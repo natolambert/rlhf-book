@@ -9,7 +9,7 @@ MAKEFILE = Makefile
 OUTPUT_FILENAME = book
 OUTPUT_FILENAME_HTML = index
 METADATA = metadata.yml
-CHAPTERS = chapters/*.md
+CHAPTERS = $(wildcard chapters/*.md) # was CHAPTERS = chapters/*.md
 TOC = --toc --toc-depth 2
 METADATA_ARGS = --metadata-file $(METADATA)
 IMAGES = $(shell find images -type f)
@@ -23,7 +23,7 @@ CONTENT_FILTERS = tee # Use this to add sed filters or other piped commands
 
 # Debugging
 
-# DEBUG_ARGS = --verbose
+DEBUG_ARGS = --verbose
 
 # Pandoc filtes - uncomment the following variable to enable cross references filter. For more
 # information, check the "Cross references" section on the README.md file.
@@ -42,6 +42,7 @@ DOCX_ARGS = --standalone --reference-doc templates/docx.docx
 EPUB_ARGS = --template templates/epub.html --epub-cover-image $(COVER_IMAGE)
 HTML_ARGS = --template templates/html.html --standalone --to html5
 PDF_ARGS = --template templates/pdf.latex --pdf-engine xelatex
+NESTED_HTML_TEMPLATE = templates/chapter.html
 
 # Per-format file dependencies
 
@@ -72,7 +73,7 @@ ECHO_BUILT = @echo "$@ was built\n"
 # Basic actions
 ####################################################################################################
 
-.PHONY: all book clean epub html pdf docx
+.PHONY: all book clean epub html pdf docx nested_html
 
 all:	book
 
@@ -81,15 +82,22 @@ book:	epub html pdf docx
 clean:
 	$(RMDIR_CMD) $(BUILD)
 
+# Debugging output for chapters and HTML output paths
+$(info Chapters found: $(CHAPTERS))
+$(info HTML output will be: $(CHAPTER_HTMLS))
+
 ####################################################################################################
 # File builders
 ####################################################################################################
 
 epub:	$(BUILD)/epub/$(OUTPUT_FILENAME).epub
 
-html:	$(BUILD)/html/$(OUTPUT_FILENAME_HTML).html
+html:	$(BUILD)/html/$(OUTPUT_FILENAME_HTML).html nested_html
 
-pdf:	$(BUILD)/pdf/$(OUTPUT_FILENAME).pdf
+nested_html: $(CHAPTER_HTMLS)
+	$(ECHO_BUILT)
+	
+# pdf:	$(BUILD)/pdf/$(OUTPUT_FILENAME).pdf
 
 docx:	$(BUILD)/docx/$(OUTPUT_FILENAME).docx
 
@@ -99,21 +107,43 @@ $(BUILD)/epub/$(OUTPUT_FILENAME).epub:	$(EPUB_DEPENDENCIES)
 	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(ARGS) $(EPUB_ARGS) -o $@
 	$(ECHO_BUILT)
 
-$(BUILD)/html/$(OUTPUT_FILENAME).html:	$(HTML_DEPENDENCIES)
-	$(ECHO_BUILDING)
-	$(MKDIR_CMD) $(BUILD)/html
-	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(ARGS) $(HTML_ARGS) -o $@
-	$(COPY_CMD) $(IMAGES) $(BUILD)/html/
-	$(ECHO_BUILT)
-
-$(BUILD)/pdf/$(OUTPUT_FILENAME).pdf:	$(PDF_DEPENDENCIES)
-	$(ECHO_BUILDING)
-	$(MKDIR_CMD) $(BUILD)/pdf
-	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(ARGS) $(PDF_ARGS) -o $@
-	$(ECHO_BUILT)
 
 $(BUILD)/docx/$(OUTPUT_FILENAME).docx:	$(DOCX_DEPENDENCIES)
 	$(ECHO_BUILDING)
 	$(MKDIR_CMD) $(BUILD)/docx
 	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(ARGS) $(DOCX_ARGS) -o $@
 	$(ECHO_BUILT)
+	
+$(BUILD)/html/$(OUTPUT_FILENAME_HTML).html:	$(HTML_DEPENDENCIES)
+	$(ECHO_BUILDING)
+	$(MKDIR_CMD) $(BUILD)/html
+	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(ARGS) $(HTML_ARGS) -o $@
+	$(COPY_CMD) $(IMAGES) $(BUILD)/html/
+	$(ECHO_BUILT)
+
+# Nested HTML build targets
+NESTED_HTML_DIR = $(BUILD)/html/c/
+CHAPTER_HTMLS = $(patsubst chapters/%.md,$(NESTED_HTML_DIR)/%.html,$(CHAPTERS))
+
+# Rule to build each HTML file from each Markdown file
+$(NESTED_HTML_DIR)/%.html: chapters/%.md $(HTML_DEPENDENCIES)
+	$(MKDIR_CMD) $(NESTED_HTML_DIR)
+	$(PANDOC_COMMAND) $(ARGS) --template $(NESTED_HTML_TEMPLATE) --standalone --to html5 -o $@ $<
+	@echo "Built HTML for $<"
+
+# Single rule for building all nested HTML
+nested_html: $(CHAPTER_HTMLS)
+	@echo "All nested HTML files built"
+
+# Main HTML target
+$(BUILD)/html/$(OUTPUT_FILENAME_HTML).html: nested_html
+	$(MKDIR_CMD) $(BUILD)/html
+	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(ARGS) $(HTML_ARGS) -o $@
+	$(COPY_CMD) $(IMAGES) $(BUILD)/html/
+	@echo "Main HTML index built"
+
+# $(BUILD)/pdf/$(OUTPUT_FILENAME).pdf:	$(PDF_DEPENDENCIES)
+# 	$(ECHO_BUILDING)
+# 	$(MKDIR_CMD) $(BUILD)/pdf
+# 	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(ARGS) $(PDF_ARGS) -o $@
+# 	$(ECHO_BUILT)

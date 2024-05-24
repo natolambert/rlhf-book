@@ -48,22 +48,23 @@ $endfor$
 $if(date)$
 <p class="date">$date$</p>
 $endif$
-$if(abstract)$
-<div class="abstract">
-  <h2>Abstract</h2>
-  $abstract$
-  <h2>Contents</h2>
-  <ol>
-      <li><a href="c/01-introduction.html">Introduction</a></li>
-      <li><a href="c/02-installation.html">TODO</a></li>
-      <li><a href="c/03-usage.html">TODO</a></li>
-      <li><a href="c/04-references.html">TODO</a></li>
-      <!-- Add more chapters as needed -->
-  </ol>
-</div>
-$endif$
 </header>
 $endif$
-<body>
+<div> <a href="../"> Home </a> </div>
+<div> <h3> Chapter Contents </h3> </div>
+$if(toc)$
+<nav id="$idprefix$TOC" role="doc-toc">
+$if(toc-title)$
+<h2 id="$idprefix$toc-title">$toc-title$</h2>
+$endif$
+$table-of-contents$
+</nav>
+$endif$
+<div id="content">
+  $body$
+</div>
+$for(include-after)$
+$include-after$
+$endfor$
 </body>
 </html>

@@ -1,4 +1,7 @@
 # build/
 # images copied within build/ dir
 build/**/*.png
+build/docx/
+build/epub/
+build/pdf/
 *.log

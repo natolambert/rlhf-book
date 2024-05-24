@@ -1,16 +1,20 @@
 ---
-title: My book title
-author: Daniel Herzog
+title: Reinforcement Learning from Human Feedback
+author: Nathan Lambert
 rights: MIT License
 lang: en-US
 mainlang: english
 otherlang: english
-tags: [pandoc, book, my-book, etc]
+tags: [rlhf, ebook, ai, ml]
+date: 24 May 2024
 abstract: |
-  Your summary.
+  An introduction to reinforcement learning from human feedback (RLHF). 
+  Covering the core topics, from history of preferences, to early work in language models, to
+  future frontiers with Direct Preference Learning (DPO) and everything that follows. 
+  Built iteratively, web first, with purcase available when completed.
 mainfont: DejaVu Sans
-# Filter preferences:
-# - pandoc-crossref
+Filter preferences:
+- pandoc-crossref
 linkReferences: true
 ---
 
