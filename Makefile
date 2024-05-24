@@ -7,6 +7,7 @@
 BUILD = build
 MAKEFILE = Makefile
 OUTPUT_FILENAME = book
+OUTPUT_FILENAME_HTML = index
 METADATA = metadata.yml
 CHAPTERS = chapters/*.md
 TOC = --toc --toc-depth 2
@@ -86,7 +87,7 @@ clean:
 
 epub:	$(BUILD)/epub/$(OUTPUT_FILENAME).epub
 
-html:	$(BUILD)/html/$(OUTPUT_FILENAME).html
+html:	$(BUILD)/html/$(OUTPUT_FILENAME_HTML).html
 
 pdf:	$(BUILD)/pdf/$(OUTPUT_FILENAME).pdf
 

@@ -15,6 +15,7 @@ Pandoc is a suite of tools to compile markdown files into readable files (PDF, E
 Please, check [this page](http://pandoc.org/installing.html) for more information. On ubuntu, it
 can be installed as the *pandoc* package:
 
+#### Linux
 ```sh
 sudo apt-get install pandoc
 ```
@@ -30,6 +31,12 @@ To export to PDF files, make sure to install the following packages:
 
 ```sh
 sudo apt-get install texlive-fonts-recommended texlive-xetex
+```
+
+#### Mac
+```
+brew install pandoc
+brew install make
 ```
 
 ### Folder structure

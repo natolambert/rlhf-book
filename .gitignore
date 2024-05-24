@@ -1,2 +1,4 @@
-build/
+# build/
+# images copied within build/ dir
+build/**/*.png
 *.log
