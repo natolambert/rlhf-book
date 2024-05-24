@@ -12,7 +12,7 @@ abstract: |
   Covering the core topics, from history of preferences, to early work in language models, to
   future frontiers with Direct Preference Learning (DPO) and everything that follows. 
   Built iteratively, web first, with purcase available when completed.
-mainfont: DejaVu Sans
+# mainfont: DejaVu Sans # not available on Mac
 Filter preferences:
 - pandoc-crossref
 linkReferences: true

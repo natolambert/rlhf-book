@@ -1,7 +1,10 @@
-# build/
-# images copied within build/ dir
+# Build files
 build/**/*.png
 build/docx/
 build/epub/
 build/pdf/
+
+# Misc
 *.log
+.DS_Store
+**/.DS_Store

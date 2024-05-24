@@ -97,7 +97,7 @@ html:	$(BUILD)/html/$(OUTPUT_FILENAME_HTML).html nested_html
 nested_html: $(CHAPTER_HTMLS)
 	$(ECHO_BUILT)
 	
-# pdf:	$(BUILD)/pdf/$(OUTPUT_FILENAME).pdf
+pdf:	$(BUILD)/pdf/$(OUTPUT_FILENAME).pdf
 
 docx:	$(BUILD)/docx/$(OUTPUT_FILENAME).docx
 
@@ -142,8 +142,8 @@ $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html: nested_html
 	$(COPY_CMD) $(IMAGES) $(BUILD)/html/
 	@echo "Main HTML index built"
 
-# $(BUILD)/pdf/$(OUTPUT_FILENAME).pdf:	$(PDF_DEPENDENCIES)
-# 	$(ECHO_BUILDING)
-# 	$(MKDIR_CMD) $(BUILD)/pdf
-# 	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(ARGS) $(PDF_ARGS) -o $@
-# 	$(ECHO_BUILT)
+$(BUILD)/pdf/$(OUTPUT_FILENAME).pdf:	$(PDF_DEPENDENCIES)
+	$(ECHO_BUILDING)
+	$(MKDIR_CMD) $(BUILD)/pdf
+	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(ARGS) $(PDF_ARGS) -o $@
+	$(ECHO_BUILT)
