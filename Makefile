@@ -16,6 +16,7 @@ IMAGES = $(shell find images -type f)
 TEMPLATES = $(shell find templates/ -type f)
 COVER_IMAGE = images/cover.png
 MATH_FORMULAS = --webtex
+BIBLIOGRAPHY = --bibliography=chapters/bib.bib
 
 # Chapters content
 CONTENT = awk 'FNR==1 && NR!=1 {print "\n\n"}{print}' $(CHAPTERS)
@@ -32,7 +33,7 @@ DEBUG_ARGS = --verbose
 
 # Combined arguments
 
-ARGS = $(TOC) $(MATH_FORMULAS) $(METADATA_ARGS) $(FILTER_ARGS) $(DEBUG_ARGS)
+ARGS = $(TOC) $(MATH_FORMULAS) $(METADATA_ARGS) $(FILTER_ARGS) $(DEBUG_ARGS) $(BIBLIOGRAPHY)
 	
 PANDOC_COMMAND = pandoc
 
