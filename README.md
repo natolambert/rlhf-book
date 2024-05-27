@@ -1,9 +1,17 @@
 # Pandoc book template
 
 [![CircleCI](https://circleci.com/gh/wikiti/pandoc-book-template.svg?style=shield)](https://circleci.com/gh/wikiti/pandoc-book-template)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/wikiti/pandoc-book-template/blob/master/LICENSE.md)
+[![Code License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/wikiti/pandoc-book-template/blob/master/LICENSE.md)
+[![Content License](https://img.shields.io/badge/license-CC--BY--NC--SA--4.0-lightgrey)](https://github.com/natolambert/rlhf-book/blob/master/LICENSE-Content.md)
 
-## Description
+## RLHF Book
+
+This is a work-in-progress textbook covering the fundamentals of Reinforcement Learning from Human Feedback (RLHF).
+The code is licensed with the MIT license, but the content for the book found in `chapters/` is licensed under the [Creative Commons Non-Commerical Attribution License](https://creativecommons.org/licenses/by-nc/4.0/deed.en), CC BY-NC 4.0.
+
+----
+
+## Tooling
 
 This repository contains a simple template for building [Pandoc](http://pandoc.org/) documents;
 Pandoc is a suite of tools to compile markdown files into readable files (PDF, EPUB, HTML...).
