@@ -16,7 +16,7 @@ IMAGES = $(shell find images -type f)
 TEMPLATES = $(shell find templates/ -type f)
 COVER_IMAGE = images/cover.png
 MATH_FORMULAS = --webtex
-BIBLIOGRAPHY = --bibliography=chapters/bib.bib
+BIBLIOGRAPHY = --bibliography=chapters/bib.bib --citeproc
 
 # Chapters content
 CONTENT = awk 'FNR==1 && NR!=1 {print "\n\n"}{print}' $(CHAPTERS)
