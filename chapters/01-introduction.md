@@ -1,6 +1,7 @@
 # Introduction
 
 This is the first paragraph of the introduction chapter.
+This is a test of citing [@lambert2023entangled].
 
 ## First: Images
 

@@ -9,6 +9,19 @@
 This is a work-in-progress textbook covering the fundamentals of Reinforcement Learning from Human Feedback (RLHF).
 The code is licensed with the MIT license, but the content for the book found in `chapters/` is licensed under the [Creative Commons Non-Commerical Attribution License](https://creativecommons.org/licenses/by-nc/4.0/deed.en), CC BY-NC 4.0.
 
+### Citation
+To cite this book, please use the following format.
+```
+@book{rlhf2024,
+  author       = {Nathan Lambert},
+  title        = {Reinforcement Learning from Human Feedback},
+  year         = {2024},
+  publisher    = {Online},
+  url          = {https://rlhfbook.com},
+  % Chapters can be optionally included as shown below:
+  % chapters   = {Introduction, Background, Methods, Results, Discussion, Conclusion}
+}
+```
 ----
 
 ## Tooling
@@ -254,6 +267,11 @@ valid plugin and with its own syntax.
 Using [pandoc-crossref](https://github.com/lierdakil/pandoc-crossref) is highly recommended, but
 there are other alternatives which use a similar syntax, like
 [pandoc-xnos](https://github.com/tomduck/pandoc-xnos).
+
+To install on Mac, run:
+```
+brew install pandoc-crossref
+```
 
 First, enable the filter on the *Makefile* by updating the `FILTER_ARGS` variable with your new
 filter(s):

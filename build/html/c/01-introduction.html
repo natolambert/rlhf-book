@@ -244,348 +244,368 @@
     code span.va { color: #19177c; } /* Variable */
     code span.vs { color: #4070a0; } /* VerbatimString */
     code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
-    /*
-     * Custom CSS file. Override it as you like.
-     *
-     * Credits to @killercup (https://gist.github.com/killercup); Extracted from this Gist:
-     *   https://gist.github.com/killercup/5917178
-     */
-
-    html {
-        font-size: 100%;
-        overflow-y: scroll;
-        -webkit-text-size-adjust: 100%;
-        -ms-text-size-adjust: 100%;
+    /* CSS for citations */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+      margin-bottom: 0em;
     }
-
-    body {
-        color: #444;
-        font-family: Georgia, Palatino, 'Palatino Linotype', Times, 'Times New Roman', serif;
-        font-size: 12px;
-        line-height: 1.7;
-        padding: 1em;
-        margin: auto;
-        max-width: 42em;
-        background: #fefefe;
+    .hanging-indent div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
     }
-
-    a {
-        color: #0645ad;
-        text-decoration: none;
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
     }
-
-    a:visited {
-        color: #0b0080;
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
     }
+    div.csl-indent {
+      margin-left: 2em;
+    }    /*
+      * Custom CSS file. Override it as you like.
+      *
+      * Credits to @killercup (https://gist.github.com/killercup); Extracted from this Gist:
+      *   https://gist.github.com/killercup/5917178
+      */
 
-    a:hover {
-        color: #06e;
-    }
+     html {
+         font-size: 100%;
+         overflow-y: scroll;
+         -webkit-text-size-adjust: 100%;
+         -ms-text-size-adjust: 100%;
+     }
 
-    a:active {
-        color: #faa700;
-    }
+     body {
+         color: #444;
+         font-family: Georgia, Palatino, 'Palatino Linotype', Times, 'Times New Roman', serif;
+         font-size: 12px;
+         line-height: 1.7;
+         padding: 1em;
+         margin: auto;
+         max-width: 42em;
+         background: #fefefe;
+     }
 
-    a:focus {
-        outline: thin dotted;
-    }
+     a {
+         color: #0645ad;
+         text-decoration: none;
+     }
 
-    *::-moz-selection {
-        background: rgba(255, 255, 0, 0.3);
-        color: #000;
-    }
+     a:visited {
+         color: #0b0080;
+     }
 
-    *::selection {
-        background: rgba(255, 255, 0, 0.3);
-        color: #000;
-    }
+     a:hover {
+         color: #06e;
+     }
 
-    a::-moz-selection {
-        background: rgba(255, 255, 0, 0.3);
-        color: #0645ad;
-    }
+     a:active {
+         color: #faa700;
+     }
 
-    a::selection {
-        background: rgba(255, 255, 0, 0.3);
-        color: #0645ad;
-    }
+     a:focus {
+         outline: thin dotted;
+     }
 
-    p {
-        margin: 1em 0;
-    }
+     *::-moz-selection {
+         background: rgba(255, 255, 0, 0.3);
+         color: #000;
+     }
 
-    img {
-        max-width: 100%;
-    }
+     *::selection {
+         background: rgba(255, 255, 0, 0.3);
+         color: #000;
+     }
 
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
-        color: #111;
-        line-height: 125%;
-        margin-top: 2em;
-        font-weight: normal;
-    }
+     a::-moz-selection {
+         background: rgba(255, 255, 0, 0.3);
+         color: #0645ad;
+     }
 
-    h4,
-    h5,
-    h6 {
-        font-weight: bold;
-    }
+     a::selection {
+         background: rgba(255, 255, 0, 0.3);
+         color: #0645ad;
+     }
 
-    h1 {
-        font-size: 2.5em;
-    }
+     p {
+         margin: 1em 0;
+     }
 
-    h2 {
-        font-size: 2em;
-    }
+     img {
+         max-width: 100%;
+     }
 
-    h3 {
-        font-size: 1.5em;
-    }
+     h1,
+     h2,
+     h3,
+     h4,
+     h5,
+     h6 {
+         color: #111;
+         line-height: 125%;
+         margin-top: 2em;
+         font-weight: normal;
+     }
 
-    h4 {
-        font-size: 1.2em;
-    }
+     h4,
+     h5,
+     h6 {
+         font-weight: bold;
+     }
 
-    h5 {
-        font-size: 1em;
-    }
+     h1 {
+         font-size: 2.5em;
+     }
 
-    h6 {
-        font-size: 0.9em;
-    }
+     h2 {
+         font-size: 2em;
+     }
 
-    blockquote {
-        color: #666666;
-        margin: 0;
-        padding-left: 3em;
-        border-left: 0.5em #EEE solid;
-    }
+     h3 {
+         font-size: 1.5em;
+     }
 
-    hr {
-        display: block;
-        height: 2px;
-        border: 0;
-        border-top: 1px solid #aaa;
-        border-bottom: 1px solid #eee;
-        margin: 1em 0;
-        padding: 0;
-    }
+     h4 {
+         font-size: 1.2em;
+     }
 
-    pre,
-    code,
-    kbd,
-    samp {
-        color: #000;
-        font-family: monospace, monospace;
-        _font-family: 'courier new', monospace;
-        font-size: 0.98em;
-    }
+     h5 {
+         font-size: 1em;
+     }
 
-    pre {
-        white-space: pre;
-        white-space: pre-wrap;
-        word-wrap: break-word;
-    }
+     h6 {
+         font-size: 0.9em;
+     }
 
-    b,
-    strong {
-        font-weight: bold;
-    }
+     blockquote {
+         color: #666666;
+         margin: 0;
+         padding-left: 3em;
+         border-left: 0.5em #EEE solid;
+     }
 
-    dfn {
-        font-style: italic;
-    }
+     hr {
+         display: block;
+         height: 2px;
+         border: 0;
+         border-top: 1px solid #aaa;
+         border-bottom: 1px solid #eee;
+         margin: 1em 0;
+         padding: 0;
+     }
 
-    ins {
-        background: #ff9;
-        color: #000;
-        text-decoration: none;
-    }
+     pre,
+     code,
+     kbd,
+     samp {
+         color: #000;
+         font-family: monospace, monospace;
+         _font-family: 'courier new', monospace;
+         font-size: 0.98em;
+     }
 
-    mark {
-        background: #ff0;
-        color: #000;
-        font-style: italic;
-        font-weight: bold;
-    }
+     pre {
+         white-space: pre;
+         white-space: pre-wrap;
+         word-wrap: break-word;
+     }
 
-    sub,
-    sup {
-        font-size: 75%;
-        line-height: 0;
-        position: relative;
-        vertical-align: baseline;
-    }
+     b,
+     strong {
+         font-weight: bold;
+     }
 
-    sup {
-        top: -0.5em;
-    }
+     dfn {
+         font-style: italic;
+     }
 
-    sub {
-        bottom: -0.25em;
-    }
+     ins {
+         background: #ff9;
+         color: #000;
+         text-decoration: none;
+     }
 
-    ul,
-    ol {
-        margin: 1em 0;
-        padding: 0 0 0 2em;
-    }
+     mark {
+         background: #ff0;
+         color: #000;
+         font-style: italic;
+         font-weight: bold;
+     }
 
-    li p:last-child {
-        margin-bottom: 0;
-    }
+     sub,
+     sup {
+         font-size: 75%;
+         line-height: 0;
+         position: relative;
+         vertical-align: baseline;
+     }
 
-    ul ul,
-    ol ol {
-        margin: .3em 0;
-    }
+     sup {
+         top: -0.5em;
+     }
 
-    dl {
-        margin-bottom: 1em;
-    }
+     sub {
+         bottom: -0.25em;
+     }
 
-    dt {
-        font-weight: bold;
-        margin-bottom: .8em;
-    }
+     ul,
+     ol {
+         margin: 1em 0;
+         padding: 0 0 0 2em;
+     }
 
-    dd {
-        margin: 0 0 .8em 2em;
-    }
+     li p:last-child {
+         margin-bottom: 0;
+     }
 
-    dd:last-child {
-        margin-bottom: 0;
-    }
+     ul ul,
+     ol ol {
+         margin: .3em 0;
+     }
 
-    img {
-        border: 0;
-        -ms-interpolation-mode: bicubic;
-        vertical-align: middle;
-    }
+     dl {
+         margin-bottom: 1em;
+     }
 
-    figure {
-        display: block;
-        text-align: center;
-        margin: 1em 0;
-    }
+     dt {
+         font-weight: bold;
+         margin-bottom: .8em;
+     }
 
-    figure img {
-        border: none;
-        margin: 0 auto;
-    }
+     dd {
+         margin: 0 0 .8em 2em;
+     }
 
-    figcaption {
-        font-size: 0.8em;
-        font-style: italic;
-        margin: 0 0 .8em;
-    }
+     dd:last-child {
+         margin-bottom: 0;
+     }
 
-    table {
-        margin-bottom: 2em;
-        border-bottom: 1px solid #ddd;
-        border-right: 1px solid #ddd;
-        border-spacing: 0;
-        border-collapse: collapse;
-    }
+     img {
+         border: 0;
+         -ms-interpolation-mode: bicubic;
+         vertical-align: middle;
+     }
 
-    table th {
-        padding: .2em 1em;
-        background-color: #eee;
-        border-top: 1px solid #ddd;
-        border-left: 1px solid #ddd;
-    }
+     figure {
+         display: block;
+         text-align: center;
+         margin: 1em 0;
+     }
 
-    table td {
-        padding: .2em 1em;
-        border-top: 1px solid #ddd;
-        border-left: 1px solid #ddd;
-        vertical-align: top;
-    }
+     figure img {
+         border: none;
+         margin: 0 auto;
+     }
 
-    .author {
-        font-size: 1.2em;
-        text-align: center;
-    }
+     figcaption {
+         font-size: 0.8em;
+         font-style: italic;
+         margin: 0 0 .8em;
+     }
 
-    @media only screen and (min-width: 480px) {
-        body {
-            font-size: 14px;
-        }
-    }
+     table {
+         margin-bottom: 2em;
+         border-bottom: 1px solid #ddd;
+         border-right: 1px solid #ddd;
+         border-spacing: 0;
+         border-collapse: collapse;
+     }
 
-    @media only screen and (min-width: 768px) {
-        body {
-            font-size: 16px;
-        }
-    }
+     table th {
+         padding: .2em 1em;
+         background-color: #eee;
+         border-top: 1px solid #ddd;
+         border-left: 1px solid #ddd;
+     }
 
-    @media print {
-        * {
-            background: transparent !important;
-            color: black !important;
-            filter: none !important;
-            -ms-filter: none !important;
-        }
-        body {
-            font-size: 12pt;
-            max-width: 100%;
-        }
-        a,
-        a:visited {
-            text-decoration: underline;
-        }
-        hr {
-            height: 1px;
-            border: 0;
-            border-bottom: 1px solid black;
-        }
-        a[href]:after {
-            content: " (" attr(href) ")";
-        }
-        abbr[title]:after {
-            content: " (" attr(title) ")";
-        }
-        .ir a:after,
-        a[href^="javascript:"]:after,
-        a[href^="#"]:after {
-            content: "";
-        }
-        pre,
-        blockquote {
-            border: 1px solid #999;
-            padding-right: 1em;
-            page-break-inside: avoid;
-        }
-        tr,
-        img {
-            page-break-inside: avoid;
-        }
-        img {
-            max-width: 100% !important;
-        }
-        @page :left {
-            margin: 15mm 20mm 15mm 10mm;
-        }
-        @page :right {
-            margin: 15mm 10mm 15mm 20mm;
-        }
-        p,
-        h2,
-        h3 {
-            orphans: 3;
-            widows: 3;
-        }
-        h2,
-        h3 {
-            page-break-after: avoid;
-        }
-    }  </style>
+     table td {
+         padding: .2em 1em;
+         border-top: 1px solid #ddd;
+         border-left: 1px solid #ddd;
+         vertical-align: top;
+     }
+
+     .author {
+         font-size: 1.2em;
+         text-align: center;
+     }
+
+     @media only screen and (min-width: 480px) {
+         body {
+             font-size: 14px;
+         }
+     }
+
+     @media only screen and (min-width: 768px) {
+         body {
+             font-size: 16px;
+         }
+     }
+
+     @media print {
+         * {
+             background: transparent !important;
+             color: black !important;
+             filter: none !important;
+             -ms-filter: none !important;
+         }
+         body {
+             font-size: 12pt;
+             max-width: 100%;
+         }
+         a,
+         a:visited {
+             text-decoration: underline;
+         }
+         hr {
+             height: 1px;
+             border: 0;
+             border-bottom: 1px solid black;
+         }
+         a[href]:after {
+             content: " (" attr(href) ")";
+         }
+         abbr[title]:after {
+             content: " (" attr(title) ")";
+         }
+         .ir a:after,
+         a[href^="javascript:"]:after,
+         a[href^="#"]:after {
+             content: "";
+         }
+         pre,
+         blockquote {
+             border: 1px solid #999;
+             padding-right: 1em;
+             page-break-inside: avoid;
+         }
+         tr,
+         img {
+             page-break-inside: avoid;
+         }
+         img {
+             max-width: 100% !important;
+         }
+         @page :left {
+             margin: 15mm 20mm 15mm 10mm;
+         }
+         @page :right {
+             margin: 15mm 10mm 15mm 20mm;
+         }
+         p,
+         h2,
+         h3 {
+             orphans: 3;
+             widows: 3;
+         }
+         h2,
+         h3 {
+             page-break-after: avoid;
+         }
+     }  </style>
   <!--[if lt IE 9]>
     <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
   <![endif]-->
@@ -610,11 +630,15 @@ Equations</a></li>
 <li><a href="#fourth-cross-references"
 id="toc-fourth-cross-references">Fourth: Cross references</a></li>
 </ul></li>
+<li><a href="#bibliography" id="toc-bibliography">Bibliography</a></li>
 </ul>
 </nav>
 <div id="content">
   <h1 id="introduction">Introduction</h1>
-  <p>This is the first paragraph of the introduction chapter.</p>
+  <p>This is the first paragraph of the introduction chapter. This is a
+  test of citing <span class="citation"
+  data-cites="lambert2023entangled"><a href="#ref-lambert2023entangled"
+  role="doc-biblioref">[1]</a></span>.</p>
   <h2 id="first-images">First: Images</h2>
   <p>This is the first subsection. Please, admire the gloriousnes of
   this seagull:</p>
@@ -680,23 +704,21 @@ id="toc-fourth-cross-references">Fourth: Cross references</a></li>
   references</a></em> section on the README.md file.</p>
   <p>Here’s a list of cross references:</p>
   <ul>
-  <li>Check <span class="citation"
-  data-cites="fig:seagull">@fig:seagull</span>.</li>
-  <li>Check <span class="citation"
-  data-cites="tbl:table">@tbl:table</span>.</li>
-  <li>Check <span class="citation"
-  data-cites="eq:equation">@eq:equation</span>.</li>
+  <li>Check fig. <a href="#fig:seagull">1</a>.</li>
+  <li>Check tbl. <a href="#tbl:table">1</a>.</li>
+  <li>Check eq. <a href="#eq:equation">1</a>.</li>
   </ul>
   <figure id="fig:seagull">
-  <img src="images/seagull.png" alt="A cool seagull" />
-  <figcaption aria-hidden="true">A cool seagull</figcaption>
+  <img src="images/seagull.png" alt="Figure 1: A cool seagull" />
+  <figcaption aria-hidden="true">Figure 1: A cool seagull</figcaption>
   </figure>
-  <p><img style="vertical-align:middle"
-  src="https://latex.codecogs.com/png.latex?%5Cdisplaystyle%20y%20%3D%20mx%20%2B%20b"
-  alt="y = mx + b" title="y = mx + b" class="math display" />
-  {#eq:equation}</p>
+  <p><span id="eq:equation"><img style="vertical-align:middle"
+  src="https://latex.codecogs.com/png.latex?%5Cdisplaystyle%20y%20%3D%20mx%20%2B%20b%20%5Cqquad%7B%281%29%7D"
+  alt="y = mx + b \qquad{(1)}" title="y = mx + b \qquad{(1)}"
+  class="math display" /></span></p>
+  <div id="tbl:table">
   <table>
-  <caption>This is an example table. {#tbl:table}</caption>
+  <caption>Table 1: This is an example table.</caption>
   <thead>
   <tr class="header">
   <th>Index</th>
@@ -718,6 +740,37 @@ id="toc-fourth-cross-references">Fourth: Cross references</a></li>
   </tr>
   </tbody>
   </table>
+  </div>
+  <h1 class="unnumbered" id="bibliography">Bibliography</h1>
+  <div id="refs" class="references csl-bib-body" data-entry-spacing="0"
+  role="list">
+  <div id="ref-lambert2023entangled" class="csl-entry" role="listitem">
+  <div class="csl-left-margin">[1] </div><div
+  class="csl-right-inline">N. Lambert, T. K. Gilbert, and T. Zick,
+  <span>“Entangled preferences: The history and risks of reinforcement
+  learning and human feedback,”</span> <em>arXiv preprint
+  arXiv:2310.13595</em>, 2023.</div>
+  </div>
+  </div>
 </div>
+<footer style="padding: 20px; text-align: center;">
+  <hr>
+  <div style="text-align: left; font-size: small; color: #888;">
+    Citation: <br>
+    @book{rlhf2024,<br>
+    &nbsp;&nbsp;author = {Nathan Lambert},<br>
+    &nbsp;&nbsp;title = {Reinforcement Learning from Human Feedback},<br>
+    &nbsp;&nbsp;year = {2024},<br>
+    &nbsp;&nbsp;publisher = {Online},<br>
+    &nbsp;&nbsp;url = {https://rlhfbook.com},<br>      }
+  </div>
+  <div>
+    <a href="https://github.com/natolambert/rlhf-book" target="_blank">
+      <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub" style="width: 40px; height: 40px;">
+    </a>
+    <!-- Add more social links here -->
+  </div>
+  <p>&copy; 2024 RLHF Book Team</p>
+</footer>  
 </body>
 </html>
