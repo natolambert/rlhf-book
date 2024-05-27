@@ -630,14 +630,15 @@ Equations</a></li>
 <li><a href="#fourth-cross-references"
 id="toc-fourth-cross-references">Fourth: Cross references</a></li>
 </ul></li>
+<li><a href="#bibliography" id="toc-bibliography">Bibliography</a></li>
 </ul>
 </nav>
 <div id="content">
   <h1 id="introduction">Introduction</h1>
   <p>This is the first paragraph of the introduction chapter. This is a
   test of citing <span class="citation"
-  data-cites="lambert2023entangled">(Lambert, Gilbert, and Zick
-  2023)</span>.</p>
+  data-cites="lambert2023entangled"><a href="#ref-lambert2023entangled"
+  role="doc-biblioref">[1]</a></span>.</p>
   <h2 id="first-images">First: Images</h2>
   <p>This is the first subsection. Please, admire the gloriousnes of
   this seagull:</p>
@@ -703,23 +704,21 @@ id="toc-fourth-cross-references">Fourth: Cross references</a></li>
   references</a></em> section on the README.md file.</p>
   <p>Here’s a list of cross references:</p>
   <ul>
-  <li>Check <span class="citation"
-  data-cites="fig:seagull">(<strong>fig:seagull?</strong>)</span>.</li>
-  <li>Check <span class="citation"
-  data-cites="tbl:table">(<strong>tbl:table?</strong>)</span>.</li>
-  <li>Check <span class="citation"
-  data-cites="eq:equation">(<strong>eq:equation?</strong>)</span>.</li>
+  <li>Check fig. <a href="#fig:seagull">1</a>.</li>
+  <li>Check tbl. <a href="#tbl:table">1</a>.</li>
+  <li>Check eq. <a href="#eq:equation">1</a>.</li>
   </ul>
   <figure id="fig:seagull">
-  <img src="images/seagull.png" alt="A cool seagull" />
-  <figcaption aria-hidden="true">A cool seagull</figcaption>
+  <img src="images/seagull.png" alt="Figure 1: A cool seagull" />
+  <figcaption aria-hidden="true">Figure 1: A cool seagull</figcaption>
   </figure>
-  <p><img style="vertical-align:middle"
-  src="https://latex.codecogs.com/png.latex?%5Cdisplaystyle%20y%20%3D%20mx%20%2B%20b"
-  alt="y = mx + b" title="y = mx + b" class="math display" />
-  {#eq:equation}</p>
+  <p><span id="eq:equation"><img style="vertical-align:middle"
+  src="https://latex.codecogs.com/png.latex?%5Cdisplaystyle%20y%20%3D%20mx%20%2B%20b%20%5Cqquad%7B%281%29%7D"
+  alt="y = mx + b \qquad{(1)}" title="y = mx + b \qquad{(1)}"
+  class="math display" /></span></p>
+  <div id="tbl:table">
   <table>
-  <caption>This is an example table. {#tbl:table}</caption>
+  <caption>Table 1: This is an example table.</caption>
   <thead>
   <tr class="header">
   <th>Index</th>
@@ -741,15 +740,37 @@ id="toc-fourth-cross-references">Fourth: Cross references</a></li>
   </tr>
   </tbody>
   </table>
-  <div id="refs" class="references csl-bib-body hanging-indent"
-  data-entry-spacing="0" role="list">
+  </div>
+  <h1 class="unnumbered" id="bibliography">Bibliography</h1>
+  <div id="refs" class="references csl-bib-body" data-entry-spacing="0"
+  role="list">
   <div id="ref-lambert2023entangled" class="csl-entry" role="listitem">
-  Lambert, Nathan, Thomas Krendl Gilbert, and Tom Zick. 2023.
-  <span>“Entangled Preferences: The History and Risks of Reinforcement
-  Learning and Human Feedback.”</span> <em>arXiv Preprint
-  arXiv:2310.13595</em>.
+  <div class="csl-left-margin">[1] </div><div
+  class="csl-right-inline">N. Lambert, T. K. Gilbert, and T. Zick,
+  <span>“Entangled preferences: The history and risks of reinforcement
+  learning and human feedback,”</span> <em>arXiv preprint
+  arXiv:2310.13595</em>, 2023.</div>
   </div>
   </div>
 </div>
+<footer style="padding: 20px; text-align: center;">
+  <hr>
+  <div style="text-align: left; font-size: small; color: #888;">
+    Citation: <br>
+    @book{rlhf2024,<br>
+    &nbsp;&nbsp;author = {Nathan Lambert},<br>
+    &nbsp;&nbsp;title = {Reinforcement Learning from Human Feedback},<br>
+    &nbsp;&nbsp;year = {2024},<br>
+    &nbsp;&nbsp;publisher = {Online},<br>
+    &nbsp;&nbsp;url = {https://rlhfbook.com},<br>      }
+  </div>
+  <div>
+    <a href="https://github.com/natolambert/rlhf-book" target="_blank">
+      <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub" style="width: 40px; height: 40px;">
+    </a>
+    <!-- Add more social links here -->
+  </div>
+  <p>&copy; 2024 RLHF Book Team</p>
+</footer>  
 </body>
 </html>

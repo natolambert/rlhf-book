@@ -268,6 +268,11 @@ Using [pandoc-crossref](https://github.com/lierdakil/pandoc-crossref) is highly 
 there are other alternatives which use a similar syntax, like
 [pandoc-xnos](https://github.com/tomduck/pandoc-xnos).
 
+To install on Mac, run:
+```
+brew install pandoc-crossref
+```
+
 First, enable the filter on the *Makefile* by updating the `FILTER_ARGS` variable with your new
 filter(s):
 

@@ -16,7 +16,7 @@ IMAGES = $(shell find images -type f)
 TEMPLATES = $(shell find templates/ -type f)
 COVER_IMAGE = images/cover.png
 MATH_FORMULAS = --webtex
-BIBLIOGRAPHY = --bibliography=chapters/bib.bib --citeproc
+BIBLIOGRAPHY = --bibliography=chapters/bib.bib --citeproc --csl=templates/ieee.csl
 
 # Chapters content
 CONTENT = awk 'FNR==1 && NR!=1 {print "\n\n"}{print}' $(CHAPTERS)
@@ -29,7 +29,7 @@ DEBUG_ARGS = --verbose
 # Pandoc filtes - uncomment the following variable to enable cross references filter. For more
 # information, check the "Cross references" section on the README.md file.
 
-# FILTER_ARGS = --filter pandoc-crossref
+FILTER_ARGS = --filter pandoc-crossref
 
 # Combined arguments
 
@@ -41,7 +41,7 @@ PANDOC_COMMAND = pandoc
 
 DOCX_ARGS = --standalone --reference-doc templates/docx.docx
 EPUB_ARGS = --template templates/epub.html --epub-cover-image $(COVER_IMAGE)
-HTML_ARGS = --template templates/html.html --standalone --to html5
+HTML_ARGS = --template templates/html.html --standalone --to html5 
 PDF_ARGS = --template templates/pdf.latex --pdf-engine xelatex
 NESTED_HTML_TEMPLATE = templates/chapter.html
 
