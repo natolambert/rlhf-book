@@ -1,8 +1,5 @@
 # Build files
-build/**/*.png
-build/docx/
-build/epub/
-build/pdf/
+build/
 
 # Misc
 *.log
