@@ -11,5 +11,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Dependencies
+        run: | 
+          sudo apt-get install -y pandoc
+
       - name: Build the static content
         run: make html
