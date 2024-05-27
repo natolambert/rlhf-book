@@ -11,14 +11,5 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x' # Specify the Python version if needed
-
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt  # Adjust as necessary for your project
-
       - name: Build the static content
         run: make html
