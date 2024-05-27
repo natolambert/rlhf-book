@@ -2,7 +2,7 @@
 
 [![CircleCI](https://circleci.com/gh/wikiti/pandoc-book-template.svg?style=shield)](https://circleci.com/gh/wikiti/pandoc-book-template)
 [![Code License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/wikiti/pandoc-book-template/blob/master/LICENSE.md)
-[![Content License](https://img.shields.io/badge/license-CC--BY--NC--SA--4.0-lightgrey)](https://github.com/natolambert/rlhf-book/blob/master/LICENSE-Content.md)
+[![Content License](https://img.shields.io/badge/license-CC--BY--NC--SA--4.0-lightgrey)](https://github.com/natolambert/rlhf-book/blob/main/LICENSE-Content.md)
 
 ## RLHF Book
 
