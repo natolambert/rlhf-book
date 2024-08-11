@@ -29,7 +29,9 @@ jobs:
           brew install pandoc
           brew install make
           brew install pandoc-crossref
-          brew install basictex
+          brew cask install mactex
+        
+      # brew install basictex
 
       # - name: Setup Pandoc
       #   uses: pandoc/actions/setup@main
@@ -42,7 +44,6 @@ jobs:
           mkdir -p build/html
 
       - name: Build book
-        uses: xu-cheng/texlive-action@v2
         run: make
 
       # pages deploy steps
