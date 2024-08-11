@@ -32,6 +32,13 @@ jobs:
           brew install --cask basictex
           eval "$(/usr/libexec/path_helper)"
           sudo tlmgr update --self
+          sudo tlmgr install xetex
+
+      - name: Set up LaTeX PATH
+        run: |
+          echo "/Library/TeX/texbin" >> $GITHUB_PATH
+          echo "PATH=$PATH:/Library/TeX/texbin" >> $GITHUB_ENV
+
 
       # - name: Setup Pandoc
       #   uses: pandoc/actions/setup@main
