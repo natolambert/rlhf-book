@@ -34,14 +34,14 @@ jobs:
           sudo tlmgr update --self
           sudo tlmgr install xetex
 
-      - name: Set up LaTeX PATH
-        run: |
-          echo "/Library/TeX/texbin" >> $GITHUB_PATH
-          echo "PATH=$PATH:/Library/TeX/texbin" >> $GITHUB_ENV
-          xelatex --version  # Verify xelatex is accessible
-          if ! command -v xelatex &> /dev/null; then
-            sudo ln -s /Library/TeX/texbin/xelatex /usr/local/bin/xelatex
-          fi
+      # - name: Set up LaTeX PATH
+      #   run: |
+      #     echo "/Library/TeX/texbin" >> $GITHUB_PATH
+      #     echo "PATH=$PATH:/Library/TeX/texbin" >> $GITHUB_ENV
+      #     xelatex --version  # Verify xelatex is accessible
+      #     if ! command -v xelatex &> /dev/null; then
+      #       sudo ln -s /Library/TeX/texbin/xelatex /usr/local/bin/xelatex
+      #     fi
 
 
 
