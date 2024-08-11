@@ -1,4 +1,4 @@
-# Installation
+# Optimizaiton - Overview
 
 This is the installation chapter.
 We love the book [@russell2016artificial].
