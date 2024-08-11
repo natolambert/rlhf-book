@@ -32,7 +32,6 @@ jobs:
           brew install --cask basictex
           eval "$(/usr/libexec/path_helper)"
           sudo tlmgr update --self
-          sudo tlmgr install xelatex        
 
       # - name: Setup Pandoc
       #   uses: pandoc/actions/setup@main
