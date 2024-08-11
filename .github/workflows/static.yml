@@ -30,8 +30,8 @@ jobs:
           brew install make
           brew install pandoc-crossref
 
-      - name: Setup Pandoc
-        uses: pandoc/actions/setup@main
+      # - name: Setup Pandoc
+      #   uses: pandoc/actions/setup@main
         # with:
         #   version: 2.19  # Uncomment and modify if you need a specific version
 
