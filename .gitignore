@@ -3,6 +3,7 @@ build/**/*.png
 build/docx/
 build/epub/
 build/pdf/
+build/html/
 
 # Misc
 *.log
