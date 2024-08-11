@@ -59,6 +59,7 @@ sudo apt-get install texlive-fonts-recommended texlive-xetex
 brew install pandoc
 brew install make
 ```
+(See below for `pandoc-crossref`)
 
 ### Folder structure
 

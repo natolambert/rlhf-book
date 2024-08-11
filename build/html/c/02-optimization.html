@@ -180,70 +180,6 @@
       vertical-align: middle;
     }
     .display.math{display: block; text-align: center; margin: 0.5rem auto;}
-    /* CSS for syntax highlighting */
-    pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { line-height: 1.25; }
-    pre > code.sourceCode > span:empty { height: 1.2em; }
-    .sourceCode { overflow: visible; }
-    code.sourceCode > span { color: inherit; text-decoration: inherit; }
-    div.sourceCode { margin: 1em 0; }
-    pre.sourceCode { margin: 0; }
-    @media screen {
-    div.sourceCode { overflow: auto; }
-    }
-    @media print {
-    pre > code.sourceCode { white-space: pre-wrap; }
-    pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
-    }
-    pre.numberSource code
-      { counter-reset: source-line 0; }
-    pre.numberSource code > span
-      { position: relative; left: -4em; counter-increment: source-line; }
-    pre.numberSource code > span > a:first-child::before
-      { content: counter(source-line);
-        position: relative; left: -1em; text-align: right; vertical-align: baseline;
-        border: none; display: inline-block;
-        -webkit-touch-callout: none; -webkit-user-select: none;
-        -khtml-user-select: none; -moz-user-select: none;
-        -ms-user-select: none; user-select: none;
-        padding: 0 4px; width: 4em;
-        color: #aaaaaa;
-      }
-    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
-    div.sourceCode
-      {   }
-    @media screen {
-    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-    }
-    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-    code span.at { color: #7d9029; } /* Attribute */
-    code span.bn { color: #40a070; } /* BaseN */
-    code span.bu { color: #008000; } /* BuiltIn */
-    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-    code span.ch { color: #4070a0; } /* Char */
-    code span.cn { color: #880000; } /* Constant */
-    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-    code span.dt { color: #902000; } /* DataType */
-    code span.dv { color: #40a070; } /* DecVal */
-    code span.er { color: #ff0000; font-weight: bold; } /* Error */
-    code span.ex { } /* Extension */
-    code span.fl { color: #40a070; } /* Float */
-    code span.fu { color: #06287e; } /* Function */
-    code span.im { color: #008000; font-weight: bold; } /* Import */
-    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-    code span.op { color: #666666; } /* Operator */
-    code span.ot { color: #007020; } /* Other */
-    code span.pp { color: #bc7a00; } /* Preprocessor */
-    code span.sc { color: #4070a0; } /* SpecialChar */
-    code span.ss { color: #bb6688; } /* SpecialString */
-    code span.st { color: #4070a0; } /* String */
-    code span.va { color: #19177c; } /* Variable */
-    code span.vs { color: #4070a0; } /* VerbatimString */
-    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
     /* CSS for citations */
     div.csl-bib-body { }
     div.csl-entry {
@@ -620,136 +556,29 @@
 <div> <h3> Chapter Contents </h3> </div>
 <nav id="TOC" role="doc-toc">
 <ul>
-<li><a href="#introduction" id="toc-introduction">Introduction</a>
-<ul>
-<li><a href="#first-images" id="toc-first-images">First: Images</a></li>
-<li><a href="#second-tables" id="toc-second-tables">Second:
-Tables</a></li>
-<li><a href="#third-equations" id="toc-third-equations">Third:
-Equations</a></li>
-<li><a href="#fourth-cross-references"
-id="toc-fourth-cross-references">Fourth: Cross references</a></li>
-</ul></li>
+<li><a href="#optimizaiton---overview"
+id="toc-optimizaiton---overview">Optimizaiton - Overview</a></li>
 <li><a href="#bibliography" id="toc-bibliography">Bibliography</a></li>
 </ul>
 </nav>
 <div id="content">
-  <h1 id="introduction">Introduction</h1>
-  <p>This is the first paragraph of the introduction chapter. This is a
-  test of citing <span class="citation"
-  data-cites="lambert2023entangled"><a href="#ref-lambert2023entangled"
+  <h1 id="optimizaiton---overview">Optimizaiton - Overview</h1>
+  <p>This is the installation chapter. We love the book <span
+  class="citation" data-cites="russell2016artificial"><a
+  href="#ref-russell2016artificial"
   role="doc-biblioref">[1]</a></span>.</p>
-  <h2 id="first-images">First: Images</h2>
-  <p>This is the first subsection. Please, admire the gloriousnes of
-  this seagull:</p>
-  <figure>
-  <img src="images/seagull.png" alt="A cool seagull." />
-  <figcaption aria-hidden="true">A cool seagull.</figcaption>
-  </figure>
-  <p>A bigger seagull:</p>
-  <figure>
-  <img src="images/seagull.png" width="320" alt="A cool big seagull." />
-  <figcaption aria-hidden="true">A cool big seagull.</figcaption>
-  </figure>
-  <h2 id="second-tables">Second: Tables</h2>
-  <p>This is the second subsection.</p>
-  <p>Please, check <a href="#first-images">First: Images</a>
-  subsection.</p>
-  <p>Please, check <a href="#first-images">this</a> subsection.</p>
-  <table>
-  <caption>This is an example table.</caption>
-  <thead>
-  <tr>
-  <th>Index</th>
-  <th>Name</th>
-  </tr>
-  </thead>
-  <tbody>
-  <tr>
-  <td>0</td>
-  <td>AAA</td>
-  </tr>
-  <tr>
-  <td>1</td>
-  <td>BBB</td>
-  </tr>
-  <tr>
-  <td>…</td>
-  <td>…</td>
-  </tr>
-  </tbody>
-  </table>
-  <h2 id="third-equations">Third: Equations</h2>
-  <p>Formula example: <img style="vertical-align:middle"
-  src="https://latex.codecogs.com/png.latex?%5Ctextstyle%20%5Cmu%20%3D%20%5Csum_%7Bi%3D0%7D%5E%7BN%7D%20%5Cfrac%7Bx_i%7D%7BN%7D"
-  alt="\mu = \sum_{i=0}^{N} \frac{x_i}{N}"
-  title="\mu = \sum_{i=0}^{N} \frac{x_i}{N}" class="math inline" /></p>
-  <p>Now, full size:</p>
-  <p><img style="vertical-align:middle"
-  src="https://latex.codecogs.com/png.latex?%5Cdisplaystyle%20%5Cmu%20%3D%20%5Csum_%7Bi%3D0%7D%5E%7BN%7D%20%5Cfrac%7Bx_i%7D%7BN%7D"
-  alt="\mu = \sum_{i=0}^{N} \frac{x_i}{N}"
-  title="\mu = \sum_{i=0}^{N} \frac{x_i}{N}" class="math display" /></p>
-  <p>And a code sample:</p>
-  <div class="sourceCode" id="cb1"><pre
-  class="sourceCode rb"><code class="sourceCode ruby"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="cf">def</span> hello_world</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">puts</span> <span class="st">&quot;hello world!&quot;</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="cf">end</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>hello_world</span></code></pre></div>
-  <p>Check these unicode characters: ǽß¢ð€đŋμ</p>
-  <h2 id="fourth-cross-references">Fourth: Cross references</h2>
-  <p>These cross references are disabled by default. To enable them,
-  check the <em><a
-  href="https://github.com/wikiti/pandoc-book-template#cross-references">Cross
-  references</a></em> section on the README.md file.</p>
-  <p>Here’s a list of cross references:</p>
-  <ul>
-  <li>Check fig. <a href="#fig:seagull">1</a>.</li>
-  <li>Check tbl. <a href="#tbl:table">1</a>.</li>
-  <li>Check eq. <a href="#eq:equation">1</a>.</li>
-  </ul>
-  <figure id="fig:seagull">
-  <img src="images/seagull.png" alt="Figure 1: A cool seagull" />
-  <figcaption aria-hidden="true">Figure 1: A cool seagull</figcaption>
-  </figure>
-  <p><span id="eq:equation"><img style="vertical-align:middle"
-  src="https://latex.codecogs.com/png.latex?%5Cdisplaystyle%20y%20%3D%20mx%20%2B%20b%20%5Cqquad%7B%281%29%7D"
-  alt="y = mx + b \qquad{(1)}" title="y = mx + b \qquad{(1)}"
-  class="math display" /></span></p>
-  <div id="tbl:table">
-  <table>
-  <caption>Table 1: This is an example table.</caption>
-  <thead>
-  <tr>
-  <th>Index</th>
-  <th>Name</th>
-  </tr>
-  </thead>
-  <tbody>
-  <tr>
-  <td>0</td>
-  <td>AAA</td>
-  </tr>
-  <tr>
-  <td>1</td>
-  <td>BBB</td>
-  </tr>
-  <tr>
-  <td>…</td>
-  <td>…</td>
-  </tr>
-  </tbody>
-  </table>
-  </div>
+  <p>For further information, check the [Introduction] chapter.</p>
+  <p>For further information, check the <a href="#introduction">this
+  chapter</a>.</p>
+  <p>For further information, check the <a href="#first">this chapter’s
+  subsection</a> section.</p>
   <h1 class="unnumbered" id="bibliography">Bibliography</h1>
   <div id="refs" class="references csl-bib-body" data-entry-spacing="0"
   role="list">
-  <div id="ref-lambert2023entangled" class="csl-entry" role="listitem">
+  <div id="ref-russell2016artificial" class="csl-entry" role="listitem">
   <div class="csl-left-margin">[1] </div><div
-  class="csl-right-inline">N. Lambert, T. K. Gilbert, and T. Zick,
-  <span>“Entangled preferences: The history and risks of reinforcement
-  learning and human feedback,”</span> <em>arXiv preprint
-  arXiv:2310.13595</em>, 2023.</div>
+  class="csl-right-inline">S. J. Russell and P. Norvig, <em>Artificial
+  intelligence: A modern approach</em>. Pearson, 2016.</div>
   </div>
   </div>
 </div>
