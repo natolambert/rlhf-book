@@ -29,9 +29,10 @@ jobs:
           brew install pandoc
           brew install make
           brew install pandoc-crossref
-          brew install mactex
-        
-      # brew install basictex
+          brew install --cask basictex
+          eval "$(/usr/libexec/path_helper)"
+          sudo tlmgr update --self
+          sudo tlmgr install xelatex        
 
       # - name: Setup Pandoc
       #   uses: pandoc/actions/setup@main
