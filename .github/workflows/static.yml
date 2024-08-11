@@ -24,7 +24,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install pandoc and pandoc-crossref
+      - name: Install brew dependencies
         run: |
           brew install pandoc
           brew install make
@@ -41,9 +41,11 @@ jobs:
           rm -rf build
           mkdir -p build/html
 
-      - name: Build documentation
+      - name: Build book
+        uses: xu-cheng/texlive-action@v2
         run: make
 
+      # pages deploy steps
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
