@@ -148,3 +148,10 @@ $(BUILD)/pdf/$(OUTPUT_FILENAME).pdf:	$(PDF_DEPENDENCIES)
 	$(MKDIR_CMD) $(BUILD)/pdf
 	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(ARGS) $(PDF_ARGS) -o $@
 	$(ECHO_BUILT)
+
+# copy faveicon.ico to build/ and into  build/c/ with bash commands
+favicon:
+	test -f favicon.ico || (echo "favicon.ico not found" && exit 1)
+	mkdir -p $(BUILD)/html/c/
+	cp favicon.ico $(BUILD)/html/ || echo "Failed to copy to $(BUILD)/html/"
+	cp favicon.ico $(BUILD)/html/c/ || echo "Failed to copy to $(BUILD)/html/c/"
