@@ -31,6 +31,10 @@ Pandoc is a suite of tools to compile markdown files into readable files (PDF, E
 
 ## Usage
 
+TLDR. 
+Run `make` to create files. 
+Run `make files` to move files into place for figures, pdf linked, etc.
+
 ### Installing
 
 Please, check [this page](http://pandoc.org/installing.html) for more information. On ubuntu, it

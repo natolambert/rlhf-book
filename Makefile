@@ -10,7 +10,7 @@ OUTPUT_FILENAME = book
 OUTPUT_FILENAME_HTML = index
 METADATA = metadata.yml
 CHAPTERS = $(wildcard chapters/*.md) # was CHAPTERS = chapters/*.md
-TOC = --toc --toc-depth 2
+TOC = --toc --toc-depth 3
 METADATA_ARGS = --metadata-file $(METADATA)
 IMAGES = $(shell find images -type f)
 TEMPLATES = $(shell find templates/ -type f)
@@ -41,7 +41,7 @@ PANDOC_COMMAND = pandoc
 
 DOCX_ARGS = --standalone --reference-doc templates/docx.docx
 EPUB_ARGS = --template templates/epub.html --epub-cover-image $(COVER_IMAGE)
-HTML_ARGS = --template templates/html.html --standalone --to html5 
+HTML_ARGS = --template templates/html.html --standalone --to html5
 PDF_ARGS = --template templates/pdf.tex --pdf-engine xelatex
 NESTED_HTML_TEMPLATE = templates/chapter.html
 
@@ -119,7 +119,7 @@ $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html:	$(HTML_DEPENDENCIES)
 	$(ECHO_BUILDING)
 	$(MKDIR_CMD) $(BUILD)/html
 	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(ARGS) $(HTML_ARGS) -o $@
-	$(COPY_CMD) $(IMAGES) $(BUILD)/html/
+	$(COPY_CMD) $(IMAGES) $(BUILD)/html/ --mathjax
 	$(ECHO_BUILT)
 
 # Nested HTML build targets
@@ -129,7 +129,7 @@ CHAPTER_HTMLS = $(patsubst chapters/%.md,$(NESTED_HTML_DIR)/%.html,$(CHAPTERS))
 # Rule to build each HTML file from each Markdown file
 $(NESTED_HTML_DIR)/%.html: chapters/%.md $(HTML_DEPENDENCIES)
 	$(MKDIR_CMD) $(NESTED_HTML_DIR)
-	$(PANDOC_COMMAND) $(ARGS) --template $(NESTED_HTML_TEMPLATE) --standalone --to html5 -o $@ $<
+	$(PANDOC_COMMAND) $(ARGS) --template $(NESTED_HTML_TEMPLATE) --standalone --to html5 -o $@ $< --mathjax
 	@echo "Built HTML for $<"
 
 # Single rule for building all nested HTML
@@ -151,9 +151,11 @@ $(BUILD)/pdf/$(OUTPUT_FILENAME).pdf:	$(PDF_DEPENDENCIES)
 
 # copy faveicon.ico to build/ and into  build/c/ with bash commands
 # also copy from build/pdf/book.pdf into build/html/
+# then copy images dir to build/html/chapters/
 files:
 	test -f favicon.ico || (echo "favicon.ico not found" && exit 1)
 	mkdir -p $(BUILD)/html/c/
 	cp favicon.ico $(BUILD)/html/ || echo "Failed to copy to $(BUILD)/html/"
 	cp favicon.ico $(BUILD)/html/c/ || echo "Failed to copy to $(BUILD)/html/c/"
 	cp $(BUILD)/pdf/book.pdf $(BUILD)/html/ || echo "Failed to copy to $(BUILD)/html/"
+	cp -r images $(BUILD)/html/c/ || echo "Failed to copy to $(BUILD)/html/chapters/"
