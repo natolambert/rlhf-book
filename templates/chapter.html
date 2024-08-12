@@ -42,6 +42,64 @@ $if(title)$
 $if(subtitle)$
 <p class="subtitle">$subtitle$</p>
 $endif$
+
+  <nav class="chapter-nav">
+    <div class="section">
+      <p><strong>Home</strong></p>
+      <ul>
+        <li><a href="https://github.com/natolambert/rlhf-book">GitHub Repository</a></li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <p><strong>Introductions &amp; History</strong></p>
+      <ol>
+        <li>Introduction</li>
+        <li>Economics, Psychology, Philosophy of preference, etc.: VNM Theory, Bradley Terry, Impossibility theorems, social choice, etc</li>
+        <li>Optimal Control, Deep RL, ML etc.</li>
+        <li>RLHF for LLM lit (pre chatgpt stuff), maybe summarize instrugpt</li>
+      </ol>
+    </div>
+
+    <div class="section">
+      <p><strong>Problem Specification</strong></p>
+      <ol>
+        <li>Definitions, basic stuff, math</li>
+        <li>Preference data collection</li>
+        <li>Preference model training</li>
+        <li>KL constraints and other penalties</li>
+      </ol>
+    </div>
+
+    <div class="section">
+      <p><strong>Policy Optimization</strong></p>
+      <ol>
+        <li>IFT / SFT / Chat Templates</li>
+        <li>Rejection Sampling / Best of N</li>
+        <li>PPO, REINFORCE, Policy Gradient</li>
+        <li>DPO (Eric, Archit, Rafael)</li>
+        <li>Other variants (short)</li>
+      </ol>
+    </div>
+
+    <div class="section">
+      <p><strong>Advanced (optional)</strong></p>
+      <ol>
+        <li>CAI</li>
+        <li>Synthetic vs human data</li>
+        <li>Evaluation</li>
+      </ol>
+    </div>
+
+    <div class="section">
+      <p><strong>Open Questions (TBD / optional)</strong></p>
+      <ol>
+        <li>Reward model over-optimization</li>
+      </ol>
+    </div>
+  </nav>
+
+
 $for(author)$
 <p class="author">$author$</p>
 $endfor$

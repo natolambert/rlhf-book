@@ -340,3 +340,38 @@ table td {
         page-break-after: avoid;
     }
 }
+
+/* Header Nav Block */
+.chapter-nav {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .section {
+    background-color: #f8f8f8;
+    padding: 10px;
+    border-radius: 5px;
+  }
+  .section p {
+    margin: 0 0 5px 0;
+    font-size: 14px;
+    font-weight: bold;
+  }
+  .section ol, .section ul {
+    margin: 0;
+    padding-left: 20px;
+  }
+  .section li {
+    font-size: 12px;
+    line-height: 1.3;
+    margin-bottom: 3px;
+  }
+  .section a {
+    color: #0066cc;
+    text-decoration: none;
+  }
+  .section a:hover {
+    text-decoration: underline;
+  }
