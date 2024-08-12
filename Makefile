@@ -150,8 +150,10 @@ $(BUILD)/pdf/$(OUTPUT_FILENAME).pdf:	$(PDF_DEPENDENCIES)
 	$(ECHO_BUILT)
 
 # copy faveicon.ico to build/ and into  build/c/ with bash commands
-favicon:
+# also copy from build/pdf/book.pdf into build/html/
+files:
 	test -f favicon.ico || (echo "favicon.ico not found" && exit 1)
 	mkdir -p $(BUILD)/html/c/
 	cp favicon.ico $(BUILD)/html/ || echo "Failed to copy to $(BUILD)/html/"
 	cp favicon.ico $(BUILD)/html/c/ || echo "Failed to copy to $(BUILD)/html/c/"
+	cp $(BUILD)/pdf/book.pdf $(BUILD)/html/ || echo "Failed to copy to $(BUILD)/html/"

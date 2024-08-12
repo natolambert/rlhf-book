@@ -54,7 +54,7 @@ jobs:
       - name: Build book
         run: |
           make
-          make favicon
+          make files
 
       # pages deploy steps
       - name: Setup Pages
