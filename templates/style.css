@@ -342,31 +342,36 @@ table td {
 }
 
 /* Header Nav Block */
-.chapter-nav {
+  .chapter-nav {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
     max-width: 1200px;
     margin: 0 auto;
+    text-align: left;
   }
   .section {
     background-color: #f8f8f8;
     padding: 10px;
     border-radius: 5px;
+    text-align: left;
   }
   .section p {
     margin: 0 0 5px 0;
     font-size: 14px;
     font-weight: bold;
+    text-align: left;
   }
   .section ol, .section ul {
     margin: 0;
     padding-left: 20px;
+    text-align: left;
   }
   .section li {
     font-size: 12px;
     line-height: 1.3;
     margin-bottom: 3px;
+    text-align: left;
   }
   .section a {
     color: #0066cc;
@@ -374,4 +379,20 @@ table td {
   }
   .section a:hover {
     text-decoration: underline;
+  }
+
+  /* Mobile Responsiveness */
+  @media screen and (max-width: 768px) {
+    .chapter-nav {
+      grid-template-columns: 1fr;
+    }
+    .section {
+      margin-bottom: 10px;
+    }
+    .section p {
+      font-size: 16px;
+    }
+    .section li {
+      font-size: 14px;
+    }
   }
