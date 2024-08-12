@@ -52,7 +52,9 @@ jobs:
           mkdir -p build/html
 
       - name: Build book
-        run: make
+        run: |
+          make
+          make favicon
 
       # pages deploy steps
       - name: Setup Pages
