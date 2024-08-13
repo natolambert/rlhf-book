@@ -10,7 +10,7 @@ Throughout the RLHF optimization, many regularization steps are used to prevent 
 
 ## Likelihood Penalty
 
-- 
+- https://arxiv.org/abs/2404.19733 on DPO loss
 
 ## Reward Bonuses
 
@@ -19,3 +19,5 @@ Throughout the RLHF optimization, many regularization steps are used to prevent 
 ## Margin Losses
 
 - Llama 2
+- Rebel
+- Reward Preference Optimization (Nemotron)

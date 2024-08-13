@@ -8,12 +8,13 @@ lang: en-US
 mainlang: english
 otherlang: english
 tags: [rlhf, ebook, ai, ml]
-date: 24 May 2024
+date: 13 August 2024
 abstract: |
-  An introduction to reinforcement learning from human feedback (RLHF). 
-  Covering the core topics, from history of preferences, to early work in language models, to
-  future frontiers with Direct Preference Learning (DPO) and everything that follows. 
-  Built iteratively, web first, with purcase available when completed.
+  Reinforcement learning from human feedback (RLHF) has become an important technical and storytelling tool to the deploy of the lastest machine learning systems.
+  In this book, we hope to give a gentle introduction to the core methods for people with some level of quantitative background.
+  The book starts with the origins of RLHF -- both in recent literature and in a convergence of disparate fields of science in economics, philosophy, and optimal control.
+  We then set the stage with definitions, problem formulation, data collection, and other common math used in the literature.
+  We detail the detail the popular algorithms and future frontiers of RLHF.
 # mainfont: DejaVu Sans # not available on Mac
 Filter preferences:
 - pandoc-crossref

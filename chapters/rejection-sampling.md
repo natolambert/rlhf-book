@@ -118,6 +118,7 @@ $$S(R) = [\arg\max_{j} r_{i,j} \text{ for } i \in [1,4]]$$
 $$S(R) = [1, 2, 1, 3, 4]$$
 
 This means we would select:
+
 - For prompt 1: completion 1 (reward 0.7)
 - For prompt 2: completion 2 (reward 0.8)
 - For prompt 3: completion 1 (reward 0.9)
@@ -144,6 +145,7 @@ Now, we select the indices of the 5 highest values:
 $$S_5(R_{flat}) = [8, 5, 14, 0, 19]$$
 
 Mapping these back to our original matrix:
+
 - Index 8 → prompt 3, completion 1 (reward 0.9)
 - Index 5 → prompt 2, completion 2 (reward 0.8)
 - Index 14 → prompt 4, completion 3 (reward 0.8)
@@ -181,6 +183,7 @@ More details can be found in the [chapter on instruction tuning](https://rlhfboo
 
 Implementation details for rejection sampling are relatively sparse.
 The core hyperparameters for performing this training are very intuitive:
+
 - **Sampling parameters**: Rejection sampling is directly dependent on the completions received from the model. Common settings for RS include tempetures above zero, e.g. between 0.7 and 1.0, with other modifications to paramters such as top-p or top-k sampling.
 - **Completions per prompt**: Successful implementations of rejection sampling have included 10 to 30 or more completions for each prompt. Using too few completions will make training biased and or noisy.
 - **Instruction tuning details**: No clear training details for the instruction tuning during RS have been released. It is likely that they use slightly different settings than the initial instruction tuning phase of the model.
