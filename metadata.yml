@@ -19,5 +19,6 @@ Filter preferences:
 - pandoc-crossref
 linkReferences: true
 link-citations: true
+numbersections: true
 ---
 
