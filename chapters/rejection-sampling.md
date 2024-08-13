@@ -15,6 +15,7 @@ WebGPT [@nakano2021webgpt], Anthropic's Helpful and Harmless agent[@bai2022train
 
 ## Training Process
 
+A visual overview of the rejection sampling process is included below.
 ![Rejection sampling overview.](images/rejection-sampling.png)
 
 
@@ -67,7 +68,7 @@ $$S(R) = [\arg\max_{j} r_{1,j}, \arg\max_{j} r_{2,j}, ..., \arg\max_{j} r_{M,j}]
 This function $S$ returns a vector of indices, where each index corresponds to the column with the maximum reward for each row in $R$.
 We can then use these indices to select our chosen completions:
 
-$$Y_{chosen} = [y_{1,S(R)1}, y{2,S(R)2}, ..., y{M,S(R)_M}]$$
+$$Y_{chosen} = [y_{1,S(R)_1}, y_{2,S(R)_2}, ..., y_{M,S(R)_M}]$$
 
 
 #### Top Overall Prompts
@@ -92,47 +93,48 @@ We simply index the $R_{flat}$ vector to get our completions.
 Consider the case where we have the following situation, with 5 prompts and 4 completions. 
 We will show two ways of selecting the completions based on reward.
 
-$R = \begin{bmatrix}
+$$R = \begin{bmatrix}
 0.7 & 0.3 & 0.5 & 0.2 \\
 0.4 & 0.8 & 0.6 & 0.5 \\
 0.9 & 0.3 & 0.4 & 0.7 \\
 0.2 & 0.5 & 0.8 & 0.6 \\
 0.5 & 0.4 & 0.3 & 0.6
-\end{bmatrix}$
+\end{bmatrix}$$
 
 First, **per prompt**. Intuitively, we can highlight the reward matrix as follows:
 
-$R = \begin{bmatrix}
+$$R = \begin{bmatrix}
 \textbf{0.7} & 0.3 & 0.5 & 0.2 \\
 0.4 & \textbf{0.8} & 0.6 & 0.5 \\
 \textbf{0.9} & 0.3 & 0.4 & 0.7 \\
 0.2 & 0.5 & \textbf{0.8} & 0.6 \\
 0.5 & 0.4 & 0.3 & \textbf{0.6}
-\end{bmatrix}$
+\end{bmatrix}$$
 
 Using the argmax method, we select the best completion for each prompt:
 
-$$S(R) = [\arg\max_{j} r_{i,j} \text{ for } i \in [1,5]]$$
+$$S(R) = [\arg\max_{j} r_{i,j} \text{ for } i \in [1,4]]$$
 
 $$S(R) = [1, 2, 1, 3, 4]$$
 
 This means we would select:
-* For prompt 1: completion 1 (reward 0.7)
-* For prompt 2: completion 2 (reward 0.8)
-* For prompt 3: completion 1 (reward 0.9)
-* For prompt 4: completion 3 (reward 0.8)
-* For prompt 5: completion 4 (reward 0.6)
+
+- For prompt 1: completion 1 (reward 0.7)
+- For prompt 2: completion 2 (reward 0.8)
+- For prompt 3: completion 1 (reward 0.9)
+- For prompt 4: completion 3 (reward 0.8)
+- For prompt 5: completion 4 (reward 0.6)
 
 Now, **best overall**.
 Let's highlight the top 5 overall completion pairs.
 
-$R = \begin{bmatrix}
+$$R = \begin{bmatrix}
 \textbf{0.7} & 0.3 & 0.5 & 0.2 \\
 0.4 & \textbf{0.8} & 0.6 & 0.5 \\
 \textbf{0.9} & 0.3 & 0.4 & \textbf{0.7} \\
 0.2 & 0.5 & \textbf{0.8} & 0.6 \\
 0.5 & 0.4 & 0.3 & 0.6
-\end{bmatrix}$
+\end{bmatrix}$$
 
 
 First, we flatten the reward matrix:
@@ -143,15 +145,54 @@ Now, we select the indices of the 5 highest values:
 $$S_5(R_{flat}) = [8, 5, 14, 0, 19]$$
 
 Mapping these back to our original matrix:
-* Index 8 → prompt 3, completion 1 (reward 0.9)
-* Index 5 → prompt 2, completion 2 (reward 0.8)
-* Index 14 → prompt 4, completion 3 (reward 0.8)
-* Index 0 → prompt 1, completion 1 (reward 0.7)
-* Index 19 → prompt 3, completion 4 (reward 0.7)
+
+- Index 8 → prompt 3, completion 1 (reward 0.9)
+- Index 5 → prompt 2, completion 2 (reward 0.8)
+- Index 14 → prompt 4, completion 3 (reward 0.8)
+- Index 0 → prompt 1, completion 1 (reward 0.7)
+- Index 19 → prompt 3, completion 4 (reward 0.7)
+
+#### Implementation Example
+
+Here is a code snippet showing how the selection methods could be implemented.
+
+```python
+import numpy as np
+
+x = np.random.randint(10, size=10)
+print(f"{x=}")
+sorted_indices = np.argsort(x)
+x_sorted = x[sorted_indices]
+print(f"{x_sorted=}")
+
+# first way to recover the original array
+i_rev = np.zeros(10, dtype=int)
+i_rev[sorted_indices] = np.arange(10)
+np.allclose(x, x_sorted[i_rev])
+
+# second way to recover the original array
+np.allclose(x, x_sorted[np.argsort(sorted_indices)])
+```
 
 ### Fine-tuning
 
+With the selected completions, you then perform standard instruction fine-tuning on the current rendition of the model.
+More details can be found in the [chapter on instruction tuning](https://rlhfbook.com/c/instructions.html).
+
 ### Details
+
+Implementation details for rejection sampling are relatively sparse.
+The core hyperparameters for performing this training are very intuitive:
+
+- **Sampling parameters**: Rejection sampling is directly dependent on the completions received from the model. Common settings for RS include tempetures above zero, e.g. between 0.7 and 1.0, with other modifications to paramters such as top-p or top-k sampling.
+- **Completions per prompt**: Successful implementations of rejection sampling have included 10 to 30 or more completions for each prompt. Using too few completions will make training biased and or noisy.
+- **Instruction tuning details**: No clear training details for the instruction tuning during RS have been released. It is likely that they use slightly different settings than the initial instruction tuning phase of the model.
+- **Hetergenous model generations**: Some implementations of rejection sampling include generations from multiple models rather than just the current model that is going to be trained. Best practices on how to do this are not established.
+- **Reward model training**: The reward model used will heavily impact the final result. For more resources on reward model training, see the [relevant chapter](https://rhlfbook.com/reward-models.html).
+
+#### Implementation Tricks
+
+- When doing batch reward model inference, you can sort the tokenized completions by length so that the batches are of similar lengths. This eliminates the need to run inference on as many padding tokens and will improve throughput in exchange for minor implementation complexity. 
 
 ## Related: Best-of-N Sampling
 
@@ -169,6 +210,6 @@ $$R = [r_1, r_2, ..., r_N]$$
 Where $r_j$ represents the reward for the j-th completion.
 
 Using the argmax method, we select the best completion for the prompt:
-$S(R) = \arg\max_{j \in [1,N]} r_j$
+$$S(R) = \arg\max_{j \in [1,N]} r_j$$
 
 Using the Top-K method is normally done with Top-1, reducing to the same method.
