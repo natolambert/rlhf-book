@@ -10,6 +10,12 @@ Throughout the RLHF optimization, many regularization steps are used to prevent 
 
 ## Likelihood Penalty
 
+- 
+
 ## Reward Bonuses
 
+- Nemotron
+
 ## Margin Losses
+
+- Llama 2
