@@ -4,7 +4,7 @@ The algorithms that popularized RLHF for language models were policy-gradient re
 These algorithms, such as PPO and Reinforce, use recently generated samples to update their model rather than storing scores in a replay buffer.
 In this section we will cover the fundamentals of the policy gradient algorithms and how they are used in the modern RLHF framework.
 
-For definitions of symbols, see the [problem setup chapter](https://rlhfbook.com/c/setup.html).
+For definitions of symbols, see the problem setup chapter.
 
 ## Policy Gradient Algorithms
 
