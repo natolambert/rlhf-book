@@ -35,6 +35,11 @@ TLDR.
 Run `make` to create files. 
 Run `make files` to move files into place for figures, pdf linked, etc.
 
+### Known Conversion Issues
+
+With the nested structure used for the website the section links between chapters in the PDF are broken. 
+We are opting for this in favor of a better web experience, but best practice is to not put any links to `rlhfbook.com` within the markdown files. Non-html versions will not be well suited to them.
+
 ### Installing
 
 Please, check [this page](http://pandoc.org/installing.html) for more information. On ubuntu, it

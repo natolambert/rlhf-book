@@ -9,7 +9,7 @@ With language models, the target distribution is high-quality answers to instruc
 
 ## Related works
 
-Many prominent RLHF and preference fine-tuning papers have used rejection sampling as a baseling, but a canonical implementation and documentation does not exist
+Many prominent RLHF and preference fine-tuning papers have used rejection sampling as a baseline, but a canonical implementation and documentation does not exist
 
 WebGPT [@nakano2021webgpt], Anthropic's Helpful and Harmless agent[@bai2022training], OpenAI's popular paper on process reward models [@lightman2023let], Llama 2 Chat models [@touvron2023llama], and other seminal works all use this baseline.
 
@@ -184,10 +184,10 @@ More details can be found in the [chapter on instruction tuning](https://rlhfboo
 Implementation details for rejection sampling are relatively sparse.
 The core hyperparameters for performing this training are very intuitive:
 
-- **Sampling parameters**: Rejection sampling is directly dependent on the completions received from the model. Common settings for RS include tempetures above zero, e.g. between 0.7 and 1.0, with other modifications to paramters such as top-p or top-k sampling.
+- **Sampling parameters**: Rejection sampling is directly dependent on the completions received from the model. Common settings for RS include temperatures above zero, e.g. between 0.7 and 1.0, with other modifications to parameters such as top-p or top-k sampling.
 - **Completions per prompt**: Successful implementations of rejection sampling have included 10 to 30 or more completions for each prompt. Using too few completions will make training biased and or noisy.
 - **Instruction tuning details**: No clear training details for the instruction tuning during RS have been released. It is likely that they use slightly different settings than the initial instruction tuning phase of the model.
-- **Hetergenous model generations**: Some implementations of rejection sampling include generations from multiple models rather than just the current model that is going to be trained. Best practices on how to do this are not established.
+- **Heterogenous model generations**: Some implementations of rejection sampling include generations from multiple models rather than just the current model that is going to be trained. Best practices on how to do this are not established.
 - **Reward model training**: The reward model used will heavily impact the final result. For more resources on reward model training, see the [relevant chapter](https://rhlfbook.com/reward-models.html).
 
 #### Implementation Tricks
