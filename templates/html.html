@@ -5,7 +5,16 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
-$for(author-meta)$
+
+  <!-- Add Open Graph meta tags for share image -->
+  <meta property="og:image" content="https://github.com/natolambert/rlhf-book/blob/main/images/rlhf-book-share" />
+  <meta property="og:image:width" content="1920" />
+  <meta property="og:image:height" content="1080" />
+  <meta property="og:title" content="$if(title-prefix)$$title-prefix$ – $endif$$pagetitle$" />
+  <meta property="og:description" content="The Basics of Reinforcement Learning from Human Feedback" />
+  <meta property="og:url" content="https://rlhfbook.com" />
+
+  $for(author-meta)$
   <meta name="author" content="$author-meta$" />
 $endfor$
 $if(date-meta)$
@@ -56,46 +65,46 @@ $endif$
   <div class="section">
     <p><strong>Introductions</strong></p>
     <ol>
-      <li><a href="https://rlhfbook.com/c/introduction.html">Introduction</a></li>
-      <li><a href="https://rlhfbook.com/c/preferences.html">What are preferences?</a></li>
-      <li><a href="https://rlhfbook.com/c/optimization.html">Optimization and RL</a></li>
-      <li><a href="https://rlhfbook.com/c/related-works.html">Seminal (Recent) Works</a></li>
+      <li><a href="https://rlhfbook.com/c/01-introduction.html">Introduction</a></li>
+      <li><a href="https://rlhfbook.com/c/02-preferences.html">What are preferences?</a></li>
+      <li><a href="https://rlhfbook.com/c/03-optimization.html">Optimization and RL</a></li>
+      <li><a href="https://rlhfbook.com/c/04-related-works.html">Seminal (Recent) Works</a></li>
     </ol>
   </div>
 
   <div class="section">
     <p><strong>Problem Setup</strong></p>
     <ol>
-      <li><a href="https://rlhfbook.com/c/setup.html">Definitions</a></li>
-      <li><a href="https://rlhfbook.com/c/preference-data.html">Preference Data</a></li>
-      <li><a href="https://rlhfbook.com/c/reward-models.html">Reward Modeling</a></li>
-      <li><a href="https://rlhfbook.com/c/regularization.html">Regularization</a></li>
+      <li><a href="https://rlhfbook.com/c/05-setup.html">Definitions</a></li>
+      <li><a href="https://rlhfbook.com/c/06-preference-data.html">Preference Data</a></li>
+      <li><a href="https://rlhfbook.com/c/07-reward-models.html">Reward Modeling</a></li>
+      <li><a href="https://rlhfbook.com/c/08-regularization.html">Regularization</a></li>
     </ol>
   </div>
 
   <div class="section">
     <p><strong>Optimization</strong></p>
     <ol>
-      <li><a href="https://rlhfbook.com/c/instructions.html">Instruction Tuning</a></li>
-      <li><a href="https://rlhfbook.com/c/rejection-sampling.html">Rejection Sampling</a></li>
-      <li><a href="https://rlhfbook.com/c/policy-gradients.html">Policy Gradients</a></li>
-      <li><a href="https://rlhfbook.com/c/direct-alignment.html">Direct Alignment Algorithms</a></li>
+      <li><a href="https://rlhfbook.com/c/09-instruction-tuning.html">Instruction Tuning</a></li>
+      <li><a href="https://rlhfbook.com/c/10-rejection-sampling.html">Rejection Sampling</a></li>
+      <li><a href="https://rlhfbook.com/c/11-policy-gradients.html">Policy Gradients</a></li>
+      <li><a href="https://rlhfbook.com/c/12-direct-alignment.html">Direct Alignment Algorithms</a></li>
     </ol>
   </div>
 
   <div class="section">
     <p><strong>Advanced (TBD)</strong></p>
     <ol>
-      <li><a href="https://rlhfbook.com/c/cai.html">Constitutional AI</a></li>
-      <li><a href="https://rlhfbook.com/c/synthetic.html">Synthetic Data</a></li>
-      <li><a href="https://rlhfbook.com/c/evaluation.html">Evaluation</a></li>
+      <li><a href="https://rlhfbook.com/c/13-cai.html">Constitutional AI</a></li>
+      <li><a href="https://rlhfbook.com/c/14-synthetic.html">Synthetic Data</a></li>
+      <li><a href="https://rlhfbook.com/c/15-evaluation.html">Evaluation</a></li>
     </ol>
   </div>
 
   <div class="section">
     <p><strong>Open Questions (TBD)</strong></p>
     <ol>
-      <li><a href="https://rlhfbook.com/c/over-optimization.html">Over-optimization</a></li>
+      <li><a href="https://rlhfbook.com/c/16-over-optimization.html">Over-optimization</a></li>
       <li>Style</li>
     </ol>
   </div>
@@ -119,7 +128,7 @@ $endif$
   <section id="acknowledgements" style="padding: 20px; text-align: center;">
     <h2>Acknowledgements</h2>
     <p>I would like to thank the following people who helped me with this project: Costa Huang, </p>
-    <p>Additionally, thank you to GitHub contributors for bug fixes. <a href="https://github.com/natolambert/rlhf-book/graphs/contributors">contributors on GitHub</a> who helped improve this project.</p>
+    <p>Additionally, thank you to the <a href="https://github.com/natolambert/rlhf-book/graphs/contributors">contributors on GitHub</a> who helped improve this project.</p>
   </section>
   <footer style="padding: 20px; text-align: center;">
     <hr>
