@@ -16,6 +16,7 @@ WebGPT [@nakano2021webgpt], Anthropic's Helpful and Harmless agent[@bai2022train
 ## Training Process
 
 A visual overview of the rejection sampling process is included below in @fig:rs-overview.
+
 ![Rejection sampling overview.](images/rejection-sampling.png){#fig:rs-overview}
 
 
