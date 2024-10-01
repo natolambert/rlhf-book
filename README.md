@@ -1,13 +1,12 @@
-# Pandoc book template
+# RLHF Book
+Built on **Pandoc book template**.
 
-[![CircleCI](https://circleci.com/gh/wikiti/pandoc-book-template.svg?style=shield)](https://circleci.com/gh/wikiti/pandoc-book-template)
 [![Code License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/wikiti/pandoc-book-template/blob/master/LICENSE.md)
 [![Content License](https://img.shields.io/badge/license-CC--BY--NC--SA--4.0-lightgrey)](https://github.com/natolambert/rlhf-book/blob/main/LICENSE-Content.md)
 
-## RLHF Book
-
 This is a work-in-progress textbook covering the fundamentals of Reinforcement Learning from Human Feedback (RLHF).
 The code is licensed with the MIT license, but the content for the book found in `chapters/` is licensed under the [Creative Commons Non-Commerical Attribution License](https://creativecommons.org/licenses/by-nc/4.0/deed.en), CC BY-NC 4.0.
+This is meant for people with a basic ML and/or software background.
 
 ### Citation
 To cite this book, please use the following format.
