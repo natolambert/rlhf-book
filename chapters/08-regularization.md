@@ -22,7 +22,11 @@ $$ D_{KL}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\frac{P(x)}{Q(x)}\r
 
 ### Reference Policy
 
+The most common implementation of KL penalities are by comparing the distance between the generated tokens 
+
 ### Reference Dataset
+
+### KL Controllers
 
 ### Implementation Example
 
@@ -39,14 +43,19 @@ This mode is far simpler to implement, particularly when dealing directly with l
 
 ```python
 import torch.nn.functional as F
-logits = model(inputs)
-ref_logits = ref_model(inputs)
+# Step 1: Generate tokens using the trained model's policy
+generated_tokens = model.generate(inputs)
+
+# Step 2: Get logits for both models using the generated tokens as context
+logits = model.forward(inputs) # technically redundant
+ref_logits = ref_model.forward(inputs)
 logprobs = convert_to_logpbs(logits) # softmax and normalize
-ref_logprobs = convert_to_logpbs(logits)
+ref_logprobs = convert_to_logpbs(ref_logits)
 
 kl_approx = logprob - ref_logprob
 kl_full = F.kl_div(ref_logprob, logprob) # alternate computation
 ```
+Some example implementations include [TRL](https://github.com/huggingface/trl/blob/5c21de30ae210e4251ead85517ba8dfe3f210e81/trl/trainer/ppo_trainer.py#L1150) and [Hamish Ivison's Jax Code]https://github.com/hamishivi/EasyLM/blob/main/EasyLM/models/llama/llama_train_ppo.py#L278)
 
 ## Likelihood Penalty
 
