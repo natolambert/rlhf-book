@@ -11,7 +11,7 @@ Still, it is important to understand tools to constrain optimization in RLHF.
 
 The general formulation, when used in an RLHF framework with a reward model, $r_\theta$ is as follows:
 
-$$ r = r_\theta - \lambda r_{\text{reg.}} $$ {eq:rl_start}
+$$ r = r_\theta - \lambda r_{\text{reg.}} $$ {#eq:rl_start}
 
 With the reference implementation being:
 
@@ -61,11 +61,11 @@ ref_logprobs = convert_to_logpbs(ref_logits)
 kl_approx = logprob - ref_logprob
 kl_full = F.kl_div(ref_logprob, logprob) # alternate computation
 ```
-Some example implementations include [TRL](https://github.com/huggingface/trl/blob/5c21de30ae210e4251ead85517ba8dfe3f210e81/trl/trainer/ppo_trainer.py#L1150) and [Hamish Ivison's Jax Code]https://github.com/hamishivi/EasyLM/blob/main/EasyLM/models/llama/llama_train_ppo.py#L278)
+Some example implementations include [TRL](https://github.com/huggingface/trl/blob/5c21de30ae210e4251ead85517ba8dfe3f210e81/trl/trainer/ppo_trainer.py#L1150) and [Hamish Ivison's Jax Code](https://github.com/hamishivi/EasyLM/blob/main/EasyLM/models/llama/llama_train_ppo.py#L278)
 
 ## Pretraining Gradients
 
-Another way of viewing regularization is that you may have a *dataset* that you want the model to remain close to, as done in InstructGPT [@ouyang2022training] ``in order to fix the
+Another way of viewing regularization is that you may have a *dataset* that you want the model to remain close to, as done in InstructGPT [@ouyang2022training] ''in order to fix the
 performance regressions on public NLP datasets''.
 To implement this, they modify the training objective for RLHF.
 Taking @eq:rl_start, we can transform this into an objective function to optimize by sampling from the RL policy model, completions $y$ from prompts $x$, which yields:
@@ -77,7 +77,7 @@ $$
 \text{objective} (\theta) = \mathbb{E}_{(x,y) \sim \mathcal{D}_{\pi^{\text{RL}}_{\theta}}} \left[ r_{\theta}(x, y) - \lambda r_{\text{reg.}} \right] + \gamma \mathbb{E}_{x \sim \mathcal{D}_{\text{pretrain}}} \left[ \log(\pi^{\text{RL}}_{\theta}(x)) \right]
 $$
 
-[@pang2024iterative] proposed using using a negative log likelihood term to balance the optimization of Direct Preference Optimization (DPO).
+Recent work proposed using using a negative log likelihood term to balance the optimization of Direct Preference Optimization (DPO) [@pang2024iterative].
 Given the pairwise nature of the DPO loss, the same loss modification can be made to reward model training, constraining the model to predict accurate text (rumors from laboratories that did not publish the work).
 
 The optimization follows as a modification to DPO.
@@ -94,7 +94,7 @@ TODO: Make the above equations congruent with the rest of the notation on DPO.
 
 Controlling the optimization is less well defined in other parts of the RLHF stack.
 Most reward models have no regularization beyond the standard contrastive loss function.
-Direct Alignment Algorithms handle regulaization to KL distances differently, through the $\Beta$ parameter (see the chapter on Direct Alignment).
+Direct Alignment Algorithms handle regulaization to KL distances differently, through the $\beta$ parameter (see the chapter on Direct Alignment).
 
 Llama 2 proposed a margin loss for reward model training [@touvron2023llama]:
 
@@ -105,4 +105,4 @@ $$
 Where $m(r)$ is the numerical difference in delta between the ratings of two annotators.
 This is either achieved by having annotators rate the outputs on a numerical scale or by using a quantified ranking method, such as [Likert scales](https://en.wikipedia.org/wiki/Likert_scale).
 
-Reward margins have been used heavily in the direct alignment literature, such as Reward weighted DPO, ``Reward-aware Preference Optimization'' (RPO), which integrates reward model scores into the update rule following a DPO loss [@adler2024nemotron], or REBEL [@gao2024rebel] that has a reward delta weighting in a regression-loss formulation.
+Reward margins have been used heavily in the direct alignment literature, such as Reward weighted DPO, ''Reward-aware Preference Optimization'' (RPO), which integrates reward model scores into the update rule following a DPO loss [@adler2024nemotron], or REBEL [@gao2024rebel] that has a reward delta weighting in a regression-loss formulation.

@@ -27,3 +27,18 @@ rewards_rejected = model(**inputs_rejected)
 
 loss = -nn.functional.logsigmoid(rewards_chosen - rewards_rejected).mean()
 ```
+
+### Further Reading
+
+reward modeling reading list imo
+
+RewardBench (biased, but gives a good overview): https://arxiv.org/abs/2403.13787
+ArmorRM: https://arxiv.org/abs/2406.12845
+HelpSteer2: https://arxiv.org/html/2406.08673v1
+HelpSteer2-Preference: https://arxiv.org/abs/2410.01257
+Nemotron 340: https://arxiv.org/abs/2406.11704
+Llama 2: https://arxiv.org/abs/2307.09288
+Interconnects 1: https://www.interconnects.ai/p/why-reward-models-matter
+Interconnects 2: https://www.interconnects.ai/p/open-rlhf-reward-models
+The o.g. paper: https://arxiv.org/abs/1811.07871
+Critique out loud RMs: https://arxiv.org/abs/2408.11791

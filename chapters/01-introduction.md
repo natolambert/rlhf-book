@@ -23,30 +23,35 @@ It will not cover all the history of the components nor recent research methods,
 
 This book has the following chapters following this Introduction:
 
-**Introductions**
+**Introductions**:
+
 1. Introduction
 2. What are preferences?: The philosophy and social sciences behind RLHF.
 3. Optimization and RL: The problem formulation of RLHF.
 4. Seminal (Recent) Works: The core works leading to and following ChatGPT.
 
-**Problem Setup**
+**Problem Setup**:
+
 1. Definitions: Mathematical reference.
 2. Preference Data: Gathering human data of preferences.
 3. Reward Modeling: Modeling human preferences for environment signal.
 4. Regularization: Numerical tricks to stabilize and guide optimization.
 
-**Optimization**
+**Optimization**:
+
 1. Instruction Tuning: Fine-tuning models to follow instructions.
 2. Rejection Sampling: Basic method for using a reward model to filter data.
 3. Policy Gradients: Core RL methods used to perform RLHF.
 4. Direct Alignment Algorithms: New PreFT algorithms that do not need RL.
 
-**Advanced (TBD)**
+**Advanced (TBD)**:
+
 1. Constitutional AI
 2. Synthetic Data
 3. Evaluation
 
-**Open Questions (TBD)**
+**Open Questions (TBD)**:
+
 1. Over-optimization
 2. Style
 
