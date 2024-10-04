@@ -36,3 +36,9 @@ TODO. Cite:
 https://spinningup.openai.com/en/latest/spinningup/rl_intro3.html#
 
 https://lilianweng.github.io/posts/2018-04-08-policy-gradient/
+
+### KL Controllers
+
+TODO: adaptive vs static KL control 
+
+See tAble 10 for impelementation details in tulu 2.5 paper
