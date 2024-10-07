@@ -13,6 +13,6 @@ Learning to summarize, first work on language models (zieglar et al)
 
 ## Pre Modern Models
 
-InstructGPT, WebgGPT, Sparrow, Etc
+InstructGPT, WebGPT, Sparrow, Etc
 
 ## ChatGPT

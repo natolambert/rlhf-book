@@ -8,7 +8,7 @@ lang: en-US
 mainlang: english
 otherlang: english
 tags: [rlhf, ebook, ai, ml]
-date: 21 September 2024
+date: 6 October 2024
 abstract: |
   Reinforcement learning from human feedback (RLHF) has become an important technical and storytelling tool to the deploy of the lastest machine learning systems.
   In this book, we hope to give a gentle introduction to the core methods for people with some level of quantitative background.
