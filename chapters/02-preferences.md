@@ -23,6 +23,8 @@ Together, each of these areas brings specific assumptions at what a preference i
 
 ### Steering preferences
 
+### Value alignment's role in RLHF
+
 ## From Design to Implementation
 
 Many of the principles discussed earlier in this chapter are further specified in the process of implementing the modern RLHF stack, adjusting the meaning of RLHF.
