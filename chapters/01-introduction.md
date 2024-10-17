@@ -12,7 +12,7 @@ Finally, the language model can be optimized with a RL optimizer of choice, by s
 This book details key decisions and basic implementation examples for each step in this process.
 
 RLHF has been applied to many domains successfully, with complexity increasing as the techniques have matured.
-Early breakthrough experiments with RLHF were applied to deep reinforcement learning [@christiano2017deep], summarization [@stiennon2020learning], follow instructions [@ouyang2022training], parse web information for question answering [@nakano2021webgpt], and ``alignment'' [@bai2022training].
+Early breakthrough experiments with RLHF were applied to deep reinforcement learning [@christiano2017deep], summarization [@stiennon2020learning], follow instructions [@ouyang2022training], parse web information for question answering [@nakano2021webgpt], and ''alignment'' [@bai2022training].
 
 ## Scope of This Book
 
