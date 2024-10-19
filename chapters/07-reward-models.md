@@ -32,6 +32,7 @@ $$\mathcal{L}(\theta) = \log \left( 1 + e^{r_{\theta}(x, y_l)}  - e^{r_{\theta}(
 
 Implementing the reward modeling loss is quite simple.
 More of the implementation challenge is on setting up a separate data loader and inference pipeline.
+Given the correct dataloader, the loss is implemented as:
 ```python
 import torch.nn as nn
 rewards_chosen = model(**inputs_chosen)
@@ -42,17 +43,30 @@ loss = -nn.functional.logsigmoid(rewards_chosen - rewards_rejected).mean()
 
 ## Variants
 
-### Margin Loss
+Reward modeling is a relatively under-explored area of RLHF.
+The traditional reward modeling loss has been modified in many popular works, but the modifications have no solidified into a single best practice.
 
-Llama 2
+### Preference Margin Loss
 
-### Prompt Balancing
+In the case where annotators are providing either scores or rankings on a Likert Scale, the magnitude of the relational quantities can be used in training.
+The most common practice is to binarize the data direction, implicitly scores of 1 and 0, but the additional information has been used to improve model training.
+Llama 2 proposes using the margin between two datapoints, $m(r)$, to distinguish the magnitude of preference:
 
-InstructGPT
+$$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(x, y_w) - r_{\theta}(x, y_l) - m(r) \right) \right)$$ {#eq:rewardmodelingmargin}
+
+### Balancing Multiple Comparisons Per Prompt
+
+InstructGPT studies the impact of using a variable number of completions per prompt, yet balancing them in the reward model training [@ouyang2022training].
+To do this, they weight the loss updates per comparison per prompt.
+At an implementation level, this can be done automatically by including all examples with the same prompt in the same training batch, naturally weighing the different pairs -- not doing this caused overfitting to the prompts.
+The loss function becomes:
+
+$$\mathcal{L}(\theta) = - \frac{1}{(\frac{K}{2})} \mathbb{E}_{(x, y_w, y_l)\sim D} \log \left( \sigma \left( r_{\theta}(x, y_w) - r_{\theta}(x, y_l) \right) \right)$$ {#eq:rewardmodelinginstructgpt}
+
 
 ### K-wise loss function
 
-Starling https://arxiv.org/abs/2301.11270
+Starling [@zhu2023principled] https://arxiv.org/abs/2301.11270
 
 ## Further Reading
 
