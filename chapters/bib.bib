@@ -6,6 +6,15 @@
   year={2023}
 }
 
+@article{wirth2017survey,
+  title={A survey of preference-based reinforcement learning methods},
+  author={Wirth, Christian and Akrour, Riad and Neumann, Gerhard and F{\"u}rnkranz, Johannes},
+  journal={Journal of Machine Learning Research},
+  volume={18},
+  number={136},
+  pages={1--46},
+  year={2017}
+}
 ################################################################################################
 
 # AI General ####################################################################
@@ -18,7 +27,37 @@
 
 ################################################################################################
 
-
+# RL related lit
+@inproceedings{knox2008tamer,
+  title={Tamer: Training an agent manually via evaluative reinforcement},
+  author={Knox, W Bradley and Stone, Peter},
+  booktitle={2008 7th IEEE international conference on development and learning},
+  pages={292--297},
+  year={2008},
+  organization={IEEE}
+}
+@inproceedings{macglashan2017interactive,
+  title={Interactive learning from policy-dependent human feedback},
+  author={MacGlashan, James and Ho, Mark K and Loftin, Robert and Peng, Bei and Wang, Guan and Roberts, David L and Taylor, Matthew E and Littman, Michael L},
+  booktitle={International conference on machine learning},
+  pages={2285--2294},
+  year={2017},
+  organization={PMLR}
+}
+@inproceedings{warnell2018deep,
+  title={Deep tamer: Interactive agent shaping in high-dimensional state spaces},
+  author={Warnell, Garrett and Waytowich, Nicholas and Lawhern, Vernon and Stone, Peter},
+  booktitle={Proceedings of the AAAI conference on artificial intelligence},
+  volume={32},
+  number={1},
+  year={2018}
+}
+@article{kaufmann2023survey,
+  title={A survey of reinforcement learning from human feedback},
+  author={Kaufmann, Timo and Weng, Paul and Bengs, Viktor and H{\"u}llermeier, Eyke},
+  journal={arXiv preprint arXiv:2312.14925},
+  year={2023}
+}
 # RLHF Methods ####################################################################
 @article{gilks1992adaptive,
   title={Adaptive rejection sampling for Gibbs sampling},
@@ -48,6 +87,34 @@
   year={2017},
   organization={PMLR}
 }
+@inproceedings{havrilla-etal-2023-trlx,
+    title = "trl{X}: A Framework for Large Scale Reinforcement Learning from Human Feedback",
+    author = "Havrilla, Alexander  and
+      Zhuravinskyi, Maksym  and
+      Phung, Duy  and
+      Tiwari, Aman  and
+      Tow, Jonathan  and
+      Biderman, Stella  and
+      Anthony, Quentin  and
+      Castricato, Louis",
+    booktitle = "Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing",
+    month = dec,
+    year = "2023",
+    address = "Singapore",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2023.emnlp-main.530",
+    doi = "10.18653/v1/2023.emnlp-main.530",
+    pages = "8578--8595",
+}
+@misc{vonwerra2022trl,
+  author = {Leandro von Werra and Younes Belkada and Lewis Tunstall and Edward Beeching and Tristan Thrush and Nathan Lambert and Shengyi Huang and Kashif Rasul and Quentin Gallouédec},
+  title = {TRL: Transformer Reinforcement Learning},
+  year = {2020},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  howpublished = {\url{https://github.com/huggingface/trl}}
+}
+
 # RLHF Core ####################################################################
 @article{christiano2017deep,
   title={Deep reinforcement learning from human preferences},
@@ -55,6 +122,18 @@
   journal={Advances in neural information processing systems},
   volume={30},
   year={2017}
+}
+@article{leike2018scalable,
+  title={Scalable agent alignment via reward modeling: a research direction},
+  author={Leike, Jan and Krueger, David and Everitt, Tom and Martic, Miljan and Maini, Vishal and Legg, Shane},
+  journal={arXiv preprint arXiv:1811.07871},
+  year={2018}
+}
+@article{ziegler2019fine,
+  title={Fine-tuning language models from human preferences},
+  author={Ziegler, Daniel M and Stiennon, Nisan and Wu, Jeffrey and Brown, Tom B and Radford, Alec and Amodei, Dario and Christiano, Paul and Irving, Geoffrey},
+  journal={arXiv preprint arXiv:1909.08593},
+  year={2019}
 }
 @article{stiennon2020learning,
   title={Learning to summarize with human feedback},
@@ -64,6 +143,13 @@
   pages={3008--3021},
   year={2020}
 }
+@article{wu2021recursively,
+  title={Recursively summarizing books with human feedback},
+  author={Wu, Jeff and Ouyang, Long and Ziegler, Daniel M and Stiennon, Nisan and Lowe, Ryan and Leike, Jan and Christiano, Paul},
+  journal={arXiv preprint arXiv:2109.10862},
+  year={2021}
+}
+
 
 @article{askell2021general,
   title={A general language assistant as a laboratory for alignment},
@@ -86,11 +172,40 @@
   pages={27730--27744},
   year={2022}
 }
-
+@article{askell2021general,
+  title={A general language assistant as a laboratory for alignment},
+  author={Askell, Amanda and Bai, Yuntao and Chen, Anna and Drain, Dawn and Ganguli, Deep and Henighan, Tom and Jones, Andy and Joseph, Nicholas and Mann, Ben and DasSarma, Nova and others},
+  journal={arXiv preprint arXiv:2112.00861},
+  year={2021}
+}
 @article{bai2022training,
   title={Training a helpful and harmless assistant with reinforcement learning from human feedback},
   author={Bai, Yuntao and Jones, Andy and Ndousse, Kamal and Askell, Amanda and Chen, Anna and DasSarma, Nova and Drain, Dawn and Fort, Stanislav and Ganguli, Deep and Henighan, Tom and others},
   journal={arXiv preprint arXiv:2204.05862},
+  year={2022}
+}
+@article{ganguli2022red,
+  title={Red teaming language models to reduce harms: Methods, scaling behaviors, and lessons learned},
+  author={Ganguli, Deep and Lovitt, Liane and Kernion, Jackson and Askell, Amanda and Bai, Yuntao and Kadavath, Saurav and Mann, Ben and Perez, Ethan and Schiefer, Nicholas and Ndousse, Kamal and others},
+  journal={arXiv preprint arXiv:2209.07858},
+  year={2022}
+}
+@article{glaese2022improving,
+  title={Improving alignment of dialogue agents via targeted human judgements},
+  author={Glaese, Amelia and McAleese, Nat and Tr{\k{e}}bacz, Maja and Aslanides, John and Firoiu, Vlad and Ewalds, Timo and Rauh, Maribeth and Weidinger, Laura and Chadwick, Martin and Thacker, Phoebe and others},
+  journal={arXiv preprint arXiv:2209.14375},
+  year={2022}
+}
+@article{menick2022teaching,
+  title={Teaching language models to support answers with verified quotes},
+  author={Menick, Jacob and Trebacz, Maja and Mikulik, Vladimir and Aslanides, John and Song, Francis and Chadwick, Martin and Glaese, Mia and Young, Susannah and Campbell-Gillingham, Lucy and Irving, Geoffrey and others},
+  journal={arXiv preprint arXiv:2203.11147},
+  year={2022}
+}
+@article{bai2022constitutional,
+  title={Constitutional ai: Harmlessness from ai feedback},
+  author={Bai, Yuntao and Kadavath, Saurav and Kundu, Sandipan and Askell, Amanda and Kernion, Jackson and Jones, Andy and Chen, Anna and Goldie, Anna and Mirhoseini, Azalia and McKinnon, Cameron and others},
+  journal={arXiv preprint arXiv:2212.08073},
   year={2022}
 }
 
@@ -107,6 +222,14 @@
   journal={arXiv preprint arXiv:2307.09288},
   year={2023}
 }
+@inproceedings{gao2023scaling,
+  title={Scaling laws for reward model overoptimization},
+  author={Gao, Leo and Schulman, John and Hilton, Jacob},
+  booktitle={International Conference on Machine Learning},
+  pages={10835--10866},
+  year={2023},
+  organization={PMLR}
+}
 
 @article{adler2024nemotron,
   title={Nemotron-4 340B Technical Report},
@@ -114,13 +237,37 @@
   journal={arXiv preprint arXiv:2406.11704},
   year={2024}
 }
-
+@article{dubey2024llama,
+  title={The llama 3 herd of models},
+  author={Dubey, Abhimanyu and Jauhri, Abhinav and Pandey, Abhinav and Kadian, Abhishek and Al-Dahle, Ahmad and Letman, Aiesha and Mathur, Akhil and Schelten, Alan and Yang, Amy and Fan, Angela and others},
+  journal={arXiv preprint arXiv:2407.21783},
+  year={2024}
+}
+@article{rafailov2024direct,
+  title={Direct preference optimization: Your language model is secretly a reward model},
+  author={Rafailov, Rafael and Sharma, Archit and Mitchell, Eric and Manning, Christopher D and Ermon, Stefano and Finn, Chelsea},
+  journal={Advances in Neural Information Processing Systems},
+  volume={36},
+  year={2024}
+}
 # RLHF More ########################################################################
 @article{pang2024iterative,
   title={Iterative reasoning preference optimization},
   author={Pang, Richard Yuanzhe and Yuan, Weizhe and Cho, Kyunghyun and He, He and Sukhbaatar, Sainbayar and Weston, Jason},
   journal={arXiv preprint arXiv:2404.19733},
   year={2024}
+}
+@article{cohen2022dynamic,
+  title={Dynamic planning in open-ended dialogue using reinforcement learning},
+  author={Cohen, Deborah and Ryu, Moonkyung and Chow, Yinlam and Keller, Orgad and Greenberg, Ido and Hassidim, Avinatan and Fink, Michael and Matias, Yossi and Szpektor, Idan and Boutilier, Craig and others},
+  journal={arXiv preprint arXiv:2208.02294},
+  year={2022}
+}
+@article{ramamurthy2022reinforcement,
+  title={Is reinforcement learning (not) for natural language processing: Benchmarks, baselines, and building blocks for natural language policy optimization},
+  author={Ramamurthy, Rajkumar and Ammanabrolu, Prithviraj and Brantley, Kiant{\'e} and Hessel, Jack and Sifa, Rafet and Bauckhage, Christian and Hajishirzi, Hannaneh and Choi, Yejin},
+  journal={arXiv preprint arXiv:2210.01241},
+  year={2022}
 }
 
 @article{gao2024rebel,
@@ -129,7 +276,32 @@
   journal={arXiv preprint arXiv:2404.16767},
   year={2024}
 }
-
+@article{casper2023open,
+  title={Open problems and fundamental limitations of reinforcement learning from human feedback},
+  author={Casper, Stephen and Davies, Xander and Shi, Claudia and Gilbert, Thomas Krendl and Scheurer, J{\'e}r{\'e}my and Rando, Javier and Freedman, Rachel and Korbak, Tomasz and Lindner, David and Freire, Pedro and others},
+  journal={arXiv preprint arXiv:2307.15217},
+  year={2023}
+}
+@article{kumar2024training,
+  title={Training language models to self-correct via reinforcement learning},
+  author={Kumar, Aviral and Zhuang, Vincent and Agarwal, Rishabh and Su, Yi and Co-Reyes, John D and Singh, Avi and Baumli, Kate and Iqbal, Shariq and Bishop, Colton and Roelofs, Rebecca and others},
+  journal={arXiv preprint arXiv:2409.12917},
+  year={2024}
+}
+@article{singh2023beyond,
+  title={Beyond human data: Scaling self-training for problem-solving with language models},
+  author={Singh, Avi and Co-Reyes, John D and Agarwal, Rishabh and Anand, Ankesh and Patil, Piyush and Liu, Peter J and Harrison, James and Lee, Jaehoon and Xu, Kelvin and Parisi, Aaron and others},
+  journal={arXiv preprint arXiv:2312.06585},
+  year={2023}
+}
+@misc{openai2024o1,
+  title        = {Introducing OpenAI o1-preview},
+  author       = {{OpenAI}},
+  year         = {2024},
+  month        = sep,
+  url          = {https://openai.com/index/introducing-openai-o1-preview/},
+  note         = {Accessed: 2024-10-18}
+}
 # LLM as a Judge ####################################################################
 @article{zheng2023judging,
   title={Judging llm-as-a-judge with mt-bench and chatbot arena},
@@ -159,4 +331,11 @@ Misc Blogs %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   year = {2016},
   howpublished = {\url{http://joschu.net/blog/kl-approx.html}},
   note = {Accessed: 2024-10-01}
+}
+@misc{openai2022chatgpt,
+  title = {ChatGPT: Optimizing Language Models for Dialogue},
+  author = {{OpenAI}},
+  year = {2022},
+  howpublished = {\url{https://openai.com/blog/chatgpt/}},
+  note = {Training a LM with RLHF for suitable use as an all-purpose chat bot.}
 }

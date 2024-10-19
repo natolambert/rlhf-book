@@ -26,12 +26,14 @@ Recall that KL distance is defined as follows:
 
 $$ D_{KL}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\frac{P(x)}{Q(x)}\right) $$
 
+In RLHF, the two distributions of interest are often the distribution of the new model version, say $P(x)$, and a distribution of the reference policy, say $Q(x)$.
+
 ### Reference Model to Generations
 
 The most common implementation of KL penalities are by comparing the distance between the generated tokens during training to a static reference model.
 The intuition is that the model you're training from has a style that you would like to stay close to.
 This reference model is most often the instruction tuned model, but can also be a previous RL checkpoint.
-With simple substitution, the model we are sampling from becomes $P(x)^{\text{RL}}$ and $P(x)^{\text{Ref.}}, shown above in @eq:kl_standard.
+With simple substitution, the model we are sampling from becomes $P^{\text{RL}}(x)$ and $P^{\text{Ref.}}(x)$, shown above in @eq:kl_standard.
 Such KL distance was first applied to dialogue agents well before the popularity of large language models [@jaques2017sequence], yet KL control was quickly established as a core technique for fine-tuning pretrained models [@jaques2020human].
 
 ### Implementation Example
