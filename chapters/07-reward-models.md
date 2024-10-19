@@ -10,7 +10,8 @@ Reward models were proposed, in their modern form, as a tool for studying the va
 There are two popular expressions for how to train a reward model -- they are numerically equivalent. 
 The canonical implementation is derived from the Bradley-Terry model of preference [@BradleyTerry].
 A Bradley-Terry model of preferences measures the probability that the pairwise comparison for two events drawn from the same distribution, say $i$ and $j$, satisfy the following relation, $i > j$:
-$$P(i > j) = \frac{p_i}{p_i + p_j}$$ {eq:bradterry}
+
+$$P(i > j) = \frac{p_i}{p_i + p_j}$$ {#eq:bradterry}
 
 To train a reward model, we must formulate a loss function that satisfies the above relation.
 The first structure applied is to convert a language model into a model that outputs a scalar value, often in the form of a single classification probability logit.
@@ -18,7 +19,7 @@ Thus, we can take the score of this model with two samples, the $i$ and $j$ abov
 
 The probability of success for a given reward model in a pairwise comparison, becomes:
 
-$$P(y_1 > y_2) = \frac{\exp(r(y_1))}{\exp(r(y_1)) + \exp(r(y_2))}$$ {eq:bradterryrm}
+$$P(y_1 > y_2) = \frac{\exp(r(y_1))}{\exp(r(y_1)) + \exp(r(y_2))}$$ {#eq:bradterryrm}
 
 Then, by taking the gradient with respect to the model parameters, we can arrive at the loss function to train a reward model.
 The first form, as in [@ouyang2022training] and other works:
@@ -68,20 +69,19 @@ $$\mathcal{L}(\theta) = - \frac{1}{(\frac{K}{2})} \mathbb{E}_{(x, y_w, y_l)\sim 
 
 Starling [@zhu2023principled] https://arxiv.org/abs/2301.11270
 
+## Generative Reward Modeling
+
+[@mahan2024generative], [@zhang2024generative], [@lambert2023entangled], generative and classifer [@ankner2024critique]
+
+Related to LLM-as-a-judge and other evaluator models, which are very popular
+
 ## Further Reading
 
 reward modeling reading list imo
 
-RewardBench (biased, but gives a good overview): https://arxiv.org/abs/2403.13787
-ArmorRM: https://arxiv.org/abs/2406.12845
-HelpSteer2: https://arxiv.org/html/2406.08673v1
-HelpSteer2-Preference: https://arxiv.org/abs/2410.01257
-Nemotron 340: https://arxiv.org/abs/2406.11704
-Llama 2: https://arxiv.org/abs/2307.09288
-Interconnects 1: https://www.interconnects.ai/p/why-reward-models-matter
-Interconnects 2: https://www.interconnects.ai/p/open-rlhf-reward-models
-The o.g. paper: https://arxiv.org/abs/1811.07871
-Critique out loud RMs: https://arxiv.org/abs/2408.11791
+RewardBench (biased, but gives a good overview): [@lambert2023entangled] [@zhou2024rmb]
+
+New reward model training methods, with aspect-conditioned models [@wang2024interpretable], high quality human datasets [@wang2024helpsteer2] [@wang2024helpsteer2p], scaling [@adler2024nemotron], extensive experimentation [@touvron2023llama], debiasing data [@park2024offsetbias],
 
 ## Recommendations
 
