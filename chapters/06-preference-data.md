@@ -1,4 +1,4 @@
-# [In progress] Preference Data
+# [Incomplete] Preference Data
 
 ## Collecting Preference Data
 
