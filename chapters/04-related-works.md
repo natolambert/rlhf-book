@@ -6,7 +6,7 @@ It is intentionally focused on recent work that lead to ChatGPT.
 There is substantial further work in the RL literature on learning from preferences [@wirth2017survey]. 
 For a more exhaustive list, you should use a proper survey paper [@kaufmann2023survey],[@casper2023open].
 
-## [Origins to 2018] RL on Preferences
+## Origins to 2018: RL on Preferences
 
 The field was recently popularized with the growth of Deep Reinforcement Learning and has grown into a broader study of the applications of LLMs from many large technology companies.
 Still, many of the techniques used today are deeply related to core techniques from early literature on RL from preferences.
@@ -18,7 +18,7 @@ TAMER was adapted to deep learning with Deep TAMER just one year later [@warnell
 
 This era began to transition as reward models as a general notion were proposed as a method for studying alignment, rather than just a tool for solving RL problems [@leike2018scalable].
 
-## [2019 to 2022] RL from Human Preferences on Language Models
+## 2019 to 2022: RL from Human Preferences on Language Models
 
 Reinforcement learning from human feedback, also referred to regularly as reinforcement learning from human preferences in its early days, was quickly adopted by AI labs increasingly turning to scaling large language models.
 A large portion of this work began between GPT-2, in 2018, and GPT-3, in 2020.
@@ -29,14 +29,14 @@ Important examples include general summarization [@stiennon2020learning], recurs
 
 Aside from applications, a number of seminal papers defined key areas for the future of RLHF, including those on:
 
-1. Reward model over-optimization [@gao2023scaling]: The ability for RL optimizers to over-fit to models trained on preference data.
+1. Reward model over-optimization [@gao2023scaling]: The ability for RL optimizers to over-fit to models trained on preference data,
 2. Language models as a general area of study for alignment [@askell2021general], and
 3. Red teaming [@ganguli2022red] -- the process of assessing safety of a language model.
 
 Work continued on refining RLHF for application to chat models.
 Anthropic continued to use it extensively for early versions of Claude [@bai2022training] and early RLHF open-source tools emerged [@ramamurthy2022reinforcement],[@havrilla-etal-2023-trlx],[@vonwerra2022trl].
 
-## [2023 to Present] ChatGPT Eta
+## 2023 to Present: ChatGPT Eta
 
 Since OpenAI launched ChatGPT [@openai2022chatgpt], RLHF has been used extensively in leading language models. 
 It is well known to be used in Anthropic's Constitutional AI for Claude [@bai2022constitutional], Meta's Llama 2 [@touvron2023llama] and Llama 3 [@dubey2024llama], Nvidia's Nemotron [@adler2024nemotron], and more.
