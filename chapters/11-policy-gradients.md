@@ -23,7 +23,7 @@ $$\nabla_\theta J(\pi_\theta) = \mathbb{E}_\tau \left[ \sum_{t=0}^T \nabla_\thet
 ### Reinforce
 
 Reinforce is a specific implementation of vanilla policy gradient that uses a Monte Carlo estimator of the gradient.
-
+[@ahmadian2024back]
 ### Proximal Policy Optimization
 
 ## Computing Policy Gradients with a Language Model
