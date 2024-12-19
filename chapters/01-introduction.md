@@ -17,6 +17,7 @@ Early breakthrough experiments with RLHF were applied to deep reinforcement lear
 In modern language model training, RLHF is one component on post-training. 
 Post-training is a more complete set of techniques and best-practices to make language models more useful for downstream tasks [@lambert2024t].
 Post-training can be summarized as using three optimization methods:
+
 1. Instruction / Supervised Finetuning (SFT),
 2. Preference Finetuning (PreFT), and
 3. Reinforcement Finetuning (RFT).
