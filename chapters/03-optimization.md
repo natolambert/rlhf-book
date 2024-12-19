@@ -11,7 +11,7 @@ $$J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[ \sum_{t=0}^{\infty} \gamma^t r(s_t,
 where $\gamma$ is a discount factor from 0 to 1 that balances the desireability of near- versus future-rewards.
 Multiple methods for optimizing this expression are discussed in Chapter 11.
 
-![Standard RL loop](images/rl.png){#fig:rl}
+![Standard RL loop](images/rl.png){#fig:rl width=320px .center}
 
 A standard illustration of the RL loop is shown in @fig:rl and how it compares to @fig:rlhf.
 
@@ -37,7 +37,7 @@ RLHF is implemented from a strong base model, which induces a need to control th
 In order to succeed in a finetuning regime, RLHF techniques employ multiple types of regularization to control the optimization.
 The most common change to the optimization function is to add a distance penalty on the difference between the current RLHF policy and the starting point of the optimization:
 
-$$J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t)\right] - \beta  \mathcal{D}_{KL}(\pi^{\text{RL}}(\cdot|s_t) \| \pi^{\ref}(\cdot|s_t)).$$
+$$J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t)\right] - \beta  \mathcal{D}_{KL}(\pi^{\text{RL}}(\cdot|s_t) \| \pi^{\text{ref}}(\cdot|s_t)).$$
 
 Within this formulation, a lot of study into RLHF training goes into understanding how to spend a certain ``KL budget'' as measured by a distance from the initial model.
 For more details, see Chapter 8 on Regularization.
