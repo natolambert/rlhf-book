@@ -1,4 +1,4 @@
-# Problem Setup
+# Definitions
 
 This chapter includes all the definitions, symbols, and operatings frequently used in the RLHF process.
 
