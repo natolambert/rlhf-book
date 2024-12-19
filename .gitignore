@@ -9,3 +9,4 @@ build/html/
 *.log
 .DS_Store
 **/.DS_Store
+.vscode/
