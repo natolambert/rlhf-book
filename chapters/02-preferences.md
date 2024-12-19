@@ -17,6 +17,10 @@ Together, each of these areas brings specific assumptions at what a preference i
 In practice, RLHF methods are motivated and studied from the perspective of empirical alignment -- maximizing model performance on specific skills instead of measuring the calibration to specific values.
 Still, the origins of value alignment for RLHF methods continue to be studied through research on methods to solve for ``pluralistic alignment'' across populations, such as position papers [@conitzer2024social], [@mishra2023ai], new datasets [@kirk2024prism], and personalization methods [@poddar2024personalizing].
 
+The goal of this chapter is to illustrate how complex motivations results in presumptions about the nature of tools used in RLHF that do often not apply in practice.
+The specifics of obtaining data for RLHF is discussed further in Chapter 6 and using it for reward modeling in Chapter 7.
+For an extended version of this chapter, see [@lambert2023entangled].
+
 ## The path to optimizing preferences
 
 A popular phrasing for the design of Artificial Intelligence (AI) systems is that of a rational agent maximizing a utility function [@russell2016artificial].
@@ -38,13 +42,19 @@ Early philosophers discussed the existence of preferences, such as Aristotle's T
 
 Progression of these ideas continued through Bentham's *Hedonic Calculus* [@bentham1823hedonic] that proposed that all of life's considerations can be weighed, and Ramsey’s *Truth and Probability* [@ramsey2016truth] that applied a quantitative model to preferences.
 This direction, drawing on advancements in decision theory, culminated in the Von Neumann-Morgenstern (VNM) utility theorem which gives credence to designing utility functions that assign relative preference for an individual that are used to make decisions.
+
 This theorem is core to all assumptions that pieces of RLHF are learning to model and dictate preferences.
+RLHF is designed to optimize these personal utility functions with reinforcement learning.
+In this context, many of the presumptions around RL problem formulation break down to the difference between a preference function and a utility function.
 
 ### On the possibility of preferences
 
-### Further reading
+Across fields of study, many critiques exist on the nature of preferences. 
+Some of the most prominent critiques are summarized below:
 
-Many of the principles discussed earlier in this chapter are further specified in the process of implementing the modern RLHF stack, adjusting the meaning of RLHF.
+- **Arrow's impossibility theorem** [@arrow1950difficulty] states that no voting system can aggregate multiple preferences while maintaining certain reasonable criteria.
+- **The impossibility of interpersonal comparison** [@harsanyi1977rule] highlights how different individuals have different relative magnitudes of preferences and they cannot be easily compared (as is done in most modern reward model training).
+- **Preferences can change over time** [@pettigrew2019choosing].
+- **Preferences can vary across contexts**.
+- **The utility functions derived from aggregating preferences can reduce corrigibility** [@soares2015corrigibility] of downstream agents (i.e. the possibility of an agents' behavior to be corrected by the designer).
 
-The specifics of obtaining data for RLHF is discussed further in Chapter 6.
-For an extended version of this chapter, see [@lambert2023entangled].
