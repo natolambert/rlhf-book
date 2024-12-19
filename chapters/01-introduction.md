@@ -6,13 +6,22 @@ Its early applications were often in control problems and other traditional doma
 RLHF became most known through the release of ChatGPT and the subsequent rapid development of large language models (LLMs) and other foundation models.
 
 The basic pipeline for RLHF involves three steps.
-First, a language model that can follow user preferences must be trained (see Chapter 9).
+First, a language model that can follow user questions must be trained (see Chapter 9).
 Second, human preference data must be collected for the training of a reward model of human preferences (see Chapter 7).
 Finally, the language model can be optimized with a RL optimizer of choice, by sampling generations and rating them with respect to the reward model (see Chapter 3 and 11).
 This book details key decisions and basic implementation examples for each step in this process.
 
 RLHF has been applied to many domains successfully, with complexity increasing as the techniques have matured.
 Early breakthrough experiments with RLHF were applied to deep reinforcement learning [@christiano2017deep], summarization [@stiennon2020learning], follow instructions [@ouyang2022training], parse web information for question answering [@nakano2021webgpt], and "alignment" [@bai2022training].
+
+In modern language model training, RLHF is one component on post-training. 
+Post-training is a more complete set of techniques and best-practices to make language models more useful for downstream tasks [@lambert2024t].
+Post-training can be summarized as using three optimization methods:
+1. Instruction / Supervised Finetuning (SFT),
+2. Preference Finetuning (PreFT), and
+3. Reinforcement Finetuning (RFT).
+
+This book focused on the second area, **preference finetuning**, which has more complexity than instruction tuning and is far more established than Reinforcement Finetuning.
 
 ## Scope of This Book
 
@@ -49,6 +58,7 @@ This book has the following chapters following this Introduction:
 1. Constitutional AI
 2. Synthetic Data
 3. Evaluation
+4. Reasoning and Reinforcement Finetuning
 
 **Open Questions (TBD)**:
 
