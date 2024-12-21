@@ -22,7 +22,7 @@ Post-training can be summarized as using three optimization methods:
 2. Preference Finetuning (PreFT), and
 3. Reinforcement Finetuning (RFT).
 
-This book focused on the second area, **preference finetuning**, which has more complexity than instruction tuning and is far more established than Reinforcement Finetuning.
+This book focuses on the second area, **preference finetuning**, which has more complexity than instruction tuning and is far more established than Reinforcement Finetuning.
 
 ## Scope of This Book
 
@@ -74,7 +74,7 @@ It will not have exhaustive documentation for all the techniques, but just those
 ### How to Use This Book
 
 This book was largely created because there were no canonical references for important topics in the RLHF workflow.
-The contributions of this book as supposed to give you the minimum knowledge needed to try a toy implementation or dive into the literature. 
+The contributions of this book are supposed to give you the minimum knowledge needed to try a toy implementation or dive into the literature. 
 This is *not* a comprehensive textbook, but rather a quick book for reminders and getting started.
 Additionally, given the web-first nature of this book, it is expected that there are minor typos and somewhat random progressions -- please contribute by fixing bugs or suggesting important content on [GitHub](https://github.com/natolambert/rlhf-book).
 

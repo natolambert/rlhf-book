@@ -13,7 +13,7 @@ Still, many of the techniques used today are deeply related to core techniques f
 
 *TAMER: Training an Agent Manually via Evaluative Reinforcement,* Proposed a learned agent where humans provided scores on the actions taken iteratively to learn a reward model [@knox2008tamer]. Other concurrent or soon after work proposed an actor-critic algorithm, COACH, where human feedback (both positive and negative) is used to tune the advantage function [@macglashan2017interactive].
 
-The primary reference, Christiano et al. 2017, is application of RLHF applied on preferences between Atari trajectories [@christiano2017deep]. The work shows that humans choosing between trajectories can be more effective in some domains than directly interacting with the environment. This uses some clever conditions, but is impressive nonetheless.
+The primary reference, Christiano et al. 2017, is an application of RLHF applied on preferences between Atari trajectories [@christiano2017deep]. The work shows that humans choosing between trajectories can be more effective in some domains than directly interacting with the environment. This uses some clever conditions, but is impressive nonetheless.
 This method was expanded upon with more direct reward modeling [@ibarz2018reward].
 TAMER was adapted to deep learning with Deep TAMER just one year later [@warnell2018deep].
 

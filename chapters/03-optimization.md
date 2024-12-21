@@ -8,7 +8,7 @@ Hence, across a finite episode, the goal of an RL agent is to solve the followin
 
 $$J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[ \sum_{t=0}^{\infty} \gamma^t r(s_t, a_t) \right],$$
 
-where $\gamma$ is a discount factor from 0 to 1 that balances the desireability of near- versus future-rewards.
+where $\gamma$ is a discount factor from 0 to 1 that balances the desirability of near- versus future-rewards.
 Multiple methods for optimizing this expression are discussed in Chapter 11.
 
 ![Standard RL loop](images/rl.png){#fig:rl width=320px .center}

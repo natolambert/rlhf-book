@@ -2,7 +2,7 @@
 # The Nature of Preferences
 
 The core of reinforcement learning from human feedback, also referred to as reinforcement learning from human preferences in early literature, is designed to optimize machine learning models in domains where specifically designing a reward function is hard.
-The motivation for using humans as the reward signals is to obtain a indirect metric for the target reward and *align* the downstream model to human preferences.
+The motivation for using humans as the reward signals is to obtain an indirect metric for the target reward and *align* the downstream model to human preferences.
 
 The use of human labeled feedback data integrates the history of many fields.
 Using human data alone is a well studied problem, but in the context of RLHF it is used at the intersection of multiple long-standing fields of study [@lambert2023entangled].
