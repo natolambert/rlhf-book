@@ -45,6 +45,9 @@ HTML_ARGS = --template templates/html.html --standalone --to html5
 PDF_ARGS = --template templates/pdf.tex --pdf-engine xelatex
 NESTED_HTML_TEMPLATE = templates/chapter.html
 
+# Add this with your other file variables at the top
+JS_FILES = $(shell find . -name '*.js')  # This will find all .js files in the current directory and subdirectories
+
 # Per-format file dependencies
 
 BASE_DEPENDENCIES = $(MAKEFILE) $(CHAPTERS) $(METADATA) $(IMAGES) $(TEMPLATES)
@@ -86,6 +89,7 @@ clean:
 # Debugging output for chapters and HTML output paths
 $(info Chapters found: $(CHAPTERS))
 $(info HTML output will be: $(CHAPTER_HTMLS))
+$(info JS files found: $(JS_FILES))
 
 ####################################################################################################
 # File builders
@@ -120,6 +124,8 @@ $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html:	$(HTML_DEPENDENCIES)
 	$(MKDIR_CMD) $(BUILD)/html
 	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(ARGS) $(HTML_ARGS) -o $@
 	$(COPY_CMD) $(IMAGES) $(BUILD)/html/ --mathjax
+	$(COPY_CMD) $(JS_FILES) $(BUILD)/html/
+	$(COPY_CMD) $(JS_FILES) $(BUILD)/html/c/  # Copy to nested directory
 	$(ECHO_BUILT)
 
 # Nested HTML build targets
@@ -159,3 +165,5 @@ files:
 	cp favicon.ico $(BUILD)/html/c/ || echo "Failed to copy to $(BUILD)/html/c/"
 	cp $(BUILD)/pdf/book.pdf $(BUILD)/html/ || echo "Failed to copy to $(BUILD)/html/"
 	cp -r images $(BUILD)/html/c/ || echo "Failed to copy to $(BUILD)/html/chapters/"
+	cp ./templates/nav.js $(BUILD)/html/ || echo "Failed to copy nav.js to $(BUILD)/html/"
+	cp ./templates/nav.js $(BUILD)/html/c/ || echo "Failed to copy nav.js to $(BUILD)/html/c/"

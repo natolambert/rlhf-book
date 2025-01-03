@@ -1,0 +1,114 @@
+class NavigationDropdown extends HTMLElement {
+    constructor() {
+      super();
+      
+      // Get the initial expanded state from the attribute, default to false
+      const initialExpanded = this.getAttribute('expanded') === 'true';
+      
+      this.innerHTML = `
+        <div>
+          <button class="dropdown-button" aria-expanded="${initialExpanded}">
+            <span><strong>Navigation</strong></span>
+            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          
+          <div class="dropdown-content${initialExpanded ? ' open' : ''}">
+    <nav class="chapter-nav">
+      <div class="section">
+        <h3>Links</h3>
+        <ol>
+          <li><a href="https://rlhfbook.com">Home</a></li>
+          <li><a href="https://github.com/natolambert/rlhf-book">GitHub Repository</a></li>
+          <li><a href="https://rlhfbook.com/book.pdf">PDF</a></li>
+          <li class="inactive">Order a copy (Soon)</li>
+        </ol>
+      </div>
+
+      <div class="section">
+        <h3>Introductions</h3>
+        <ol>
+          <li><a href="https://rlhfbook.com/c/01-introduction.html">Introduction</a></li>
+          <li><a href="https://rlhfbook.com/c/02-preferences.html">What are preferences?</a></li>
+          <li><a href="https://rlhfbook.com/c/03-optimization.html">Optimization and RL</a></li>
+          <li><a href="https://rlhfbook.com/c/04-related-works.html">Seminal (Recent) Works</a></li>
+        </ol>
+      </div>
+
+      <div class="section">
+        <h3>Problem Setup</h3>
+        <ol>
+          <li><a href="https://rlhfbook.com/c/05-setup.html">Definitions</a></li>
+          <li><a href="https://rlhfbook.com/c/06-preference-data.html">Preference Data</a></li>
+          <li><a href="https://rlhfbook.com/c/07-reward-models.html">Reward Modeling</a></li>
+          <li><a href="https://rlhfbook.com/c/08-regularization.html">Regularization</a></li>
+        </ol>
+      </div>
+
+      <div class="section">
+        <h3>Optimization</h3>
+        <ol>
+          <li><a href="https://rlhfbook.com/c/09-instruction-tuning.html">Instruction Tuning</a></li>
+          <li><a href="https://rlhfbook.com/c/10-rejection-sampling.html">Rejection Sampling</a></li>
+          <li><a href="https://rlhfbook.com/c/11-policy-gradients.html">Policy Gradients</a></li>
+          <li><a href="https://rlhfbook.com/c/12-direct-alignment.html">Direct Alignment Algorithms</a></li>
+        </ol>
+      </div>
+
+      <div class="section">
+        <h3>Advanced (TBD)</h3>
+        <ol>
+          <li><a href="https://rlhfbook.com/c/13-cai.html">Constitutional AI and AI Feedback</a></li>
+          <li><a href="https://rlhfbook.com/c/14-reasoning.html">Reasoning and Reinforcement Finetuning</a></li>
+          <li><a href="https://rlhfbook.com/c/15-synthetic.html">Synthetic Data</a></li>
+          <li><a href="https://rlhfbook.com/c/16-evaluation.html">Evaluation</a></li>
+        </ol>
+      </div>
+
+      <div class="section">
+        <h3>Open Questions (TBD)</h3>
+        <ol>
+          <li><a href="https://rlhfbook.com/c/17-over-optimization.html">Over-optimization</a></li>
+          <li class="inactive">Style</li>
+        </ol>
+      </div>
+    </nav>
+  </div>
+</div>
+      `;
+  
+      // Set up click handler
+      const button = this.querySelector('.dropdown-button');
+      const content = this.querySelector('.dropdown-content');
+      
+      button.addEventListener('click', () => {
+        const isExpanded = button.getAttribute('aria-expanded') === 'true';
+        button.setAttribute('aria-expanded', !isExpanded);
+        content.classList.toggle('open');
+      });
+    }
+    
+    // Add attribute change observer
+    static get observedAttributes() {
+      return ['expanded'];
+    }
+    
+    attributeChangedCallback(name, oldValue, newValue) {
+      if (name === 'expanded') {
+        const button = this.querySelector('.dropdown-button');
+        const content = this.querySelector('.dropdown-content');
+        const isExpanded = newValue === 'true';
+        
+        if (button && content) {
+          button.setAttribute('aria-expanded', isExpanded);
+          content.classList.toggle('open', isExpanded);
+        }
+      }
+    }
+}
+
+// Only define the component once
+if (!customElements.get('navigation-dropdown')) {
+  customElements.define('navigation-dropdown', NavigationDropdown);
+}

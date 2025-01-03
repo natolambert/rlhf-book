@@ -40,6 +40,10 @@ $endif$
 $for(header-includes)$
   $header-includes$
 $endfor$
+
+<!-- custom js nav -->
+<script src="nav.js" defer></script>
+
 </head>
 <body>
 $for(include-before)$
@@ -51,73 +55,15 @@ $if(title)$
 $if(subtitle)$
 <p class="subtitle">$subtitle$</p>
 $endif$
-
-<nav class="chapter-nav">
-  <div class="section">
-    <h3>Links</h3>
-    <ol>
-      <li><a href="https://rlhfbook.com">Home</a></li>
-      <li><a href="https://github.com/natolambert/rlhf-book">GitHub Repository</a></li>
-      <li><a href="https://rlhfbook.com/book.pdf">PDF</a></li>
-      <li class="inactive">Order a copy (Soon)</li>
-    </ol>
-</div>
-
-  <div class="section">
-    <p><strong>Introductions</strong></p>
-    <ol>
-      <li><a href="https://rlhfbook.com/c/01-introduction.html">Introduction</a></li>
-      <li><a href="https://rlhfbook.com/c/02-preferences.html">What are preferences?</a></li>
-      <li><a href="https://rlhfbook.com/c/03-optimization.html">Optimization and RL</a></li>
-      <li><a href="https://rlhfbook.com/c/04-related-works.html">Seminal (Recent) Works</a></li>
-    </ol>
-  </div>
-
-  <div class="section">
-    <p><strong>Problem Setup</strong></p>
-    <ol>
-      <li><a href="https://rlhfbook.com/c/05-setup.html">Definitions</a></li>
-      <li><a href="https://rlhfbook.com/c/06-preference-data.html">Preference Data</a></li>
-      <li><a href="https://rlhfbook.com/c/07-reward-models.html">Reward Modeling</a></li>
-      <li><a href="https://rlhfbook.com/c/08-regularization.html">Regularization</a></li>
-    </ol>
-  </div>
-
-  <div class="section">
-    <p><strong>Optimization</strong></p>
-    <ol>
-      <li><a href="https://rlhfbook.com/c/09-instruction-tuning.html">Instruction Tuning</a></li>
-      <li><a href="https://rlhfbook.com/c/10-rejection-sampling.html">Rejection Sampling</a></li>
-      <li><a href="https://rlhfbook.com/c/11-policy-gradients.html">Policy Gradients</a></li>
-      <li><a href="https://rlhfbook.com/c/12-direct-alignment.html">Direct Alignment Algorithms</a></li>
-    </ol>
-  </div>
-
-  <div class="section">
-    <p><strong>Advanced (TBD)</strong></p>
-    <ol>
-      <li><a href="https://rlhfbook.com/c/13-cai.html">Constitutional AI and AI Feedback</a></li>
-      <li><a href="https://rlhfbook.com/c/14-reasoning.html">Reasoning and Reinforcement Finetuning</a></li>
-      <li><a href="https://rlhfbook.com/c/15-synthetic.html">Synthetic Data</a></li>
-      <li><a href="https://rlhfbook.com/c/16-evaluation.html">Evaluation</a></li>
-    </ol>
-  </div>
-
-  <div class="section">
-    <p><strong>Open Questions (TBD)</strong></p>
-    <ol>
-      <li><a href="https://rlhfbook.com/c/17-over-optimization.html">Over-optimization</a></li>
-      <li>Style</li>
-    </ol>
-  </div>
-</nav>
-
 $for(author)$
 <p class="author">$author$</p>
 $endfor$
 $if(date)$
 <p class="date">$date$</p>
 $endif$
+
+<navigation-dropdown expanded="true"></navigation-dropdown>
+
 $if(abstract)$
 <div class="abstract">
   <h2>Abstract</h2>
