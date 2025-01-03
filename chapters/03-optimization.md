@@ -1,3 +1,9 @@
+---
+prev-chapter: "Home"
+prev-url: "www.rlhfbook.com"
+next-chapter: "The Nature of Preferences"
+next-url: "02-preferences.html"
+---
 
 # Problem Formulation
 
