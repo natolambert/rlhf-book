@@ -341,6 +341,13 @@ table td {
     }
 }
 
+.dropdown-content {
+  display: none;
+}
+
+.dropdown-content.open {
+  display: block;
+}
 /* Header Nav Block */
     .chapter-nav {
         display: grid;
