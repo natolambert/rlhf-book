@@ -51,7 +51,7 @@ $include-before$
 $endfor$
 $if(title)$
 <header id="title-block-header">
-<h1 class="title"><a href="www.rlhfbook.com" style="color: inherit; text-decoration: none;">$title$</a></h1>
+<h1 class="title"><a href="https://rlhfbook.com/" style="color: inherit; text-decoration: none;">$title$</a></h1>
 $if(subtitle)$
 <p class="subtitle">$subtitle$</p>
 $endif$
@@ -76,6 +76,23 @@ $endif$
 <div id="content">
   $body$
 </div>
+
+<div id="chapter-navigation" style="display: flex; justify-content: space-between; padding: 2em 0;">
+  $if(prev-url)$
+  <a href="$prev-url$" class="prev-chapter">
+    ← Previous: $prev-chapter$
+  </a>
+  $else$
+  <div></div>
+  $endif$
+  
+  $if(next-url)$
+  <a href="$next-url$" class="next-chapter">
+    Next: $next-chapter$ →
+  </a>
+  $endif$
+</div>
+
 $for(include-after)$
 $include-after$
 $endfor$

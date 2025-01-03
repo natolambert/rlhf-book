@@ -1,3 +1,10 @@
+---
+prev-chapter: "Home"
+prev-url: "www.rlhfbook.com"
+next-chapter: "The Nature of Preferences"
+next-url: "02-preferences.html"
+---
+
 # Introduction
 
 Reinforcement learning from Human Feedback (RLHF) is a technique used to incorporate human information into AI systems.
