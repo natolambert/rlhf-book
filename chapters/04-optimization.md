@@ -1,8 +1,8 @@
 ---
-prev-chapter: "Home"
-prev-url: "www.rlhfbook.com"
+prev-chapter: "Problem Setup"
+prev-url: "03-setup.html"
 next-chapter: "The Nature of Preferences"
-next-url: "02-preferences.html"
+next-url: "05-preferences.html"
 ---
 
 # Problem Formulation

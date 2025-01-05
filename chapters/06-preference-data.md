@@ -1,3 +1,10 @@
+---
+prev-chapter: "The Nature of Preferences"
+prev-url: "05-preferences.html"
+next-chapter: "Reward Modeling"
+next-url: "07-reward-models.html"
+---
+
 # [Incomplete] Preference Data
 
 ## Collecting Preference Data

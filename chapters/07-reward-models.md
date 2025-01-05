@@ -1,3 +1,10 @@
+---
+prev-chapter: "Preference Data"
+prev-url: "06-preference-data.html"
+next-chapter: "Regularization"
+next-url: "08-regularization.html"
+---
+
 # Reward Modeling
 
 Reward models are core to the modern approach to RLHF.

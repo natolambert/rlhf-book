@@ -1,8 +1,8 @@
 ---
-prev-chapter: "Introduction"
-prev-url: "01-introduction.html"
-next-chapter: "Problem Formulation"
-next-url: "03-optimization.html"
+prev-chapter: "Problem Formulation"
+prev-url: "04-optimization.html"
+next-chapter: "Preference Data"
+next-url: "06-preference-data.html"
 ---
 
 # The Nature of Preferences

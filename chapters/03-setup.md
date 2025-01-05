@@ -1,3 +1,10 @@
+---
+prev-chapter: "Key Related Works"
+prev-url: "02-related-works.html"
+next-chapter: "Problem Formulation"
+next-url: "04-optimization.html"
+---
+
 # Definitions
 
 This chapter includes all the definitions, symbols, and operatings frequently used in the RLHF process.

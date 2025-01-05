@@ -1,8 +1,8 @@
 ---
 prev-chapter: "Home"
-prev-url: "www.rlhfbook.com"
-next-chapter: "The Nature of Preferences"
-next-url: "02-preferences.html"
+prev-url: "https://rlhfbook.com/"
+next-chapter: "Key Related Works"
+next-url: "02-related-works.html"
 ---
 
 # Introduction
