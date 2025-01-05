@@ -1,3 +1,10 @@
+---
+prev-chapter: "Instruction Tuning"
+prev-url: "09-instruction-tuning.html"
+next-chapter: "Policy Gradients"
+next-url: "11-policy-gradients.html"
+---
+
 # Rejection Sampling
 
 Rejection Sampling (RS) is a popular and simple baseline for performing preference fine-tuning. 

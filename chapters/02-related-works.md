@@ -1,3 +1,10 @@
+---
+prev-chapter: "Introduction"
+prev-url: "01-introduction.html"
+next-chapter: "Problem Setup"
+next-url: "03-setup.html"
+---
+
 # Key Related Works
 
 In this chapter we detail the key papers and projects that got the RLHF field to where it is today.

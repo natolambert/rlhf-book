@@ -1,3 +1,10 @@
+---
+prev-chapter: "Reward Modeling"
+prev-url: "07-reward-models.html"
+next-chapter: "Instruction Tuning"
+next-url: "09-instruction-tuning.html"
+---
+
 # Regularization
 
 Throughout the RLHF optimization, many regularization steps are used to prevent over-optimization of the reward model.
