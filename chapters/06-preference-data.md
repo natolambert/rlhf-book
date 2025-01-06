@@ -5,7 +5,7 @@ next-chapter: "Reward Modeling"
 next-url: "07-reward-models.html"
 ---
 
-# [Incomplete] Preference Data
+# Preference Data
 
 ## Collecting Preference Data
 
@@ -15,7 +15,35 @@ Given the sensitivity, processes that work and improve the models are extracted 
 
 ## Rankings vs. Ratings
 
+
+
+
 [@likert1932technique]
+
+For example, a 5 point Likert scale would look like the following:
+
+| A$>>$B | A$>$B | Tie | B$>$A | B$>>$A |
+|:------:|:-----:|:-----:|:-----:|:------:|
+| 1    | 2   | 3   | 4   | 5    |
+
+Table: An example 5-wise Likert scale between two responses, A and B. {#tbl:likert5}
+
+Some early RLHF for language modeling works uses an 8-step Likert scale with levels of preference between the two responses [@bai2022training]. 
+An even scale removes the possibility of ties:
+
+Here's a markdown table formatted as an 8-point Likert scale:
+
+| A$>>>$B |     |     | A$>$B | B$>$A  |     |     | B$>>>$A |
+|:-------:|:-----:|:-----:|:-----:|:------:|:-----:|:-----:|:-------:|
+| 1     | 2   | 3   | 4   | 5    | 6   | 7   | 8     |
+
+Table: An example 8-wise Likert scale between two responses, A and B. {#tbl:likert8}
+
+In this case [@bai2022training], and in other works, this information is still reduced to a binary signal for the training of a reward model.
+
+
+
+
 
 ### Sourcing and Contracts
 
@@ -30,7 +58,7 @@ Once a contract is settled the data buyer and data provider agree upon instructi
 
 An example interface is shown below from [@bai2022training]:
 
-![Example preference data collection interface.](images/anthropic-interface.pdf){#fig:preference-interface}
+![Example preference data collection interface.](images/anthropic-interface.png){#fig:preference-interface width=600px .center}
 
 Depending on the domains of interest in the data, timelines for when the data can be labeled or curated vary. High-demand areas like mathematical reasoning or coding must be locked into a schedule weeks out. Simple delays of data collection don’t always work — Scale AI et al. are managing their workforces like AI research labs manage the compute-intensive jobs on their clusters.
 
@@ -38,7 +66,7 @@ Once everything is agreed upon, the actual collection process is a high-stakes t
 
 The data is delivered in weekly batches with more data coming later in the contract. For example, when we bought preference data for on-policy models we were training at HuggingFace, we had a 6 week delivery period. The first weeks were for further calibration and the later weeks were when we hoped to most improve our model.
 
-![Overview of the multi-batch cycle for obtaining human preference data from a vendor.](images/pref-data-timeline.png){#fig:preferences}
+![Overview of the multi-batch cycle for obtaining human preference data from a vendor.](images/pref-data-timeline.png){#fig:preferences width=600px .center}
 
 The goal is that by week 4 or 5 we can see the data improving our model. This is something some frontier models have mentioned, such as the 14 stages in the Llama 2 data collection [@touvron2023llama], but it doesn’t always go well. At HuggingFace, trying to do this for the first time with human preferences, we didn’t have the RLHF preparedness to get meaningful bumps on our evaluations. The last weeks came and we were forced to continue to collect preference data generating from endpoints we weren’t confident in.
 
