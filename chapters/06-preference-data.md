@@ -42,7 +42,7 @@ Table: An example 8-wise Likert scale between two responses, A and B. {#tbl:like
 In this case [@bai2022training], and in other works, this information is still reduced to a binary signal for the training of a reward model.
 
 
-
+TODO example of thumbs up / down with synthetic data or KTO
 
 
 ### Sourcing and Contracts
