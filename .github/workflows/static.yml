@@ -49,6 +49,7 @@ jobs:
       - name: Clean build directory
         run: |
           rm -rf build
+          make clean
           mkdir -p build/html
 
       - name: Build book

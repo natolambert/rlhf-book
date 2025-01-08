@@ -30,25 +30,25 @@ class NavigationDropdown extends HTMLElement {
         <h3>Introductions</h3>
         <ol>
           <li><a href="https://rlhfbook.com/c/01-introduction.html">Introduction</a></li>
-          <li><a href="https://rlhfbook.com/c/02-preferences.html">What are preferences?</a></li>
-          <li><a href="https://rlhfbook.com/c/03-optimization.html">Optimization and RL</a></li>
-          <li><a href="https://rlhfbook.com/c/04-related-works.html">Seminal (Recent) Works</a></li>
+          <li><a href="https://rlhfbook.com/c/02-related-works.html">Seminal (Recent) Works</a></li>
+          <li><a href="https://rlhfbook.com/c/03-setup.html">Definitions</a></li>
         </ol>
       </div>
 
       <div class="section">
         <h3>Problem Setup</h3>
         <ol>
-          <li><a href="https://rlhfbook.com/c/05-setup.html">Definitions</a></li>
+          <li><a href="https://rlhfbook.com/c/04-optimization.html">Optimization and RL</a></li>
+          <li><a href="https://rlhfbook.com/c/05-preferences.html">What are preferences?</a></li>
           <li><a href="https://rlhfbook.com/c/06-preference-data.html">Preference Data</a></li>
-          <li><a href="https://rlhfbook.com/c/07-reward-models.html">Reward Modeling</a></li>
-          <li><a href="https://rlhfbook.com/c/08-regularization.html">Regularization</a></li>
         </ol>
       </div>
 
       <div class="section">
         <h3>Optimization</h3>
         <ol>
+          <li><a href="https://rlhfbook.com/c/07-reward-models.html">Reward Modeling</a></li>
+          <li><a href="https://rlhfbook.com/c/08-regularization.html">Regularization</a></li>
           <li><a href="https://rlhfbook.com/c/09-instruction-tuning.html">Instruction Tuning</a></li>
           <li><a href="https://rlhfbook.com/c/10-rejection-sampling.html">Rejection Sampling</a></li>
           <li><a href="https://rlhfbook.com/c/11-policy-gradients.html">Policy Gradients</a></li>
