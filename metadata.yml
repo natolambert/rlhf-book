@@ -1,14 +1,15 @@
 ---
-title: The Basics of Reinforcement Learning from Human Feedback
+title: A Little Bit of Reinforcement Learning from Human Feedback
+subtitle: A short introduction to RLHF and post-training focused on language models.
 biblio-title: Bibliography
 reference-section-title: Bibliography
 author: Nathan Lambert
-rights: MIT License
+rights: CC-BY-NC-SA-4.0
 lang: en-US
 mainlang: english
 otherlang: english
 tags: [rlhf, ebook, ai, ml]
-date: 5 January 2025
+date: 15 January 2025
 abstract: |
   Reinforcement learning from human feedback (RLHF) has become an important technical and storytelling tool to deploy the latest machine learning systems.
   In this book, we hope to give a gentle introduction to the core methods for people with some level of quantitative background.
