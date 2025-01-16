@@ -33,6 +33,7 @@ Over-optimization of a proxy reward is much more subtle (and linked to the curre
 
 The general notion captured by this reasoning follows from Goodhart's law, which is colloquially the notion that "When a measure becomes a target, it ceases to be a good measure." 
 This adage is derived from Goodhart's writing [@goodhart1984problems]:
+
 > Any observed statistical regularity will tend to collapse once pressure is placed upon it for control purposes.
 
 The insight here builds on the fact that we have optimizations we are probably incorrectly using ML losses as ground truths in these complex systems. 
@@ -54,8 +55,6 @@ This points to a fundamental question as to the limits of optimization the inten
 A potential solution is that *implicit* feedback will be measured from users of chatbots and models to tune performance.
 Implicit feedback is actions taken by the user, such as re-rolling an output, closing the tab, or writing an angry message that indicates the quality of the previous response. The challenge here, and with most optimization changes to RLHF, is that there's a strong risk of losing stability when making the reward function more specific. RL, as a strong optimizer, is increasingly likely to exploit the reward function when it is a smooth surface (and not just pairwise human values). The expected solution to this is that future RLHF will be trained with both pairwise preference data and additional steering loss functions. There are also a bunch of different loss functions that can be used to better handle pairwise data, such as Mallow's model [@lu2011learning] or Placket-Luce [@liu2019learning].
 
-Further reading: 
-
 ### Llama 2 and "too much RLHF"
 
 ### An aside on "undercooking" RLHF
@@ -63,9 +62,6 @@ Further reading:
 As training practices for language models have matured, there are also prominent cases where strong models do not have an amount of post-training that most users expect, resulting in models that are harder to use than their evaluation scores would suggest.
 
 TODO add references to minimax model? See tweets etc?
-
-### Related: Objective mismatch in model-based RL
-
 
 ## Quantitative over-optimization
 

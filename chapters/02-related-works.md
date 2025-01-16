@@ -47,6 +47,7 @@ Anthropic continued to use it extensively for early versions of Claude [@bai2022
 ## 2023 to Present: ChatGPT Eta
 
 The announcement of ChatGPT was very clear in the role of RLHF in its training [@openai2022chatgpt]:
+
 > We trained this model using Reinforcement Learning from Human Feedback (RLHF), using the same methods as InstructGPT⁠, but with slight differences in the data collection setup.
 
 Since then RLHF has been used extensively in leading language models. 
