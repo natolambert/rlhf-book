@@ -42,6 +42,30 @@ With this expected return, $J$, the gradient can be computed as follows, where $
 
 $$\theta \leftarrow \theta + \alpha \nabla_\theta J(\theta)$$
 
+The core implementation detail is how to compute said gradient.
+Schulman et al. 2015 provides an overview of the different ways that policy gradients can be computed [@schulman2015high].
+The goal is to *estimate* the exact gradient $g := \nabla_\theta \mathbb{E}[\sum_{t=0}^\infty r_t]$, of which, there are many forms similar to:
+
+$$ g = \mathbb{E}\Big[\sum_{t=0}^\infty \Psi_t \nabla_\theta \text{log} \pi_\theta(a_t|s_t) \Big], $$
+
+Where $\Psi_t$ can be the following:
+
+1. $\sum_{t=0}^{\infty} r_t$: total reward of the trajectory.
+2. $\sum_{t'=t}^{\infty} r_{t'}$: reward following action $a_t$.
+3. $\sum_{t'=t}^{\infty} r_{t'} - b(s_t)$: baselined version of previous formula.
+4. $Q^{\pi}(s_t, a_t)$: state-action value function.
+5. $A^{\pi}(s_t, a_t)$: advantage function.
+6. $r_t + V^{\pi}(s_{t+1}) - V^{\pi}(s_t)$: TD residual.
+
+The *baseline* is a value used to reduce variance of policy updates (more on this below).
+
+For language models, some of these concepts do not make as much sense.
+For example, we know that for a deterministic policy the value function is defined as $V(s) = \max_a Q(s,a)$ or for a stochastic policy as $V(s) = \mathbb{E}_{a \sim \pi(a|s)}[Q(s,a)]$.
+If we define $s+a$ as the continuation $a$ to the prompt $s$, then $Q(s, a) = V(s+a)$, which gives a different advantage trick:
+
+$$ A(s,a) = Q(s,a) - V(s) = V(s + a) - V(s) = r + \gamma V(s + a) - V(s)$$
+
+Which is a combination of the reward, the value of the prompt, and the discounted value of the entire utterance.
 
 ### Vanilla Policy Gradient
 
@@ -84,6 +108,10 @@ REINFORCE can be run without value network -- the value network is for the basel
 
 Note that for verifiable domains like reasoning, RLOO may not because it averages over outcomes to update parameters. 
 This reduces credit assignment to the batch level and will make it harder for the model to attribute outcomes to specific behaviors within one sample.
+
+### Group Relative Policy Optimization
+
+Introduced in DeepSeekMath [@shao2024deepseekmath], used in others e.g. DeepSeek-V3 [@liu2024deepseek]
 
 ## Computing Policy Gradients with a Language Model
 
