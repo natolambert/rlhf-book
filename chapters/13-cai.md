@@ -9,6 +9,13 @@ next-url: "14-reasoning.html"
 
 RL from AI Feedback (RLAIF) is a larger set of techniques for using AI to augment or generate feedback data, including pairwise preferences [@lee2023rlaif]  [@sharma2024critical] [@castricato2024suppressing].
 
+## Trade-offs
+
+1. Human data is high-noise and low-bias,
+2. Synthetic preference data is low-noise and high-bias,
+
+Results in many academic results showing how one can substitute AI preference data in RLHF workflows and achieve strong evaluation scores, but shows how the literature of RLHF is separated from industrial best practices.
+
 ## Constitutional AI
 
 ### Summary
