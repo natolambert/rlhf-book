@@ -42,6 +42,7 @@ $if(background-image)$
   \includegraphics[width=\paperwidth]{$background-image$}%
 }
 $endif$
+
 \usepackage{pgfpages}
 \setbeamertemplate{caption}[numbered]
 \setbeamertemplate{caption label separator}{: }
@@ -463,6 +464,7 @@ $include-before$
 
 $endfor$
 $if(toc)$
+\clearpage
 $if(toc-title)$
 \renewcommand*\contentsname{$toc-title$}
 $endif$
@@ -481,6 +483,7 @@ $endif$
 \setcounter{tocdepth}{$toc-depth$}
 \tableofcontents
 }
+\clearpage
 $endif$
 $endif$
 $if(lot)$

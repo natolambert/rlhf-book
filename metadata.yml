@@ -22,5 +22,13 @@ Filter preferences:
 linkReferences: true
 link-citations: true
 numbersections: true
+# add pages in pdf between chapters
+header-includes:
+  - |
+    ```{=latex}
+    % Add new page before chapters start
+    \pretocmd{\section}{\newpage}{}{}  
+    ```
+##################
 ---
 
