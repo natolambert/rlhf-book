@@ -35,6 +35,12 @@ $$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(x, y_w) - r_{\the
 Second, as in [@askell2021general] and other works:
 $$\mathcal{L}(\theta) = \log \left( 1 + e^{r_{\theta}(x, y_l)}  - e^{r_{\theta}(x, y_w)} \right)$$ {#eq:rewardmodeling2}
 
+## Architecture
+
+The most common way reward models are implemented is through an abstraction similar to Transformer's `AutoModelForSequenceClassification`, which appends a small linear head to the language model that performs classification between two outcomes -- chosen and rejected.
+At inference time, the model outputs the *probability that the piece of text is chosen* as a single logit from the model.
+
+Other implementation options exist, such as just taking a linear layer directly from the final embeddings, but they are less common in open tooling.
 
 ## Implementation Example
 
@@ -48,6 +54,8 @@ rewards_rejected = model(**inputs_rejected)
 
 loss = -nn.functional.logsigmoid(rewards_chosen - rewards_rejected).mean()
 ```
+
+Note, when training reward models, the most common practice is to train for only 1 epoch to avoid overfitting.
 
 ## Variants
 
@@ -72,26 +80,97 @@ The loss function becomes:
 $$\mathcal{L}(\theta) = - \frac{1}{(\frac{K}{2})} \mathbb{E}_{(x, y_w, y_l)\sim D} \log \left( \sigma \left( r_{\theta}(x, y_w) - r_{\theta}(x, y_l) \right) \right)$$ {#eq:rewardmodelinginstructgpt}
 
 
-### K-wise loss function
+### K-wise Loss Function
 
-Starling [@zhu2023principled] https://arxiv.org/abs/2301.11270
+There are many other formulations that can create suitable models of human preferences for RLHF.
+One such example, used in the popular, early RLHF'd models Starling 7B and 34B [@zhu2024starling], is a K-wise loss function based on the Plackett-Luce model [@liu2019learning].
+
+Following Zhu et al. 2023 formalizes the setup [@zhu2023principled], following as follows.
+With a prompt, or state, $s^i$, $K$ actions $(a_0^i, a_1^i, \cdots, a_{K-1}^i)$ are sampled from $P(a_0,\cdots,a_{K-1}|s^i)$.
+Then, labelers are used to rank preferences with $\sigma^i: [K] \mapsto [K]$ is a function representing action rankings, where $\sigma^i(0)$ is the most preferred action. This yields a preference model capturing the following:
+
+$$P(\sigma^i|s^i,a_0^i,a_1^i,\ldots,a_{K-1}^i) = \prod_{k=0}^{K-1} \frac{\exp(r_{\theta\star}(s^i,a_{\sigma^i(k)}^i))}{\sum_{j=k}^{K-1}\exp(r_{\theta\star}(s^i,a_{\sigma^i(j)}^i))}$$
+
+When $K = 2$, this reduces to the Bradley-Terry (BT) model for pairwise comparisons.
+Regardless, once trained, these models are used similarly to other reward models during RLHF training.
+
+## Outcome Reward Models
+
+The majority of *preference tuning* for language models and other AI systems is done with the Bradley Terry models discussed above.
+For reasoning heavy tasks, one can use an Outcome Reward Model (ORM).
+The training data for an ORM is constructed in a similar manner to standard preference tuning.
+Here, we have a problem statement or prompt, $x$ and two completions $y_1$ and $y_2$. 
+The inductive bias used here is that one completion should be a correct solution to the problem and one incorrect, resulting in $(y_c,y_{ic})$.
+
+The shape of the models used is very similar to a standard reward model, with a linear layer appended to a model that can output a single logit (in the case of an RM) -- with an ORM, the training objective that follows is slightly different [@cobbe2021training]:
+
+> [We] train verifiers with a joint objective where the model
+learns to label a model completion as correct or incorrect, in addition to the original language modeling objective. 
+> Architecturally, this means our verifiers
+are language models, with a small scalar head that outputs predictions on a per-token basis. 
+> We implement this scalar head as a single bias parameter and single gain parameter that operate on the logits outputted by the language model’s final unembedding layer.
+
+These models have continued in use, but are less supported in open-source RLHF tools. 
+For example, the same type of ORM was used in the seminal work *Let's Verify Step by Step* [@lightman2023let], but without the language modeling prediction piece of the loss.
+Then, the final loss is a cross entropy loss on every token predicting if the final answer is correct.
+
+## Process Reward Models
+
+Process Reward Models (PRMs), originally called Process-supervised Reward Models, are reward models trained to output scores at every *step* in a chain of thought reasoning process. 
+These differ from a standard RM that outputs a score only at an EOS token or a ORM that outputs a score at every token.
+Process Reward Models require supervision at the end of each reasoning step, and then are trained similarly where the tokens in the step are trained to their relevant target -- the target is the step in PRMs and the entire response for ORMs.
+
+Here's an example of how this per-step label can be packaged in a trainer, from HuggingFace's TRL [@vonwerra2022trl]:
+```
+# Get the ID of the separator token and add it to the completions
+separator_ids = tokenizer.encode(step_separator, add_special_tokens=False)
+completions_ids = [completion + separator_ids for completion in completions_ids]
+
+# Create the label 
+labels = [[-100] * (len(completion) - 1) + [label] for completion, label in zip(completions_ids, labels)]
+```
 
 ## Generative Reward Modeling
 
-[@mahan2024generative], [@zhang2024generative], [@lambert2023entangled], generative and classifer [@ankner2024critique]
+With the cost of preference data, a large research area emerged to use existing language models as a judge of human preferences or in other evaluation settings [@zheng2023judging].
+The core idea is to prompt a language model with instructions on how to judge, a prompt, and two completions (much as would be done with human labelers). 
+An example prompt, from one of the seminal works here for the chat evaluation MT-Bench [@zheng2023judging], follows:
 
-Related to LLM-as-a-judge and other evaluator models, which are very popular
+```
+[System]
+Please act as an impartial judge and evaluate the quality of the responses provided by two
+AI assistants to the user question displayed below. You should choose the assistant that
+follows the user’s instructions and answers the user’s question better. Your evaluation
+should consider factors such as the helpfulness, relevance, accuracy, depth, creativity,
+and level of detail of their responses. Begin your evaluation by comparing the two
+responses and provide a short explanation. Avoid any position biases and ensure that the
+order in which the responses were presented does not influence your decision. Do not allow
+the length of the responses to influence your evaluation. Do not favor certain names of
+the assistants. Be as objective as possible. After providing your explanation, output your
+final verdict by strictly following this format: "[[A]]" if assistant A is better, "[[B]]"
+if assistant B is better, and "[[C]]" for a tie.
+[User Question]
+{question}
+[The Start of Assistant A’s Answer]
+{answer_a}
+[The End of Assistant A’s Answer]
+[The Start of Assistant B’s Answer]
+{answer_b}
+[The End of Assistant B’s Answer]
+```
+
+Given the efficacy of LLM-as-a-judge for evaluation, spawning many other evaluations such as AlpacaEval [@dubois2024length], Arena-Hard [@li2024crowdsourced], and WildBench [@lin2024wildbench], many began using LLM-as-a-judge instead of reward models to create and use preference data.
+
+An entire field of study has emerged to study how to use so called "Generative Reward Models" [@mahan2024generative]
+[@zhang2024generative] [@ankner2024critique] (including models trained *specifically* to be effective judges [@kim2023prometheus]), but on RM evaluations they tend to be behind existing reward models, showing that reward modeling is an important technique for current RLHF.
 
 ## Further Reading
 
-reward modeling reading list imo
+The academic literature for reward modeling established itself in 2024. 
+The bulk of progress in reward modeling early on has been in establishing benchmarks and identifying behavior modes.
+The first RM benchmark, RewardBench, provided common infrastructure for testing reward models [@lambert2024rewardbench].
+Since then, RM evaluation has expanded to be similar to the types of evaluations available to general post-trained models, where some evaluations test the accuracy of prediction on domains with known true answers [@lambert2024rewardbench] or those more similar to "vibes" performed with LLM-as-a-judge or correlations to other benchmarks [@wen2024rethinking].
 
-RewardBench (biased, but gives a good overview): [@lambert2023entangled] [@zhou2024rmb]
+Examples of new benchmarks include multilingual reward bench (M-RewardBench) [@gureja2024m], RAG-RewardBench [@jin2024rag], RM-Bench [@zhou2024rmb], Preference Proxy Evaluations [@frick2024evaluate], and RewardMATH [@kim2024evaluating].
 
-New reward model training methods, with aspect-conditioned models [@wang2024interpretable], high quality human datasets [@wang2024helpsteer2] [@wang2024helpsteer2p], scaling [@adler2024nemotron], extensive experimentation [@touvron2023llama], debiasing data [@park2024offsetbias],
-
-Evaluations
-
-## Recommendations
-
-Strong tendency in the literature to train for only one epoch, otherwise it overfits
+To understand progress on *training* reward models, one can reference new reward model training methods, with aspect-conditioned models [@wang2024interpretable], high quality human datasets [@wang2024helpsteer2] [@wang2024helpsteer2p], scaling [@adler2024nemotron], extensive experimentation [@touvron2023llama], or debiasing data [@park2024offsetbias].
