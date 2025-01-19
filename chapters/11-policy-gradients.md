@@ -63,7 +63,7 @@ For language models, some of these concepts do not make as much sense.
 For example, we know that for a deterministic policy the value function is defined as $V(s) = \max_a Q(s,a)$ or for a stochastic policy as $V(s) = \mathbb{E}_{a \sim \pi(a|s)}[Q(s,a)]$.
 If we define $s+a$ as the continuation $a$ to the prompt $s$, then $Q(s, a) = V(s+a)$, which gives a different advantage trick:
 
-$$ A(s,a) = Q(s,a) - V(s) = V(s + a) - V(s) = r + \gamma V(s + a) - V(s)$$
+$$A(s,a) = Q(s,a) - V(s) = V(s + a) - V(s) = r + \gamma V(s + a) - V(s)$$
 
 Which is a combination of the reward, the value of the prompt, and the discounted value of the entire utterance.
 

@@ -70,7 +70,7 @@ class NavigationDropdown extends HTMLElement {
         <h3>Open Questions (TBD)</h3>
         <ol>
           <li><a href="https://rlhfbook.com/c/17-over-optimization.html">Over-optimization</a></li>
-          <li class="inactive">Style</li>
+          <li><a href="https://rlhfbook.com/c/18-style.html">Style and Information</a></li>
         </ol>
       </div>
     </nav>
