@@ -110,6 +110,8 @@ learns to label a model completion as correct or incorrect, in addition to the o
 are language models, with a small scalar head that outputs predictions on a per-token basis. 
 > We implement this scalar head as a single bias parameter and single gain parameter that operate on the logits outputted by the language model’s final unembedding layer.
 
+To translate, this is implemented as as a language modeling head that can predict two classes per token (1 for correct, 0 for incorrect), rather than a classification head of a traditional RM that outputs one token for the entire sequence.
+
 These models have continued in use, but are less supported in open-source RLHF tools. 
 For example, the same type of ORM was used in the seminal work *Let's Verify Step by Step* [@lightman2023let], but without the language modeling prediction piece of the loss.
 Then, the final loss is a cross entropy loss on every token predicting if the final answer is correct.
@@ -129,6 +131,8 @@ completions_ids = [completion + separator_ids for completion in completions_ids]
 # Create the label 
 labels = [[-100] * (len(completion) - 1) + [label] for completion, label in zip(completions_ids, labels)]
 ```
+
+TODO comment on how they are often trained with LM heads and have 3 classes, +, neutral, -
 
 ## Generative Reward Modeling
 

@@ -138,3 +138,8 @@ In this view, a large part of the difference between algorithms like PPO (which 
 
 In PPO, the objective that handles capping the step-size of the update is known as the [surrogate objective](https://huggingface.co/blog/deep-rl-ppo#introducing-the-clipped-surrogate-objective). 
 To monitor how much the PPO regularization is impacting updates in RLHF, one can look at the clip fraction variable in many popular implementations, which is the percentage of samples in the batch where the gradients are clipped by this regularizer in PPO. These gradients are *reduced* to a maximum value.
+
+## Training Value Networks
+
+TODO BCELoss loss because continuous between 0 and 1.
+If any range, they could be a MSELoss, I think.
