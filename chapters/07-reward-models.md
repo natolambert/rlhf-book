@@ -128,12 +128,12 @@ Related to LLM-as-a-judge and other evaluator models, which are very popular
 
 The academic literature for reward modeling established itself in 2024. 
 The bulk of progress in reward modeling early on has been in establishing benchmarks and identifying behavior modes.
-The first RM benchmark, RewardBench, provided common infrastructure for testing reward models
-RewardBench (biased, but gives a good overview): [@lambert2023entangled] [@zhou2024rmb]
+The first RM benchmark, RewardBench, provided common infrastructure for testing reward models [@lambert2024rewardbench].
+Since then, RM evaluation has expanded to be similar to the types of evaluations available to general post-trained models, where some evaluations test the accuracy of prediction on domains with known true answers [@lambert2024rewardbench] or those more similar to "vibes" performed with LLM-as-a-judge or correlations to other benchmarks [@wen2024rethinking].
 
-New reward model training methods, with aspect-conditioned models [@wang2024interpretable], high quality human datasets [@wang2024helpsteer2] [@wang2024helpsteer2p], scaling [@adler2024nemotron], extensive experimentation [@touvron2023llama], debiasing data [@park2024offsetbias],
+Examples of new benchmarks include multilingual reward bench (M-RewardBench) [@gureja2024m], RAG-RewardBench [@jin2024rag], RM-Bench [@zhou2024rmb], Preference Proxy Evaluations [@frick2024evaluate], and RewardMATH [@kim2024evaluating].
 
-Evaluations
+To understand progress on *training* reward models, one can reference new reward model training methods, with aspect-conditioned models [@wang2024interpretable], high quality human datasets [@wang2024helpsteer2] [@wang2024helpsteer2p], scaling [@adler2024nemotron], extensive experimentation [@touvron2023llama], or debiasing data [@park2024offsetbias].
 
 ## Recommendations
 
