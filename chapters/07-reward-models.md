@@ -35,6 +35,12 @@ $$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(x, y_w) - r_{\the
 Second, as in [@askell2021general] and other works:
 $$\mathcal{L}(\theta) = \log \left( 1 + e^{r_{\theta}(x, y_l)}  - e^{r_{\theta}(x, y_w)} \right)$$ {#eq:rewardmodeling2}
 
+## Architecture
+
+The most common way reward models are implemented is through an abstraction similar to Transformer's `AutoModelForSequenceClassification`, which appends a small linear head to the language model that performs classification between two outcomes -- chosen and rejected.
+At inference time, the model outputs the *probability that the piece of text is chosen* as a single logit from the model.
+
+Other implementation options exist, such as just taking a linear layer directly from the final embeddings, but they are less common in open tooling.
 
 ## Implementation Example
 
@@ -72,9 +78,45 @@ The loss function becomes:
 $$\mathcal{L}(\theta) = - \frac{1}{(\frac{K}{2})} \mathbb{E}_{(x, y_w, y_l)\sim D} \log \left( \sigma \left( r_{\theta}(x, y_w) - r_{\theta}(x, y_l) \right) \right)$$ {#eq:rewardmodelinginstructgpt}
 
 
-### K-wise loss function
+### K-wise Loss Function
 
 Starling [@zhu2023principled] https://arxiv.org/abs/2301.11270
+
+## Outcome Reward Models
+
+The majority of *preference tuning* for language models and other AI systems is done with the Bradley Terry models discussed above.
+For reasoning heavy tasks, one can use an Outcome Reward Model (ORM).
+The training data for an ORM is constructed in a similar manner to standard preference tuning.
+Here, we have a problem statement or prompt, $x$ and two completions $y_1$ and $y_2$. 
+The inductive bias used here is that one completion should be a correct solution to the problem and one incorrect, resulting in $(y_c,y_{ic})$.
+
+The shape of the models used is very similar to a standard reward model, with a linear layer appended to a model that can output a single logit (in the case of an RM) -- with an ORM, the training objective that follows is slightly different [@cobbe2021training]:
+
+> [We] train verifiers with a joint objective where the model
+learns to label a model completion as correct or incorrect, in addition to the original language modeling objective. 
+> Architecturally, this means our verifiers
+are language models, with a small scalar head that outputs predictions on a per-token basis. 
+> We implement this scalar head as a single bias parameter and single gain parameter that operate on the logits outputted by the language model’s final unembedding layer.
+
+These models have continued in use, but are less supported in open-source RLHF tools. 
+For example, the same type of ORM was used in the seminal work *Let's Verify Step by Step* [@lightman2023let], but without the language modeling prediction piece of the loss.
+Then, the final loss is a cross entropy loss on every token predicting if the final answer is correct.
+
+## Process Reward Models
+
+Process Reward Models (PRMs), originally called Process-supervised Reward Models, are reward models trained to output scores at every *step* in a chain of thought reasoning process. 
+These differ from a standard RM that outputs a score only at an EOS token or a ORM that outputs a score at every token.
+Process Reward Models require supervision at the end of each reasoning step, and then are trained similarly where the tokens in the step are trained to their relevant target -- the target is the step in PRMs and the entire response for ORMs.
+
+Here's an example of how this per-step label can be packaged in a trainer, from HuggingFace's TRL [@vonwerra2022trl]:
+```
+# Get the ID of the separator token and add it to the completions
+separator_ids = tokenizer.encode(step_separator, add_special_tokens=False)
+completions_ids = [completion + separator_ids for completion in completions_ids]
+
+# Create the label 
+labels = [[-100] * (len(completion) - 1) + [label] for completion, label in zip(completions_ids, labels)]
+```
 
 ## Generative Reward Modeling
 
@@ -84,8 +126,9 @@ Related to LLM-as-a-judge and other evaluator models, which are very popular
 
 ## Further Reading
 
-reward modeling reading list imo
-
+The academic literature for reward modeling established itself in 2024. 
+The bulk of progress in reward modeling early on has been in establishing benchmarks and identifying behavior modes.
+The first RM benchmark, RewardBench, provided common infrastructure for testing reward models
 RewardBench (biased, but gives a good overview): [@lambert2023entangled] [@zhou2024rmb]
 
 New reward model training methods, with aspect-conditioned models [@wang2024interpretable], high quality human datasets [@wang2024helpsteer2] [@wang2024helpsteer2p], scaling [@adler2024nemotron], extensive experimentation [@touvron2023llama], debiasing data [@park2024offsetbias],
