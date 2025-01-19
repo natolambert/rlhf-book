@@ -55,6 +55,8 @@ rewards_rejected = model(**inputs_rejected)
 loss = -nn.functional.logsigmoid(rewards_chosen - rewards_rejected).mean()
 ```
 
+Note, when training reward models, the most common practice is to train for only 1 epoch to avoid overfitting.
+
 ## Variants
 
 Reward modeling is a relatively under-explored area of RLHF.
@@ -80,7 +82,17 @@ $$\mathcal{L}(\theta) = - \frac{1}{(\frac{K}{2})} \mathbb{E}_{(x, y_w, y_l)\sim 
 
 ### K-wise Loss Function
 
-Starling [@zhu2023principled] https://arxiv.org/abs/2301.11270
+There are many other formulations that can create suitable models of human preferences for RLHF.
+One such example, used in the popular, early RLHF'd models Starling 7B and 34B [@zhu2024starling], is a K-wise loss function based on the Plackett-Luce model [@liu2019learning].
+
+Following Zhu et al. 2023 formalizes the setup [@zhu2023principled], following as follows.
+With a prompt, or state, $s^i$, $K$ actions $(a_0^i, a_1^i, \cdots, a_{K-1}^i)$ are sampled from $P(a_0,\cdots,a_{K-1}|s^i)$.
+Then, labelers are used to rank preferences with $\sigma^i: [K] \mapsto [K]$ is a function representing action rankings, where $\sigma^i(0)$ is the most preferred action. This yields a preference model capturing the following:
+
+$$P(\sigma^i|s^i,a_0^i,a_1^i,\ldots,a_{K-1}^i) = \prod_{k=0}^{K-1} \frac{\exp(r_{\theta\star}(s^i,a_{\sigma^i(k)}^i))}{\sum_{j=k}^{K-1}\exp(r_{\theta\star}(s^i,a_{\sigma^i(j)}^i))}$$
+
+When $K = 2$, this reduces to the Bradley-Terry (BT) model for pairwise comparisons.
+Regardless, once trained, these models are used similarly to other reward models during RLHF training.
 
 ## Outcome Reward Models
 
@@ -120,9 +132,37 @@ labels = [[-100] * (len(completion) - 1) + [label] for completion, label in zip(
 
 ## Generative Reward Modeling
 
-[@mahan2024generative], [@zhang2024generative], [@lambert2023entangled], generative and classifer [@ankner2024critique]
+With the cost of preference data, a large research area emerged to use existing language models as a judge of human preferences or in other evaluation settings [@zheng2023judging].
+The core idea is to prompt a language model with instructions on how to judge, a prompt, and two completions (much as would be done with human labelers). 
+An example prompt, from one of the seminal works here for the chat evaluation MT-Bench [@zheng2023judging], follows:
 
-Related to LLM-as-a-judge and other evaluator models, which are very popular
+```
+[System]
+Please act as an impartial judge and evaluate the quality of the responses provided by two
+AI assistants to the user question displayed below. You should choose the assistant that
+follows the user’s instructions and answers the user’s question better. Your evaluation
+should consider factors such as the helpfulness, relevance, accuracy, depth, creativity,
+and level of detail of their responses. Begin your evaluation by comparing the two
+responses and provide a short explanation. Avoid any position biases and ensure that the
+order in which the responses were presented does not influence your decision. Do not allow
+the length of the responses to influence your evaluation. Do not favor certain names of
+the assistants. Be as objective as possible. After providing your explanation, output your
+final verdict by strictly following this format: "[[A]]" if assistant A is better, "[[B]]"
+if assistant B is better, and "[[C]]" for a tie.
+[User Question]
+{question}
+[The Start of Assistant A’s Answer]
+{answer_a}
+[The End of Assistant A’s Answer]
+[The Start of Assistant B’s Answer]
+{answer_b}
+[The End of Assistant B’s Answer]
+```
+
+Given the efficacy of LLM-as-a-judge for evaluation, spawning many other evaluations such as AlpacaEval [@dubois2024length], Arena-Hard [@li2024crowdsourced], and WildBench [@lin2024wildbench], many began using LLM-as-a-judge instead of reward models to create and use preference data.
+
+An entire field of study has emerged to study how to use so called "Generative Reward Models" [@mahan2024generative]
+[@zhang2024generative] [@ankner2024critique] (including models trained *specifically* to be effective judges [@kim2023prometheus]), but on RM evaluations they tend to be behind existing reward models, showing that reward modeling is an important technique for current RLHF.
 
 ## Further Reading
 
@@ -134,7 +174,3 @@ Since then, RM evaluation has expanded to be similar to the types of evaluations
 Examples of new benchmarks include multilingual reward bench (M-RewardBench) [@gureja2024m], RAG-RewardBench [@jin2024rag], RM-Bench [@zhou2024rmb], Preference Proxy Evaluations [@frick2024evaluate], and RewardMATH [@kim2024evaluating].
 
 To understand progress on *training* reward models, one can reference new reward model training methods, with aspect-conditioned models [@wang2024interpretable], high quality human datasets [@wang2024helpsteer2] [@wang2024helpsteer2p], scaling [@adler2024nemotron], extensive experimentation [@touvron2023llama], or debiasing data [@park2024offsetbias].
-
-## Recommendations
-
-Strong tendency in the literature to train for only one epoch, otherwise it overfits
