@@ -111,7 +111,24 @@ This reduces credit assignment to the batch level and will make it harder for th
 
 ### Group Relative Policy Optimization
 
-Introduced in DeepSeekMath [@shao2024deepseekmath], used in others e.g. DeepSeek-V3 [@liu2024deepseek]
+Group Relative Policy Optimization (GRPO) is introduced in DeepSeekMath [@shao2024deepseekmath], and used in other DeepSeek works, e.g. DeepSeek-V3 [@liu2024deepseek] and DeepSeek-R1 [TODOCITE].
+GRPO can be viewed as PPO-inspired algorithm with a very similar surrogate loss, but it avoids learning a value function with another copy of the original policy language model (or another checkpoint for initialization). 
+This brings two posited benefits:
+
+1. Avoiding the challenge of learning a value function from a LM backbone, where research hasn't established best practices.
+2. Saves memory by not needing to keep another set of model weights in memory.
+
+GRPO does this by simplifying the value estimation and assigning the same value to every token in the episode (i.e. in the completion to a prompt, each token gets assigned the same value rather than discounted rewards in a standard value function) by estimating the advantage or baseline.
+The estimate is done by collecting multiple completions ($a_i$) and rewards ($r_i$), i.e. a Monte Carlo estimate, from the same initial state / prompt ($s$).
+
+To state this formally, the GRPO objective is very similar to the PPO objective above:
+
+$$J(\theta) = \frac{1}{G}\sum_{i=1}^G \left(\min\left(\frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}A_i, \text{clip}\left(\frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}, 1-\varepsilon, 1+\varepsilon\right)A_i\right) - \beta D_{KL}(\pi_\theta_||\pi_{ref})\right).$$
+
+With the advantage computation for the completion index $i$:
+
+$$A_i = \frac{r_i - \text{mean}({r_1, r_2, \cdots, r_G})}{\text{std}({r_1, r_2, \cdots, r_G})}. \quad (3)$$
+
 
 ## Computing Policy Gradients with a Language Model
 
