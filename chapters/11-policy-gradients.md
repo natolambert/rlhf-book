@@ -102,6 +102,10 @@ REINFORCE can be run without value network -- the value network is for the basel
 
 ### Proximal Policy Optimization
 
+Proximal Policy Optimization (PPO) [@schulman2017proximal] is one of the most important algorithms used in X Y Z blah blah TODO.
+
+For now, see: https://spinningup.openai.com/en/latest/algorithms/ppo.html
+
 ### REINFORCE Leave One Out (RLOO)
 
 [@huang2024putting], [@ahmadian2024back]
