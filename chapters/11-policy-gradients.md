@@ -63,7 +63,7 @@ For language models, some of these concepts do not make as much sense.
 For example, we know that for a deterministic policy the value function is defined as $V(s) = \max_a Q(s,a)$ or for a stochastic policy as $V(s) = \mathbb{E}_{a \sim \pi(a|s)}[Q(s,a)]$.
 If we define $s+a$ as the continuation $a$ to the prompt $s$, then $Q(s, a) = V(s+a)$, which gives a different advantage trick:
 
-$$ A(s,a) = Q(s,a) - V(s) = V(s + a) - V(s) = r + \gamma V(s + a) - V(s)$$
+$$A(s,a) = Q(s,a) - V(s) = V(s + a) - V(s) = r + \gamma V(s + a) - V(s)$$
 
 Which is a combination of the reward, the value of the prompt, and the discounted value of the entire utterance.
 
@@ -102,6 +102,10 @@ REINFORCE can be run without value network -- the value network is for the basel
 
 ### Proximal Policy Optimization
 
+Proximal Policy Optimization (PPO) [@schulman2017proximal] is one of the most important algorithms used in X Y Z blah blah TODO.
+
+For now, see: https://spinningup.openai.com/en/latest/algorithms/ppo.html
+
 ### REINFORCE Leave One Out (RLOO)
 
 [@huang2024putting], [@ahmadian2024back]
@@ -111,7 +115,24 @@ This reduces credit assignment to the batch level and will make it harder for th
 
 ### Group Relative Policy Optimization
 
-Introduced in DeepSeekMath [@shao2024deepseekmath], used in others e.g. DeepSeek-V3 [@liu2024deepseek]
+Group Relative Policy Optimization (GRPO) is introduced in DeepSeekMath [@shao2024deepseekmath], and used in other DeepSeek works, e.g. DeepSeek-V3 [@liu2024deepseek] and DeepSeek-R1 [TODOCITE].
+GRPO can be viewed as PPO-inspired algorithm with a very similar surrogate loss, but it avoids learning a value function with another copy of the original policy language model (or another checkpoint for initialization). 
+This brings two posited benefits:
+
+1. Avoiding the challenge of learning a value function from a LM backbone, where research hasn't established best practices.
+2. Saves memory by not needing to keep another set of model weights in memory.
+
+GRPO does this by simplifying the value estimation and assigning the same value to every token in the episode (i.e. in the completion to a prompt, each token gets assigned the same value rather than discounted rewards in a standard value function) by estimating the advantage or baseline.
+The estimate is done by collecting multiple completions ($a_i$) and rewards ($r_i$), i.e. a Monte Carlo estimate, from the same initial state / prompt ($s$).
+
+To state this formally, the GRPO objective is very similar to the PPO objective above:
+
+$$J(\theta) = \frac{1}{G}\sum_{i=1}^G \left(\min\left(\frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}A_i, \text{clip} \left( \frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}, 1-\varepsilon, 1+\varepsilon \right) A_i \right) - \beta D_{KL}(\pi_\theta||\pi_{ref})\right).$$
+
+With the advantage computation for the completion index $i$:
+
+$$A_i = \frac{r_i - \text{mean}({r_1, r_2, \cdots, r_G})}{\text{std}({r_1, r_2, \cdots, r_G})}. \quad (3)$$
+
 
 ## Computing Policy Gradients with a Language Model
 
@@ -138,3 +159,8 @@ In this view, a large part of the difference between algorithms like PPO (which 
 
 In PPO, the objective that handles capping the step-size of the update is known as the [surrogate objective](https://huggingface.co/blog/deep-rl-ppo#introducing-the-clipped-surrogate-objective). 
 To monitor how much the PPO regularization is impacting updates in RLHF, one can look at the clip fraction variable in many popular implementations, which is the percentage of samples in the batch where the gradients are clipped by this regularizer in PPO. These gradients are *reduced* to a maximum value.
+
+## Training Value Networks
+
+TODO BCELoss loss because continuous between 0 and 1.
+If any range, they could be a MSELoss, I think.

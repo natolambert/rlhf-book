@@ -1,8 +1,8 @@
 ---
 prev-chapter: ""
 prev-url: ""
-next-chapter: ""
-next-url: ""
+next-chapter: "Style and Information"
+next-url: "18-style.html"
 ---
 
 # Over Optimization

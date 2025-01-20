@@ -76,12 +76,6 @@ This experience, especially relative to the simplicity of synthetic data, makes 
 
 Note that this section *does not* mirror the experience for buying human-written instruction data, where the process is less of a time crunch.
 
-## Synthetic Preferences and LLM-as-a-judge
+## Are the Preferences Expressed in the Models?
 
-TODO
-
-### Example Prompts
-
-TODO Cite MT Bench [@zheng2023judging],[@huang2024empirical], including specialized models for LLM as a judge [@kim2023prometheus]
-
-> Please act as an impartial judge and evaluate the quality of the responses provided by two AI assistants to the user question displayed below. You should choose the assistant that follows the user's instructions and answers the user's question better. Your evaluation should consider factors such as the helpfulness, relevance, accuracy, depth, creativity, and level of detail of their responses. Begin your evaluation by comparing the two responses and provide a short explanation. Avoid any position biases and ensure that the order in which the responses were presented does not influence your decision. Do not allow the length of the responses to influence your evaluation. Do not favor certain names of the assistants. Be as objective as possible. After providing your explanation, output your final verdict by strictly following this format: "[[A]]" if assistant A is better, "[[B]]" if assistant B is better.
+Make it clear that we don't know if the goals of collection are achieved.
