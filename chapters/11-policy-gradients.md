@@ -139,9 +139,6 @@ $$A_i = \frac{r_i - \text{mean}({r_1, r_2, \cdots, r_G})}{\text{std}({r_1, r_2, 
 In this case, GRPO computes the advantage as the sum of the normalized rewards for the following reasoning steps.
 To do so, the rewards are accumulated with additional tracking of a reasoning index $j$, and then computed step wise as TODO, ref paper
 
-#### Implementing GRPO
-
-
 ## Implementation
 
 - Only score a response with a reward model with the `eos_token` is generated, otherwise the response is truncated.
