@@ -82,22 +82,6 @@ $$\nabla_\theta J(\pi_\theta) = \mathbb{E}_\tau \left[ \sum_{t=0}^T \nabla_\thet
 
 TODO cite further reading
 
-#### Implementing PG
-
-A simple implementation of policy gradient, using advantages to estimate the gradient to prepare for advanced algorithms such as PPO and GRPO follows:
-```
-pg_loss = -advantages * ratio
-```
-Ratio here is the logratio of the new policy model probabilities relative to the reference model.
-
-In order to understand this equation it is good to understand different cases that can fall within a batch of updates. 
-Remember that we want the loss to *decrease* as the model gets better at the task.
-
-Case 1: Positive advantage, so the action was better than the expected value of the state. We want to reinforce this. In this case, the model will make this more likely with the negative sign. To do so it'll increase the logratio. A positive logratio, or sum of log probabilties of the tokens, means that the model is more likely to generate those tokens.
-
-Case 2: Negative advantage, so the action was worse than the expected value of the state. This follows very similarly. Here, the loss will be positive if the new model was more likely, so the model will try to make it so the policy parameters make this completion less likely.
-
-Case 3: Zero advantage, so no update is needed. The loss is zero, don't change the policy model.
 
 
 ### Reinforce
@@ -124,10 +108,70 @@ Proximal Policy Optimization (PPO) [@schulman2017proximal] is one of the most im
 
 For now, see: https://spinningup.openai.com/en/latest/algorithms/ppo.html
 
-#### PPO Implementation
+### REINFORCE Leave One Out (RLOO)
+
+[@huang2024putting], [@ahmadian2024back]
+
+Note that for verifiable domains like reasoning, RLOO may not because it averages over outcomes to update parameters. 
+This reduces credit assignment to the batch level and will make it harder for the model to attribute outcomes to specific behaviors within one sample.
+
+### Group Relative Policy Optimization
+
+Group Relative Policy Optimization (GRPO) is introduced in DeepSeekMath [@shao2024deepseekmath], and used in other DeepSeek works, e.g. DeepSeek-V3 [@liu2024deepseek] and DeepSeek-R1 [TODOCITE].
+GRPO can be viewed as PPO-inspired algorithm with a very similar surrogate loss, but it avoids learning a value function with another copy of the original policy language model (or another checkpoint for initialization). 
+This brings two posited benefits:
+
+1. Avoiding the challenge of learning a value function from a LM backbone, where research hasn't established best practices.
+2. Saves memory by not needing to keep another set of model weights in memory.
+
+GRPO does this by simplifying the value estimation and assigning the same value to every token in the episode (i.e. in the completion to a prompt, each token gets assigned the same value rather than discounted rewards in a standard value function) by estimating the advantage or baseline.
+The estimate is done by collecting multiple completions ($a_i$) and rewards ($r_i$), i.e. a Monte Carlo estimate, from the same initial state / prompt ($s$).
+
+To state this formally, the GRPO objective is very similar to the PPO objective above:
+
+$$J(\theta) = \frac{1}{G}\sum_{i=1}^G \left(\min\left(\frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}A_i, \text{clip} \left( \frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}, 1-\varepsilon, 1+\varepsilon \right) A_i \right) - \beta D_{KL}(\pi_\theta||\pi_{ref})\right).$$
+
+With the advantage computation for the completion index $i$:
+
+$$A_i = \frac{r_i - \text{mean}({r_1, r_2, \cdots, r_G})}{\text{std}({r_1, r_2, \cdots, r_G})}. \quad (3)$$ {#eq:GRPO_ADV}
+
+@eq:GRPO_ADV is the implementation of GRPO when working with outcome supervision (either a standard reward model or a single verifiable reward) and a different implementation is needed with process supervision.
+In this case, GRPO computes the advantage as the sum of the normalized rewards for the following reasoning steps.
+To do so, the rewards are accumulated with additional tracking of a reasoning index $j$, and then computed step wise as $A_i = \frac{r_i - \text{mean}({r_1, r_2, \cdots, r_G})}{\text{std}({r_1, r_2, \cdots, r_G})}. \quad (3)$
+
+#### Implementing GRPO
+
+
+## Implementation
+
+- Only score a response with a reward model with the `eos_token` is generated, otherwise the response is truncated.
+
+TODO. Cite:
+https://spinningup.openai.com/en/latest/spinningup/rl_intro3.html#
+
+https://lilianweng.github.io/posts/2018-04-08-policy-gradient/
+
+### Policy Gradient
+
+A simple implementation of policy gradient, using advantages to estimate the gradient to prepare for advanced algorithms such as PPO and GRPO follows:
+```
+pg_loss = -advantages * ratio
+```
+Ratio here is the logratio of the new policy model probabilities relative to the reference model.
+
+In order to understand this equation it is good to understand different cases that can fall within a batch of updates. 
+Remember that we want the loss to *decrease* as the model gets better at the task.
+
+Case 1: Positive advantage, so the action was better than the expected value of the state. We want to reinforce this. In this case, the model will make this more likely with the negative sign. To do so it'll increase the logratio. A positive logratio, or sum of log probabilties of the tokens, means that the model is more likely to generate those tokens.
+
+Case 2: Negative advantage, so the action was worse than the expected value of the state. This follows very similarly. Here, the loss will be positive if the new model was more likely, so the model will try to make it so the policy parameters make this completion less likely.
+
+Case 3: Zero advantage, so no update is needed. The loss is zero, don't change the policy model.
+
+### Proximal Policy Optimization
 
 There are many, many implementations of PPO available. 
-The core *loss* compuation is shown below. 
+The core *loss* computation is shown below. 
 Crucial to stable performance is also the *value* computation, where multiple options exist (including multiple options for the *value model* loss).
 
 
@@ -195,44 +239,13 @@ Finally, the max of two is taken as mentioned above, in order to take the more c
 
 For PPO, all of this happens *while* learning a value function, which opens more complexity, but this is the core logic for the parameter update.
 
-### REINFORCE Leave One Out (RLOO)
-
-[@huang2024putting], [@ahmadian2024back]
-
-Note that for verifiable domains like reasoning, RLOO may not because it averages over outcomes to update parameters. 
-This reduces credit assignment to the batch level and will make it harder for the model to attribute outcomes to specific behaviors within one sample.
-
 ### Group Relative Policy Optimization
-
-Group Relative Policy Optimization (GRPO) is introduced in DeepSeekMath [@shao2024deepseekmath], and used in other DeepSeek works, e.g. DeepSeek-V3 [@liu2024deepseek] and DeepSeek-R1 [TODOCITE].
-GRPO can be viewed as PPO-inspired algorithm with a very similar surrogate loss, but it avoids learning a value function with another copy of the original policy language model (or another checkpoint for initialization). 
-This brings two posited benefits:
-
-1. Avoiding the challenge of learning a value function from a LM backbone, where research hasn't established best practices.
-2. Saves memory by not needing to keep another set of model weights in memory.
-
-GRPO does this by simplifying the value estimation and assigning the same value to every token in the episode (i.e. in the completion to a prompt, each token gets assigned the same value rather than discounted rewards in a standard value function) by estimating the advantage or baseline.
-The estimate is done by collecting multiple completions ($a_i$) and rewards ($r_i$), i.e. a Monte Carlo estimate, from the same initial state / prompt ($s$).
-
-To state this formally, the GRPO objective is very similar to the PPO objective above:
-
-$$J(\theta) = \frac{1}{G}\sum_{i=1}^G \left(\min\left(\frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}A_i, \text{clip} \left( \frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}, 1-\varepsilon, 1+\varepsilon \right) A_i \right) - \beta D_{KL}(\pi_\theta||\pi_{ref})\right).$$
-
-With the advantage computation for the completion index $i$:
-
-$$A_i = \frac{r_i - \text{mean}({r_1, r_2, \cdots, r_G})}{\text{std}({r_1, r_2, \cdots, r_G})}. \quad (3)$$ {#eq:GRPO_ADV}
-
-@eq:GRPO_ADV is the implementation of GRPO when working with outcome supervision (either a standard reward model or a single verifiable reward) and a different implementation is needed with process supervision.
-In this case, GRPO computes the advantage as the sum of the normalized rewards for the following reasoning steps.
-To do so, the rewards are accumulated with additional tracking of a reasoning index $j$, and then computed step wise as $A_i = \frac{r_i - \text{mean}({r_1, r_2, \cdots, r_G})}{\text{std}({r_1, r_2, \cdots, r_G})}. \quad (3)$
-
-#### Implementing GRPO
 
 The DeepSeekMath paper details some implementation details of GRPO that differ from PPO [@shao2024deepseekmath], especially if comparing to a standard application of PPO from Deep RL rather than language models.
 For example, the KL penalty within the RLHF optimization (recall the KL penalty is also used when training reasoning models on verifiable rewards without a reward model) is applied directly in the loss update rather to the reward function.
-Where the standard KL penalty application for RLHF is applied as $r=r_\theta + \Beta D_{KL}$, the GRPO implementation is along the lines of:
+Where the standard KL penalty application for RLHF is applied as $r=r_\theta + \beta D_{KL}$, the GRPO implementation is along the lines of:
 
-$$ L = L_{\text{policy gradient}} - \Beta * D_KL $$
+$$ L = L_{\text{policy gradient}} - \beta * D_{KL} $$
 
 Though, there are multiple ways to implement this.
 Traditionally, the KL distance is computed with respect to each token in the completion to a prompt $s$.
@@ -286,18 +299,8 @@ with torch.no_grad():
 
 For more details on how to interpret this code, see the PPO section above.
 
-## Computing Policy Gradients with a Language Model
 
-## Implementation Tricks
-
-- Only score a response with a reward model with the `eos_token` is generated, otherwise the response is truncated.
-
-TODO. Cite:
-https://spinningup.openai.com/en/latest/spinningup/rl_intro3.html#
-
-https://lilianweng.github.io/posts/2018-04-08-policy-gradient/
-
-### KL Controllers
+## KL Controllers
 
 TODO: adaptive vs static KL control 
 
