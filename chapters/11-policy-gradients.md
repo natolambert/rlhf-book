@@ -173,7 +173,8 @@ There are many, many implementations of PPO available.
 The core *loss* computation is shown below. 
 Crucial to stable performance is also the *value* computation, where multiple options exist (including multiple options for the *value model* loss).
 
-
+Note that the reference policy (or old logprobs) here are from the time the generations were sampled and not necessarily the reference policy. 
+The reference policy is only used for the KL distance constraint/penalty.
 
 ```
 # B: Batch Size, L: Sequence Length, G: Num of Generations
@@ -234,9 +235,21 @@ Though, PPO is controlling the update size to not be too big. Because losses can
 We know that if we *do not* constrain the loss, the policy gradient algorithm will update the weights exactly to the new probability distribution. 
 Hence, by clamping the logratio's, PPO is limiting the distance that the update can move the policy parameters.
 
-Finally, the max of two is taken as mentioned above, in order to take the more conversative loss update.
+Finally, the max of two is taken as mentioned above, in order to take the more conservative loss update.
 
 For PPO, all of this happens *while* learning a value function, which opens more complexity, but this is the core logic for the parameter update.
+
+#### PPO/GRPO simplification with 1 gradient step per sample
+
+PPO (and GRPO) implementations can be handled much more elegantly if the hyperparameter "number of gradient steps per sample" is equal to 1.
+Many normal values for this are from 2-4 or higher.
+In the main PPO or GRPO equations, see @eq:TODO_PPO, the "reference" policy is the previous parameters -- those used to generate the completions or actions.
+Thus, if only one gradient step is taken, $\pi_\theta = \pi_{\theta_{old}}$, and the update rule reduces to the following (the notation $[]_\nabla$ indicates a stop gradient):
+
+$$J(\theta) = \frac{1}{G}\sum_{i=1}^G \left(\frac{\pi_\theta(a_i|s)}{\left[\pi_{\theta}(a_i|s)\right]_\nabla}A_i - \beta D_{KL}(\pi_\theta||\pi_{ref})\right). $$ {#eq:ppo_1step}
+
+This leads to PPO or GRPO implementations where the second policy gradient and clipping logic can be omitted, making the optimizer far closer to standard policy gradient.
+
 
 ### Group Relative Policy Optimization
 
