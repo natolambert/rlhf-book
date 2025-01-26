@@ -256,9 +256,17 @@ $if(beamer)$
 $endif$
 $if(listings)$
 \usepackage{listings}
+% for line wrapping
+\allowdisplaybreaks
 \newcommand{\passthrough}[1]{#1}
-\lstset{defaultdialect=[5.3]Lua}
-\lstset{defaultdialect=[x86masm]Assembler}
+\lstset{
+  defaultdialect=[5.3]Lua,
+  defaultdialect=[x86masm]Assembler,
+  % wrapping
+  breaklines=true,
+  postbreak=\space,
+  basicstyle=\small\ttfamily
+}
 $endif$
 $if(lhs)$
 \lstnewenvironment{code}{\lstset{language=Haskell,basicstyle=\small\ttfamily}}{}

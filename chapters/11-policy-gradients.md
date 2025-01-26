@@ -153,7 +153,7 @@ https://lilianweng.github.io/posts/2018-04-08-policy-gradient/
 ### Policy Gradient
 
 A simple implementation of policy gradient, using advantages to estimate the gradient to prepare for advanced algorithms such as PPO and GRPO follows:
-```
+```python
 pg_loss = -advantages * ratio
 ```
 Ratio here is the logratio of the new policy model probabilities relative to the reference model.
@@ -176,7 +176,7 @@ Crucial to stable performance is also the *value* computation, where multiple op
 Note that the reference policy (or old logprobs) here are from the time the generations were sampled and not necessarily the reference policy. 
 The reference policy is only used for the KL distance constraint/penalty.
 
-```
+```python
 # B: Batch Size, L: Sequence Length, G: Num of Generations
 # Apply KL penalty to rewards
 rewards = rewards - self.beta * per_token_kl  # Shape: (B*G, L)
@@ -224,7 +224,7 @@ with torch.no_grad():
 
 The core piece to understand with PPO is how the policy gradient loss is updated.
 Focus on these three lines:
-```
+```python
 pg_losses1 = -advantages * ratio  # Shape: (B*G, L)
 pg_losses2 = -advantages * torch.clamp(ratio, 1.0 - eps, 1.0 + eps)  # Shape: (B*G, L)
 pg_loss_max = torch.max(pg_losses1, pg_losses2)  # Shape: (B*G, L)
@@ -266,7 +266,7 @@ so the KL distance will have a shape of [B, L, N], where B is the batch size, L 
 The question when implementing GRPO is: How do you sum over the KL distance and loss to design different types of value-attribution. 
 In the below implementation, the loss is summed over the tokens in the completion, but mean could be an alternative.
 
-```
+```python
 # B: Batch Size, L: Sequence Length, G: Number of Generations
 # Compute grouped-wise rewards # Shape: (B,)
 mean_grouped_rewards = rewards.view(-1, self.num_generations).mean(dim=1)
