@@ -84,9 +84,25 @@ TODO cite further reading
 
 
 
-### Reinforce
+### REINFORCE
 
-The REINFORCE update is as follows:
+The algorithm REINFORCE is likely a backronym, but the components of the algorithms it represents are quite relevant for modern reinforcement learning algorithms. 
+Defined in the seminal paper *Simple statistical gradient-following algorithms for connectionist reinforcement learning* [@williams1992simple]:
+> The name is an acronym for "REward Increment = Nonnegative Factor X Offset Reinforcement X Characteristic Eligibility."
+
+The three components of this are how to do the *reward increment*, a.k.a. the policy gradient step.
+It has three pieces to the update rule:
+
+1. Nonnegative factor: This is the learning rate (step size) that must be a positive number.
+2. Offset Reinforcement: This is a baseline $b$ or other normalizing factor of the reward to improve stability.
+3. Characteristic Eligibility: This is how the learning becomes attributed per token. It can be a general value, $e$ per parameter, but is often log probabilities of the policy in modern equations.
+
+Thus, the form looks quite familiar:
+
+$$ \Delta_\theta = \alpha(r - b)e $$ {#eq:REINFORCE_BASIC}
+
+With more modern notation and the generalized return $G$, the REINFORCE operator appears as:
+
 $$
 \nabla_{\theta}\,J(\theta)
 \;=\;
@@ -100,13 +116,8 @@ $$
 Reinforce is a specific implementation of vanilla policy gradient that uses a Monte Carlo estimator of the gradient.
 [@ahmadian2024back]
 
-REINFORCE can be run without value network -- the value network is for the baseline in the policy gradient. PPO on the other hand needs the value network to accurately compute the advantage funciton
-
-### Proximal Policy Optimization
-
-Proximal Policy Optimization (PPO) [@schulman2017proximal] is one of the most important algorithms used in X Y Z blah blah TODO.
-
-For now, see: https://spinningup.openai.com/en/latest/algorithms/ppo.html
+REINFORCE can be run without value network -- the value network is for the baseline in the policy gradient. 
+PPO on the other hand needs the value network to accurately compute the advantage function.
 
 ### REINFORCE Leave One Out (RLOO)
 
@@ -114,6 +125,14 @@ For now, see: https://spinningup.openai.com/en/latest/algorithms/ppo.html
 
 Note that for verifiable domains like reasoning, RLOO may not because it averages over outcomes to update parameters. 
 This reduces credit assignment to the batch level and will make it harder for the model to attribute outcomes to specific behaviors within one sample.
+
+
+### Proximal Policy Optimization
+
+Proximal Policy Optimization (PPO) [@schulman2017proximal] is one of the most important algorithms used in X Y Z blah blah TODO.
+
+For now, see: https://spinningup.openai.com/en/latest/algorithms/ppo.html
+
 
 ### Group Relative Policy Optimization
 
