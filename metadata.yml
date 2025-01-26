@@ -23,7 +23,7 @@ linkReferences: true
 link-citations: true
 numbersections: true
 # for better code processing
-# listings: true
+listings: true
 # add pages in pdf between chapters
 header-includes:
   - |
