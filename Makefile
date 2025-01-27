@@ -41,8 +41,8 @@ PANDOC_COMMAND = pandoc
 
 DOCX_ARGS = --standalone --reference-doc templates/docx.docx
 EPUB_ARGS = --template templates/epub.html --epub-cover-image $(COVER_IMAGE)
-HTML_ARGS = --template templates/html.html --standalone --to html5
-PDF_ARGS = --template templates/pdf.tex --pdf-engine xelatex
+HTML_ARGS = --template templates/html.html --standalone --to html5 --listings
+PDF_ARGS = --template templates/pdf.tex --pdf-engine xelatex --listings
 NESTED_HTML_TEMPLATE = templates/chapter.html
 
 # Add this with your other file variables at the top

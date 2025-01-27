@@ -84,9 +84,25 @@ TODO cite further reading
 
 
 
-### Reinforce
+### REINFORCE
 
-The REINFORCE update is as follows:
+The algorithm REINFORCE is likely a backronym, but the components of the algorithms it represents are quite relevant for modern reinforcement learning algorithms. 
+Defined in the seminal paper *Simple statistical gradient-following algorithms for connectionist reinforcement learning* [@williams1992simple]:
+> The name is an acronym for "REward Increment = Nonnegative Factor X Offset Reinforcement X Characteristic Eligibility."
+
+The three components of this are how to do the *reward increment*, a.k.a. the policy gradient step.
+It has three pieces to the update rule:
+
+1. Nonnegative factor: This is the learning rate (step size) that must be a positive number.
+2. Offset Reinforcement: This is a baseline $b$ or other normalizing factor of the reward to improve stability.
+3. Characteristic Eligibility: This is how the learning becomes attributed per token. It can be a general value, $e$ per parameter, but is often log probabilities of the policy in modern equations.
+
+Thus, the form looks quite familiar:
+
+$$ \Delta_\theta = \alpha(r - b)e $$ {#eq:REINFORCE_BASIC}
+
+With more modern notation and the generalized return $G$, the REINFORCE operator appears as:
+
 $$
 \nabla_{\theta}\,J(\theta)
 \;=\;
@@ -100,13 +116,8 @@ $$
 Reinforce is a specific implementation of vanilla policy gradient that uses a Monte Carlo estimator of the gradient.
 [@ahmadian2024back]
 
-REINFORCE can be run without value network -- the value network is for the baseline in the policy gradient. PPO on the other hand needs the value network to accurately compute the advantage funciton
-
-### Proximal Policy Optimization
-
-Proximal Policy Optimization (PPO) [@schulman2017proximal] is one of the most important algorithms used in X Y Z blah blah TODO.
-
-For now, see: https://spinningup.openai.com/en/latest/algorithms/ppo.html
+REINFORCE can be run without value network -- the value network is for the baseline in the policy gradient. 
+PPO on the other hand needs the value network to accurately compute the advantage function.
 
 ### REINFORCE Leave One Out (RLOO)
 
@@ -114,6 +125,14 @@ For now, see: https://spinningup.openai.com/en/latest/algorithms/ppo.html
 
 Note that for verifiable domains like reasoning, RLOO may not because it averages over outcomes to update parameters. 
 This reduces credit assignment to the batch level and will make it harder for the model to attribute outcomes to specific behaviors within one sample.
+
+
+### Proximal Policy Optimization
+
+Proximal Policy Optimization (PPO) [@schulman2017proximal] is one of the most important algorithms used in X Y Z blah blah TODO.
+
+For now, see: https://spinningup.openai.com/en/latest/algorithms/ppo.html
+
 
 ### Group Relative Policy Optimization
 
@@ -153,7 +172,7 @@ https://lilianweng.github.io/posts/2018-04-08-policy-gradient/
 ### Policy Gradient
 
 A simple implementation of policy gradient, using advantages to estimate the gradient to prepare for advanced algorithms such as PPO and GRPO follows:
-```
+```python
 pg_loss = -advantages * ratio
 ```
 Ratio here is the logratio of the new policy model probabilities relative to the reference model.
@@ -176,7 +195,7 @@ Crucial to stable performance is also the *value* computation, where multiple op
 Note that the reference policy (or old logprobs) here are from the time the generations were sampled and not necessarily the reference policy. 
 The reference policy is only used for the KL distance constraint/penalty.
 
-```
+```python
 # B: Batch Size, L: Sequence Length, G: Num of Generations
 # Apply KL penalty to rewards
 rewards = rewards - self.beta * per_token_kl  # Shape: (B*G, L)
@@ -224,7 +243,7 @@ with torch.no_grad():
 
 The core piece to understand with PPO is how the policy gradient loss is updated.
 Focus on these three lines:
-```
+```python
 pg_losses1 = -advantages * ratio  # Shape: (B*G, L)
 pg_losses2 = -advantages * torch.clamp(ratio, 1.0 - eps, 1.0 + eps)  # Shape: (B*G, L)
 pg_loss_max = torch.max(pg_losses1, pg_losses2)  # Shape: (B*G, L)
@@ -266,7 +285,7 @@ so the KL distance will have a shape of [B, L, N], where B is the batch size, L 
 The question when implementing GRPO is: How do you sum over the KL distance and loss to design different types of value-attribution. 
 In the below implementation, the loss is summed over the tokens in the completion, but mean could be an alternative.
 
-```
+```python
 # B: Batch Size, L: Sequence Length, G: Number of Generations
 # Compute grouped-wise rewards # Shape: (B,)
 mean_grouped_rewards = rewards.view(-1, self.num_generations).mean(dim=1)
