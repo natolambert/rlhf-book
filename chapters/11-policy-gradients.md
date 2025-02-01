@@ -84,6 +84,17 @@ Many of the policy gradient algorithms discussed in this chapter build on the ad
 
 $$\nabla_\theta J(\pi_\theta) = \mathbb{E}_\tau \left[ \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t|s_t) A^{\pi_\theta}(s_t, a_t) \right]$$
 
+A core piece of the policy gradient implementation involves taking the derivative of the probabilistic policies. 
+This comes from:
+
+$$\nabla_\theta \log \pi_\theta(a|s) = \frac{\nabla_\theta \pi_\theta(a|s)}{\pi_\theta(a|s)}$$
+
+Which is derived from the chain rule:
+
+$$\nabla_\theta \log x = \frac{1}{x} \nabla_\theta x$$
+
+We will use this later on in the chapter.
+
 
 ### REINFORCE
 
@@ -115,7 +126,7 @@ $$
 $$
 
 
-Reinforce is a specific implementation of vanilla policy gradient that uses a Monte Carlo estimator of the gradient.
+REINFORCE is a specific implementation of vanilla policy gradient that uses a Monte Carlo estimator of the gradient.
 [@ahmadian2024back]
 
 REINFORCE can be run without value network -- the value network is for the baseline in the policy gradient. 
@@ -132,14 +143,16 @@ Other implementations of REINFORCE algorithms have been designed for language mo
 
 ### Proximal Policy Optimization
 
-Proximal Policy Optimization (PPO) [@schulman2017proximal] is one of the most important algorithms used in X Y Z blah blah TODO.
+*This section follows similar to [@achiam2018spinning].*
+
+Proximal Policy Optimization (PPO) [@schulman2017proximal] is one of the foundational algorithms to Deep RL's successes (such as OpenAI's DOTA 5 [@berner2019dota] and large amounts of research).
 
 For now, see: https://spinningup.openai.com/en/latest/algorithms/ppo.html
 
 
 #### Group Relative Policy Optimization
 
-Group Relative Policy Optimization (GRPO) is introduced in DeepSeekMath [@shao2024deepseekmath], and used in other DeepSeek works, e.g. DeepSeek-V3 [@liu2024deepseek] and DeepSeek-R1 [TODOCITE].
+Group Relative Policy Optimization (GRPO) is introduced in DeepSeekMath [@shao2024deepseekmath], and used in other DeepSeek works, e.g. DeepSeek-V3 [@liu2024deepseek] and DeepSeek-R1 [@guo2025deepseek].
 GRPO can be viewed as PPO-inspired algorithm with a very similar surrogate loss, but it avoids learning a value function with another copy of the original policy language model (or another checkpoint for initialization). 
 This brings two posited benefits:
 
@@ -173,6 +186,8 @@ TODO. Cite:
 https://spinningup.openai.com/en/latest/spinningup/rl_intro3.html#
 
 https://lilianweng.github.io/posts/2018-04-08-policy-gradient/
+
+For more details on implementation details for RLHF, see [@huang2024n]. For further information on the algorithms, see [@weng2018PG].
 
 ### Policy Gradient
 
