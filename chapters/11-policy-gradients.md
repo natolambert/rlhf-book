@@ -106,7 +106,7 @@ Defined in the seminal paper *Simple statistical gradient-following algorithms f
 The three components of this are how to do the *reward increment*, a.k.a. the policy gradient step.
 It has three pieces to the update rule:
 
-1. Nonnegative factor: This is the learning rate (step size) that must be a positive number.
+1. Nonnegative factor: This is the learning rate (step size) that must be a positive number, e.g. $\alpha$ below.
 2. Offset Reinforcement: This is a baseline $b$ or other normalizing factor of the reward to improve stability.
 3. Characteristic Eligibility: This is how the learning becomes attributed per token. It can be a general value, $e$ per parameter, but is often log probabilities of the policy in modern equations.
 
@@ -127,17 +127,21 @@ $$
 
 
 REINFORCE is a specific implementation of vanilla policy gradient that uses a Monte Carlo estimator of the gradient.
-[@ahmadian2024back]
 
 REINFORCE can be run without value network -- the value network is for the baseline in the policy gradient. 
 PPO on the other hand needs the value network to accurately compute the advantage function.
 
-#### REINFORCE Leave One Out (RLOO)
+### REINFORCE Leave One Out (RLOO)
 
-[@huang2024putting], [@ahmadian2024back]
+The core implementation detail of REINFORCE Leave One Out  versus standard REINFORCE is that it takes the average reward of the *other* samples in the batch to compute the baseline -- rather than averaging over all rewards in the batch [@huang2024putting], [@ahmadian2024back], [@kool2019buy].
+
+Crucially, this only works when generating multiple responses per prompt, which is common practice in multiple domains of finetuning language models with RL.
 
 Note that for verifiable domains like reasoning, RLOO may not because it averages over outcomes to update parameters. 
 This reduces credit assignment to the batch level and will make it harder for the model to attribute outcomes to specific behaviors within one sample.
+
+Related to this idea is the fact that REINFORCE, as implemented with RLOO, assigns the reward of the entire completion to every token in it. Other algorithms, such as PPO, that use a value function assign value to every token individually, discounting from the final reward achieved at the EOS token.
+For example, with the KL divergence distance penalty, RLOO sums it over the completion while PPO and similar algorithms compute it on a per-token basis and subtract it from the reward (or the advantage, in the case of GRPO).
 
 Other implementations of REINFORCE algorithms have been designed for language models, such as ReMax [@li2023remax], which implements a baseline normalization designed specifically to accommodate the sources of uncertainty from reward model inference.
 
@@ -149,8 +153,10 @@ Proximal Policy Optimization (PPO) [@schulman2017proximal] is one of the foundat
 
 For now, see: https://spinningup.openai.com/en/latest/algorithms/ppo.html
 
+#### Generalized Advantage Estimation (GAE)
 
-#### Group Relative Policy Optimization
+
+### Group Relative Policy Optimization
 
 Group Relative Policy Optimization (GRPO) is introduced in DeepSeekMath [@shao2024deepseekmath], and used in other DeepSeek works, e.g. DeepSeek-V3 [@liu2024deepseek] and DeepSeek-R1 [@guo2025deepseek].
 GRPO can be viewed as PPO-inspired algorithm with a very similar surrogate loss, but it avoids learning a value function with another copy of the original policy language model (or another checkpoint for initialization). 
@@ -168,7 +174,7 @@ $$J(\theta) = \frac{1}{G}\sum_{i=1}^G \left(\min\left(\frac{\pi_\theta(a_i|s)}{\
 
 With the advantage computation for the completion index $i$:
 
-$$A_i = \frac{r_i - \text{mean}({r_1, r_2, \cdots, r_G})}{\text{std}({r_1, r_2, \cdots, r_G})}. \quad (3)$$ {#eq:GRPO_ADV}
+$$A_i = \frac{r_i - \text{mean}({r_1, r_2, \cdots, r_G})}{\text{std}({r_1, r_2, \cdots, r_G})}.$$ {#eq:GRPO_ADV}
 
 @eq:GRPO_ADV is the implementation of GRPO when working with outcome supervision (either a standard reward model or a single verifiable reward) and a different implementation is needed with process supervision.
 In this case, GRPO computes the advantage as the sum of the normalized rewards for the following reasoning steps.
@@ -176,7 +182,6 @@ To do so, the rewards are accumulated with additional tracking of a reasoning in
 
 Finally, GRPO's advantage estimation can also be applied without the PPO clipping to more vanilla versions of policy gradient (e.g. REINFORCE), but it is not the canonical form.
 
-#### Generalized Advantage Estimation (GAE)
 
 ## Implementation
 
@@ -187,7 +192,7 @@ https://spinningup.openai.com/en/latest/spinningup/rl_intro3.html#
 
 https://lilianweng.github.io/posts/2018-04-08-policy-gradient/
 
-For more details on implementation details for RLHF, see [@huang2024n]. For further information on the algorithms, see [@weng2018PG].
+For more details on implementation details for RLHF, see [@huang2024n+]. For further information on the algorithms, see [@weng2018PG].
 
 ### Policy Gradient
 
@@ -355,7 +360,7 @@ For more details on how to interpret this code, see the PPO section above.
 
 TODO: adaptive vs static KL control 
 
-See tAble 10 for impelementation details in tulu 2.5 paper
+See table 10 for impelementation details in tulu 2.5 paper
 
 ## Double regularization
 
