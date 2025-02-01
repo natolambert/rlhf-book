@@ -5,7 +5,7 @@ next-chapter: "Direct Alignment Algorithms"
 next-url: "12-direct-alignment.html"
 ---
 
-# [Incomplete] Policy Gradient Algorithms
+# Policy Gradient Algorithms
 
 
 The algorithms that popularized RLHF for language models were policy-gradient reinforcement learning algorithms. 
@@ -75,19 +75,21 @@ A simple version, with respect to the overall return, is:
 $$\nabla_\theta J(\pi_\theta) = \mathbb{E}_\tau \left[ \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t|s_t) R_t \right]$$
 
 A common problem with vanilla policy gradient algorithms is the high variance in gradient updates, which can be mitigated in multiple ways.
+In order to alleviate this,  various techniques are used to normalize the value estimation, called *baselines*. 
+Baselines accomplish this in multiple ways, effectively normalizing by the value of the state relative to the downstream action (e.g. in the case of Advantage, which is the difference between the Q value and the value). 
+The simplest baselines are averages over the batch of rewards or a moving average.
+Even these baselines can de-bias the gradients so $\mathbb{E}_{a \sim \pi(a|s)}[\nabla_\theta \log \pi_\theta(a|s)] = 0$, improving the learning signal substantially.
 
-TODO baselines, explain advantage
+Many of the policy gradient algorithms discussed in this chapter build on the advantage formulation of policy gradient:
 
 $$\nabla_\theta J(\pi_\theta) = \mathbb{E}_\tau \left[ \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t|s_t) A^{\pi_\theta}(s_t, a_t) \right]$$
-
-TODO cite further reading
-
 
 
 ### REINFORCE
 
 The algorithm REINFORCE is likely a backronym, but the components of the algorithms it represents are quite relevant for modern reinforcement learning algorithms. 
 Defined in the seminal paper *Simple statistical gradient-following algorithms for connectionist reinforcement learning* [@williams1992simple]:
+
 > The name is an acronym for "REward Increment = Nonnegative Factor X Offset Reinforcement X Characteristic Eligibility."
 
 The three components of this are how to do the *reward increment*, a.k.a. the policy gradient step.
@@ -135,7 +137,7 @@ Proximal Policy Optimization (PPO) [@schulman2017proximal] is one of the most im
 For now, see: https://spinningup.openai.com/en/latest/algorithms/ppo.html
 
 
-### Group Relative Policy Optimization
+#### Group Relative Policy Optimization
 
 Group Relative Policy Optimization (GRPO) is introduced in DeepSeekMath [@shao2024deepseekmath], and used in other DeepSeek works, e.g. DeepSeek-V3 [@liu2024deepseek] and DeepSeek-R1 [TODOCITE].
 GRPO can be viewed as PPO-inspired algorithm with a very similar surrogate loss, but it avoids learning a value function with another copy of the original policy language model (or another checkpoint for initialization). 
@@ -160,6 +162,8 @@ In this case, GRPO computes the advantage as the sum of the normalized rewards f
 To do so, the rewards are accumulated with additional tracking of a reasoning index $j$, and then computed step wise as TODO, ref paper
 
 Finally, GRPO's advantage estimation can also be applied without the PPO clipping to more vanilla versions of policy gradient (e.g. REINFORCE), but it is not the canonical form.
+
+#### Generalized Advantage Estimation (GAE)
 
 ## Implementation
 
