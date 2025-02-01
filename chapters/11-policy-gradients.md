@@ -119,13 +119,14 @@ Reinforce is a specific implementation of vanilla policy gradient that uses a Mo
 REINFORCE can be run without value network -- the value network is for the baseline in the policy gradient. 
 PPO on the other hand needs the value network to accurately compute the advantage function.
 
-### REINFORCE Leave One Out (RLOO)
+#### REINFORCE Leave One Out (RLOO)
 
 [@huang2024putting], [@ahmadian2024back]
 
 Note that for verifiable domains like reasoning, RLOO may not because it averages over outcomes to update parameters. 
 This reduces credit assignment to the batch level and will make it harder for the model to attribute outcomes to specific behaviors within one sample.
 
+Other implementations of REINFORCE algorithms have been designed for language models, such as ReMax [@li2023remax], which implements a baseline normalization designed specifically to accommodate the sources of uncertainty from reward model inference.
 
 ### Proximal Policy Optimization
 
