@@ -134,6 +134,8 @@ labels = [[-100] * (len(completion) - 1) + [label] for completion, label in zip(
 
 TODO comment on how they are often trained with LM heads and have 3 classes, +, neutral, -
 
+## Reward Models vs. Outcome RMs vs. Process RMs vs. Value Functions
+
 ## Generative Reward Modeling
 
 With the cost of preference data, a large research area emerged to use existing language models as a judge of human preferences or in other evaluation settings [@zheng2023judging].
