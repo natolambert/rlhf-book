@@ -187,10 +187,6 @@ Finally, GRPO's advantage estimation can also be applied without the PPO clippin
 
 - Only score a response with a reward model with the `eos_token` is generated, otherwise the response is truncated.
 
-TODO. Cite:
-https://spinningup.openai.com/en/latest/spinningup/rl_intro3.html#
-
-https://lilianweng.github.io/posts/2018-04-08-policy-gradient/
 
 For more details on implementation details for RLHF, see [@huang2024n+]. For further information on the algorithms, see [@weng2018PG].
 
@@ -283,7 +279,7 @@ Finally, the max of two is taken as mentioned above, in order to take the more c
 
 For PPO, all of this happens *while* learning a value function, which opens more complexity, but this is the core logic for the parameter update.
 
-#### PPO/GRPO simplification with 1 gradient step per sample
+#### PPO/GRPO simplification with 1 gradient step per sample (no clipping)
 
 PPO (and GRPO) implementations can be handled much more elegantly if the hyperparameter "number of gradient steps per sample" is equal to 1.
 Many normal values for this are from 2-4 or higher.
@@ -370,8 +366,3 @@ In this view, a large part of the difference between algorithms like PPO (which 
 
 In PPO, the objective that handles capping the step-size of the update is known as the [surrogate objective](https://huggingface.co/blog/deep-rl-ppo#introducing-the-clipped-surrogate-objective). 
 To monitor how much the PPO regularization is impacting updates in RLHF, one can look at the clip fraction variable in many popular implementations, which is the percentage of samples in the batch where the gradients are clipped by this regularizer in PPO. These gradients are *reduced* to a maximum value.
-
-## Training Value Networks
-
-TODO BCELoss loss because continuous between 0 and 1.
-If any range, they could be a MSELoss, I think.
