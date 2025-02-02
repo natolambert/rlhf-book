@@ -15,7 +15,7 @@ abstract: |
   In this book, we hope to give a gentle introduction to the core methods for people with some level of quantitative background.
   The book starts with the origins of RLHF -- both in recent literature and in a convergence of disparate fields of science in economics, philosophy, and optimal control.
   We then set the stage with definitions, problem formulation, data collection, and other common math used in the literature.
-  We detail the detail the popular algorithms and future frontiers of RLHF.
+  We detail the popular algorithms and future frontiers of RLHF.
 # mainfont: DejaVu Sans # not available on Mac
 Filter preferences:
 - pandoc-crossref
