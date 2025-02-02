@@ -25,11 +25,55 @@ In modern language model training, RLHF is one component of post-training.
 Post-training is a more complete set of techniques and best-practices to make language models more useful for downstream tasks [@lambert2024t].
 Post-training can be summarized as using three optimization methods:
 
-1. Instruction / Supervised Finetuning (SFT),
-2. Preference Finetuning (PreFT), and
-3. Reinforcement Finetuning (RFT).
+1. Instruction / Supervised Finetuning (IFT/SFT), where we teach formatting and for base of instruction following abilities. This is largely about learning *features* in language.
+2. Preference Finetuning (PreFT),where we align to human preferences (and get smaller bump in capabilities at the same time). This is largely about *style* of language and subtle human preferences that are hard to quantify. 
+3. Reinforcement Finetuning (RFT). The newest type of post-training that boosts performance on verifiable domains.
 
 This book focuses on the second area, **preference finetuning**, which has more complexity than instruction tuning and is far more established than Reinforcement Finetuning.
+That being said, RLHF colloquially *is* what led to modern post-training.
+Soon after the release of ChatGPT, RLHF encompassed all of post-training.
+The foundations of RLHF involve far more than preferences alone and this book provides introductions to all the related topics.
+
+
+## How We Got Here
+
+Post-training, the craft of eliciting powerful behaviors from a raw pretrained language model, has gone through many seasons and moods since the release of ChatGPT that sparked the renewed interest in RLHF. 
+In the era of Alpaca [@alpaca], Vicuna [@vicuna2023],  [@koala_blogpost_2023], and Dolly [@DatabricksBlog2023DollyV1], a limited number of human datapoints with extended synthetic data in the style of Self-Instruct were used to normally fine-tune the original LLaMA to get similar behavior to ChatGPT. 
+The benchmark for these early models was fully vibes (and human evaluation) as we were all so captivated by the fact that these small models can have such impressive behaviors across domains. 
+It was justified excitement.
+
+Open post-training was moving faster, releasing more models, and making more noise than its closed counterparts. 
+Companies were scrambling, e.g. DeepMind merging with Google or being started, and taking time to follow it up. 
+There are phases of open recipes surging and then lagging behind.
+
+The era following Alpaca et al., the first lag in open recipes, was one defined by skepticism and doubt on reinforcement learning from human feedback (RLHF), the technique OpenAI highlighted as crucial to the success of the first ChatGPT. 
+Many companies doubted that they needed to do RLHF. 
+A common phrase – “instruction tuning is enough for alignment” – was so popular then that it still holds heavy weight today despite heavy obvious pressures against it. 
+
+This doubt of RLHF lasted, especially in the open where groups cannot afford data budgets on the order of \$100K to \$1M. 
+The companies that embraced it early ended up winning out.
+Anthropic published extensive research on RLHF through 2022 and is now argued to have the best post-training [@askell2021general] [@bai2022training] [@bai2022constitutional]. 
+The delta between open groups, struggling to reproduce, or even knowing basic closed techniques, is a common theme.
+
+The first shift in open alignment methods and post-training was the story of Direct Preference Optimization (DPO) [@rafailov2024direct]. 
+The DPO paper, posted in May of 2023, didn’t have any clearly impactful models trained with it going through the fall of 2023. 
+This changed with the releases of a few breakthrough DPO models – all contingent on finding a better, lower, learning rate. 
+Zephyr-Beta [@tunstall2023zephyr], Tülu 2 [@ivison2023camels], and many other models showed that the DPO era of post-training had begun. 
+Chris Manning literally thanked me for “saving DPO.” 
+This is how fine the margins are on evolutions of best practices with leading labs being locked down. 
+Open post-training was cruising again.
+
+Preference-tuning was something you needed to do to meet the table stakes of releasing a good model since late 2023. 
+The DPO era continued through 2024, in the form of never-ending variants on the algorithm, but we were very far into another slump in open recipes. 
+Open post-training recipes had saturated the extent of knowledge and resources available.  
+A year after Zephyr and Tulu 2, the same breakout dataset, UltraFeedback is arguably still state-of-the-art for preference tuning in open recipes [@cui2023ultrafeedback]. 
+
+At the same time, the Llama 3.1 [@dubey2024llama] and Nemotron 4 340B [@adler2024nemotron] reports gave us substantive hints that large-scale post-training is much more complex and impactful. 
+The closed labs are doing full post-training – a large multi-stage process of instruction tuning, RLHF, prompt design, etc. – where academic papers are just scratching the surface. 
+Tülu 3 represented a comprehensive, open effort to build the foundation of future academic post-training research [@lambert2024t].
+
+Today, post-training is a complex process involving the aforementioned training objectives applied in various orders in order to target specific capabilities.
+This book is designed to give a platform to understand all of these techniques, and in coming years the best practices for how to interleave them will emerge.
 
 ## Scope of This Book
 
@@ -37,6 +81,8 @@ This book hopes to touch on each of the core steps of doing canonical RLHF imple
 It will not cover all the history of the components nor recent research methods, just techniques, problems, and trade-offs that have been proven to occur again and again.
 
 ### Chapter Summaries
+
+*While book is WIP, see navigation for up to date chapters.*
 
 This book has the following chapters following this Introduction:
 

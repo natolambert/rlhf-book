@@ -9,18 +9,18 @@ next-url: "03-setup.html"
 
 In this chapter we detail the key papers and projects that got the RLHF field to where it is today.
 This is not intended to be a comprehensive review on RLHF and the related fields, but rather a starting point and retelling of how we got to today.
-It is intentionally focused on recent work that lead to ChatGPT.
+It is intentionally focused on recent work that led to ChatGPT.
 There is substantial further work in the RL literature on learning from preferences [@wirth2017survey]. 
 For a more exhaustive list, you should use a proper survey paper [@kaufmann2023survey],[@casper2023open].
 
 ## Origins to 2018: RL on Preferences
 
-The field was recently popularized with the growth of Deep Reinforcement Learning and has grown into a broader study of the applications of LLMs from many large technology companies.
+The field has recently been popularized with the growth of Deep Reinforcement Learning and has grown into a broader study of the applications of LLMs from many large technology companies.
 Still, many of the techniques used today are deeply related to core techniques from early literature on RL from preferences.
 
 *TAMER: Training an Agent Manually via Evaluative Reinforcement,* Proposed a learned agent where humans provided scores on the actions taken iteratively to learn a reward model [@knox2008tamer]. Other concurrent or soon after work proposed an actor-critic algorithm, COACH, where human feedback (both positive and negative) is used to tune the advantage function [@macglashan2017interactive].
 
-The primary reference, Christiano et al. 2017, is an application of RLHF applied on preferences between Atari trajectories [@christiano2017deep]. The work shows that humans choosing between trajectories can be more effective in some domains than directly interacting with the environment. This uses some clever conditions, but is impressive nonetheless.
+The primary reference, Christiano et al. 2017, is an application of RLHF applied to preferences between Atari trajectories [@christiano2017deep]. The work shows that humans choosing between trajectories can be more effective in some domains than directly interacting with the environment. This uses some clever conditions, but is impressive nonetheless.
 This method was expanded upon with more direct reward modeling [@ibarz2018reward].
 TAMER was adapted to deep learning with Deep TAMER just one year later [@warnell2018deep].
 
@@ -46,7 +46,7 @@ Anthropic continued to use it extensively for early versions of Claude [@bai2022
 
 ## 2023 to Present: ChatGPT Eta
 
-The announcement of ChatGPT was very clear in the role of RLHF in its training [@openai2022chatgpt]:
+The announcement of ChatGPT was very clear about the role of RLHF in its training [@openai2022chatgpt]:
 
 > We trained this model using Reinforcement Learning from Human Feedback (RLHF), using the same methods as InstructGPT⁠, but with slight differences in the data collection setup.
 

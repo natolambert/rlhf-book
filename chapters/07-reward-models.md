@@ -33,7 +33,7 @@ The first form, as in [@ouyang2022training] and other works:
 $$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(x, y_w) - r_{\theta}(x, y_l) \right) \right)$$ {#eq:rewardmodeling1}
 
 Second, as in [@askell2021general] and other works:
-$$\mathcal{L}(\theta) = \log \left( 1 + e^{r_{\theta}(x, y_l)}  - e^{r_{\theta}(x, y_w)} \right)$$ {#eq:rewardmodeling2}
+$$\mathcal{L}(\theta) = \log \left( 1 + e^{r_{\theta}(x, y_l) - r_{\theta}(x, y_w)} \right)$$ {#eq:rewardmodeling2}
 
 ## Architecture
 
