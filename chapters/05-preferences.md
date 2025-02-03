@@ -23,7 +23,7 @@ Together, each of these areas brings specific assumptions at what a preference i
 In practice, RLHF methods are motivated and studied from the perspective of empirical alignment -- maximizing model performance on specific skills instead of measuring the calibration to specific values.
 Still, the origins of value alignment for RLHF methods continue to be studied through research on methods to solve for ``pluralistic alignment'' across populations, such as position papers [@conitzer2024social], [@mishra2023ai], new datasets [@kirk2024prism], and personalization methods [@poddar2024personalizing].
 
-The goal of this chapter is to illustrate how complex motivations results in presumptions about the nature of tools used in RLHF that do often not apply in practice.
+The goal of this chapter is to illustrate how complex motivations result in presumptions about the nature of tools used in RLHF that do often not apply in practice.
 The specifics of obtaining data for RLHF is discussed further in Chapter 6 and using it for reward modeling in Chapter 7.
 For an extended version of this chapter, see [@lambert2023entangled].
 

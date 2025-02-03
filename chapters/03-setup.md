@@ -7,7 +7,7 @@ next-url: "04-optimization.html"
 
 # Definitions
 
-This chapter includes all the definitions, symbols, and operations frequently used in the RLHF process.
+This chapter includes all the definitions, symbols, and operatings frequently used in the RLHF process.
 
 ## ML Definitions
 

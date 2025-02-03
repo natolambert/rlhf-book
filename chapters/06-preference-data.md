@@ -47,7 +47,7 @@ TODO example of thumbs up / down with synthetic data or KTO
 
 ### Sourcing and Contracts
 
-The first step is sourcing the vendor to provide data (or ones own annotators). 
+The first step is sourcing the vendor to provide data (or one's own annotators). 
 Much like acquiring access to cutting-edge Nvidia GPUs, getting access to data providers is also a who-you-know game. If you have credibility in the AI ecosystem, the best data companies will want you on our books for public image and long-term growth options. Discounts are often also given on the first batches of data to get training teams hooked.
 
 If you’re a new entrant in the space, you may have a hard time getting the data you need quickly. Getting the tail of interested buying parties that Scale AI had to turn away is an option for the new data startups. It’s likely their primary playbook to bootstrap revenue.
