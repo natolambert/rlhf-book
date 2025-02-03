@@ -9,7 +9,7 @@ next-url: "03-setup.html"
 
 In this chapter we detail the key papers and projects that got the RLHF field to where it is today.
 This is not intended to be a comprehensive review on RLHF and the related fields, but rather a starting point and retelling of how we got to today.
-It is intentionally focused on recent work that lead to ChatGPT.
+It is intentionally focused on recent work that led to ChatGPT.
 There is substantial further work in the RL literature on learning from preferences [@wirth2017survey]. 
 For a more exhaustive list, you should use a proper survey paper [@kaufmann2023survey],[@casper2023open].
 
@@ -44,7 +44,7 @@ Aside from applications, a number of seminal papers defined key areas for the fu
 Work continued on refining RLHF for application to chat models.
 Anthropic continued to use it extensively for early versions of Claude [@bai2022training] and early RLHF open-source tools emerged [@ramamurthy2022reinforcement],[@havrilla-etal-2023-trlx],[@vonwerra2022trl].
 
-## 2023 to Present: ChatGPT Eta
+## 2023 to Present: ChatGPT Era
 
 The announcement of ChatGPT was very clear in the role of RLHF in its training [@openai2022chatgpt]:
 

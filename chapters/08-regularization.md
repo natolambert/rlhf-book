@@ -103,7 +103,7 @@ TODO: Make the above equations congruent with the rest of the notation on DPO.
 
 Controlling the optimization is less well defined in other parts of the RLHF stack.
 Most reward models have no regularization beyond the standard contrastive loss function.
-Direct Alignment Algorithms handle regulaization to KL distances differently, through the $\beta$ parameter (see the chapter on Direct Alignment).
+Direct Alignment Algorithms handle regularization to KL distances differently, through the $\beta$ parameter (see the chapter on Direct Alignment).
 
 Llama 2 proposed a margin loss for reward model training [@touvron2023llama]:
 
