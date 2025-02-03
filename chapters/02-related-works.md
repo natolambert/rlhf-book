@@ -44,7 +44,7 @@ Aside from applications, a number of seminal papers defined key areas for the fu
 Work continued on refining RLHF for application to chat models.
 Anthropic continued to use it extensively for early versions of Claude [@bai2022training] and early RLHF open-source tools emerged [@ramamurthy2022reinforcement],[@havrilla-etal-2023-trlx],[@vonwerra2022trl].
 
-## 2023 to Present: ChatGPT Eta
+## 2023 to Present: ChatGPT Era
 
 The announcement of ChatGPT was very clear in the role of RLHF in its training [@openai2022chatgpt]:
 
