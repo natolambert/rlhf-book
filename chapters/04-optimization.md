@@ -37,10 +37,10 @@ In many ways, the result is that while RLHF is heavily inspired by RL optimizers
 
 ![Standard RLHF loop](images/rlhf.png){#fig:rlhf}
 
-## Finetuning and regularization
+## Fine-tuning and regularization
 
 RLHF is implemented from a strong base model, which induces a need to control the optimization from straying too far from the initial policy.
-In order to succeed in a finetuning regime, RLHF techniques employ multiple types of regularization to control the optimization.
+In order to succeed in a fine-tuning regime, RLHF techniques employ multiple types of regularization to control the optimization.
 The most common change to the optimization function is to add a distance penalty on the difference between the current RLHF policy and the starting point of the optimization:
 
 $$J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t)\right] - \beta  \mathcal{D}_{KL}(\pi^{\text{RL}}(\cdot|s_t) \| \pi^{\text{ref}}(\cdot|s_t)).$$
