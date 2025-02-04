@@ -27,7 +27,7 @@ A standard illustration of the RL loop is shown in @fig:rl and how it compares t
 There are multiple core changes from the standard RL setup to that of RLHF:
 
 1. Switching from a reward function to a reward model. In RLHF, a learned model of human preferences, $r_\theta(s_t, a_t)$ (or any other classification model) is used instead of an environmental reward function. This gives the designer a substantial increase in the flexibility of the approach and control over the final results.
-2. No state transitions exist. In RLHF, the initial states for the domain are prompts sampled from a training dataset and the ``action'' is the completion to said prompt. During standard practices, this action does not impact the next state and is only scored by the reward model.
+2. No state transitions exist. In RLHF, the initial states for the domain are prompts sampled from a training dataset and the "action" is the completion to said prompt. During standard practices, this action does not impact the next state and is only scored by the reward model.
 3. Response level rewards. Often referred to as a Bandits Problem, RLHF attribution of reward is done for an entire sequence of actions, composed of multiple generated tokens, rather than in a fine-grained manner. 
 
 Given the single-turn nature of the problem, the optimization can be re-written without the time horizon and discount factor (and the reward models):
@@ -45,5 +45,5 @@ The most common change to the optimization function is to add a distance penalty
 
 $$J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t)\right] - \beta  \mathcal{D}_{KL}(\pi^{\text{RL}}(\cdot|s_t) \| \pi^{\text{ref}}(\cdot|s_t)).$$
 
-Within this formulation, a lot of study into RLHF training goes into understanding how to spend a certain ``KL budget'' as measured by a distance from the initial model.
+Within this formulation, a lot of study into RLHF training goes into understanding how to spend a certain "KL budget" as measured by a distance from the initial model.
 For more details, see Chapter 8 on Regularization.
