@@ -58,7 +58,7 @@ jobs:
 
       - name: Create CNAME file
         run: |
-          echo "example.com" > build/html/CNAME
+          echo "www.rlhfbook.com" > build/html/CNAME
 
       # pages deploy steps
       - name: Setup Pages
