@@ -56,6 +56,10 @@ jobs:
           make
           make files
 
+      - name: Create CNAME file
+        run: |
+          echo "example.com" > build/html/CNAME
+
       # pages deploy steps
       - name: Setup Pages
         uses: actions/configure-pages@v5
