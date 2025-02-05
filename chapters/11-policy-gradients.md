@@ -150,11 +150,49 @@ Other implementations of REINFORCE algorithms have been designed for language mo
 *This section follows similar to [@achiam2018spinning].*
 
 Proximal Policy Optimization (PPO) [@schulman2017proximal] is one of the foundational algorithms to Deep RL's successes (such as OpenAI's DOTA 5 [@berner2019dota] and large amounts of research).
+The loss function is as follows:
 
-For now, see: https://spinningup.openai.com/en/latest/algorithms/ppo.html
+$$J(\theta) = \frac{1}{G}\sum_{i=1}^G \min\left(\frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}A_i, \text{clip} \left( \frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}, 1-\varepsilon, 1+\varepsilon \right) A_i \right)).$$ {#eq:PPO_EQN}
 
-#### Generalized Advantage Estimation (GAE)
+Here we will explain the difference cases this loss function triggers given various advantages and policy ratios.
+At an implementation level, the inner computations for PPO involve standard policy gradient and a clipped policy gradient.
 
+To understand how different situations emerge, we can define the policy ratio as:
+
+$$R(\theta) = \frac{\pi_\theta(a|s)}{\pi_{\theta_{old}}(a|s)}$$ {#eq:PPO_POL_RATIO}
+
+The first case is when the advantage is positive and the policy ratio exceeds $1+\varepsilon$ (meaning that the new policy is more likely to take said action), which is clipped, and the objective becomes:
+
+$$J(\theta) = \min \left(R(\theta), (1 + \varepsilon)\right)A = (1 + \varepsilon)A $$
+
+This will increase the probability ratio, making the action even more likely, but only up until the clipping parameter epsilon.
+The similar conditions are when the advantage is still positive, but the likelihood ratio shifts.
+
+For positive advantage and ratio less than $1-\varepsilon$, a we get a partially substituted equation:
+
+$$J(\theta) = \min \left(R(\theta), (1 - \varepsilon)\right)A$$
+
+That reduces to
+
+$$J(\theta) = R(\theta)A$$
+
+because of the less than assumption.
+
+Similarly, if the probability ratio is not clipping, the objective also reduces to the $min(R(\theta),R(\theta))$, yielding a standard policy gradient with an advantage estimator.
+
+If the advantage is negative, this looks similar. A clipped objective will occur when $R(\theta) < (1-\varepsilon)$, appearing through:
+
+$$J(\theta) = \min \left(R(\theta)A, (1 - \varepsilon)A\right),$$
+
+Which, because $A<0$ we have $R(\theta)A > (1-\varepsilon)A$ and can flip the min to the max when pulling $A$ from the equation, is equivalent to
+
+$$J(\theta) = \max \left(R(\theta), (1 - \varepsilon)\right)A.$$
+
+Then the objective becomes:
+
+$$J(\theta) = (1 - \varepsilon)A$$
+
+The other cases follow as above, inverted, and are left as an exercise to the reader.
 
 ### Group Relative Policy Optimization
 
@@ -172,6 +210,7 @@ To state this formally, the GRPO objective is very similar to the PPO objective 
 
 $$J(\theta) = \frac{1}{G}\sum_{i=1}^G \left(\min\left(\frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}A_i, \text{clip} \left( \frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}, 1-\varepsilon, 1+\varepsilon \right) A_i \right) - \beta D_{KL}(\pi_\theta||\pi_{ref})\right).$$
 
+Note that relative to PPO, the standard implementation of GRPO includes the KL distance in the loss.
 With the advantage computation for the completion index $i$:
 
 $$A_i = \frac{r_i - \text{mean}({r_1, r_2, \cdots, r_G})}{\text{std}({r_1, r_2, \cdots, r_G})}.$$ {#eq:GRPO_ADV}
@@ -351,14 +390,21 @@ with torch.no_grad():
 
 For more details on how to interpret this code, see the PPO section above.
 
+## Auxiliary Topics
 
-## KL Controllers
+### Generalized Advantage Estimation (GAE)
+
+Generalized Advantage Estimation (GAE) is an alternate method to compute the advantage for policy gradient algorithms [@schulman2015high].
+GAE works 
+
+
+### KL Controllers
 
 TODO: adaptive vs static KL control 
 
 See table 10 for impelementation details in tulu 2.5 paper
 
-## Double regularization
+### Double regularization
 
 Many popular policy gradient algorithms from Deep Reinforcement Learning originated due to the need to control the learning process of the agent.
 In RLHF, as discussed extensively in Chapter 8 on Regularization and in Chapter 4 on Problem Formulation, there is a built in regularization term via the distance penalty relative to the original policy one is finetuning.
