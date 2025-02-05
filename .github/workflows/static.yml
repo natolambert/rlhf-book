@@ -56,6 +56,12 @@ jobs:
           make
           make files
 
+      # Need this if main domain is www.rlhfbook.com
+      # For now, it is rlhfbook.com, and seems to be working.
+      # - name: Create CNAME file
+      #   run: |
+      #     echo "www.rlhfbook.com" > build/html/CNAME
+
       # pages deploy steps
       - name: Setup Pages
         uses: actions/configure-pages@v5
