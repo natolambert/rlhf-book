@@ -178,7 +178,7 @@ $$J(\theta) = R(\theta)A$$
 
 because of the less than assumption.
 
-Similarly, if the probability ratio is not clipping, the objective also reduces to the $min(R(\theta),R(\theta))$, yielding a standard policy gradient with an advantage estimator.
+Similarly, if the probability ratio is not clipping, the objective also reduces to the $\min(R(\theta),R(\theta))$, yielding a standard policy gradient with an advantage estimator.
 
 If the advantage is negative, this looks similar. A clipped objective will occur when $R(\theta) < (1-\varepsilon)$, appearing through:
 
@@ -193,6 +193,9 @@ Then the objective becomes:
 $$J(\theta) = (1 - \varepsilon)A$$
 
 The other cases follow as above, inverted, and are left as an exercise to the reader.
+
+All of these are designed to make the behaviors where advantage is positive more likely and keep the gradient step within the trust region.
+It is crucial to remember that PPO within the trust region is the same as standard forms of policy gradient.
 
 ### Group Relative Policy Optimization
 
@@ -394,9 +397,44 @@ For more details on how to interpret this code, see the PPO section above.
 
 ### Generalized Advantage Estimation (GAE)
 
-Generalized Advantage Estimation (GAE) is an alternate method to compute the advantage for policy gradient algorithms [@schulman2015high].
-GAE works 
+Generalized Advantage Estimation (GAE) is an alternate method to compute the advantage for policy gradient algorithms [@schulman2015high] that better balances the bias-variance tradeoff. 
+Traditional single-step advantage estimates often suffer from high variance, while using complete trajectories can introduce too much bias.
+GAE works by combining two ideas -- multi-step prediction and weighted running average (or just one of these).
 
+Advantage estimates can take many forms, but we can define a $k$ step advantage estimator (similar to the TD residual at the beginning of the chapter) as follows:
+
+$$
+\hat{A}_t^{(n)} = \begin{cases}
+r_t + \gamma V(s_{t+1}) - V(s_t), & n = 1 \\
+r_t + \gamma r_{t+1} + \gamma^2 V(s_{t+2}) - V(s_t), & n = 2 \\
+\vdots \\
+r_t + \gamma r_{t+1} + \gamma^2 r_{t+2} + \cdots - V(s_t), & n = \infty
+\end{cases}
+$$ {#eq:K_STEP_ADV}
+
+Here a shorter $k$ will have lower variance but higher bias as we are attributing more learning power to each trajectory -- it can overfit.
+GAE attempts to generalize this formulation into a weighted multi-step average instead of a specific $k$.
+To start, we must define the temporal difference (TD) residual of predicted value.
+
+$$
+\delta_t^V = r_t + \gamma V(s_{t+1}) - V(s_t)
+$$ {#eq:TD_RESIDUAL}
+
+To utilize this, we introduce another variable $\lambda$ as the GAE mixing parameter. This folds into an exponential decay of future advantages we wish to estimate:
+
+$$
+\begin{array}{l}
+\hat{A}_t^{GAE(\gamma,\lambda)} = (1-\lambda)(\hat{A}_t^{(1)} + \lambda\hat{A}_t^{(2)} + \lambda^2\hat{A}_t^{(3)} + \cdots) \\
+= (1-\lambda)(\delta_t^V + \lambda(\delta_t^V + \gamma\delta_{t+1}^V) + \lambda^2(\delta_t^V + \gamma\delta_{t+1}^V + \gamma^2\delta_{t+2}^V) + \cdots) \\
+= (1-\lambda)(\delta_t^V(1 + \lambda + \lambda^2 + \cdots) + \gamma\delta_{t+1}^V(\lambda + \lambda^2 + \cdots) + \cdots) \\
+= (1-\lambda)(\delta_t^V\frac{1}{1-\lambda} + \gamma\delta_{t+1}^V\frac{\lambda}{1-\lambda} + \cdots) \\
+= \sum_{l=0}^{\infty}(\gamma\lambda)^l\delta_{t+l}^V
+\end{array}
+$$ {#eq:GAE_DFN}
+
+Intuitively, this can be used to average of multi-step estimates of Advantage in an elegant fashion.
+
+*For further reading, see [@seita2017gae].*
 
 ### KL Controllers
 
