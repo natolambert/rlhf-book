@@ -56,5 +56,5 @@ $$ D_{KL}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\frac{P(x)}{Q(x)}\r
   where $\rho_\pi$ is the state distribution under policy $\pi$, and $\gamma$ is the discount factor.
 
 - **Finite Horizon Reward ($J(\pi_\theta)$)**: The expected finite-horizon undiscounted return of the policy $\pi_\theta$, parameterized by $\theta$  is defined as:
-$J(\pi_\theta) = E_\tau~\pi_\theta [\sum^T_t=0 r_t]$
-where $\tau ~ \pi_\theta$ denotes trajectories sampled by following policy $\pi_\theta$ and $T$ is the finite horizon.
+$J(\pi_\theta) = \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum_{t=0}^T \gamma^t r_t \right]$
+where $\tau \sim \pi_\theta$ denotes trajectories sampled by following policy $\pi_\theta$ and $T$ is the finite horizon.
