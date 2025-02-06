@@ -12,9 +12,13 @@ Reward models broadly have been used extensively in reinforcement learning resea
 The practice is closely related to inverse reinforcement learning, where the problem is to approximate an agent's reward function given trajectories of behavior [@ng2000algorithms], and other areas of deep reinforcement learning.
 Reward models were proposed, in their modern form, as a tool for studying the value alignment problem [@leike2018scalable].
 
+The most common reward model predicts the probability that a piece of text was close to a "preferred" piece of text from the training comparisons.
+Later in this section we also compare these to Outcome Reward Models (ORMs) that predict the probability and a completion results in a correct answer or a Process Reward Model (PRM) that assigns a score to each step in reasoning.
+When not indicated, the reward models mentioned are those predicting preference between text.
+
 ## Training Reward Models
 
-There are two popular expressions for how to train a reward model -- they are numerically equivalent. 
+There are two popular expressions for how to train a standard reward model for RLHF -- they are numerically equivalent. 
 The canonical implementation is derived from the Bradley-Terry model of preference [@BradleyTerry].
 A Bradley-Terry model of preferences measures the probability that the pairwise comparison for two events drawn from the same distribution, say $i$ and $j$, satisfy the following relation, $i > j$:
 
@@ -132,9 +136,28 @@ completions_ids = [completion + separator_ids for completion in completions_ids]
 labels = [[-100] * (len(completion) - 1) + [label] for completion, label in zip(completions_ids, labels)]
 ```
 
-TODO comment on how they are often trained with LM heads and have 3 classes, +, neutral, -
+Traditionally PRMs are trained with a language modeling head that outputs a token only at the end of a reasoning step, e.g. at the token corresponding to "\n\n". 
+These predictions tend to be -1 for incorrect, 0 for neutral, and 1 for correct.
+These labels do not necessarily tie with whether or not the model is on the right path, but if the step is correct.
 
 ## Reward Models vs. Outcome RMs vs. Process RMs vs. Value Functions
+
+The various types of reward models covered indicate the spectrum of ways that "quality" can be measured in RLHF and other post-training methods.
+Below, a summary of what the models predict and how they are trained.
+
+| Model Class           | What They Predict                                                       | How They Are Trained                                                                                   | Head Structure (Example)                                 |
+|-----------------------|-------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------|----------------------------------------------------------|
+| **Reward Models**     | Quality of text via probability of chosen response at EOS token                 | Contrastive loss between pairwise (or N-wise) comparisons between completions | Regression or classification head on top of LM features |
+| **Outcome Reward Models** | Probability that an answer is correct per-token | Labeled outcome pairs (e.g., success/failure on verifiable domains)                      | Language modeling head per-token cross-entropy, where every label is the outcome level label |
+| **Process Reward Models** | A reward or score for intermediate steps at end of reasoning steps | Trained using intermediate feedback or stepwise annotations (trained per token in reasoning step)               | Language modeling head only running inference per reasoning step, predicts three classes -1, 0, 1 |
+| **Value Functions**   | The  expected return given the current state             | Trained via regression to each point in sequence           | A classification with output per-token    |
+
+Table: Comparing types of reward models. {#tbl:rm_compare}
+
+Some notes, given the above table has a lot of edge cases.
+
+* Both in preference tuning and reasoning training, the value functions often have a discount factor of 1, which makes a value function even closer to an outcome reward model, but with a different training loss.
+* A process reward model can be supervised by doing rollouts from an intermediate state and collecting outcome data. This blends multiple ideas, but if the *loss* is per reasoning step labels, it is best referred to as a PRM.
 
 ## Generative Reward Modeling
 
