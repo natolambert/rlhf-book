@@ -27,7 +27,7 @@ This is a *training-data only* interface.
 Now that these models are popular, applications often expose data directly to the users for testing.
 An example interaction of this form is shown below for an earlier version of ChatGPT.
 
-![Example preference data collection interface.](images/chatgpt-ab-test.jpeg){#fig:preference-interface .center}
+![Example preference data collection interface.](images/chatgpt-ab-test.jpeg){#fig:preference-chatgpt .center}
 
 This style of interface is used extensively across the industry, such as for *evaluation* of models given the same format.
 A popular public option to see engage with models in this way is ChatBotArena:
