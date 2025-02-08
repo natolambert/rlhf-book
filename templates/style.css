@@ -240,27 +240,32 @@ figcaption {
     margin: 0 0 .8em;
 }
 
+/* for html tables */
 table {
     margin-bottom: 2em;
     border-bottom: 1px solid #ddd;
     border-right: 1px solid #ddd;
     border-spacing: 0;
+    box-shadow: none;
+    border: none;
     border-collapse: collapse;
     margin-left: auto;
     margin-right: auto;
+    width: auto; /* Ensures the table doesn't stretch full-width */
+    display: table;
 }
 
-table th {
-    padding: .2em 1em;
+th {
+    padding: 12px;
+    text-align: center;
     background-color: #eee;
-    border-top: 1px solid #ddd;
-    border-left: 1px solid #ddd;
+    border: 1px solid #ddd;
 }
 
-table td {
-    padding: .2em 1em;
-    border-top: 1px solid #ddd;
-    border-left: 1px solid #ddd;
+td {
+    padding: 12px;
+    text-align: left; /* Keeps data cells left-aligned */
+    border: 1px solid #ddd;
     vertical-align: top;
 }
 
@@ -347,19 +352,7 @@ table td {
   display: none;
 }
 
-/* for html tables */
-table {
-    margin-left: auto;
-    margin-right: auto;
-    border-collapse: collapse;
-    box-shadow: none;
-    border: none;
-}
-th, td {
-    padding: 8px;
-    text-align: center;
-    border: 1px solid #ddd;
-}
+
 
 thead {
     background-color: #f5f5f5;
