@@ -246,6 +246,8 @@ table {
     border-right: 1px solid #ddd;
     border-spacing: 0;
     border-collapse: collapse;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 table th {

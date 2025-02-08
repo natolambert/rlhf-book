@@ -30,6 +30,9 @@ header-includes:
     ```{=latex}
     % Add new page before chapters start
     \pretocmd{\section}{\newpage}{}{}  
+    % more stable tables in pdf
+    \usepackage{array}
+    \newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1\textwidth}}
     ```
 ##################
 ---
