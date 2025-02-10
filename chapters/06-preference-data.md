@@ -10,10 +10,36 @@ next-url: "07-reward-models.html"
 ## Collecting Preference Data
 
 Getting the most out of human data involves iterative training of models, evolving and highly detailed data instructions, translating through data foundry businesses, and other challenges that add up. 
-The process is difficult for new organizations trying to add human data to their pipelines. 
+The same applies for AI feedback data -- the exact balance between human and AI preference data used for the latest AI models is unknown.
+Regardless, the process is difficult for new organizations trying to add human data to their pipelines. 
 Given the sensitivity, processes that work and improve the models are extracted until the performance runs out.
 
-## Rankings vs. Ratings
+In this chapter we detail technical decisions on how the data is formatted and organizational practices for collecting it.
+
+### Interface
+
+Crucial to collecting preference data is the interface by which one interacts with the model.
+An example interface is shown below from [@bai2022training]:
+
+![Example preference data collection interface.](images/anthropic-interface.png){#fig:preference-interface .center}
+
+This is a *training-data only* interface. 
+Now that these models are popular, applications often expose data directly to the users for testing.
+An example interaction of this form is shown below for an earlier version of ChatGPT.
+
+![Example preference data collection interface.](images/chatgpt-ab-test.jpeg){#fig:preference-chatgpt .center}
+
+This style of interface is used extensively across the industry, such as for *evaluation* of models given the same format.
+A popular public option to see engage with models in this way is ChatBotArena:
+
+TODO chatbotarena image
+
+### Rankings vs. Ratings
+
+The largest decision on how to collect preference data is if the data should be rankings -- i.e. relative ordering of model completions -- or ratings -- i.e. scores assigned to each piece of text.
+Common practice is to train on rankings, but ratings are often used as metadata and / or have been explored in related literature.
+
+The most common technique for collecting preferences is to use a Likert scale, which asks users to rate which response they prefer.
 
 
 
@@ -45,7 +71,7 @@ In this case [@bai2022training], and in other works, this information is still r
 TODO example of thumbs up / down with synthetic data or KTO
 
 
-### Sourcing and Contracts
+## Sourcing and Contracts
 
 The first step is sourcing the vendor to provide data (or one's own annotators). 
 Much like acquiring access to cutting-edge Nvidia GPUs, getting access to data providers is also a who-you-know game. If you have credibility in the AI ecosystem, the best data companies will want you on our books for public image and long-term growth options. Discounts are often also given on the first batches of data to get training teams hooked.
@@ -55,10 +81,6 @@ If you’re a new entrant in the space, you may have a hard time getting the dat
 On multiple occasions, I’ve heard of data companies not delivering their data contracted to them without threatening legal or financial action. Others have listed companies I work with as customers for PR even though we never worked with them, saying they “didn’t know how that happened” when reaching out. There are plenty of potential bureaucratic or administrative snags through the process. For example, the default terms on the contracts often prohibit the open sourcing of artifacts after acquisition in some fine print.
 
 Once a contract is settled the data buyer and data provider agree upon instructions for the task(s) purchased. There are intricate documents with extensive details, corner cases, and priorities for the data. A popular example of data instructions is the one that [OpenAI released for InstructGPT](https://docs.google.com/document/d/1MJCqDNjzD04UbcnVZ-LmeXJ04-TKEICDAepXyMCBUb8/edit#heading=h.21o5xkowgmpj).
-
-An example interface is shown below from [@bai2022training]:
-
-![Example preference data collection interface.](images/anthropic-interface.png){#fig:preference-interface .center}
 
 Depending on the domains of interest in the data, timelines for when the data can be labeled or curated vary. High-demand areas like mathematical reasoning or coding must be locked into a schedule weeks out. Simple delays of data collection don’t always work — Scale AI et al. are managing their workforces like AI research labs manage the compute-intensive jobs on their clusters.
 
