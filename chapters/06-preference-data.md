@@ -34,9 +34,22 @@ An example interaction of this form is shown below for an earlier version of Cha
 ![Example preference data collection interface.](images/chatgpt-ab-test.jpeg){#fig:preference-chatgpt .center}
 
 This style of interface is used extensively across the industry, such as for *evaluation* of models given the same format.
-A popular public option to see engage with models in this way is ChatBotArena:
+A popular public option to see engage with models in this way is ChatBotArena [@chiang2024chatbot]:
 
-TODO chatbotarena image
+![Example preference data collection interface.](images/chatbotarena.png){#fig:chatbotarena .center}
+
+For models in the wild, one of the most common techniques is to collect feedback on if a specific response was positive or negative.
+An example from the Ai2 playground is shown below with thumbs up and down indicators:
+
+![Example preference data collection interface with up or down arrow.](images/up-down-vote.png){#fig:up-down .center}
+
+In domains other than language, the same core principles apply, even though these domains are not the focus of this book.
+For every Midjourney generation (and most popular image generators) they expose multiple responses to users.
+These companies then use the data of which response was selected to finetune their models with RLHF.
+Midjourney's interface is shown below:
+
+![Example user interface of text-to-image-models.](images/midj.jpeg){#fig:midj .center}
+
 
 ### Rankings vs. Ratings
 

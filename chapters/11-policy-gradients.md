@@ -244,7 +244,7 @@ Some decisions not covered here include:
 - **Different KL estimators**: With complex language models, precisely computing the KL divergence between models can be complex, so multiple approximations are used to substitute for an exact calculation [@schulman2016klapprox].
 - **KL controllers**: Original implementations of PPO and related algorithms had dynamic controllers that targeted specific KLs and changed the penalty based on recent measurements. Most modern RLHF implementations use static KL penalties, but this can also vary.
 
-For more details on implementation details for RLHF, see [@huang2024n+]. 
+For more details on implementation details for RLHF, see [@huang2024n]. 
 For further information on the algorithms, see [@weng2018PG].
 
 ### Policy Gradient
