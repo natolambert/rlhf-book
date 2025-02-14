@@ -7,6 +7,10 @@ next-url: "07-reward-models.html"
 
 # Preference Data
 
+Preference data is the engine of preference finetuning and reinforcement learning from human feedback. 
+The data is the signal groups collect in order to then match behaviors they desire and avoid the others.
+Within preference finetuning, many methods for collecting and using said data have been proposed, but until human preferences can be captured in a clear reward function, this process of collecting labeled preference data will be central to RLHF and related techniques.
+
 ## Collecting Preference Data
 
 Getting the most out of human data involves iterative training of models, evolving and highly detailed data instructions, translating through data foundry businesses, and other challenges that add up. 
@@ -30,9 +34,22 @@ An example interaction of this form is shown below for an earlier version of Cha
 ![Example preference data collection interface.](images/chatgpt-ab-test.jpeg){#fig:preference-chatgpt .center}
 
 This style of interface is used extensively across the industry, such as for *evaluation* of models given the same format.
-A popular public option to see engage with models in this way is ChatBotArena:
+A popular public option to see engage with models in this way is ChatBotArena [@chiang2024chatbot]:
 
-TODO chatbotarena image
+![Example preference data collection interface.](images/chatbotarena.png){#fig:chatbotarena .center}
+
+For models in the wild, one of the most common techniques is to collect feedback on if a specific response was positive or negative.
+An example from the Ai2 playground is shown below with thumbs up and down indicators:
+
+![Example preference data collection interface with up or down arrow.](images/up-down-vote.png){#fig:up-down .center}
+
+In domains other than language, the same core principles apply, even though these domains are not the focus of this book.
+For every Midjourney generation (and most popular image generators) they expose multiple responses to users.
+These companies then use the data of which response was selected to finetune their models with RLHF.
+Midjourney's interface is shown below:
+
+![Example user interface of text-to-image-models.](images/midj.jpeg){#fig:midj .center}
+
 
 ### Rankings vs. Ratings
 
