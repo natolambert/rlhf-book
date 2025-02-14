@@ -21,8 +21,7 @@ Multiple methods for optimizing this expression are discussed in Chapter 11.
 
 A standard illustration of the RL loop is shown in @fig:rl and how it compares to @fig:rlhf.
 
-
-## Manipulating the standard RL setup
+## Manipulating the Standard RL Setup
 
 There are multiple core changes from the standard RL setup to that of RLHF:
 
@@ -37,7 +36,7 @@ In many ways, the result is that while RLHF is heavily inspired by RL optimizers
 
 ![Standard RLHF loop](images/rlhf.png){#fig:rlhf}
 
-## Finetuning and regularization
+## Finetuning and Regularization
 
 RLHF is implemented from a strong base model, which induces a need to control the optimization from straying too far from the initial policy.
 In order to succeed in a finetuning regime, RLHF techniques employ multiple types of regularization to control the optimization.
@@ -47,3 +46,14 @@ $$J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t)\right] - \beta  \
 
 Within this formulation, a lot of study into RLHF training goes into understanding how to spend a certain "KL budget" as measured by a distance from the initial model.
 For more details, see Chapter 8 on Regularization.
+
+## Optimization Tools
+
+In this book, we detail many popular techniques for solving this optimization problem.
+The popular tools of post-training include:
+
+- **Reward modeling** (Chapter 7): Where a model is trained to capture the signal from collected preference data and can then output a scalar reward indicating the quality of future text.
+- **Instruction finetuning** (Chapter 9): A prerequisite to RLHF where models are taught the question-answer format used in the majority of language modeling interactions today by imitating preselected examples.
+- **Rejection sampling** (Chapter 10): The most basic RLHF technique where candidate completions for instruction finetuning are filtered a reward model imitating human preferences.
+- **Policy gradients** (Chapter 11): The reinforcement learning algorithms used in the seminal examples of RLHF to update parameters of a language model with respect to the signal from a reward model.
+- **Direct alignment algorithms** (Chapter 12): Algorithms that directly optimize a policy from pairwise preference data, rather than learning an intermediate reward model to then optimize later.

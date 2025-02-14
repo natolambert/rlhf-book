@@ -7,6 +7,10 @@ next-url: "07-reward-models.html"
 
 # Preference Data
 
+Preference data is the engine of preference finetuning and reinforcement learning from human feedback. 
+The data is the signal groups collect in order to then match behaviors they desire and avoid the others.
+Within preference finetuning, many methods for collecting and using said data have been proposed, but until human preferences can be captured in a clear reward function, this process of collecting labeled preference data will be central to RLHF and related techniques.
+
 ## Collecting Preference Data
 
 Getting the most out of human data involves iterative training of models, evolving and highly detailed data instructions, translating through data foundry businesses, and other challenges that add up. 

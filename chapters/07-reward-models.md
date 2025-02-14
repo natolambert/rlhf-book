@@ -148,11 +148,8 @@ Below, a summary of what the models predict and how they are trained.
 | Model Class | What They Predict | How They Are Trained | LM structure |
 |------------|------------------|---------------------|--------------|
 | **Reward Models** | Quality of text via probability of chosen response at EOS token | Contrastive loss between pairwise (or N-wise) comparisons between completions | Regression or classification head on top of LM features |
-|------------|------------------|---------------------|--------------|
 | **Outcome Reward Models** | Probability that an answer is correct per-token | Labeled outcome pairs (e.g., success/failure on verifiable domains) | Language modeling head per-token cross-entropy, where every label is the outcome level label |
-|------------|------------------|---------------------|--------------|
 | **Process Reward Models** | A reward or score for intermediate steps at end of reasoning steps | Trained using intermediate feedback or stepwise annotations (trained per token in reasoning step) | Language modeling head only running inference per reasoning step, predicts three classes -1, 0, 1 |
-|------------|------------------|---------------------|--------------|
 | **Value Functions** | The expected return given the current state | Trained via regression to each point in sequence | A classification with output per-token |
 
 Table: Comparing types of reward models. {#tbl:rm_compare}

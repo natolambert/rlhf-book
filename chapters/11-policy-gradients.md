@@ -227,10 +227,25 @@ Finally, GRPO's advantage estimation can also be applied without the PPO clippin
 
 ## Implementation
 
-- Only score a response with a reward model with the `eos_token` is generated, otherwise the response is truncated.
+Compared to the original Deep RL literature where many of these algorithms were developed, implementing RL for optimizing language models or other large AI models requires many small implementation details.
+In this section, we highlight some key factors that differentiate the implementations of popular algorithms.
 
+There are many other small details that go into this training. 
+For example, when doing RLHF with language models a crucial step is generating text that will then be rated by the reward model. 
+Under normal circumstances, the model should generate a end-of-sequence (EOS) token indicating it finished generating, but a common practice is to put a hard cap on generation length to efficiently utilize infrastructure.
+A failure mode of RLHF is that the model is regularly truncated in its answers, driving the ratings from the reward model out of distribution and to unpredictable scores.
+The solution to this is to *only* run a reward model ranking on the `eos_token`, and to otherwise assign a penalty to the model for generating too long.
 
-For more details on implementation details for RLHF, see [@huang2024n+]. For further information on the algorithms, see [@weng2018PG].
+The popular open-source tools for RLHF have a large variance in implementation details across the algorithms (see table 10 in [@ivison2024unpacking]).
+Some decisions not covered here include:
+
+- **Value network initialization**: The internal learned value network used by PPO and other similar algorithms can be started from a different model of the same architecture or randomly selected weights. This can have a large impact on performance.
+- **Reward normalization, reward whitening, and/or advantage whitening**: Where normalization bounds all the values from the RM (or environment) to be between 0 and 1, which can help with learning stability, [whitening](https://en.wikipedia.org/wiki/Whitening_transformation) the rewards or the advantage estimates to uniform covariates can provide an even stronger boost to stability.
+- **Different KL estimators**: With complex language models, precisely computing the KL divergence between models can be complex, so multiple approximations are used to substitute for an exact calculation [@schulman2016klapprox].
+- **KL controllers**: Original implementations of PPO and related algorithms had dynamic controllers that targeted specific KLs and changed the penalty based on recent measurements. Most modern RLHF implementations use static KL penalties, but this can also vary.
+
+For more details on implementation details for RLHF, see [@huang2024n+]. 
+For further information on the algorithms, see [@weng2018PG].
 
 ### Policy Gradient
 
@@ -435,12 +450,6 @@ $$ {#eq:GAE_DFN}
 Intuitively, this can be used to average of multi-step estimates of Advantage in an elegant fashion.
 
 *For further reading, see [@seita2017gae].*
-
-### KL Controllers
-
-TODO: adaptive vs static KL control 
-
-See table 10 for impelementation details in tulu 2.5 paper
 
 ### Double regularization
 
