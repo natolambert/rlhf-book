@@ -56,13 +56,7 @@ Midjourney's interface is shown below:
 The largest decision on how to collect preference data is if the data should be rankings -- i.e. relative ordering of model completions -- or ratings -- i.e. scores assigned to each piece of text.
 Common practice is to train on rankings, but ratings are often used as metadata and / or have been explored in related literature.
 
-The most common technique for collecting preferences is to use a Likert scale, which asks users to rate which response they prefer.
-
-
-
-
-[@likert1932technique]
-
+The most common technique for collecting preferences is to use a Likert scale [@likert1932technique], which asks users to rate which response they prefer.
 For example, a 5 point Likert scale would look like the following:
 
 | A$>>$B | A$>$B | Tie | B$>$A | B$>>$A |
@@ -86,7 +80,7 @@ In this case [@bai2022training], and in other works, this information is still r
 
 
 TODO example of thumbs up / down with synthetic data or KTO
-
+[@ethayarajh2024kto]
 
 ## Sourcing and Contracts
 

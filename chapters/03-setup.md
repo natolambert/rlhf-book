@@ -20,7 +20,7 @@ TODO
 - **Kullback-Leibler (KL) divergence ($D_{KL}(P || Q)$)**, also known as KL divergence, is a measure of the difference between two probability distributions. 
 For discrete probability distributions $P$ and $Q$ defined on the same probability space $\mathcal{X}$, the KL distance from $Q$ to $P$ is defined as:
 
-$$ D_{KL}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\frac{P(x)}{Q(x)}\right) $$
+$$ D_{KL}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\frac{P(x)}{Q(x)}\right) $$ {#eq:def_kl}
 
 
 ### NLP Definitions
