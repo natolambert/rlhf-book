@@ -274,9 +274,16 @@ td {
     text-align: center;
 }
 
-@media only screen and (min-width: 480px) {
+/* Target only mobile screens */
+@media only screen and (max-width: 479px) {
     body {
         font-size: 14px;
+    }
+}
+
+@media only screen and (min-width: 480px) {
+    body {
+        font-size: 15px;
     }
 }
 
