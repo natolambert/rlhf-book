@@ -12,7 +12,7 @@ In RL, an agent takes actions, $a$, sampled from a policy, $\pi$, with respect t
 Traditionally, the environment evolves with respect to a transition or dynamics function $p(s_{t+1}|s_t,a_t)$.
 Hence, across a finite episode, the goal of an RL agent is to solve the following optimization:
 
-$$J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[ \sum_{t=0}^{\infty} \gamma^t r(s_t, a_t) \right],$$
+$$J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[ \sum_{t=0}^{\infty} \gamma^t r(s_t, a_t) \right],$$ {#eq:rl_opt}
 
 where $\gamma$ is a discount factor from 0 to 1 that balances the desirability of near- versus future-rewards.
 Multiple methods for optimizing this expression are discussed in Chapter 11.
@@ -30,7 +30,7 @@ There are multiple core changes from the standard RL setup to that of RLHF:
 3. Response level rewards. Often referred to as a Bandits Problem, RLHF attribution of reward is done for an entire sequence of actions, composed of multiple generated tokens, rather than in a fine-grained manner. 
 
 Given the single-turn nature of the problem, the optimization can be re-written without the time horizon and discount factor (and the reward models):
-$$J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t) \right],$$
+$$J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t) \right].$$ {#eq:rl_opt_int}
 
 In many ways, the result is that while RLHF is heavily inspired by RL optimizers and problem formulations, the action implementation is very distinct from traditional RL.
 
@@ -42,7 +42,7 @@ RLHF is implemented from a strong base model, which induces a need to control th
 In order to succeed in a finetuning regime, RLHF techniques employ multiple types of regularization to control the optimization.
 The most common change to the optimization function is to add a distance penalty on the difference between the current RLHF policy and the starting point of the optimization:
 
-$$J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t)\right] - \beta  \mathcal{D}_{KL}(\pi^{\text{RL}}(\cdot|s_t) \| \pi^{\text{ref}}(\cdot|s_t)).$$
+$$J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t)\right] - \beta  \mathcal{D}_{KL}(\pi^{\text{RL}}(\cdot|s_t) \| \pi^{\text{ref}}(\cdot|s_t)).$$ {#eq:rlhf_opt_eq}
 
 Within this formulation, a lot of study into RLHF training goes into understanding how to spend a certain "KL budget" as measured by a distance from the initial model.
 For more details, see Chapter 8 on Regularization.
