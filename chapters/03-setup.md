@@ -1,6 +1,7 @@
 ---
 prev-chapter: "Key Related Works"
 prev-url: "02-related-works.html"
+page-title: Related Works
 next-chapter: "Problem Formulation"
 next-url: "04-optimization.html"
 ---
@@ -11,7 +12,25 @@ This chapter includes all the definitions, symbols, and operations frequently us
 
 ## Language Modeling Overview
 
-TODO
+The majority of modern language models are trained to learn the joint probability distribution of sequences of tokens (words, subwords, or characters) in a autoregressive manner. 
+Autoregression simply means that each next prediction depends on the previous entities in the sequence.
+ Given a sequence of tokens $x = (x_1, x_2, \ldots, x_T)$, the model factorizes the probability of the entire sequence into a product of conditional distributions:
+
+$$P_{\theta}(x) = \prod_{t=1}^{T} P_{\theta}(x_{t} \mid x_{1}, \ldots, x_{t-1}).$$ {#eq:llming}
+
+In order to fit a model that accurately predicts this, the goal is often to maximize the likelihood of the training data as predicted by the current model. 
+To do so we can minimize a negative log-likelihood (NLL) loss:
+
+$$\mathcal{L}_{\text{LM}}(\theta)=-\,\mathbb{E}_{x \sim \mathcal{D}}\left[\sum_{t=1}^{T}\log P_{\theta}\left(x_t \mid x_{<t}\right)\right]. $$ {#eq:nll}
+
+In practice, one uses a cross-entropy loss with respect to each next-token prediction, computed by comparing the true token in a sequence to what was predicted by the model.
+
+Implementing a language model can take many forms.
+Modern LMs, including ChatGPT, Claude, Gemini, etc., most often use **decoder-only Transformers** [@Vaswani2017AttentionIA].
+The core innovation of the Transform was heavily utilizing the **self-attention** [@Bahdanau2014NeuralMT] mechanism to allow the model to directly attend to concepts in context and learn complex mappings.
+Throughout this book, particularly when covering reward models in Chapter 7, we will discuss adding new heads or modifying a language modeling (LM) head of the transformer.
+The LM head is a final linear projection layer that maps from the models internal embedding space to the tokenizer space (a.k.a. vocabulary).
+Different heads can be used to re-use the internals of the model and fine-tune it to output differently shaped quantities.
 
 ## Definitions
 

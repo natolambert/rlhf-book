@@ -1,6 +1,7 @@
 ---
 prev-chapter: "Instruction Tuning"
 prev-url: "09-instruction-tuning.html"
+page-title: Rejection Sampling
 next-chapter: "Policy Gradients"
 next-url: "11-policy-gradients.html"
 ---

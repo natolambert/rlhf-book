@@ -1,6 +1,7 @@
 ---
 prev-chapter: "Problem Setup"
 prev-url: "03-setup.html"
+page-title: Problem Formulation
 next-chapter: "The Nature of Preferences"
 next-url: "05-preferences.html"
 ---

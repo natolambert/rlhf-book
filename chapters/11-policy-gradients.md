@@ -1,6 +1,7 @@
 ---
 prev-chapter: "Rejection Sampling"
 prev-url: "10-rejection-sampling.html"
+page-title: Policy Gradient Algorithms
 next-chapter: "Direct Alignment Algorithms"
 next-url: "12-direct-alignment.html"
 ---
@@ -11,6 +12,10 @@ next-url: "12-direct-alignment.html"
 The algorithms that popularized RLHF for language models were policy-gradient reinforcement learning algorithms. 
 These algorithms, such as PPO and Reinforce, use recently generated samples to update their model rather than storing scores in a replay buffer.
 In this section we will cover the fundamentals of the policy gradient algorithms and how they are used in the modern RLHF framework.
+
+The most popular algorithms used for RLHF has evolved over time. When RLHF came onto the scene with ChatGPT, it was largely known that they used a variant of PPO, and many initial efforts were built upon that.
+Over time, multiple research projects showed the promise of REINFORCE style algorithms [@ahmadian2024back] [@wang2024helpsteer2p], touted for its simplicity over PPO without a reward model (saves memory and therefore the number of GPUs required) and with simpler value estimation (no GAE).
+More algorithms have emerged, including Group Relative Policy Optimization, which is particularly popular with reasoning tasks, but in general many of these algorithms can be tuned to fit a specific task.
 
 For definitions of symbols, see the problem setup chapter.
 
