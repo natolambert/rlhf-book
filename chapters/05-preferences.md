@@ -1,6 +1,7 @@
 ---
 prev-chapter: "Problem Formulation"
 prev-url: "04-optimization.html"
+page-title: The Nature of Preferences
 next-chapter: "Preference Data"
 next-url: "06-preference-data.html"
 ---

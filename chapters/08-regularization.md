@@ -1,6 +1,7 @@
 ---
 prev-chapter: "Reward Modeling"
 prev-url: "07-reward-models.html"
+page-title: Regularization
 next-chapter: "Instruction Tuning"
 next-url: "09-instruction-tuning.html"
 ---
