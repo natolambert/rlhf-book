@@ -65,7 +65,7 @@ Note, when training reward models, the most common practice is to train for only
 ## Variants
 
 Reward modeling is a relatively under-explored area of RLHF.
-The traditional reward modeling loss has been modified in many popular works, but the modifications have no solidified into a single best practice.
+The traditional reward modeling loss has been modified in many popular works, but the modifications have not solidified into a single best practice.
 
 ### Preference Margin Loss
 
