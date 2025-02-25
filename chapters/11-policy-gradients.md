@@ -27,7 +27,7 @@ The objective of the agent, often called the *return*, is the sum of discounted,
 $$G_t = R_{t+1} + \gamma R_{t+2} + \cdots = \sum_{k=o}^\infty \gamma^k R_{t+k+1}.$$
 
 The return definition can also be estimated as:
-$$G_{t} = \gamma{G_{t+1}} + R_{t}.$$
+$$G_{t} = \gamma{G_{t+1}} + R_{t+1}.$$
 
 This return is the basis for learning a value function $V(s)$ that is the estimated future return given a current state:
 
