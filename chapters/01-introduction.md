@@ -64,7 +64,7 @@ As we will cover in this book, implementing RLHF often requires training a rewar
 With this, the optimization itself is prone to *over-optimization* because our reward signal is at best a proxy objective, requiring regularization.
 With these limitations, effective RLHF requires a strong starting point, so RLHF cannot be a solution to every problem alone and needs to be approached in a broader lens of post-training.
 
-Due to this complexity, implementing RLHF is far more costly than simple instruction finetuning. 
+Due to this complexity, implementing RLHF is far more costly than simple instruction finetuning and can come with unexpected challenges such as length bias [@singhal2023long] [@park2024disentangling]. 
 For projects where performance matters, RLHF is established as being crucial to achieving a strong finetuned model, but it is more expensive in compute, data costs, and time.
 
 ## How We Got Here
