@@ -2,7 +2,7 @@
 prev-chapter: "Key Related Works"
 prev-url: "02-related-works.html"
 page-title: Related Works
-next-chapter: "Problem Formulation"
+next-chapter: "Training Overview"
 next-url: "04-optimization.html"
 ---
 

@@ -38,7 +38,7 @@ class NavigationDropdown extends HTMLElement {
       <div class="section">
         <h3>Problem Setup</h3>
         <ol start="4">
-          <li><a href="https://rlhfbook.com/c/04-optimization.html">Optimization and RL</a></li>
+          <li><a href="https://rlhfbook.com/c/04-optimization.html">Training Overview</a></li>
           <li><a href="https://rlhfbook.com/c/05-preferences.html">What are preferences?</a></li>
           <li><a href="https://rlhfbook.com/c/06-preference-data.html">Preference Data</a></li>
         </ol>
