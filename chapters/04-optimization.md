@@ -1,12 +1,12 @@
 ---
-prev-chapter: "Problem Setup"
+prev-chapter: "Definitions & Background"
 prev-url: "03-setup.html"
 page-title: Training Overview
 next-chapter: "The Nature of Preferences"
 next-url: "05-preferences.html"
 ---
 
-# RLHF Training Overview
+# Training Overview
 
 ## Problem Formulation
 

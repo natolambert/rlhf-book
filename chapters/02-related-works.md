@@ -2,7 +2,7 @@
 prev-chapter: "Introduction"
 prev-url: "01-introduction.html"
 page-title: Related Works
-next-chapter: "Problem Setup"
+next-chapter: "Definitions & Background"
 next-url: "03-setup.html"
 ---
 

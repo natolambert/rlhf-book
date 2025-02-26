@@ -129,7 +129,7 @@ Newer RLHF techniques and discussions that are not clearly established, but are 
 15. Synthetic Data
 16. Evaluation
 
-### Open Questions (TBD)
+#### Open Questions (TBD)
 
 Fundamental problems and discussions for the long-term evolution of how RLHF is used.
 
