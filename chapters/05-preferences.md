@@ -9,7 +9,47 @@ next-url: "06-preference-data.html"
 # The Nature of Preferences
 
 The core of reinforcement learning from human feedback, also referred to as reinforcement learning from human preferences in early literature, is designed to optimize machine learning models in domains where specifically designing a reward function is hard.
+Consider an example, how do you decide which of these two poems is better (Context: *On February 26th, 2025, I asked both Claude 3.7 Sonnet and ChatGPT with GPT-4o to "Write me a short poem about a optimistic goldfish."*):
+
+Example 1:
+> The Optimistic Goldfish
+> 
+> A little goldfish, bright and bold,
+> Swam in circles, dreams untold.
+> Though the bowl was small and round,
+> Endless wonders still abound.
+> 
+> “The world is vast,” she’d always say,
+> “I’ll find new joys in every day!”
+> With every ripple, every gleam,
+> She’d chase the sunlight, chase a dream.
+> 
+> No walls could dim her hopeful view,
+> For in her heart, the ocean grew.
+> And though she swam in just one place,
+> She met each day with love and grace.
+
+Example 2:
+> The Optimistic Goldfish
+> 
+> In a bowl of curved glass,
+> Swims a goldfish, bright and bold.
+> Three seconds of memory, they say,
+> Yet each circuit feels brand new and gold.
+> 
+> "Today might bring fresh flakes,
+> Or perhaps a castle tall.
+> The water seems especially clear—
+> What adventure awaits beyond this wall?"
+> 
+> Round and round with gleaming scales,
+> Forever finding joy anew.
+> Each moment fresh, each circle bright,
+> The optimist in golden hue.
+
+Which is better? Which came from which model? How would you tell? Particularly, compare this to a question like "Who is the president of the United States?" There, there is a clear right and wrong answer.
 The motivation for using humans as the reward signals is to obtain an indirect metric for the target reward and *align* the downstream model to human preferences.
+In practice, the implementation is challenging and there is a substantial grey area to interpret the best practices.
 
 The use of human labeled feedback data integrates the history of many fields.
 Using human data alone is a well studied problem, but in the context of RLHF it is used at the intersection of multiple long-standing fields of study [@lambert2023entangled].

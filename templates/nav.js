@@ -52,12 +52,12 @@ class NavigationDropdown extends HTMLElement {
           <li><a href="https://rlhfbook.com/c/09-instruction-tuning.html">Instruction Tuning</a></li>
           <li><a href="https://rlhfbook.com/c/10-rejection-sampling.html">Rejection Sampling</a></li>
           <li><a href="https://rlhfbook.com/c/11-policy-gradients.html">Policy Gradients</a></li>
-          <li><a href="https://rlhfbook.com/c/12-direct-alignment.html">Direct Alignment Algorithms</a></li>
+          <li><a href="https://rlhfbook.com/c/12-direct-alignment.html">Direct Alignment Algorithms (WIP)</a></li>
         </ol>
       </div>
 
       <div class="section">
-        <h3>Advanced (TBD)</h3>
+        <h3>Advanced (WIP)</h3>
         <ol start="13">
           <li><a href="https://rlhfbook.com/c/13-cai.html">Constitutional AI and AI Feedback</a></li>
           <li><a href="https://rlhfbook.com/c/14-reasoning.html">Reasoning and Reinforcement Finetuning</a></li>
@@ -67,7 +67,7 @@ class NavigationDropdown extends HTMLElement {
       </div>
 
       <div class="section">
-        <h3>Open Questions (TBD)</h3>
+        <h3>Open Questions (WIP)</h3>
         <ol start="16">
           <li><a href="https://rlhfbook.com/c/17-over-optimization.html">Over-optimization</a></li>
           <li><a href="https://rlhfbook.com/c/18-style.html">Style and Information</a></li>
