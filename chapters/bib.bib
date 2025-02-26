@@ -668,6 +668,14 @@
   journal={arXiv preprint arXiv:2203.11147},
   year={2022}
 }
+@article{lambert2022illustrating,
+  author = {Lambert, Nathan and Castricato, Louis and von Werra, Leandro and Havrilla, Alex},
+  title = {Illustrating Reinforcement Learning from Human Feedback (RLHF)},
+  journal = {Hugging Face Blog},
+  year = {2022},
+  note = {https://huggingface.co/blog/rlhf},
+}
+
 @article{bai2022constitutional,
   title={Constitutional ai: Harmlessness from ai feedback},
   author={Bai, Yuntao and Kadavath, Saurav and Kundu, Sandipan and Askell, Amanda and Kernion, Jackson and Jones, Andy and Chen, Anna and Goldie, Anna and Mirhoseini, Azalia and McKinnon, Cameron and others},
@@ -755,6 +763,18 @@
   volume={36},
   year={2024}
 }
+@article{kirk2023understanding,
+  title={Understanding the effects of rlhf on llm generalisation and diversity},
+  author={Kirk, Robert and Mediratta, Ishita and Nalmpantis, Christoforos and Luketina, Jelena and Hambro, Eric and Grefenstette, Edward and Raileanu, Roberta},
+  journal={arXiv preprint arXiv:2310.06452},
+  year={2023}
+}
+@article{chu2025sft,
+  title={Sft memorizes, rl generalizes: A comparative study of foundation model post-training},
+  author={Chu, Tianzhe and Zhai, Yuexiang and Yang, Jihan and Tong, Shengbang and Xie, Saining and Schuurmans, Dale and Le, Quoc V and Levine, Sergey and Ma, Yi},
+  journal={arXiv preprint arXiv:2501.17161},
+  year={2025}
+}
 @article{chen2024learning,
   title={Learning from Natural Language Feedback},
   author={Chen, Angelica and Scheurer, J{\'e}r{\'e}my and Campos, Jon Ander and Korbak, Tomasz and Chan, Jun Shern and Bowman, Samuel R and Cho, Kyunghyun and Perez, Ethan},
@@ -791,6 +811,109 @@
   title={Rebel: Reinforcement learning via regressing relative rewards},
   author={Gao, Zhaolin and Chang, Jonathan D and Zhan, Wenhao and Oertell, Owen and Swamy, Gokul and Brantley, Kiant{\'e} and Joachims, Thorsten and Bagnell, J Andrew and Lee, Jason D and Sun, Wen},
   journal={arXiv preprint arXiv:2404.16767},
+  year={2024}
+}
+% dpo methods
+@inproceedings{azar2024general,
+  title={A general theoretical paradigm to understand learning from human preferences},
+  author={Azar, Mohammad Gheshlaghi and Guo, Zhaohan Daniel and Piot, Bilal and Munos, Remi and Rowland, Mark and Valko, Michal and Calandriello, Daniele},
+  booktitle={International Conference on Artificial Intelligence and Statistics},
+  pages={4447--4455},
+  year={2024},
+  organization={PMLR}
+}
+@article{zhao2023slic,
+  title={Slic-hf: Sequence likelihood calibration with human feedback},
+  author={Zhao, Yao and Joshi, Rishabh and Liu, Tianqi and Khalman, Misha and Saleh, Mohammad and Liu, Peter J},
+  journal={arXiv preprint arXiv:2305.10425},
+  year={2023}
+}
+@article{singhal2024d2po,
+  title={D2po: Discriminator-guided dpo with response evaluation models},
+  author={Singhal, Prasann and Lambert, Nathan and Niekum, Scott and Goyal, Tanya and Durrett, Greg},
+  journal={arXiv preprint arXiv:2405.01511},
+  year={2024}
+}
+@article{guo2024direct,
+  title={Direct language model alignment from online ai feedback},
+  author={Guo, Shangmin and Zhang, Biao and Liu, Tianlin and Liu, Tianqi and Khalman, Misha and Llinares, Felipe and Rame, Alexandre and Mesnard, Thomas and Zhao, Yao and Piot, Bilal and others},
+  journal={arXiv preprint arXiv:2402.04792},
+  year={2024}
+}
+@article{amini2024direct,
+  title={Direct preference optimization with an offset},
+  author={Amini, Afra and Vieira, Tim and Cotterell, Ryan},
+  journal={arXiv preprint arXiv:2402.10571},
+  year={2024}
+}
+@article{hong2024reference,
+  title={Reference-free monolithic preference optimization with odds ratio},
+  author={Hong, Jiwoo and Lee, Noah and Thorne, James},
+  journal={arXiv e-prints},
+  pages={arXiv--2403},
+  year={2024}
+}
+@article{meng2025simpo,
+  title={Simpo: Simple preference optimization with a reference-free reward},
+  author={Meng, Yu and Xia, Mengzhou and Chen, Danqi},
+  journal={Advances in Neural Information Processing Systems},
+  volume={37},
+  pages={124198--124235},
+  year={2025}
+}
+@article{zhao2024rainbowpo,
+  title={Rainbowpo: A unified framework for combining improvements in preference optimization},
+  author={Zhao, Hanyang and Winata, Genta Indra and Das, Anirban and Zhang, Shi-Xiong and Yao, David D and Tang, Wenpin and Sahu, Sambit},
+  journal={arXiv preprint arXiv:2410.04203},
+  year={2024}
+}
+@article{rosset2024direct,
+  title={Direct nash optimization: Teaching language models to self-improve with general preferences},
+  author={Rosset, Corby and Cheng, Ching-An and Mitra, Arindam and Santacroce, Michael and Awadallah, Ahmed and Xie, Tengyang},
+  journal={arXiv preprint arXiv:2404.03715},
+  year={2024}
+}
+@article{jung2024binary,
+  title={Binary classifier optimization for large language model alignment},
+  author={Jung, Seungjae and Han, Gunsoo and Nam, Daniel Wontae and On, Kyoung-Woon},
+  journal={arXiv preprint arXiv:2404.04656},
+  year={2024}
+}
+@article{gorbatovski2025differences,
+  title={The Differences Between Direct Alignment Algorithms are a Blur},
+  author={Gorbatovski, Alexey and Shaposhnikov, Boris and Sinii, Viacheslav and Malakhov, Alexey and Gavrilov, Daniil},
+  journal={arXiv preprint arXiv:2502.01237},
+  year={2025}
+}
+@article{razin2024unintentional,
+  title={Unintentional unalignment: Likelihood displacement in direct preference optimization},
+  author={Razin, Noam and Malladi, Sadhika and Bhaskar, Adithya and Chen, Danqi and Arora, Sanjeev and Hanin, Boris},
+  journal={arXiv preprint arXiv:2410.08847},
+  year={2024}
+}
+@article{xiao2024cal,
+  title={Cal-dpo: Calibrated direct preference optimization for language model alignment},
+  author={Xiao, Teng and Yuan, Yige and Zhu, Huaisheng and Li, Mingxiao and Honavar, Vasant G},
+  journal={arXiv preprint arXiv:2412.14516},
+  year={2024}
+}
+@article{park2024disentangling,
+  title={Disentangling length from quality in direct preference optimization},
+  author={Park, Ryan and Rafailov, Rafael and Ermon, Stefano and Finn, Chelsea},
+  journal={arXiv preprint arXiv:2403.19159},
+  year={2024}
+}
+% end dpo methods
+@article{singhal2023long,
+  title={A long way to go: Investigating length correlations in rlhf},
+  author={Singhal, Prasann and Goyal, Tanya and Xu, Jiacheng and Durrett, Greg},
+  journal={arXiv preprint arXiv:2310.03716},
+  year={2023}
+}
+@article{tajwar2024preference,
+  title={Preference fine-tuning of llms should leverage suboptimal, on-policy data},
+  author={Tajwar, Fahim and Singh, Anikait and Sharma, Archit and Rafailov, Rafael and Schneider, Jeff and Xie, Tengyang and Ermon, Stefano and Finn, Chelsea and Kumar, Aviral},
+  journal={arXiv preprint arXiv:2404.14367},
   year={2024}
 }
 @article{casper2023open,

@@ -1,12 +1,14 @@
 ---
-prev-chapter: "Problem Setup"
+prev-chapter: "Definitions & Background"
 prev-url: "03-setup.html"
-page-title: Problem Formulation
+page-title: Training Overview
 next-chapter: "The Nature of Preferences"
 next-url: "05-preferences.html"
 ---
 
-# Problem Formulation
+# Training Overview
+
+## Problem Formulation
 
 The optimization of reinforcement learning from human feedback (RLHF) builds on top of the standard RL setup.
 In RL, an agent takes actions, $a$, sampled from a policy, $\pi$, with respect to the state of the environment, $s$, to maximize reward, $r$.
@@ -37,6 +39,30 @@ In many ways, the result is that while RLHF is heavily inspired by RL optimizers
 
 ![Standard RLHF loop](images/rlhf.png){#fig:rlhf}
 
+## Optimization Tools
+
+In this book, we detail many popular techniques for solving this optimization problem.
+The popular tools of post-training include:
+
+- **Reward modeling** (Chapter 7): Where a model is trained to capture the signal from collected preference data and can then output a scalar reward indicating the quality of future text.
+- **Instruction finetuning** (Chapter 9): A prerequisite to RLHF where models are taught the question-answer format used in the majority of language modeling interactions today by imitating preselected examples.
+- **Rejection sampling** (Chapter 10): The most basic RLHF technique where candidate completions for instruction finetuning are filtered a reward model imitating human preferences.
+- **Policy gradients** (Chapter 11): The reinforcement learning algorithms used in the seminal examples of RLHF to update parameters of a language model with respect to the signal from a reward model.
+- **Direct alignment algorithms** (Chapter 12): Algorithms that directly optimize a policy from pairwise preference data, rather than learning an intermediate reward model to then optimize later.
+
+Modern RLHF-trained models always utilize instruction finetuning followed by a mixture of the other optimization options.
+
+## RLHF Recipe Example
+
+The canonical RLHF recipe circa the release of ChatGPT followed a standard three step post-training recipe where RLHF was the center piece [@lambert2022illustrating] [@ouyang2022training] [@bai2022training].
+The three steps taken on top of a "base" language model (the next-token prediction model trained on large-scale web text) was:
+
+1. **Instruction tuning on ~10K examples**: This teaches the model to follow the question-answer format and teaches some basic skills from primarily human-written data.
+2. **Training a reward model on ~100K pairwise prompts**: This model is trained from the instruction-tuned checkpoint and captures the diverse values one wishes to model in their final training. The reward model is the optimization target for RLHF.
+3. **Training the instruction-tuned model with RLHF on another ~100K prompts**: The model is optimized against the reward model with a set of prompts that the model generates over before receiving ratings.
+
+Once RLHF was done, the model was ready to be deployed to users. This recipe is the foundation of modern RLHF, but recipes have evolved substantially to include more stages and more data.
+
 ## Finetuning and Regularization
 
 RLHF is implemented from a strong base model, which induces a need to control the optimization from straying too far from the initial policy.
@@ -48,13 +74,3 @@ $$J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t)\right] - \beta  \
 Within this formulation, a lot of study into RLHF training goes into understanding how to spend a certain "KL budget" as measured by a distance from the initial model.
 For more details, see Chapter 8 on Regularization.
 
-## Optimization Tools
-
-In this book, we detail many popular techniques for solving this optimization problem.
-The popular tools of post-training include:
-
-- **Reward modeling** (Chapter 7): Where a model is trained to capture the signal from collected preference data and can then output a scalar reward indicating the quality of future text.
-- **Instruction finetuning** (Chapter 9): A prerequisite to RLHF where models are taught the question-answer format used in the majority of language modeling interactions today by imitating preselected examples.
-- **Rejection sampling** (Chapter 10): The most basic RLHF technique where candidate completions for instruction finetuning are filtered a reward model imitating human preferences.
-- **Policy gradients** (Chapter 11): The reinforcement learning algorithms used in the seminal examples of RLHF to update parameters of a language model with respect to the signal from a reward model.
-- **Direct alignment algorithms** (Chapter 12): Algorithms that directly optimize a policy from pairwise preference data, rather than learning an intermediate reward model to then optimize later.

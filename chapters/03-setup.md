@@ -1,12 +1,12 @@
 ---
 prev-chapter: "Key Related Works"
 prev-url: "02-related-works.html"
-page-title: Related Works
-next-chapter: "Problem Formulation"
+page-title: Definitions & Background
+next-chapter: "Training Overview"
 next-url: "04-optimization.html"
 ---
 
-# Problem Setup
+# Definitions & Background
 
 This chapter includes all the definitions, symbols, and operations frequently used in the RLHF process and with a quick overview of language models (the common optimization target of this book).
 
@@ -32,9 +32,7 @@ Throughout this book, particularly when covering reward models in Chapter 7, we 
 The LM head is a final linear projection layer that maps from the models internal embedding space to the tokenizer space (a.k.a. vocabulary).
 Different heads can be used to re-use the internals of the model and fine-tune it to output differently shaped quantities.
 
-## Definitions
-
-### ML Definitions
+## ML Definitions
 
 - **Kullback-Leibler (KL) divergence ($D_{KL}(P || Q)$)**, also known as KL divergence, is a measure of the difference between two probability distributions. 
 For discrete probability distributions $P$ and $Q$ defined on the same probability space $\mathcal{X}$, the KL distance from $Q$ to $P$ is defined as:
@@ -42,7 +40,7 @@ For discrete probability distributions $P$ and $Q$ defined on the same probabili
 $$ D_{KL}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\frac{P(x)}{Q(x)}\right) $$ {#eq:def_kl}
 
 
-### NLP Definitions
+## NLP Definitions
 
 - **Prompt ($x$)**: The input text given to a language model to generate a response or completion.
 
@@ -54,7 +52,7 @@ $$ D_{KL}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\frac{P(x)}{Q(x)}\r
 
 - **Policy ($\pi$)**: A probability distribution over possible completions, parameterized by $\theta$: $\pi_\theta(y|x)$.
 
-### RL Definitions
+## RL Definitions
 
 - **Reward ($r$)**: A scalar value indicating the desirability of an action or state, typically denoted as $r$.
 
