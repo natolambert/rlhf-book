@@ -35,6 +35,37 @@ That being said, RLHF colloquially *is* what led to modern post-training.
 Soon after the release of ChatGPT, RLHF encompassed all of post-training.
 The foundations of RLHF involve far more than preferences alone and this book provides introductions to all the related topics.
 
+## What Does RLHF Do?
+
+The biggest question around RLHF, yet one that is still hard to answer, is "What does RLHF training offer models?"
+The core role of this book, beyond teaching the techniques for doing RLHF, is to distill intuition as to *why* RLHF is crucial to modern AI models.
+In recent years, language models shifted from academic experiments studied in the purview of benchmarks to general purpose technology.
+RLHF is at the core of this transition.
+
+The most compelling view of how RLHF works is to think of how *style* applies to interactions you have with language models.
+The style, or format, of information presented is crucial to how it is learned.
+This has always been the case for examples such as coursework, but is normally applied in the background and not considered directly.
+
+Modern research has established RLHF as a general method to integrate subtle stylistic and related behavioral features into the models.
+Compared to other techniques for post-training, such as instruction finetuning, RLHF generalizes far better across domains [@kirk2023understanding] [@chu2025sft] -- helping create effective general purpose models.
+
+Intuitively, this can be seen in how the optimization techniques are applied. 
+Instruction finetuning is training the model to predict the next certain token when the text preceding is close to examples it has seen.
+It is optimizing the model to more regularly output specific features in text. This is a per-token update.
+
+RLHF on the other hand tunes the responses on the response level rather than looking at the next token specifically.
+Additionally, it is telling the model what a *better* response looks like, rather than a specific response it should learn.
+RLHF also shows a model which type of response it should avoid, i.e. negative feedback. 
+The training to achieve this is often called a *contrastive* loss function and is referenced throughout this book.
+
+While this flexibility is a major advantage of RLHF, it comes with implementation challenges. 
+Largely, these center on *how to control the optimization.* 
+As we will cover in this book, implementing RLHF often requires training a reward model, of which best practices are not strongly established and depend on the area of application.
+With this, the optimization itself is prone to *over-optimization* because our reward signal is at best a proxy objective, requiring regularization.
+With these limitations, effective RLHF requires a strong starting point, so RLHF cannot be a solution to every problem alone and needs to be approached in a broader lens of post-training.
+
+Due to this complexity, implementing RLHF is far more costly than simple instruction finetuning. 
+For projects where performance matters, RLHF is established as being crucial to achieving a strong finetuned model, but it is more expensive in compute, data costs, and time.
 
 ## How We Got Here
 
