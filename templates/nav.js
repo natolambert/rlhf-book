@@ -18,17 +18,17 @@ class NavigationDropdown extends HTMLElement {
     <nav class="chapter-nav">
       <div class="section">
         <h3>Links</h3>
-        <ol>
+        <ul>
           <li><a href="https://rlhfbook.com">Home</a></li>
           <li><a href="https://github.com/natolambert/rlhf-book">GitHub Repository</a></li>
           <li><a href="https://rlhfbook.com/book.pdf">PDF</a></li>
           <li class="inactive">Order a copy (Soon)</li>
-        </ol>
+        </ul>
       </div>
 
       <div class="section">
         <h3>Introductions</h3>
-        <ol>
+        <ol start="1">
           <li><a href="https://rlhfbook.com/c/01-introduction.html">Introduction</a></li>
           <li><a href="https://rlhfbook.com/c/02-related-works.html">Seminal (Recent) Works</a></li>
           <li><a href="https://rlhfbook.com/c/03-setup.html">Definitions</a></li>
@@ -37,7 +37,7 @@ class NavigationDropdown extends HTMLElement {
 
       <div class="section">
         <h3>Problem Setup</h3>
-        <ol>
+        <ol start="4">
           <li><a href="https://rlhfbook.com/c/04-optimization.html">Optimization and RL</a></li>
           <li><a href="https://rlhfbook.com/c/05-preferences.html">What are preferences?</a></li>
           <li><a href="https://rlhfbook.com/c/06-preference-data.html">Preference Data</a></li>
@@ -46,7 +46,7 @@ class NavigationDropdown extends HTMLElement {
 
       <div class="section">
         <h3>Optimization</h3>
-        <ol>
+        <ol start="7">
           <li><a href="https://rlhfbook.com/c/07-reward-models.html">Reward Modeling</a></li>
           <li><a href="https://rlhfbook.com/c/08-regularization.html">Regularization</a></li>
           <li><a href="https://rlhfbook.com/c/09-instruction-tuning.html">Instruction Tuning</a></li>
@@ -58,7 +58,7 @@ class NavigationDropdown extends HTMLElement {
 
       <div class="section">
         <h3>Advanced (TBD)</h3>
-        <ol>
+        <ol start="13">
           <li><a href="https://rlhfbook.com/c/13-cai.html">Constitutional AI and AI Feedback</a></li>
           <li><a href="https://rlhfbook.com/c/14-reasoning.html">Reasoning and Reinforcement Finetuning</a></li>
           <li><a href="https://rlhfbook.com/c/15-synthetic.html">Synthetic Data</a></li>
@@ -68,7 +68,7 @@ class NavigationDropdown extends HTMLElement {
 
       <div class="section">
         <h3>Open Questions (TBD)</h3>
-        <ol>
+        <ol start="16">
           <li><a href="https://rlhfbook.com/c/17-over-optimization.html">Over-optimization</a></li>
           <li><a href="https://rlhfbook.com/c/18-style.html">Style and Information</a></li>
         </ol>
