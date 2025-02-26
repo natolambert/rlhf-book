@@ -36,7 +36,7 @@ class NavigationDropdown extends HTMLElement {
       </div>
 
       <div class="section">
-        <h3>Problem Setup</h3>
+        <h3>Problem Setup & Context</h3>
         <ol start="4">
           <li><a href="https://rlhfbook.com/c/04-optimization.html">Training Overview</a></li>
           <li><a href="https://rlhfbook.com/c/05-preferences.html">What are preferences?</a></li>
@@ -45,7 +45,7 @@ class NavigationDropdown extends HTMLElement {
       </div>
 
       <div class="section">
-        <h3>Optimization</h3>
+        <h3>Optimization Tools</h3>
         <ol start="7">
           <li><a href="https://rlhfbook.com/c/07-reward-models.html">Reward Modeling</a></li>
           <li><a href="https://rlhfbook.com/c/08-regularization.html">Regularization</a></li>
