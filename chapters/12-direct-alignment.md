@@ -50,8 +50,41 @@ Online variants that sample generations from the model, e.g. **Online DPO** [@gu
 
 There is a long list of other DAA variants, such as Direct Nash Optimization (DNO) [@rosset2024direct] or Binary Classifier Optimization (BCO) [@jung2024binary], but the choice of algorithm is far less important than the initial model and the data used [@lambert2024t] [@zhao2024rainbowpo] [@gorbatovski2025differences].
 
+## Implementation Considerations
+
+DAAs such as DPO are implemented very differently than policy gradient optimizers.
+The DPO loss, taken from the original implementation, largely can be summarized as follows [@rafailov2024direct]:
+
+```python
+pi_logratios = policy_chosen_logps - policy_rejected_logps
+ref_logratios = reference_chosen_logps - reference_rejected_logps
+
+logits = pi_logratios - ref_logratios  # also known as h_{\pi_\theta}^{y_w,y_l}
+
+losses = -F.logsigmoid(beta * logits)
+
+chosen_rewards = beta * (policy_chosen_logps - reference_chosen_logps).detach()
+rejected_rewards = beta * (policy_rejected_logps - reference_rejected_logps).detach()
+```
+
+This can be used in standard language model training stacks as this information is already collated during the forward pass of a model (with the addition of a reference model).
+
+In most ways, this is simpler and an quality of life improvement, but also they offer a different set of considerations.
+1. **KL distance is static**: In DPO and other algorithms, the KL distance is set explicitly by the $\beta$ parameter that balances the distance penalty to the optimization. This is due to the fact that DPO takes gradient steps towards the *optimal* solution to the RLHF objective given the data -- it steps exactly to the solution set by the $\beta$ term. On the other hand, RL based optimizers take steps based on the batch and recent data.
+2. **Caching log-probabilities**: Simple implementations of DPO do the forward passes for the policy model and reference models at the same time for conveniences with respect to the loss function. Though, this doubles the memory used and results in increased GPU usage. To avoid this, one can compute the log-probabilities of the reference model over the training dataset first, then reference it when computing the loss and updating the parameters per batch, reducing the peak memory usage by 50%.
 
 
 ## DAAs vs. RL: Online vs. Offline Data
 
-Tülu 2.5 [@ivison2024unpacking], should use on-policy data [@tajwar2024preference], Online DPO above
+Broadly, the argument boils down to one question: Do we need the inner workings of reinforcement learning, with value functions, policy gradients, and all, to align language models with RLHF? 
+This, like most questions phrased this way, is overly simplistic. 
+Of course, both methods are well-established, but it is important to illustrate where the fundamental differences and performance manifolds lie.
+
+Multiple reports have concluded that policy-gradient based and RL methods outperform DPO and its variants.
+The arguments take different forms, from training models with different algorithms but controlled data[@ivison2024unpacking] [@xu2024dpo] or studying the role of on-policy data within the RL optimization loop [@tajwar2024preference].
+In all of these cases, DPO algorithms are a hair behind.
+
+Even with this performance delta, DAA are still used extensively in leading models due to its simplicity.
+DAAs provide a controlled environment where iterations on training data and other configurations can be made rapidly, and given that data is often far more important than algorithms, using DPO can be fine.
+
+With the emergence of reasoning models that are primarily trained with RL, further investment will return to using RL for preference-tuning, which in the long-term will improve the robustness of RL infrastructure and cement this margin between DAAs and RL for optimizing from human feedback.
