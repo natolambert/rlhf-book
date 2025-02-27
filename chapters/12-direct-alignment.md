@@ -30,20 +30,25 @@ Multiple algorithms have been proposed to re-balance the optimization away from 
 - **DPO with an offset (ODPO)** "requires the difference between the likelihood of the preferred and dispreferred response to be greater than an offset value" [@amini2024direct] -- do not treat every data pair equally, but this can come at the cost of a more difficult labeling environment.
 
 
-
 variants without a reference model by changing the regularization, such as Odds Ratio Policy Optimization (ORPO) [@hong2024reference]
-
 Minor changes to the optimization, such as averaging the log-probabilities rather than summing them (SimPO) or adding length normalization, to improve performance [@meng2025simpo]
+
+
+TODO - figure on preference displacement
+
+![Sketch of preference displacement in DPO.](images/DPO-displacement.png){#fig:dpo_issue .center}
+
+One of the core issues *apparent* in DPO is that the optimization drives only to increase the margin between the probability of the chosen and rejected responses.
+Numerically, the model reduces the probabiltiy of both the chosen and rejected responses, but the *rejected response is reduced by a greater extent* as shown in @fig:DPO-displacement.
+Intuitively, it is not clear how this generalizes, but work has posited that it increases the probability of unaddressed for behaviors [@razin2024unintentional]. 
+Simple methods, such as Cal-DPO [@xiao2024cal], adjust the optimization so that this **preference displacement** does not occur.
+In practice, the exact impact of this is not well known, but points are a potential reason why online methods can outperform vanilla DPO.
+
+
 
 Online variants that sample generations from the model, e.g. Online DPO [@guo2024direct], even with regular reward model relabelling of newly created creations (D2PO) [@singhal2024d2po]
 
-And others, such as Direct Nash Optimization (DNO) [@rosset2024direct] or Binary Classifier Optimization (BCO) [@jung2024binary]
-
-Regardless, the choice of algorithm is far less important than the initial model and the data used -- prompts and completions [@lambert2024t] [@zhao2024rainbowpo] [@gorbatovski2025differences].
-
-
-DPO does some weird things to the models, but is not fully understood. E.g. decreasing the likelihood of chosen responses, but decreasing rejected more.
-[@razin2024unintentional] (and methods have been proposed to address it [@xiao2024cal])
+There is a long list of other DAA variants, such as Direct Nash Optimization (DNO) [@rosset2024direct] or Binary Classifier Optimization (BCO) [@jung2024binary], but the choice of algorithm is far less important than the initial model and the data used [@lambert2024t] [@zhao2024rainbowpo] [@gorbatovski2025differences].
 
 
 
