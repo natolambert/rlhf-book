@@ -29,9 +29,10 @@ Multiple algorithms have been proposed to re-balance the optimization away from 
 - **Conservative DPO (cDPO) and Identity Preference Optimization (IPO)** address the overfitting by assuming noise in the preference data. cDPO assumes N percent of the data is incorrectly labelled [@rafailov2024direct] and IPO changes the optimization to soften probability of preference rather than optimize directly from a label [@azar2024general]. Practically, IPO changes the preference probability to a nonlinear function, moving away from the Bradley-Terry assumption, with $\Psi(q) = \log\left(\frac{q}{1-q}\right)$.
 - **DPO with an offset (ODPO)** "requires the difference between the likelihood of the preferred and dispreferred response to be greater than an offset value" [@amini2024direct] -- do not treat every data pair equally, but this can come at the cost of a more difficult labeling environment.
 
+Some variants to DPO attempt to either improve the learning signal by making small changes to the loss or make the application more efficient by reducing memory usage.
 
-variants without a reference model by changing the regularization, such as Odds Ratio Policy Optimization (ORPO) [@hong2024reference]
-Minor changes to the optimization, such as averaging the log-probabilities rather than summing them (SimPO) or adding length normalization, to improve performance [@meng2025simpo]
+- **Odds Ratio Policy Optimization (ORPO)** directly updates the policy model with a pull towards the chosen response, similar to the instruction finetuning loss, with a small penalty on the chosen response [@hong2024reference]. This change of loss function removes the need for a reference model, simplifying the setup. The best way to view ORPO is DPO inspired, rather than a DPO derivative.
+-- **Simple Preference Optimization SimPO** makes a minor change to the DPO optimization, by averaging the log-probabilities rather than summing them (SimPO) or adding length normalization, to improve performance [@meng2025simpo].
 
 
 TODO - figure on preference displacement
@@ -44,9 +45,8 @@ Intuitively, it is not clear how this generalizes, but work has posited that it 
 Simple methods, such as Cal-DPO [@xiao2024cal], adjust the optimization so that this **preference displacement** does not occur.
 In practice, the exact impact of this is not well known, but points are a potential reason why online methods can outperform vanilla DPO.
 
-
-
-Online variants that sample generations from the model, e.g. Online DPO [@guo2024direct], even with regular reward model relabelling of newly created creations (D2PO) [@singhal2024d2po]
+The largest other reason that is posited for DPO-like methods to have a lower ceiling on performance than online (RL based) RLHF methods is that the training signal comes from completions from previous or other models.
+Online variants that sample generations from the model, e.g. **Online DPO** [@guo2024direct], even with regular reward model relabelling of newly created creations **Discriminator-Guided DPO** (D2PO) [@singhal2024d2po], alleviate these by generating new completions for the prompt and incorporating a preference signal at training time.
 
 There is a long list of other DAA variants, such as Direct Nash Optimization (DNO) [@rosset2024direct] or Binary Classifier Optimization (BCO) [@jung2024binary], but the choice of algorithm is far less important than the initial model and the data used [@lambert2024t] [@zhao2024rainbowpo] [@gorbatovski2025differences].
 
