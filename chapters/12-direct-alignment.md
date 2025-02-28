@@ -85,9 +85,7 @@ $$ \pi^*(y|x) = \pi(y|x) = \frac{1}{Z(x)}\pi_{\text{ref}}(y|x)\exp\left(\frac{1}
 
 #### Deriving DPO Objective for Bradley Terry Models
 
-Crucially, with our policy $\pi$, we can express it in terms of the partition function, as follows (similar to a Boltzmann distribution):
-
-$$ \pi(y|x) = \frac{1}{Z(x)} \pi_{\text{ref}}(y|x)\exp\left(\frac{1}{\beta}r(x,y)\right) $$ {#eq:dpo_partition_pi}
+TODO
 
 The DPO has an additional derivation for the objective under a Plackett-Luce Model.
 
