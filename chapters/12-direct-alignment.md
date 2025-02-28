@@ -71,6 +71,17 @@ With $\log(x) + \log(y) = \log(x\cdot y)$ (and moving $Z$ to the denominator), w
 $$ = \log \frac{\pi(y|x)}{\frac{1}{Z(x)}\pi_{\text{ref}}(y|x)}- \log Z(x) - \frac{1}{\beta}r(x,y) $$ {#eq:dpo_deriv_9}
 
 Next, we expand $\frac{1}{\beta}r(x,y)$ to $\log \exp \frac{1}{\beta}r(x,y)$ and do the same operation to get @eq:dpo_deriv_5.
+With this optimization form, we need to actually solve for the optimal policy $\pi^*$.
+To do so, let us consider the above optimization as a KL distance:
+
+$$ \min_{\pi}\mathbb{E}_{x\sim\mathcal{D}}\left[\mathbb{D}_\text{KL} \left(\pi(y|x)||\frac{1}{Z(x)}\pi_{\text{ref}}(y|x)\exp\left(\frac{1}{\beta}r(x,y)\right) \right) - \log Z(x)\right] $$ {#eq:dpo_deriv_10}
+
+Since the partition function $Z(x)$ does not depend on the final answer, we can ignore it. This leaves us with just the KL distance between our policy we are learning and a form relating the partition, $\beta$, reward, and reference policy.
+The Gibb's inequality tells this is minimized at a distance of 0, only when the two quantities are equal!
+Hence, we get an optimal policy:
+
+$$ \pi^*(y|x) = \pi(y|x) = \frac{1}{Z(x)}\pi_{\text{ref}}(y|x)\exp\left(\frac{1}{\beta}r(x,y)\right) $$
+
 
 #### Deriving DPO Objective for Bradley Terry Models
 
