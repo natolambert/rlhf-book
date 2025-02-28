@@ -11,7 +11,7 @@ next-url: "05-preferences.html"
 ## Problem Formulation
 
 The optimization of reinforcement learning from human feedback (RLHF) builds on top of the standard RL setup.
-In RL, an agent takes actions, $a$, sampled from a policy, $\pi$, with respect to the state of the environment, $s$, to maximize reward, $r$.
+In RL, an agent takes actions, $a$, sampled from a policy, $\pi$, with respect to the state of the environment, $s$, to maximize reward, $r$ [@sutton2018reinforcement].
 Traditionally, the environment evolves with respect to a transition or dynamics function $p(s_{t+1}|s_t,a_t)$.
 Hence, across a finite episode, the goal of an RL agent is to solve the following optimization:
 
