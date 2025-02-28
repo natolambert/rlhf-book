@@ -11,7 +11,7 @@ next-url: "13-cai.html"
 Direct Alignment Algorithms (DAAs) allow one to update models to solve the  same RLHF objective without ever training an intermediate reward model or using reinforcement learning optimizers.
 The most prominent DAA and one that catalyzed an entire academic movement of aligning language models is Direct Preference Optimization (DPO) [@rafailov2024direct].
 At its core, DPO is using gradient ascent to solve the same constrained RLHF objective.
-Since its release in May of 2023, after a brief delay where the community figured out the right data and hyperparameters to use DPO with, many popular models have used DPO or its variants, from Zephyr-$\beta$ kickstarting it in October of 2024 [@tunstall2023zephyr], Llama 3 Instruct [@dubey2024llama], Tülu 2 [@ivison2023camels] and 3 [@lambert2024t], Nemotron 4 340B [@adler2024nemotron], and others.
+Since its release in May of 2023, after a brief delay where the community figured out the right data and hyperparameters to use DPO with (specifically, surprisingly low learning rates), many popular models have used DPO or its variants, from Zephyr-$\beta$ kickstarting it in October of 2024 [@tunstall2023zephyr], Llama 3 Instruct [@dubey2024llama], Tülu 2 [@ivison2023camels] and 3 [@lambert2024t], Nemotron 4 340B [@adler2024nemotron], and others.
 Technically, Sequence Likelihood Calibration (SLiC-HF) was released first [@zhao2023slic], but it did not catch on due to a combination of luck and effectiveness.
 
 The most impactful part of DPO and DAAs is lowering the barrier of entry to experimenting with language model post-training.
@@ -70,6 +70,7 @@ rejected_rewards = beta * (policy_rejected_logps - reference_rejected_logps).det
 This can be used in standard language model training stacks as this information is already collated during the forward pass of a model (with the addition of a reference model).
 
 In most ways, this is simpler and an quality of life improvement, but also they offer a different set of considerations.
+
 1. **KL distance is static**: In DPO and other algorithms, the KL distance is set explicitly by the $\beta$ parameter that balances the distance penalty to the optimization. This is due to the fact that DPO takes gradient steps towards the *optimal* solution to the RLHF objective given the data -- it steps exactly to the solution set by the $\beta$ term. On the other hand, RL based optimizers take steps based on the batch and recent data.
 2. **Caching log-probabilities**: Simple implementations of DPO do the forward passes for the policy model and reference models at the same time for conveniences with respect to the loss function. Though, this doubles the memory used and results in increased GPU usage. To avoid this, one can compute the log-probabilities of the reference model over the training dataset first, then reference it when computing the loss and updating the parameters per batch, reducing the peak memory usage by 50%.
 
