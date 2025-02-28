@@ -5,4 +5,4 @@ next-chapter: ""
 next-url: ""
 ---
 
-# [Incomplete] Synthetic Data
+# [Incomplete] Synthetic Data & Distillation
