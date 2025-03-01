@@ -85,11 +85,11 @@ Table: An example 8-wise Likert scale between two responses, A and B. {#tbl:like
 
 In this case [@bai2022training], and in other works, this information is still reduced to a binary signal for the training of a reward model.
 
-### Automatic Preference Data
+### Structured Preference Data
 
 In many applications of RLHF and post-training, preference data can be created *automatically* due to innate structures of the data -- i.e. the domains make automatic checks of correctness or preference possible.
 For example, in mathematic reasoning domains the chosen response can be a correct answer and the rejected an incorrect answer.
-Another example is in precise instruction following, such as the evaluation IFEval [TODOCITE], where prompts take the form of:
+Another example is in precise instruction following, such as the evaluation IFEval [@zhou2023instruction], where prompts take the form of:
 
 > Write me a short poem about a goldfish. **Start each sentence with the letter g.**
 
@@ -108,10 +108,18 @@ For example, prompting GPT-4.5-Preview with both of these gives the following.
 > Graceful turns in endless roam,
 > Goldfish finds a crystal home.
 
-And without the constraint:
+And without the constraint (which, it turns out, is also a lower quality output):
 
 > **Prompt**: Write me a short poem about a goldfish.
-> **Response**:
+> **Response**: In circles bright, the goldfish glides,
+> A spark of sun that gently rides
+> Through waters clear, in endless spins—
+> A golden whisper, scales like fins.
+> 
+> Its world confined, yet vast within,
+> Each bubble breathed, a tale begins.
+> In silent waves, content to roam,
+> The goldfish dreams its bowl as home.
 
 Crucially, the prompt for the preference data will need to include the constraint.
 In domains outside of academic study, there are far more applications of preference data based on inductive biases.
