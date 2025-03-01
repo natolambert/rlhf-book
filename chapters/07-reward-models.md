@@ -75,6 +75,8 @@ Llama 2 proposes using the margin between two datapoints, $m(r)$, to distinguish
 
 $$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(x, y_w) - r_{\theta}(x, y_l) - m(r) \right) \right)$$ {#eq:rewardmodelingmargin}
 
+Note that in Llama 3 the margin term was removed as the team observed diminishing improvements after scaling.
+
 ### Balancing Multiple Comparisons Per Prompt
 
 InstructGPT studies the impact of using a variable number of completions per prompt, yet balancing them in the reward model training [@ouyang2022training].
