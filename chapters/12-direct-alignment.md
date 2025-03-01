@@ -16,7 +16,80 @@ Technically, Sequence Likelihood Calibration (SLiC-HF) was released first [@zhao
 
 The most impactful part of DPO and DAAs is lowering the barrier of entry to experimenting with language model post-training.
 
-## Direct Preference Optimization
+## Direct Preference Optimization (DPO)
+
+Here we will re-derive DPO completely and explain intuitions for how it works. 
+
+### DPO Derivation
+
+#### Deriving Optimal RLHF Solution
+
+To start, we should consider the RLHF optimization objective once again, here indicating we wish to maximize this quantity:
+
+$$ \max_{\pi} \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t)\right] - \beta  \mathcal{D}_{KL}(\pi^{\text{RL}}(\cdot|s_t) \| \pi^{\text{ref}}(\cdot|s_t)).$$ {#eq:rlhf_opt_eq_repeat}
+
+First, let us expand the definition of KL-divergence,
+
+$$\max_{\pi} \mathbb{E}_{x \sim \mathcal{D}}\mathbb{E}_{y \sim \pi(y|x)}\left[r(x,y)-\beta\log\frac{\pi(y|x)}{\pi_{\text{ref}}(y|x)}\right] $$ {#eq:dpo_deriv_1}
+
+Next, pull the negative sign out of the difference in brackets. To do this, split it into two terms:
+
+$$ = \max_{\pi}\left(\mathbb{E}_{x \sim \mathcal{D}}\mathbb{E}_{y \sim \pi(y|x)}[r(x,y)] - \beta\,\mathbb{E}_{x \sim \mathcal{D}}\mathbb{E}_{y \sim \pi(y|x)}\left[\log\frac{\pi(y|x)}{\pi_{\text{ref}}(y|x)}\right]\right) $$ {#eq:dpo_deriv_2}
+
+Then, remove the factor of $-1$ and $\beta$,
+
+$$ = \min_{\pi}\left(-\mathbb{E}_{x \sim \mathcal{D}}\mathbb{E}_{y \sim \pi(y|x)}[r(x,y)] + \beta\,\mathbb{E}_{x \sim \mathcal{D}}\mathbb{E}_{y \sim \pi(y|x)}\left[\log\frac{\pi(y|x)}{\pi_{\mathrm{ref}}(y|x)}\right]\right) $$ {#eq:dpo_deriv_3}
+
+Divide by $\beta$ and recombine:
+
+$$ = \min_{\pi}\left(\mathbb{E}_{x \sim \mathcal{D}}\mathbb{E}_{y \sim \pi(y|x)}\left[ \log\frac{\pi(y|x)}{\pi_{\text{ref}}(y|x)} - \frac{1}{\beta}r(x,y) \right]\right) $$ {#eq:dpo_deriv_4}
+
+
+Next, we must introduce a partition function, $Z(x)$:
+
+$$ Z(x) = \sum_y \pi_{\text{ref}}(y|x)\exp\left(\frac{1}{\beta}r(x,y)\right) $$ {#eq:dpo_partition}
+
+The partition function acts as a normalization factor over the reference policy, summing over all possible responses $y$ to a prompt $x$.
+With this substituted in, we obtain our intermediate transformation:
+
+$$ \min_{\pi}\mathbb{E}_{x\sim\mathcal{D}}\mathbb{E}_{y\sim\pi(y|x)}\left[\log\frac{\pi(y|x)}{\frac{1}{Z(x)}\pi_{\text{ref}}(y|x)\exp\left(\frac{1}{\beta}r(x,y)\right)} - \log Z(x)\right] $$ {#eq:dpo_deriv_5}
+
+To see how this is obtained, consider the internal part of the optimization in brackets of @eq:dpo_deriv_4:
+
+$$ \log\frac{\pi(y|x)}{\pi_{\text{ref}}(y|x)} - \frac{1}{\beta}r(x,y) $$ {#eq:dpo_deriv_6}
+
+Then, add $\log Z(x) - \log Z(x)$ to both sides:
+
+$$ = \log\frac{\pi(y|x)}{\pi_{\text{ref}}(y|x)} - \frac{1}{\beta}r(x,y) + \log Z(x) - \log Z(x) $$ {#eq:dpo_deriv_7}
+
+Then, we group the terms:
+
+$$ = \left( \log \frac{\pi(y|x)}{\pi_{\text{ref}}(y|x)} + \log Z(x) \right) - \log Z(x) - \frac{1}{\beta}r(x,y) $$ {#eq:dpo_deriv_8}
+
+With $\log(x) + \log(y) = \log(x\cdot y)$ (and moving $Z$ to the denominator), we get:
+
+$$ = \log \frac{\pi(y|x)}{\frac{1}{Z(x)}\pi_{\text{ref}}(y|x)}- \log Z(x) - \frac{1}{\beta}r(x,y) $$ {#eq:dpo_deriv_9}
+
+Next, we expand $\frac{1}{\beta}r(x,y)$ to $\log \exp \frac{1}{\beta}r(x,y)$ and do the same operation to get @eq:dpo_deriv_5.
+With this optimization form, we need to actually solve for the optimal policy $\pi^*$.
+To do so, let us consider the above optimization as a KL distance:
+
+$$ \min_{\pi}\mathbb{E}_{x\sim\mathcal{D}}\left[\mathbb{D}_\text{KL} \left(\pi(y|x)||\frac{1}{Z(x)}\pi_{\text{ref}}(y|x)\exp\left(\frac{1}{\beta}r(x,y)\right) \right) - \log Z(x)\right] $$ {#eq:dpo_deriv_10}
+
+Since the partition function $Z(x)$ does not depend on the final answer, we can ignore it. This leaves us with just the KL distance between our policy we are learning and a form relating the partition, $\beta$, reward, and reference policy.
+The Gibb's inequality tells this is minimized at a distance of 0, only when the two quantities are equal!
+Hence, we get an optimal policy:
+
+$$ \pi^*(y|x) = \pi(y|x) = \frac{1}{Z(x)}\pi_{\text{ref}}(y|x)\exp\left(\frac{1}{\beta}r(x,y)\right) $$
+
+
+#### Deriving DPO Objective for Bradley Terry Models
+
+TODO
+
+The DPO has an additional derivation for the objective under a Plackett-Luce Model.
+
+### How DPO Works
 
 ## Numerical Concerns, Weaknesses, and Alternatives
 

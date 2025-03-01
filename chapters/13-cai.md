@@ -1,6 +1,7 @@
 ---
 prev-chapter: "Direct Alignment"
 prev-url: "12-direct-alignment.html"
+page-title: Constitutional AI and AI Feedback
 next-chapter: "Reasoning Models"
 next-url: "14-reasoning.html"
 ---

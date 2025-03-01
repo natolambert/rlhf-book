@@ -10,12 +10,17 @@ next-url: "12-direct-alignment.html"
 
 
 The algorithms that popularized RLHF for language models were policy-gradient reinforcement learning algorithms. 
-These algorithms, such as PPO and Reinforce, use recently generated samples to update their model rather than storing scores in a replay buffer.
+These algorithms, such as PPO, GRPO, and REINFORCE, use recently generated samples to update their model rather than storing scores in a replay buffer.
 In this section we will cover the fundamentals of the policy gradient algorithms and how they are used in the modern RLHF framework.
 
-The most popular algorithms used for RLHF has evolved over time. When RLHF came onto the scene with ChatGPT, it was largely known that they used a variant of PPO, and many initial efforts were built upon that.
+At a machine learning level, this section is the subject with the highest complexity in the RLHF process.
+Though, as with most modern AI models, the largest determining factor on its success is the data provided as inputs to the process.
+
+The most popular algorithms used for RLHF has evolved over time.
+When RLHF came onto the scene with ChatGPT, it was largely known that they used a variant of PPO, and many initial efforts were built upon that.
 Over time, multiple research projects showed the promise of REINFORCE style algorithms [@ahmadian2024back] [@wang2024helpsteer2p], touted for its simplicity over PPO without a reward model (saves memory and therefore the number of GPUs required) and with simpler value estimation (no GAE).
 More algorithms have emerged, including Group Relative Policy Optimization, which is particularly popular with reasoning tasks, but in general many of these algorithms can be tuned to fit a specific task.
+In this chapter, we cover the core policy gradient setup and the three algorithms mentioned above due to their central role in the establishment of a canonical RLHF literature.
 
 For definitions of symbols, see the problem setup chapter.
 
@@ -147,8 +152,6 @@ This reduces credit assignment to the batch level and will make it harder for th
 
 Related to this idea is the fact that REINFORCE, as implemented with RLOO, assigns the reward of the entire completion to every token in it. Other algorithms, such as PPO, that use a value function assign value to every token individually, discounting from the final reward achieved at the EOS token.
 For example, with the KL divergence distance penalty, RLOO sums it over the completion while PPO and similar algorithms compute it on a per-token basis and subtract it from the reward (or the advantage, in the case of GRPO).
-
-Other implementations of REINFORCE algorithms have been designed for language models, such as ReMax [@li2023remax], which implements a baseline normalization designed specifically to accommodate the sources of uncertainty from reward model inference.
 
 ### Proximal Policy Optimization
 
@@ -345,7 +348,7 @@ For PPO, all of this happens *while* learning a value function, which opens more
 
 PPO (and GRPO) implementations can be handled much more elegantly if the hyperparameter "number of gradient steps per sample" is equal to 1.
 Many normal values for this are from 2-4 or higher.
-In the main PPO or GRPO equations, see @eq:TODO_PPO, the "reference" policy is the previous parameters -- those used to generate the completions or actions.
+In the main PPO or GRPO equations, see @eq:PPO_EQN, the "reference" policy is the previous parameters -- those used to generate the completions or actions.
 Thus, if only one gradient step is taken, $\pi_\theta = \pi_{\theta_{old}}$, and the update rule reduces to the following (the notation $[]_\nabla$ indicates a stop gradient):
 
 $$J(\theta) = \frac{1}{G}\sum_{i=1}^G \left(\frac{\pi_\theta(a_i|s)}{\left[\pi_{\theta}(a_i|s)\right]_\nabla}A_i - \beta D_{KL}(\pi_\theta||\pi_{ref})\right). $$ {#eq:ppo_1step}
@@ -415,6 +418,9 @@ For more details on how to interpret this code, see the PPO section above.
 
 ## Auxiliary Topics
 
+In order to master the application of policy-gradient algorithms, there are countless other considerations.
+Here we consider some, but not all of these discussions.
+
 ### Generalized Advantage Estimation (GAE)
 
 Generalized Advantage Estimation (GAE) is an alternate method to compute the advantage for policy gradient algorithms [@schulman2015high] that better balances the bias-variance tradeoff. 
@@ -456,7 +462,7 @@ Intuitively, this can be used to average of multi-step estimates of Advantage in
 
 *For further reading, see [@seita2017gae].*
 
-### Double regularization
+### Double Regularization
 
 Many popular policy gradient algorithms from Deep Reinforcement Learning originated due to the need to control the learning process of the agent.
 In RLHF, as discussed extensively in Chapter 8 on Regularization and in Chapter 4 on Problem Formulation, there is a built in regularization term via the distance penalty relative to the original policy one is finetuning.
@@ -464,3 +470,12 @@ In this view, a large part of the difference between algorithms like PPO (which 
 
 In PPO, the objective that handles capping the step-size of the update is known as the [surrogate objective](https://huggingface.co/blog/deep-rl-ppo#introducing-the-clipped-surrogate-objective). 
 To monitor how much the PPO regularization is impacting updates in RLHF, one can look at the clip fraction variable in many popular implementations, which is the percentage of samples in the batch where the gradients are clipped by this regularizer in PPO. These gradients are *reduced* to a maximum value.
+
+### Further Reading
+
+As RLHF has cemented itself at the center of modern post-training, other policy-gradient RL algorithms and RL algorithms generally have been proposed to improve the training process, but they have not had a central role in governing best practices.
+Examples for further reading include:
+
+- **Pairwise Proximal Policy Optimization (P3O)** [@wu2023pairwise] uses pairwise data directly in a PPO-style policy update without learning an intermediate reward model.
+- Other implementations of REINFORCE algorithms have been designed for language models, such as **ReMax** [@li2023remax], which implements a baseline normalization designed specifically to accommodate the sources of uncertainty from reward model inference.
+- Some foundation models, such as Apple Intelligence Foundation Models [@gunter2024apple] or Kimi k1.5 reasoning model [@team2025kimi], have used variants of **Mirror Descent Policy Optimization (MDPO)** [@tomar2020mirror]. Research is still developing further on the fundamentals here [@zhang2025improving], but Mirror Descent is an optimization method rather than directly a policy gradient algorithm. What is important here is that it is substituted in very similarly to existing RL infrastructure.
