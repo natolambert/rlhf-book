@@ -9,6 +9,14 @@ next-url: "14-reasoning.html"
 # [Incomplete] Constitutional AI and AI Feedback
 
 RL from AI Feedback (RLAIF) is a larger set of techniques for using AI to augment or generate feedback data, including pairwise preferences [@lee2023rlaif]  [@sharma2024critical] [@castricato2024suppressing].
+There are many motivations to using RLAIF to either entirely replace human feedback or augment it. 
+AI models are far cheaper than humans, with a single piece of human preference data costing on the order of $1 or higher (or even above $10 per prompt), AI feedback with a frontier AI model, such as GPT-4o costs less than $0.01. 
+This cost differences opens the market of experimentation with RLHF methods to an entire population of people previously priced out.
+Other than price, AI feedback introduces different *tradeoffs* on performance than human feedback, which are still being investigated.
+
+The term RLAIF was introduced in Anthropic's work *Constitutional AI: Harmlessness from AI Feedback* [@bai2022constitutional], which resulted in initial confusion in the AI community over the relationship between the methods.
+Since the release of the Constitutional AI (CAI) paper and the formalization of RLAIF, RLAIF has become a default method within the post-training and RLHF literatures -- there are far more examples than one can easily enumerate.
+The relationship should be understood as CAI was the example that kickstarted the broader field of RLAIF.
 
 ## Trade-offs
 
