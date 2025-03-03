@@ -70,7 +70,9 @@ class NavigationDropdown extends HTMLElement {
         <h3>Open Questions (WIP)</h3>
         <ol start="16">
           <li><a href="https://rlhfbook.com/c/17-over-optimization.html">Over-optimization</a></li>
-          <li><a href="https://rlhfbook.com/c/18-style.html">Style and Information</a></li>
+          <li><a href="https://rlhfbook.com/c/18-style.html">Style & Information</a></li>
+          <li><a href="https://rlhfbook.com/c/19-character.html">Character Training & Model Character</a></li>
+          <li><a href="https://rlhfbook.com/c/20-product.html">Product, UX, and Post-Training</a></li>
         </ol>
       </div>
     </nav>
