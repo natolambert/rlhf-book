@@ -226,9 +226,12 @@ With the advantage computation for the completion index $i$:
 
 $$A_i = \frac{r_i - \text{mean}({r_1, r_2, \cdots, r_G})}{\text{std}({r_1, r_2, \cdots, r_G})}.$$ {#eq:GRPO_ADV}
 
+Intuitively, the GRPO update is comparing multiple answers to a single question within a batch.
+The model learns to become more like the answers marked as correct and less like the others. 
+This is a very simple way to compute the advantage, which is the measure of how much better a specific action is than the average at a given state.
+
 @eq:GRPO_ADV is the implementation of GRPO when working with outcome supervision (either a standard reward model or a single verifiable reward) and a different implementation is needed with process supervision.
 In this case, GRPO computes the advantage as the sum of the normalized rewards for the following reasoning steps.
-To do so, the rewards are accumulated with additional tracking of a reasoning index $j$, and then computed step wise as TODO, ref paper
 
 Finally, GRPO's advantage estimation can also be applied without the PPO clipping to more vanilla versions of policy gradient (e.g. REINFORCE), but it is not the canonical form.
 
