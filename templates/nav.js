@@ -52,7 +52,7 @@ class NavigationDropdown extends HTMLElement {
           <li><a href="https://rlhfbook.com/c/09-instruction-tuning.html">Instruction Tuning</a></li>
           <li><a href="https://rlhfbook.com/c/10-rejection-sampling.html">Rejection Sampling</a></li>
           <li><a href="https://rlhfbook.com/c/11-policy-gradients.html">Policy Gradients</a></li>
-          <li><a href="https://rlhfbook.com/c/12-direct-alignment.html">Direct Alignment Algorithms (WIP)</a></li>
+          <li><a href="https://rlhfbook.com/c/12-direct-alignment.html">Direct Alignment Algorithms</a></li>
         </ol>
       </div>
 
