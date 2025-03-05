@@ -18,11 +18,60 @@ The most impactful part of DPO and DAAs is lowering the barrier of entry to expe
 
 ## Direct Preference Optimization (DPO)
 
-Here we will re-derive DPO completely and explain intuitions for how it works. 
+Here we explain intuitions for how it works and re-derive the core equations fully. 
+
+### How DPO Works
+
+DPO at a surface level is directly optimizing a policy to solve the RLHF objective.
+The loss function for this, which we will revisit below in the derivations, is a pairwise relationship of log-probabilities.
+The loss function derived from a Bradley-Terry reward model follows:
+
+$$ \mathcal{L}_{\text{DPO}}(\pi_\theta; \pi_{\text{ref}}) = -\mathbb{E}_{(x, y_c, y_r) \sim \mathcal{D}}\left[ \log \sigma\left( \beta \log \frac{\pi_{\theta}(y_c \mid x)}{\pi_{\text{ref}}(y_c \mid x)} - \beta \log \frac{\pi_{\theta}(y_r \mid x)}{\pi_{\text{ref}}(y_r \mid x)} \right) \right] $$ {#eq:dpo_core}
+
+This relies on the implicit reward for DPO training that replaces using an external reward model, which is a log-ratio of probabilities:
+
+$$r(x, y) = \beta  \log \frac{\pi_r(y \mid x)}{\pi_{\text{ref}}(y \mid x)}$$ {#eq:dpo_reward}
+
+This comes from deriving the Bradley-Terry reward with respect to an optimal policy (shown in @eq:dpo_opt_policy), as shown in TODO BT model. 
+Essentially, the implicit reward model shows "the probability of human preference data in terms of the optimal policy rather than the reward model."
+
+Let us consider the loss shown in @eq:dpo_core. 
+The learning process is decreasing the loss. Here, the loss will be lower when the log-ratio of the chosen response is bigger than the log-ratio of the rejected response (normalized by the reference model).
+In practice, this is a sum of log-probabilities of the model across the sequence of tokens in the data presented.
+Hence, DPO is increasing the delta in probabilities between the chosen and rejected responses.
+
+With the reward in @eq:dpo_reward, we can write the gradient of the loss to further interpret what is going on:
+
+$$\nabla_{\theta}\mathcal{L}_{\text{DPO}}(\pi_{\theta}; \pi_{\text{ref}}) = -\beta \mathbb{E}_{(x, y_c, y_r)\sim \mathcal{D}}\left[ \sigma\left(r_{\theta}(x, y_r) - r_{\theta}(x, y_c)\right) \left(\nabla_{\theta}\log \pi(y_c \mid x) - \nabla_{\theta}\log \pi(y_r \mid x)\right) \right] $$ {#eq:dpo_gradient}
+
+Here, the gradient solves the above objective by doing the following:
+
+* The first term within the sigmoid function, $\sigma(\cdot)$, creates a weight of the parameter update from 0 to 1 that is higher when the reward estimate is incorrect. When the rejected sample is preferred over the chosen, the weight update should be larger!
+* Second, the terms in the inner brackets $[\cdot]$ increases the likelihood of the chosen response $y_c$ and decreases the likelihood of the rejected $y_r$.
+* These terms are weighted by $\beta$, which controls how the update balances ordering the completions correctly relative to the KL distance.
+
+
+The core intuition is that DPO is "fitting an implicit reward model whose corresponding optimal policy can be extracted in a closed form" (thanks to gradient ascent and our ML tools).
+What is often misunderstood is that DPO is learning a reward model at its core, hence the subtitle of the paper *Your Language Model is Secretly a Reward Model.* 
+It is easy to confuse this with the DPO objective training a policy directly, hence studying the derivations below are good for a complete understanding.
+
+With the implicit reward model learning, DPO is generating an optimal solution to the RLHF objective given the data in the dataset and the specific KL constraint in the objective $\beta$. 
+Here, DPO solves for the exact policy given a specific KL distance because the generations are not online as in policy gradient algorithms -- a core difference from the RL methods for preference tuning.
+In many ways, this makes the $\beta$ value easier to tune with DPO relative to online RL methods, but crucially and intuitively the optimal value depends on the model being trained and the data training it.
+
+At each batch of preference data, composed of many pairs of completions $y_{chosen} \succ y_{rejected}$, DPO takes gradient steps directly towards the optimal solution.
+It is far simpler than policy gradient methods.
+
+![DPO simplicity meme.](images/dpo_meme.png){#fig:dpo-meme}
+
 
 ### DPO Derivation
 
-#### Deriving Optimal RLHF Solution
+The DPO derivation takes two primary parts. 
+First, the authors show the form of the policy that optimally solved the RLHF objective used throughout this book.
+Next, they show how to arrive at that solution from pairwise preference data (i.e. a Bradley Terry model).
+
+#### 1. Deriving the Optimal RLHF Solution
 
 To start, we should consider the RLHF optimization objective once again, here indicating we wish to maximize this quantity:
 
@@ -80,16 +129,17 @@ Since the partition function $Z(x)$ does not depend on the final answer, we can 
 The Gibb's inequality tells this is minimized at a distance of 0, only when the two quantities are equal!
 Hence, we get an optimal policy:
 
-$$ \pi^*(y|x) = \pi(y|x) = \frac{1}{Z(x)}\pi_{\text{ref}}(y|x)\exp\left(\frac{1}{\beta}r(x,y)\right) $$
+$$ \pi^*(y|x) = \pi(y|x) = \frac{1}{Z(x)}\pi_{\text{ref}}(y|x)\exp\left(\frac{1}{\beta}r(x,y)\right) $$ {#eq:dpo_opt_policy}
 
 
-#### Deriving DPO Objective for Bradley Terry Models
+#### 2. Deriving DPO Objective for Bradley Terry Models
 
 TODO
 
+As shown in @eq:dpo_core.
+
 The DPO has an additional derivation for the objective under a Plackett-Luce Model.
 
-### How DPO Works
 
 ## Numerical Concerns, Weaknesses, and Alternatives
 
