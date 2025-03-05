@@ -6,7 +6,7 @@ next-chapter: "Constitutional AI"
 next-url: "13-cai.html"
 ---
 
-# [Incomplete] Direct Alignment Algorithms
+# Direct Alignment Algorithms
 
 Direct Alignment Algorithms (DAAs) allow one to update models to solve the  same RLHF objective without ever training an intermediate reward model or using reinforcement learning optimizers.
 The most prominent DAA and one that catalyzed an entire academic movement of aligning language models is Direct Preference Optimization (DPO) [@rafailov2024direct].
