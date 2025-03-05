@@ -18,11 +18,60 @@ The most impactful part of DPO and DAAs is lowering the barrier of entry to expe
 
 ## Direct Preference Optimization (DPO)
 
-Here we will re-derive DPO completely and explain intuitions for how it works. 
+Here we explain intuitions for how it works and re-derive the core equations fully. 
+
+### How DPO Works
+
+DPO at a surface level is directly optimizing a policy to solve the RLHF objective.
+The loss function for this, which we will revisit below in the derivations, is a pairwise relationship of log-probabilities.
+The loss function derived from a Bradley-Terry reward model follows:
+
+$$ \mathcal{L}_{\text{DPO}}(\pi_\theta; \pi_{\text{ref}}) = -\mathbb{E}_{(x, y_c, y_r) \sim \mathcal{D}}\left[ \log \sigma\left( \beta \log \frac{\pi_{\theta}(y_c \mid x)}{\pi_{\text{ref}}(y_c \mid x)} - \beta \log \frac{\pi_{\theta}(y_r \mid x)}{\pi_{\text{ref}}(y_r \mid x)} \right) \right] $$ {#eq:dpo_core}
+
+This relies on the implicit reward for DPO training that replaces using an external reward model, which is a log-ratio of probabilities:
+
+$$r(x, y) = \beta  \log \frac{\pi_r(y \mid x)}{\pi_{\text{ref}}(y \mid x)}$$ {#eq:dpo_reward}
+
+This comes from deriving the Bradley-Terry reward with respect to an optimal policy (shown in @eq:dpo_opt_policy), as shown in TODO BT model. 
+Essentially, the implicit reward model shows "the probability of human preference data in terms of the optimal policy rather than the reward model."
+
+Let us consider the loss shown in @eq:dpo_core. 
+The learning process is decreasing the loss. Here, the loss will be lower when the log-ratio of the chosen response is bigger than the log-ratio of the rejected response (normalized by the reference model).
+In practice, this is a sum of log-probabilities of the model across the sequence of tokens in the data presented.
+Hence, DPO is increasing the delta in probabilities between the chosen and rejected responses.
+
+With the reward in @eq:dpo_reward, we can write the gradient of the loss to further interpret what is going on:
+
+$$\nabla_{\theta}\mathcal{L}_{\text{DPO}}(\pi_{\theta}; \pi_{\text{ref}}) = -\beta \mathbb{E}_{(x, y_c, y_r)\sim \mathcal{D}}\left[ \sigma\left(r_{\theta}(x, y_r) - r_{\theta}(x, y_c)\right) \left(\nabla_{\theta}\log \pi(y_c \mid x) - \nabla_{\theta}\log \pi(y_r \mid x)\right) \right] $$ {#eq:dpo_gradient}
+
+Here, the gradient solves the above objective by doing the following:
+
+* The first term within the sigmoid function, $\sigma(\cdot)$, creates a weight of the parameter update from 0 to 1 that is higher when the reward estimate is incorrect. When the rejected sample is preferred over the chosen, the weight update should be larger!
+* Second, the terms in the inner brackets $[\cdot]$ increases the likelihood of the chosen response $y_c$ and decreases the likelihood of the rejected $y_r$.
+* These terms are weighted by $\beta$, which controls how the update balances ordering the completions correctly relative to the KL distance.
+
+
+The core intuition is that DPO is "fitting an implicit reward model whose corresponding optimal policy can be extracted in a closed form" (thanks to gradient ascent and our ML tools).
+What is often misunderstood is that DPO is learning a reward model at its core, hence the subtitle of the paper *Your Language Model is Secretly a Reward Model.* 
+It is easy to confuse this with the DPO objective training a policy directly, hence studying the derivations below are good for a complete understanding.
+
+With the implicit reward model learning, DPO is generating an optimal solution to the RLHF objective given the data in the dataset and the specific KL constraint in the objective $\beta$. 
+Here, DPO solves for the exact policy given a specific KL distance because the generations are not online as in policy gradient algorithms -- a core difference from the RL methods for preference tuning.
+In many ways, this makes the $\beta$ value easier to tune with DPO relative to online RL methods, but crucially and intuitively the optimal value depends on the model being trained and the data training it.
+
+At each batch of preference data, composed of many pairs of completions $y_{chosen} \succ y_{rejected}$, DPO takes gradient steps directly towards the optimal solution.
+It is far simpler than policy gradient methods.
+
+![DPO simplicity meme, credit Tom Goldstein.](images/dpo_meme.jpeg){#fig:dpo-meme}
+
 
 ### DPO Derivation
 
-#### Deriving Optimal RLHF Solution
+The DPO derivation takes two primary parts. 
+First, the authors show the form of the policy that optimally solved the RLHF objective used throughout this book.
+Next, they show how to arrive at that solution from pairwise preference data (i.e. a Bradley Terry model).
+
+#### 1. Deriving the Optimal RLHF Solution
 
 To start, we should consider the RLHF optimization objective once again, here indicating we wish to maximize this quantity:
 
@@ -80,16 +129,58 @@ Since the partition function $Z(x)$ does not depend on the final answer, we can 
 The Gibb's inequality tells this is minimized at a distance of 0, only when the two quantities are equal!
 Hence, we get an optimal policy:
 
-$$ \pi^*(y|x) = \pi(y|x) = \frac{1}{Z(x)}\pi_{\text{ref}}(y|x)\exp\left(\frac{1}{\beta}r(x,y)\right) $$
+$$ \pi^*(y|x) = \pi(y|x) = \frac{1}{Z(x)}\pi_{\text{ref}}(y|x)\exp\left(\frac{1}{\beta}r(x,y)\right) $$ {#eq:dpo_opt_policy}
 
 
-#### Deriving DPO Objective for Bradley Terry Models
+#### 2. Deriving DPO Objective for Bradley Terry Models
 
-TODO
+To start, recall from Chapter 7 on Reward Modeling and Chapter 6 on Preference Data that a Bradley-Terry model of human preferences is formed as:
 
-The DPO has an additional derivation for the objective under a Plackett-Luce Model.
+$$p^*(y_1 \succ y_2 \mid x) = \frac{\exp\left(r^*(y_1 \mid x)\right)}{\exp\left(r^*(x,y_1)\right) + \exp\left(r^*(x, y_2)\right)} $$ {#eq:bradley_terry_dpo}
 
-### How DPO Works
+By manipulating @eq:dpo_opt_policy by taking the logarithm of both sides and performing some algebra, one can obtain the DPO reward as follows:
+
+$$r^*(x, y) = \beta \log \frac{\pi^*(y \mid x)}{\pi_{\text{ref}}(y \mid x)} + \beta \log Z(x)$$ {#eq:dpo_reward_full}
+
+We then can substitute the reward into the Bradley-Terry equation shown in @eq:bradley_terry_dpo to obtain:
+
+$$p^*(y_1 \succ y_2 \mid x) = \frac{\exp\left(\beta \log \frac{\pi^*(y_1 \mid x)}{\pi_{\text{ref}}(y_1 \mid x)} + \beta \log Z(x)\right)}
+{\exp\left(\beta \log \frac{\pi^*(y_1 \mid x)}{\pi_{\text{ref}}(y_1 \mid x)} + \beta \log Z(x)\right) + \exp\left(\beta \log \frac{\pi^*(y_2 \mid x)}{\pi_{\text{ref}}(y_2 \mid x)} + \beta \log Z(x)\right)} $$ {#eq:eq:dpo_loss_deriv0}
+
+By decomposing the exponential expressions from $e^{a+b}$ to $e^a e^b$ and then cancelling out the terms $e^{\log(Z(x))}$, this simplifies to:
+
+$$p^*(y_1 \succ y_2 \mid x) = \frac{\exp\left(\beta \log \frac{\pi^*(y_1 \mid x)}{\pi_{\text{ref}}(y_1 \mid x)}\right)}
+{\exp\left(\beta \log \frac{\pi^*(y_1 \mid x)}{\pi_{\text{ref}}(y_1 \mid x)}\right) + \exp\left(\beta \log \frac{\pi^*(y_2 \mid x)}{\pi_{\text{ref}}(y_2 \mid x)}\right)} $$ {#eq:dpo_loss_deriv1}
+
+Then, multiple the numerator and denominator by $\exp\left(-\beta \log \frac{\pi^*(y_1 \mid x)}{\pi_{\text{ref}}(y_1 \mid x)}\right)$ to obtain:
+
+$$p^*(y_1 \succ y_2 \mid x) = \frac{1}{1 + \exp\left(\beta \log \frac{\pi^*(y_2 \mid x)}{\pi_{\text{ref}}(y_2 \mid x)} - \beta \log \frac{\pi^*(y_1 \mid x)}{\pi_{\text{ref}}(y_1 \mid x)}\right)} $$ {#eq:dpo_loss_deriv2}
+
+Finally, with the definition of a sigmoid function as $\sigma(x) = \frac{1}{1+e^{-x}}$, we obtain:
+
+$$p^*(y_1 \succ y_2 \mid x) = \sigma\left(\beta \log \frac{\pi^*(y_1 \mid x)}{\pi_{\text{ref}}(y_1 \mid x)} - \beta \log \frac{\pi^*(y_2 \mid x)}{\pi_{\text{ref}}(y_2 \mid x)}\right) $$ {#eq:dpo_loss_deriv3}
+
+This is the loss function for DPO, as shown in @eq:dpo_core. 
+The DPO paper has an additional derivation for the objective under a Plackett-Luce Model, which is far less used in practice [@rafailov2024direct].
+
+#### 3. Deriving the Bradley Terry DPO Gradient
+
+We used the DPO gradient shown in @eq:dpo_gradient to explain intuitions for how the model learns.
+To derive this, we must take the gradient of @eq:dpo_loss_deriv3 with respect to the model parameters.
+
+$$\nabla_{\theta}\mathcal{L}_{\text{DPO}}(\pi_{\theta}; \pi_{\text{ref}}) = -\nabla_{\theta}\mathbb{E}_{(x,y_c,y_r)\sim\mathcal{D}}\left[ \log \sigma\left(\beta \log \frac{\pi_{\theta}(y_c|x)}{\pi_{\text{ref}}(y_c|x)} - \beta \log \frac{\pi_{\theta}(y_r|x)}{\pi_{\text{ref}}(y_r|x)}\right)\right] $$ {#eq:dpo_grad_0}
+
+To start, this can be rewritten.
+We know that the derivative of a sigmoid function $\frac{d}{dx} \sigma(x) = \sigma(x)(1-\sigma(x))$, the derivative of logarithm $\frac{d}{dx} \log x = \frac{1}{x}$, and properties of sigmoid $\sigma(-x)=1-\sigma(x)$, so we can reformat the above equation. 
+
+First, define the expression inside the sigmoid as $u=\beta \log \frac{\pi_{\theta}(y_c|x)}{\pi_{\text{ref}}(y_c|x)} - \beta \log \frac{\pi_{\theta}(y_r|x)}{\pi_{\text{ref}}(y_r|x)}$.
+Then, we have
+
+$$\nabla_{\theta}\mathcal{L}_{\text{DPO}}(\pi_{\theta};\pi_{\text{ref}}) = -\mathbb{E}_{(x, y_c, y_r)\sim \mathcal{D}}\left[\frac{\sigma'(u)}{\sigma(u)}\nabla_{\theta}u\right] $$ {#eq:dpo_grad_2}
+
+Expanding this and using the above expressions for sigmoid and logarithms results in the gradient introduced earlier:
+
+$$ -\mathbb{E}_{(x,y_c,y_r)\sim\mathcal{D}}\left[\beta\sigma\left(\beta\log\frac{\pi_{\theta}(y_r|x)}{\pi_{\text{ref}}(y_r|x)} - \beta\log\frac{\pi_{\theta}(y_c|x)}{\pi_{\text{ref}}(y_c|x)}\right)\left[\nabla_{\theta}\log\pi(y_c|x)-\nabla_{\theta}\log\pi(y_r|x)\right]\right] $$ {#eq:dpo_grad_3}
 
 ## Numerical Concerns, Weaknesses, and Alternatives
 
@@ -105,16 +196,13 @@ Multiple algorithms have been proposed to re-balance the optimization away from 
 Some variants to DPO attempt to either improve the learning signal by making small changes to the loss or make the application more efficient by reducing memory usage.
 
 - **Odds Ratio Policy Optimization (ORPO)** directly updates the policy model with a pull towards the chosen response, similar to the instruction finetuning loss, with a small penalty on the chosen response [@hong2024reference]. This change of loss function removes the need for a reference model, simplifying the setup. The best way to view ORPO is DPO inspired, rather than a DPO derivative.
--- **Simple Preference Optimization SimPO** makes a minor change to the DPO optimization, by averaging the log-probabilities rather than summing them (SimPO) or adding length normalization, to improve performance [@meng2025simpo].
+- **Simple Preference Optimization SimPO** makes a minor change to the DPO optimization, by averaging the log-probabilities rather than summing them (SimPO) or adding length normalization, to improve performance [@meng2025simpo].
 
-
-TODO - figure on preference displacement
-
-![Sketch of preference displacement in DPO.](images/DPO-displacement.png){#fig:dpo_issue .center}
+![Sketch of preference displacement in DPO.](images/dpo_displacement.png){#fig:dpo_issue .center}
 
 One of the core issues *apparent* in DPO is that the optimization drives only to increase the margin between the probability of the chosen and rejected responses.
-Numerically, the model reduces the probabiltiy of both the chosen and rejected responses, but the *rejected response is reduced by a greater extent* as shown in @fig:DPO-displacement.
-Intuitively, it is not clear how this generalizes, but work has posited that it increases the probability of unaddressed for behaviors [@razin2024unintentional]. 
+Numerically, the model reduces the probabiltiy of both the chosen and rejected responses, but the *rejected response is reduced by a greater extent* as shown in @fig:dpo_issue.
+Intuitively, it is not clear how this generalizes, but work has posited that it increases the probability of unaddressed for behaviors [@razin2024unintentional] [@ren2024learning]. 
 Simple methods, such as Cal-DPO [@xiao2024cal], adjust the optimization so that this **preference displacement** does not occur.
 In practice, the exact impact of this is not well known, but points are a potential reason why online methods can outperform vanilla DPO.
 

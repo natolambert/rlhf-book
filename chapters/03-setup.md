@@ -48,6 +48,8 @@ $$ D_{KL}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\frac{P(x)}{Q(x)}\r
 
 - **Chosen Completion ($y_c$)**: The completion that is selected or preferred over other alternatives, often denoted as $y_{chosen}$.
 
+- **Rejected Completion ($y_r$)**: The disfavored completion in a pairwise setting.
+
 - **Preference Relation ($\succ$)**: A symbol indicating that one completion is preferred over another, e.g., $y_{chosen} \succ y_{rejected}$.
 
 - **Policy ($\pi$)**: A probability distribution over possible completions, parameterized by $\theta$: $\pi_\theta(y|x)$.
