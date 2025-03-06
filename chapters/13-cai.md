@@ -6,7 +6,7 @@ next-chapter: "Reasoning Models"
 next-url: "14-reasoning.html"
 ---
 
-# [Incomplete] Constitutional AI & AI Feedback
+# Constitutional AI & AI Feedback
 
 RL from AI Feedback (RLAIF) is a larger set of techniques for using AI to augment or generate feedback data, including pairwise preferences [@lee2023rlaif]  [@sharma2024critical] [@castricato2024suppressing].
 There are many motivations to using RLAIF to either entirely replace human feedback or augment it. 
@@ -19,15 +19,12 @@ The term RLAIF was introduced in Anthropic's work *Constitutional AI: Harmlessne
 Since the release of the Constitutional AI (CAI) paper and the formalization of RLAIF, RLAIF has become a default method within the post-training and RLHF literatures -- there are far more examples than one can easily enumerate.
 The relationship should be understood as CAI was the example that kickstarted the broader field of RLAIF.
 
-
-## Trade-offs
-
 A rule of thumb for the difference between human data and AI feedback data is as follows:
 
 1. Human data is high-noise and low-bias,
 2. Synthetic preference data is low-noise and high-bias,
 
-Results in many academic results showing how one can substitute AI preference data in RLHF workflows and achieve strong evaluation scores, but shows how the literature of RLHF is separated from industrial best practices.
+Results in many academic results showing how one can substitute AI preference data in RLHF workflows and achieve strong evaluation scores [@miranda2024hybrid], but shows how the literature of RLHF is separated from industrial best practices.
 
 ## Constitutional AI
 
@@ -39,7 +36,7 @@ Constitutional AI has two uses of synthetic data:
 
 Largely, CAI is known for the second half above, the preference data, but the methods introduced for instruction data are used in general data filtering and synthetic data generation methods across post-training.
 
-### Mathematical Formulation
+CAI can be formalized as follows.
 
 By employing a human-written set of principles, which they term a *constitution*, Bai et al. 2022 use a separate LLM to generate artificial preference and instruction data used for fine-tuning [@bai2022constitutional].
 A constitution $\mathcal{C}$ is a set of written principles indicating specific aspects to focus on during a critique phase.
@@ -53,18 +50,17 @@ The feedback models' probability of outputting either (A) or (B) is recorded as 
 
 ## Specific LLMs for Judgement
 
-Multiple models have been released with the goal of substituting for frontier models as a data labeling tool, such as Shepherd [@wang2023shepherd], Prometheus [@kim2023prometheus], and Prometheus 2 [@kim2024prometheus] but they are widely adopted.
-
+As RLAIF and LLM-as-a-judge has become more prevalent, many have wondered if we should be using the same models for generating responses as those for generating critiques or ratings.
+Multiple models have been released with the goal of substituting for frontier models as a data labeling tool, such as critic models Shepherd [@wang2023shepherd] and CriticLLM [@ke2023critiquellm] or models for evaluating response performance akin to Auto-J [@li2023generative], Prometheus [@kim2023prometheus], Prometheus 2 [@kim2024prometheus], or Prometheus-Vision [@lee2024prometheus] but they are not widely adopted in documented training recipes.
 
 ## Further Reading
 
-TODO search for references of constitutional AI outside of Anthropic
-- OpenAI mentioned in their announcement of the Model Spec that they are investigating training models referencing it, which would be similar, then deliberative alignment
-- Cite Claude [@Anthropic2023ClaudesConstitution], Collective CAI [@ganguli2023], and other Anthropic work
-- TODO cite SDSD [@lambert2024self] & HuggingFace's mini replication [@Huang2024cai], see SDSD's related work
+There are many related research directions and extensions of Constitutional AI, but few of them have been documented as clear improvements in RLHF and post-training recipes.
+For now, they are included as further reading.
+
+- OpenAI has released a Model Spec [@openai2024modelspec], which is a document stating the intended behavior for their models, and stated that they are exploring methods for alignment where the model references the document directly (which could be seen as a close peer to CAI). OpenAI has continued and trained their reasoning models such as o1 with a method called Deliberative Alignment [@guan2024deliberative] to align the model while referencing these safety or behavior policies.
+- Anthropic has continued to use CAI in their model training, updating the constitution Claude uses [@Anthropic2023ClaudesConstitution] and experimenting with how population collectives converge on principles for models and how that changes model behavior [@ganguli2023].
+- The open-source community has explore replications of CAI applied to open datasets [@Huang2024cai] and for explorations into creating dialogue data between LMs [@lambert2024self].
 - Other work has used principle-driven preferences or feedback with different optimization methods.
 [@sun2023principledriven] uses principles as context for the reward models, which was used to train the Dromedary models [@sun2024salmon].
-[@glaese2022improving] uses principles to improve the accuracy of human judgements in the RLHF process.
-
-
-More: https://chatgpt.com/share/67c335c2-fb3c-8005-832d-ccbaf3ca64f8
+[@glaese2022improving] uses principles to improve the accuracy of human judgments in the RLHF process.
