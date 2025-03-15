@@ -5,7 +5,7 @@ Built on [**Pandoc book template**](https://github.com/wikiti/pandoc-book-templa
 [![Content License](https://img.shields.io/badge/license-CC--BY--NC--SA--4.0-lightgrey)](https://github.com/natolambert/rlhf-book/blob/main/LICENSE-Content.md)
 
 This is a work-in-progress textbook covering the fundamentals of Reinforcement Learning from Human Feedback (RLHF).
-The code is licensed with the MIT license, but the content for the book found in `chapters/` is licensed under the [Creative Commons Non-Commerical Attribution License](https://creativecommons.org/licenses/by-nc/4.0/deed.en), CC BY-NC 4.0.
+The code is licensed with the MIT license, but the content for the book found in `chapters/` is licensed under the [Creative Commons Non-Commercial Attribution License](https://creativecommons.org/licenses/by-nc/4.0/deed.en), CC BY-NC 4.0.
 This is meant for people with a basic ML and/or software background.
 
 ### Citation
@@ -197,7 +197,7 @@ For more information, check the [Second] section.
 ...
 ```
 
-Or, with al alternative name:
+Or, with an alternative name:
 
 ```md
 For more information, check [this](#second) section.
@@ -397,7 +397,7 @@ custom styles, etc, and modify the Makefile file accordingly.
 
 Output files are generated using [pandoc templates](https://pandoc.org/MANUAL.html#templates). All
 templates are located under the `templates/` folder, and may be modified as you will. Some basic
-format templates are already included on this repository, ion case you need something to start
+format templates are already included on this repository, in case you need something to start
 with.
 
 ## References
