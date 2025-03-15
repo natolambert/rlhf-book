@@ -75,7 +75,6 @@ Table: An example 5-wise Likert scale between two responses, A and B. {#tbl:like
 Some early RLHF for language modeling works uses an 8-step Likert scale with levels of preference between the two responses [@bai2022training]. 
 An even scale removes the possibility of ties:
 
-Here's a markdown table formatted as an 8-point Likert scale:
 
 | A$>>>$B |     |     | A$>$B | B$>$A  |     |     | B$>>>$A |
 |:-------:|:-----:|:-----:|:-----:|:------:|:-----:|:-----:|:-------:|
