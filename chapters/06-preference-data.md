@@ -47,7 +47,7 @@ A popular public option to engage with models in this way is ChatBotArena [@chia
 ![Example preference data collection interface.](images/chatbotarena.png){#fig:chatbotarena .center}
 
 For models in the wild, one of the most common techniques is to collect feedback on if a specific response was positive or negative.
-An example from the AI2 playground is shown below with thumbs up and down indicators:
+An example from the Ai2 playground is shown below with thumbs up and down indicators:
 
 ![Example preference data collection interface with up or down arrow.](images/up-down-vote.png){#fig:up-down .center}
 
