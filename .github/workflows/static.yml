@@ -26,6 +26,7 @@ jobs:
 
       - name: Install brew dependencies
         run: |
+          brew update
           brew install pandoc
           brew install make
           brew install pandoc-crossref
