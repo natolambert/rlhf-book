@@ -27,7 +27,7 @@ In practice, one uses a cross-entropy loss with respect to each next-token predi
 
 Implementing a language model can take many forms.
 Modern LMs, including ChatGPT, Claude, Gemini, etc., most often use **decoder-only Transformers** [@Vaswani2017AttentionIA].
-The core innovation of the Transform was heavily utilizing the **self-attention** [@Bahdanau2014NeuralMT] mechanism to allow the model to directly attend to concepts in context and learn complex mappings.
+The core innovation of the Transformer was heavily utilizing the **self-attention** [@Bahdanau2014NeuralMT] mechanism to allow the model to directly attend to concepts in context and learn complex mappings.
 Throughout this book, particularly when covering reward models in Chapter 7, we will discuss adding new heads or modifying a language modeling (LM) head of the transformer.
 The LM head is a final linear projection layer that maps from the models internal embedding space to the tokenizer space (a.k.a. vocabulary).
 Different heads can be used to re-use the internals of the model and fine-tune it to output differently shaped quantities.

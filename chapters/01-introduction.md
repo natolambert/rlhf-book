@@ -16,7 +16,7 @@ RLHF became most known through the release of ChatGPT and the subsequent rapid d
 The basic pipeline for RLHF involves three steps.
 First, a language model that can follow user questions must be trained (see Chapter 9).
 Second, human preference data must be collected for the training of a reward model of human preferences (see Chapter 7).
-Finally, the language model can be optimized with a RL optimizer of choice, by sampling generations and rating them with respect to the reward model (see Chapter 3 and 11).
+Finally, the language model can be optimized with an RL optimizer of choice, by sampling generations and rating them with respect to the reward model (see Chapter 3 and 11).
 This book details key decisions and basic implementation examples for each step in this process.
 
 RLHF has been applied to many domains successfully, with complexity increasing as the techniques have matured.
@@ -27,7 +27,7 @@ Post-training is a more complete set of techniques and best-practices to make la
 Post-training can be summarized as using three optimization methods:
 
 1. Instruction / Supervised Finetuning (IFT/SFT), where we teach formatting and for base of instruction following abilities. This is largely about learning *features* in language.
-2. Preference Finetuning (PreFT), where we align to human preferences (and get smaller bump in capabilities at the same time). This is largely about *style* of language and subtle human preferences that are hard to quantify. 
+2. Preference Finetuning (PreFT), where we align to human preferences (and get smaller bump in capabilities at the same time). This is largely about *style* of language and subtle human preferences that are hard to quantify.
 3. Reinforcement Finetuning (RFT). The newest type of post-training that boosts performance on verifiable domains.
 
 This book focuses on the second area, **preference finetuning**, which has more complexity than instruction tuning and is far more established than Reinforcement Finetuning.
@@ -39,7 +39,7 @@ The foundations of RLHF involve far more than preferences alone and this book pr
 
 The biggest question around RLHF, yet one that is still hard to answer, is "What does RLHF training offer models?"
 The core role of this book, beyond teaching the techniques for doing RLHF, is to distill intuition as to *why* RLHF is crucial to modern AI models.
-In recent years, language models shifted from academic experiments studied in the purview of benchmarks to general purpose technology.
+In recent years, language models have shifted from academic experiments studied in the purview of benchmarks to general purpose technology.
 RLHF is at the core of this transition.
 
 The most compelling view of how RLHF works is to think of how *style* applies to interactions you have with language models.
