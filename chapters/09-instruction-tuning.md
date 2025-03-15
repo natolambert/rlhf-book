@@ -9,7 +9,7 @@ next-url: "10-rejection-sampling.html"
 # Instruction Finetuning
 
 Early language models were only trained to predict the next tokens in a sequence and were not adapted to any specific tasks.
-Around the release of GPT-3 [@brown2020language], language models were still primarily used via in-context learning where examples where shown to the model and then it was asked to complete a similar task.
+Around the release of GPT-3 [@brown2020language], language models were still primarily used via in-context learning where examples were shown to the model and then it was asked to complete a similar task.
 
 This was the combination of two trends -- historically in the natural language processing (NLP) literature, models were trained for a specific task.
 Here, as seen with one example where bigger models generalize better, multiple results showed how standardizing the approach of task data can enable dramatically different downstream performance.

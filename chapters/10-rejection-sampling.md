@@ -194,8 +194,8 @@ The core hyperparameters for performing this training are very intuitive:
 - **Sampling parameters**: Rejection sampling is directly dependent on the completions received from the model. Common settings for RS include temperatures above zero, e.g. between 0.7 and 1.0, with other modifications to parameters such as top-p or top-k sampling.
 - **Completions per prompt**: Successful implementations of rejection sampling have included 10 to 30 or more completions for each prompt. Using too few completions will make training biased and or noisy.
 - **Instruction tuning details**: No clear training details for the instruction tuning during RS have been released. It is likely that they use slightly different settings than the initial instruction tuning phase of the model.
-- **Heterogenous model generations**: Some implementations of rejection sampling include generations from multiple models rather than just the current model that is going to be trained. Best practices on how to do this are not established.
-- **Reward model training**: The reward model used will heavily impact the final result. For more resources on reward model training, see the [relevant chapter](https://rhlfbook.com/reward-models.html).
+- **Heterogeneous model generations**: Some implementations of rejection sampling include generations from multiple models rather than just the current model that is going to be trained. Best practices on how to do this are not established.
+- **Reward model training**: The reward model used will heavily impact the final result. For more resources on reward model training, see the [relevant chapter](https://rlhfbook.com/c/07-reward-models.html).
 
 #### Implementation Tricks
 
@@ -205,7 +205,7 @@ The core hyperparameters for performing this training are very intuitive:
 
 Best-of-N (BoN) sampling is often included as a baseline relative to RLHF methods.
 It is important to remember that BoN *does not* modify the underlying model, but is a sampling technique. 
-For this matter, comparisons for BoN sampling to online training methods, such as PPO, is still valid in some contexts.
+For this matter, comparisons for BoN sampling to online training methods, such as PPO, are still valid in some contexts.
 For example, you can still measure the KL distance when running BoN sampling relative to any other policy.
 
 Here, we will show that when using simple BoN sampling over one prompt, both selection criteria shown above are equivalent.

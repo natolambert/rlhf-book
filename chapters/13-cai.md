@@ -11,7 +11,7 @@ next-url: "14-reasoning.html"
 RL from AI Feedback (RLAIF) is a larger set of techniques for using AI to augment or generate feedback data, including pairwise preferences [@lee2023rlaif]  [@sharma2024critical] [@castricato2024suppressing].
 There are many motivations to using RLAIF to either entirely replace human feedback or augment it. 
 AI models are far cheaper than humans, with a single piece of human preference data costing on the order of $1 or higher (or even above $10 per prompt), AI feedback with a frontier AI model, such as GPT-4o costs less than $0.01. 
-This cost differences opens the market of experimentation with RLHF methods to an entire population of people previously priced out.
+This cost difference opens the market of experimentation with RLHF methods to an entire population of people previously priced out.
 Other than price, AI feedback introduces different *tradeoffs* on performance than human feedback, which are still being investigated.
 The peak performance for AI feedback is at least in the same ballpark of human data on skill-based evaluations, but it is not studied if human data allows finer control of the models in real-world product settings or for newer training methods such as character training.
 
@@ -28,10 +28,10 @@ Results in many academic results showing how one can substitute AI preference da
 
 ## Constitutional AI
 
-The method of Constitutional AI (CAI), which Anthropic uses extensively in their Claude models, is earliest, large-scale use of synthetic data for RLHF training. 
+The method of Constitutional AI (CAI), which Anthropic uses extensively in their Claude models, is the earliest, large-scale use of synthetic data for RLHF training. 
 Constitutional AI has two uses of synthetic data:
 
-1. Critiques of instruction-tune data to follow a set of principles like “Is the answer encouraging violence” or “Is the answer truthful.” When the model generates answers to questions, it checks the answer against the list of principles in the constitution, refining the answer over time. Then, they fine-tune the model on this resulting dataset.
+1. Critiques of instruction-tuned data to follow a set of principles like “Is the answer encouraging violence” or “Is the answer truthful.” When the model generates answers to questions, it checks the answer against the list of principles in the constitution, refining the answer over time. Then, they fine-tune the model on this resulting dataset.
 2. Generates pairwise preference data by using a language model to answer which completion was better, given the context of a random principle from the constitution (similar to this paper for principle-guided reward models). Then, RLHF proceeds as normal with synthetic data, hence the RLAIF name.
 
 Largely, CAI is known for the second half above, the preference data, but the methods introduced for instruction data are used in general data filtering and synthetic data generation methods across post-training.

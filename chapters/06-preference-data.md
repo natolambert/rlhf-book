@@ -42,7 +42,7 @@ An example interaction of this form is shown below for an earlier version of Cha
 ![Example preference data collection interface.](images/chatgpt-ab-test.jpeg){#fig:preference-chatgpt .center}
 
 This style of interface is used extensively across the industry, such as for *evaluation* of models given the same format.
-A popular public option to see engage with models in this way is ChatBotArena [@chiang2024chatbot]:
+A popular public option to engage with models in this way is ChatBotArena [@chiang2024chatbot]:
 
 ![Example preference data collection interface.](images/chatbotarena.png){#fig:chatbotarena .center}
 

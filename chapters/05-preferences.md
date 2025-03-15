@@ -9,7 +9,7 @@ next-url: "06-preference-data.html"
 # The Nature of Preferences
 
 The core of reinforcement learning from human feedback, also referred to as reinforcement learning from human preferences in early literature, is designed to optimize machine learning models in domains where specifically designing a reward function is hard.
-Consider an example, how do you decide which of these two poems is better (Context: *On February 26th, 2025, I asked both Claude 3.7 Sonnet and ChatGPT with GPT-4o to "Write me a short poem about a optimistic goldfish."*):
+Consider an example, how do you decide which of these two poems is better (Context: *On February 26th, 2025, I asked both Claude 3.7 Sonnet and ChatGPT with GPT-4o to "Write me a short poem about an optimistic goldfish."*):
 
 Example 1:
 > The Optimistic Goldfish
@@ -64,8 +64,8 @@ Together, each of these areas brings specific assumptions at what a preference i
 In practice, RLHF methods are motivated and studied from the perspective of empirical alignment -- maximizing model performance on specific skills instead of measuring the calibration to specific values.
 Still, the origins of value alignment for RLHF methods continue to be studied through research on methods to solve for ``pluralistic alignment'' across populations, such as position papers [@conitzer2024social], [@mishra2023ai], new datasets [@kirk2024prism], and personalization methods [@poddar2024personalizing].
 
-The goal of this chapter is to illustrate how complex motivations result in presumptions about the nature of tools used in RLHF that do often not apply in practice.
-The specifics of obtaining data for RLHF is discussed further in Chapter 6 and using it for reward modeling in Chapter 7.
+The goal of this chapter is to illustrate how complex motivations result in presumptions about the nature of tools used in RLHF that often do not apply in practice.
+The specifics of obtaining data for RLHF are discussed further in Chapter 6 and using it for reward modeling in Chapter 7.
 For an extended version of this chapter, see [@lambert2023entangled].
 
 ## The path to optimizing preferences
