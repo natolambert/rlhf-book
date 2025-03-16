@@ -1,6 +1,6 @@
 ---
-prev-chapter: ""
-prev-url: ""
+prev-chapter: "Synthetic Data & Distillation"
+prev-url: "15-synthetic.html"
 next-chapter: "Over Optimization"
 next-url: "17-over-optimization.html"
 ---

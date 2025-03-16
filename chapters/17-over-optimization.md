@@ -1,6 +1,6 @@
 ---
-prev-chapter: ""
-prev-url: ""
+prev-chapter: "Evaluation & Prompting"
+prev-url: "16-evaluation.html"
 next-chapter: "Style and Information"
 next-url: "18-style.html"
 ---

@@ -47,12 +47,12 @@ Example 2:
 > Each moment fresh, each circle bright,
 > The optimist in golden hue.
 
-Which is better? Which came from which model? How would you tell? Particularly, compare this to a question like "Who is the president of the United States?" There, there is a clear right and wrong answer.
+Which is better? Which came from which model? How would you tell? Particularly, compare this to a question like "Who is the president of the United States?" There is a clear right and wrong answer.
 The motivation for using humans as the reward signals is to obtain an indirect metric for the target reward and *align* the downstream model to human preferences.
 In practice, the implementation is challenging and there is a substantial grey area to interpret the best practices.
 
 The use of human labeled feedback data integrates the history of many fields.
-Using human data alone is a well studied problem, but in the context of RLHF it is used at the intersection of multiple long-standing fields of study [@lambert2023entangled].
+Using human data alone is a well-studied problem, but in the context of RLHF it is used at the intersection of multiple long-standing fields of study [@lambert2023entangled].
 
 As an approximation, modern RLHF is the convergence of three areas of development:
 
@@ -60,7 +60,7 @@ As an approximation, modern RLHF is the convergence of three areas of developmen
 2. Optimal control, reinforcement learning, and maximizing utility; and
 3. Modern deep learning systems.
 
-Together, each of these areas brings specific assumptions at what a preference is and how it can be optimized, which dictates the motivations and design of RLHF problems.
+Together, each of these areas brings specific assumptions about what a preference is and how it can be optimized, which dictates the motivations and design of RLHF problems.
 In practice, RLHF methods are motivated and studied from the perspective of empirical alignment -- maximizing model performance on specific skills instead of measuring the calibration to specific values.
 Still, the origins of value alignment for RLHF methods continue to be studied through research on methods to solve for ``pluralistic alignment'' across populations, such as position papers [@conitzer2024social], [@mishra2023ai], new datasets [@kirk2024prism], and personalization methods [@poddar2024personalizing].
 
@@ -74,7 +74,7 @@ A popular phrasing for the design of Artificial Intelligence (AI) systems is tha
 The inspiration of a **rational agent** is a lens of decision making, where said agent is able to act in the world and impact its future behavior and returns, as a measure of goodness in the world.
 
 The lens of study of **utility** began in the study of analog circuits to optimize behavior on a finite time horizon [@widrow1960adaptive].
-Large portions of optimal control adopted this lens, often studying dynamic problems under the lens of minimizing as cost function on a certain horizon -- a lens often associated with solving for a clear, optimal behavior.
+Large portions of optimal control adopted this lens, often studying dynamic problems under the lens of minimizing a cost function on a certain horizon -- a lens often associated with solving for a clear, optimal behavior.
 Reinforcement learning, inspired from literature in operant conditioning, animal behavior, and the *Law of Effect* [@skinner2019behavior],[@thorndike1927law], studies how to elicit behaviors from agents via reinforcing positive behaviors.
 
 Reinforcement learning from human feedback combines multiple lenses by building the theory of learning and change of RL, i.e. that behaviors can be learned by reinforcing behavior, with a suite of methods designed for quantifying preferences.
