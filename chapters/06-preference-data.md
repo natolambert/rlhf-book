@@ -98,6 +98,7 @@ Constructing this preference data, which would be included as *synthetic* prefer
 For example, prompting GPT-4.5-Preview with both of these gives the following.
 
 > **Prompt**: Write me a short poem about a goldfish. Start each sentence with the letter g.
+>
 > **Response**: Golden swimmer, circling slow,
 > Gleaming scales in water’s glow.
 > Gentle fins dance softly by,
@@ -110,6 +111,7 @@ For example, prompting GPT-4.5-Preview with both of these gives the following.
 And without the constraint (which, it turns out, is also a lower quality output):
 
 > **Prompt**: Write me a short poem about a goldfish.
+>
 > **Response**: In circles bright, the goldfish glides,
 > A spark of sun that gently rides
 > Through waters clear, in endless spins—
