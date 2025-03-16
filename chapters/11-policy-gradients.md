@@ -229,6 +229,7 @@ $$A_i = \frac{r_i - \text{mean}({r_1, r_2, \cdots, r_G})}{\text{std}({r_1, r_2, 
 Intuitively, the GRPO update is comparing multiple answers to a single question within a batch.
 The model learns to become more like the answers marked as correct and less like the others. 
 This is a very simple way to compute the advantage, which is the measure of how much better a specific action is than the average at a given state.
+Relative to PPO, REINFORCE, and broadly RLHF performed with a reward model rating (relative to output reward), GRPO is often run with a far higher number of samples per prompt. Here, the current policy generates multiple responses to a given prompt, and the group-wise GRPO advantage estimate is given valuable context.
 
 @eq:GRPO_ADV is the implementation of GRPO when working with outcome supervision (either a standard reward model or a single verifiable reward) and a different implementation is needed with process supervision.
 In this case, GRPO computes the advantage as the sum of the normalized rewards for the following reasoning steps.
