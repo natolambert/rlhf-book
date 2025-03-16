@@ -55,13 +55,20 @@ Modern RLHF-trained models always utilize instruction finetuning followed by a m
 ## RLHF Recipe Example
 
 The canonical RLHF recipe circa the release of ChatGPT followed a standard three step post-training recipe where RLHF was the center piece [@lambert2022illustrating] [@ouyang2022training] [@bai2022training].
-The three steps taken on top of a "base" language model (the next-token prediction model trained on large-scale web text) was:
+The three steps taken on top of a "base" language model (the next-token prediction model trained on large-scale web text) was, summarized below in @fig:rlhf-basic-repeat:
 
 1. **Instruction tuning on ~10K examples**: This teaches the model to follow the question-answer format and teaches some basic skills from primarily human-written data.
 2. **Training a reward model on ~100K pairwise prompts**: This model is trained from the instruction-tuned checkpoint and captures the diverse values one wishes to model in their final training. The reward model is the optimization target for RLHF.
 3. **Training the instruction-tuned model with RLHF on another ~100K prompts**: The model is optimized against the reward model with a set of prompts that the model generates over before receiving ratings.
 
 Once RLHF was done, the model was ready to be deployed to users. This recipe is the foundation of modern RLHF, but recipes have evolved substantially to include more stages and more data.
+
+![A rendition of the early, three stage RLHF process with SFT, a reward model, and then optimization.](images/rlhf-basic.png){#fig:rlhf-basic-repeat}
+
+Modern versions of post-training involve many, many more model versions. 
+An example is shown below in fig:complex-rlhf where the model undergoes numerous training iterations before convergence.
+
+![A rendition of modern post-training with many rounds.](images/rlhf-complex.png){#fig:rlhf-complex}
 
 ## Finetuning and Regularization
 

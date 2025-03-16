@@ -206,6 +206,8 @@ Given the efficacy of LLM-as-a-judge for evaluation, spawning many other evaluat
 An entire field of study has emerged to study how to use so called "Generative Reward Models" [@mahan2024generative]
 [@zhang2024generative] [@ankner2024critique] (including models trained *specifically* to be effective judges [@kim2023prometheus]), but on RM evaluations they tend to be behind existing reward models, showing that reward modeling is an important technique for current RLHF.
 
+A common trick to improve the robustness of LLM-as-a-judge workflows is to use a sampling temperature of 0 to reduce variance of ratings.
+
 ## Further Reading
 
 The academic literature for reward modeling established itself in 2024. 

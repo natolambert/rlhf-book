@@ -89,3 +89,14 @@ where $\tau \sim \pi_\theta$ denotes trajectories sampled by following policy $\
 ## RLHF Only Definitions
 
 - **Reference Model ($\pi_\text{ref}$)**: This is a saved set of parameters used in RLHF where outputs of it are used to regularize the optimization.
+
+## Extended Glossary
+
+- **Synthetic Data**: This is any training data for an AI model that is the output from another AI system. This could be anything from text generated from a open-ended prompt of a model to a model re-writing existing content.
+- **Distillation**: Distillation is a general set of practices in training AI models where a model is trained on the outputs of a stronger model. This is a type of synthetic data known to make strong, smaller models. Most models make the rules around distillation clear through either the license, for open weight models, or the terms of service, for models accessible only via API. The term distillation is now overloaded with a specific technical definition from the ML literature.
+- **(Teacher-student) Knowledge Distillation**: Knowledge distillation from a specific teacher to student model is a specific type of distillation above and where the term originated. It is a specific deep learning method where a neural network loss is modified to learn from the log-probabilites of the teacher model over multiple potential tokens/logits, instead of learning directly from a chosen output [@hinton2015distilling]. An example of a modern series of models trained with Knowledge Distillation is Gemma 2 [@team2024gemma] or Gemma 3. For a language modeling setup, the next-token loss function can be modified as follows [@agarwal2024policy], where the student model $P_\theta$ learns from the teacher distribution $P_\phi$:
+
+$$\mathcal{L}_{\text{KD}}(\theta) = -\,\mathbb{E}_{x \sim \mathcal{D}}\left[\sum_{t=1}^{T} P_{\phi}(x_t \mid x_{<t}) \log P_{\theta}(x_t \mid x_{<t})\right]. $$
+
+- **In-context Learning (ICL)**: In-context here refers to any information within the context window of the language model. Usually, this is information added to the prompt. The simplest form of in-context learning is adding examples of a similar form before the prompt. Advanced versions can learn which information to include for a specific use-case.
+- **Chain of Thought (CoT)**: Chain of thought is a specific behavior of language models where they are steered towards a behavior that breaks down a problem in a step by step form. The original version of this was through the prompt "Let's think step by step" [@wei2022chain].

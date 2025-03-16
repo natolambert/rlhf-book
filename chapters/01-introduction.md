@@ -21,6 +21,9 @@ This book details key decisions and basic implementation examples for each step 
 
 RLHF has been applied to many domains successfully, with complexity increasing as the techniques have matured.
 Early breakthrough experiments with RLHF were applied to deep reinforcement learning [@christiano2017deep], summarization [@stiennon2020learning], following instructions [@ouyang2022training], parsing web information for question answering [@nakano2021webgpt], and "alignment" [@bai2022training].
+A summary of the early RLHF recipes is shown below in @fig:rlhf-basic.
+
+![A rendition of the early, three stage RLHF process with SFT, a reward model, and then optimization.](images/rlhf-basic.png){#fig:rlhf-basic}
 
 In modern language model training, RLHF is one component of post-training. 
 Post-training is a more complete set of techniques and best-practices to make language models more useful for downstream tasks [@lambert2024t].
@@ -42,9 +45,24 @@ The core role of this book, beyond teaching the techniques for doing RLHF, is to
 In recent years, language models have shifted from academic experiments studied in the purview of benchmarks to general purpose technology.
 RLHF is at the core of this transition.
 
+To start, let us consider how a language model at the end of autoregressive pretraining answers a query. 
+A strong model, Llama 3.1 405B, will continue from "The president of the united states in 2006 was":
+
+> George w bush, the governor of Florida in 2006 was Jeb bush, and John McCain was an arizona senator in 2006 - who later lost to obama.
+> September 1 – U.S. President Bush signs an executive order to provide more options for faith-based organizations when delivering social services that are paid for with federal funds.
+> January 1 – The current deadline set by United States Congress in the Unlawful Internet Gambling Enforcement Act, aka UIGEA.
+> search: Amendments to the 1961 International Convention for the Protection of New Varieties of Plants require plant breeders' rights include farmer's privilege.
+> 2009 was a common year starting on Thursday of the Gregorian calendar, the 2009th year of the Common Era (ce) and Anno Domini (ad) designations, the 9th year of the 3rd millennium, the 9th year of the 21st century, and the 10th and last year of the 2000s decade.
+
+What is clear is that this model is completing the sentence and adding other common internet metadata.
+
 The most compelling view of how RLHF works is to think of how *style* applies to interactions you have with language models.
 The style, or format, of information presented is crucial to how it is learned.
 This has always been the case for examples such as coursework, but is normally applied in the background and not considered directly.
+
+Continuing the above example, a model trained with RLHF (and other post-training tools), would answer the question very differently. Asking Tülu 3 405B the same question "The president of the united states in 2006 was," is says concisely:
+
+> George W. Bush was the president of the United States in 2006. He served two terms in office, from January 20, 2001, to January 20, 2009.
 
 Modern research has established RLHF as a general method to integrate subtle stylistic and related behavioral features into the models.
 Compared to other techniques for post-training, such as instruction finetuning, RLHF generalizes far better across domains [@kirk2023understanding] [@chu2025sft] -- helping create effective general purpose models.

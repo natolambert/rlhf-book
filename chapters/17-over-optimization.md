@@ -7,10 +7,11 @@ next-url: "18-style.html"
 
 # Over Optimization
 
-In the RLHF literature and discourse, there are two directions that over-optimization can emerge:
+In the RLHF literature and discourse, there are three directions that over-optimization can emerge:
 
-1. **Quantitative research** on the technical notion of over-optimization of reward, and
+1. **Quantitative research** on the technical notion of over-optimization of reward, 
 2. **Qualitative observations** that "overdoing" RLHF can result in worse models.
+3. **Misalignment** where overdoing RLHF or related techniques can make a language model behave against its design.
 
 This chapter provides a cursory introduction to both. We begin with the latter, qualitative, because it motivates the problem to study further.
 
@@ -72,3 +73,7 @@ DPO may not benefit from this as much, the direct optimization will likely chang
 
 
 [@gao2023scaling]
+
+## Misalignment
+
+Consequences [@zhuang2020consequences] or sycophancy [@sharma2023towards]
