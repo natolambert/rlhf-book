@@ -373,7 +373,25 @@ Traditionally, the KL distance is computed with respect to each token in the com
 For reasoning training, multiple completions are sampled from one prompt, and there are multiple prompts in one batch,
 so the KL distance will have a shape of [B, L, N], where B is the batch size, L is the sequence length, and N is the number of completions per prompt.
 The question when implementing GRPO is: How do you sum over the KL distance and loss to design different types of value-attribution. 
-In the below implementation, the loss is summed over the tokens in the completion, but mean could be an alternative.
+In the below implementation, the loss is summed over the tokens in the completion:
+
+```python
+sequence_loss = ((per_token_loss * completion_mask).sum(dim=1) / \
+             completion_mask.sum(dim=1)).mean()
+```
+
+An alternative is to average over each token individually.
+
+```python
+token_loss = ((per_token_loss * completion_mask).sum() / \
+            completion_mask.sum())
+```
+
+Intuitively, it could seem that averaging over the sequence is best, as we are trying to reward the model for *outcomes* and the specific tokens are not as important.
+In practice, the setup that is best likely is the one that is suited to the individual, online learning setup. 
+Often in RLHF methods the method with the best numerical stability and or the least variance in loss could be preferred.
+
+Putting it together, using the first loss accumulation, the psuedocode can be written as below.
 
 ```python
 # B: Batch Size, L: Sequence Length, G: Number of Generations
