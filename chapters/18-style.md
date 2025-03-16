@@ -1,8 +1,8 @@
 ---
 prev-chapter: "Over Optimization"
 prev-url: "17-over-optimization.html"
-next-chapter: ""
-next-url: ""
+next-chapter: "Character Training & Model Character"
+next-url: "19-character.html"
 ---
 
 # Style and Information
