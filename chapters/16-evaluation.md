@@ -9,7 +9,15 @@ next-url: "17-over-optimization.html"
 
 ## How To Tell if RLHF is Working?
 
-## ChatBotArena
+## Prompting
+
+Prompting, i.e. crafting the correct query for  a model, is a crucial portion of using them as the models are evolving rapidly.
+
+## Evaluation
+
+### Formatting and Overview
+
+### ChatBotArena
 
 ChatBotArena is the largest community evaluation tool for language models. The LMSYS team, which emerged early in the post-ChatGPT craze, works with most of the model providers to host all of the relevant models. If you’re looking to get to know how multiple models compare to each other, ChatBotArena is the place to start.
 
@@ -39,6 +47,6 @@ When ChatBotArena was founded, these styles were in flux. Now, they majorly shif
 
 There are clear reasons why OpenAI’s models top the charts on ChatBotArena. They were the originators of modern RLHF, have most clearly dictated their goals with RLHF, continue to publish innovative ideas in the space, and have always been ahead here. Most people just did not realize how important this was to evaluation until the launch of GPT-4o-mini. Culture impacts AI style.
 
-## Private Leaderboards
+### Private Leaderboards
 
 Scale Leaderboard etc

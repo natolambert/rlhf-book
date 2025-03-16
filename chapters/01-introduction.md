@@ -23,7 +23,7 @@ RLHF has been applied to many domains successfully, with complexity increasing a
 Early breakthrough experiments with RLHF were applied to deep reinforcement learning [@christiano2017deep], summarization [@stiennon2020learning], following instructions [@ouyang2022training], parsing web information for question answering [@nakano2021webgpt], and "alignment" [@bai2022training].
 A summary of the early RLHF recipes is shown below in @fig:rlhf-basic.
 
-![A rendition of the early, three stage RLHF process with SFT, a reward model, and then optimization.](images/rlhf-basic.png) {#fig:rlhf-basic}
+![A rendition of the early, three stage RLHF process with SFT, a reward model, and then optimization.](images/rlhf-basic.png){#fig:rlhf-basic}
 
 In modern language model training, RLHF is one component of post-training. 
 Post-training is a more complete set of techniques and best-practices to make language models more useful for downstream tasks [@lambert2024t].

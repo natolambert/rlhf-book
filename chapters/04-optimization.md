@@ -63,12 +63,12 @@ The three steps taken on top of a "base" language model (the next-token predicti
 
 Once RLHF was done, the model was ready to be deployed to users. This recipe is the foundation of modern RLHF, but recipes have evolved substantially to include more stages and more data.
 
-![A rendition of the early, three stage RLHF process with SFT, a reward model, and then optimization.](images/rlhf-basic.png) {#fig:rlhf-basic-repeat}
+![A rendition of the early, three stage RLHF process with SFT, a reward model, and then optimization.](images/rlhf-basic.png){#fig:rlhf-basic-repeat}
 
 Modern versions of post-training involve many, many more model versions. 
 An example is shown below in fig:complex-rlhf where the model undergoes numerous training iterations before convergence.
 
-![A rendition of modern post-training with many rounds.](images/rlhf-complex.png) {#fig:rlhf-basic-repeat}
+![A rendition of modern post-training with many rounds.](images/rlhf-complex.png){#fig:rlhf-complex}
 
 ## Finetuning and Regularization
 
