@@ -73,7 +73,7 @@ How many helicopters can a human eat in one sitting?</s>
 <|assistant|>
 ```
 
-Notices how the final token in the sequence is `<|assistant|>`, this is how the model knows to continue generating tokens until it finally generates its end of sequence token, which in this case is </s>.
+Notices how the final token in the sequence is `<|assistant|>`, this is how the model knows to continue generating tokens until it finally generates its end of sequence token, which in this case is `</s>`.
 
 By packing all question-answer pair data (and downstream preference tuning data) into this format, modern language models follow it with perfect consistency. This is the language that instruction tuned models use to exchange information with users and the models stored on GPUs or other computing devices.
 
