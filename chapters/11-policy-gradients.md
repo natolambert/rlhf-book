@@ -29,14 +29,14 @@ For definitions of symbols, see the problem setup chapter.
 Reinforcement learning algorithms are designed to maximize the future, discounted reward across a trajectory of states, $s \in \mathcal{S}$, and actions, $a \in \mathcal{A}$ (for more notation, see Chapter 3, Definitions).
 The objective of the agent, often called the *return*, is the sum of discounted, future rewards (where $\gamma\in [0,1)$ is a factor that prioritizes near term rewards) at a given time $t$:
 
-$$G_t = R_{t+1} + \gamma R_{t+2} + \cdots = \sum_{k=o}^\infty \gamma^k R_{t+k+1}.$$
+$$G_t = R_{t+1} + \gamma R_{t+2} + \cdots = \sum_{k=0}^\infty \gamma^k R_{t+k+1}.$$
 
 The return definition can also be estimated as:
 $$G_{t} = \gamma{G_{t+1}} + R_{t+1}.$$
 
 This return is the basis for learning a value function $V(s)$ that is the estimated future return given a current state:
 
-$$V(s) = \mathbb{E}\big[G_t | S_t = s \big].$$
+$$V(s) = \mathbb{E}\left[G_t | S_t = s \right].$$
 
 All policy gradient algorithms solve an objective for such a value function induced from a specific policy, $\pi(s|a)$. 
 
@@ -54,9 +54,9 @@ $$\theta \leftarrow \theta + \alpha \nabla_\theta J(\theta)$$
 
 The core implementation detail is how to compute said gradient.
 Schulman et al. 2015 provides an overview of the different ways that policy gradients can be computed [@schulman2015high].
-The goal is to *estimate* the exact gradient $g := \nabla_\theta \mathbb{E}[\sum_{t=0}^\infty r_t]$, of which, there are many forms similar to:
+The goal is to *estimate* the exact gradient $g := \nabla_\theta \mathbb{E}\left[\sum_{t=0}^\infty r_t\right]$, of which, there are many forms similar to:
 
-$$ g = \mathbb{E}\Big[\sum_{t=0}^\infty \Psi_t \nabla_\theta \text{log} \pi_\theta(a_t|s_t) \Big], $$
+$$ g = \mathbb{E}\left[\sum_{t=0}^\infty \Psi_t \nabla_\theta \text{log} \pi_\theta(a_t|s_t) \right], $$
 
 Where $\Psi_t$ can be the following:
 
@@ -129,10 +129,10 @@ With more modern notation and the generalized return $G$, the REINFORCE operator
 $$
 \nabla_{\theta}\,J(\theta)
 \;=\;
-\mathbb{E}_{\tau \sim \pi_{\theta}}\!\Big[
+\mathbb{E}_{\tau \sim \pi_{\theta}}\!\left[
     \sum_{t=0}^{T}
     \nabla_{\theta} \log \pi_{\theta}(a_t \mid s_t)\,G_t
-\Big],
+\right],
 $$
 
 
@@ -160,7 +160,7 @@ For example, with the KL divergence distance penalty, RLOO sums it over the comp
 Proximal Policy Optimization (PPO) [@schulman2017proximal] is one of the foundational algorithms to Deep RL's successes (such as OpenAI's DOTA 5 [@berner2019dota] and large amounts of research).
 The loss function is as follows:
 
-$$J(\theta) = \frac{1}{G}\sum_{i=1}^G \min\left(\frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}A_i, \text{clip} \left( \frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}, 1-\varepsilon, 1+\varepsilon \right) A_i \right)).$$ {#eq:PPO_EQN}
+$$J(\theta) = \frac{1}{G}\sum_{i=1}^G \min\left(\frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}A_i, \text{clip} \left( \frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}, 1-\varepsilon, 1+\varepsilon \right) A_i \right).$$ {#eq:PPO_EQN}
 
 Here we will explain the difference cases this loss function triggers given various advantages and policy ratios.
 At an implementation level, the inner computations for PPO involve standard policy gradient and a clipped policy gradient.
@@ -224,7 +224,7 @@ $$J(\theta) = \frac{1}{G}\sum_{i=1}^G \left(\min\left(\frac{\pi_\theta(a_i|s)}{\
 Note that relative to PPO, the standard implementation of GRPO includes the KL distance in the loss.
 With the advantage computation for the completion index $i$:
 
-$$A_i = \frac{r_i - \text{mean}({r_1, r_2, \cdots, r_G})}{\text{std}({r_1, r_2, \cdots, r_G})}.$$ {#eq:GRPO_ADV}
+$$A_i = \frac{r_i - \text{mean}\left({r_1, r_2, \cdots, r_G}\right)}{\text{std}\left({r_1, r_2, \cdots, r_G}\right)}.$$ {#eq:GRPO_ADV}
 
 Intuitively, the GRPO update is comparing multiple answers to a single question within a batch.
 The model learns to become more like the answers marked as correct and less like the others. 

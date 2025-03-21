@@ -31,7 +31,7 @@ Thus, we can take the score of this model with two samples, the $i$ and $j$ abov
 
 The probability of success for a given reward model in a pairwise comparison, becomes:
 
-$$P(y_1 > y_2) = \frac{\exp(r(y_1))}{\exp(r(y_1)) + \exp(r(y_2))}$$ {#eq:bradterryrm}
+$$P(y_1 > y_2) = \frac{\exp\left(r(y_1)\right)}{\exp\left(r(y_1)\right) + \exp\left(r(y_2)\right)}$$ {#eq:bradterryrm}
 
 Then, by taking the gradient with respect to the model parameters, we can arrive at the loss function to train a reward model.
 The first form, as in [@ouyang2022training] and other works:
@@ -84,7 +84,7 @@ To do this, they weight the loss updates per comparison per prompt.
 At an implementation level, this can be done automatically by including all examples with the same prompt in the same training batch, naturally weighing the different pairs -- not doing this caused overfitting to the prompts.
 The loss function becomes:
 
-$$\mathcal{L}(\theta) = - \frac{1}{(\frac{K}{2})} \mathbb{E}_{(x, y_w, y_l)\sim D} \log \left( \sigma \left( r_{\theta}(x, y_w) - r_{\theta}(x, y_l) \right) \right)$$ {#eq:rewardmodelinginstructgpt}
+$$\mathcal{L}(\theta) = - \frac{1}{\left(\frac{K}{2}\right)} \mathbb{E}_{(x, y_w, y_l)\sim D} \log \left( \sigma \left( r_{\theta}(x, y_w) - r_{\theta}(x, y_l) \right) \right)$$ {#eq:rewardmodelinginstructgpt}
 
 
 ### K-wise Loss Function
@@ -96,7 +96,7 @@ Following Zhu et al. 2023 formalizes the setup [@zhu2023principled], following a
 With a prompt, or state, $s^i$, $K$ actions $(a_0^i, a_1^i, \cdots, a_{K-1}^i)$ are sampled from $P(a_0,\cdots,a_{K-1}|s^i)$.
 Then, labelers are used to rank preferences with $\sigma^i: [K] \mapsto [K]$ is a function representing action rankings, where $\sigma^i(0)$ is the most preferred action. This yields a preference model capturing the following:
 
-$$P(\sigma^i|s^i,a_0^i,a_1^i,\ldots,a_{K-1}^i) = \prod_{k=0}^{K-1} \frac{\exp(r_{\theta\star}(s^i,a_{\sigma^i(k)}^i))}{\sum_{j=k}^{K-1}\exp(r_{\theta\star}(s^i,a_{\sigma^i(j)}^i))}$$ {#eq:kwise_rm}
+$$P(\sigma^i|s^i,a_0^i,a_1^i,\ldots,a_{K-1}^i) = \prod_{k=0}^{K-1} \frac{\exp\left(r_{\theta\star}(s^i,a_{\sigma^i(k)}^i)\right)}{\sum_{j=k}^{K-1}\exp\left(r_{\theta\star}(s^i,a_{\sigma^i(j)}^i)\right)}$$ {#eq:kwise_rm}
 
 When $K = 2$, this reduces to the Bradley-Terry (BT) model for pairwise comparisons.
 Regardless, once trained, these models are used similarly to other reward models during RLHF training.
@@ -120,9 +120,9 @@ are language models, with a small scalar head that outputs predictions on a per-
 To translate, this is implemented as a language modeling head that can predict two classes per token (1 for correct, 0 for incorrect), rather than a classification head of a traditional RM that outputs one token for the entire sequence.
 Formally, following [@lyu2025exploring] this can be shown as:
 
-$$\mathcal{L}_{\text{CE}} = -\mathbb{E}_{(s,r)\sim \mathcal{D}}[r\log p_\theta(s) + (1-r)\log(1-p_\theta(s))]$$ {#eq:orm_loss}
+$$\mathcal{L}_{\text{CE}} = -\mathbb{E}_{(s,r)\sim \mathcal{D}}\left[r\log p_\theta(s) + (1-r)\log(1-p_\theta(s))\right]$$ {#eq:orm_loss}
 
-where $r \in {0,1}$ is a binary label where 1 applies to a correct answer to a given prompt and 0 applies to an incorrect, and $p_\theta(s)$ is the scalar proportional to predicted probability of correctness from the model being trained.
+where $r \in \{0,1\}$ is a binary label where 1 applies to a correct answer to a given prompt and 0 applies to an incorrect, and $p_\theta(s)$ is the scalar proportional to predicted probability of correctness from the model being trained.
 
 These models have continued in use, but are less supported in open-source RLHF tools. 
 For example, the same type of ORM was used in the seminal work *Let's Verify Step by Step* [@lightman2023let], but without the language modeling prediction piece of the loss.
