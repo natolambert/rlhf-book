@@ -141,7 +141,7 @@ REINFORCE is a specific implementation of vanilla policy gradient that uses a Mo
 REINFORCE can be run without value network -- the value network is for the baseline in the policy gradient. 
 PPO on the other hand needs the value network to accurately compute the advantage function.
 
-### REINFORCE Leave One Out (RLOO)
+#### REINFORCE Leave One Out (RLOO)
 
 The core implementation detail of REINFORCE Leave One Out  versus standard REINFORCE is that it takes the average reward of the *other* samples in the batch to compute the baseline -- rather than averaging over all rewards in the batch [@huang2024putting], [@ahmadian2024back], [@kool2019buy].
 
@@ -160,7 +160,7 @@ For example, with the KL divergence distance penalty, RLOO sums it over the comp
 Proximal Policy Optimization (PPO) [@schulman2017proximal] is one of the foundational algorithms to Deep RL's successes (such as OpenAI's DOTA 5 [@berner2019dota] and large amounts of research).
 The loss function is as follows:
 
-$$J(\theta) = \frac{1}{G}\sum_{i=1}^G \min\left(\frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}A_i, \text{clip} \left( \frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}, 1-\varepsilon, 1+\varepsilon \right) A_i \right)).$$ {#eq:PPO_EQN}
+$$J(\theta) = \frac{1}{G}\sum_{i=1}^G \min\left(\frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}A_i, \text{clip} \left( \frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}, 1-\varepsilon, 1+\varepsilon \right) A_i \right).$$ {#eq:PPO_EQN}
 
 Here we will explain the difference cases this loss function triggers given various advantages and policy ratios.
 At an implementation level, the inner computations for PPO involve standard policy gradient and a clipped policy gradient.
@@ -236,7 +236,6 @@ In this case, GRPO computes the advantage as the sum of the normalized rewards f
 
 Finally, GRPO's advantage estimation can also be applied without the PPO clipping to more vanilla versions of policy gradient (e.g. REINFORCE), but it is not the canonical form.
 
-
 ## Implementation
 
 Compared to the original Deep RL literature where many of these algorithms were developed, implementing RL for optimizing language models or other large AI models requires many small implementation details.
@@ -259,7 +258,7 @@ Some decisions not covered here include:
 For more details on implementation details for RLHF, see [@huang2024n]. 
 For further information on the algorithms, see [@weng2018PG].
 
-### Policy Gradient
+### Policy Gradient Basics
 
 A simple implementation of policy gradient, using advantages to estimate the gradient to prepare for advanced algorithms such as PPO and GRPO follows:
 ```python
@@ -275,6 +274,71 @@ Case 1: Positive advantage, so the action was better than the expected value of 
 Case 2: Negative advantage, so the action was worse than the expected value of the state. This follows very similarly. Here, the loss will be positive if the new model was more likely, so the model will try to make it so the policy parameters make this completion less likely.
 
 Case 3: Zero advantage, so no update is needed. The loss is zero, don't change the policy model.
+
+### Loss Aggregation
+
+The question when implementing any policy gradient algorithm with language models is: How do you sum over the KL distance and loss to design different types of value-attribution.
+
+Consider an example where we have the following variables, with a batch size B and sequence length L.
+
+```python
+advantages # [B, 1]
+per_token_probability_ratios # [B, L]
+```
+
+We can approximate the loss as above with a batch multiplication of `pg_loss = -advantages * ratio`. Multiplying these together is broadcasting the advantage per each completion in the batch (as in the outcome reward setting, rather than a per-token value model setting) to be the same. They are then multiplied by the per token probability logratios.
+
+In cases where a value network is used, it is easy to see that the different losses can behave very differently. 
+When outcome rewards are used, the advantages are set to be the same per token, so the difference in per-token probability is crucial to policy gradient learning dynamics.
+
+In the below implementations of GRPO and PPO, the loss is summed over the tokens in the completion:
+
+```python
+sequence_loss = ((per_token_loss * completion_mask).sum(dim=1) / \
+             completion_mask.sum(dim=1)).mean()
+```
+
+The operation above is very similar to a `masked_mean` operation.
+An alternative is to average over each token individually.
+
+```python
+token_loss = ((per_token_loss * completion_mask).sum() / \
+            completion_mask.sum())
+```
+
+Intuitively, it could seem that averaging over the sequence is best, as we are trying to reward the model for *outcomes* and the specific tokens are not as important.
+This can introduce subtle forms of bias. 
+Consider two sequences of different lengths, assigned two different advantages `a_1` and `a_2`. 
+
+```python
+seq_1_advs = [a_1, a_1, a_1, a_1, a_1] # 5 tokens
+seq_2_advs = [a_2, a_2, a_2, a_2, a_2, a_2, a_2, a_2, a_2, a_2] # 10 tokens
+```
+
+Now, consider if the last token in each sequence is important to the advantage being positive, so it gets increased over the multiple gradient steps per batch.
+When you convert these to per-token losses, you could get something approximate to:
+
+```python
+seq_1_losses = [-1, -1, -1, -1, -10] # 5 tokens
+seq_2_losses = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -10] # 10 tokens
+```
+
+If we average these over the sequences, we will get the following numbers:
+```
+seq_1_loss = -2.8
+seq_2_loss = -1.9
+```
+
+If we average these together weighting sequences equally, we get a loss of -2.35.
+If, instead we apply the loss equally to each token, the loss would be computed by summing all the per token losses and normalizing by length, which in this case would be -2.27.
+If the sequences had bigger differences, the two loss values can have substantially different values.
+
+Another way to aggregate loss is discussed in [TODO CITE DrGRPO] that has its origins in pre language model RL research, where every per-token loss is normalized by the max sequence length set in the experiment. 
+This would change how the losses compare across batches per tokens in the above example.
+
+
+In practice, the setup that is best likely is the one that is suited to the individual, online learning setup. 
+Often in RLHF methods the method with the best numerical stability and or the least variance in loss could be preferred.
 
 ### Proximal Policy Optimization
 
@@ -372,24 +436,6 @@ Though, there are multiple ways to implement this.
 Traditionally, the KL distance is computed with respect to each token in the completion to a prompt $s$.
 For reasoning training, multiple completions are sampled from one prompt, and there are multiple prompts in one batch,
 so the KL distance will have a shape of [B, L, N], where B is the batch size, L is the sequence length, and N is the number of completions per prompt.
-The question when implementing GRPO is: How do you sum over the KL distance and loss to design different types of value-attribution. 
-In the below implementation, the loss is summed over the tokens in the completion:
-
-```python
-sequence_loss = ((per_token_loss * completion_mask).sum(dim=1) / \
-             completion_mask.sum(dim=1)).mean()
-```
-
-An alternative is to average over each token individually.
-
-```python
-token_loss = ((per_token_loss * completion_mask).sum() / \
-            completion_mask.sum())
-```
-
-Intuitively, it could seem that averaging over the sequence is best, as we are trying to reward the model for *outcomes* and the specific tokens are not as important.
-In practice, the setup that is best likely is the one that is suited to the individual, online learning setup. 
-Often in RLHF methods the method with the best numerical stability and or the least variance in loss could be preferred.
 
 Putting it together, using the first loss accumulation, the psuedocode can be written as below.
 
