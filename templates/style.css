@@ -83,6 +83,25 @@ h6 {
     line-height: 125%;
     margin-top: 2em;
     font-weight: normal;
+    position: relative;
+}
+
+/* Heading anchor link styles */
+.header-anchor {
+    opacity: 0;
+    font-size: 0.8em;
+    vertical-align: middle;
+    position: absolute;
+    margin-left: 0.3em;
+    transition: opacity 0.2s ease-in-out;
+}
+
+h2:hover .header-anchor,
+h3:hover .header-anchor,
+h4:hover .header-anchor,
+h5:hover .header-anchor,
+h6:hover .header-anchor {
+    opacity: 1;
 }
 
 h4,
