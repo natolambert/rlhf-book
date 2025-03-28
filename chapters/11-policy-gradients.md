@@ -58,13 +58,13 @@ The goal is to *estimate* the exact gradient $g := \nabla_\theta \mathbb{E}[\sum
 
 $$ g = \mathbb{E}\Big[\sum_{t=0}^\infty \Psi_t \nabla_\theta \text{log} \pi_\theta(a_t|s_t) \Big], $$
 
-Where $\Psi_t$ can be the following:
+Where $\Psi_t$ can be the following (where the rewards can also often be discounted by $\gamma$):
 
 1. $\sum_{t=0}^{\infty} r_t$: total reward of the trajectory.
-2. $\sum_{t'=t}^{\infty} r_{t'}$: reward following action $a_t$.
+2. $\sum_{t'=t}^{\infty} r_{t'}$: reward following action $a_t$, also described as the return, $G$.
 3. $\sum_{t'=t}^{\infty} r_{t'} - b(s_t)$: baselined version of previous formula.
 4. $Q^{\pi}(s_t, a_t)$: state-action value function.
-5. $A^{\pi}(s_t, a_t)$: advantage function.
+5. $A^{\pi}(s_t, a_t)$: advantage function, which yields the lowest possible theoretical variance if it can be computed accurately.
 6. $r_t + V^{\pi}(s_{t+1}) - V^{\pi}(s_t)$: TD residual.
 
 The *baseline* is a value used to reduce variance of policy updates (more on this below).
@@ -131,10 +131,20 @@ $$
 \;=\;
 \mathbb{E}_{\tau \sim \pi_{\theta}}\!\Big[
     \sum_{t=0}^{T}
-    \nabla_{\theta} \log \pi_{\theta}(a_t \mid s_t)\,G_t
+    \nabla_{\theta} \log \pi_{\theta}(a_t \mid s_t)\,(G_t - b)
 \Big],
 $$
 
+Here, the value $G_t - b(s_t)$ is the *advantage* of the policy at the current state, so we can reformulate the policy gradient in a form that we continue later with the advantage, $A$:
+
+$$
+\nabla_{\theta}\,J(\theta)
+\;=\;
+\mathbb{E}_{\tau \sim \pi_{\theta}}\!\Big[
+    \sum_{t=0}^{T}
+    \nabla_{\theta} \log \pi_{\theta}(a_t \mid s_t)\,A_t
+\Big],
+$$
 
 REINFORCE is a specific implementation of vanilla policy gradient that uses a Monte Carlo estimator of the gradient.
 
@@ -143,24 +153,52 @@ PPO on the other hand needs the value network to accurately compute the advantag
 
 #### REINFORCE Leave One Out (RLOO)
 
-The core implementation detail of REINFORCE Leave One Out  versus standard REINFORCE is that it takes the average reward of the *other* samples in the batch to compute the baseline -- rather than averaging over all rewards in the batch [@huang2024putting], [@ahmadian2024back], [@kool2019buy].
+The core implementation detail of REINFORCE Leave One Out versus standard REINFORCE is that it takes the average reward of the *other* samples in the batch to compute the baseline -- rather than averaging over all rewards in the batch [@huang2024putting], [@ahmadian2024back], [@kool2019buy].
 
 Crucially, this only works when generating multiple responses per prompt, which is common practice in multiple domains of finetuning language models with RL.
 
-Note that for verifiable domains like reasoning, RLOO may not because it averages over outcomes to update parameters. 
-This reduces credit assignment to the batch level and will make it harder for the model to attribute outcomes to specific behaviors within one sample.
+Specifically, for the REINFORCE Leave-One-Out (RLOO) baseline, given $K$ sampled trajectories or actions $a_1, \dots, a_K$, to a given prompt $s$ we define the baseline explicitly as the following *per-prompt*:
 
-Related to this idea is the fact that REINFORCE, as implemented with RLOO, assigns the reward of the entire completion to every token in it. Other algorithms, such as PPO, that use a value function assign value to every token individually, discounting from the final reward achieved at the EOS token.
+$$
+b(c, a_k) = \frac{1}{K-1}\sum_{i=1, i\neq k}^{K} R(s, a_i),
+$$
+
+resulting in the advantage:
+
+$$
+A(s, a_k) = R(s, a_k) - b(s, a_k).
+$$
+
+Equivalently, this can be expressed as:
+
+$$
+A(s, a_k) = \frac{K}{K - 1}\left(R(s, a_k) - \frac{1}{K}\sum_{i=1}^{K} R(s, a_i)\right).
+$$
+
+This is a simple, low-variance advantage update that is very similar to GRPO, which will be discussed later, where REINFORCE is used with a different location of KL penalty and without step-size clipping.
+Still, the advantage from RLOO could be combined with the clipping of PPO, showing how similar many of these algorithms are.
+
+RLOO and other algorithms that do not use a value network assign the advantage (or reward) of the sequence to every token for the loss computation.
+Algorithms that use a learned value network, such as PPO, assign a different value to every token individually, discounting from the final reward achieved at the EOS token.
 For example, with the KL divergence distance penalty, RLOO sums it over the completion while PPO and similar algorithms compute it on a per-token basis and subtract it from the reward (or the advantage, in the case of GRPO).
+These details and trade-offs are discussed later in the chapter.
+
+<!-- A nice formulation of LM RL loss functions is found here https://arxiv.org/pdf/2502.01600 -->
 
 ### Proximal Policy Optimization
 
-*This section follows similar to [@achiam2018spinning].*
-
 Proximal Policy Optimization (PPO) [@schulman2017proximal] is one of the foundational algorithms to Deep RL's successes (such as OpenAI's DOTA 5 [@berner2019dota] and large amounts of research).
-The loss function is as follows:
+The loss function is as follows per sample:
 
-$$J(\theta) = \frac{1}{G}\sum_{i=1}^G \min\left(\frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}A_i, \text{clip} \left( \frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}, 1-\varepsilon, 1+\varepsilon \right) A_i \right).$$ {#eq:PPO_EQN}
+$$J(\theta) = \min\left(\frac{\pi_\theta(a|s)}{\pi_{\theta_{old}}(a|s)}A, \text{clip} \left( \frac{\pi_\theta(a|s)}{\pi_{\theta_{old}}(a|s)}, 1-\varepsilon, 1+\varepsilon \right) A \right).$$ {#eq:PPO_EQN}
+
+For language models, the loss is computed per token, which intuitively can be grounded in how one would compute the probability of the entire sequence of autoregressive predictions -- by a product of probabilities. 
+From there, the common implementation is with *log-probabilities* that make the computation far more tractable.
+
+$$ J(\theta) = \frac{1}{|a|} \sum_{t=0}^{|a|} \min\left(\frac{\pi_\theta(a_{t}|s_{t})}{\pi_{\theta_{old}}(a_{t}|s_{t})}A_{t}, \text{clip} \left( \frac{\pi_\theta(a_{t}|s_{t})}{\pi_{\theta_{old}}(a_{t}|s_{t})}, 1-\varepsilon, 1+\varepsilon \right) A_{t} \right).  $$  {#eq:PPO_EQN_EXPANDED}
+
+This is the per-token version of PPO, which also applies to other policy-gradient methods, but is explored further later in the implementation section of this chapter.
+Here, the term for averaging by the number of tokens in the action, $\frac{1}{|a|}$, comes from common implementation practices, but is not in a formal derivation of the loss (shown in [@liu2025understanding]).
 
 Here we will explain the difference cases this loss function triggers given various advantages and policy ratios.
 At an implementation level, the inner computations for PPO involve standard policy gradient and a clipped policy gradient.
@@ -168,6 +206,13 @@ At an implementation level, the inner computations for PPO involve standard poli
 To understand how different situations emerge, we can define the policy ratio as:
 
 $$R(\theta) = \frac{\pi_\theta(a|s)}{\pi_{\theta_{old}}(a|s)}$$ {#eq:PPO_POL_RATIO}
+
+The policy ratio is a centerpiece of PPO and related algorithms. 
+It emerges from computing the gradient of a policy and controls the parameter updates in a very intuitive way.
+For any batch of data, the policy ratio starts at 1 for the first gradient step for that batch (common practice is to take 1-4 gradient steps per batch with policy gradient algorithms).
+Then, the policy ratio will be above one if that gradient step increased the likelihood of certain tokens with an associated positive advantage, or less than one for the other case. 
+
+The policy ratio and advantage together can occur in a few different configurations.
 
 The first case is when the advantage is positive and the policy ratio exceeds $1+\varepsilon$ (meaning that the new policy is more likely to take said action), which is clipped, and the objective becomes:
 
@@ -217,9 +262,15 @@ This brings two posited benefits:
 GRPO does this by simplifying the value estimation and assigning the same value to every token in the episode (i.e. in the completion to a prompt, each token gets assigned the same value rather than discounted rewards in a standard value function) by estimating the advantage or baseline.
 The estimate is done by collecting multiple completions ($a_i$) and rewards ($r_i$), i.e. a Monte Carlo estimate, from the same initial state / prompt ($s$).
 
-To state this formally, the GRPO objective is very similar to the PPO objective above:
+To state this formally, the GRPO objective is very similar to the PPO objective above.
+For GRPO, the loss is accumulated over a group of responses $\{a_1, a_2, ..., a_G\}$ to a given question $s$:
 
-$$J(\theta) = \frac{1}{G}\sum_{i=1}^G \left(\min\left(\frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}A_i, \text{clip} \left( \frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}, 1-\varepsilon, 1+\varepsilon \right) A_i \right) - \beta D_{KL}(\pi_\theta||\pi_{ref})\right).$$
+$$J(\theta) = \frac{1}{G}\sum_{i=1}^G \left(\min\left(\frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}A_i, \text{clip} \left( \frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}, 1-\varepsilon, 1+\varepsilon \right) A_i \right) - \beta D_{KL}(\pi_\theta||\pi_{ref})\right).$$ {#eq:GRPO}
+
+As above, we can expand this into a per-token loss computation:
+
+$$ J(\theta) = \frac{1}{G}\sum_{i=1}^G  \frac{1}{|a_i|} \sum_{t=1}^{|a_i|} \left( \min\left(\frac{\pi_\theta(a_{i,t}|s_{i,t})}{\pi_{\theta_{old}}(a_{i,t}|s_{i,t})}A_{i,t}, \text{clip} \left( \frac{\pi_\theta(a_{i,t}|s_{i,t})}{\pi_{\theta_{old}}(a_{i,t}|s_{i,t})}, 1-\varepsilon, 1+\varepsilon \right) A_{i,t} \right) - \beta D_{KL}(\pi_\theta(\cdot|s_{i,t})||\pi_{ref}(\cdot|s_{i,t})) \right)  $$ {#eq:GRPO_token}
+
 
 Note that relative to PPO, the standard implementation of GRPO includes the KL distance in the loss.
 With the advantage computation for the completion index $i$:
@@ -230,6 +281,11 @@ Intuitively, the GRPO update is comparing multiple answers to a single question 
 The model learns to become more like the answers marked as correct and less like the others. 
 This is a very simple way to compute the advantage, which is the measure of how much better a specific action is than the average at a given state.
 Relative to PPO, REINFORCE, and broadly RLHF performed with a reward model rating (relative to output reward), GRPO is often run with a far higher number of samples per prompt. Here, the current policy generates multiple responses to a given prompt, and the group-wise GRPO advantage estimate is given valuable context.
+
+The advantage computation for GRPO has trade-offs in its biases.
+The normalization by standard deviation is rewarding questions in a batch that have a low variation in answer correctness.
+For questions with either nearly all correct or all incorrect answers, the standard deviation will be lower and the advantage will be higher.
+[@liu2025understanding] proposes removing the standard deviation term given this bias, but this comes at the cost of down-weighing questions that were all incorrect with a few correct answers, which could be seen as valuable learning signal.
 
 @eq:GRPO_ADV is the implementation of GRPO when working with outcome supervision (either a standard reward model or a single verifiable reward) and a different implementation is needed with process supervision.
 In this case, GRPO computes the advantage as the sum of the normalized rewards for the following reasoning steps.
@@ -483,6 +539,30 @@ with torch.no_grad():
 ```
 
 For more details on how to interpret this code, see the PPO section above.
+
+#### RLOO vs. GRPO
+
+The advantage updates for RLOO follow very closely to GRPO, highlighting the conceptual similarity of the algorithm when taken separately from the PPO style clipping and KL penalty details.
+Specially, for RLOO, the advantage is computed relative to a baseline that is extremely similar to that of GRPO -- the completion reward relative to the others for that same question.
+Concisely, the RLOO advantage estimate follows as (expanded from [TRL](https://github.com/huggingface/trl/blob/bfe20756082488350091352d1cdc19c172e42cd8/trl/trainer/rloo_trainer.py#L433)'s implementation):
+
+```python
+# rloo_k --> number of completions per prompt 
+# rlhf_reward --> Initially a flat tensor of total rewards for all completions. Length B = N x k
+rlhf_reward = rlhf_reward.reshape(rloo_k, -1) # 
+# Now, Shape: (k, N), each column j contains the k rewards for prompt j.
+
+baseline = (rlhf_reward.sum(0) - rlhf_reward) / (rloo_k - 1)
+# baseline --> Leave-one-out baseline rewards. Shape: (k, N)
+#  baseline[i, j] is the avg reward of samples i' != i for prompt j.
+
+advantages = rlhf_reward - baseline
+# advantages --> Same Shape: (k, N)
+
+advantages = advantages.flatten() # Same shape as original tensor
+```
+
+The rest of the implementation details for RLOO follow the other trade-offs of implementing policy-gradient.
 
 ## Auxiliary Topics
 
