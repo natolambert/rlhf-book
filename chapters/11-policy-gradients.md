@@ -183,6 +183,8 @@ Algorithms that use a learned value network, such as PPO, assign a different val
 For example, with the KL divergence distance penalty, RLOO sums it over the completion while PPO and similar algorithms compute it on a per-token basis and subtract it from the reward (or the advantage, in the case of GRPO).
 These details and trade-offs are discussed later in the chapter.
 
+<!-- A nice formulation of LM RL loss functions is found here https://arxiv.org/pdf/2502.01600 -->
+
 ### Proximal Policy Optimization
 
 Proximal Policy Optimization (PPO) [@schulman2017proximal] is one of the foundational algorithms to Deep RL's successes (such as OpenAI's DOTA 5 [@berner2019dota] and large amounts of research).
@@ -196,7 +198,7 @@ From there, the common implementation is with *log-probabilities* that make the 
 $$ J(\theta) = \frac{1}{|a|} \sum_{t=0}^{|a|} \min\left(\frac{\pi_\theta(a_{t}|s_{t})}{\pi_{\theta_{old}}(a_{t}|s_{t})}A_{t}, \text{clip} \left( \frac{\pi_\theta(a_{t}|s_{t})}{\pi_{\theta_{old}}(a_{t}|s_{t})}, 1-\varepsilon, 1+\varepsilon \right) A_{t} \right).  $$  {#eq:PPO_EQN_EXPANDED}
 
 This is the per-token version of PPO, which also applies to other policy-gradient methods, but is explored further later in the implementation section of this chapter.
-
+Here, the term for averaging by the number of tokens in the action, $\frac{1}{|a|}$, comes from common implementation practices, but is not in a formal derivation of the loss (shown in [@liu2025understanding]).
 
 Here we will explain the difference cases this loss function triggers given various advantages and policy ratios.
 At an implementation level, the inner computations for PPO involve standard policy gradient and a clipped policy gradient.
@@ -542,7 +544,7 @@ For more details on how to interpret this code, see the PPO section above.
 
 The advantage updates for RLOO follow very closely to GRPO, highlighting the conceptual similarity of the algorithm when taken separately from the PPO style clipping and KL penalty details.
 Specially, for RLOO, the advantage is computed relative to a baseline that is extremely similar to that of GRPO -- the completion reward relative to the others for that same question.
-Concisely, the RLOO advantage estimate follows as:
+Concisely, the RLOO advantage estimate follows as (expanded from [TRL](https://github.com/huggingface/trl/blob/bfe20756082488350091352d1cdc19c172e42cd8/trl/trainer/rloo_trainer.py#L433)'s implementation):
 
 ```python
 # rloo_k --> number of completions per prompt 
