@@ -158,9 +158,17 @@ For example, with the KL divergence distance penalty, RLOO sums it over the comp
 *This section follows similar to [@achiam2018spinning].*
 
 Proximal Policy Optimization (PPO) [@schulman2017proximal] is one of the foundational algorithms to Deep RL's successes (such as OpenAI's DOTA 5 [@berner2019dota] and large amounts of research).
-The loss function is as follows:
+The loss function is as follows per sample:
 
-$$J(\theta) = \frac{1}{G}\sum_{i=1}^G \min\left(\frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}A_i, \text{clip} \left( \frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}, 1-\varepsilon, 1+\varepsilon \right) A_i \right).$$ {#eq:PPO_EQN}
+$$J(\theta) = \min\left(\frac{\pi_\theta(a|s)}{\pi_{\theta_{old}}(a|s)}A, \text{clip} \left( \frac{\pi_\theta(a|s)}{\pi_{\theta_{old}}(a|s)}, 1-\varepsilon, 1+\varepsilon \right) A \right).$$ {#eq:PPO_EQN}
+
+For language models, the loss is computed per token, which intuitively can be grounded in how one would compute the probability of the entire sequence of autoregressive predictions -- by a product of probabilities. 
+From there, the common implementation is with *log-probabilities* that make the computation far more tractable.
+
+$$ J(\theta) = \frac{1}{|a|} \sum_{t=0}^{|a|} \min\left(\frac{\pi_\theta(a_{t}|s_{t})}{\pi_{\theta_{old}}(a_{t}|s_{t})}A_{t}, \text{clip} \left( \frac{\pi_\theta(a_{t}|s_{t})}{\pi_{\theta_{old}}(a_{t}|s_{t})}, 1-\varepsilon, 1+\varepsilon \right) A_{t} \right).  $$  {#eq:PPO_EQN_EXPANDED}
+
+This is the per-token version of PPO, which also applies to other policy-gradient methods, but is explored further later in the implementation section of this chapter.
+
 
 Here we will explain the difference cases this loss function triggers given various advantages and policy ratios.
 At an implementation level, the inner computations for PPO involve standard policy gradient and a clipped policy gradient.
@@ -168,6 +176,13 @@ At an implementation level, the inner computations for PPO involve standard poli
 To understand how different situations emerge, we can define the policy ratio as:
 
 $$R(\theta) = \frac{\pi_\theta(a|s)}{\pi_{\theta_{old}}(a|s)}$$ {#eq:PPO_POL_RATIO}
+
+The policy ratio is a centerpiece of PPO and related algorithms. 
+It emerges from computing the gradient of a policy and controls the parameter updates in a very intuitive way.
+For any batch of data, the policy ratio starts at 1 for the first gradient step for that batch (common practice is to take 1-4 gradient steps per batch with policy gradient algorithms).
+Then, the policy ratio will be above one if that gradient step increased the likelihood of certain tokens with an associated positive advantage, or less than one for the other case. 
+
+The policy ratio and advantage together can occur in a few different configurations.
 
 The first case is when the advantage is positive and the policy ratio exceeds $1+\varepsilon$ (meaning that the new policy is more likely to take said action), which is clipped, and the objective becomes:
 
@@ -217,9 +232,15 @@ This brings two posited benefits:
 GRPO does this by simplifying the value estimation and assigning the same value to every token in the episode (i.e. in the completion to a prompt, each token gets assigned the same value rather than discounted rewards in a standard value function) by estimating the advantage or baseline.
 The estimate is done by collecting multiple completions ($a_i$) and rewards ($r_i$), i.e. a Monte Carlo estimate, from the same initial state / prompt ($s$).
 
-To state this formally, the GRPO objective is very similar to the PPO objective above:
+To state this formally, the GRPO objective is very similar to the PPO objective above.
+For GRPO, the loss is accumulated over a group of responses $\{a_1, a_2, ..., a_G\}$ to a given question $s$:
 
-$$J(\theta) = \frac{1}{G}\sum_{i=1}^G \left(\min\left(\frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}A_i, \text{clip} \left( \frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}, 1-\varepsilon, 1+\varepsilon \right) A_i \right) - \beta D_{KL}(\pi_\theta||\pi_{ref})\right).$$
+$$J(\theta) = \frac{1}{G}\sum_{i=1}^G \left(\min\left(\frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}A_i, \text{clip} \left( \frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}, 1-\varepsilon, 1+\varepsilon \right) A_i \right) - \beta D_{KL}(\pi_\theta||\pi_{ref})\right).$$ {#eq:GRPO}
+
+As above, we can expand this into a per-token loss computation:
+
+$$ J(\theta) = \frac{1}{G}\sum_{i=1}^G  \frac{1}{|a_i|} \sum_{t=1}^{|a_i|} \left( \min\left(\frac{\pi_\theta(a_{i,t}|s_{i,t})}{\pi_{\theta_{old}}(a_{i,t}|s_{i,t})}A_{i,t}, \text{clip} \left( \frac{\pi_\theta(a_{i,t}|s_{i,t})}{\pi_{\theta_{old}}(a_{i,t}|s_{i,t})}, 1-\varepsilon, 1+\varepsilon \right) A_{i,t} \right) - \beta D_{KL}(\pi_\theta(\cdot|s_{i,t})||\pi_{ref}(\cdot|s_{i,t})) \right)  $$ {#eq:GRPO_token}
+
 
 Note that relative to PPO, the standard implementation of GRPO includes the KL distance in the loss.
 With the advantage computation for the completion index $i$:
@@ -230,6 +251,11 @@ Intuitively, the GRPO update is comparing multiple answers to a single question 
 The model learns to become more like the answers marked as correct and less like the others. 
 This is a very simple way to compute the advantage, which is the measure of how much better a specific action is than the average at a given state.
 Relative to PPO, REINFORCE, and broadly RLHF performed with a reward model rating (relative to output reward), GRPO is often run with a far higher number of samples per prompt. Here, the current policy generates multiple responses to a given prompt, and the group-wise GRPO advantage estimate is given valuable context.
+
+The advantage computation for GRPO has trade-offs in its biases.
+The normalization by standard deviation is rewarding questions in a batch that have a low variation in answer correctness.
+For questions with either nearly all correct or all incorrect answers, the standard deviation will be lower and the advantage will be higher.
+[@liu2025understanding] proposes removing the standard deviation term given this bias, but this comes at the cost of down-weighing questions that were all incorrect with a few correct answers, which could be seen as valuable learning signal.
 
 @eq:GRPO_ADV is the implementation of GRPO when working with outcome supervision (either a standard reward model or a single verifiable reward) and a different implementation is needed with process supervision.
 In this case, GRPO computes the advantage as the sum of the normalized rewards for the following reasoning steps.
