@@ -19,6 +19,8 @@ abstract: |
 # mainfont: DejaVu Sans # not available on Mac
 Filter preferences:
 - pandoc-crossref
+geometry:
+  - margin=1.5in # Sets all margins (top, bottom, left, right) equally
 linkReferences: true
 link-citations: true
 numbersections: true
