@@ -58,13 +58,13 @@ The goal is to *estimate* the exact gradient $g := \nabla_\theta \mathbb{E}[\sum
 
 $$ g = \mathbb{E}\Big[\sum_{t=0}^\infty \Psi_t \nabla_\theta \text{log} \pi_\theta(a_t|s_t) \Big], $$
 
-Where $\Psi_t$ can be the following:
+Where $\Psi_t$ can be the following (where the rewards can also often be discounted by $\gamma$):
 
 1. $\sum_{t=0}^{\infty} r_t$: total reward of the trajectory.
-2. $\sum_{t'=t}^{\infty} r_{t'}$: reward following action $a_t$.
+2. $\sum_{t'=t}^{\infty} r_{t'}$: reward following action $a_t$, also described as the return, $G$.
 3. $\sum_{t'=t}^{\infty} r_{t'} - b(s_t)$: baselined version of previous formula.
 4. $Q^{\pi}(s_t, a_t)$: state-action value function.
-5. $A^{\pi}(s_t, a_t)$: advantage function.
+5. $A^{\pi}(s_t, a_t)$: advantage function, which yields the lowest possible theoretical variance if it can be computed accurately.
 6. $r_t + V^{\pi}(s_{t+1}) - V^{\pi}(s_t)$: TD residual.
 
 The *baseline* is a value used to reduce variance of policy updates (more on this below).
@@ -131,10 +131,20 @@ $$
 \;=\;
 \mathbb{E}_{\tau \sim \pi_{\theta}}\!\Big[
     \sum_{t=0}^{T}
-    \nabla_{\theta} \log \pi_{\theta}(a_t \mid s_t)\,G_t
+    \nabla_{\theta} \log \pi_{\theta}(a_t \mid s_t)\,(G_t - b)
 \Big],
 $$
 
+Here, the value $G_t - b(s_t)$ is the *advantage* of the policy at the current state, so we can reformulate the policy gradient in a form that we continue later with the advantage, $A$:
+
+$$
+\nabla_{\theta}\,J(\theta)
+\;=\;
+\mathbb{E}_{\tau \sim \pi_{\theta}}\!\Big[
+    \sum_{t=0}^{T}
+    \nabla_{\theta} \log \pi_{\theta}(a_t \mid s_t)\,A_t
+\Big],
+$$
 
 REINFORCE is a specific implementation of vanilla policy gradient that uses a Monte Carlo estimator of the gradient.
 
@@ -143,19 +153,37 @@ PPO on the other hand needs the value network to accurately compute the advantag
 
 #### REINFORCE Leave One Out (RLOO)
 
-The core implementation detail of REINFORCE Leave One Out  versus standard REINFORCE is that it takes the average reward of the *other* samples in the batch to compute the baseline -- rather than averaging over all rewards in the batch [@huang2024putting], [@ahmadian2024back], [@kool2019buy].
+The core implementation detail of REINFORCE Leave One Out versus standard REINFORCE is that it takes the average reward of the *other* samples in the batch to compute the baseline -- rather than averaging over all rewards in the batch [@huang2024putting], [@ahmadian2024back], [@kool2019buy].
 
 Crucially, this only works when generating multiple responses per prompt, which is common practice in multiple domains of finetuning language models with RL.
 
-Note that for verifiable domains like reasoning, RLOO may not because it averages over outcomes to update parameters. 
-This reduces credit assignment to the batch level and will make it harder for the model to attribute outcomes to specific behaviors within one sample.
+Specifically, for the REINFORCE Leave-One-Out (RLOO) baseline, given $K$ sampled trajectories or actions $a_1, \dots, a_K$, to a given prompt $s$ we define the baseline explicitly as the following *per-prompt*:
 
-Related to this idea is the fact that REINFORCE, as implemented with RLOO, assigns the reward of the entire completion to every token in it. Other algorithms, such as PPO, that use a value function assign value to every token individually, discounting from the final reward achieved at the EOS token.
+$$
+b(c, a_k) = \frac{1}{K-1}\sum_{i=1, i\neq k}^{K} R(s, a_i),
+$$
+
+resulting in the advantage:
+
+$$
+A(s, a_k) = R(s, a_k) - b(s, a_k).
+$$
+
+Equivalently, this can be expressed as:
+
+$$
+A(s, a_k) = \frac{K}{K - 1}\left(R(s, a_k) - \frac{1}{K}\sum_{i=1}^{K} R(s, a_i)\right).
+$$
+
+This is a simple, low-variance advantage update that is very similar to GRPO, which will be discussed later, where REINFORCE is used with a different location of KL penalty and without step-size clipping.
+Still, the advantage from RLOO could be combined with the clipping of PPO, showing how similar many of these algorithms are.
+
+RLOO and other algorithms that do not use a value network assign the advantage (or reward) of the sequence to every token for the loss computation.
+Algorithms that use a learned value network, such as PPO, assign a different value to every token individually, discounting from the final reward achieved at the EOS token.
 For example, with the KL divergence distance penalty, RLOO sums it over the completion while PPO and similar algorithms compute it on a per-token basis and subtract it from the reward (or the advantage, in the case of GRPO).
+These details and trade-offs are discussed later in the chapter.
 
 ### Proximal Policy Optimization
-
-*This section follows similar to [@achiam2018spinning].*
 
 Proximal Policy Optimization (PPO) [@schulman2017proximal] is one of the foundational algorithms to Deep RL's successes (such as OpenAI's DOTA 5 [@berner2019dota] and large amounts of research).
 The loss function is as follows per sample:
@@ -509,6 +537,30 @@ with torch.no_grad():
 ```
 
 For more details on how to interpret this code, see the PPO section above.
+
+#### RLOO vs. GRPO
+
+The advantage updates for RLOO follow very closely to GRPO, highlighting the conceptual similarity of the algorithm when taken separately from the PPO style clipping and KL penalty details.
+Specially, for RLOO, the advantage is computed relative to a baseline that is extremely similar to that of GRPO -- the completion reward relative to the others for that same question.
+Concisely, the RLOO advantage estimate follows as:
+
+```python
+# rloo_k --> number of completions per prompt 
+# rlhf_reward --> Initially a flat tensor of total rewards for all completions. Length B = N x k
+rlhf_reward = rlhf_reward.reshape(rloo_k, -1) # 
+# Now, Shape: (k, N), each column j contains the k rewards for prompt j.
+
+baseline = (rlhf_reward.sum(0) - rlhf_reward) / (rloo_k - 1)
+# baseline --> Leave-one-out baseline rewards. Shape: (k, N)
+#  baseline[i, j] is the avg reward of samples i' != i for prompt j.
+
+advantages = rlhf_reward - baseline
+# advantages --> Same Shape: (k, N)
+
+advantages = advantages.flatten() # Same shape as original tensor
+```
+
+The rest of the implementation details for RLOO follow the other trade-offs of implementing policy-gradient.
 
 ## Auxiliary Topics
 
