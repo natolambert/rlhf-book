@@ -40,7 +40,7 @@ $$V(s) = \mathbb{E}\big[G_t | S_t = s \big].$$
 
 All policy gradient algorithms solve an objective for such a value function induced from a specific policy, $\pi(s|a)$. 
 
-The optimization is defined as:
+Where $d_\pi(s)$ is the stationary distribution of states induced by policy $\pi(s)$, the optimization is defined as:
 $$
 J(\theta)
 \;=\;
