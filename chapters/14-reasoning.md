@@ -82,16 +82,28 @@ The tokens in the `<thinking>` tags is the model's reasoning.
 For more complex problems the reasoning stage can take thousands of tokens before producing an answer.
 So, long-context language models were a prerequisite to advanced reasoning behavior, but that is not the focus of this chapter.
 
+The core intuition for *how this training works* is that for a given model, we repeat the following cycle:
+
+1. Sample multiple answers to multiple questions,
+2. Take gradient steps towards the answers that are correct, and
+3. Repeat, revisiting the same data. 
+
+Remarkably, this extremely simple approach (when done with a careful distribution of data and stable training infrastructure) helps the models learn by revisiting the same questions again and again.
+Even more remarkable is that the improvements on these training questions generalize to questions and (some) domains the models have never seen!
+
+This simple approach allows the models to lightly search over behavior space and the RL algorithm increases the likelihood of behaviors that are correlated with correct answers.
+
 ## Why Does RL Work Now?
 
-Despite many, many takes that “RL doesn’t work yet” or “RL scaling isn’t ready yet” (and implicit versions of this saying to focus on “RL that Matters”), Yann’s view seems to have been right.
+Despite many, many takes that “RL doesn’t work yet” [@irpan2018deep] or paper's detailing deep reproducibility issues with RL [@henderson2018deep], the field overcame it to find high-impact applications.
+The takeoff of RL-focused training on language models indicates steps in many fundamental issues for the research area, including:
 
-* Stability of RL can be solved: For its entire existence, the limiting factor on RL’s adoption has been stability. This manifests in two ways. First, the learning itself can be fickle and not always work. Second, the training itself is known to be more brittle than standard language model training and more prone to loss spikes, crashes, etc. Releasing an API where any user can train on their own data signals unprecedented stability improvements. This program is still a beta ahead of a full launch, but this signals that OpenAI is more confident about it working for the public rather than not. For example, last year when I heard about large-scale RL runs at frontier AI laboratories, it would be with stories like “they launch multiple seeds at once and only keep running the ones that didn’t crash.” Now, they can be confident in their RL running and accomplishing the task. The final output model is likely automatically detected by running evaluations on the checkpoint to make sure behavior did not dip and or measuring the KL distance from the initial policy. Both of these are signals that researchers rely on heavily in post-training experimentation, so automating decision-making based on it is extremely impactful.
+* **Stability of RL can be solved**: For its entire existence, the limiting factor on RL’s adoption has been stability. This manifests in two ways. First, the learning itself can be fickle and not always work. Second, the training itself is known to be more brittle than standard language model training and more prone to loss spikes, crashes, etc. Countless releases are using this style of RL training and substantial academic uptake has occurred. The technical barriers to entry on RL are at an all time low.
 
-* Open-source versions already “exist”: Our recent work at Ai2 on reinforcement learning with verifiable rewards (RLVR) is extremely similar. The major components, i.e. data format and optimizer type are identical, we just need increased open-source investment to understand many discussion items like which model to start on, which types of data to use, etc. Check out the code we’ve been using at Open Instruct.
+* **Open-source versions already “exist”**: Many tools already exist for training language models with RLVR and related techniques. 
+Examples include TRL [@vonwerra2022trl], Open Instruct [lambert2024t], veRL [@sheng2024hybridflow], and OpenRLHF [@hu2024openrlhf], where many of these are building on optimizations from earlier in the arc of RLHF and post-training. The accessibility of tooling is enabling a large uptake of research that'll likely soon render this chapter out of date.
 
-* A potential data flywheel for advanced reasoning models: The best speculation is that OpenAI’s o1 is trained mostly with large-scale RL on data with verifiable outputs — much like this API. If this API works as intended, OpenAI could accumulate an extreme dataset for training future versions of their o1 models. The main limitation of these models is the lack of diversity in available domains and by experimenting with training on the targeted domains of many users of OpenAI’s models they can start turning a fruitful flywheel.
-
+Multiple resources point to RL training for reasoning only being viable on leading models coming out from about 2024 onwards, indicating that a certain level of underlying capability was needed in the models before reasoning training was possible.
 
 ## RL Training vs. Inference Time Scaling
 
@@ -111,14 +123,16 @@ What is important here is the correlation between downstream performance and an 
 
 ## The Future (Beyond Reasoning) of Reinforcement Finetuning
 
-In many domains, Reinforcement Finetuning is much more aligned with the goals of developers by being focused on performance rather than behavior. Standard finetuning APIs generally use a parameter-efficient finetuning method such as LoRA with supervised finetuning on instructions. Developers pass in prompts and completions and the model is tuned to match that by updating model parameters to match the completions. OpenAI describes this as increasing the prevalence of “features” in the text of interest.
+In many domains, these new flavors of RLVR and reinforcement finetuning are much more aligned with the goals of developers by being focused on performance rather than behavior. 
+Standard finetuning APIs generally use a parameter-efficient finetuning method such as LoRA with supervised finetuning on instructions. 
+Developers pass in prompts and completions and the model is tuned to match that by updating model parameters to match the completions, which increases the prevalence of features from your data in the models generations.
 
-Reinforcement finetuning is focused on matching answers. Given queries and correct answers, RFT helps the model learn to get the correct answers. While standard instruction tuning is done with 1 or 2 epochs of loss updates over the data, reinforcement finetuning gets its name by doing hundreds or thousands of epochs over the same few data points to give the model time to learn new behaviors. This can be viewed as reinforcing positive behaviors that would work sparingly in the base model version into robust behaviors after RFT.
+Reinforcement finetuning is focused on matching answers. 
+Given queries and correct answers, RFT helps the model learn to get the correct answers. 
+While standard instruction tuning is done with 1 or 2 epochs of loss updates over the data, reinforcement finetuning gets its name by doing hundreds or thousands of epochs over the same few data points to give the model time to learn new behaviors. 
+This can be viewed as reinforcing positive behaviors that would work sparingly in the base model version into robust behaviors after RFT.
 
-The impact of reinforcement finetuning’s existence
-Reinforcement finetuning signals many changes to the fate of RL and language models, both at OpenAI and elsewhere:
+**The scope of RL training for language models continues to grow**: The biggest takeaway from o1 and R1 on a fundamental scientific level was that we have even more ways to train language models to potentially valuable behaviors. 
+The more open doors that are available to researchers and engineers, the more optimism we should have about AI’s general trajectory. 
 
-The scope of RL training for language models continues to grow: The biggest takeaway from o1 on a fundamental scientific level was that we have even more ways to train language models to potentially valuable behaviors. The more open doors that are available to researchers and engineers, the more optimism we should have about AI’s general trajectory. The RL finetuning API expands the window of permissivity for RL training.
-
-I recall listening to a talk by a prominent OpenAI researcher a year ago (I couldn’t find it), where they said they were excited about RLHF and related methods just because the loss function is more general than autoregressive prediction. We are now living in this world of RL’s impact growing rapidly, and as many people expected, the human feedback piece is not always necessary.
 
