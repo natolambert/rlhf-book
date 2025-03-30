@@ -24,7 +24,7 @@ This little bit of reasoning training emerged with **reasoning models** that use
 
 The training method for these models, Reinforcement Learning with Verifiable Rewards (RLVR) [@lambert2024t], proceeds very similarly to RLHF, but it makes the reward model optional in lieu of a scoring function that returns a positive reward when the answer is correct and 0 otherwise.
 
-![RLVR in the form of an RL feedback loop. Instead of a reward model, we use a verification function.](images/rlvr-system){#fig:rlvr}
+![RLVR in the form of an RL feedback loop. Instead of a reward model, we use a verification function.](images/rlvr-system.png){#fig:rlvr}
 
 The first models to successfully deploy this type of training were OpenAI's o1 [@openai2024o1] and the open-weight model DeepSeek R1 [@guo2025deepseek]. 
 Soon after, the the entire AI industry prioritized this training process and model style.
