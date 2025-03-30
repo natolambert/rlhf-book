@@ -1,5 +1,5 @@
 ---
-prev-chapter: "Reasoning"
+prev-chapter: "Reasoning & Inference-Time Scaling"
 prev-url: "14-reasoning.html"
 next-chapter: "Evaluation & Prompting"
 next-url: "16-evaluation.html"
