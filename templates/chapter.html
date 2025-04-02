@@ -56,19 +56,6 @@ $endfor$
 <script src="nav.js" defer></script>
 <script src="header-anchors.js" defer></script>
 
-  <!-- Dark mode toggle script -->
-  <script>
-    function toggleDarkMode() {
-      document.documentElement.classList.toggle('dark-mode');
-      localStorage.setItem('darkMode', document.documentElement.classList.contains('dark-mode'));
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-      if (localStorage.getItem('darkMode') === 'true') {
-        document.documentElement.classList.add('dark-mode');
-      }
-    });
-  </script>
 </head>
 <body>
 $for(include-before)$
@@ -85,11 +72,6 @@ $for(author)$
 <p class="author">$author$</p>
 $endfor$
 
-<div style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
-      <button onclick="toggleDarkMode()" style="padding: 8px 12px; background: var(--bg-color); border: 1px solid var(--table-border); border-radius: 4px; cursor: pointer; color: var(--text-color);">
-        Toggle Dark Mode
-      </button>
-    </div>
 <navigation-dropdown expanded="false"></navigation-dropdown>
 
 </header>
