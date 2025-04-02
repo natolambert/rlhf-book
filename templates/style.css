@@ -6,39 +6,75 @@
  * Substantial modifications made by natolambert
  */
 
+:root {
+    --text-color: #444;
+    --bg-color: #fefefe;
+    --link-color: #0645ad;
+    --link-visited-color: #0b0080;
+    --link-hover-color: #06e;
+    --link-active-color: #faa700;
+    --heading-color: #111;
+    --blockquote-color: #666666;
+    --blockquote-border: #EEE;
+    --code-color: #000;
+    --table-border: #ddd;
+    --table-header-bg: #eee;
+    --selection-bg: rgba(255, 255, 0, 0.3);
+    --selection-color: #000;
+}
+
+/* Dark mode styles */
+:root.dark-mode, html.dark-mode {
+    --text-color: #e0e0e0;
+    --bg-color: #222;
+    --link-color: #6a9ae6;
+    --link-visited-color: #9980c4;
+    --link-hover-color: #8ab8ff;
+    --link-active-color: #ffc34d;
+    --heading-color: #f0f0f0;
+    --blockquote-color: #a0a0a0;
+    --blockquote-border: #444;
+    --code-color: #ddd;
+    --table-border: #555;
+    --table-header-bg: #333;
+    --selection-bg: rgba(100, 100, 255, 0.3);
+    --selection-color: #ffffff;
+}
+
 html {
     font-size: 100%;
     overflow-y: scroll;
     -webkit-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
+    background: var(--bg-color);
 }
 
 body {
-    color: #444;
+    color: var(--text-color);
     font-family: Georgia, Palatino, 'Palatino Linotype', Times, 'Times New Roman', serif;
     font-size: 12px;
     line-height: 1.7;
     padding: 1em;
     margin: auto;
     max-width: 42em;
-    background: #fefefe;
+    background: var(--bg-color);
 }
 
 a {
-    color: #0645ad;
+    color: var(--link-color);
     text-decoration: none;
 }
 
 a:visited {
-    color: #0b0080;
+    color: var(--link-visited-color);
 }
 
 a:hover {
-    color: #06e;
+    color: var(--link-hover-color);
 }
 
 a:active {
-    color: #faa700;
+    color: var(--link-active-color);
 }
 
 a:focus {
@@ -46,23 +82,23 @@ a:focus {
 }
 
 *::-moz-selection {
-    background: rgba(255, 255, 0, 0.3);
-    color: #000;
+    background: var(--selection-bg);
+    color: var(--selection-color);
 }
 
 *::selection {
-    background: rgba(255, 255, 0, 0.3);
-    color: #000;
+    background: var(--selection-bg);
+    color: var(--selection-color);
 }
 
 a::-moz-selection {
-    background: rgba(255, 255, 0, 0.3);
-    color: #0645ad;
+    background: var(--selection-bg);
+    color: var(--link-color);
 }
 
 a::selection {
-    background: rgba(255, 255, 0, 0.3);
-    color: #0645ad;
+    background: var(--selection-bg);
+    color: var(--link-color);
 }
 
 p {
@@ -79,7 +115,7 @@ h3,
 h4,
 h5,
 h6 {
-    color: #111;
+    color: var(--heading-color);
     line-height: 125%;
     margin-top: 2em;
     font-weight: normal;
@@ -135,10 +171,10 @@ h6 {
 }
 
 blockquote {
-    color: #666666;
+    color: var(--blockquote-color);
     margin: 0;
     padding-left: 3em;
-    border-left: 0.5em #EEE solid;
+    border-left: 0.5em var(--blockquote-border) solid;
 }
 
 hr {
@@ -155,7 +191,7 @@ pre,
 code,
 kbd,
 samp {
-    color: #000;
+    color: var(--code-color);
     font-family: monospace, monospace;
     _font-family: 'courier new', monospace;
     font-size: 0.98em;
@@ -278,14 +314,14 @@ table {
 th {
     padding: 12px;
     text-align: center;
-    background-color: #eee;
-    border: 1px solid #ddd;
+    background-color: var(--table-header-bg);
+    border: 1px solid var(--table-border);
 }
 
 td {
     padding: 12px;
     text-align: left; /* Keeps data cells left-aligned */
-    border: 1px solid #ddd;
+    border: 1px solid var(--table-border);
     vertical-align: top;
 }
 
@@ -400,12 +436,13 @@ thead {
         text-align: left;
     }  
     .section {
-        background-color: #ffffff;
+        background-color: var(--bg-color);
         padding-top: 5px;
         padding-right: 12px;
         padding-bottom: 8px;
         padding-left: 12px;
         border-radius: 5px;
+        border: 1px solid var(--table-border);
         text-align: left;
     }
   .dropdown-content.open {
@@ -415,14 +452,15 @@ thead {
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s ease-out;
-    background: #f8f8f8;  /* Unified with section background */
+    background: var(--bg-color);
   }
   /* dropdown row */
   .dropdown-button {
     width: 100%;
     text-align: left;
     padding: 0.5rem;
-    background: #f8f8f8;
+    background: var(--bg-color);
+    color: var(--text-color);
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -458,7 +496,7 @@ thead {
     text-align: left;
   }
   .section a {
-    color: #0066cc;
+    color: var(--link-color);
     text-decoration: none;
   }
   .section a:hover {
