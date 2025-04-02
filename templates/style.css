@@ -41,6 +41,22 @@
     --selection-color: #ffffff;
 }
 
+/* Apply dark mode to all html elements */
+html.dark-mode, html.dark-mode * {
+    background-color: #222;
+    color: #e0e0e0;
+}
+
+/* Fix for margin areas */
+.dark-mode {
+    background-color: #222 !important;
+}
+
+/* Fix scrolling issues */
+html.dark-mode, body.dark-mode {
+    overflow-y: auto !important;
+}
+
 html, body {
     font-size: 100%;
     overflow-y: scroll;
