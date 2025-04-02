@@ -41,7 +41,7 @@
     --selection-color: #ffffff;
 }
 
-html {
+html, body {
     font-size: 100%;
     overflow-y: scroll;
     -webkit-text-size-adjust: 100%;
