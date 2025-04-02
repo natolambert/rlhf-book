@@ -60,12 +60,14 @@ $endfor$
   <script>
     function toggleDarkMode() {
       document.documentElement.classList.toggle('dark-mode');
+      document.querySelector('html').classList.toggle('dark-mode');
       localStorage.setItem('darkMode', document.documentElement.classList.contains('dark-mode'));
     }
 
     document.addEventListener('DOMContentLoaded', function() {
       if (localStorage.getItem('darkMode') === 'true') {
         document.documentElement.classList.add('dark-mode');
+        document.querySelector('html').classList.add('dark-mode');
       }
     });
   </script>
@@ -87,7 +89,7 @@ $endfor$
 
 <div style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
       <button onclick="toggleDarkMode()" style="padding: 8px 12px; background: var(--bg-color); border: 1px solid var(--table-border); border-radius: 4px; cursor: pointer; color: var(--text-color);">
-        Toggle Dark Mode
+        Dark Mode
       </button>
     </div>
 <navigation-dropdown expanded="false"></navigation-dropdown>
