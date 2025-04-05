@@ -167,12 +167,6 @@ pre {
     word-wrap: break-word;
 }
 
-/* Scrollable math container for wide equations */
-.math-display {
-    overflow-x: auto;
-    max-width: 100%;
-    padding: 0.5em 0;
-}
 
 b,
 strong {
