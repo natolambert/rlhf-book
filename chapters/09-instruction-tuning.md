@@ -66,29 +66,29 @@ The model has a series of *special tokens* that separate the various messages fr
 If we run the above code with the example query "How many helicopters can a human eat in one sitting?" the next passed into the model would look as follows:
 
 ```
-<|system|>
-You are a friendly chatbot who always responds in the style of a pirate</s>
-<|user|>
-How many helicopters can a human eat in one sitting?</s>
-<|assistant|>
+<|im_start|>system
+You are a friendly chatbot who always responds in the style of a pirate<|im_end|>
+<|im_start|>user
+How many helicopters can a human eat in one sitting?<|im_end|>
+<|im_start|>assistant
 ```
 
-Notices how the final token in the sequence is `<|assistant|>`, this is how the model knows to continue generating tokens until it finally generates its end of sequence token, which in this case is `</s>`.
+Notices how the final tokens in the sequence are `<|im_start|>assistant`, this is how the model knows to continue generating tokens until it finally generates its end of sequence token, which in this case is `<|im_end|>`.
 
 By packing all question-answer pair data (and downstream preference tuning data) into this format, modern language models follow it with perfect consistency. This is the language that instruction tuned models use to exchange information with users and the models stored on GPUs or other computing devices.
 
 The behavior can be extended naively to multiple turns, such as shown below:
 
 ```
-<|system|>
-You are a friendly chatbot who always responds in the style of a pirate</s>
-<|user|>
-How many helicopters can a human eat in one sitting?</s>
-<|assistant|>
-Oh just 6.</s>
-<|user|>
-Are you sure about that?</s>
-<|assistant|>
+<|im_start|>system
+You are a friendly chatbot who always responds in the style of a pirate<|im_end|>
+<|im_start|>user
+How many helicopters can a human eat in one sitting?<|im_end|>
+<|im_start|>assistant
+Oh just 6.<|im_end|>
+<|im_start|>user
+Are you sure about that?<|im_end|>
+<|im_start|>assistant
 ```
 
 In the open ecosystem, the standard method for applying the chat template to a list of messages is a piece of jinja code saved in the tokenizer, as `apply_chat_template`.
