@@ -4,14 +4,15 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <link rel="shortcut icon" type="image/x-icon" href="../favicon.ico">
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
 
   <!-- Add Open Graph meta tags for share image -->
   <meta property="og:image" content="https://github.com/natolambert/rlhf-book/blob/main/images/rlhf-book-share" />
   <meta property="og:image:width" content="1920" />
   <meta property="og:image:height" content="1080" />
-
-  <meta property="og:title" content="RLHF Book by Nathan Lambert" />
+  
+  <!-- <meta property="og:title" content="$if(title-prefix)$$title-prefix$ – $endif$$pagetitle$" /> -->
+  <meta property="og:title" content="$if(page-title)$$page-title$$else$$title$$endif$ | RLHF Book by Nathan Lambert" />
   <meta property="og:description" content="The Reinforcement Learning from Human Feedback Book" />
   <meta property="og:url" content="https://rlhfbook.com" />
 
@@ -24,8 +25,14 @@ $endif$
 $if(keywords)$
   <meta name="keywords" content="$for(keywords)$$keywords$$sep$, $endfor$" />
 $endif$
-  <title>
-    $if(title-prefix)$$title-prefix$ – $endif$$pagetitle$
+  <!-- <title>RLHF Book</title> -->
+   <!-- SEO and Open Graph titles -->
+   <title>
+    $if(page-title)$
+      $page-title$ | RLHF Book by Nathan Lambert
+    $else$
+      $title$ | RLHF Book by Nathan Lambert
+    $endif$
   </title>
   
   <style>
@@ -71,9 +78,11 @@ $endif$
 $for(author)$
 <p class="author">$author$</p>
 $endfor$
-<navigation-dropdown expanded="true"></navigation-dropdown>
+<navigation-dropdown expanded="false"></navigation-dropdown>
+
 </header>
 $endif$
+<div> <h3> Chapter Contents </h3> </div>
 $if(toc)$
 <nav id="$idprefix$TOC" role="doc-toc">
 $if(toc-title)$
@@ -82,7 +91,25 @@ $endif$
 $table-of-contents$
 </nav>
 $endif$
-$body$
+<div id="content">
+  $body$
+</div>
+
+<div id="chapter-navigation" style="display: flex; justify-content: space-between; padding: 2em 0;">
+  $if(prev-url)$
+  <a href="$prev-url$" class="prev-chapter">
+    ← Previous: $prev-chapter$
+  </a>
+  $else$
+  <div></div>
+  $endif$
+  
+  $if(next-url)$
+  <a href="$next-url$" class="next-chapter">
+    Next: $next-chapter$ →
+  </a>
+  $endif$
+</div>
 $for(include-after)$
 $include-after$
 $endfor$
