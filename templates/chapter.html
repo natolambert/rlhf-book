@@ -4,15 +4,14 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+  <link rel="shortcut icon" type="image/x-icon" href="../favicon.ico">
 
   <!-- Add Open Graph meta tags for share image -->
   <meta property="og:image" content="https://github.com/natolambert/rlhf-book/blob/main/images/rlhf-book-share" />
   <meta property="og:image:width" content="1920" />
   <meta property="og:image:height" content="1080" />
-  
-  <!-- <meta property="og:title" content="$if(title-prefix)$$title-prefix$ – $endif$$pagetitle$" /> -->
-  <meta property="og:title" content="$if(page-title)$$page-title$$else$$title$$endif$ | RLHF Book by Nathan Lambert" />
+
+  <meta property="og:title" content="RLHF Book by Nathan Lambert" />
   <meta property="og:description" content="The Reinforcement Learning from Human Feedback Book" />
   <meta property="og:url" content="https://rlhfbook.com" />
 
@@ -25,13 +24,8 @@ $endif$
 $if(keywords)$
   <meta name="keywords" content="$for(keywords)$$keywords$$sep$, $endfor$" />
 $endif$
-  <!-- <title>RLHF Book</title> -->
-   <!-- SEO and Open Graph titles -->
-   <title>
-    $if(page-title)$
-      $page-title$ | RLHF Book by Nathan Lambert
-    $else$
-      $title$ | RLHF Book by Nathan Lambert
+  <title>
+    $if(title-prefix)$$title-prefix$ – $endif$$pagetitle$
     $endif$
   </title>
   
@@ -44,6 +38,26 @@ $for(css)$
 $endfor$
 $if(math)$
   $math$
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          addCSSClass: [15, function (doc) {
+            for (const math of doc.math) {
+              if (math.display) {
+                math.typesetRoot.classList.add('math-display');
+              }
+            }
+          }, function () {}]
+        }
+      }
+    };
+  </script>
 $endif$
   <!--[if lt IE 9]>
     <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
@@ -67,16 +81,12 @@ $if(title)$
 $if(subtitle)$
 <p class="subtitle">$subtitle$</p>
 $endif$
-
 $for(author)$
 <p class="author">$author$</p>
 $endfor$
-
-<navigation-dropdown expanded="false"></navigation-dropdown>
-
+<navigation-dropdown expanded="true"></navigation-dropdown>
 </header>
 $endif$
-<div> <h3> Chapter Contents </h3> </div>
 $if(toc)$
 <nav id="$idprefix$TOC" role="doc-toc">
 $if(toc-title)$
@@ -85,26 +95,7 @@ $endif$
 $table-of-contents$
 </nav>
 $endif$
-<div id="content">
-  $body$
-</div>
-
-<div id="chapter-navigation" style="display: flex; justify-content: space-between; padding: 2em 0;">
-  $if(prev-url)$
-  <a href="$prev-url$" class="prev-chapter">
-    ← Previous: $prev-chapter$
-  </a>
-  $else$
-  <div></div>
-  $endif$
-  
-  $if(next-url)$
-  <a href="$next-url$" class="next-chapter">
-    Next: $next-chapter$ →
-  </a>
-  $endif$
-</div>
-
+$body$
 $for(include-after)$
 $include-after$
 $endfor$
@@ -126,6 +117,6 @@ $endfor$
     <!-- Add more social links here -->
   </div>
   <p>&copy; 2024 RLHF Book Team</p>
-</footer>  
+</footer>
 </body>
 </html>

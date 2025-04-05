@@ -40,6 +40,26 @@ $for(css)$
 $endfor$
 $if(math)$
   $math$
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          addCSSClass: [15, function (doc) {
+            for (const math of doc.math) {
+              if (math.display) {
+                math.typesetRoot.classList.add('math-display');
+              }
+            }
+          }, function () {}]
+        }
+      }
+    };
+  </script>
 $endif$
   <!--[if lt IE 9]>
     <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
