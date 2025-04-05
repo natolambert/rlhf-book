@@ -44,6 +44,14 @@ $for(css)$
 $endfor$
 $if(math)$
   $math$
+  <style>
+    /* Target all possible MathJax display containers */
+    .MathJax_Display, .MJXc-display, .math.display, mjx-container[jax="CHTML"][display="true"], mjx-container[jax="SVG"][display="true"] {
+      overflow-x: auto;
+      max-width: 100%;
+      padding: 0.5em 0;
+    }
+  </style>
 $endif$
   <!--[if lt IE 9]>
     <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
@@ -67,11 +75,9 @@ $if(title)$
 $if(subtitle)$
 <p class="subtitle">$subtitle$</p>
 $endif$
-
 $for(author)$
 <p class="author">$author$</p>
 $endfor$
-
 <navigation-dropdown expanded="false"></navigation-dropdown>
 
 </header>
@@ -104,7 +110,6 @@ $endif$
   </a>
   $endif$
 </div>
-
 $for(include-after)$
 $include-after$
 $endfor$
@@ -126,6 +131,6 @@ $endfor$
     <!-- Add more social links here -->
   </div>
   <p>&copy; 2024 RLHF Book Team</p>
-</footer>  
+</footer>
 </body>
 </html>

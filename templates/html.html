@@ -40,6 +40,14 @@ $for(css)$
 $endfor$
 $if(math)$
   $math$
+  <style>
+    /* Target all possible MathJax display containers */
+    .MathJax_Display, .MJXc-display, .math.display, mjx-container[jax="CHTML"][display="true"], mjx-container[jax="SVG"][display="true"] {
+      overflow-x: auto;
+      max-width: 100%;
+      padding: 0.5em 0;
+    }
+  </style>
 $endif$
   <!--[if lt IE 9]>
     <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
