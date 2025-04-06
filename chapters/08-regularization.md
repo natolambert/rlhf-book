@@ -32,7 +32,7 @@ $$ {#eq:kl_standard}
 For mathematical definitions, see Chapter 5 on Problem Setup.
 Recall that KL distance is defined as follows:
 
-$$ D_{KL}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\frac{P(x)}{Q(x)}\right) $$
+$$ D_{KL}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\frac{P(x)}{Q(x)}\right) $$ {#eq:kl_distance_regularization}
 
 In RLHF, the two distributions of interest are often the distribution of the new model version, say $P(x)$, and a distribution of the reference policy, say $Q(x)$.
 
@@ -53,7 +53,7 @@ Then, the computation for KL distance changes to the following:
 
 $$
 D_{\text{KL}}(P \,||\, Q) = \mathbb{E}_{x \sim P} \left[ \log P(x) - \log Q(x) \right].
-$$
+$$ {#eq:kl_expectation}
 
 This mode is far simpler to implement, particularly when dealing directly with log probabilities used frequently in language model training.
 
@@ -81,22 +81,22 @@ To implement this, they modify the training objective for RLHF.
 Taking @eq:rl_start, we can transform this into an objective function to optimize by sampling from the RL policy model, completions $y$ from prompts $x$, which yields:
 $$
 \text{objective} (\theta) = \mathbb{E}_{(x,y) \sim \mathcal{D}_{\pi^{\text{RL}}_{\theta}}} \left[ r_{\theta}(x, y) - \lambda r_{\text{reg.}} \right]
-$$
+$$ {#eq:objective_regularization}
 Then, we can add an additional reward for higher probabilities on pretraining accuracy:
 $$
 \text{objective} (\theta) = \mathbb{E}_{(x,y) \sim \mathcal{D}_{\pi^{\text{RL}}_{\theta}}} \left[ r_{\theta}(x, y) - \lambda r_{\text{reg.}} \right] + \gamma \mathbb{E}_{x \sim \mathcal{D}_{\text{pretrain}}} \left[ \log(\pi^{\text{RL}}_{\theta}(x)) \right]
-$$
+$$ {#eq:objective_pretraining}
 
 Recent work proposed using a negative log likelihood term to balance the optimization of Direct Preference Optimization (DPO) [@pang2024iterative].
 Given the pairwise nature of the DPO loss, the same loss modification can be made to reward model training, constraining the model to predict accurate text (rumors from laboratories that did not publish the work).
 
 The optimization follows as a modification to DPO.
 $$\mathcal{L}_{\text{DPO+NLL}} = \mathcal{L}_{\text{DPO}}(c_i^w, y_i^w, c_i^l, y_i^l \mid x_i) + \alpha \mathcal{L}_{\text{NLL}}(c_i^w, y_i^w \mid x_i)
-$$
+$$ {#eq:dpo_nll}
 
 $$
 = -\log \sigma \left( \beta \log \frac{M_\theta(c_i^w, y_i^w \mid x_i)}{M_t(c_i^w, y_i^w \mid x_i)} - \beta \log \frac{M_\theta(c_i^l, y_i^l \mid x_i)}{M_t(c_i^l, y_i^l \mid x_i)} \right) - \alpha \frac{\log M_\theta(c_i^w, y_i^w \mid x_i)}{|c_i^w| + |y_i^w|}.
-$$
+$$ {#eq:dpo_nll_expanded}
 
 TODO: Make the above equations congruent with the rest of the notation on DPO.
 
@@ -110,7 +110,7 @@ Llama 2 proposed a margin loss for reward model training [@touvron2023llama]:
 
 $$
 \mathcal{L}(\theta) = - \left[ \log \left( \sigma \left( r_{\theta}(x, y_w) - r_{\theta}(x, y_l) \right) - m(r) \right) \right]
-$$
+$$ {#eq:margin_loss}
 
 Where $m(r)$ is the numerical difference in delta between the ratings of two annotators.
 This is either achieved by having annotators rate the outputs on a numerical scale or by using a quantified ranking method, such as [Likert scales](https://en.wikipedia.org/wiki/Likert_scale).

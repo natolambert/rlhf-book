@@ -212,11 +212,11 @@ Here, we will show that when using simple BoN sampling over one prompt, both sel
 
 Let R be a reward vector for our single prompt with N completions:
 
-$$R = [r_1, r_2, ..., r_N]$$
+$$R = [r_1, r_2, ..., r_N]$$ {#eq:rewards_vector}
 
 Where $r_j$ represents the reward for the j-th completion.
 
 Using the argmax method, we select the best completion for the prompt:
-$$S(R) = \arg\max_{j \in [1,N]} r_j$$
+$$S(R) = \arg\max_{j \in [1,N]} r_j$$ {#eq:selection_function}
 
 Using the Top-K method is normally done with Top-1, reducing to the same method.

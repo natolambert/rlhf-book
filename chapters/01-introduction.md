@@ -281,7 +281,7 @@ Formula example: $\mu = \sum_{i=0}^{N} \frac{x_i}{N}$
 
 Now, full size:
 
-$$\mu = \sum_{i=0}^{N} \frac{x_i}{N}$$
+$$\mu = \sum_{i=0}^{N} \frac{x_i}{N}$$ {#eq:mean_example}
 
 And a code sample:
 
