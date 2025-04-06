@@ -29,14 +29,14 @@ For definitions of symbols, see the problem setup chapter.
 Reinforcement learning algorithms are designed to maximize the future, discounted reward across a trajectory of states, $s \in \mathcal{S}$, and actions, $a \in \mathcal{A}$ (for more notation, see Chapter 3, Definitions).
 The objective of the agent, often called the *return*, is the sum of discounted, future rewards (where $\gamma\in [0,1)$ is a factor that prioritizes near term rewards) at a given time $t$:
 
-$$G_t = R_{t+1} + \gamma R_{t+2} + \cdots = \sum_{k=o}^\infty \gamma^k R_{t+k+1}.$$
+$$G_t = R_{t+1} + \gamma R_{t+2} + \cdots = \sum_{k=o}^\infty \gamma^k R_{t+k+1}.$$ {#eq:return_definition}
 
 The return definition can also be estimated as:
-$$G_{t} = \gamma{G_{t+1}} + R_{t+1}.$$
+$$G_{t} = \gamma{G_{t+1}} + R_{t+1}.$$ {#eq:recursive_return}
 
 This return is the basis for learning a value function $V(s)$ that is the estimated future return given a current state:
 
-$$V(s) = \mathbb{E}\big[G_t | S_t = s \big].$$
+$$V(s) = \mathbb{E}\big[G_t | S_t = s \big].$$ {#eq:value_function}
 
 All policy gradient algorithms solve an objective for such a value function induced from a specific policy, $\pi(s|a)$. 
 
@@ -45,18 +45,18 @@ $$
 J(\theta)
 \;=\;
 \sum_{s} d_\pi(s) V_\pi(s),
-$$
+$$ {#eq:policy_objective}
 
 The core of policy gradient algorithms is computing the gradient with respect to the finite time expected return over the current policy. 
 With this expected return, $J$, the gradient can be computed as follows, where $\alpha$ is the learning rate: 
 
-$$\theta \leftarrow \theta + \alpha \nabla_\theta J(\theta)$$
+$$\theta \leftarrow \theta + \alpha \nabla_\theta J(\theta)$$ {#eq:policy_update}
 
 The core implementation detail is how to compute said gradient.
 Schulman et al. 2015 provides an overview of the different ways that policy gradients can be computed [@schulman2015high].
 The goal is to *estimate* the exact gradient $g := \nabla_\theta \mathbb{E}[\sum_{t=0}^\infty r_t]$, of which, there are many forms similar to:
 
-$$ g = \mathbb{E}\Big[\sum_{t=0}^\infty \Psi_t \nabla_\theta \text{log} \pi_\theta(a_t|s_t) \Big], $$
+$$ g = \mathbb{E}\Big[\sum_{t=0}^\infty \Psi_t \nabla_\theta \text{log} \pi_\theta(a_t|s_t) \Big], $$ {#eq:general_gradient}
 
 Where $\Psi_t$ can be the following (where the rewards can also often be discounted by $\gamma$):
 
@@ -73,7 +73,7 @@ For language models, some of these concepts do not make as much sense.
 For example, we know that for a deterministic policy the value function is defined as $V(s) = \max_a Q(s,a)$ or for a stochastic policy as $V(s) = \mathbb{E}_{a \sim \pi(a|s)}[Q(s,a)]$.
 If we define $s+a$ as the continuation $a$ to the prompt $s$, then $Q(s, a) = V(s+a)$, which gives a different advantage trick:
 
-$$A(s,a) = Q(s,a) - V(s) = V(s + a) - V(s) = r + \gamma V(s + a) - V(s)$$
+$$A(s,a) = Q(s,a) - V(s) = V(s + a) - V(s) = r + \gamma V(s + a) - V(s)$$ {#eq:advantage_trick}
 
 Which is a combination of the reward, the value of the prompt, and the discounted value of the entire utterance.
 
@@ -82,7 +82,7 @@ Which is a combination of the reward, the value of the prompt, and the discounte
 The vanilla policy gradient implementation optimizes the above expression for $J(\theta)$ by differentiating with respect to the policy parameters.
 A simple version, with respect to the overall return, is:
 
-$$\nabla_\theta J(\pi_\theta) = \mathbb{E}_\tau \left[ \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t|s_t) R_t \right]$$
+$$\nabla_\theta J(\pi_\theta) = \mathbb{E}_\tau \left[ \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t|s_t) R_t \right]$$ {#eq:vanilla_policy_gradient}
 
 A common problem with vanilla policy gradient algorithms is the high variance in gradient updates, which can be mitigated in multiple ways.
 In order to alleviate this,  various techniques are used to normalize the value estimation, called *baselines*. 
@@ -92,16 +92,16 @@ Even these baselines can de-bias the gradients so $\mathbb{E}_{a \sim \pi(a|s)}[
 
 Many of the policy gradient algorithms discussed in this chapter build on the advantage formulation of policy gradient:
 
-$$\nabla_\theta J(\pi_\theta) = \mathbb{E}_\tau \left[ \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t|s_t) A^{\pi_\theta}(s_t, a_t) \right]$$
+$$\nabla_\theta J(\pi_\theta) = \mathbb{E}_\tau \left[ \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t|s_t) A^{\pi_\theta}(s_t, a_t) \right]$$ {#eq:advantage_policy_gradient}
 
 A core piece of the policy gradient implementation involves taking the derivative of the probabilistic policies. 
 This comes from:
 
-$$\nabla_\theta \log \pi_\theta(a|s) = \frac{\nabla_\theta \pi_\theta(a|s)}{\pi_\theta(a|s)}$$
+$$\nabla_\theta \log \pi_\theta(a|s) = \frac{\nabla_\theta \pi_\theta(a|s)}{\pi_\theta(a|s)}$$ {#eq:log_prob_derivative}
 
 Which is derived from the chain rule:
 
-$$\nabla_\theta \log x = \frac{1}{x} \nabla_\theta x$$
+$$\nabla_\theta \log x = \frac{1}{x} \nabla_\theta x$$ {#eq:log_chain_rule}
 
 We will use this later on in the chapter.
 
@@ -133,7 +133,7 @@ $$
     \sum_{t=0}^{T}
     \nabla_{\theta} \log \pi_{\theta}(a_t \mid s_t)\,(G_t - b)
 \Big],
-$$
+$$ {#eq:REINFORCE_with_baseline}
 
 Here, the value $G_t - b(s_t)$ is the *advantage* of the policy at the current state, so we can reformulate the policy gradient in a form that we continue later with the advantage, $A$:
 
@@ -144,7 +144,7 @@ $$
     \sum_{t=0}^{T}
     \nabla_{\theta} \log \pi_{\theta}(a_t \mid s_t)\,A_t
 \Big],
-$$
+$$ {#eq:REINFORCE_with_advantage}
 
 REINFORCE is a specific implementation of vanilla policy gradient that uses a Monte Carlo estimator of the gradient.
 
@@ -161,19 +161,19 @@ Specifically, for the REINFORCE Leave-One-Out (RLOO) baseline, given $K$ sampled
 
 $$
 b(c, a_k) = \frac{1}{K-1}\sum_{i=1, i\neq k}^{K} R(s, a_i),
-$$
+$$ {#eq:RLOO_baseline}
 
 resulting in the advantage:
 
 $$
 A(s, a_k) = R(s, a_k) - b(s, a_k).
-$$
+$$ {#eq:RLOO_advantage}
 
 Equivalently, this can be expressed as:
 
 $$
 A(s, a_k) = \frac{K}{K - 1}\left(R(s, a_k) - \frac{1}{K}\sum_{i=1}^{K} R(s, a_i)\right).
-$$
+$$ {#eq:RLOO_advantage_alt}
 
 This is a simple, low-variance advantage update that is very similar to GRPO, which will be discussed later, where REINFORCE is used with a different location of KL penalty and without step-size clipping.
 Still, the advantage from RLOO could be combined with the clipping of PPO, showing how similar many of these algorithms are.
@@ -216,18 +216,18 @@ The policy ratio and advantage together can occur in a few different configurati
 
 The first case is when the advantage is positive and the policy ratio exceeds $1+\varepsilon$ (meaning that the new policy is more likely to take said action), which is clipped, and the objective becomes:
 
-$$J(\theta) = \min \left(R(\theta), (1 + \varepsilon)\right)A = (1 + \varepsilon)A $$
+$$J(\theta) = \min \left(R(\theta), (1 + \varepsilon)\right)A = (1 + \varepsilon)A $$ {#eq:PPO_CASE1}
 
 This will increase the probability ratio, making the action even more likely, but only up until the clipping parameter epsilon.
 The similar conditions are when the advantage is still positive, but the likelihood ratio shifts.
 
 For positive advantage and ratio less than $1-\varepsilon$, a we get a partially substituted equation:
 
-$$J(\theta) = \min \left(R(\theta), (1 - \varepsilon)\right)A$$
+$$J(\theta) = \min \left(R(\theta), (1 - \varepsilon)\right)A$$ {#eq:PPO_CASE2}
 
 That reduces to
 
-$$J(\theta) = R(\theta)A$$
+$$J(\theta) = R(\theta)A$$ {#eq:PPO_CASE3}
 
 because of the less than assumption.
 
@@ -235,15 +235,15 @@ Similarly, if the probability ratio is not clipping, the objective also reduces 
 
 If the advantage is negative, this looks similar. A clipped objective will occur when $R(\theta) < (1-\varepsilon)$, appearing through:
 
-$$J(\theta) = \min \left(R(\theta)A, (1 - \varepsilon)A\right),$$
+$$J(\theta) = \min \left(R(\theta)A, (1 - \varepsilon)A\right),$$ {#eq:PPO_CASE4}
 
 Which, because $A<0$ we have $R(\theta)A > (1-\varepsilon)A$ and can flip the min to the max when pulling $A$ from the equation, is equivalent to
 
-$$J(\theta) = \max \left(R(\theta), (1 - \varepsilon)\right)A.$$
+$$J(\theta) = \max \left(R(\theta), (1 - \varepsilon)\right)A.$$ {#eq:PPO_CASE5}
 
 Then the objective becomes:
 
-$$J(\theta) = (1 - \varepsilon)A$$
+$$J(\theta) = (1 - \varepsilon)A$$ {#eq:PPO_CASE6}
 
 The other cases follow as above, inverted, and are left as an exercise to the reader.
 
