@@ -111,6 +111,7 @@ Training with Reinforcement Learning to illicit reasoning behaviors and performa
 Inference-time scaling, also called test-time scaling, is the general class of methods that use more computational power at inference in order to perform better at a downstream tasks.
 Methods for inference-time scaling were studied before the release of DeepSeek R1 and OpenAI's o1, which both massively popularized investment in RL training specifically.
 Examples include value-guided sampling [@liu2023don] or repeated random sampling with answer extraction [@brown2024large].
+Beyond this, inference-time scaling can be used to improve more methods of AI training beyond chain of thought reasoning to solve problems, such as with reward models that consider the options deeply [@ankner2024critique] [@liu2025inference].
 
 RL training is a short path to inference time scaling laws being used, but in the long-term we will have more methods for eliciting the inference-time tradeoffs we need for best performance.
 Training models heavily with RL changes them so that they generate more tokens per response in a way that is strongly correlated with downstream performance. 

@@ -291,6 +291,31 @@ For questions with either nearly all correct or all incorrect answers, the stand
 In this case, GRPO computes the advantage as the sum of the normalized rewards for the following reasoning steps.
 
 Finally, GRPO's advantage estimation can also be applied without the PPO clipping to more vanilla versions of policy gradient (e.g. REINFORCE), but it is not the canonical form.
+As an example of how these algorithms are intertwined, we can show that the advantage estimation in a variant of GRPO, Dr. GRPO (GRPO Done Right) [@liu2025understanding], is equivalent to the RLOO estimation up to a constant scaling factor (which normally does not matter due to implementation details to normalize the advantage).
+Dr. GRPO removes the standard deviation normalization term from @eq:GRPO_ADV. 
+This addresses a bias towards questions with low reward variance -- i.e. almost all the answers are right or wrong -- but comes at a potential cost where problems where just one sample gets the answer right are important to learn from. 
+The Dr. GRPO advantage for completion i within a group of size G is defined as:
+
+$$ \tilde{A}_i = r_i - \text{mean}({r_1, r_2, \cdots, r_G}) = r_i - \frac{1}{G}\sum{j=1}^G r_j $$ {#eq:DrGRPO_ADV}
+
+Here, in the same notation we can recall the RLOO advantage estimation as:
+
+$$ A_i^\text{RLOO} = r_i - \frac{1}{G-1}\sum_{j=1, i\neq j}^G r_j $$ {#eq:RLOO_ADV_AGAIN}
+
+Thus, if we multiply the Dr. GRPO advantage definition by $\frac{G}{G-1}$ we can see an scaled equivalence:
+
+$$
+\begin{aligned}
+\frac{G}{G-1} \tilde{A}_i &= \frac{G}{G-1} \left( r_i - \frac{1}{G}\sum_{j=1}^G r_j \right) \\
+&= \frac{G}{G-1} r_i - \frac{1}{G-1} \sum_{j=1}^G r_j \\
+&= \frac{G}{G-1} r_i - \frac{1}{G-1} \sum_{j=1, j\neq i}^G r_j - \frac{1}{G-1} r_i \\
+&= r_i \left( \frac{G}{G-1} - \frac{1}{G-1} \right) - \frac{1}{G-1} \sum_{j=1, j\neq i}^G r_j \\
+&= r_i - \frac{1}{G-1} \sum_{j=1, j\neq i}^G r_j \\
+&= A_i^{\text{RLOO}}
+\end{aligned}
+$$ {#eq:RLOO_GRPO_EQUIV}
+
+
 
 ## Implementation
 
