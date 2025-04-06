@@ -93,6 +93,30 @@ Are you sure about that?<|im_end|>
 
 In the open ecosystem, the standard method for applying the chat template to a list of messages is a piece of jinja code saved in the tokenizer, as `apply_chat_template`.
 
+The above chat template is a derivative of OpenAI's Chat Markup Language (ChatML), which was an early attempt to standardize message formatting.
+Now, OpenAI and other model providers use a hierarchical system where the user can configure a system message, yet their are higher level instructions that may or may not be revealed to the user [@wallace2024instruction].
+
+Many other chat templates exist. Some other examples include Zephyr's [@tunstall2023zephyr]:
+
+```
+<|system|>
+You are a friendly chatbot who always responds in the style of a pirate</s>
+<|user|>
+How many helicopters can a human eat in one sitting?</s>
+<|assistant|>
+```
+
+Or Tülu's:
+
+```
+<|user|>
+How are you doing?
+<|assistant|>
+I'm just a computer program, so I don't have feelings, but I'm functioning as expected. How can I assist you today?<|endoftext|>
+```
+
+Beyond this, many chat templates include formatting and other tokens for tasks such as tool-use.
+
 
 ## Best practices of instruction tuning
 
