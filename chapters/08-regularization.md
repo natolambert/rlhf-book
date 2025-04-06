@@ -109,7 +109,7 @@ Direct Alignment Algorithms handle regularization to KL distances differently, t
 Llama 2 proposed a margin loss for reward model training [@touvron2023llama]:
 
 $$
-\mathcal{L}(\theta) = - \left[ \log \left( \sigma \left( r_{\theta}(x, y_w) - r_{\theta}(x, y_l) \right) - m(r) \right) \right]
+\mathcal{L}(\theta) = - \left[ \log \left( \sigma \left( r_{\theta}(x, y_w) - r_{\theta}(x, y_l) - m(r) \right) \right) \right]
 $$ {#eq:margin_loss}
 
 Where $m(r)$ is the numerical difference in delta between the ratings of two annotators.
