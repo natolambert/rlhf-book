@@ -33,7 +33,19 @@ The probability of success for a given reward model in a pairwise comparison, be
 
 $$P(y_1 > y_2) = \frac{\exp(r(y_1))}{\exp(r(y_1)) + \exp(r(y_2))}$$ {#eq:bradterryrm}
 
-Then, by taking the gradient with respect to the model parameters, we can arrive at the loss function to train a reward model.
+Then, by maximizing the log-likelihood of the above function (or alternatively minimizing the negative log-likelihood), we can arrive at the loss function to train a reward model:
+
+$$
+\begin{aligned}
+\theta^* = \arg\max_\theta P(y_w > y_l) &= \arg\max_\theta \frac{\exp(r_\theta(y_w))}{\exp(r_\theta(y_w)) + \exp(r_\theta(y_l))} \\
+&= \arg\max_\theta \frac{\exp(r_\theta(y_w))}{\exp(r_\theta(y_w))\left(1 + \frac{\exp(r_\theta(y_l))}{\exp(r_\theta(y_w))}\right)} \\
+&= \arg\max_\theta \frac{1}{1 + \frac{\exp(r_\theta(y_l))}{\exp(r_\theta(y_w))}} \\ 
+&= \arg\max_\theta \frac{1}{1 + \exp(-(r_\theta(y_w) - r_\theta(y_l)))} \\
+&= \arg\max_\theta \sigma \left( r_\theta(y_w) - r_\theta(y_l) \right) \\
+&= \arg\min_\theta - \log \left( \sigma \left(r_\theta(y_w) - r_\theta(y_l)\right) \right)
+\end{aligned}
+$$ 
+
 The first form, as in [@ouyang2022training] and other works:
 $$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(x, y_w) - r_{\theta}(x, y_l) \right) \right)$$ {#eq:rewardmodeling1}
 
