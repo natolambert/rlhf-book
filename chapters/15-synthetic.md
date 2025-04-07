@@ -5,7 +5,7 @@ next-chapter: "Evaluation & Prompting"
 next-url: "16-evaluation.html"
 ---
 
-# [Incomplete] Synthetic Data & Distillation
+# Synthetic Data & Distillation
 
 Reinforcement learning from *human feedback* is deeply rooted in the idea of keeping a human influence on the models we are building.
 When the first models were trained successfully with RLHF, human data was *the only* viable way to improve the models in this way.
@@ -37,8 +37,22 @@ Otherwise, there are two clear areas where human data continues to be important.
 
 ## Distillation
 
-The term distillation has been the most powerful form of discussion around the role of synthetic data in language models.
+The term distillation has been the most powerful form of discussion around the role of synthetic data in language models. 
+Distillation as a term comes from a technical definition of teacher-student knowledge distillation from the deep learning literature [@hinton2015distilling].
 
-### As a Data Engine
+Distillation colloquially refers to using the outputs from a stronger model to train a smaller model.
+In post-training, this general notion of distillation takes two common forms:
 
-### Transferring Behaviors
+1. As a data engine to use across wide swaths of the post-training process: Completions for instructions, preference data (or Constitutional AI), or verification for RL.
+2. To transfer specific skills from a stronger model to a weaker model, which is often done for specific skill such as mathematic reasoning or coding.
+
+The first strategy has grown in popularity as language models evolved to be more reliable than humans at writing answers to a variety of tasks.
+GPT-4 class models expanded the scope of this to use distillation of stronger models for complex tasks such as math and code (as mentioned above).
+Here, distillation motivates having a model suite where often a laboratory will train a large internal model, such as Claude Opus or Gemini Ultra, which is not released publicly and just used internally to make stronger models.
+With open models, common practice is to distill training data from closed API models into smaller, openly available weights [@tunstall2023zephyr].
+Within this, curating high-quality prompts and filtering responses from the teacher model is crucial to maximize performance.
+
+Transferring specific skills into smaller language models uses the same principles of distillation -- get the best data possible for training.
+Here, many papers have studying using limited datasets from stronger models to improve alignment
+[@zhou2023lima], mathematic reasoning [@shridhar2023distilling] [@hsieh2023distilling], 
+ and test-time scaling [@muennighoff2025s1].

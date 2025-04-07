@@ -44,7 +44,7 @@ $$
 &= \arg\max_\theta \sigma \left( r_\theta(y_w) - r_\theta(y_l) \right) \\
 &= \arg\min_\theta - \log \left( \sigma \left(r_\theta(y_w) - r_\theta(y_l)\right) \right)
 \end{aligned}
-$$ 
+$$ {#eq:bradterryrm_deriv}
 
 The first form, as in [@ouyang2022training] and other works:
 $$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(x, y_w) - r_{\theta}(x, y_l) \right) \right)$$ {#eq:rewardmodeling1}
