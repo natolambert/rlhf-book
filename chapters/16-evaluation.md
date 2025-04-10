@@ -13,6 +13,82 @@ While challenging evaluations drive progress in language models to new areas, th
 
 In many ways, this chapter is designed to present vignettes of popular evaluation regimes throughout the early history of RLHF, so readers can understand the common themes, details, and failure modes.
 
+Evaluation for RLHF and post-training has gone a few distinct phases in its early history:
+1. **Early chat-phase**: Early models trained with RLHF or preference tuning targeted evaluations focused on capturing the chat performance of a model, especially relative to known strong models such as GPT-4. Early examples include MT-Bench [@zheng2023judging], AlpacaEval [@dubois2024length], and Arena-Hard [@li2024crowdsourced]. Models were evaluated narrowly and these are now considered as "chat" or "instruction following" domains.
+2. **Multi-skill era**: Over time, common practice established that RLHF can be used to improve more skills than just chat. For example, the Tülu evaluation suite included tasks on knowledge (MMLU [@hendrycks2020measuring], PopQA [@mallen2023llm_memorization], TruthfulQA [@lin2021truthfulqa]), Reasoning (BigBenchHard [@suzgun2022challenging], DROP [@dua2019drop]), Math (MATH [@hendrycksmath2021], GSM8K [@cobbe2021gsm8k]), Coding (HumanEval [@chen2021codex], HumanEval+ [@evalplus]), Instruction Following [@zhou2023instructionfollowingevaluationlargelanguage], and Safety (a composite of many evaluations). This reflects the domain where post-training is embraced as a multi-faceted solution beyond safety and chat.
+3. **Reasoning & tools**: The current era for post-training is defined by a focus on challenging reasoning and tool use problems. These include much harder knowledge-intensive tasks such as GPQA Diamond [@rein2023gpqa] and Humanity's Last Exam [@phan2025hle], intricate software engineering tasks such as SWE-Bench+ [@aleithan2024swebenchplus] and LiveCodeBench [@jain2024livecodebench], or challenging math problems exemplified by recent AIME contests.
+
+Beyond this, new domains will evolve. 
+Throughout this chapter we will include details that map to how these evaluations were implemented and understood.
+
+# Formatting: From Few-shot to Zero-shot Prompting
+
+Early language models were only used as intelligent autocomplete.
+In order to use these models in an more open ended way, multiple examples were shown to the model and then a prompt that is an incomplete phrase. This was called few-shot learning [@brown2020language]:
+
+In the case of popular evaluations, this would look like:
+
+```
+# Few-Shot Prompt for a Question-Answering Task
+You are a helpful assistant. Below are example interactions to guide your style:
+
+### Example 1
+User: "What is the capital of France?"
+Assistant: "The capital of France is Paris."
+
+### Example 2
+User: "Who wrote the novel '1984'?"
+Assistant: "George Orwell wrote '1984.'"
+
+# Now continue the conversation using the same style.
+User: "Can you explain what a neural network is?"
+Assistant:
+```
+
+Here, there are multiple ways to evaluate an answer. If we consider a question in the style of MMLU, where the model has to choose between multiple answers:
+
+```
+# Few-Shot Prompt
+
+Below are examples of MMLU-style questions and answers:
+
+### Example 1
+Q: A right triangle has legs of lengths 3 and 4. What is the length of its hypotenuse?
+Choices:
+(A) 5
+(B) 6
+(C) 7
+(D) 8
+
+Correct Answer: (A)
+
+### Example 2
+Q: Which of the following is the chemical symbol for Sodium?
+Choices:
+(A) Na
+(B) S
+(C) N
+(D) Ca
+
+Correct Answer: (A)
+
+### Now answer the new question in the same style:
+
+Q: Which theorem states that if a function f is continuous on a closed interval [a,b], then f must attain both a maximum and a minimum on that interval?
+Choices:
+(A) The Mean Value Theorem
+(B) The Intermediate Value Theorem
+(C) The Extreme Value Theorem
+(D) Rolle’s Theorem
+
+Correct Answer:
+```
+
+To extract an answer here one could either generate a token based on some sampling parameters and see if the answer is correct, A,B,C, or D, or one could look at the probabilities of each token and mark the task as correct if the correct answer is more likely. 
+This second method has two potential implementations -- first, one could look at the probability of the letter (A) or the answer "The Mean Value Theorem." 
+Both of these are permissible metrics, but answer prediction is more common.
+
+
 ## How To Tell if RLHF is Working?
 
 ## Prompting
@@ -55,4 +131,4 @@ There are clear reasons why OpenAI’s models top the charts on ChatBotArena. Th
 
 ### Private Leaderboards
 
-Scale Leaderboard etc
+Scale Leaderboard [@scale2024seal] etc
