@@ -14,6 +14,7 @@ While challenging evaluations drive progress in language models to new areas, th
 In many ways, this chapter is designed to present vignettes of popular evaluation regimes throughout the early history of RLHF, so readers can understand the common themes, details, and failure modes.
 
 Evaluation for RLHF and post-training has gone a few distinct phases in its early history:
+
 1. **Early chat-phase**: Early models trained with RLHF or preference tuning targeted evaluations focused on capturing the chat performance of a model, especially relative to known strong models such as GPT-4. Early examples include MT-Bench [@zheng2023judging], AlpacaEval [@dubois2024length], and Arena-Hard [@li2024crowdsourced]. Models were evaluated narrowly and these are now considered as "chat" or "instruction following" domains.
 2. **Multi-skill era**: Over time, common practice established that RLHF can be used to improve more skills than just chat. For example, the Tülu evaluation suite included tasks on knowledge (MMLU [@hendrycks2020measuring], PopQA [@mallen2023llm_memorization], TruthfulQA [@lin2021truthfulqa]), Reasoning (BigBenchHard [@suzgun2022challenging], DROP [@dua2019drop]), Math (MATH [@hendrycksmath2021], GSM8K [@cobbe2021gsm8k]), Coding (HumanEval [@chen2021codex], HumanEval+ [@evalplus]), Instruction Following [@zhou2023instructionfollowingevaluationlargelanguage], and Safety (a composite of many evaluations). This reflects the domain where post-training is embraced as a multi-faceted solution beyond safety and chat.
 3. **Reasoning & tools**: The current era for post-training is defined by a focus on challenging reasoning and tool use problems. These include much harder knowledge-intensive tasks such as GPQA Diamond [@rein2023gpqa] and Humanity's Last Exam [@phan2025hle], intricate software engineering tasks such as SWE-Bench+ [@aleithan2024swebenchplus] and LiveCodeBench [@jain2024livecodebench], or challenging math problems exemplified by recent AIME contests.
@@ -21,11 +22,10 @@ Evaluation for RLHF and post-training has gone a few distinct phases in its earl
 Beyond this, new domains will evolve. 
 Throughout this chapter we will include details that map to how these evaluations were implemented and understood.
 
-# Formatting: From Few-shot to Zero-shot Prompting
+## Formatting: From Few-shot to Zero-shot Prompting
 
 Early language models were only used as intelligent autocomplete.
-In order to use these models in an more open ended way, multiple examples were shown to the model and then a prompt that is an incomplete phrase. This was called few-shot learning [@brown2020language]:
-
+In order to use these models in an more open ended way, multiple examples were shown to the model and then a prompt that is an incomplete phrase. This was called few-shot or in-context learning [@brown2020language], and at the time instruction tuning or RLHF was not involved.
 In the case of popular evaluations, this would look like:
 
 ```
@@ -84,12 +84,31 @@ Choices:
 Correct Answer:
 ```
 
-To extract an answer here one could either generate a token based on some sampling parameters and see if the answer is correct, A,B,C, or D, or one could look at the probabilities of each token and mark the task as correct if the correct answer is more likely. 
+To extract an answer here one could either generate a token based on some sampling parameters and see if the answer is correct, A,B,C, or D (formatting above like this proposed in [@robinson2023leveraging]), or one could look at the probabilities of each token and mark the task as correct if the correct answer is more likely. 
 This second method has two potential implementations -- first, one could look at the probability of the letter (A) or the answer "The Mean Value Theorem." 
-Both of these are permissible metrics, but answer prediction is more common.
+Both of these are permissible metrics, but answer prediction is more common among probability base metrics.
 
+A common challenge with few-shot prompting is that models will not follow the format, which is counted as an incorrect answer. 
+When designing an evaluation domain, the number of examples used in-context is often considered a design parameter and ranges from 3 to 8 or more.
 
-## How To Tell if RLHF is Working?
+Over time, as language models became stronger, they evolved to zero-shot evaluation, a.k.a. "zero-shot learners" [@wei2022finetuned].
+The Finetuned Language Net (FLAN) showed that language models finetuned in specific tasks, as a precursor to modern instruction tuning, could generalize to zero-shot questions they were not trained on [@wei2022finetuned] (similar results are also found in T0 [@sanh2022multitask]).
+This is the emergence of instruction finetuning (IFT), an important precursor to RLHF and post-training.
+A zero shot question would look like:
+
+```
+User: "What is the capital of France?"
+Assistant:
+```
+
+From here in 2022, the timeline begins to include key early RLHF works, such as InstructGPT.
+The core capability and use-case shift that accompanied these models is even more open-ended usage.
+With more open-ended usage, generative evaluation became increasingly popular as it mirrors actual usage.
+In this period through recent years after ChatGPT, some multiple-choice evaluations were still used in RLHF research as a holdback to common practice.
+
+With the rise of reasoning models at the end of 2024 and the beginning of 2025, a major change in model behavior was the addition of a long Chain-of-Thought (CoT [@wei2022chain]) reasoning process before every answer.
+This, especially when the models use special formatting to separate thinking tokens from answer tokens, necessitated the most recent major update to evaluation regimes.
+Evaluation is moving to where the models are tested to respond in a generative manner with a chain of thought prompting.
 
 ## Prompting
 
