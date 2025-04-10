@@ -7,6 +7,12 @@ next-url: "17-over-optimization.html"
 
 # [Incomplete] Evaluation & Prompting
 
+Evaluation is an ever evolving approach.
+The key to understanding language model evaluation, particularly with post-training, is that the current popular evaluation regimes represents a reflection of the popular training best practices and goals.
+While challenging evaluations drive progress in language models to new areas, the majority of evaluation is designed around building useful signals for new models.
+
+In many ways, this chapter is designed to present vignettes of popular evaluation regimes throughout the early history of RLHF, so readers can understand the common themes, details, and failure modes.
+
 ## How To Tell if RLHF is Working?
 
 ## Prompting
