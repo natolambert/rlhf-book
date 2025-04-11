@@ -107,6 +107,20 @@ With more open-ended usage, generative evaluation became increasingly popular as
 In this period through recent years after ChatGPT, some multiple-choice evaluations were still used in RLHF research as a holdback to common practice.
 
 With the rise of reasoning models at the end of 2024 and the beginning of 2025, a major change in model behavior was the addition of a long Chain-of-Thought (CoT [@wei2022chain]) reasoning process before every answer.
+For example, for every prompt there can specially designed prompts to help extract behavior from the model.
+Tülu 3 details some prompts used for CoT answering on multiple choice questions [@lambert2024t]:
+
+```
+Answer the following multiple-choice question by giving the correct answer letter in parentheses. Provide CONCISE reasoning for the answer, and make sure to finish the response with “Therefore, the answer is (ANSWER_LETTER)” where (ANSWER_LETTER) is one of (A), (B), (C), (D), (E), etc.
+
+Question: {question}
+(A) {choice_A}
+(B) {choice_B}
+(C) …
+
+Answer the above question and REMEMBER to finish your response with the exact phrase “Therefore, the answer is (ANSWER_LETTER)” where (ANSWER_LETTER) is one of (A), (B), (C), (D), (E), etc.
+```
+
 This, especially when the models use special formatting to separate thinking tokens from answer tokens, necessitated the most recent major update to evaluation regimes.
 Evaluation is moving to where the models are tested to respond in a generative manner with a chain of thought prompting.
 
@@ -151,7 +165,8 @@ Inference of frontier models is becoming more complicated with special system pr
 
 We do not know all the formats and details used to numerically report the closed evaluations.
 
-There are a lot of asterisks to put on the state of closed evaluations. To get ahead of some comments, it is important to acknowledge that there are some very useful efforts by closed labs to communicate their evaluation efforts. Some include OpenAI’s prompts in simple-evals, OpenAI releasing entire evals to the community, such as MLE Bench, or Meta’s documentation on reproducing their results with a popular open-source eval tools.
+There are a lot of asterisks to put on the state of closed evaluations. To get ahead of some comments, it is important to acknowledge that there are some very useful efforts by closed labs to communicate their evaluation efforts. 
+Some include OpenAI’s prompts in simple-evals, OpenAI releasing entire evals to the community, such as MLE Bench, or Meta’s documentation on reproducing their results with a popular open-source eval tools.
 
 TODO open tools here:
 
