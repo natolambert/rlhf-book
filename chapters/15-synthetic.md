@@ -35,8 +35,6 @@ Otherwise, there are two clear areas where human data continues to be important.
 1. The role of human data continues to be at the fringe of capabilities in models -- humans must generate data where AI's do not yet have any ability. Once the first strong model exists, synthetic data proliferates.
 2. Human preference data is still used in the leading models, even though academic work shows synthetic versions to perform just as well. The role of human preferences is still being established in the literature.
 
-## Distillation
-
 The term distillation has been the most powerful form of discussion around the role of synthetic data in language models. 
 Distillation as a term comes from a technical definition of teacher-student knowledge distillation from the deep learning literature [@hinton2015distilling].
 
