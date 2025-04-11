@@ -107,6 +107,7 @@ With more open-ended usage, generative evaluation became increasingly popular as
 In this period through recent years after ChatGPT, some multiple-choice evaluations were still used in RLHF research as a holdback to common practice.
 
 With the rise of reasoning models at the end of 2024 and the beginning of 2025, a major change in model behavior was the addition of a long Chain-of-Thought (CoT [@wei2022chain]) reasoning process before every answer.
+
 For example, for every prompt there can specially designed prompts to help extract behavior from the model.
 Tülu 3 details some prompts used for CoT answering on multiple choice questions [@lambert2024t]:
 
