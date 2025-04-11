@@ -22,7 +22,7 @@ Evaluation for RLHF and post-training has gone a few distinct phases in its earl
 Beyond this, new domains will evolve. 
 Throughout this chapter we will include details that map to how these evaluations were implemented and understood.
 
-## Formatting: From Few-shot to Zero-shot Prompting
+## Formatting as prompting: From Few-shot to Zero-shot Prompting to CoT
 
 Early language models were only used as intelligent autocomplete.
 In order to use these models in an more open ended way, multiple examples were shown to the model and then a prompt that is an incomplete phrase. This was called few-shot or in-context learning [@brown2020language], and at the time instruction tuning or RLHF was not involved.
@@ -107,6 +107,21 @@ With more open-ended usage, generative evaluation became increasingly popular as
 In this period through recent years after ChatGPT, some multiple-choice evaluations were still used in RLHF research as a holdback to common practice.
 
 With the rise of reasoning models at the end of 2024 and the beginning of 2025, a major change in model behavior was the addition of a long Chain-of-Thought (CoT [@wei2022chain]) reasoning process before every answer.
+
+For example, for every prompt there can specially designed prompts to help extract behavior from the model.
+Tülu 3 details some prompts used for CoT answering on multiple choice questions [@lambert2024t]:
+
+```
+Answer the following multiple-choice question by giving the correct answer letter in parentheses. Provide CONCISE reasoning for the answer, and make sure to finish the response with “Therefore, the answer is (ANSWER_LETTER)” where (ANSWER_LETTER) is one of (A), (B), (C), (D), (E), etc.
+
+Question: {question}
+(A) {choice_A}
+(B) {choice_B}
+(C) …
+
+Answer the above question and REMEMBER to finish your response with the exact phrase “Therefore, the answer is (ANSWER_LETTER)” where (ANSWER_LETTER) is one of (A), (B), (C), (D), (E), etc.
+```
+
 This, especially when the models use special formatting to separate thinking tokens from answer tokens, necessitated the most recent major update to evaluation regimes.
 Evaluation is moving to where the models are tested to respond in a generative manner with a chain of thought prompting.
 
@@ -114,11 +129,62 @@ Evaluation is moving to where the models are tested to respond in a generative m
 
 Prompting, i.e. crafting the correct query for  a model, is a crucial portion of using them as the models are evolving rapidly.
 
-## Evaluation
+TODO expand
 
-### Formatting and Overview
+## Tooling
+
+*Needs editing, taken from blog*
+
+Language model evaluations done within companies can only be compared to their peers with large error bars. As evaluation scores have become central components of corporate marketing schemes, their implementations within companies have drifted. There are rumors of major AI labs using “custom prompts” for important evaluations like GSM8k or MATH. At the same time, OpenAI has released open-source code for configurations (and basic prompts) for their models.
+
+It would seem that open-source language model builders should have an advantage in trust and comparability of models, but the open-source AI community also hasn’t converged on a single rubric for evaluating language models. The experience that motivated this article has happened every time — it is looking at an open weights model (such as Llama) and realizing we need to re-run evaluations on our own setup to get a sense of what is actually happening. This is very salient and hard to communicate to the general audience, where open means more reproducible. It should also mean the results are easier to interpret. What tools do we need for this?
+
+In my article on “Big Tech’s LLM evals are just marketing,” I didn’t uncover the deeper reasons as to why can’t fully believe these evaluations. Language model evaluation stacks are perceived as marketing because the evaluations have no hard source of truth. What is happening inside frontier labs is that evaluation suites are being tuned to suit their internal needs. When results are shared, we get output in the form of the numbers a lab got for their models, but not all the inputs to that function. The inputs are very sensitive configurations, and they’re different at all of OpenAI, Meta, Anthropic, and Google. Even fully open evaluation standards are hard to guarantee reproducibility on. Focusing efforts on your own models is the only way to get close to repeatable evaluation techniques. There are good intentions underpinning the marketing, starting with the technical teams.
+
+Evaluation of frontier language models is every bit as much an art today as it is a science.
+
+Different groups choose different evaluations to maintain independence on, i.e. making them a true test set, but no one discloses which ones they choose. For example, popular reasoning evaluations MATH and GSM8k both have training sets with prompts that can easily be used to improve performance. Improving performance with the prompts from the same distribution is very different than generalizing to these tasks by training on general math data.
+
+Labs like OpenAI hillclimb by focusing on a few key evaluations and report scores on the core public set at the end. The key point is that some of their evaluations for tracking progress, such as the datasets for cross-entropy loss predictions in scaling from the GPT-4 report, are often not public.
+
+
+The post-training evaluations are heavily co-dependent on human evaluation. Human evaluation for generative language models yields Elo rankings (popular in early Anthropic papers, such as Constitutional AI), and human evaluation for reward models shows agreement.
+
+The limited set of evaluations they choose to focus on forms a close link between evaluation and training. At one point one evaluation of focus was MMLU. Now, GPQA is likely. Labs will change the evaluations to make them better suited to their needs, such as OpenAI releasing SWE-Bench-Verified. There are more internally we don’t know about.
+
+The key “capability” that improving evaluations internally has on downstream training is improving the statistical power when comparing training runs. By changing evaluations, these labs reduce the noise on their prioritized signals in order to make more informed training decisions.
+
+This is compounded by the sophistication of post-training in the modern language model training stacks. Evaluating language models today involves a moderate amount of generating tokens (rather than just looking at log probabilities of answers). It is accepted that small tricks are used by frontier labs to boost performance on many tasks — the most common explanation is one-off prompts for certain evaluations. Does Claude use its special thinking tokens when being evaluated on reasoning benchmarks? I have no way of knowing.
+
+Depending on how your data is formatted in post-training, models will have substantial differences. For example, two popular, open math datasets Numina and MetaMathQA conflict with each other in training due to small differences in how the answers are formatted — training on both can make performance worse than with just one. Meta’s models use a very specific format for MATH, Minerva, while this varies substantially with post-training decisions.
+
+In the end we are left with a few key points on the state of evaluating closed models:
+
+We do not know or necessarily have the key test sets that labs are climbing on, so some evaluations are proxies (or worse, blissfully cheated on by training on text on the public web).
+
+Inference of frontier models is becoming more complicated with special system prompts, special tokens, etc., and we don’t know how it impacts evaluations, and
+
+We do not know all the formats and details used to numerically report the closed evaluations.
+
+There are a lot of asterisks to put on the state of closed evaluations. To get ahead of some comments, it is important to acknowledge that there are some very useful efforts by closed labs to communicate their evaluation efforts. 
+Some include OpenAI’s prompts in simple-evals, OpenAI releasing entire evals to the community, such as MLE Bench, or Meta’s documentation on reproducing their results with a popular open-source eval tools.
+
+TODO open tools here:
+
+There are many open-sourced evaluation tools for people to choose from. There’s Inspect AI from the UK Safety Institute [@inspectAI2024], HuggingFace’s LightEval [@fourrier2023lighteval] that powers the LLM Leaderboard, Eleuther AI’s evaluation harness [@gao2023evalharness] built on top of the infrastructure from their GPT-Neo-X model (around GPT-3 evaluation config), AI2’s library based on OLMES [@gu2024olmes], Stanford’s Center for Research on Foundation Model’s HELM [@liang2023helm], Mosaic’s (now Databricks’) Eval Gauntlet [@mosaicml2024gauntlet], and surely more I did not mention.
+
+## Contamination
+
+TODO mini section
+
+## Case Studies
+
+Below are a few types of evaluations that are at the core of how RLHF and post-training is evolving today.
 
 ### ChatBotArena
+
+*Needs editing, taken from blog*
+
 
 ChatBotArena is the largest community evaluation tool for language models. The LMSYS team, which emerged early in the post-ChatGPT craze, works with most of the model providers to host all of the relevant models. If you’re looking to get to know how multiple models compare to each other, ChatBotArena is the place to start.
 
