@@ -22,7 +22,20 @@ Evaluation for RLHF and post-training has gone a few distinct phases in its earl
 Beyond this, new domains will evolve. 
 Throughout this chapter we will include details that map to how these evaluations were implemented and understood.
 
-## Formatting as prompting: From Few-shot to Zero-shot Prompting to CoT
+## Prompting and Formatting: From Few-shot to Zero-shot to CoT
+
+**Prompting** language models is primarily a verb, but it is also considered a craft or art that one can practice and/or train in general [@schulhoff2024prompt].
+A prompt is the way of structuring information and context for a language model. 
+For common interactions, the prompt is relatively basic.
+For advanced scenarios, a well crafted prompt will mean success or failure on a specific one-off use-case.
+
+When it comes to evaluation, prompting techniques can have a substantial impact on the performance of the model.
+Some prompting techniques -- e.g. formatting discussed below -- can make a model's performance drop from 60% to near 0.
+Similarly, a change of prompt can help models learn better during training. 
+Colloquially, prompting a model well can give the subjective experience of using future models, unlocking performance outside of normal use.
+
+Prompting well with modern language moderns can involve preparing an entire report for the model to respond to (often with 1000s of tokens of generated text). 
+This behavior is downstream of many changes in how language model performance has been measured and understood.
 
 Early language models were only used as intelligent autocomplete.
 In order to use these models in an more open ended way, multiple examples were shown to the model and then a prompt that is an incomplete phrase. This was called few-shot or in-context learning [@brown2020language], and at the time instruction tuning or RLHF was not involved.
@@ -91,6 +104,29 @@ Both of these are permissible metrics, but answer prediction is more common amon
 A common challenge with few-shot prompting is that models will not follow the format, which is counted as an incorrect answer. 
 When designing an evaluation domain, the number of examples used in-context is often considered a design parameter and ranges from 3 to 8 or more.
 
+Within the evolution of few-shot prompting came the idea of including chain-of-thought examples for the model to follow.
+This comes in the form of examples where the in-context examples have written out reasoning, such as below (which later was superseded by explicit prompting to generate reasoning steps) [@wei2022chain]:
+
+```
+# standard prompting
+Q: Roger has 5 tennis balls. He buys 2 more cans of tennis balls. Each can has 3 tennis balls. How many tennis balls does he have now?
+
+A: The answer is 11.
+
+Q: The cafeteria had 23 apples. If they used 20 to make lunch and bought 6 more, how many apples do they have?
+
+A: The answer is ...
+
+# chain of thought prompting
+Q: Roger has 5 tennis balls. He buys 2 more cans of tennis balls. Each can has 3 tennis balls. How many tennis balls does he have now?
+
+A: Roger started with 5 balls. 2 cans of 3 tennis balls each is 6 tennis balls. 5 + 6 = 11. The answer is 11.
+
+Q: The cafeteria had 23 apples. If they used 20 to make lunch and bought 6 more, how many apples do they have?
+
+A: The cafeteria had 23 apples originally. They..
+```
+
 Over time, as language models became stronger, they evolved to zero-shot evaluation, a.k.a. "zero-shot learners" [@wei2022finetuned].
 The Finetuned Language Net (FLAN) showed that language models finetuned in specific tasks, as a precursor to modern instruction tuning, could generalize to zero-shot questions they were not trained on [@wei2022finetuned] (similar results are also found in T0 [@sanh2022multitask]).
 This is the emergence of instruction finetuning (IFT), an important precursor to RLHF and post-training.
@@ -106,7 +142,8 @@ The core capability and use-case shift that accompanied these models is even mor
 With more open-ended usage, generative evaluation became increasingly popular as it mirrors actual usage.
 In this period through recent years after ChatGPT, some multiple-choice evaluations were still used in RLHF research as a holdback to common practice.
 
-With the rise of reasoning models at the end of 2024 and the beginning of 2025, a major change in model behavior was the addition of a long Chain-of-Thought (CoT [@wei2022chain]) reasoning process before every answer.
+With the rise of reasoning models at the end of 2024 and the beginning of 2025, a major change in model behavior was the addition of a long Chain-of-Thought (CoT) reasoning process before every answer.
+These models no longer needed to be prompted with the canonical modification of "think step by step," as proposed in [@kojima2022large].
 
 For example, for every prompt there can specially designed prompts to help extract behavior from the model.
 Tülu 3 details some prompts used for CoT answering on multiple choice questions [@lambert2024t]:
@@ -124,12 +161,6 @@ Answer the above question and REMEMBER to finish your response with the exact ph
 
 This, especially when the models use special formatting to separate thinking tokens from answer tokens, necessitated the most recent major update to evaluation regimes.
 Evaluation is moving to where the models are tested to respond in a generative manner with a chain of thought prompting.
-
-## Prompting
-
-Prompting, i.e. crafting the correct query for  a model, is a crucial portion of using them as the models are evolving rapidly.
-
-TODO expand
 
 ## Tooling
 
