@@ -233,6 +233,10 @@ This is called *dataset contamination* and respectively the practices to avoid i
 In order to decontaminate a dataset, one performs searches over the the training and test datasets, looking for matches in n-grams (characters) or tokens [@singh2024evaluation].
 There are many ways that data can become contaminated, but the most common is from scraping of training data for multiple stages from the web. 
 Benchmarks are often listed on public web domains that are crawled, or users pass questions into models which can then end up in candidate training data for future models.
+
+For example, during the decontamination of the evaluation suite for Tülu 3, the authors found that popular open datasets were contaminated with popular evaluations for RLHF [@lambert2024t]. 
+These overlaps include: UltraFeedback's contamination with TruthfulQA, Evol-CodeAlpaca's contamination with HumanEval, NuminaMath's contamination with MATH, and WildChat's contamination with safety evaluations. 
+
 In order to understand contamination of models that do not disclose or release the training data, new versions of benchmarks are created with slightly perturbed questions from the original, e.g. for MATH [@huang2025math], in order to see which models were trained to match the original format or questions.
 High variance on these perturbation benchmarks is not confirmation of contamination, which is difficult to prove, but could indicate models that were trained with a specific format in mind that may not translate to real world performance.
 
