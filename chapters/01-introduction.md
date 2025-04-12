@@ -200,14 +200,14 @@ This is a serial presentation of the techniques one can use to solve the problem
 11. Policy Gradients: The core RL techniques used to optimize reward models (and other signals) throughout RLHF.
 12. Direct Alignment Algorithms: Algorithms that optimize the RLHF objective direction from pairwise preference data rather than learning a reward model first.
 
-#### Advanced (TBD)
+#### Advanced
 
 Newer RLHF techniques and discussions that are not clearly established, but are important to current generations of models.
 
-13. Constitutional AI and AI Feedback
-14. Reasoning and Reinforcement Finetuning
-15. Synthetic Data
-16. Evaluation
+13. Constitutional AI and AI Feedback: How AI feedback data and specific models designed to simulate human preference ratings work.
+14. Reasoning and Reinforcement Finetuning: The role of new RL training methods for inference-time scaling with respect to post-training and RLHF.
+15. Synthetic Data: The shift away from human to synthetic data and how distilling from other models is used.
+16. Evaluation: The ever evolving role of evaluation (and prompting) in language models.
 
 #### Open Questions (TBD)
 
