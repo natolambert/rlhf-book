@@ -226,14 +226,15 @@ In the end we are left with a few key points on the state of evaluating closed m
 * Inference of frontier models is becoming more complicated with special system prompts, special tokens, etc., and we don’t know how it impacts evaluations, and
 * We do not know all the formats and details used to numerically report the closed evaluations.
 
-## Case Studies
-
-Below are a few types of evaluations that are at the core of how RLHF and post-training is evolving today.
-
 ## Contamination
 
-decontamination [@singh2024evaluation], perturbed benchmarks [@huang2025math], evaluation data is often high quality data
-TODO mini section
+A major issue with current language model practices (i.e. not restricted to RLHF and post-training) is intentional or unintentional use of data from evaluation datasets in training.
+This is called *dataset contamination* and respectively the practices to avoid it are *decontamination*. 
+In order to decontaminate a dataset, one performs searches over the the training and test datasets, looking for matches in n-grams (characters) or tokens [@singh2024evaluation].
+There are many ways that data can become contaminated, but the most common is from scraping of training data for multiple stages from the web. 
+Benchmarks are often listed on public web domains that are crawled, or users pass questions into models which can then end up in candidate training data for future models.
+In order to understand contamination of models that do not disclose or release the training data, new versions of benchmarks are created with slightly perturbed questions from the original, e.g. for MATH [@huang2025math], in order to see which models were trained to match the original format or questions.
+High variance on these perturbation benchmarks is not confirmation of contamination, which is difficult to prove, but could indicate models that were trained with a specific format in mind that may not translate to real world performance.
 
 
 ## Tooling
