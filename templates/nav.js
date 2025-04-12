@@ -57,7 +57,7 @@ class NavigationDropdown extends HTMLElement {
       </div>
 
       <div class="section">
-        <h3>Advanced (WIP)</h3>
+        <h3>Advanced</h3>
         <ol start="13">
           <li><a href="https://rlhfbook.com/c/13-cai.html">Constitutional AI and AI Feedback</a></li>
           <li><a href="https://rlhfbook.com/c/14-reasoning.html">Reasoning and Reinforcement Finetuning</a></li>
