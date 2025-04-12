@@ -236,6 +236,7 @@ Benchmarks are often listed on public web domains that are crawled, or users pas
 
 For example, during the decontamination of the evaluation suite for Tülu 3, the authors found that popular open datasets were contaminated with popular evaluations for RLHF [@lambert2024t]. 
 These overlaps include: UltraFeedback's contamination with TruthfulQA, Evol-CodeAlpaca's contamination with HumanEval, NuminaMath's contamination with MATH, and WildChat's contamination with safety evaluations. 
+These were found via 8-gram overlap from the training prompt to the exact prompts in the evaluation set.
 
 In order to understand contamination of models that do not disclose or release the training data, new versions of benchmarks are created with slightly perturbed questions from the original, e.g. for MATH [@huang2025math], in order to see which models were trained to match the original format or questions.
 High variance on these perturbation benchmarks is not confirmation of contamination, which is difficult to prove, but could indicate models that were trained with a specific format in mind that may not translate to real world performance.
