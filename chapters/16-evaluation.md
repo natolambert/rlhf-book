@@ -224,7 +224,6 @@ In the end we are left with a few key points on the state of evaluating closed m
 * Inference of frontier models is becoming more complicated with special system prompts, special tokens, etc., and we don’t know how it impacts evaluations, and
 * We do not know all the formats and details used to numerically report the closed evaluations.
 
-
 ## Case Studies
 
 Below are a few types of evaluations that are at the core of how RLHF and post-training is evolving today.
