@@ -22,7 +22,20 @@ Evaluation for RLHF and post-training has gone a few distinct phases in its earl
 Beyond this, new domains will evolve. 
 Throughout this chapter we will include details that map to how these evaluations were implemented and understood.
 
-## Formatting as prompting: From Few-shot to Zero-shot Prompting to CoT
+## Prompting and Formatting: From Few-shot to Zero-shot to CoT
+
+**Prompting** language models is primarily a verb, but it is also considered a craft or art that one can practice and/or train in general [@schulhoff2024prompt].
+A prompt is the way of structuring information and context for a language model. 
+For common interactions, the prompt is relatively basic.
+For advanced scenarios, a well crafted prompt will mean success or failure on a specific one-off use-case.
+
+When it comes to evaluation, prompting techniques can have a substantial impact on the performance of the model.
+Some prompting techniques -- e.g. formatting discussed below -- can make a model's performance drop from 60% to near 0.
+Similarly, a change of prompt can help models learn better during training. 
+Colloquially, prompting a model well can give the subjective experience of using future models, unlocking performance outside of normal use.
+
+Prompting well with modern language moderns can involve preparing an entire report for the model to respond to (often with 1000s of tokens of generated text). 
+This behavior is downstream of many changes in how language model performance has been measured and understood.
 
 Early language models were only used as intelligent autocomplete.
 In order to use these models in an more open ended way, multiple examples were shown to the model and then a prompt that is an incomplete phrase. This was called few-shot or in-context learning [@brown2020language], and at the time instruction tuning or RLHF was not involved.
@@ -91,6 +104,29 @@ Both of these are permissible metrics, but answer prediction is more common amon
 A common challenge with few-shot prompting is that models will not follow the format, which is counted as an incorrect answer. 
 When designing an evaluation domain, the number of examples used in-context is often considered a design parameter and ranges from 3 to 8 or more.
 
+Within the evolution of few-shot prompting came the idea of including chain-of-thought examples for the model to follow.
+This comes in the form of examples where the in-context examples have written out reasoning, such as below (which later was superseded by explicit prompting to generate reasoning steps) [@wei2022chain]:
+
+```
+# standard prompting
+Q: Roger has 5 tennis balls. He buys 2 more cans of tennis balls. Each can has 3 tennis balls. How many tennis balls does he have now?
+
+A: The answer is 11.
+
+Q: The cafeteria had 23 apples. If they used 20 to make lunch and bought 6 more, how many apples do they have?
+
+A: The answer is ...
+
+# chain of thought prompting
+Q: Roger has 5 tennis balls. He buys 2 more cans of tennis balls. Each can has 3 tennis balls. How many tennis balls does he have now?
+
+A: Roger started with 5 balls. 2 cans of 3 tennis balls each is 6 tennis balls. 5 + 6 = 11. The answer is 11.
+
+Q: The cafeteria had 23 apples. If they used 20 to make lunch and bought 6 more, how many apples do they have?
+
+A: The cafeteria had 23 apples originally. They..
+```
+
 Over time, as language models became stronger, they evolved to zero-shot evaluation, a.k.a. "zero-shot learners" [@wei2022finetuned].
 The Finetuned Language Net (FLAN) showed that language models finetuned in specific tasks, as a precursor to modern instruction tuning, could generalize to zero-shot questions they were not trained on [@wei2022finetuned] (similar results are also found in T0 [@sanh2022multitask]).
 This is the emergence of instruction finetuning (IFT), an important precursor to RLHF and post-training.
@@ -106,7 +142,8 @@ The core capability and use-case shift that accompanied these models is even mor
 With more open-ended usage, generative evaluation became increasingly popular as it mirrors actual usage.
 In this period through recent years after ChatGPT, some multiple-choice evaluations were still used in RLHF research as a holdback to common practice.
 
-With the rise of reasoning models at the end of 2024 and the beginning of 2025, a major change in model behavior was the addition of a long Chain-of-Thought (CoT [@wei2022chain]) reasoning process before every answer.
+With the rise of reasoning models at the end of 2024 and the beginning of 2025, a major change in model behavior was the addition of a long Chain-of-Thought (CoT) reasoning process before every answer.
+These models no longer needed to be prompted with the canonical modification of "think step by step," as proposed in [@kojima2022large].
 
 For example, for every prompt there can specially designed prompts to help extract behavior from the model.
 Tülu 3 details some prompts used for CoT answering on multiple choice questions [@lambert2024t]:
@@ -125,57 +162,67 @@ Answer the above question and REMEMBER to finish your response with the exact ph
 This, especially when the models use special formatting to separate thinking tokens from answer tokens, necessitated the most recent major update to evaluation regimes.
 Evaluation is moving to where the models are tested to respond in a generative manner with a chain of thought prompting.
 
-## Prompting
+## Using Evaluations vs. Observing Evaluations
 
-Prompting, i.e. crafting the correct query for  a model, is a crucial portion of using them as the models are evolving rapidly.
+![Report from Epoch AI showing how major AI evaluations are rapidly saturated over time.](images/benchmark-performance.jpeg)
 
-TODO expand
+Language model evaluations done within companies can only be compared to their peers with large error bars because the process that they use evaluations internally is not matched with external evaluations.
+Internal evaluations are made to hillclimb on for training, as would be called a "training set" in traditional machine learning.
+The public evaluations that the community uses to compare leading models cannot be known if they were within said training set or as unseen "test sets" or "validation sets."
 
-## Tooling
+As evaluation scores have become central components of corporate marketing schemes, their implementations within companies have drifted. 
+There are rumors of major AI labs using “custom prompts” for important evaluations like GSM8k or MATH. 
+These practices evolve rapidly.
 
-*Needs editing, taken from blog*
-
-Language model evaluations done within companies can only be compared to their peers with large error bars. As evaluation scores have become central components of corporate marketing schemes, their implementations within companies have drifted. There are rumors of major AI labs using “custom prompts” for important evaluations like GSM8k or MATH. At the same time, OpenAI has released open-source code for configurations (and basic prompts) for their models.
-
-It would seem that open-source language model builders should have an advantage in trust and comparability of models, but the open-source AI community also hasn’t converged on a single rubric for evaluating language models. The experience that motivated this article has happened every time — it is looking at an open weights model (such as Llama) and realizing we need to re-run evaluations on our own setup to get a sense of what is actually happening. This is very salient and hard to communicate to the general audience, where open means more reproducible. It should also mean the results are easier to interpret. What tools do we need for this?
-
-In my article on “Big Tech’s LLM evals are just marketing,” I didn’t uncover the deeper reasons as to why can’t fully believe these evaluations. Language model evaluation stacks are perceived as marketing because the evaluations have no hard source of truth. What is happening inside frontier labs is that evaluation suites are being tuned to suit their internal needs. When results are shared, we get output in the form of the numbers a lab got for their models, but not all the inputs to that function. The inputs are very sensitive configurations, and they’re different at all of OpenAI, Meta, Anthropic, and Google. Even fully open evaluation standards are hard to guarantee reproducibility on. Focusing efforts on your own models is the only way to get close to repeatable evaluation techniques. There are good intentions underpinning the marketing, starting with the technical teams.
+Language model evaluation stacks are perceived as marketing because the evaluations have no hard source of truth. 
+What is happening inside frontier labs is that evaluation suites are being tuned to suit their internal needs. 
+When results are shared, we get output in the form of the numbers a lab got for their models, but not all the inputs to that function. 
+The inputs are very sensitive configurations, and they’re different at all of OpenAI, Meta, Anthropic, and Google. 
+Even fully open evaluation standards are hard to guarantee reproducibility on. 
+Focusing efforts on your own models is the only way to get close to repeatable evaluation techniques. 
+There are good intentions underpinning the marketing, starting with the technical teams.
 
 Evaluation of frontier language models is every bit as much an art today as it is a science.
 
-Different groups choose different evaluations to maintain independence on, i.e. making them a true test set, but no one discloses which ones they choose. For example, popular reasoning evaluations MATH and GSM8k both have training sets with prompts that can easily be used to improve performance. Improving performance with the prompts from the same distribution is very different than generalizing to these tasks by training on general math data.
+Different groups choose different evaluations to maintain independence on, i.e. making them a true test set, but no one discloses which ones they choose. 
+For example, popular reasoning evaluations MATH and GSM8k both have training sets with prompts that can easily be used to improve performance. 
+Improving performance with the prompts from the same distribution is very different than generalizing to these tasks by training on general math data.
 
-Labs like OpenAI hillclimb by focusing on a few key evaluations and report scores on the core public set at the end. The key point is that some of their evaluations for tracking progress, such as the datasets for cross-entropy loss predictions in scaling from the GPT-4 report, are often not public.
+In fact, these *training sets* are very high quality data so models would benefit from training on them.
+If these companies are *not* using the corresponding evaluation as an core metric to track, training on the evaluation set could be a practical decision as high-quality data is a major limiting factor of model development.
 
+Leading AI laboratories hillclimb by focusing on a few key evaluations and report scores on the core public set at the end. 
+The key point is that some of their evaluations for tracking progress, such as the datasets for cross-entropy loss predictions in scaling from the GPT-4 report [@achiam2023gpt], are often not public.
 
-The post-training evaluations are heavily co-dependent on human evaluation. Human evaluation for generative language models yields Elo rankings (popular in early Anthropic papers, such as Constitutional AI), and human evaluation for reward models shows agreement.
+The post-training evaluations are heavily co-dependent on human evaluation. 
+Human evaluation for generative language models yields Elo rankings (popular in early Anthropic papers, such as Constitutional AI), and human evaluation for reward models shows agreement.
+These can also be obtained by serving two different models to users with an A/B testing window (as discussed in the chapter on Preference Data).
 
-The limited set of evaluations they choose to focus on forms a close link between evaluation and training. At one point one evaluation of focus was MMLU. Now, GPQA is likely. Labs will change the evaluations to make them better suited to their needs, such as OpenAI releasing SWE-Bench-Verified. There are more internally we don’t know about.
+The limited set of evaluations they choose to focus on forms a close link between evaluation and training. 
+At one point one evaluation of focus was MMLU. 
+GPQA was one of choice during reasoning models' emergence. 
+Labs will change the evaluations to make them better suited to their needs, such as OpenAI releasing SWE-Bench-Verified [@openai2024swebench]. 
+There are many more internally the public does not have access to.
 
-The key “capability” that improving evaluations internally has on downstream training is improving the statistical power when comparing training runs. By changing evaluations, these labs reduce the noise on their prioritized signals in order to make more informed training decisions.
+The key “capability” that improving evaluations internally has on downstream training is **improving the statistical power when comparing training runs**. 
+By changing evaluations, these labs reduce the noise on their prioritized signals in order to make more informed training decisions.
 
-This is compounded by the sophistication of post-training in the modern language model training stacks. Evaluating language models today involves a moderate amount of generating tokens (rather than just looking at log probabilities of answers). It is accepted that small tricks are used by frontier labs to boost performance on many tasks — the most common explanation is one-off prompts for certain evaluations. Does Claude use its special thinking tokens when being evaluated on reasoning benchmarks? I have no way of knowing.
+This is compounded by the sophistication of post-training in the modern language model training stacks. 
+Evaluating language models today involves a moderate amount of generating tokens (rather than just looking at log probabilities of answers). 
+It is accepted that small tricks are used by frontier labs to boost performance on many tasks — the most common explanation is one-off prompts for certain evaluations. 
 
-Depending on how your data is formatted in post-training, models will have substantial differences. For example, two popular, open math datasets Numina and MetaMathQA conflict with each other in training due to small differences in how the answers are formatted — training on both can make performance worse than with just one. Meta’s models use a very specific format for MATH, Minerva, while this varies substantially with post-training decisions.
+Another example of confusion when comparing evaluations from multiple laboratories is the addition of inference-time scaling to evaluation comparisons.
+Inference-time scaling shows that models can improve in performance by using more tokens at inference.
+Thus, controlling evaluation scores by the total number of tokens for inference is important, but not yet common practice.
+
+Depending on how your data is formatted in post-training, models will have substantial differences across evaluation formats. 
+For example, two popular, open math datasets  [@li2024numinamath] and MetaMath [@yu2023metamath] conflict with each other in training due to small differences in how the answers are formatted -- Numina puts the answer in `\boxed{XYZ}` and MetaMath puts the answer after `The answer is: XYZ` -— training on both can make performance worse than with just one. 
+Strong models are trained to be able to function with multiple formats, but the generally have a strongest format.
 
 In the end we are left with a few key points on the state of evaluating closed models:
-
-We do not know or necessarily have the key test sets that labs are climbing on, so some evaluations are proxies (or worse, blissfully cheated on by training on text on the public web).
-
-Inference of frontier models is becoming more complicated with special system prompts, special tokens, etc., and we don’t know how it impacts evaluations, and
-
-We do not know all the formats and details used to numerically report the closed evaluations.
-
-There are a lot of asterisks to put on the state of closed evaluations. To get ahead of some comments, it is important to acknowledge that there are some very useful efforts by closed labs to communicate their evaluation efforts. 
-Some include OpenAI’s prompts in simple-evals, OpenAI releasing entire evals to the community, such as MLE Bench, or Meta’s documentation on reproducing their results with a popular open-source eval tools.
-
-TODO open tools here:
-
-There are many open-sourced evaluation tools for people to choose from. There’s Inspect AI from the UK Safety Institute [@inspectAI2024], HuggingFace’s LightEval [@fourrier2023lighteval] that powers the LLM Leaderboard, Eleuther AI’s evaluation harness [@gao2023evalharness] built on top of the infrastructure from their GPT-Neo-X model (around GPT-3 evaluation config), AI2’s library based on OLMES [@gu2024olmes], Stanford’s Center for Research on Foundation Model’s HELM [@liang2023helm], Mosaic’s (now Databricks’) Eval Gauntlet [@mosaicml2024gauntlet], and surely more I did not mention.
-
-## Contamination
-
-TODO mini section
+* We do not know or necessarily have the key test sets that labs are climbing on, so some evaluations are proxies.
+* Inference of frontier models is becoming more complicated with special system prompts, special tokens, etc., and we don’t know how it impacts evaluations, and
+* We do not know all the formats and details used to numerically report the closed evaluations.
 
 ## Case Studies
 
@@ -217,3 +264,16 @@ There are clear reasons why OpenAI’s models top the charts on ChatBotArena. Th
 ### Private Leaderboards
 
 Scale Leaderboard [@scale2024seal] etc
+
+
+## Contamination
+
+decontamination [@singh2024evaluation], perturbed benchmarks [@huang2025math], evaluation data is often high quality data
+TODO mini section
+
+
+## Tooling
+
+There are many open-sourced evaluation tools for people to choose from. 
+There’s Inspect AI from the UK Safety Institute [@inspectAI2024], HuggingFace’s LightEval [@fourrier2023lighteval] that powered the Open LLM Leaderboard [@open-llm-leaderboard-v2], Eleuther AI’s evaluation harness [@gao2023evalharness] built on top of the infrastructure from their GPT-Neo-X model (around GPT-3 evaluation config) [@gpt-neox-20b], AI2’s library based on OLMES [@gu2024olmes], Stanford’s Center for Research on Foundation Model’s HELM [@liang2023helm], Mosaic’s (now Databricks’) Eval Gauntlet [@mosaicml2024gauntlet], and more.
+
