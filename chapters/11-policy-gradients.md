@@ -160,7 +160,7 @@ Crucially, this only works when generating multiple responses per prompt, which 
 Specifically, for the REINFORCE Leave-One-Out (RLOO) baseline, given $K$ sampled trajectories or actions $a_1, \dots, a_K$, to a given prompt $s$ we define the baseline explicitly as the following *per-prompt*:
 
 $$
-b(c, a_k) = \frac{1}{K-1}\sum_{i=1, i\neq k}^{K} R(s, a_i),
+b(s, a_k) = \frac{1}{K-1}\sum_{i=1, i\neq k}^{K} R(s, a_i),
 $$ {#eq:RLOO_baseline}
 
 resulting in the advantage:
@@ -414,7 +414,7 @@ If we average these together weighting sequences equally, we get a loss of -2.35
 If, instead we apply the loss equally to each token, the loss would be computed by summing all the per token losses and normalizing by length, which in this case would be -2.27.
 If the sequences had bigger differences, the two loss values can have substantially different values.
 
-Another way to aggregate loss is discussed in [TODO CITE DrGRPO] that has its origins in pre language model RL research, where every per-token loss is normalized by the max sequence length set in the experiment. 
+Another way to aggregate loss is discussed in [@liu2025understanding] that has its origins in pre language model RL research, where every per-token loss is normalized by the max sequence length set in the experiment. 
 This would change how the losses compare across batches per tokens in the above example.
 
 
@@ -518,7 +518,7 @@ Traditionally, the KL distance is computed with respect to each token in the com
 For reasoning training, multiple completions are sampled from one prompt, and there are multiple prompts in one batch,
 so the KL distance will have a shape of [B, L, N], where B is the batch size, L is the sequence length, and N is the number of completions per prompt.
 
-Putting it together, using the first loss accumulation, the psuedocode can be written as below.
+Putting it together, using the first loss accumulation, the pseudocode can be written as below.
 
 ```python
 # B: Batch Size, L: Sequence Length, G: Number of Generations
@@ -653,4 +653,5 @@ Examples for further reading include:
 - Off-policy policy-gradient algorithms could enable further asynchronous training, such as **Contrastive Policy Gradient (CoPG)** [@flet2024contrastive] (a generalization of the direct alignment algorithm IPO and vanilla policy gradient), which was used by Cohere for their Command A model [@cohere2025command].
 - Other implementations of REINFORCE algorithms have been designed for language models, such as **ReMax** [@li2023remax], which implements a baseline normalization designed specifically to accommodate the sources of uncertainty from reward model inference.
 - Some foundation models, such as Apple Intelligence Foundation Models [@gunter2024apple] or Kimi k1.5 reasoning model [@team2025kimi], have used variants of **Mirror Descent Policy Optimization (MDPO)** [@tomar2020mirror]. Research is still developing further on the fundamentals here [@zhang2025improving], but Mirror Descent is an optimization method rather than directly a policy gradient algorithm. What is important here is that it is substituted in very similarly to existing RL infrastructure.
-- **Decoupled Clip and Dynamic sAmpling Policy Optimization (DAPO)** proposes 4 modifications to GRPO to better suit reasoning language models, where long traces are needed and new, underutilized tokens need to be increased in probability [@yu2025dapo]. The changes are: 1, have two different clip hyperparameters, $\epsilon_\text{low}$ and $\epsilon_\text{high}$, so clipping on the positive side of the logratio  can take bigger steps for better exploration; 2, dynamic sampling, which removes all samples with reward = 0 or reward = 1 for all samples in the batch (no learning signal); 3, use the per token loss as discussed above in Implementation: GRPO; and 4, a soft penalty on samples that are too long to avoid trying to learn from truncated answers. Value-based Augmented Proximal Policy Optimization (VAPO) [@yuan2025vapo] combines optimizations from DAPO (including clip-higher, token level policy-gradient, and different length normalization) with insights from Value-Calibrated PPO [@yuan2025s] to pretrain the value function and length-adaptive GAE to show the promise of value base methods relative to GRPO.
+- **Decoupled Clip and Dynamic sAmpling Policy Optimization (DAPO)** proposes 4 modifications to GRPO to better suit reasoning language models, where long traces are needed and new, underutilized tokens need to be increased in probability [@yu2025dapo]. The changes are: 1, have two different clip hyperparameters, $\epsilon_\text{low}$ and $\epsilon_\text{high}$, so clipping on the positive side of the logratio  can take bigger steps for better exploration; 2, dynamic sampling, which removes all samples with reward = 0 or reward = 1 for all samples in the batch (no learning signal); 3, use the per token loss as discussed above in Implementation: GRPO; and 4, a soft penalty on samples that are too long to avoid trying to learn from truncated answers. 
+- **Value-based Augmented Proximal Policy Optimization (VAPO)** [@yuan2025vapo] combines optimizations from DAPO (including clip-higher, token level policy-gradient, and different length normalization) with insights from Value-Calibrated PPO [@yuan2025s] to pretrain the value function and length-adaptive GAE to show the promise of value base methods relative to GRPO.

@@ -66,7 +66,7 @@ Once RLHF was done, the model was ready to be deployed to users. This recipe is 
 ![A rendition of the early, three stage RLHF process with SFT, a reward model, and then optimization.](images/rlhf-basic.png){#fig:rlhf-basic-repeat}
 
 Modern versions of post-training involve many, many more model versions. 
-An example is shown below in fig:complex-rlhf where the model undergoes numerous training iterations before convergence.
+An example is shown below in @fig:rlhf-complex where the model undergoes numerous training iterations before convergence.
 
 ![A rendition of modern post-training with many rounds.](images/rlhf-complex.png){#fig:rlhf-complex}
 

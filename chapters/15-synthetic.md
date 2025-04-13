@@ -26,7 +26,7 @@ Synthetic data is key to post-training.
 The ability for synthetic data to be impactful to this extent emerged with GPT-4 class models.
 With early language models, such as Llama 2 and GPT-3.5-Turbo, the models were not reliable enough in generating or supervising data pipelines.
 Within 1-2 years, language models were far superior to humans for generating answers.
-In the transition from GPT-3.5 to GPT-4 class models, the ability for models to perform LLM_as-a-judge tasks also emerged.
+In the transition from GPT-3.5 to GPT-4 class models, the ability for models to perform LLM-as-a-judge tasks also emerged.
 GPT-4 or better models are far more robust and consistent in generating feedback or scores with respect to a piece of content.
 
 Since this transition, the role of synthetic data has only grown in language model training. 
