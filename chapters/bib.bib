@@ -151,11 +151,12 @@
   journal={arXiv preprint arXiv:1912.06680},
   year={2019}
 }
-@article{huang2024n,
-  title={The N+ Implementation Details of RLHF with PPO: A Case Study on TL; DR Summarization},
-  author={Huang, Shengyi and Noukhovitch, Michael and Hosseini, Arian and Rasul, Kashif and Wang, Weixun and Tunstall, Lewis},
-  journal={arXiv preprint arXiv:2403.17031},
-  year={2024}
+@inproceedings{huang2024n,
+  title={The N+ Implementation Details of {RLHF} with {PPO}: A Case Study on {TL};{DR} Summarization},
+  author={Shengyi Huang and Michael Noukhovitch and Arian Hosseini and Kashif Rasul and Weixun Wang and Lewis Tunstall},
+  booktitle={First Conference on Language Modeling},
+  year={2024},
+  url={https://openreview.net/forum?id=kHO2ZTa8e3}
 }
 @article{weng2018PG,
   title   = "Policy Gradient Algorithms",
@@ -214,17 +215,17 @@
 @inproceedings{ng2000algorithms,
   title={Algorithms for inverse reinforcement learning.},
   author={Ng, Andrew Y and Russell, Stuart and others},
-  booktitle={Icml},
-  volume={1},
-  number={2},
-  pages={2},
+  booktitle = {Proceedings of the Seventeenth International Conference on Machine Learning},
+  pages = {663–-670},
+  numpages = {8},
+  series = {ICML '00},
   year={2000}
 }
-@article{schulman2015high,
+@inproceedings{schulman2015high,
   title={High-dimensional continuous control using generalized advantage estimation},
   author={Schulman, John and Moritz, Philipp and Levine, Sergey and Jordan, Michael and Abbeel, Pieter},
-  journal={arXiv preprint arXiv:1506.02438},
-  year={2015}
+  booktitle={Proceedings of the International Conference on Learning Representations (ICLR)},
+  year =2016
 }
 @misc{seita2017gae,
   author = {Daniel Seita},
@@ -245,11 +246,12 @@
   journal={arXiv preprint arXiv:2311.00168},
   year={2023}
 }
-@article{sharma2023towards,
-  title={Towards understanding sycophancy in language models},
-  author={Sharma, Mrinank and Tong, Meg and Korbak, Tomasz and Duvenaud, David and Askell, Amanda and Bowman, Samuel R and Cheng, Newton and Durmus, Esin and Hatfield-Dodds, Zac and Johnston, Scott R and others},
-  journal={arXiv preprint arXiv:2310.13548},
-  year={2023}
+@inproceedings{sharma2023towards,
+  title={Towards Understanding Sycophancy in Language Models},
+  author={Mrinank Sharma and Meg Tong and Tomasz Korbak and David Duvenaud and Amanda Askell and Samuel R. Bowman and Esin DURMUS and Zac Hatfield-Dodds and Scott R Johnston and Shauna M Kravec and Timothy Maxwell and Sam McCandlish and Kamal Ndousse and Oliver Rausch and Nicholas Schiefer and Da Yan and Miranda Zhang and Ethan Perez},
+  booktitle={The Twelfth International Conference on Learning Representations},
+  year={2024},
+  url={https://openreview.net/forum?id=tvhaxkMKAn}
 }
 # models & history ####################################################################
 @article{brown2020language,
@@ -269,23 +271,33 @@
   pages={1--67},
   year={2020}
 }
-@article{wei2021finetuned,
-  title={Finetuned language models are zero-shot learners},
-  author={Wei, Jason and Bosma, Maarten and Zhao, Vincent Y and Guu, Kelvin and Yu, Adams Wei and Lester, Brian and Du, Nan and Dai, Andrew M and Le, Quoc V},
-  journal={arXiv preprint arXiv:2109.01652},
-  year={2021}
+@inproceedings{wei2021finetuned,
+  title={Finetuned Language Models are Zero-Shot Learners},
+  author={Jason Wei and Maarten Bosma and Vincent Zhao and Kelvin Guu and Adams Wei Yu and Brian Lester and Nan Du and Andrew M. Dai and Quoc V Le},
+  booktitle={International Conference on Learning Representations},
+  year={2022},
+  url={https://openreview.net/forum?id=gEZrGCozdqR}
 }
-@article{sanh2021multitask,
-  title={Multitask prompted training enables zero-shot task generalization},
-  author={Sanh, Victor and Webson, Albert and Raffel, Colin and Bach, Stephen H and Sutawika, Lintang and Alyafeai, Zaid and Chaffin, Antoine and Stiegler, Arnaud and Scao, Teven Le and Raja, Arun and others},
-  journal={arXiv preprint arXiv:2110.08207},
-  year={2021}
+@inproceedings{sanh2021multitask,
+  title={Multitask Prompted Training Enables Zero-Shot Task Generalization},
+  author={Victor Sanh and Albert Webson and Colin Raffel and Stephen Bach and Lintang Sutawika and Zaid Alyafeai and Antoine Chaffin and Arnaud Stiegler and Arun Raja and Manan Dey and M Saiful Bari and Canwen Xu and Urmish Thakker and Shanya Sharma Sharma and Eliza Szczechla and Taewoon Kim and Gunjan Chhablani and Nihal Nayak and Debajyoti Datta and Jonathan Chang and Mike Tian-Jian Jiang and Han Wang and Matteo Manica and Sheng Shen and Zheng Xin Yong and Harshit Pandey and Rachel Bawden and Thomas Wang and Trishala Neeraj and Jos Rozen and Abheesht Sharma and Andrea Santilli and Thibault Fevry and Jason Alan Fries and Ryan Teehan and Teven Le Scao and Stella Biderman and Leo Gao and Thomas Wolf and Alexander M Rush},
+  booktitle={International Conference on Learning Representations},
+  year={2022},
+  url={https://openreview.net/forum?id=9Vrb9D0WI4}
 }
-@article{mishra2021cross,
-  title={Cross-task generalization via natural language crowdsourcing instructions},
-  author={Mishra, Swaroop and Khashabi, Daniel and Baral, Chitta and Hajishirzi, Hannaneh},
-  journal={arXiv preprint arXiv:2104.08773},
-  year={2021}
+@inproceedings{mishra2021cross,
+    title = "Cross-Task Generalization via Natural Language Crowdsourcing Instructions",
+    author = "Mishra, Swaroop  and
+      Khashabi, Daniel  and
+      Baral, Chitta  and
+      Hajishirzi, Hannaneh",
+    booktitle = "Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)",
+    month = may,
+    year = "2022",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2022.acl-long.244/",
+    doi = "10.18653/v1/2022.acl-long.244",
+    pages = "3470--3487",
 }
 @misc{alpaca,
   author = {Rohan Taori and Ishaan Gulrajani and Tianyi Zhang and Yann Dubois and Xuechen Li and Carlos Guestrin and Percy Liang and Tatsunori B. Hashimoto },
@@ -318,11 +330,12 @@
     url       = {https://www.databricks.com/blog/2023/03/24/hello-dolly-democratizing-magic-chatgpt-open-models.html},
     urldate   = {2023-06-30}
 }
-@article{tunstall2023zephyr,
-  title={Zephyr: Direct distillation of lm alignment},
-  author={Tunstall, Lewis and Beeching, Edward and Lambert, Nathan and Rajani, Nazneen and Rasul, Kashif and Belkada, Younes and Huang, Shengyi and von Werra, Leandro and Fourrier, Cl{\'e}mentine and Habib, Nathan and others},
-  journal={arXiv preprint arXiv:2310.16944},
-  year={2023}
+@inproceedings{tunstall2023zephyr,
+  title={Zephyr: Direct Distillation of {LM} Alignment},
+  author={Lewis Tunstall and Edward Emanuel Beeching and Nathan Lambert and Nazneen Rajani and Kashif Rasul and Younes Belkada and Shengyi Huang and Leandro Von Werra and Cl{\'e}mentine Fourrier and Nathan Habib and Nathan Sarrazin and Omar Sanseviero and Alexander M Rush and Thomas Wolf},
+  booktitle={First Conference on Language Modeling},
+  year={2024},
+  url={https://openreview.net/forum?id=aKkAwZB6JV}
 }
 @article{zhou2023lima,
   title={Lima: Less is more for alignment},
