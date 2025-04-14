@@ -62,7 +62,7 @@ As an approximation, modern RLHF is the convergence of three areas of developmen
 
 Together, each of these areas brings specific assumptions about what a preference is and how it can be optimized, which dictates the motivations and design of RLHF problems.
 In practice, RLHF methods are motivated and studied from the perspective of empirical alignment -- maximizing model performance on specific skills instead of measuring the calibration to specific values.
-Still, the origins of value alignment for RLHF methods continue to be studied through research on methods to solve for ``pluralistic alignment'' across populations, such as position papers [@conitzer2024social], [@mishra2023ai], new datasets [@kirk2024prism], and personalization methods [@poddar2024personalizing].
+Still, the origins of value alignment for RLHF methods continue to be studied through research on methods to solve for "pluralistic alignment" across populations, such as position papers [@conitzer2024social], [@mishra2023ai], new datasets [@kirk2024prism], and personalization methods [@poddar2024personalizing].
 
 The goal of this chapter is to illustrate how complex motivations result in presumptions about the nature of tools used in RLHF that often do not apply in practice.
 The specifics of obtaining data for RLHF are discussed further in Chapter 6 and using it for reward modeling in Chapter 7.

@@ -3,7 +3,7 @@ prev-chapter: "Constitutional AI & AI Feedback"
 prev-url: "13-cai.html"
 page-title: Reasoning Training & Inference-Time Scaling
 next-chapter: "Synthetic Data & Distillation"
-next-url: "16-synthetic.html"
+next-url: "15-synthetic.html"
 ---
 
 # Reasoning Training & Inference-Time Scaling
@@ -101,7 +101,7 @@ The takeoff of RL-focused training on language models indicates steps in many fu
 * **Stability of RL can be solved**: For its entire existence, the limiting factor on RL’s adoption has been stability. This manifests in two ways. First, the learning itself can be fickle and not always work. Second, the training itself is known to be more brittle than standard language model training and more prone to loss spikes, crashes, etc. Countless releases are using this style of RL training and substantial academic uptake has occurred. The technical barriers to entry on RL are at an all time low.
 
 * **Open-source versions already “exist”**: Many tools already exist for training language models with RLVR and related techniques. 
-Examples include TRL [@vonwerra2022trl], Open Instruct [lambert2024t], veRL [@sheng2024hybridflow], and OpenRLHF [@hu2024openrlhf], where many of these are building on optimizations from earlier in the arc of RLHF and post-training. The accessibility of tooling is enabling a large uptake of research that'll likely soon render this chapter out of date.
+Examples include TRL [@vonwerra2022trl], Open Instruct [@lambert2024t], veRL [@sheng2024hybridflow], and OpenRLHF [@hu2024openrlhf], where many of these are building on optimizations from earlier in the arc of RLHF and post-training. The accessibility of tooling is enabling a large uptake of research that'll likely soon render this chapter out of date.
 
 Multiple resources point to RL training for reasoning only being viable on leading models coming out from about 2024 onwards, indicating that a certain level of underlying capability was needed in the models before reasoning training was possible.
 

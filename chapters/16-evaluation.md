@@ -36,7 +36,7 @@ Some prompting techniques -- e.g. formatting discussed below -- can make a model
 Similarly, a change of prompt can help models learn better during training. 
 Colloquially, prompting a model well can give the subjective experience of using future models, unlocking performance outside of normal use.
 
-Prompting well with modern language moderns can involve preparing an entire report for the model to respond to (often with 1000s of tokens of generated text). 
+Prompting well with modern language models can involve preparing an entire report for the model to respond to (often with 1000s of tokens of generated text). 
 This behavior is downstream of many changes in how language model performance has been measured and understood.
 
 Early language models were only used as intelligent autocomplete.
@@ -222,6 +222,7 @@ For example, two popular, open math datasets  [@li2024numinamath] and MetaMath [
 Strong models are trained to be able to function with multiple formats, but the generally have a strongest format.
 
 In the end we are left with a few key points on the state of evaluating closed models:
+
 * We do not know or necessarily have the key test sets that labs are climbing on, so some evaluations are proxies.
 * Inference of frontier models is becoming more complicated with special system prompts, special tokens, etc., and we don’t know how it impacts evaluations, and
 * We do not know all the formats and details used to numerically report the closed evaluations.
@@ -230,7 +231,7 @@ In the end we are left with a few key points on the state of evaluating closed m
 
 A major issue with current language model practices (i.e. not restricted to RLHF and post-training) is intentional or unintentional use of data from evaluation datasets in training.
 This is called *dataset contamination* and respectively the practices to avoid it are *decontamination*. 
-In order to decontaminate a dataset, one performs searches over the the training and test datasets, looking for matches in n-grams (characters) or tokens [@singh2024evaluation].
+In order to decontaminate a dataset, one performs searches over the training and test datasets, looking for matches in n-grams (characters) or tokens [@singh2024evaluation].
 There are many ways that data can become contaminated, but the most common is from scraping of training data for multiple stages from the web. 
 Benchmarks are often listed on public web domains that are crawled, or users pass questions into models which can then end up in candidate training data for future models.
 
