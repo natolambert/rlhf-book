@@ -10,7 +10,7 @@ next-url: "09-instruction-tuning.html"
 
 Throughout the RLHF optimization, many regularization steps are used to prevent over-optimization of the reward model.
 Over-optimization in these contexts looks like models that output nonsensical text.
-Some examples of optimization "off the rails'' are that models can output followable math reasoning with extremely incorrect answers, repeated text, switching languages, or excessive special characters.
+Some examples of optimization "off the rails" are that models can output followable math reasoning with extremely incorrect answers, repeated text, switching languages, or excessive special characters.
 
 The most popular variant, used in most RLHF implementations at the time of writing, is a KL Distance from the current policy to a reference policy across the generated samples.
 Many other regularization techniques have emerged in the literature to then disappear in the next model iteration in that line of research.
