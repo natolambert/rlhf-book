@@ -107,7 +107,7 @@ Multiple resources point to RL training for reasoning only being viable on leadi
 
 ## RL Training vs. Inference Time Scaling
 
-Training with Reinforcement Learning to illicit reasoning behaviors and performance on verifiable domains is closely linked to the ideas of inference time scaling.
+Training with Reinforcement Learning to elicit reasoning behaviors and performance on verifiable domains is closely linked to the ideas of inference time scaling.
 Inference-time scaling, also called test-time scaling, is the general class of methods that use more computational power at inference in order to perform better at a downstream tasks.
 Methods for inference-time scaling were studied before the release of DeepSeek R1 and OpenAI's o1, which both massively popularized investment in RL training specifically.
 Examples include value-guided sampling [@liu2023don] or repeated random sampling with answer extraction [@brown2024large].
