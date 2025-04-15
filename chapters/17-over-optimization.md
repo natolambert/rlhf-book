@@ -13,7 +13,15 @@ In the RLHF literature and discourse, there are three directions that over-optim
 2. **Qualitative observations** that "overdoing" RLHF can result in worse models.
 3. **Misalignment** where overdoing RLHF or related techniques can make a language model behave against its design.
 
-This chapter provides a cursory introduction to both. We begin with the latter, qualitative, because it motivates the problem to study further.
+This chapter provides a cursory introduction to both. 
+We begin with the latter, qualitative, because it motivates the problem to study further.
+
+Over-optimization is a concept where the training metric ends up being mismatched from the final evaluations of interest.
+While similar to over-fitting -- where one trains on data that is too narrow relative to the downstream evaluations that test generalization -- over-optimization is used in the RL literature to indicate that an *external* signal is used too much. 
+The cost of over-optimization is a lower alignment to real world goals or lower quality in any domain, and the shape of training associated with it is shown in @fig:overoptimization.
+
+![Over-optimization of an RL training run vs. downstream evaluations.](images/overoptimization.png){#fig:overoptimization}
+
 
 ## Qualitative (behavioral) over-optimization
 
@@ -21,22 +29,24 @@ This chapter provides a cursory introduction to both. We begin with the latter, 
 
 ### Managing proxy objectives
 
-The thing about RLHF that should be more obvious is that we don't have a good reward function for chatbots. 
-RLHF has been driven into the forefront because of its impressive performance at making chatbots a bit better to use (from both eliminating bad stuff and a bit of adding capabilities), which is entirely governed by a proxy objective — thinking that the rewards measured from human labelers in a controlled setting mirror those desires of downstream users. 
-Post-training generally has emerged to include training on explicitly verifiable rewards, but standard learning from preferences alone also improves performance on domains such as mathematical reasoning and coding.
+RLHF is built around the fact that we do not have a universally good reward function for chatbots. 
+RLHF has been driven into the forefront because of its impressive performance at making chatbots a bit better to use, which is entirely governed by a proxy objective — thinking that the rewards measured from human labelers in a controlled setting mirror those desires of downstream users. 
+Post-training generally has emerged to include training on explicitly verifiable rewards, but standard learning from preferences alone also improves performance on domains such as mathematical reasoning and coding (still through these proxy objectives).
 
 The proxy reward in RLHF is the score returned by a trained reward model to the RL algorithm itself because it is known to only be at best correlated with chatbot performance [@schulman2023proxy].
-Therefore, it's been shown that applying too much optimization power to the RL part of the algorithm will actually decrease the usefulness of the final language model. 
-And over-optimization, put simply by John, is "when optimizing the proxy objective causes the true objective to get better, then get worse." 
-A curve where the training loss goes up, slowly levels off, then goes down. 
-This is different from overfitting, where the model accuracy keeps getting better on the training distribution. 
-Over-optimization of a proxy reward is much more subtle (and linked to the current [evaluation fog](https://www.interconnects.ai/t/evaluation) in NLP, where it's hard to know which models are actually "good").
+Therefore, it's been shown that applying too much optimization power to the RL part of the algorithm will actually decrease the usefulness of the final language model -- a type of over-optimization known to many applications of reinforcement learning [@zhang2018study]. 
+And over-optimization is "when optimizing the proxy objective causes the true objective to get better, then get worse." 
 
-The general notion captured by this reasoning follows from Goodhart's law, which is colloquially the notion that "When a measure becomes a target, it ceases to be a good measure." 
-This adage is derived from Goodhart's writing [@goodhart1984problems]:
+A curve where the training loss goes up, slowly levels off, then goes down, as shown in @fig:overoptimization.
+This is different from overfitting, where the model accuracy keeps getting better on the training distribution. 
+Over-optimization of a proxy reward is much more subtle.
+
+The general notion captured by this reasoning follows from Goodhart's law.
+Goodhart explained the behavior that is now commonplace [@goodhart1984problems]:
 
 > Any observed statistical regularity will tend to collapse once pressure is placed upon it for control purposes.
 
+This colloquially evolved to the notion that "When a measure becomes a target, it ceases to be a good measure"[@hoskin1996awful].
 The insight here builds on the fact that we have optimizations we are probably incorrectly using ML losses as ground truths in these complex systems. 
 In reality, the loss functions we use are designed (and theoretically motivated for) local optimizations. 
 The global use of them is resulting in challenges with the RLHF proxy objective.
@@ -73,6 +83,8 @@ DPO may not benefit from this as much, the direct optimization will likely chang
 
 
 [@gao2023scaling]
+
+reward ensembles mitigate it [@coste2023reward], changing optimizers [@moskovitz2023confronting], direct alignment algos [@rafailov2024scaling]
 
 ## Misalignment
 
