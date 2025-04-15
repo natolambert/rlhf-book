@@ -82,6 +82,8 @@ DPO may not benefit from this as much, the direct optimization will likely chang
 
 [@gao2023scaling]
 
+reward ensembles mitigate it [@coste2023reward], changing optimizers [@moskovitz2023confronting], direct alignment algos [@rafailov2024scaling]
+
 ## Misalignment
 
 Consequences [@zhuang2020consequences] or sycophancy [@sharma2023towards]
