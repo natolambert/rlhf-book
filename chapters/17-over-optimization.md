@@ -13,7 +13,15 @@ In the RLHF literature and discourse, there are three directions that over-optim
 2. **Qualitative observations** that "overdoing" RLHF can result in worse models.
 3. **Misalignment** where overdoing RLHF or related techniques can make a language model behave against its design.
 
-This chapter provides a cursory introduction to both. We begin with the latter, qualitative, because it motivates the problem to study further.
+This chapter provides a cursory introduction to both. 
+We begin with the latter, qualitative, because it motivates the problem to study further.
+
+Over-optimization is a concept where the training metric ends up being mismatched from the final evaluations of interest.
+While similar to over-fitting -- where one trains on data that is too narrow relative to the downstream evaluations that test generalization -- over-optimization is used in the RL literature to indicate that an *external* signal is used too much. 
+The cost of over-optimization is a lower alignment to real world goals or lower quality in any domain, and the shape of training associated with it is shown in @fig:overoptimization.
+
+![Over-optimization of an RL training run vs. downstream evaluations.](images/overoptimization.png){#fig:overoptimization}
+
 
 ## Qualitative (behavioral) over-optimization
 
