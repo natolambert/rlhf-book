@@ -67,7 +67,7 @@ class NavigationDropdown extends HTMLElement {
       </div>
 
       <div class="section">
-        <h3>Open Questions (WIP)</h3>
+        <h3>Open Questions</h3>
         <ol start="17">
           <li><a href="https://rlhfbook.com/c/17-over-optimization.html">Over-optimization</a></li>
           <li><a href="https://rlhfbook.com/c/18-style.html">Style & Information</a></li>
