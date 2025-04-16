@@ -360,6 +360,8 @@ Case 3: Zero advantage, so no update is needed. The loss is zero, don't change t
 
 The question when implementing any policy gradient algorithm with language models is: How do you sum over the KL distance and loss to design different types of value-attribution.
 
+*Most of the discussions in this section assume a token-level action, where the RL problem is formatted as a Markov Decision Process (MDP) rather than a bandit problem. In a bandit problem, all the tokens in an action will be given the same loss, which has been the default implementation for some algorithms such as Advantage-Leftover Lunch RL (A-LoL) [@baheti2023leftover]. The formulation between MDP and bandit is actually an implementation detail over how the loss is aggregated per-sample. A bandit approach takes a mean that assigns the same loss to every token.*
+
 Consider an example where we have the following variables, with a batch size B and sequence length L.
 
 ```python
@@ -400,23 +402,101 @@ Now, consider if the last token in each sequence is important to the advantage b
 When you convert these to per-token losses, you could get something approximate to:
 
 ```python
-seq_1_losses = [-1, -1, -1, -1, -10] # 5 tokens
-seq_2_losses = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -10] # 10 tokens
+seq_1_losses = [1, 1, 1, 1, 10] # 5 tokens
+seq_2_losses = [1, 1, 1, 1, 1, 1, 1, 1, 1, 10] # 10 tokens
 ```
 
 If we average these over the sequences, we will get the following numbers:
 ```
-seq_1_loss = -2.8
-seq_2_loss = -1.9
+seq_1_loss = 2.8
+seq_2_loss = 1.9
 ```
 
-If we average these together weighting sequences equally, we get a loss of -2.35.
-If, instead we apply the loss equally to each token, the loss would be computed by summing all the per token losses and normalizing by length, which in this case would be -2.27.
+If we average these together weighting sequences equally, we get a loss of 2.35.
+If, instead we apply the loss equally to each token, the loss would be computed by summing all the per token losses and normalizing by length, which in this case would be 2.27.
 If the sequences had bigger differences, the two loss values can have substantially different values.
+
+For a more complete example on how loss aggregation changes the loss per-token and per-example, see the below script that computes the loss over a toy batch with two samples, one long and one short.
+The example uses three loss aggregation techniques: `masked_mean` corresponds to a per-sample length normalization, the loss proposed in DAPO [@yu2025dapo] with token level normalization per batch, `masked_mean_token_level`, and `masked_sum_result` with a fixed length normalization from the max length from Dr. GRPO [@liu2025understanding].
+
+```python
+from typing import Optional
+import torch
+
+def masked_mean(values: torch.Tensor, mask: torch.Tensor, axis: Optional[int] = None) -> torch.Tensor:
+    """Compute mean of tensor with a masked values."""
+    if axis is not None:
+        return (values * mask).sum(axis=axis) / mask.sum(axis=axis)
+    else:
+        return (values * mask).sum() / mask.sum()
+
+def masked_sum(
+        values: torch.Tensor,
+        mask: torch.Tensor,
+        axis: Optional[bool] = None,
+        constant_normalizer: float = 1.0,
+    ) -> torch.Tensor:
+    """Compute sum of tensor with a masked values. Use a constant to normalize."""
+    if axis is not None:
+        return (values * mask).sum(axis=axis) / constant_normalizer
+    else:
+        return (values * mask).sum() / constant_normalizer
+
+ratio = torch.tensor([
+    [1., 1, 1, 1, 1, 1, 1,],
+    [1, 1, 1, 1, 1, 1, 1,],
+], requires_grad=True)
+
+
+advs = torch.tensor([
+    [2, 2, 2, 2, 2, 2, 2,],
+    [2, 2, 2, 2, 2, 2, 2,],
+])
+
+masks = torch.tensor([
+    # generation 1: 4 tokens
+    [1, 1, 1, 1, 0, 0, 0,],
+    # generation 2: 7 tokens
+    [1, 1, 1, 1, 1, 1, 1,],
+])
+
+max_gen_len = 7
+
+masked_mean_result = masked_mean(ratio * advs, masks, axis=1)
+masked_mean_token_level = masked_mean(ratio, masks, axis=None)
+masked_sum_result = masked_sum(ratio * advs, masks, axis=1, constant_normalizer=max_gen_len)
+
+print("masked_mean", masked_mean_result)
+print("masked_sum", masked_sum_result)
+print("masked_mean_token_level", masked_mean_token_level)
+
+# masked_mean tensor([2., 2.], grad_fn=<DivBackward0>)
+# masked_sum tensor([1.1429, 2.0000], grad_fn=<DivBackward0>)
+# masked_mean_token_level tensor(1., grad_fn=<DivBackward0>)
+
+masked_mean_result.mean().backward()
+print("ratio.grad", ratio.grad)
+ratio.grad.zero_()
+# ratio.grad tensor([[0.2500, 0.2500, 0.2500, 0.2500, 0.0000, 0.0000, 0.0000],
+# [0.1429, 0.1429, 0.1429, 0.1429, 0.1429, 0.1429, 0.1429]])
+
+masked_sum_result.mean().backward()
+print("ratio.grad", ratio.grad)
+# ratio.grad tensor([[0.1429, 0.1429, 0.1429, 0.1429, 0.0000, 0.0000, 0.0000],
+# [0.1429, 0.1429, 0.1429, 0.1429, 0.1429, 0.1429, 0.1429]])
+
+masked_mean_token_level.mean().backward()
+print("ratio.grad", ratio.grad)
+# ratio.grad tensor([[0.2338, 0.2338, 0.2338, 0.2338, 0.0000, 0.0000, 0.0000],
+# [0.2338, 0.2338, 0.2338, 0.2338, 0.2338, 0.2338, 0.2338]])
+```
+
+Here it can be seen for the default GRPO implementation, `masked_mean`, the short length has a bigger per-token gradient than the longer one, and the two implementations of Dr. GRPO and DAPO balance it out. 
+Note that these results can vary substantially if gradient accumulation is used, where the gradients are summed across multiple mini batches before taking a backward step.
+In this case, the balance between shorter and longer sequences can flip.
 
 Another way to aggregate loss is discussed in [@liu2025understanding] that has its origins in pre language model RL research, where every per-token loss is normalized by the max sequence length set in the experiment. 
 This would change how the losses compare across batches per tokens in the above example.
-
 
 In practice, the setup that is best likely is the one that is suited to the individual, online learning setup. 
 Often in RLHF methods the method with the best numerical stability and or the least variance in loss could be preferred.
