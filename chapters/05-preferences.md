@@ -12,6 +12,7 @@ The core of reinforcement learning from human feedback, also referred to as rein
 Consider an example, how do you decide which of these two poems is better (Context: *On February 26th, 2025, I asked both Claude 3.7 Sonnet and ChatGPT with GPT-4o to "Write me a short poem about an optimistic goldfish."*):
 
 Example 1:
+
 > The Optimistic Goldfish
 > 
 > A little goldfish, bright and bold,
@@ -30,6 +31,7 @@ Example 1:
 > She met each day with love and grace.
 
 Example 2:
+
 > The Optimistic Goldfish
 > 
 > In a bowl of curved glass,

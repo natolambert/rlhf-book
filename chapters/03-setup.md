@@ -62,7 +62,7 @@ $$ D_{KL}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\frac{P(x)}{Q(x)}\r
 
 - **State ($s$)**: The current configuration or situation of the environment, usually denoted as $s \in S$, where $S$ is the state space.
 
-- **Trajectory ($\tau$)**: A trajectory τ is a sequence of states, actions, and rewards experienced by an agent: $\tau = (s_0, a_0, r_0, s_1, a_1, r_1, ..., s_T, a_T, r_T)$. 
+- **Trajectory ($\tau$)**: A trajectory $\tau$ is a sequence of states, actions, and rewards experienced by an agent: $\tau = (s_0, a_0, r_0, s_1, a_1, r_1, ..., s_T, a_T, r_T)$. 
 
 - **Trajectory Distribution ($(\tau|\pi)$)**: The probability of a trajectory under policy $\pi$ is $P(\tau|\pi) = p(s_0)\prod_{t=0}^T \pi(a_t|s_t)p(s_{t+1}|s_t,a_t)$, where $p(s_0)$ is the initial state distribution and $p(s_{t+1}|s_t,a_t)$ is the transition probability. 
 
