@@ -113,13 +113,16 @@ For example, the relationship in @fig:overoptimization, can also be seen with th
 An additional example of this can be seen below, where a preference tuning dataset was split in half to create a train reward model (preference model, PM, below) and a test reward model.
 Here, over training, eventually the improvements on the training RM fail to transfer to the test PM at ~150K training samples [@bai2022training].
 
+Over-optimization is fundamental and unavoidable with RLHF due to the soft nature of the reward signal -- a learned model -- relative to reward functions in traditional RL literature that are intended to fully capture the world dynamics.
+Hence, it is a fundamental optimization problem that RLHF can never fully solve.
+
 ![Over-optimization with a train and test RM from Bai et al. 2022. License CC-BY.](images/anthropic_overoptimization.png){#fig:anthropic_overoptimization width=450px}
 
 With different RLHF training methods, the KL distance spent will vary. 
 For example, the KL distance used by online RL algorithms modifying the model parameters, e.g. PPO, is much higher than the KL distance of inference-time sampling methods such as best of N sampling (BoN).
 With RL training, a higher KL penalty will reduce over-optimization as a given KL distance, but it could take more overall training steps to get the model to this point.
 
-Many solutions exist to mitigate over-optimization, but it cannot ever be fully solved due to the problems presented in the qualitative section.
+Many solutions exist to mitigate over-optimization.
 Some include bigger policy models that have more room to change the parameters to increase reward while keeping smaller KL distances, reward model ensembles [@coste2023reward], or changing optimizers [@moskovitz2023confronting].
 While direct alignment algorithms are still prone to over-optimization [@rafailov2024scaling], the direct notion of their optimization lets one use fixed KL distances that will make the trade-off easier to manage.
 
