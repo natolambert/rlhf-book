@@ -107,7 +107,8 @@ The industry standard has shifted to a narrower set of harms and models that are
 
 KL is the primary metric,
 
-Put simply, the solution that will most likely play out is to use bigger models. Bigger models have more room for change in the very under-parameterized setting of a reward model (sample efficient part of the equation), so are less impacted. 
+Put simply, the solution that will most likely play out is to use bigger models. 
+Bigger models have more room for change in the very under-parameterized setting of a reward model (sample efficient part of the equation), so are less impacted. 
 DPO may not benefit from this as much, the direct optimization will likely change sample efficiency one way or another.
 
 
