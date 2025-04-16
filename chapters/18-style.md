@@ -7,8 +7,6 @@ next-url: "19-character.html"
 
 # Style and Information
 
-*This chapter draws on content from [two](https://www.interconnects.ai/p/how-rlhf-works-2) | [posts](https://www.interconnects.ai/p/gpt-4o-mini-changed-chatbotarena) on the role of style in post-training and evaluation of RLHF'd models.*
-
 Early developments in RLHF gave it a reputation for being "just style transfer" or other harsh critiques on how RLHF manipulates the way information is presented in outputs.
 
 Style transfer, has held back the RLHF narrative for two reasons. 
@@ -23,27 +21,38 @@ If RLHF is going to make language models simply more fun, that is delivered valu
 
 ## The Chattiness Paradox
 
-TODO EDIT
+RLHF or preference fine-tuning methods are being used mostly to boost scores like AlpacaEval and other automatic leaderboards without shifting the proportionally on harder-to-game evaluations like ChatBotArena. 
+The paradox is that while alignment methods give a measurable improvement on these models that does transfer into performance that people care about, a large swath of the models doing more or less the same thing take it way too far and publish evaluation scores that are obviously meaningless.
 
-RLHF or preference fine-tuning methods are being used mostly to boost scores like AlpacaEval and other automatic leaderboards without shifting the proportionally on harder-to-game evaluations like ChatBotArena. The paradox is that while alignment methods like DPO give a measurable improvement on these models that does transfer into performance that people care about, a large swath of the models doing more or less the same thing take it way too far and publish evaluation scores that are obviously meaningless.
+These methods, when done right, make the models easier to work with and more enjoyable. 
+This often comes with a few percentage point improvements on evaluation tools like MT Bench or AlpacaEval. 
+The problem is that you can also use techniques like DPO and PPO in feedback loops or in an abundance of data to actually severely harm the model on other tasks like mathematics or coding at the cost of LLM-as-a-judge performance.
 
-For how methods like DPO can simply make the model better, some of my older articles on scaling DPO and if we even need PPO can help. These methods, when done right, make the models easier to work with and more enjoyable. This often comes with a few percentage point improvements on evaluation tools like MT Bench or AlpacaEval (and soon Arena Hard will show the same). The problem is that you can also use techniques like DPO and PPO in feedback loops or in an abundance of data to actually lobotomize the model at the cost of LLM-as-a-judge performance. There are plenty of examples.
+During the proliferation of the DPO versus PPO debate there were many papers that came out with incredible benchmarks but no model weights that gathered sustained usage. 
+When applying RLHF, there is no way to make an aligned version of a 7 billion parameter model actually beat GPT-4 across comprehensive benchmarks. 
+It seems obvious, but there are papers claiming these results. 
+@fig:DNO is from a paper called Direct Nash Optimization (DNO) that makes the case that their model is state-of-the-art or so on AlpacaEval.
+These challenges emerge when academic incentives interface with technologies becoming of extreme interest to the broader society.
 
-Some of the models I’m highlighting here are academic papers that shouldn’t entirely be judged on “if the final model passes vibes tests,” but are illustrative of the state of the field. These are still useful papers, just not something everyone will immediately use for training state-of-the-art models. Those come from downstream papers.
+![Results from the paper on Direct Nash Optimization (DNO) highlighting their small model outperforming the likes of GPT-4. Rosset et al. 2024. License CC-BY.](images/dno-figure.png){#fig:DNO width=550px}
 
-During the proliferation of the DPO versus PPO debate there were many papers that came out with ridiculous benchmarks but no model weights that gathered sustained usage. When applying RLHF, there is no way to make an aligned version of a 7 billion parameter model actually beat GPT-4. It seems obvious, but there are papers claiming these results. Here’s a figure from a paper called Direct Nash Optimization (DNO) that makes the case that their model is state-of-the-art or so on AlpacaEval.
+Even the pioneering paper Self Rewarding Language Models [@yuan2025selfrewardinglanguagemodels] disclosed unrealistic scores on Llama 2 70B. 
+A 70B model can get closer to GPT-4 than a 7B model can, as we have seen with Llama 3, but it’s important to separate the reality of models from the claims in modern RLHF papers. 
+Many more methods have come and gone similar to this, sharing valuable insights and oversold results, which make RLHF harder to understand.
 
-Even the pioneering paper Self Rewarding Language Models disclosed ridiculous scores on Llama 2 70B. A 70B model can get closer to GPT-4 than a 7B model can, as we have seen with Llama 3, but it’s important to separate the reality of models from the claims in modern RLHF papers. Many more methods have come and gone in the last few months. They’re the academic line of work that I’m following, and there’s insight there, but the methods that stick will be accompanied by actually useful models some number of months down the line.
+A symptom of models that have “funky RLHF” applied to them has often been a length bias. 
+This got so common that multiple evaluation systems like AlpacaEval and WildBench both have linear length correction mechanisms in them. 
+This patches the incentives for doping on chattiness to “beat GPT-4,” and adds a less gamified bug that shorter and useful models may actually win out.
 
-Other players in industry have released models alone (rather than papers) that gamify these metrics. Two examples that come to mind are the Mistral 7B fine-tune from Snorkel AI or a similar model from Contextual trained with KTO. There are things in common here — using a reward model to further filter the data, repeated training via some sort of synthetic data feedback, and scores that are too good to be true.
+Regardless, aligning chat models simply for chattiness still has a bit of a tax in the literature. 
+This note from the Qwen models is something that has been seen multiple times in early alignment experiments, exaggerating a trade-off between chattiness and performance [@qwen]. 
 
-A symptom of models that have “funky RLHF” applied to them has often been a length bias. This got so bad that multiple evaluation systems like AlpacaEval and WildBench both have linear length correction mechanisms in them. This patches the incentives for doping on chattiness to “beat GPT-4,” and adds a less gamified bug that shorter and useful models may actually win out. So far so good on the linear length controls.
+> We pretrained the models with a large amount of data, and we post-trained the models with both supervised finetuning and direct preference optimization. However, DPO leads to improvements in human preference evaluation but degradation in benchmark evaluation.
 
-Regardless, aligning chat models simply for chattiness still has a bit of a tax in the literature. This note from the Qwen models is something that has been seen multiple times in early alignment experiments. I suspect this is mostly about data.
-
-We pretrained the models with a large amount of data, and we post-trained the models with both supervised finetuning and direct preference optimization. However, DPO leads to improvements in human preference evaluation but degradation in benchmark evaluation.
-
-A good example of this tradeoff done right is a model like Starling Beta. It’s a model that was fine-tuned from another chat model, OpenChat, which was in fact trained by an entire other organization. It’s training entirely focuses on a k-wise reward model training and PPO optimization, and moves it up 10 places in ChatBotArena. The average response length of the model increases, but in a way that’s good enough to actually help the human raters.
+A good example of this tradeoff done right is a model like Starling Beta [@zhu2024starling]. 
+It’s a model that was fine-tuned from another chat model, OpenChat [@wang2023openchat], which was in fact trained by an entire other organization. 
+It’s training entirely focuses on a k-wise reward model training and PPO optimization, and moves it up 10 places in ChatBotArena. 
+The average response length of the model increases, but in a way that’s good enough to actually help the human raters.
 
 ### How Chattiness Emerges
 
