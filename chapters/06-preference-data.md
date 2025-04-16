@@ -33,7 +33,7 @@ In this chapter we detail technical decisions on how the data is formatted and o
 Crucial to collecting preference data is the interface by which one interacts with the model.
 An example interface is shown below from [@bai2022training]:
 
-![Example preference data collection interface.](images/anthropic-interface.png){#fig:preference-interface .center}
+![Example preference data collection interface. Bai et al. 2022. License CC-BY.](images/anthropic-interface.png){#fig:preference-interface .center}
 
 This is a *training-data only* interface. 
 Now that these models are popular, applications often expose data directly to the users for testing.

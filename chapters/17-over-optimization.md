@@ -7,20 +7,21 @@ next-url: "18-style.html"
 
 # Over Optimization
 
-In the RLHF literature and discourse, there are three directions that over-optimization can emerge:
+In the RLHF literature and discourse, there are two primary directions that over-optimization can emerge:
 
-1. **Quantitative research** on the technical notion of over-optimization of reward, 
-2. **Qualitative observations** that "overdoing" RLHF can result in worse models.
-3. **Misalignment** where overdoing RLHF or related techniques can make a language model behave against its design.
+1. **Quantitative research** on the technical notion of over-optimization of reward. This measures optimization distance and power versus training metrics and downstream performance. Training keeps going up, while eventually downstream goes down.
+2. **Qualitative observations** that "overdoing" RLHF can result in worse models. These are fundamental limitations in the RLHF problem setup, measurement tools, and trade-offs.
 
 This chapter provides a cursory introduction to both. 
 We begin with the latter, qualitative, because it motivates the problem to study further.
+Finally, the chapter concludes with a brief discussion of **misalignment** where overdoing RLHF or related techniques can make a language model behave against its design.
+
 
 Over-optimization is a concept where the training metric ends up being mismatched from the final evaluations of interest.
 While similar to over-fitting -- where one trains on data that is too narrow relative to the downstream evaluations that test generalization -- over-optimization is used in the RL literature to indicate that an *external* signal is used too much. 
 The cost of over-optimization is a lower alignment to real world goals or lower quality in any domain, and the shape of training associated with it is shown in @fig:overoptimization.
 
-![Over-optimization of an RL training run vs. downstream evaluations.](images/overoptimization.png){#fig:overoptimization}
+![Over-optimization of an RL training run vs. downstream evaluations.](images/overoptimization.png){#fig:overoptimization width=450px}
 
 
 ## Qualitative Over-optimization
@@ -105,16 +106,21 @@ The industry standard has shifted to a narrower set of harms and models that are
 
 ## Quantitative over-optimization
 
-KL is the primary metric,
+Over-optimization is also a technical field of study where relationships between model performance versus KL optimization distance are studied [@gao2023scaling].
+Recall that the KL distance is a measure of distance between the probabilities of the original model before training, a.k.a. the reference model, and the current policy.
+For example, the relationship in @fig:overoptimization, can also be seen with the KL distance of the optimization on the x-axis rather than training steps.
+An additional example of this can be seen below, where a preference tuning dataset was split in half to create a train reward model (preference model, PM, below) and a test reward model.
+Here, over training, eventually the improvements on the training RM fail to transfer to the test PM at ~150K training samples [@bai2022training].
 
-Put simply, the solution that will most likely play out is to use bigger models. 
-Bigger models have more room for change in the very under-parameterized setting of a reward model (sample efficient part of the equation), so are less impacted. 
-DPO may not benefit from this as much, the direct optimization will likely change sample efficiency one way or another.
+![Over-optimization with a train and test RM from Bai et al. 2022. License CC-BY.](images/anthropic_overoptimization.png){#fig:anthropic_overoptimization width=450px}
 
+With different RLHF training methods, the KL distance spent will vary. 
+For example, the KL distance used by online RL algorithms modifying the model parameters, e.g. PPO, is much higher than the KL distance of inference-time sampling methods such as best of N sampling (BoN).
+With RL training, a higher KL penalty will reduce over-optimization as a given KL distance, but it could take more overall training steps to get the model to this point.
 
-[@gao2023scaling]
-
-reward ensembles mitigate it [@coste2023reward], changing optimizers [@moskovitz2023confronting], direct alignment algos [@rafailov2024scaling]
+Many solutions exist to mitigate over-optimization, but it cannot ever be fully solved due to the problems presented in the qualitative section.
+Some include bigger policy models that have more room to change the parameters to increase reward while keeping smaller KL distances, reward model ensembles [@coste2023reward], or changing optimizers [@moskovitz2023confronting].
+While direct alignment algorithms are still prone to over-optimization [@rafailov2024scaling], the direct notion of their optimization lets one use fixed KL distances that will make the trade-off easier to manage.
 
 ## Misalignment and the Role of RLHF
 
