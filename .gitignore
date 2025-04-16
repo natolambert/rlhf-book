@@ -4,6 +4,8 @@ build/docx/
 build/epub/
 build/pdf/
 build/html/
+build/latex/
+build/latex.zip
 
 # Misc
 *.log

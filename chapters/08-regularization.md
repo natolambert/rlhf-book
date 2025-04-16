@@ -98,8 +98,6 @@ $$
 = -\log \sigma \left( \beta \log \frac{M_\theta(c_i^w, y_i^w \mid x_i)}{M_t(c_i^w, y_i^w \mid x_i)} - \beta \log \frac{M_\theta(c_i^l, y_i^l \mid x_i)}{M_t(c_i^l, y_i^l \mid x_i)} \right) - \alpha \frac{\log M_\theta(c_i^w, y_i^w \mid x_i)}{|c_i^w| + |y_i^w|}.
 $$ {#eq:dpo_nll_expanded}
 
-TODO: Make the above equations congruent with the rest of the notation on DPO.
-
 ## Other Regularization
 
 Controlling the optimization is less well defined in other parts of the RLHF stack.

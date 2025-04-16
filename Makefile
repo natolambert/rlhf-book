@@ -77,7 +77,7 @@ ECHO_BUILT = @echo "$@ was built\n"
 # Basic actions
 ####################################################################################################
 
-.PHONY: all book clean epub html pdf docx nested_html
+.PHONY: all book clean epub html pdf docx nested_html latex
 
 all:	book
 
@@ -105,6 +105,8 @@ nested_html: $(CHAPTER_HTMLS)
 pdf:	$(BUILD)/pdf/$(OUTPUT_FILENAME).pdf
 
 docx:	$(BUILD)/docx/$(OUTPUT_FILENAME).docx
+
+latex:	$(BUILD)/latex/$(OUTPUT_FILENAME).tex
 
 $(BUILD)/epub/$(OUTPUT_FILENAME).epub:	$(EPUB_DEPENDENCIES)
 	$(ECHO_BUILDING)
@@ -148,6 +150,51 @@ $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html: nested_html
 	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(ARGS) $(HTML_ARGS) -o $@
 	$(COPY_CMD) $(IMAGES) $(BUILD)/html/
 	@echo "Main HTML index built"
+
+# ArXiv‑compatible LaTeX build rule
+$(BUILD)/latex/$(OUTPUT_FILENAME).tex: $(PDF_DEPENDENCIES)
+	$(ECHO_BUILDING)
+	$(MKDIR_CMD) -p $(BUILD)/latex
+
+	# 1. Generate the LaTeX file with Pandoc (tell Pandoc where to find images)
+	$(CONTENT) \
+	  | $(CONTENT_FILTERS) \
+	  | $(PANDOC_COMMAND) $(ARGS) $(PDF_ARGS) --resource-path=. -o $@
+
+	# 2. Flatten image paths — copy every referenced image into the build dir root
+	$(foreach img,$(IMAGES), cp $(img) $(BUILD)/latex/$(notdir $(img));)
+
+	# 3a. Strip directory prefixes in \includegraphics paths
+	sed -E -i '' 's|(\\includegraphics(\[[^]]*\])?\{)[^/}]+/|\1|g' $@
+
+	# 3b. Restore missing \includegraphics inside \pandocbounded{}
+	perl -CSD -pi -e 's/\\pandocbounded\{([^{}]+)\}\}/\\pandocbounded{\\includegraphics{$$1}}/g' $@
+
+	# 3c. Unicode → ASCII/TeX normalisation (one perl pass per rule for clarity)
+	perl -CSD -pi -e 's/\x{2060}//g;'                                        $@  # WORD JOINER
+	perl -CSD -pi -e 's/\x{03C4}/\\tau/g;'                                  $@  # τ
+	perl -CSD -pi -e 's/[\x{2018}\x{2019}]/\x27/g;'                       $@  # curly apostrophes
+	perl -CSD -pi -e 's/[\x{201C}\x{201D}]/\x22/g;'                       $@  # curly quotes
+	perl -CSD -pi -e 's/\x{2026}/.../g;'                                    $@  # ellipsis
+	perl -CSD -pi -e 's/\x{00A9}/\\textcopyright{}/g;'                    $@  # © symbol
+
+	# 4. Copy bibliography and CSL files required by arXiv
+	cp chapters/bib.bib    $(BUILD)/latex/
+	cp templates/ieee.csl  $(BUILD)/latex/
+
+	# 5. Warn (but don\'t fail) if any non‑ASCII bytes remain
+	@REM_BYTES=$$(grep -nP "[\x80-\xFF]" $@ || true); \
+	if [ -n "$$REM_BYTES" ]; then \
+	  echo "[WARN] Non‑ASCII bytes still present in $@:"; \
+	  echo "$$REM_BYTES" | head; \
+	else \
+	  echo "[INFO] All bytes ASCII‑safe after post‑processing."; \
+	fi
+
+	$(ECHO_BUILT)
+
+
+
 
 $(BUILD)/pdf/$(OUTPUT_FILENAME).pdf:	$(PDF_DEPENDENCIES)
 	$(ECHO_BUILDING)
