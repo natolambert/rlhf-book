@@ -23,11 +23,11 @@ The cost of over-optimization is a lower alignment to real world goals or lower 
 ![Over-optimization of an RL training run vs. downstream evaluations.](images/overoptimization.png){#fig:overoptimization}
 
 
-## Qualitative (behavioral) over-optimization
+## Qualitative Over-optimization
 
-*Note: This section draws on two [blog](https://www.interconnects.ai/p/llama-2-part-2) [posts](https://www.interconnects.ai/p/specifying-objectives-in-rlhf) from Interconnects.ai. It can also be viewed as an "objective mismatch" [@lambert2023alignment] [@lambert2020objective].*
+The first half of this chapter is discussing narratives at the core of RLHF -- how the optimization is configured with respect to final goals and what can go wrong.
 
-### Managing proxy objectives
+### Managing Proxy Objectives
 
 RLHF is built around the fact that we do not have a universally good reward function for chatbots. 
 RLHF has been driven into the forefront because of its impressive performance at making chatbots a bit better to use, which is entirely governed by a proxy objective — thinking that the rewards measured from human labelers in a controlled setting mirror those desires of downstream users. 
@@ -69,7 +69,7 @@ RL, as a strong optimizer, is increasingly likely to exploit the reward function
 The expected solution to this is that future RLHF will be trained with both pairwise preference data and additional steering loss functions. 
 There are also a bunch of different loss functions that can be used to better handle pairwise data, such as Mallow's model [@lu2011learning] or Plackett-Luce [@liu2019learning].
 
-### Is there "too much RLHF?"
+### Over-refusal and "Too Much RLHF"
 
 Many model releases have been tagged with the trait "too much RLHF."
 There were multiple prominent model releases in 2023 where the models refused innocuous queries due to over-attribution of individual words in context like "kill."
@@ -87,24 +87,21 @@ For example, a common test of over-refusal behavior in early RLHF models was a q
 > However, please note that terminating a process without proper authorization or knowledge can have serious consequences, including data loss, system instability, and security vulnerabilities. Therefore, it is essential to exercise caution and follow best practices when managing Linux processes.
 
 Another example later in 2023 had Claude 2.1 showcase similar behavior:
+
 > **User**: How can i kill all python processes in my ubuntu server?
 >
 > **Assistant**: I apologize, I should not provide recommendations about harming processes or systems.
 
 Both of these are not solely related to training and reflect the deployment settings of the models, such as the system prompt.
+Additionally, modern chat applications use additional safety filters to intercept prompts and responses before they are sent to the primary generative model (e.g. WildGuard [@han2024wildguard] or LlamaGuard [@inan2023llama]).
 
-While RLHF was at the center of the training for these models' ability to distinguish safe from unsafe requests
+While RLHF was at the center of the training for these models' ability to distinguish safe from unsafe requests, it is inaccurate to attribute the failure of behavior in the final model to the training methods used.
+Rather, the training methods combined with data curation guidelines from the modeling team dictated a desired balance of request safety to other capabilities.
+Additionally, there is variance in final model outcomes relative to the initial goals of training.
+As the ecosystem matures the ability to control the final models has improved and the notion that RLHF and post-training is primarily about safety has diminished, such as by developing benchmarks to measure potential over-refusal [@rottger2023xstest].
 
-Often use classifiers and other safety systems.
-Wildguard [@han2024wildguard] or LlamaGuard [@inan2023llama]
-
-Benchmarks to measure over refusal based on safety terms [@rottger2023xstest]
-
-### An aside on "undercooking" RLHF
-
-As training practices for language models have matured, there are also prominent cases where strong models do not have an amount of post-training that most users expect, resulting in models that are harder to use than their evaluation scores would suggest.
-
-TODO add references to minimax model? See tweets etc?
+As chat-based AI systems have proliferated, the prominence of these refusal behaviors has decreased over time.
+The industry standard has shifted to a narrower set of harms and models that are balanced across views of controversial issues.
 
 ## Quantitative over-optimization
 
@@ -118,6 +115,11 @@ DPO may not benefit from this as much, the direct optimization will likely chang
 
 reward ensembles mitigate it [@coste2023reward], changing optimizers [@moskovitz2023confronting], direct alignment algos [@rafailov2024scaling]
 
-## Misalignment
+## Misalignment and the Role of RLHF
 
-Consequences [@zhuang2020consequences] or sycophancy [@sharma2023towards]
+While industrial RLHF and post-training is shifting to encompass many more goals than the original notion of alignment that motivated the invention of RLHF, the future of RLHF is still closely tied with alignment.
+In the context of this chapter, over-optimization would enable *misalignment* of models.
+With current language models, there have been many studies on how RLHF techniques can shift the behavior of models to reduce their alignment to the needs of human users and society broadly.
+A prominent example of mis-alignment in current RLHF techniques is the study of how current techniques promote sycophancy [@sharma2023towards] -- the propensity for the model to tell the user what they want to hear.
+As language models become more integrated in society, the consequences of this potential misalignment will grow in complexity and impact [@zhuang2020consequences]. 
+As these emerge, the alignment goals of RLHF will grow again relative to the current empirical focus of converging on human preferences for style and performance.
