@@ -39,9 +39,28 @@ One of the few public discussions of character training came from Amanda Askell 
 
 In summary, Anthropic uses the same techniques they use for Constitutional AI and general post-training for capabilities to train these models’ characters. 
 
-## Model Specification & Documentation
+## Model Specifications
+
+OpenAI recently shared what they call their “Model Spec” [@openai2024modelspec], a document that details their goal model behaviors prior to clicking go on a fine-tuning run. 
+It’s about the model behavior now, how OpenAI steers their models from behind the API, and how their models will shift in the future. 
+
+Model Spec's are one of the few tools in the industry and RLHF where one can compare the actual behavior of the model to what the designers intended.
+As we have covered in this book, training models is a complicated and multi-faceted process, so it is expected that the final outcome differs from inputs such as the data labeler instructions or the balance of tasks in the training data.
+For example, a Model Spec is much more revealing than a list of principles used in Constitutional AI because it speaks to the intent of the process rather than listing what acts as intermediate training variables.
+
+A Model Spec provides value to every stakeholder involved in a model release process:
+
+- **Model Designers**: The model designers get the benefit of needing to clarify what behaviors they do and do not want. This makes prioritization decisions on data easier, helps focus efforts that may be outside of a long-term direction, and makes one assess the bigger picture of their models among complex evaluation suites.
+- **Developers**: Users of models have a better picture for which behaviors they encounter may be intentional -- i.e. some types of refusals -- or side-effects of training. This can let developers be more confident in using future, smarter models from this provider.
+- **Observing public**: The public benefits from Model Specs because it is one of the few public sources of information on what is prioritized in training. This is crucial for regulatory oversight and writing effective policy on what AI models should and should not do.
 
 ## Product Cycles, UX, and RLHF
 
+As powerful AI models become closer to products than singular artifacts of an experiment machine learning process, RLHF has become an interface point for the relationship between models and product.
+Much more goes into making a model easy to use than just having the final model weights be correct -- fast inference, suitable tools to use (e.g. search or code execution), a reliable and easy to understand user interface (UX), and more.
+RLHF research has become the interface where a lot of this is tested because of the framing where RLHF is a way to understand the user's preferences to products in real time and because it is the final training stage before release.
+The quickest way to add a new feature to a model is to try and incorporate it at post-training where training is faster and cheaper.
+This cycle has been seen with image understanding, tool use, better behavior, and more.
+What starts as a product question quickly becomes and RLHF modeling question, and if it is successful there it backpropagates to other earlier training stages.
 
 
