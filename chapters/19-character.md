@@ -6,7 +6,7 @@ next-chapter: ""
 next-url: ""
 ---
 
-# Product, UX, Character, and Post-Training
+# Product, UX, and Model Character
 
 Frontiers in RLHF and post-training show how these techniques are used within companies to make leading products.
 As RLHF becomes more established, the problems it is used to address are becoming more nuanced.
