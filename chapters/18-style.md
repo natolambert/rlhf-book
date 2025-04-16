@@ -19,6 +19,8 @@ Second, we’ve seen how different styles actually can improve evaluation improv
 The Llama 3 Instruct models scored extremely high on ChatBotArena, and it’s accepted as being because they had a more fun personality. 
 If RLHF is going to make language models simply more fun, that is delivered value.
 
+Throughout this chapter, the term "chattiness" is used to encompass the growing length of responses from models training with RLHF, but it also encompasses techniques like heavy markdown use, emojis, and formatting the answer in bulleted lists.
+
 ## The Chattiness Paradox
 
 RLHF or preference fine-tuning methods are being used mostly to boost scores like AlpacaEval and other automatic leaderboards without shifting the proportionally on harder-to-game evaluations like ChatBotArena. 
@@ -56,13 +58,23 @@ The average response length of the model increases, but in a way that’s good e
 
 ### How Chattiness Emerges
 
-TODO EDIT
+A natural question is: Why does RLHF make model responses longer?
+At a fundamental answer, evaluations like ChatBotArena have shown us that average users of models often like longer, complete answers when compared with terse responses.
+This does not represent the preference of *every* user, but these models are trained to match the preferences of many data labelers.
 
-Let’s round out this article with how RLHF is actually achieving chattiness at the parameter level. Most of the popular datasets for alignment these days are synthetic preferences where a model like GPT-4 rates outputs from other models as the winner or the loser. Given that GPT-4 is known to have length and style biases for outputs that match itself, most of the pieces of text in the “preferred” section of the dataset are either from an OpenAI model or are stylistically similar to it. The important difference is that not all of the pieces of text in the dataset will have that. They’re often generated from other open models like Alpaca, Vicuna, or more recent examples. These models have very different characteristics.
+Most of the popular datasets for alignment these days are synthetic preferences where a model like GPT-4 rates outputs from other models as the winner or the loser. 
+Given that GPT-4 is known to have length and style biases for outputs that match itself, most of the pieces of text in the “preferred” section of the dataset are either from an OpenAI model or are stylistically similar to it. 
+The important difference is that not all of the pieces of text in the dataset will have that. 
+They’re often generated from other open models like Alpaca, Vicuna, or more recent examples. 
+These models have very different characteristics.
 
-Next, now that we’ve established that we have a preference dataset where most of the chosen models are similar to ChatGPT (or some other model that is accepted to be “strong”), these alignment methods simply increase the probability of these sequences. The math is somewhat complicated, where the batches of data operate on many chosen-rejected pairs at once, but in practice, the model is doing credit assignment over sequences of tokens (subword pieces). Preference alignment for chattiness is making the sequences found in outputs of models like GPT-4 more likely and the sequences from other, weaker models less likely. Repeatedly, this results in models with longer generations and characteristics that people like more.
+Next, now that we’ve established that we have a preference dataset where most of the chosen models are similar to ChatGPT (or some other model that is accepted to be “strong”), these alignment methods simply increase the probability of these sequences. 
+The math is somewhat complicated, where the batches of data operate on many chosen-rejected pairs at once, but in practice, the model is doing credit assignment over sequences of tokens (subword pieces). 
+Preference alignment for chattiness is making the sequences found in outputs of models like GPT-4 more likely and the sequences from other, weaker models less likely. 
+Repeatedly, this results in models with longer generations and characteristics that people like more.
 
-Those among you who are familiar with RLHF methods may ask if the KL constraint in the optimization should stop this from happening. The KL constraint is a distance term between the distribution of the original model and the resulting model. It helps make the optimization more robust to overoptimization, but that makes the border between good and bad models a bit more nuanced. Hence, the prevalence of vibes-based evaluations. Though, models tend to have enough parameters where they can change substantially and still satisfy the KL constraint on the data being measured — it can’t be the entire pertaining dataset, for example.
-
-As more models than ChatGPT become prevalent and strong enough for creating synthetic data, the distribution of outcomes we can expect from our aligned models should shift. There are two key places where the data influences this process: 1) where the text used to train the model is generated and 2) which LLM is used to determine which answer is the “winner” and “loser” in the preference learning framework. While all of these models have licenses or terms of service that make this practice technically violate an agreement of use, we’ve had more than a year of progress in open alignment practices relying on them in the past, so I don’t expect it to change. Mistral AI is the only LLM provider that doesn’t have a term restricting training on outputs (as far as I know).
-
+Those among you who are familiar with RLHF methods may ask if the KL constraint in the optimization should stop this from happening. 
+The KL constraint is a distance term between the distribution of the original model and the resulting model. 
+It helps make the optimization more robust to overoptimization, but that makes the border between good and bad models a bit more nuanced. 
+Hence, the prevalence of vibes-based evaluations. 
+Though, models tend to have enough parameters where they can change substantially and still satisfy the KL constraint on the data being measured — it can’t be the entire pertaining dataset, for example.
