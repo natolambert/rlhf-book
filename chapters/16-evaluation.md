@@ -166,7 +166,7 @@ Evaluation is moving to where the models are tested to respond in a generative m
 
 ## Using Evaluations vs. Observing Evaluations
 
-![Report from Epoch AI showing how major AI evaluations are rapidly saturated over time.](images/benchmark-performance.jpeg)
+![Report from Epoch AI showing how major AI evaluations are rapidly saturated over time. License CC-BY.](images/benchmark-performance.jpeg)
 
 Language model evaluations done within companies can only be compared to their peers with large error bars because the process that they use evaluations internally is not matched with external evaluations.
 Internal evaluations are made to hillclimb on for training, as would be called a "training set" in traditional machine learning.
