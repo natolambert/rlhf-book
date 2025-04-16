@@ -292,7 +292,7 @@ In this case, GRPO computes the advantage as the sum of the normalized rewards f
 
 Finally, GRPO's advantage estimation can also be applied without the PPO clipping to more vanilla versions of policy gradient (e.g. REINFORCE), but it is not the canonical form.
 As an example of how these algorithms are intertwined, we can show that the advantage estimation in a variant of GRPO, Dr. GRPO (GRPO Done Right) [@liu2025understanding], is equivalent to the RLOO estimation up to a constant scaling factor (which normally does not matter due to implementation details to normalize the advantage).
-Dr. GRPO removes the standard deviation normalization term from @eq:GRPO_ADV. 
+Dr. GRPO removes the standard deviation normalization term from @eq:GRPO_ADV -- note that this also scales the advantage *up*, which is equivalent to increasing the GRPO learning rate on samples with a variance in answer scores. 
 This addresses a bias towards questions with low reward variance -- i.e. almost all the answers are right or wrong -- but comes at a potential cost where problems where just one sample gets the answer right are important to learn from. 
 The Dr. GRPO advantage for completion i within a group of size G is defined as:
 
