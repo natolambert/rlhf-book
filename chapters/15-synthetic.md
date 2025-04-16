@@ -1,6 +1,7 @@
 ---
 prev-chapter: "Reasoning & Inference-Time Scaling"
 prev-url: "14-reasoning.html"
+page-title: Synthetic Data & Distillation
 next-chapter: "Evaluation & Prompting"
 next-url: "16-evaluation.html"
 ---

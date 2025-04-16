@@ -1,6 +1,7 @@
 ---
 prev-chapter: "Synthetic Data & Distillation"
 prev-url: "15-synthetic.html"
+page-title: Evaluation
 next-chapter: "Over Optimization"
 next-url: "17-over-optimization.html"
 ---
