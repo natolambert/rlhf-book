@@ -48,7 +48,7 @@ RLHF is at the core of this transition.
 To start, let us consider how a language model at the end of autoregressive pretraining answers a query. 
 A strong model, Llama 3.1 405B, will continue from "The president of the united states in 2006 was":
 
-> George w bush, the governor of Florida in 2006 was Jeb bush, and John McCain was an arizona senator in 2006 - who later lost to obama.
+> George W. Bush, the governor of Florida in 2006 was Jeb Bush, and John McCain was an Arizona senator in 2006 - who later lost to obama.
 > September 1 – U.S. President Bush signs an executive order to provide more options for faith-based organizations when delivering social services that are paid for with federal funds.
 > January 1 – The current deadline set by United States Congress in the Unlawful Internet Gambling Enforcement Act, aka UIGEA.
 > search: Amendments to the 1961 International Convention for the Protection of New Varieties of Plants require plant breeders' rights include farmer's privilege.

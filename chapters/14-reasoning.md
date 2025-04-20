@@ -27,7 +27,7 @@ The training method for these models, Reinforcement Learning with Verifiable Rew
 ![RLVR in the form of an RL feedback loop. Instead of a reward model, we use a verification function.](images/rlvr-system.png){#fig:rlvr}
 
 The first models to successfully deploy this type of training were OpenAI's o1 [@openai2024o1] and the open-weight model DeepSeek R1 [@guo2025deepseek]. 
-Soon after, the the entire AI industry prioritized this training process and model style.
+Soon after, the entire AI industry prioritized this training process and model style.
 The core change here is more of a reallocation of the stages of training and the priority of different behaviors rather than this type of RL setup being entirely new.
 Reasoning models brought an era where scaling RL training is expected.
 
