@@ -21,8 +21,8 @@ Evaluation for RLHF and post-training has gone a few distinct phases in its earl
 3. **Reasoning & tools**: The current era for post-training is defined by a focus on challenging reasoning and tool use problems. These include much harder knowledge-intensive tasks such as GPQA Diamond [@rein2023gpqa] and Humanity's Last Exam [@phan2025hle], intricate software engineering tasks such as SWE-Bench+ [@aleithan2024swebenchplus] and LiveCodeBench [@jain2024livecodebench], or challenging math problems exemplified by recent AIME contests.
 
 Beyond this, new domains will evolve. 
-As AI becomes more of a industrialized field, the incentives of evaluation are shifting and becoming multi-stakeholder.
-Since the release of ChatGPT, private evaluations such as the Scale Leaderboard [@scale2024seal], community driven evaluations such as ChatBotArena [@chiang2024chatbot], and third part evaluation companies such as ArtificialAnalysis and Epoch AI have proliferated.
+As AI becomes more of an industrialized field, the incentives of evaluation are shifting and becoming multi-stakeholder.
+Since the release of ChatGPT, private evaluations such as the Scale Leaderboard [@scale2024seal], community-driven evaluations such as ChatBotArena [@chiang2024chatbot], and third-party evaluation companies such as ArtificialAnalysis and Epoch AI have proliferated.
 Throughout this chapter we will include details that map to how these evaluations were implemented and understood.
 
 ## Prompting Formatting: From Few-shot to Zero-shot to CoT

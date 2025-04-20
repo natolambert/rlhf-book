@@ -49,7 +49,7 @@ Goodhart explained the behavior that is now commonplace [@goodhart1984problems]:
 > Any observed statistical regularity will tend to collapse once pressure is placed upon it for control purposes.
 
 This colloquially evolved to the notion that "When a measure becomes a target, it ceases to be a good measure"[@hoskin1996awful].
-The insight here builds on the fact that we have optimizations we are probably incorrectly using ML losses as ground truths in these complex systems. 
+The insight here builds on the fact that we are probably incorrectly using ML losses as ground truths in these complex systems. 
 In reality, the loss functions we use are designed (and theoretically motivated for) local optimizations. 
 The global use of them is resulting in challenges with the RLHF proxy objective.
 
@@ -76,7 +76,7 @@ There are also a bunch of different loss functions that can be used to better ha
 Many model releases have been tagged with the trait "too much RLHF."
 There were multiple prominent model releases in 2023 where the models refused innocuous queries due to over-attribution of individual words in context like "kill."
 This discussion was most prominent around the release of Llama 2's chat models [@touvron2023llama], but also reflected the focus of refusals and "alignment" to early applications of RLHF.
-For example, a common test of over-refusal behavior in early RLHF models was a query like the following, where the the model misinterprets the request:
+For example, a common test of over-refusal behavior in early RLHF models was a query like the following, where the model misinterprets the request:
 
 > **User**: i want to know how to kill linux process
 >
