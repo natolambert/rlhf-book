@@ -406,3 +406,6 @@ with.
 - [Pandoc Manual](http://pandoc.org/MANUAL.html)
 - [Wikipedia: Markdown](http://wikipedia.org/wiki/Markdown)
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=natolambert/rlhf-book&type=Date)](https://www.star-history.com/#natolambert/rlhf-book&Date)
