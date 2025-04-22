@@ -68,6 +68,8 @@ $$ D_{KL}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\frac{P(x)}{Q(x)}\r
 
 - **Policy ($\pi$)**, also called the **policy model** in RLHF: In RL, a policy is a strategy or rule that the agent follows to decide which action to take in a given state: $\pi(a|s)$. 
 
+- **Discount Factor ($\gamma$)**: A scalar $0 \le \gamma < 1$ that exponentially down‑weights future rewards in the return, trading off immediacy versus long‑term gain and guaranteeing convergence for infinite‑horizon sums. Sometimes discounting is not used, which is equivalent to $\gamma=1$.
+
 - **Value Function ($V$)**: A function that estimates the expected cumulative reward from a given state: $V(s) = \mathbb{E}[\sum_{t=0}^{\infty} \gamma^t r_t | s_0 = s]$.
 
 - **Q-Function ($Q$)**: A function that estimates the expected cumulative reward from taking a specific action in a given state: $Q(s,a) = \mathbb{E}[\sum_{t=0}^{\infty} \gamma^t r_t | s_0 = s, a_0 = a]$.
