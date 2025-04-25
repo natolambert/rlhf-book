@@ -680,7 +680,7 @@ Generalized Advantage Estimation (GAE) is an alternate method to compute the adv
 Traditional single-step advantage estimates often suffer from high variance, while using complete trajectories can introduce too much bias.
 GAE works by combining two ideas -- multi-step prediction and weighted running average (or just one of these).
 
-Advantage estimates can take many forms, but we can define a $k$ step advantage estimator (similar to the TD residual at the beginning of the chapter) as follows:
+Advantage estimates can take many forms, but we can define a $n$ step advantage estimator (similar to the TD residual at the beginning of the chapter) as follows:
 
 $$
 \hat{A}_t^{(n)} = \begin{cases}
@@ -691,8 +691,8 @@ r_t + \gamma r_{t+1} + \gamma^2 r_{t+2} + \cdots - V(s_t), & n = \infty
 \end{cases}
 $$ {#eq:K_STEP_ADV}
 
-Here a shorter $k$ will have lower variance but higher bias as we are attributing more learning power to each trajectory -- it can overfit.
-GAE attempts to generalize this formulation into a weighted multi-step average instead of a specific $k$.
+Here a shorter $n$ will have lower variance but higher bias as we are attributing more learning power to each trajectory -- it can overfit.
+GAE attempts to generalize this formulation into a weighted multi-step average instead of a specific $n$.
 To start, we must define the temporal difference (TD) residual of predicted value.
 
 $$
