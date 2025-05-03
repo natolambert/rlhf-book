@@ -27,7 +27,6 @@ Regardless, the process is difficult for new organizations trying to add human d
 Given the sensitivity, processes that work and improve the models are extracted until the performance runs out.
 
 In this chapter we detail technical decisions on how the data is formatted and organizational practices for collecting it.
-Many research questions are still emerging, such as if the person labeling the preference on the generations should be the same as the person who creates the prompt (to avoid sycophancy), and other variables that are difficult to control for in data collection (question [inspired by John Schulman](https://x.com/johnschulman2/status/1917483351436582953)).
 
 ### Interface
 
@@ -84,6 +83,17 @@ An even scale removes the possibility of ties:
 Table: An example 8-wise Likert scale between two responses, A and B. {#tbl:likert8}
 
 In this case [@bai2022training], and in other works, this information is still reduced to a binary signal for the training of a reward model.
+
+### Multi-turn Data
+
+In practice, core questions often arise over how to parse and collect multi-turn data -- simply conversations with multiple related prompts.
+In a real-world interaction, normally a piece of preference data is only collected on the "final" prompt, but there are scenarios where preferences can be given on every response.
+When preferences are given on every response, the conversation traditionally continues with the "chosen" answer.
+At training time, it is common to include the training data for every turn of the conversation as a "single prompt," where the model can learn from completing it.
+This can effectively unroll longer conversations into many training prompts, but needs to be done carefully to not bias the training data.
+Many research questions are still emerging, such as if the person labeling the preference on the generations should be the same as the person who creates the prompt (to avoid sycophancy), and other variables that are difficult to control for in data collection (question [inspired by John Schulman](https://x.com/johnschulman2/status/1917483351436582953)).
+If the prompt creator cannot label the preference data, multi-turn is not really practical due to the need for conversations to continue in real-time -- sometimes for preference data the curation of prompts is a different problem than comparing responses (also due to the work of maintaining active endpoints for models).
+For training, all of the previous turns in the conversation are masked from the loss, as discussed with instruction finetuning.
 
 ### Structured Preference Data
 

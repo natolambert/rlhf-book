@@ -58,19 +58,33 @@ $$ {#eq:kl_expectation}
 This mode is far simpler to implement, particularly when dealing directly with log probabilities used frequently in language model training.
 
 ```python
-import torch.nn.functional as F
-# Step 1: Generate tokens using the trained model's policy
+# Step 1: sample (or otherwise generate) a sequence from your policy
 generated_tokens = model.generate(inputs)
 
-# Step 2: Get logits for both models using the generated tokens as context
-logits = model.forward(generated_tokens) # technically redundant
-ref_logits = ref_model.forward(generated_tokens)
-logprobs = convert_to_logpbs(logits) # softmax and normalize
-ref_logprobs = convert_to_logpbs(ref_logits)
+# Step 2: score that generated sequence under both models
+#    for autoregressive LMs, you usually do:
+#      inputs_for_scoring = generated_tokens[:, :-1]
+#      labels           = generated_tokens[:, 1:]
+logits       = model.forward(generated_tokens[:, :-1]).logits
+ref_logits   = ref_model.forward(generated_tokens[:, :-1]).logits
 
-kl_approx = logprob - ref_logprob
-kl_full = F.kl_div(ref_logprob, logprob) # alternate computation
+# convert to log-probs, then align labels to index into the logits
+logprobs     = F.log_softmax(logits, dim=-1)
+ref_logprobs = F.log_softmax(ref_logits, dim=-1)
+
+# gather the log-probs of the actual next tokens
+token_logprobs     = logprobs.gather(-1, generated_tokens[:, 1:].unsqueeze(-1)).squeeze(-1)
+ref_token_logprobs = ref_logprobs.gather(-1, generated_tokens[:, 1:].unsqueeze(-1)).squeeze(-1)
+
+# now you can sum (or average) those to get the sequence log-prob,
+# and compute KL:
+seq_logprob     = token_logprobs.sum(dim=-1)
+ref_seq_logprob = ref_token_logprobs.sum(dim=-1)
+
+kl_approx = seq_logprob - ref_seq_logprob
+kl_full   = F.kl_div(ref_logprobs, logprobs, reduction='batchmean')
 ```
+
 Some example implementations include [TRL](https://github.com/huggingface/trl/blob/5c21de30ae210e4251ead85517ba8dfe3f210e81/trl/trainer/ppo_trainer.py#L1150) and [Hamish Ivison's Jax Code](https://github.com/hamishivi/EasyLM/blob/main/EasyLM/models/llama/llama_train_ppo.py#L278)
 
 ## Pretraining Gradients
