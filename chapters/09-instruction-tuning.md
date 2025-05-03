@@ -134,3 +134,5 @@ A few principles remain:
 * ~1M prompts can be used to create a model capable of excellent RLHF and post-training. Further scaling prompts can have improvements, but has quick diminishing returns.
 * The best prompts are those in a similar distribution to downstream tasks of interest.
 * If multiple stages of training are done after instruction tuning, the models can recover from some noise in the process. Optimizing the overall optimization is more important than each individual stage.
+* Standard practice in instruction finetuning (and other post-training, such as direct alignment algorithms) is to mask the prompts when learning to only apply the loss on tokens in the completion. 
+* With multi-turn training samples, the same above masking exists -- only the generation of the "final turn" is included in the loss. This means that earlier "assistant" turns can sometimes be included in the prompt which is masked.
