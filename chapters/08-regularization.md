@@ -63,8 +63,8 @@ import torch.nn.functional as F
 generated_tokens = model.generate(inputs)
 
 # Step 2: Get logits for both models using the generated tokens as context
-logits = model.forward(inputs) # technically redundant
-ref_logits = ref_model.forward(inputs)
+logits = model.forward(generated_tokens) # technically redundant
+ref_logits = ref_model.forward(generated_tokens)
 logprobs = convert_to_logpbs(logits) # softmax and normalize
 ref_logprobs = convert_to_logpbs(ref_logits)
 

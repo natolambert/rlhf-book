@@ -27,6 +27,7 @@ Regardless, the process is difficult for new organizations trying to add human d
 Given the sensitivity, processes that work and improve the models are extracted until the performance runs out.
 
 In this chapter we detail technical decisions on how the data is formatted and organizational practices for collecting it.
+Many research questions are still emerging, such as if the person labeling the preference on the generations should be the same as the person who creates the prompt (to avoid sycophancy), and other variables that are difficult to control for in data collection (question [inspired by John Schulman](https://x.com/johnschulman2/status/1917483351436582953)).
 
 ### Interface
 
