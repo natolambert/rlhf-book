@@ -45,6 +45,10 @@ Please, check [this page](http://pandoc.org/installing.html) for more informatio
 can be installed as the *pandoc* package:
 
 #### Linux
+
+*NOTE*: This is not fully tested.
+
+Original build instructions:
 ```sh
 sudo apt-get install pandoc
 ```
@@ -61,6 +65,21 @@ To export to PDF files, make sure to install the following packages:
 ```sh
 sudo apt-get install texlive-fonts-recommended texlive-xetex
 ```
+
+User-tested build instructions (see this [issue](https://github.com/natolambert/rlhf-book/issues/117)):
+> On my PopOS 22.04 Linux system let me share how I got this book to build:
+> 
+> Install Pandoc 3.6.4 to avoid warning messages regarding pandoc-crossref
+> 
+> `brew install pandoc-crossref` is needed to get the build working right.
+> 
+> `sudo apt install fonts-dejavu` because my system repository had no ttf-dejavu package available
+> 
+> `make clean` to remove build artifacts
+> 
+> `git pull` in the project directory to update the local copy with the GitHub repository copy
+
+Or, fork a process from the [github action](https://github.com/natolambert/rlhf-book/blob/main/.github/workflows/static.yml) that auto-builds new versions.
 
 #### Mac
 ```
