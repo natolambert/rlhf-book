@@ -79,14 +79,14 @@ User-tested build instructions (see this [issue](https://github.com/natolambert/
 > 
 > `git pull` in the project directory to update the local copy with the GitHub repository copy
 
-Or, fork a process from the [github action](https://github.com/natolambert/rlhf-book/blob/main/.github/workflows/static.yml) that auto-builds new versions.
-
 #### Mac
 ```
 brew install pandoc
 brew install make
 ```
 (See below for `pandoc-crossref`)
+
+Or, fork a process from the [github action](https://github.com/natolambert/rlhf-book/blob/main/.github/workflows/static.yml) that auto-builds new versions on MacOS.
 
 ### Folder structure
 
