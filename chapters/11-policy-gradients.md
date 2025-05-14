@@ -677,7 +677,7 @@ Here we consider some, but not all of these discussions.
 ### Generalized Advantage Estimation (GAE)
 
 Generalized Advantage Estimation (GAE) is an alternate method to compute the advantage for policy gradient algorithms [@schulman2015high] that better balances the bias-variance tradeoff. 
-Traditional single-step advantage estimates often suffer from high variance, while using complete trajectories can introduce too much bias.
+Traditional single-step advantage estimates can introduce too much bias, while using complete trajectories often suffer from high variance.
 GAE works by combining two ideas -- multi-step prediction and weighted running average (or just one of these).
 
 Advantage estimates can take many forms, but we can define a $n$ step advantage estimator (similar to the TD residual at the beginning of the chapter) as follows:
