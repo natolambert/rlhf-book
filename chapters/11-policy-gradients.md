@@ -296,7 +296,7 @@ Dr. GRPO removes the standard deviation normalization term from @eq:GRPO_ADV -- 
 This addresses a bias towards questions with low reward variance -- i.e. almost all the answers are right or wrong -- but comes at a potential cost where problems where just one sample gets the answer right are important to learn from. 
 The Dr. GRPO advantage for completion i within a group of size G is defined as:
 
-$$ \tilde{A}_i = r_i - \text{mean}({r_1, r_2, \cdots, r_G}) = r_i - \frac{1}{G}\sum{j=1}^G r_j $$ {#eq:DrGRPO_ADV}
+$$ \tilde{A}_i = r_i - \text{mean}({r_1, r_2, \cdots, r_G}) = r_i - \frac{1}{G}\sum_{j=1}^G r_j $$ {#eq:DrGRPO_ADV}
 
 Here, in the same notation we can recall the RLOO advantage estimation as:
 
