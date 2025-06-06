@@ -69,6 +69,7 @@ Modern RLHF-trained models always utilize instruction finetuning followed by a m
 Over time various models have been identified as canonical recipes for RLHF specifically or post-training generally.
 These recipes reflect data practices and model abilities at the time.
 As the recipes age, training models with the same characteristics becomes easier and takes fewer data.
+There is a general trends of post-training involving more optimization steps with more training algorithms across more diverse training datasets and evaluations.
 
 ### InstructGPT
 
@@ -92,7 +93,7 @@ An example is shown below in @fig:rlhf-complex where the model undergoes numerou
 
 The most complex models trained in this era and onwards have not released full details of their training process.
 Leading models such as ChatGPT or Claude circa 2025 involve many, iterative rounds of training.
-This can even include techniques that train specialized models and then merge the weights together to get a final model capable on many subtasks [@li2022branch] (e.g. Cohere's Command A~ [@cohere2025command]).
+This can even include techniques that train specialized models and then merge the weights together to get a final model capable on many subtasks [@li2022branch] (e.g. Cohere's Command A [@cohere2025command]).
 
 ![A summary of the Tülu 3 recipe with target skills and multi-step training recipe. Lambert et al. 2024, License CC-BY.](images/tulu3.png){#fig:tulu-3}
 
