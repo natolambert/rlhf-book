@@ -22,7 +22,11 @@ In this analogy:
 We learn just “a few bits” of information with RL in just a few training samples.
 This little bit of reasoning training emerged with **reasoning models** that use a combination of the post-training techniques discussed in this book to align preferences along with RL training on verifiable domains to dramatically increase capabilities such as reasoning, coding, and mathematics problem solving.
 
-The training method for these models, Reinforcement Learning with Verifiable Rewards (RLVR) [@lambert2024t], proceeds very similarly to RLHF, but it makes the reward model optional in lieu of a scoring function that returns a positive reward when the answer is correct and 0 otherwise.
+The training method for these models, Reinforcement Learning with Verifiable Rewards (RLVR) [@lambert2024t], proceeds very similarly to RLHF, but it makes the reward model optional in lieu of a scoring function that returns a positive reward when the answer is correct and 0 otherwise. 
+The ideas behind RLVR are not new to the RL literature and there are many related ideas in the language modeling literature where the model learns from feedback on if the answer is correct.
+
+RL with Verifiable Rewards is subtly different from only learning from ground truth answers. For some domains, such as mathematics, a ground truth answer is available to check problems. Originally, RLVR was to be named RL with Ground Truth rewards (RLGT), but it does not generalize to domains such as code or precise instruction following where the answers are verifiable with some sort of checking function (e.g. unit test), but there is not one ground truth answer.
+The core to progress on RLVR is having a variety and depth of these verifiable problems, even if the exact solution isn't known a priori.
 
 ![RLVR in the form of an RL feedback loop. Instead of a reward model, we use a verification function.](images/rlvr-system.png){#fig:rlvr}
 
