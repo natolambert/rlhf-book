@@ -169,3 +169,8 @@ The binary rewards of Tülu 3 and modern reasoning training techniques can be co
 ### Common Practices in Training Reasoning Models
 
 In this section we detail common methods used to sequence training stages and modify data to maximize performance when training a reasoning model.
+
+* **Offline difficulty filtering**:
+* **Remove KL penalty**:
+* **Relaxed policy-gradient clipping**: 
+* **Per-batch online filtering**:
