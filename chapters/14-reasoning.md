@@ -97,7 +97,11 @@ Even more remarkable is that the improvements on these training questions genera
 
 This simple approach allows the models to lightly search over behavior space and the RL algorithm increases the likelihood of behaviors that are correlated with correct answers.
 
-## Why Does RL Work Now?
+## The Origins of New Reasoning Models
+
+Here we detail the high-level trends that led to the explosion of reasoning models in 2025. 
+
+### Why Does RL Work Now?
 
 Despite many, many takes that “RL doesn’t work yet” [@irpan2018deep] or paper's detailing deep reproducibility issues with RL [@henderson2018deep], the field overcame it to find high-impact applications.
 The takeoff of RL-focused training on language models indicates steps in many fundamental issues for the research area, including:
@@ -109,7 +113,7 @@ Examples include TRL [@vonwerra2022trl], Open Instruct [@lambert2024t], veRL [@s
 
 Multiple resources point to RL training for reasoning only being viable on leading models coming out from about 2024 onwards, indicating that a certain level of underlying capability was needed in the models before reasoning training was possible.
 
-## RL Training vs. Inference Time Scaling
+### RL Training vs. Inference Time Scaling
 
 Training with Reinforcement Learning to elicit reasoning behaviors and performance on verifiable domains is closely linked to the ideas of inference time scaling.
 Inference-time scaling, also called test-time scaling, is the general class of methods that use more computational power at inference in order to perform better at a downstream tasks.
@@ -126,7 +130,7 @@ These are largely out of the scope of this book due to their rapidly evolving na
 What is important here is the correlation between downstream performance and an increase in the number of tokens generated -- otherwise it is just wasted energy.
 
 
-## The Future (Beyond Reasoning) of Reinforcement Finetuning
+### The Future (Beyond Reasoning) of Reinforcement Finetuning
 
 In many domains, these new flavors of RLVR and reinforcement finetuning are much more aligned with the goals of developers by being focused on performance rather than behavior. 
 Standard finetuning APIs generally use a parameter-efficient finetuning method such as LoRA with supervised finetuning on instructions. 
@@ -141,3 +145,27 @@ This can be viewed as reinforcing positive behaviors that would work sparingly i
 The more open doors that are available to researchers and engineers, the more optimism we should have about AI’s general trajectory. 
 
 
+## Understanding Reasoning Training Methods
+
+The investment in reasoning has instigated a major evolution in the art of how models are trained to follow human instructions.
+These recipes still use the common pieces discussed in earlier chapters, including instruction finetuning, reinforcement learning from human feedback, and reinforcement learning with verifiable rewards (RLVR). 
+The core change is using far more RLVR and applying the other training techniques in different orders -- traditionally for a reasoning model the core training step is either a large-scale RL run or a large-scale instruction tuning run on *outputs* of another model that had undergone a substantial portion of RLVR training (referred to as distillation).
+
+### Early Reasoning Work
+
+Before the takeoff of reasoning models, a substantial effort was made understanding how to train language models to be better at verifiable domains.
+The main difference between these works below is that their methodologies did not scale up to the same factor as those used in DeepSeek R1 and subsequent models, or they resulted in models that made sacrifices in overall performance in exchange for higher mathematics or coding abilities.
+The underlying ideas and motivations are included to paint a broader picture for how reasoning models emerged within the landscape.
+
+Some of the earliest efforts training language models on verifiable domains include self-taught reasoner (STaR) line of work[@zelikman2022star] [@Zelikman2024QuietSTaRLM] and TRICE [@hoffman2023training], which both used ground-truth reward signals to encourage chain of thought reasoning in models throughout 2022 and 2023. 
+STaR effectively approximates the policy gradient algorithm, but in practice filters samples differently and uses a cross-entropy measure instead of a log-probability, and Quiet-STaR expands on this with very related ideas of recent reasoning models by having the model generate tokens before trying to answer the verifiable question (which helps with training performance).
+TRICE [@hoffman2023training] also improves upon reasoning by generating traces and then optimizing with a custom Markov chain Monte Carlo inspired expectation maximization algorithm. 
+VinePPO [@VinePPO] followed these and used a setup that shifted closer to modern reasoning models. 
+VinePPO uses binary rewards math questions (GSM8K and MATH training sets in the paper) correctness with a PPO-based algorithm.
+Other work before OpenAI's o1 and DeepSeek R1 used code execution as a feedback signal for training [@gehring2024rlefgroundingcodellms], [@xudpoppo]. 
+Tülu 3 expanded upon these methods by using a simple PPO trainer to reward completions with correct answers -- most importantly while maintaining the model's overall performance on a broad suite of evaluations.
+The binary rewards of Tülu 3 and modern reasoning training techniques can be contrasted to the iterative approach of STaR or the log-likelihood rewards of Quiet-STaR.
+
+### Common Practices in Training Reasoning Models
+
+In this section we detail common methods used to sequence training stages and modify data to maximize performance when training a reasoning model.
