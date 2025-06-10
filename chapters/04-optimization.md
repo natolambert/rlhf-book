@@ -97,17 +97,27 @@ This can even include techniques that train specialized models and then merge th
 
 ![A summary of the Tülu 3 recipe with target skills and multi-step training recipe. Lambert et al. 2024, License CC-BY.](images/tulu3.png){#fig:tulu-3}
 
+A fully example version of this multi-stage version of post-training where RLHF plays a major role is Tülu 3.
+The Tülu 3 recipe consists of three stages:
+
+1. **Instruction tuning on ~1M examples**: This primarily synthetic data from a mix of frontier models such as GPT-4o and Llama 3.1 405B teaches the model general instruction following and serves as the foundation of a variety of capabilities such as mathematics or coding.
+2. **On-policy preference data on ~1M preference pairs**: This stage substantially boosts the chattiness (e.g. ChatBotArena or AlpacaEval 2) of the model while also improving skills mentioned above in the instruction tuning stage.
+3. **Reinforcement Learning with Verifiable Rewards on ~10K prompts**: This stage is a small scale reinforcement learning run to boost core skill such as mathematic while maintaining overall performance (and is now seen as a precursor to modern reasoning models such as DeepSeek R1).
+
+The recipe has been successfully applied to Llama 3.1 [@lambert2024t], OLMo 2 [@olmo20242], and SmolLM models [@alrashed2024smoltulu].
 
 ### DeepSeek R1
 
-[@guo2025deepseek]
-Alibaba's larger Qwen 3 models (i.e. only the 32B and 225B MoE models) [@yang2025qwen3], Xiaomi's MiMo 7B [@xia2025mimo]
+With the rise of reasoning language models, such as OpenAI's o1, the best practices in post-training evolved again to re-order and redistribute compute across training stages.
+The clearest documentation of a reasoning model post-training recipe is DeepSeek R1 [@guo2025deepseek], which has been mirrored by Alibaba's larger Qwen 3 models (i.e. only the 32B and 225B MoE models) [@yang2025qwen3] or Xiaomi's MiMo 7B [@xia2025mimo].
+The DeepSeek recipe follows:
 
-1. “Cold-start” of supervised finetuning on synthetic reasoning data from the R1-Zero model.
-2. Large-scale reinforcement learning training on reasoning problems “until convergence.”
-3. Rejection sampling on 3/4 reasoning problems and 1/4 general queries to start the transition to a general-purpose model.
-4. Reinforcement learning training mixing reasoning problems (verifiable rewards) with general preference tuning reward models to polish the model.
+1. **“Cold-start” of 100K+ on-policy reasoning samples**: This data is sampled from an earlier RL checkpoint, R1-Zero, and heavily filtered to instill a specific reasoning process on the model.
+2. **Large-scale reinforcement learning training**: This stage repeatedly covers reasoning problems with the model, running RLVR “until convergence” on a variety of benchmarks.
+3. **Rejection sampling** on 3/4 reasoning problems and 1/4 general queries to start the transition to a general-purpose model.
+4. **Mixed reinforcement learning training** on reasoning problems (verifiable rewards) with general preference tuning reward models to polish the model.
 
-As above, there are evolutions of the recipe. Many models start with tailored instruction datasets with Chain of Thought sequences that are heavily filtered and polished from existing models, providing a fast step to strong behaviors with SFT alone before moving onto RL [@seed2025seed].
+As above, there are evolutions of the recipe, particularly with steps 3 and 4 to finalize the model before exposing it to users.
+Many models start with tailored instruction datasets with Chain of Thought sequences that are heavily filtered and polished from existing models, providing a fast step to strong behaviors with SFT alone before moving onto RL [@seed2025seed].
 
 
