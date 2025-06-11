@@ -151,7 +151,7 @@ The investment in reasoning has instigated a major evolution in the art of how m
 These recipes still use the common pieces discussed in earlier chapters, including instruction finetuning, reinforcement learning from human feedback, and reinforcement learning with verifiable rewards (RLVR). 
 The core change is using far more RLVR and applying the other training techniques in different orders -- traditionally for a reasoning model the core training step is either a large-scale RL run or a large-scale instruction tuning run on *outputs* of another model that had undergone a substantial portion of RLVR training (referred to as distillation).
 
-### Early Reasoning Work
+### Reasoning Research Pre OpenAI's o1 or DeepSeek R1
 
 Before the takeoff of reasoning models, a substantial effort was made understanding how to train language models to be better at verifiable domains.
 The main difference between these works below is that their methodologies did not scale up to the same factor as those used in DeepSeek R1 and subsequent models, or they resulted in models that made sacrifices in overall performance in exchange for higher mathematics or coding abilities.
@@ -166,11 +166,44 @@ Other work before OpenAI's o1 and DeepSeek R1 used code execution as a feedback 
 Tülu 3 expanded upon these methods by using a simple PPO trainer to reward completions with correct answers -- most importantly while maintaining the model's overall performance on a broad suite of evaluations.
 The binary rewards of Tülu 3 and modern reasoning training techniques can be contrasted to the iterative approach of STaR or the log-likelihood rewards of Quiet-STaR.
 
+### Early Reasoning Models
+
+A summary of the foundational reasoning research reports, some of which are accompanied by open data and model weights, following DeepSeek R1 is below.
+
+| Date        | Name                        | TLDR                                                                  | Open weights | Open data |
+|-------------|----------------------------|-----------------------------------------------------------------------|--------------|-----------|
+| 2025‑01‑22  | DeepSeek R1 [@guo2025deepseek]             | RL-based upgrade to DeepSeek, big gains on math & code reasoning      |  Yes      | Partial   |
+| 2025‑01‑22  | Kimi 1.5 [@team2025kimi]                  | Scales PPO/GRPO on Chinese/English data; strong AIME maths            | No           | No        |
+| 2025‑03‑31  | Open-Reasoner-Zero [@hu2025openreasonerzero]   | Fully open replication of base model RL      |  Yes      |  Yes   |
+| 2025‑04‑10  | Seed-Thinking 1.5 [@seed2025seed]         | ByteDance RL pipeline with dynamic CoT gating                         | Yes (7B)     | Partial   |
+| 2025‑04‑30  | Phi-4 Reasoning [@abdin2025phi4]          | 14B model; careful SFT→RL; excels at STEM reasoning                   | Yes      | No        |
+| 2025‑05‑02  | Llama-Nemotron [@bercovich2025llamanemotron]   | Multi-size "reasoning-toggle" models                 |  Yes      |  Yes   |
+| 2025‑05‑12  | INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained] | First globally-decentralized RL training run (32B)                    |  Yes      |  Yes   |
+| 2025‑05‑12  | Xiaomi MiMo [@xia2025mimo]                | End-to-end reasoning pipeline from pre- to post-training              | Yes          | No       |
+| 2025‑05‑14  | Qwen 3 [@yang2025qwen3]                   | Similar to R1 recipe applied to new models                    |  Yes      | No   |
+| 2025‑05‑21  | Hunyuan-TurboS [@liu2025hunyuan]          | Mamba-Transformer MoE, adaptive long/short CoT                        | No           | No        |
+| 2025‑05‑28  | Skywork OR-1 [@he2025skyworkor1]          | RL recipe avoiding entropy collapse; beats DeepSeek on AIME           |  Yes      |  Yes   |
+| 2025‑06‑04  | Xiaomi MiMo VL [@coreteam2025mimovltechnicalreport]                | Adapting reasoning pipeline end-to-end to include multi-modal tasks              | Yes          | No       |
+| 2025‑06‑04  | OpenThoughts [@guha2025openthoughts]      | Public 1.2M-example instruction dataset distilled from Qwen 3                    |  Yes      |  Yes   |
+| 2025‑06‑10  | Magistral [@mistral2025magistral]         | Pure RL on Mistral 3; multilingual CoT; small model open-sourced      |  Yes (24B)| No        |
+
+
 ### Common Practices in Training Reasoning Models
 
-In this section we detail common methods used to sequence training stages and modify data to maximize performance when training a reasoning model.
+In this section we detail common methods used to sequence training stages and modify data to maximize performance when training a reasoning model. 
 
-* **Offline difficulty filtering**:
-* **Remove KL penalty**:
-* **Relaxed policy-gradient clipping**: 
-* **Per-batch online filtering**:
+Note that these papers could have used a listed technique and not mentioned it while their peers do, so these examples 
+
+* **Offline difficulty filtering**: A core intuition of RLVR is that models can only learn from examples where there is a gradient. If the starting model for RLVR can solve a problem either 100% of the time or 0% of the time, there will be no gradient between different completions to the prompt (i.e., all strategies appear the same to the policy gradient algorithm). Many models have used difficulty filtering before starting a large-scale RL to restrict the training problems to those that the starting point model solves only 20-80% of the time. This data is collected by sampling N, e.g. 16, completions to each prompt in the training set and verifying which percentage are correct. Forms of this were used by Seed-Thinking 1.5, Open Reasoner Zero, Phi 4, INTELLECT-2, MiMo RL, Skywork OR-1, and others.
+* **Per-batch online filtering** (or difficulty curriculums throughout training): To compliment the offline filtering to find the right problems to train on, another major question is "what order should we present the problems to the model during learning." In order to address this, many models use online filtering of questions in the batch, prebuilt curriculums/data schedulers, saving harder problems for later in training, or other ideas to improve long-term stability. Related ideas are used by Kimi 1.5, Magistral, Llama-Nemotron, INTELLECT-2, MiMo-RL, Hunyuan-TurboS, and others.
+* **Remove KL penalty**: As the length of RL runs increased for reasoning models relative to RLHF training, and the reward function became less prone to over-optimization, many models removed the KL penalty constraining the RL-learned policy to be similar to the base model of training. This allows the model to further explore during it's training. This was used by RAGEN[@wang2025ragen], Magistral, OpenReasonerZero,  Skywork OR-1, and others.
+* **Relaxed policy-gradient clipping**: New variations of the algorithm GRPO, such as DAPO [@yu2025dapo], proposed modifications to the two sided clipping objective used in GRPO (or PPO) in order to enable better exploration. Clipping has also been shown to cause potentially spurious learning signals when rewards are imperfect [@shao2025spurious]. This two-sided clipping with different ranges per gradient direction is used by RAGEN, Magistral, INTELLECT-2, and others.
+* **Off-policy data (or fully asynchronous updates)**: As the length of completions needed to solve tasks with RL increases dramatically with harder problems (particularly in the *variance* of the response length), compute in RL runs can sit idle. To solve this, training is moving to asynchronous updates or changing how problems are arranged into batches to improve overall throughput. Partial-to-full asynchronous (off-policy) data is used by Seed-Thinking 1.5, INTELLECT-2, and others. 
+* **Additional format rewards**: In order to make the reasoning process predictable, many models add minor rewards to make sure the model follows the correct format of e.g. `<think>...</think>` before an answer. This is used by DeepSeek R1, OpenReasonerZero, Magistral, Skywork OR-1, and others.
+* **Language consistency rewards**: Similar to format rewards, some multilingual reasoning models use language consistency rewards to prioritize models that do not change languages while reasoning (for a better and more predictable user experience). These include DeepSeek R1, Magistral, and others.
+* **Length penalties**: Many models use different forms of length penalties during RL training to either stabilize the learning process over time or to mitigate overthinking on hard problems. Some examples include Kimi 1.5 progressively extend target length to combat overthinking (while training accuracy is high across difficulty curriculum) or INTELLECT-2 running a small length penalty throughout. Others use overlong filtering and other related implementations to improve throughput.
+
+In complement to the common techniques, there are also many common findings on how reasoning training can create useful models without sacrificing ancillary capabilities:
+
+* **Text-only reasoning boosts multimodal performance**: Magistral, MiMo-VL, and others find that training a multimodal model and then performing text-only reasoning training after it can *improve* multimodal performance in the final model.
+* **Toggleable reasoning with system prompt** (or length control): Llama-Nemotron, Qwen 3, and others use specific system prompts (possibly in combination with length-controlled RL training [@aggarwal2025l1]) to enable a toggle-able thinking length for the user.
