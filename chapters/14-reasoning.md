@@ -172,10 +172,10 @@ A summary of the foundational reasoning research reports, some of which are acco
 
 | Date        | Name                        | TLDR                                                                  | Open weights | Open data |
 |-------------|----------------------------|-----------------------------------------------------------------------|--------------|-----------|
-| 2025‑01‑22  | DeepSeek R1 [@guo2025deepseek]             | RL-based upgrade to DeepSeek, big gains on math & code reasoning      |  Yes      | Partial   |
+| 2025‑01‑22  | DeepSeek R1 [@guo2025deepseek]             | RL-based upgrade to DeepSeek, big gains on math & code reasoning      |  Yes      | No   |
 | 2025‑01‑22  | Kimi 1.5 [@team2025kimi]                  | Scales PPO/GRPO on Chinese/English data; strong AIME maths            | No           | No        |
 | 2025‑03‑31  | Open-Reasoner-Zero [@hu2025openreasonerzero]   | Fully open replication of base model RL      |  Yes      |  Yes   |
-| 2025‑04‑10  | Seed-Thinking 1.5 [@seed2025seed]         | ByteDance RL pipeline with dynamic CoT gating                         | Yes (7B)     | Partial   |
+| 2025‑04‑10  | Seed-Thinking 1.5 [@seed2025seed]         | ByteDance RL pipeline with dynamic CoT gating                         | Yes (7B)     | No   |
 | 2025‑04‑30  | Phi-4 Reasoning [@abdin2025phi4]          | 14B model; careful SFT→RL; excels at STEM reasoning                   | Yes      | No        |
 | 2025‑05‑02  | Llama-Nemotron [@bercovich2025llamanemotron]   | Multi-size "reasoning-toggle" models                 |  Yes      |  Yes   |
 | 2025‑05‑12  | INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained] | First globally-decentralized RL training run (32B)                    |  Yes      |  Yes   |
