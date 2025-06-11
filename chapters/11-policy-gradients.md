@@ -501,6 +501,31 @@ This would change how the losses compare across batches per tokens in the above 
 In practice, the setup that is best likely is the one that is suited to the individual, online learning setup. 
 Often in RLHF methods the method with the best numerical stability and or the least variance in loss could be preferred.
 
+### Asynchronicity
+
+The default implementation for policy-gradient algorithms is what is called **on-policy** execution, where the actions (generations) taken by the agent (language model) are scored before updating the model.
+For theoretical derivations of policy-gradient, many results rely on these results, where the model is always up to date with the results from the latest trials.
+In practice, separating training from roll-outs (i.e. inference for a generative model) substantially slows training [@noukhovitch2024asynchronous].
+
+![A comparison of the generation-update phases for synchronous or asynchronous RL training follow Noukhovitch et al. 2024.](images/asynch_v_synch_rl.png){#fig:async}
+
+The common solution used is to constantly run inference and training on separate GPU nodes with software designed to efficiently run both.
+Common practice in popular open-source RL tools for language models is to use a distributed process management library such as Ray to hand information off between the policy-gradient learning loop and the inference loop that is running an efficient inference loop, e.g. VLLM.
+The primary challenges faced when making training more asynchronous are keeping training stable and maintaining learning signal.
+
+These systems are designed and implemented with the presumption that nearly on-policy data is good enough for stable learning. 
+Here, the generation and update phases can easily be synced to avoid idle compute on either piece of the training system.
+With reasoning models, the extremely long inference characteristics of problems requiring 10K to 100K+ tokens per answer makes the generation of roll-outs a far stronger bottleneck.
+A common problem when training reasoning models on more synchronous RL infrastructure is that an answer to one answer in the batch can take substantially more time to generate (either through more tokens or more tool calls), resulting in the majority of the allocated compute being idle until it completes. 
+A second solution to this, called sequence-level packing, length mismatch issue within a batch is to stack shorter samples within a batch with clever masking to enable continued roll-outs from the model and better distributed length normalization of samples within a batch.
+The full complexity of distributed RL infrastructure is out of scope for this book, as it can cause many other subtle issues that slow down training or cause instability.
+
+Following the emergence of these reasoning models, further interest has been taken to make the training and inference loops fully off-policy, where training batches for the policy gradient updates are filled with the most recently completed roll-outs across multiple instances generating answers [@wu2025llamarl] [@fu2025areal].
+Fully asynchronous training would also enable scaling RL training runs across multiple datacenters more easily due to the option of increasing the time between weight syncs between the learner node (taking policy gradient steps) and the actor (trying to solve problems) [@primeintellectteam2025intellect2reasoningmodeltrained].
+
+Related methods are exploring fully off-policy policy gradient algorithms [@roux2025tapered].
+
+
 ### Proximal Policy Optimization
 
 There are many, many implementations of PPO available. 

@@ -19,6 +19,14 @@ Collecting this data to train reward models is one of the original ideas behind 
 One of the core intuitions for *why this data works so well* is that it is far easier, both for humans and AI models supervising data collection, to differentiate between a good and a bad answer for a prompt than it is to generate a good answer on its own. 
 This chapter focuses on the *mechanics* of getting preference data and the best-practices depend on the specific problem being solved.
 
+## Bias
+
+Human preference data is known to contain many forms of bias, e.g. prefix bias [@kumar2025detecting], that can be passed to the final model [@bharadwaj2025flatteryflufffogdiagnosing].
+These issues are often subtle and vary in how applicable interventions to mitigate them are.
+For many, such as sycophancy [@sharma2023towards], they reflect issues within humans that are often outside of the labeling criteria.
+Others, such as verbosity [@singhal2023long] [@bu2025beyond] or formatting habits [@zhang2024lists], emerge for a similar reason, but they are easier to detect and mitigate in training.
+
+
 ## Collecting Preference Data
 
 Getting the most out of human data involves iterative training of models, evolving and highly detailed data instructions, translating through data foundry businesses, and other challenges that add up. 
