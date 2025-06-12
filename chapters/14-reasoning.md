@@ -184,7 +184,7 @@ A summary of the foundational reasoning research reports, some of which are acco
 | 2025‑05‑21  | Hunyuan-TurboS [@liu2025hunyuan]          | Mamba-Transformer MoE, adaptive long/short CoT                        | No           | No        |
 | 2025‑05‑28  | Skywork OR-1 [@he2025skyworkor1]          | RL recipe avoiding entropy collapse; beats DeepSeek on AIME           |  Yes      |  Yes   |
 | 2025‑06‑04  | Xiaomi MiMo VL [@coreteam2025mimovltechnicalreport]                | Adapting reasoning pipeline end-to-end to include multi-modal tasks              | Yes          | No       |
-| 2025‑06‑04  | OpenThoughts [@guha2025openthoughts]      | Public 1.2M-example instruction dataset distilled from Qwen 3                    |  Yes      |  Yes   |
+| 2025‑06‑04  | OpenThoughts [@guha2025openthoughts]      | Public 1.2M-example instruction dataset distilled from QwQ-32B                    |  Yes      |  Yes   |
 | 2025‑06‑10  | Magistral [@mistral2025magistral]         | Pure RL on Mistral 3; multilingual CoT; small model open-sourced      |  Yes (24B)| No        |
 
 
