@@ -61,6 +61,7 @@ class NavigationDropdown extends HTMLElement {
         <ol start="13">
           <li><a href="https://rlhfbook.com/c/13-cai.html">Constitutional AI and AI Feedback</a></li>
           <li><a href="https://rlhfbook.com/c/14-reasoning.html">Reasoning and Reinforcement Finetuning</a></li>
+          <li><a href="https://rlhfbook.com/c/14.5-tools.html">Tool Use and Function Calling</a></li>
           <li><a href="https://rlhfbook.com/c/15-synthetic.html">Synthetic Data</a></li>
           <li><a href="https://rlhfbook.com/c/16-evaluation.html">Evaluation</a></li>
         </ol>
@@ -68,7 +69,7 @@ class NavigationDropdown extends HTMLElement {
 
       <div class="section">
         <h3>Open Questions</h3>
-        <ol start="17">
+        <ol start="18">
           <li><a href="https://rlhfbook.com/c/17-over-optimization.html">Over-optimization</a></li>
           <li><a href="https://rlhfbook.com/c/18-style.html">Style & Information</a></li>
           <li><a href="https://rlhfbook.com/c/19-character.html">Product, UX, Character, and Post-Training</a></li>
