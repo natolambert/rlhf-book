@@ -134,5 +134,12 @@ A few principles remain:
 * ~1M prompts can be used to create a model capable of excellent RLHF and post-training. Further scaling prompts can have improvements, but has quick diminishing returns.
 * The best prompts are those in a similar distribution to downstream tasks of interest.
 * If multiple stages of training are done after instruction tuning, the models can recover from some noise in the process. Optimizing the overall optimization is more important than each individual stage.
-* Standard practice in instruction finetuning (and other post-training, such as direct alignment algorithms) is to mask the prompts when learning to only apply the loss on tokens in the completion. 
-* With multi-turn training samples, the same above masking exists -- only the generation of the "final turn" is included in the loss. This means that earlier "assistant" turns can sometimes be included in the prompt which is masked.
+
+## Implementation
+
+While the loss function is the same as pretraining, there are few key implementation details that are different than the setting used for pre-training.
+Many practices, such as deciding on the types of parallelism used to shard models across many GPUs are the same as pretraining, just the total number of machines used is often lower (for the first technical change listed below):
+
+1. **Smaller batch sizes**: Compared to pre-training, instruction tuning (and other post-training techniques such as preference finetuning) use substantially smaller batch sizes. For example, OLMo 2 uses a batch size of 1024 sequences for the 7B and 2048 for the 13B pretraining, while both only use a batch size of 256 sequences at post-training [@olmo20242]. The smaller batch sizes means that these training jobs cannot be sharded across as many devices as pretraining, where more GPUs handle bigger batches in parallel.
+2. **Prompt masking**: When pretraining, every token in the batch is predicted autoregressively and the loss is then applied to them. For instruction tuning, the prompt tokens are masked out so the model isn't learning to predict accurately user queries -- just responses. The same applies for other post-training algorithms.
+3. **Multi-turn masking**: Similar to above, when using multi-turn data only the generation of the "final turn" is included in the loss. This means that earlier "assistant" turns can sometimes be included in the prompt which is masked. For long conversations, long conversations can be "unrolled" into multiple training samples where for a conversation of N turns, each data point is trained to predict one of the assistant responses while masking all previous context (and not including the future turns in the example).

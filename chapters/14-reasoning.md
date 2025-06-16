@@ -2,8 +2,8 @@
 prev-chapter: "Constitutional AI & AI Feedback"
 prev-url: "13-cai.html"
 page-title: Reasoning Training & Inference-Time Scaling
-next-chapter: "Synthetic Data & Distillation"
-next-url: "15-synthetic.html"
+next-chapter: "Tool Use & Function Calling"
+next-url: "14.5-tools.html"
 ---
 
 # Reasoning Training & Inference-Time Scaling

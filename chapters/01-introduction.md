@@ -206,16 +206,17 @@ Newer RLHF techniques and discussions that are not clearly established, but are 
 
 13. Constitutional AI and AI Feedback: How AI feedback data and specific models designed to simulate human preference ratings work.
 14. Reasoning and Reinforcement Finetuning: The role of new RL training methods for inference-time scaling with respect to post-training and RLHF.
-15. Synthetic Data: The shift away from human to synthetic data and how distilling from other models is used.
-16. Evaluation: The ever evolving role of evaluation (and prompting) in language models.
+15. Tool Use and Function Calling: The basics of training models to call functions or tools in their outputs.
+16. Synthetic Data: The shift away from human to synthetic data and how distilling from other models is used.
+17. Evaluation: The ever evolving role of evaluation (and prompting) in language models.
 
 #### Open Questions 
 
 Fundamental problems and discussions for the long-term evolution of how RLHF is used.
 
-17. Over-optimization: Qualitative observations of why RLHF goes wrong and why over-optimization is inevitable with a soft optimization target in reward models.
-18. Style and Information: How RLHF is often underestimated in its role in improving the user experience of models due to the crucial role that style plays in information sharing.
-19. Product, UX, Character: How RLHF is shifting in its applicability has major AI laboratories use it to subtly match their models to their products.
+18. Over-optimization: Qualitative observations of why RLHF goes wrong and why over-optimization is inevitable with a soft optimization target in reward models.
+19. Style and Information: How RLHF is often underestimated in its role in improving the user experience of models due to the crucial role that style plays in information sharing.
+20. Product, UX, Character: How RLHF is shifting in its applicability has major AI laboratories use it to subtly match their models to their products.
 
 
 ### Target Audience
