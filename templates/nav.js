@@ -60,7 +60,7 @@ class NavigationDropdown extends HTMLElement {
         <h3>Advanced</h3>
         <ol start="13">
           <li><a href="https://rlhfbook.com/c/13-cai.html">Constitutional AI and AI Feedback</a></li>
-          <li><a href="https://rlhfbook.com/c/14-reasoning.html">Reasoning and Reinforcement Finetuning</a></li>
+          <li><a href="https://rlhfbook.com/c/14-reasoning.html">Reasoning and Inference-time Scaling</a></li>
           <li><a href="https://rlhfbook.com/c/14.5-tools.html">Tool Use and Function Calling</a></li>
           <li><a href="https://rlhfbook.com/c/15-synthetic.html">Synthetic Data</a></li>
           <li><a href="https://rlhfbook.com/c/16-evaluation.html">Evaluation</a></li>
