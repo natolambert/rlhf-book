@@ -1,6 +1,6 @@
 ---
-prev-chapter: "Reasoning & Inference-Time Scaling"
-prev-url: "14-reasoning.html"
+prev-chapter: "Tool Use & Function Calling"
+prev-url: "14.5-tools.html"
 page-title: Synthetic Data & Distillation
 next-chapter: "Evaluation & Prompting"
 next-url: "16-evaluation.html"
