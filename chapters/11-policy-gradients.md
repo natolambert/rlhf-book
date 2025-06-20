@@ -38,7 +38,7 @@ This return is the basis for learning a value function $V(s)$ that is the estima
 
 $$V(s) = \mathbb{E}\big[G_t | S_t = s \big].$$ {#eq:value_function}
 
-All policy gradient algorithms solve an objective for such a value function induced from a specific policy, $\pi(s|a)$. 
+All policy gradient algorithms solve an objective for such a value function induced from a specific policy, $\pi(a|s)$. 
 
 Where $d_\pi(s)$ is the stationary distribution of states induced by policy $\pi(s)$, the optimization is defined as:
 $$
