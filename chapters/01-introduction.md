@@ -216,7 +216,7 @@ Fundamental problems and discussions for the long-term evolution of how RLHF is 
 
 18. Over-optimization: Qualitative observations of why RLHF goes wrong and why over-optimization is inevitable with a soft optimization target in reward models.
 19. Style and Information: How RLHF is often underestimated in its role in improving the user experience of models due to the crucial role that style plays in information sharing.
-20. Product, UX, Character: How RLHF is shifting in its applicability has major AI laboratories use it to subtly match their models to their products.
+20. Product, UX, Character: How RLHF is shifting in its applicability as major AI laboratories use it to subtly match their models to their products.
 
 
 ### Target Audience
