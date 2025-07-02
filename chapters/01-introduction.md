@@ -60,7 +60,7 @@ The most compelling view of how RLHF works is to think of how *style* applies to
 The style, or format, of information presented is crucial to how it is learned.
 This has always been the case for examples such as coursework, but is normally applied in the background and not considered directly.
 
-Continuing the above example, a model trained with RLHF (and other post-training tools), would answer the question very differently. Asking Tülu 3 405B the same question "The president of the united states in 2006 was," is says concisely:
+Continuing the above example, a model trained with RLHF (and other post-training tools), would answer the question very differently. Asking Tülu 3 405B the same question "The president of the united states in 2006 was," it says concisely:
 
 > George W. Bush was the president of the United States in 2006. He served two terms in office, from January 20, 2001, to January 20, 2009.
 
