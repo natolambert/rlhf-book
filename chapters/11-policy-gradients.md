@@ -516,7 +516,7 @@ The primary challenges faced when making training more asynchronous are keeping 
 These systems are designed and implemented with the presumption that nearly on-policy data is good enough for stable learning. 
 Here, the generation and update phases can easily be synced to avoid idle compute on either piece of the training system.
 With reasoning models, the extremely long inference characteristics of problems requiring 10K to 100K+ tokens per answer makes the generation of roll-outs a far stronger bottleneck.
-A common problem when training reasoning models on more synchronous RL infrastructure is that an answer to one answer in the batch can take substantially more time to generate (either through more tokens or more tool calls), resulting in the majority of the allocated compute being idle until it completes. 
+A common problem when training reasoning models on more synchronous RL infrastructure is that an answer to one prompt in the batch can take substantially more time to generate (either through more tokens or more tool calls), resulting in the majority of the allocated compute being idle until it completes. 
 A second solution to this, called sequence-level packing, length mismatch issue within a batch is to stack shorter samples within a batch with clever masking to enable continued roll-outs from the model and better distributed length normalization of samples within a batch.
 The full complexity of distributed RL infrastructure is out of scope for this book, as it can cause many other subtle issues that slow down training or cause instability.
 
