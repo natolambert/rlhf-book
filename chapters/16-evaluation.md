@@ -9,7 +9,7 @@ next-url: "17-over-optimization.html"
 # Evaluation
 
 Evaluation is an ever evolving approach.
-The key to understanding language model evaluation, particularly with post-training, is that the current popular evaluation regimes represents a reflection of the popular training best practices and goals.
+The key to understanding language model evaluation, particularly with post-training, is that the current popular evaluation regimes represent a reflection of the popular training best practices and goals.
 While challenging evaluations drive progress in language models to new areas, the majority of evaluation is designed around building useful signals for new models.
 
 In many ways, this chapter is designed to present vignettes of popular evaluation regimes throughout the early history of RLHF, so readers can understand the common themes, details, and failure modes.
@@ -169,7 +169,7 @@ Evaluation is moving to where the models are tested to respond in a generative m
 
 ![Report from Epoch AI showing how major AI evaluations are rapidly saturated over time. License CC-BY.](images/benchmark-performance.jpeg)
 
-Language model evaluations done within companies can only be compared to their peers with large error bars because the process that they use evaluations internally is not matched with external evaluations.
+Language model evaluations done within companies can only be compared to their peers with large error bars because the process that they use for evaluations internally is not matched with external evaluations.
 Internal evaluations are made to hillclimb on for training, as would be called a "training set" in traditional machine learning.
 The public evaluations that the community uses to compare leading models cannot be known if they were within said training set or as unseen "test sets" or "validation sets."
 
