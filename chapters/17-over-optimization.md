@@ -62,7 +62,7 @@ Common signs of over-optimization in early chat models emerged as:
 
 It is an open research question on which types of error in the training process result in these failures.
 Many sources of error exist [@schulman2023proxy]: Approximation error from reward models not being able to fit to preferences, estimation error from overfitting during training the RM, optimization error in training the language model policy, etc.
-This points to a fundamental question as to the limits of optimizating the intents and outputs of data contractors relative to what downstream users want.
+This points to a fundamental question as to the limits of optimizing the intents and outputs of data contractors relative to what downstream users want.
 
 A potential solution is that *implicit* feedback will be measured from users of chatbots and models to tune performance.
 Implicit feedback is actions taken by the user, such as re-rolling an output, closing the tab, or writing an angry message that indicates the quality of the previous response. 

@@ -5,7 +5,7 @@ Built on [**Pandoc book template**](https://github.com/wikiti/pandoc-book-templa
 [![Content License](https://img.shields.io/badge/license-CC--BY--NC--SA--4.0-lightgrey)](https://github.com/natolambert/rlhf-book/blob/main/LICENSE-Content.md)
 
 This is a work-in-progress textbook covering the fundamentals of Reinforcement Learning from Human Feedback (RLHF).
-The code is licensed with the MIT license, but the content for the book found in `chapters/` is licensed under the [Creative Commons Non-Commercial Attribution License](https://creativecommons.org/licenses/by-nc/4.0/deed.en), CC BY-NC 4.0.
+The code is licensed with the MIT license, but the content for the book found in `chapters/` is licensed under the [Creative Commons Non-Commercial ShareAlike Attribution License](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en), CC-BY-NC-SA-4.0.
 This is meant for people with a basic ML and/or software background.
 
 ### Citation
@@ -14,7 +14,7 @@ To cite this book, please use the following format.
 @book{rlhf2024,
   author       = {Nathan Lambert},
   title        = {Reinforcement Learning from Human Feedback},
-  year         = {2024},
+  year         = {2025},
   publisher    = {Online},
   url          = {https://rlhfbook.com},
   % Chapters can be optionally included as shown below:

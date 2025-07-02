@@ -86,6 +86,10 @@ book:	epub html pdf docx
 clean:
 	$(RMDIR_CMD) $(BUILD)
 
+# Chapters content and dependencies defined first
+NESTED_HTML_DIR = $(BUILD)/html/c/
+CHAPTER_HTMLS = $(patsubst chapters/%.md,$(NESTED_HTML_DIR)/%.html,$(CHAPTERS))
+
 # Debugging output for chapters and HTML output paths
 $(info Chapters found: $(CHAPTERS))
 $(info HTML output will be: $(CHAPTER_HTMLS))
@@ -99,9 +103,6 @@ epub:	$(BUILD)/epub/$(OUTPUT_FILENAME).epub
 
 html:	$(BUILD)/html/$(OUTPUT_FILENAME_HTML).html nested_html
 
-nested_html: $(CHAPTER_HTMLS)
-	$(ECHO_BUILT)
-	
 pdf:	$(BUILD)/pdf/$(OUTPUT_FILENAME).pdf
 
 docx:	$(BUILD)/docx/$(OUTPUT_FILENAME).docx
@@ -125,14 +126,11 @@ $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html:	$(HTML_DEPENDENCIES)
 	$(ECHO_BUILDING)
 	$(MKDIR_CMD) $(BUILD)/html
 	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(ARGS) $(HTML_ARGS) -o $@
-	$(COPY_CMD) $(IMAGES) $(BUILD)/html/ --mathjax
+	$(COPY_CMD) $(IMAGES) $(BUILD)/html/
 	$(COPY_CMD) $(JS_FILES) $(BUILD)/html/
 	$(COPY_CMD) $(JS_FILES) $(BUILD)/html/c/  # Copy to nested directory
 	$(ECHO_BUILT)
 
-# Nested HTML build targets
-NESTED_HTML_DIR = $(BUILD)/html/c/
-CHAPTER_HTMLS = $(patsubst chapters/%.md,$(NESTED_HTML_DIR)/%.html,$(CHAPTERS))
 
 # Rule to build each HTML file from each Markdown file
 $(NESTED_HTML_DIR)/%.html: chapters/%.md $(HTML_DEPENDENCIES)
@@ -144,12 +142,6 @@ $(NESTED_HTML_DIR)/%.html: chapters/%.md $(HTML_DEPENDENCIES)
 nested_html: $(CHAPTER_HTMLS)
 	@echo "All nested HTML files built"
 
-# Main HTML target
-$(BUILD)/html/$(OUTPUT_FILENAME_HTML).html: nested_html
-	$(MKDIR_CMD) $(BUILD)/html
-	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(ARGS) $(HTML_ARGS) -o $@
-	$(COPY_CMD) $(IMAGES) $(BUILD)/html/
-	@echo "Main HTML index built"
 
 # ArXiv‑compatible LaTeX build rule
 $(BUILD)/latex/$(OUTPUT_FILENAME).tex: $(PDF_DEPENDENCIES)
