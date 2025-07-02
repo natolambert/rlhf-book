@@ -61,6 +61,6 @@ Much more goes into making a model easy to use than just having the final model 
 RLHF research has become the interface where a lot of this is tested because of the framing where RLHF is a way to understand the user's preferences to products in real time and because it is the final training stage before release.
 The quickest way to add a new feature to a model is to try and incorporate it at post-training where training is faster and cheaper.
 This cycle has been seen with image understanding, tool use, better behavior, and more.
-What starts as a product question quickly becomes and RLHF modeling question, and if it is successful there it backpropagates to other earlier training stages.
+What starts as a product question quickly becomes an RLHF modeling question, and if it is successful there it backpropagates to other earlier training stages.
 
 
