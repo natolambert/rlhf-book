@@ -612,7 +612,7 @@ This leads to PPO or GRPO implementations where the second policy gradient and c
 ### Group Relative Policy Optimization
 
 The DeepSeekMath paper details some implementation details of GRPO that differ from PPO [@shao2024deepseekmath], especially if comparing to a standard application of PPO from Deep RL rather than language models.
-For example, the KL penalty within the RLHF optimization (recall the KL penalty is also used when training reasoning models on verifiable rewards without a reward model) is applied directly in the loss update rather to the reward function.
+For example, the KL penalty within the RLHF optimization (recall the KL penalty is also used when training reasoning models on verifiable rewards without a reward model) is applied directly in the loss update rather than to the reward function.
 Where the standard KL penalty application for RLHF is applied as $r=r_\theta + \beta D_{KL}$, the GRPO implementation is along the lines of:
 
 $$ L = L_{\text{policy gradient}} - \beta * D_{KL} $$
