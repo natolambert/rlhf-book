@@ -97,7 +97,7 @@ This can even include techniques that train specialized models and then merge th
 
 ![A summary of the Tülu 3 recipe with target skills and multi-step training recipe. Lambert et al. 2024, License CC-BY.](images/tulu3.png){#fig:tulu-3}
 
-A fully example version of this multi-stage version of post-training where RLHF plays a major role is Tülu 3.
+A fully open example version of this multi-stage version of post-training where RLHF plays a major role is Tülu 3.
 The Tülu 3 recipe consists of three stages:
 
 1. **Instruction tuning on ~1M examples**: This primarily synthetic data from a mix of frontier models such as GPT-4o and Llama 3.1 405B teaches the model general instruction following and serves as the foundation of a variety of capabilities such as mathematics or coding.

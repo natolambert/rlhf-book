@@ -10,7 +10,7 @@ next-url: "19-character.html"
 
 Early developments in RLHF gave it a reputation for being "just style transfer" or other harsh critiques on how RLHF manipulates the way information is presented in outputs.
 
-Style transfer, has held back the RLHF narrative for two reasons. 
+Style transfer has held back the RLHF narrative for two reasons. 
 
 First, when people discuss style transfer, they don’t describe this as being important or exciting. 
 Style is a never-ending source of human value, it’s why retelling stories can result in new bestselling books (such as [Sapiens](https://en.wikipedia.org/wiki/Sapiens:_A_Brief_History_of_Humankind)), and it is a fundamental part of continuing to progress our intellectual ecosystem. 
@@ -78,4 +78,4 @@ Those among you who are familiar with RLHF methods may ask if the KL constraint 
 The KL constraint is a distance term between the distribution of the original model and the resulting model. 
 It helps make the optimization more robust to overoptimization, but that makes the border between good and bad models a bit more nuanced. 
 Hence, the prevalence of vibes-based evaluations. 
-Though, models tend to have enough parameters where they can change substantially and still satisfy the KL constraint on the data being measured — it can’t be the entire pertaining dataset, for example.
+Though, models tend to have enough parameters where they can change substantially and still satisfy the KL constraint on the data being measured — it can’t be the entire pretraining dataset, for example.

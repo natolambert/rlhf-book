@@ -200,7 +200,7 @@ $$ J(\theta) = \frac{1}{|a|} \sum_{t=0}^{|a|} \min\left(\frac{\pi_\theta(a_{t}|s
 This is the per-token version of PPO, which also applies to other policy-gradient methods, but is explored further later in the implementation section of this chapter.
 Here, the term for averaging by the number of tokens in the action, $\frac{1}{|a|}$, comes from common implementation practices, but is not in a formal derivation of the loss (shown in [@liu2025understanding]).
 
-Here we will explain the difference cases this loss function triggers given various advantages and policy ratios.
+Here we will explain the different cases this loss function triggers given various advantages and policy ratios.
 At an implementation level, the inner computations for PPO involve standard policy gradient and a clipped policy gradient.
 
 To understand how different situations emerge, we can define the policy ratio as:
@@ -516,7 +516,7 @@ The primary challenges faced when making training more asynchronous are keeping 
 These systems are designed and implemented with the presumption that nearly on-policy data is good enough for stable learning. 
 Here, the generation and update phases can easily be synced to avoid idle compute on either piece of the training system.
 With reasoning models, the extremely long inference characteristics of problems requiring 10K to 100K+ tokens per answer makes the generation of roll-outs a far stronger bottleneck.
-A common problem when training reasoning models on more synchronous RL infrastructure is that an answer to one answer in the batch can take substantially more time to generate (either through more tokens or more tool calls), resulting in the majority of the allocated compute being idle until it completes. 
+A common problem when training reasoning models on more synchronous RL infrastructure is that an answer to one prompt in the batch can take substantially more time to generate (either through more tokens or more tool calls), resulting in the majority of the allocated compute being idle until it completes. 
 A second solution to this, called sequence-level packing, length mismatch issue within a batch is to stack shorter samples within a batch with clever masking to enable continued roll-outs from the model and better distributed length normalization of samples within a batch.
 The full complexity of distributed RL infrastructure is out of scope for this book, as it can cause many other subtle issues that slow down training or cause instability.
 
@@ -548,7 +548,6 @@ advantages = rewards - values.detach()  # Shape: (B*G, L)
 
 # Normalize advantages (optional but stable)
 advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
-advantages = advantages.unsqueeze(1)  # Shape: (B*G, 1)
 
 # Compute probability ratio between new and old policies
 ratio = torch.exp(new_per_token_logps - per_token_logps)  # Shape: (B*G, L)
@@ -613,7 +612,7 @@ This leads to PPO or GRPO implementations where the second policy gradient and c
 ### Group Relative Policy Optimization
 
 The DeepSeekMath paper details some implementation details of GRPO that differ from PPO [@shao2024deepseekmath], especially if comparing to a standard application of PPO from Deep RL rather than language models.
-For example, the KL penalty within the RLHF optimization (recall the KL penalty is also used when training reasoning models on verifiable rewards without a reward model) is applied directly in the loss update rather to the reward function.
+For example, the KL penalty within the RLHF optimization (recall the KL penalty is also used when training reasoning models on verifiable rewards without a reward model) is applied directly in the loss update rather than to the reward function.
 Where the standard KL penalty application for RLHF is applied as $r=r_\theta + \beta D_{KL}$, the GRPO implementation is along the lines of:
 
 $$ L = L_{\text{policy gradient}} - \beta * D_{KL} $$

@@ -52,6 +52,6 @@ With open models, common practice is to distill training data from closed API mo
 Within this, curating high-quality prompts and filtering responses from the teacher model is crucial to maximize performance.
 
 Transferring specific skills into smaller language models uses the same principles of distillation -- get the best data possible for training.
-Here, many papers have studying using limited datasets from stronger models to improve alignment
+Here, many papers have studied using limited datasets from stronger models to improve alignment
 [@zhou2023lima], mathematic reasoning [@shridhar2023distilling] [@hsieh2023distilling], 
  and test-time scaling [@muennighoff2025s1].
