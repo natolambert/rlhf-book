@@ -548,7 +548,6 @@ advantages = rewards - values.detach()  # Shape: (B*G, L)
 
 # Normalize advantages (optional but stable)
 advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
-advantages = advantages.unsqueeze(1)  # Shape: (B*G, 1)
 
 # Compute probability ratio between new and old policies
 ratio = torch.exp(new_per_token_logps - per_token_logps)  # Shape: (B*G, L)
