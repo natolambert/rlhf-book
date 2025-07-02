@@ -389,6 +389,7 @@ thead {
 
 .dropdown-content.open {
   display: block;
+  max-height: 2000px;
 }
 /* Header Nav Block */
     .chapter-nav {
@@ -409,9 +410,6 @@ thead {
         border-radius: 5px;
         text-align: left;
     }
-  .dropdown-content.open {
-    max-height: 2000px;
-  }
   .dropdown-content {
     max-height: 0;
     overflow: hidden;

@@ -9,7 +9,7 @@ lang: en-US
 mainlang: english
 otherlang: english
 tags: [rlhf, ebook, ai, ml]
-date: 13 June 2025
+date: 2 July 2025
 abstract: |
   Reinforcement learning from human feedback (RLHF) has become an important technical and storytelling tool to deploy the latest machine learning systems.
   In this book, we hope to give a gentle introduction to the core methods for people with some level of quantitative background.
@@ -19,7 +19,7 @@ abstract: |
   The book concludes with advanced topics -- understudied research questions in synthetic data and evaluation -- and open questions for the field.
 # mainfont: DejaVu Sans # not available on Mac
 Filter preferences:
-- pandoc-crossref
+  - pandoc-crossref
 geometry:
   - margin=1.5in # Sets all margins (top, bottom, left, right) equally
 linkReferences: true
@@ -37,6 +37,5 @@ header-includes:
     \usepackage{array}
     \newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1\textwidth}}
     ```
-##################
 ---
 

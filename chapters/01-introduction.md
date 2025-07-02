@@ -121,7 +121,7 @@ Post-training has far outgrown that, and we are coming to see that the style of 
 Why does this book make sense now? How much still will change?
 
 Post-training, the craft of eliciting powerful behaviors from a raw pretrained language model, has gone through many seasons and moods since the release of ChatGPT that sparked the renewed interest in RLHF. 
-In the era of Alpaca [@alpaca], Vicuna [@vicuna2023],  [@koala_blogpost_2023], and Dolly [@DatabricksBlog2023DollyV1], a limited number of human datapoints with extended synthetic data in the style of Self-Instruct were used to normally fine-tune the original LLaMA to get similar behavior to ChatGPT. 
+In the era of Alpaca [@alpaca], Vicuna [@vicuna2023], Koala [@koala_blogpost_2023], and Dolly [@DatabricksBlog2023DollyV1], a limited number of human datapoints with extended synthetic data in the style of Self-Instruct were used to normally fine-tune the original LLaMA to get similar behavior to ChatGPT. 
 The benchmark for these early models was fully vibes (and human evaluation) as we were all so captivated by the fact that these small models can have such impressive behaviors across domains. 
 It was justified excitement.
 
