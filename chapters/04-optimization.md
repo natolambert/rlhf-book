@@ -69,7 +69,7 @@ Modern RLHF-trained models always utilize instruction finetuning followed by a m
 Over time various models have been identified as canonical recipes for RLHF specifically or post-training generally.
 These recipes reflect data practices and model abilities at the time.
 As the recipes age, training models with the same characteristics becomes easier and takes fewer data.
-There is a general trends of post-training involving more optimization steps with more training algorithms across more diverse training datasets and evaluations.
+There is a general trend of post-training involving more optimization steps with more training algorithms across more diverse training datasets and evaluations.
 
 ### InstructGPT
 
