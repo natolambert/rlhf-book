@@ -12,7 +12,7 @@ This chapter includes all the definitions, symbols, and operations frequently us
 
 ## Language Modeling Overview
 
-The majority of modern language models are trained to learn the joint probability distribution of sequences of tokens (words, subwords, or characters) in a autoregressive manner. 
+The majority of modern language models are trained to learn the joint probability distribution of sequences of tokens (words, subwords, or characters) in an autoregressive manner. 
 Autoregression simply means that each next prediction depends on the previous entities in the sequence.
  Given a sequence of tokens $x = (x_1, x_2, \ldots, x_T)$, the model factorizes the probability of the entire sequence into a product of conditional distributions:
 
