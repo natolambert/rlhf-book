@@ -19,7 +19,7 @@ For a more exhaustive list, you should use a proper survey paper [@kaufmann2023s
 The field has recently been popularized with the growth of Deep Reinforcement Learning and has grown into a broader study of the applications of LLMs from many large technology companies.
 Still, many of the techniques used today are deeply related to core techniques from early literature on RL from preferences.
 
-*TAMER: Training an Agent Manually via Evaluative Reinforcement,* Proposed a learned agent where humans provided scores on the actions taken iteratively to learn a reward model [@knox2008tamer]. Other concurrent or soon after work proposed an actor-critic algorithm, COACH, where human feedback (both positive and negative) is used to tune the advantage function [@macglashan2017interactive].
+*TAMER: Training an Agent Manually via Evaluative Reinforcement* proposed a learned agent where humans provided scores on the actions taken iteratively to learn a reward model [@knox2008tamer]. Other concurrent or soon after work proposed an actor-critic algorithm, COACH, where human feedback (both positive and negative) is used to tune the advantage function [@macglashan2017interactive].
 
 The primary reference, Christiano et al. 2017, is an application of RLHF applied to preferences between Atari trajectories [@christiano2017deep]. The work shows that humans choosing between trajectories can be more effective in some domains than directly interacting with the environment. This uses some clever conditions, but is impressive nonetheless.
 This method was expanded upon with more direct reward modeling [@ibarz2018reward].
@@ -51,7 +51,7 @@ The announcement of ChatGPT was very clear about the role of RLHF in its trainin
 
 > We trained this model using Reinforcement Learning from Human Feedback (RLHF), using the same methods as InstructGPT⁠, but with slight differences in the data collection setup.
 
-Since then RLHF has been used extensively in leading language models. 
+Since then, RLHF has been used extensively in leading language models. 
 It is well known to be used in Anthropic's Constitutional AI for Claude [@bai2022constitutional], Meta's Llama 2 [@touvron2023llama] and Llama 3 [@dubey2024llama], Nvidia's Nemotron [@adler2024nemotron], Ai2's Tülu 3 [@lambert2024t], and more.
 
 Today, RLHF is growing into a broader field of preference fine-tuning (PreFT), including new applications such as process reward for intermediate reasoning steps [@lightman2023let], direct alignment algorithms inspired by Direct Preference Optimization (DPO) [@rafailov2024direct], learning from execution feedback from code or math [@kumar2024training],[@singh2023beyond], and other online reasoning methods inspired by OpenAI's o1 [@openai2024o1].
