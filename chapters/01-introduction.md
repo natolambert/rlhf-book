@@ -247,7 +247,7 @@ RLHF is the tool most associated with rapid progress in "post-training" of langu
 This textbook is a broad overview of RLHF and its directly neighboring methods, such as instruction tuning and other implementation details needed to set up a model for RLHF training.
 
 As more successes of fine-tuning language models with RL emerge, such as OpenAI's o1 reasoning models, RLHF will be seen as the bridge that enabled further investment of RL methods for fine-tuning large base models.
-At the same time, while the spotlight of focus may be more intense on the RL portion of RLHF in the near future -- as a way to maximize performance on valuable tasks -- the core of RLHF is that it is a lens for studying on of the grand problems facing modern forms of AI.
+At the same time, while the spotlight of focus may be more intense on the RL portion of RLHF in the near future -- as a way to maximize performance on valuable tasks -- the core of RLHF is that it is a lens for studying the grand problems facing modern forms of AI.
 How do we map the complexities of human values and objectives into systems we use on a regular basis?
 This book hopes to be the foundation of decades of research and lessons on these problems.
 
