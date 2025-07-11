@@ -19,7 +19,7 @@ Historically, until RLHF and related methods, all finetuning was **instruction f
 
 Since, instruction finetuning, also called colloquially just *instruction tuning*, has matured and is standard practice across many language modeling pipelines.
 At its core, IFT is the simplest method for adapting language models to a desired task.
-It serves as the foundation for RLHF by preparing the model for a format of instructions that is known common, question-answering, and is the first tool used by those attempting to apply modern techniques to new domains.
+It serves as the foundation for RLHF by preparing the model for a format of instructions that is known as question-answering, and it is the first tool used by those attempting to apply modern techniques to new domains.
 
 Instruction tuning practically uses the same autoregressive loss function used in pretraining language models.
 

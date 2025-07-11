@@ -148,7 +148,7 @@ $$ {#eq:REINFORCE_with_advantage}
 
 REINFORCE is a specific implementation of vanilla policy gradient that uses a Monte Carlo estimator of the gradient.
 
-REINFORCE can be run without value network -- the value network is for the baseline in the policy gradient. 
+REINFORCE can be run without a value network -- the value network is for the baseline in the policy gradient. 
 PPO on the other hand needs the value network to accurately compute the advantage function.
 
 #### REINFORCE Leave One Out (RLOO)
@@ -510,7 +510,7 @@ The default implementation for policy-gradient algorithms is what is called **on
 For theoretical derivations of policy-gradient, many results rely on these results, where the model is always up to date with the results from the latest trials.
 In practice, separating training from roll-outs (i.e. inference for a generative model) substantially slows training [@noukhovitch2024asynchronous].
 
-![A comparison of the generation-update phases for synchronous or asynchronous RL training follow Noukhovitch et al. 2024.](images/async_v_synch_rl){#fig:async}
+![A comparison of the generation-update phases for synchronous or asynchronous RL training follow Noukhovitch et al. 2024.](images/async_v_synch_rl.png){#fig:async}
 
 The common solution used is to constantly run inference and training on separate GPU nodes with software designed to efficiently run both.
 Common practice in popular open-source RL tools for language models is to use a distributed process management library such as Ray to hand information off between the policy-gradient learning loop and the inference loop that is running an efficient inference loop, e.g. VLLM.
