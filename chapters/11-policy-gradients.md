@@ -148,7 +148,7 @@ $$ {#eq:REINFORCE_with_advantage}
 
 REINFORCE is a specific implementation of vanilla policy gradient that uses a Monte Carlo estimator of the gradient.
 
-REINFORCE can be run without the value network -- the value network is for the baseline in the policy gradient. 
+REINFORCE can be run without a value network -- the value network is for the baseline in the policy gradient. 
 PPO on the other hand needs the value network to accurately compute the advantage function.
 
 #### REINFORCE Leave One Out (RLOO)
