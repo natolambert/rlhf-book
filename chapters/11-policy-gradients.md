@@ -53,14 +53,74 @@ With this expected return, $J$, the gradient can be computed as follows, where $
 $$\theta \leftarrow \theta + \alpha \nabla_\theta J(\theta)$$ {#eq:policy_update}
 
 The core implementation detail is how to compute said gradient.
-Schulman et al. 2015 provides an overview of the different ways that policy gradients can be computed [@schulman2015high].
-The goal is to *estimate* the exact gradient $g := \nabla_\theta \mathbb{E}[\sum_{t=0}^\infty r_t]$, of which, there are many forms similar to:
 
-$$ g = \mathbb{E}\Big[\sum_{t=0}^\infty \Psi_t \nabla_\theta \text{log} \pi_\theta(a_t|s_t) \Big], $$ {#eq:general_gradient}
+Another way to pose the RL objective we want to maximize is as follows:
+$$
+J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta} \left[ R(\tau) \right],
+$$ {#eq:policy_objective_expectation}
 
-Where $\Psi_t$ can be the following (where the rewards can also often be discounted by $\gamma$):
+where $\tau = (s_0, a_0, s_1, a_1, \ldots)$ is a trajectory and $R(\tau) = \sum_{t=0}^\infty r_t$ is the total reward of the trajectory. Alternatively, we can write the expectation as an integral over all possible trajectories:
+$$
+J(\theta) = \int_\tau p_\theta (\tau) R(\tau) d\tau
+$$ {#eq:policy_objective_integral}
 
-1. $\sum_{t=0}^{\infty} r_t$: total reward of the trajectory.
+Notice that we can express the trajectory probability as follows:
+$$
+p_\theta (\tau) = p(s_0) \prod_{t=0}^\infty \pi_\theta(a_t|s_t) p(s_{t+1}|s_t, a_t),
+$$ {#eq:trajectory_probability}
+
+If we take the gradient of the objective (@eq:policy_objective_expectation) with respect to the policy parameters $\theta$: 
+$$
+\nabla_\theta J(\theta) = \int_\tau \nabla_\theta p_\theta (\tau) R(\tau) d\tau
+$$ {#eq:policy_gradient_integral}
+
+Notice that we can use the [log-derivative trick](https://andrewcharlesjones.github.io/journal/log-derivative.html) in order to rewrite the gradient of the integral as an expectation:
+$$
+\begin{aligned}
+\nabla_\theta \log p_\theta(\tau) &= \frac{\nabla_\theta p_\theta(\tau)}{p_\theta(\tau)} &\text{(from chain rule)} \\
+\implies \nabla_\theta p_\theta(\tau) &= p_\theta(\tau) \nabla_\theta \log p_\theta(\tau) &\text{(rearranging)}
+\end{aligned}
+$$ {#eq:log_chain_rule}
+
+Using this log-derivative trick:
+$$
+\begin{aligned}
+\nabla_\theta J(\theta) &= \int_\tau \nabla_\theta p_\theta (\tau) R(\tau) d\tau \\
+&= \int_\tau p_\theta (\tau) \nabla_\theta \log p_\theta (\tau) R(\tau) d\tau \\
+&= \mathbb{E}_{\tau \sim \pi_\theta} \left[ \nabla_\theta \log p_\theta (\tau) R(\tau) \right]
+\end{aligned}
+$$ {#eq:policy_gradient_expectation}
+
+Expanding the log probability of the trajectory:
+
+$$
+\log p_\theta (\tau) = \log p(s_0) + \sum_{t=0}^\infty \log \pi_\theta(a_t|s_t) + \sum_{t=0}^\infty \log p(s_{t+1}|s_t, a_t)
+$$
+
+Now, if we take the gradient of the above we get:  
+
+- $\nabla_\theta \log p(s_0) = 0$ (initial state doesn't depend on $\theta$)
+- $\nabla_\theta \log p(s_{t+1}|s_t, a_t) = 0$ (environment transition dynamics don't depend on $\theta$)
+- only $\nabla_\theta \log \pi_\theta(a_t|s_t)$ survives
+
+Therefore, the gradient of the log probability of the trajectory simplifies to:
+$$
+\nabla_\theta \log p_\theta (\tau) = \sum_{t=0}^\infty \nabla_\theta \log \pi_\theta(a_t|s_t)
+$$
+
+Substituting this back in @eq:policy_gradient_expectation, we get:
+$$
+\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum_{t=0}^\infty \nabla_\theta \log \pi_\theta(a_t|s_t) R(\tau) \right]
+$$
+
+Quite often, people use a more general formulation of the policy gradient: 
+$$
+g = \nabla_\theta J(\pi_\theta) = \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum_{t=0}^\infty \nabla_\theta \log \pi_\theta(a_t|s_t) \Psi_t \right]
+$$ {#eq:general_gradient}
+
+Where $\Psi_t$ can be the following (where the rewards can also often be discounted by $\gamma$), a taxonomy adopted from Schulman et al. 2015 [@schulman2015high]:
+
+1. $R(\tau) = \sum_{t=0}^{\infty} r_t$: total reward of the trajectory.
 2. $\sum_{t'=t}^{\infty} r_{t'}$: reward following action $a_t$, also described as the return, $G$.
 3. $\sum_{t'=t}^{\infty} r_{t'} - b(s_t)$: baselined version of previous formula.
 4. $Q^{\pi}(s_t, a_t)$: state-action value function.
@@ -93,17 +153,6 @@ Even these baselines can de-bias the gradients so $\mathbb{E}_{a \sim \pi(a|s)}[
 Many of the policy gradient algorithms discussed in this chapter build on the advantage formulation of policy gradient:
 
 $$\nabla_\theta J(\pi_\theta) = \mathbb{E}_\tau \left[ \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t|s_t) A^{\pi_\theta}(s_t, a_t) \right]$$ {#eq:advantage_policy_gradient}
-
-A core piece of the policy gradient implementation involves taking the derivative of the probabilistic policies. 
-This comes from:
-
-$$\nabla_\theta \log \pi_\theta(a|s) = \frac{\nabla_\theta \pi_\theta(a|s)}{\pi_\theta(a|s)}$$ {#eq:log_prob_derivative}
-
-Which is derived from the chain rule:
-
-$$\nabla_\theta \log x = \frac{1}{x} \nabla_\theta x$$ {#eq:log_chain_rule}
-
-We will use this later on in the chapter.
 
 
 ### REINFORCE
