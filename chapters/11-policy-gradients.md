@@ -118,7 +118,7 @@ $$
 g = \nabla_\theta J(\pi_\theta) = \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum_{t=0}^\infty \nabla_\theta \log \pi_\theta(a_t|s_t) \Psi_t \right]
 $$ {#eq:general_gradient}
 
-Where $\Psi_t$ can be the following (where the rewards can also often be discounted by $\gamma$):
+Where $\Psi_t$ can be the following (where the rewards can also often be discounted by $\gamma$), a taxonomy adopted from Schulman et al. 2015 [@schulman2015high]:
 
 1. $R(\tau) = \sum_{t=0}^{\infty} r_t$: total reward of the trajectory.
 2. $\sum_{t'=t}^{\infty} r_{t'}$: reward following action $a_t$, also described as the return, $G$.
