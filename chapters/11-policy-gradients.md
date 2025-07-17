@@ -263,43 +263,76 @@ It emerges from computing the gradient of a policy and controls the parameter up
 For any batch of data, the policy ratio starts at 1 for the first gradient step for that batch (common practice is to take 1-4 gradient steps per batch with policy gradient algorithms).
 Then, the policy ratio will be above one if that gradient step increased the likelihood of certain tokens with an associated positive advantage, or less than one for the other case. 
 
-The policy ratio and advantage together can occur in a few different configurations.
+The policy ratio and advantage together can occur in a few different configurations. We will split the cases into two groups: positive and negative advantage.
 
-The first case is when the advantage is positive and the policy ratio exceeds $1+\varepsilon$ (meaning that the new policy is more likely to take said action), which is clipped, and the objective becomes:
+**Positive Advantage ($A_t > 0$)**
 
-$$J(\theta) = \min \left(R(\theta), (1 + \varepsilon)\right)A = (1 + \varepsilon)A $$ {#eq:PPO_CASE1}
+This means that the action taken was beneficial according to the value function, and we want to increase the likelihood of taking that action in the future. Now, let's look at different cases for the policy ratio $R(\theta)$:
 
-This will increase the probability ratio, making the action even more likely, but only up until the clipping parameter epsilon.
-The similar conditions are when the advantage is still positive, but the likelihood ratio shifts.
+1. $R(\theta) < 1 - \varepsilon$:
 
-For positive advantage and ratio less than $1-\varepsilon$, a we get a partially substituted equation:
+    - **Interpretation**: Action is less likely with the new policy than the old policy
+    - **Unclipped Term**: $R(\theta) A_t$
+    - **Clipped Term**: $(1 - \varepsilon) A_t$
+    - **Objective**: $R(\theta) A_t$
+    - **Gradient**: $\nabla_\theta R(\theta) A_t \neq 0$
+    - **What happens**: Normal update - increase likelihood of action
 
-$$J(\theta) = \min \left(R(\theta), (1 - \varepsilon)\right)A$$ {#eq:PPO_CASE2}
+2. $1 - \varepsilon \leq R(\theta) \leq 1 + \varepsilon$:
 
-That reduces to
+    - **Interpretation**: Action is almost equally likely with the new policy as the old policy
+    - **Unclipped Term**: $R(\theta) A_t$
+    - **Clipped Term**: $R(\theta) A_t$
+    - **Objective**: $R(\theta) A_t$
+    - **Gradient**: $\nabla_\theta R(\theta) A_t \neq 0$
+    - **What happens**: Normal update - increase likelihood of action
 
-$$J(\theta) = R(\theta)A$$ {#eq:PPO_CASE3}
+3. $1 + \varepsilon < R(\theta)$:
 
-because of the less than assumption.
+    - **Interpretation**: Action is more likely with the new policy than the old policy
+    - **Unclipped Term**: $R(\theta) A_t$
+    - **Clipped Term**: $(1 + \varepsilon) A_t$
+    - **Objective**: $(1 + \varepsilon) A_t$
+    - **Gradient**: $\nabla_\theta (1 + \varepsilon) A_t = 0$
+    - **What happens**: NO UPDATE - action is already more likely under the new policy
 
-Similarly, if the probability ratio is not clipping, the objective also reduces to the $\min(R(\theta),R(\theta))$, yielding a standard policy gradient with an advantage estimator.
+Notice that in the cases when the action is already more likely under the new policy, the gradient is zero, and therefore no gradient step is effectively taken. Only in the cases when the action is less likely or equally likely does the gradient step occur, and it is always in the direction of increasing the likelihood of the action so that the reward is higher in the future.
 
-If the advantage is negative, this looks similar. A clipped objective will occur when $R(\theta) < (1-\varepsilon)$, appearing through:
+**Negative Advantage ($A_t < 0$)**
 
-$$J(\theta) = \min \left(R(\theta)A, (1 - \varepsilon)A\right),$$ {#eq:PPO_CASE4}
+This means that the action taken was detrimental according to the value function, and we want to decrease the likelihood of taking that action in the future. Now, let's look at different cases for the policy ratio $R(\theta)$:
 
-Which, because $A<0$ we have $R(\theta)A > (1-\varepsilon)A$ and can flip the min to the max when pulling $A$ from the equation, is equivalent to
+1. $R(\theta) < 1 - \varepsilon$:
 
-$$J(\theta) = \max \left(R(\theta), (1 - \varepsilon)\right)A.$$ {#eq:PPO_CASE5}
+    - **Interpretation**: Action is less likely with the new policy than the old policy
+    - **Unclipped Term**: $R(\theta) A_t$
+    - **Clipped Term**: $(1 - \varepsilon) A_t$
+    - **Objective**: $(1 - \varepsilon) A_t$
+    - **Gradient**: $\nabla_\theta (1 - \varepsilon) A_t = 0$
+    - **What happens**: NO UPDATE - action is already less likely under the new policy
 
-Then the objective becomes:
+2. $1 - \varepsilon \leq R(\theta) \leq 1 + \varepsilon$:
 
-$$J(\theta) = (1 - \varepsilon)A$$ {#eq:PPO_CASE6}
+    - **Interpretation**: Action is almost equally likely with the new policy as the old policy
+    - **Unclipped Term**: $R(\theta) A_t$
+    - **Clipped Term**: $R(\theta) A_t$
+    - **Objective**: $R(\theta) A_t$
+    - **Gradient**: $\nabla_\theta R(\theta) A_t \neq 0$
+    - **What happens**: Normal update - decrease likelihood of action
 
-The other cases follow as above, inverted, and are left as an exercise to the reader.
+3. $1 + \varepsilon < R(\theta)$:
+
+    - **Interpretation**: Action is more likely with the new policy than the old policy
+    - **Unclipped Term**: $R(\theta) A_t$
+    - **Clipped Term**: $(1 + \varepsilon) A_t$
+    - **Objective**: $R(\theta) A_t$
+    - **Gradient**: $\nabla_\theta R(\theta) A_t \neq 0$
+    - **What happens**: Normal update - decrease likelihood of action
+
+Notice that in the cases when the action is already less likely under the new policy, the gradient is zero, and therefore no gradient step is effectively taken. Only in the cases when the action is more likely or equally likely does the gradient step occur, and it is always in the direction of decreasing the likelihood of the action so that the reward is higher in the future.
 
 All of these are designed to make the behaviors where advantage is positive more likely and keep the gradient step within the trust region.
-It is crucial to remember that PPO within the trust region is the same as standard forms of policy gradient.
+It is crucial to remember that PPO within the trust region is roughly the same as standard forms of policy gradient.
 
 ### Group Relative Policy Optimization
 
