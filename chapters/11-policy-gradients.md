@@ -296,7 +296,10 @@ This means that the action taken was beneficial according to the value function,
     - **Gradient**: $\nabla_\theta (1 + \varepsilon) A_t = 0$
     - **What happens**: NO UPDATE - action is already more likely under the new policy
 
-Notice that in the cases when the action is already more likely under the new policy, the gradient is zero, and therefore no gradient step is effectively taken. Only in the cases when the action is less likely or equally likely does the gradient step occur, and it is always in the direction of increasing the likelihood of the action so that the reward is higher in the future.
+To summarize, when the advantage is positive ($A_t>0$), we want to boost the probability of the action. Therefore:
+
+- We perform gradient steps only in the case when $\pi_{\text{new}}(a) \leq \pi_{\text{old}}(a)$. Intuitively, we want to boost the probability of the action, since the reward was positive.
+- Crucially, when $\pi_{\text{new}}(a) > \pi_{\text{old}}(a)$, then we don't perform any update, and the gradient of the clipped objective is $0$. Intuitively, the action is already more expressed with the new policy, so we don't want to over-reinforce it.
 
 **Negative Advantage ($A_t < 0$)**
 
@@ -329,9 +332,11 @@ This means that the action taken was detrimental according to the value function
     - **Gradient**: $\nabla_\theta R(\theta) A_t \neq 0$
     - **What happens**: Normal update - decrease likelihood of action
 
-Notice that in the cases when the action is already less likely under the new policy, the gradient is zero, and therefore no gradient step is effectively taken. Only in the cases when the action is more likely or equally likely does the gradient step occur, and it is always in the direction of decreasing the likelihood of the action so that the reward is higher in the future.
+Analogously, when the advantage is negative ($A_t < 0$), we want to decrease the probability of the action. Therefore:
 
-All of these are designed to make the behaviors where advantage is positive more likely and keep the gradient step within the trust region.
+- We perform gradient steps only in the case when $\pi_{\text{new}}(a) \geq \pi_{\text{old}}(a)$. Intuitively, we want to decrease the probability of the action, since the reward was negative.
+- Crucially, when $\pi_{\text{new}}(a) < \pi_{\text{old}}(a)$, then we don't perform any update, and the gradient of the clipped objective is $0$. Intuitively, the action is already less likely under the new policy, so we don't want to over-suppress it.
+
 It is crucial to remember that PPO within the trust region is roughly the same as standard forms of policy gradient.
 
 ### Group Relative Policy Optimization
