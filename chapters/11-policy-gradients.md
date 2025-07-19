@@ -263,6 +263,13 @@ It emerges from computing the gradient of a policy and controls the parameter up
 For any batch of data, the policy ratio starts at 1 for the first gradient step for that batch (common practice is to take 1-4 gradient steps per batch with policy gradient algorithms).
 Then, the policy ratio will be above one if that gradient step increased the likelihood of certain tokens with an associated positive advantage, or less than one for the other case. 
 
+Overall, the PPO objective can be visualized by two lines of a plot of objective versus policy ratio, which is shown in @fig:ppo-obj.
+The PPO objective is maximized by changing the probability of the sampled actions.
+Numerically, the objective controls for both positive and negative advantage cases by clever use of the minimum operation, making it so the update is at most pushed by an episilon distance away from a policy ratio of 1.
+Within the trust region, PPO operates the same as other policy gradient algorithms.
+
+![Visualization of the different regions of the PPO objective for a hypothetical advantage.](images/ppo-viz-4x.png){#fig:ppo-obj}
+
 The policy ratio and advantage together can occur in a few different configurations. We will split the cases into two groups: positive and negative advantage.
 
 **Positive Advantage ($A_t > 0$)**
@@ -276,7 +283,7 @@ This means that the action taken was beneficial according to the value function,
     - **Clipped Term**: $(1 - \varepsilon) A_t$
     - **Objective**: $R(\theta) A_t$
     - **Gradient**: $\nabla_\theta R(\theta) A_t \neq 0$
-    - **What happens**: Normal update - increase likelihood of action
+    - **What happens**: Normal policy-gradient update - increase likelihood of action
 
 2. $1 - \varepsilon \leq R(\theta) \leq 1 + \varepsilon$:
 
@@ -285,7 +292,7 @@ This means that the action taken was beneficial according to the value function,
     - **Clipped Term**: $R(\theta) A_t$
     - **Objective**: $R(\theta) A_t$
     - **Gradient**: $\nabla_\theta R(\theta) A_t \neq 0$
-    - **What happens**: Normal update - increase likelihood of action
+    - **What happens**: Normal policy-gradient update - increase likelihood of action
 
 3. $1 + \varepsilon < R(\theta)$:
 
@@ -298,8 +305,8 @@ This means that the action taken was beneficial according to the value function,
 
 To summarize, when the advantage is positive ($A_t>0$), we want to boost the probability of the action. Therefore:
 
-- We perform gradient steps only in the case when $\pi_{\text{new}}(a) \leq \pi_{\text{old}}(a)$ (up to an $\varepsilon$ ball). Intuitively, we want to boost the probability of the action, since the reward was positive.
-- Crucially, when $\pi_{\text{new}}(a) > \pi_{\text{old}}(a)$, then we don't perform any update, and the gradient of the clipped objective is $0$. Intuitively, the action is already more expressed with the new policy, so we don't want to over-reinforce it.
+- We perform gradient steps only in the case when $\pi_{\text{new}}(a) \leq (1+\epsilon) \pi_{\text{old}}(a)$. Intuitively, we want to boost the probability of the action, since the reward was positive, but not boost it so much that we have made it substantially more likely.
+- Crucially, when $\pi_{\text{new}}(a) > (1+\epsilon) \pi_{\text{old}}(a)$, then we don't perform any update, and the gradient of the clipped objective is $0$. Intuitively, the action is already more expressed with the new policy, so we don't want to over-reinforce it.
 
 **Negative Advantage ($A_t < 0$)**
 
@@ -321,7 +328,7 @@ This means that the action taken was detrimental according to the value function
     - **Clipped Term**: $R(\theta) A_t$
     - **Objective**: $R(\theta) A_t$
     - **Gradient**: $\nabla_\theta R(\theta) A_t \neq 0$
-    - **What happens**: Normal update - decrease likelihood of action
+    - **What happens**: Normal policy-gradient update - decrease likelihood of action
 
 3. $1 + \varepsilon < R(\theta)$:
 
@@ -330,12 +337,12 @@ This means that the action taken was detrimental according to the value function
     - **Clipped Term**: $(1 + \varepsilon) A_t$
     - **Objective**: $R(\theta) A_t$
     - **Gradient**: $\nabla_\theta R(\theta) A_t \neq 0$
-    - **What happens**: Normal update - decrease likelihood of action
+    - **What happens**: Normal policy-gradient update - decrease likelihood of action
 
 To summarize, when the advantage is negative ($A_t < 0$), we want to decrease the probability of the action. Therefore:
 
-- We perform gradient steps only in the case when $\pi_{\text{new}}(a) \geq \pi_{\text{old}}(a)$ (up to an $\varepsilon$ ball). Intuitively, we want to decrease the probability of the action, since the reward was negative.
-- Crucially, when $\pi_{\text{new}}(a) < \pi_{\text{old}}(a)$, then we don't perform any update, and the gradient of the clipped objective is $0$. Intuitively, the action is already less likely under the new policy, so we don't want to over-suppress it.
+- We perform gradient steps only in the case when $\pi_{\text{new}}(a) \geq (1-\epsilon) \pi_{\text{old}}(a)$. Intuitively, we want to decrease the probability of the action, since the reward was negative, and we do so proportional to the advantage.
+- Crucially, when $\pi_{\text{new}}(a) < (1-\epsilon) \pi_{\text{old}}(a)$, then we don't perform any update, and the gradient of the clipped objective is $0$. Intuitively, the action is already less likely under the new policy, so we don't want to over-suppress it.
 
 It is crucial to remember that PPO within the trust region is roughly the same as standard forms of policy gradient.
 
