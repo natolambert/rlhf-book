@@ -298,7 +298,7 @@ This means that the action taken was beneficial according to the value function,
 
 To summarize, when the advantage is positive ($A_t>0$), we want to boost the probability of the action. Therefore:
 
-- We perform gradient steps only in the case when $\pi_{\text{new}}(a) \leq \pi_{\text{old}}(a)$. Intuitively, we want to boost the probability of the action, since the reward was positive.
+- We perform gradient steps only in the case when $\pi_{\text{new}}(a) \leq \pi_{\text{old}}(a)$ (up to an $\varepsilon$ ball). Intuitively, we want to boost the probability of the action, since the reward was positive.
 - Crucially, when $\pi_{\text{new}}(a) > \pi_{\text{old}}(a)$, then we don't perform any update, and the gradient of the clipped objective is $0$. Intuitively, the action is already more expressed with the new policy, so we don't want to over-reinforce it.
 
 **Negative Advantage ($A_t < 0$)**
@@ -332,9 +332,9 @@ This means that the action taken was detrimental according to the value function
     - **Gradient**: $\nabla_\theta R(\theta) A_t \neq 0$
     - **What happens**: Normal update - decrease likelihood of action
 
-Analogously, when the advantage is negative ($A_t < 0$), we want to decrease the probability of the action. Therefore:
+To summarize, when the advantage is negative ($A_t < 0$), we want to decrease the probability of the action. Therefore:
 
-- We perform gradient steps only in the case when $\pi_{\text{new}}(a) \geq \pi_{\text{old}}(a)$. Intuitively, we want to decrease the probability of the action, since the reward was negative.
+- We perform gradient steps only in the case when $\pi_{\text{new}}(a) \geq \pi_{\text{old}}(a)$ (up to an $\varepsilon$ ball). Intuitively, we want to decrease the probability of the action, since the reward was negative.
 - Crucially, when $\pi_{\text{new}}(a) < \pi_{\text{old}}(a)$, then we don't perform any update, and the gradient of the clipped objective is $0$. Intuitively, the action is already less likely under the new policy, so we don't want to over-suppress it.
 
 It is crucial to remember that PPO within the trust region is roughly the same as standard forms of policy gradient.
