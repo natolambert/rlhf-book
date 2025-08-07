@@ -41,7 +41,7 @@ Prompting well with modern language models can involve preparing an entire repor
 This behavior is downstream of many changes in how language model performance has been measured and understood.
 
 Early language models were only used as intelligent autocomplete.
-In order to use these models in an more open ended way, multiple examples were shown to the model and then a prompt that is an incomplete phrase. This was called few-shot or in-context learning [@brown2020language], and at the time instruction tuning or RLHF was not involved.
+In order to use these models in a more open ended way, multiple examples were shown to the model and then a prompt that is an incomplete phrase. This was called few-shot or in-context learning [@brown2020language], and at the time instruction tuning or RLHF was not involved.
 In the case of popular evaluations, this would look like:
 
 ```
@@ -192,7 +192,7 @@ For example, popular reasoning evaluations MATH and GSM8k both have training set
 Improving performance with the prompts from the same distribution is very different than generalizing to these tasks by training on general math data.
 
 In fact, these *training sets* are very high quality data so models would benefit from training on them.
-If these companies are *not* using the corresponding evaluation as an core metric to track, training on the evaluation set could be a practical decision as high-quality data is a major limiting factor of model development.
+If these companies are *not* using the corresponding evaluation as a core metric to track, training on the evaluation set could be a practical decision as high-quality data is a major limiting factor of model development.
 
 Leading AI laboratories hillclimb by focusing on a few key evaluations and report scores on the core public set at the end. 
 The key point is that some of their evaluations for tracking progress, such as the datasets for cross-entropy loss predictions in scaling from the GPT-4 report [@achiam2023gpt], are often not public.
@@ -219,7 +219,7 @@ Inference-time scaling shows that models can improve in performance by using mor
 Thus, controlling evaluation scores by the total number of tokens for inference is important, but not yet common practice.
 
 Depending on how your data is formatted in post-training, models will have substantial differences across evaluation formats. 
-For example, two popular, open math datasets  [@li2024numinamath] and MetaMath [@yu2023metamath] conflict with each other in training due to small differences in how the answers are formatted -- Numina puts the answer in `\boxed{XYZ}` and MetaMath puts the answer after `The answer is: XYZ` -— training on both can make performance worse than with just one. 
+For example, two popular, open math datasets NuminaMath [@li2024numinamath] and MetaMath [@yu2023metamath] conflict with each other in training due to small differences in how the answers are formatted -- Numina puts the answer in `\boxed{XYZ}` and MetaMath puts the answer after `The answer is: XYZ` -— training on both can make performance worse than with just one. 
 Strong models are trained to be able to function with multiple formats, but they generally have a strongest format.
 
 In the end we are left with a few key points on the state of evaluating closed models:
