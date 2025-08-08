@@ -17,14 +17,14 @@ Style is a never-ending source of human value, it’s why retelling stories can 
 Style is intertwined with what the information is. 
 
 Second, we’ve seen how different styles actually can improve evaluation improvements with Llama 3 [@dubey2024llama]. 
-The Llama 3 Instruct models scored extremely high on ChatBotArena, and it’s accepted as being because they had a more fun personality. 
+The Llama 3 Instruct models scored extremely high on ChatBotArena, and it’s accepted as being so because they had a more fun personality. 
 If RLHF is going to make language models simply more fun, that is delivered value.
 
 Throughout this chapter, the term "chattiness" is used to encompass the growing length of responses from models training with RLHF, but it also encompasses techniques like heavy markdown use, emojis, and formatting the answer in bulleted lists.
 
 ## The Chattiness Paradox
 
-RLHF or preference fine-tuning methods are being used mostly to boost scores like AlpacaEval and other automatic leaderboards without shifting the proportionally on harder-to-game evaluations like ChatBotArena. 
+RLHF or preference fine-tuning methods are being used mostly to boost scores like AlpacaEval and other automatic leaderboards without shifting proportionally on harder-to-game evaluations like ChatBotArena. 
 The paradox is that while alignment methods give a measurable improvement on these models that does transfer into performance that people care about, a large swath of the models doing more or less the same thing take it way too far and publish evaluation scores that are obviously meaningless.
 
 These methods, when done right, make the models easier to work with and more enjoyable. 
