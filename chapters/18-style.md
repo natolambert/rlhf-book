@@ -17,7 +17,7 @@ Style is a never-ending source of human value, it’s why retelling stories can 
 Style is intertwined with what the information is. 
 
 Second, we’ve seen how different styles actually can improve evaluation improvements with Llama 3 [@dubey2024llama]. 
-The Llama 3 Instruct models scored extremely high on ChatBotArena, and it’s accepted as being so because they had a more fun personality. 
+The Llama 3 Instruct models scored extremely high on ChatBotArena, and it’s accepted as being because they had a more fun personality. 
 If RLHF is going to make language models simply more fun, that is delivered value.
 
 Throughout this chapter, the term "chattiness" is used to encompass the growing length of responses from models training with RLHF, but it also encompasses techniques like heavy markdown use, emojis, and formatting the answer in bulleted lists.
