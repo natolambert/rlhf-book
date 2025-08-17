@@ -159,7 +159,7 @@ Today, post-training is a complex process involving the aforementioned training 
 This book is designed to give a platform to understand all of these techniques, and in coming years the best practices for how to interleave them will emerge.
 
 The primary areas of innovation in post-training are now in reinforcement finetuning, reasoning training, and related ideas. 
-This newer methods build extensively on the infrastructure and ideas of RLHF, but are evolving far faster.
+These newer methods build extensively on the infrastructure and ideas of RLHF, but are evolving far faster.
 This book is written to capture the first stable literature for RLHF after its initial period of rapid change.
 
 ## Scope of This Book
