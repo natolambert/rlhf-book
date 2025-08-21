@@ -148,7 +148,7 @@ These have been shown to enable preference finetuning to have meaningful perform
 #### Alternatives
 
 There are multiple other ways to collect useful feedback data for RLHF that have not been pursued in as great of detail. 
-Examples include using single datapoints with directional labels, e.g. as shown from Ai2 playground above in @fig:up-down, directly with algorithms designed for single direction signals like Kahneman-Tversk Optimization (KTO) [@ethayarajh2024kto].
+Examples include using single datapoints with directional labels, e.g. as shown from Ai2 playground above in @fig:up-down, directly with algorithms designed for single direction signals like Kahneman-Tversky Optimization (KTO) [@ethayarajh2024kto].
 Other algorithms have been proposed with different types of feedback signals such as fine-grained feedback, e.g. at the token level [@wu2024fine], or natural language feedback, e.g. by writing responses [@chen2024learning], to provide a richer learning signal in exchange for a more complex data collection setup.
 
 ### Sourcing and Contracts
@@ -159,7 +159,7 @@ Over time, these processes will become far more automated and efficient (especia
 
 The first step is sourcing the vendor to provide data (or one's own annotators). 
 Much like acquiring access to cutting-edge Nvidia GPUs, getting access to data providers in the peak of AI excitement is also a who-you-know game -- those who can provide data are supply-limited. 
-If you have credibility in the AI ecosystem, the best data companies will want you on our books for public image and long-term growth options. 
+If you have credibility in the AI ecosystem, the best data companies will want you on their books for public image and long-term growth options. 
 Discounts are often also given on the first batches of data to get training teams hooked.
 
 If you’re a new entrant in the space, you may have a hard time getting the data you need quickly. 
@@ -205,6 +205,6 @@ Note that this section *does not* mirror the experience for buying human-written
 ## Are the Preferences Expressed in the Models?
 
 In the maturation of RLHF and related approaches, the motivation of them -- to align models to abstract notions of human preference -- has drifted from the practical use -- to make the models more effective to users.
-A feedback loop that is not measurable due to the closed nature of industrial RLHF work is the check to if the behavior of the models matches the specification given to the data annotators during the process of data collection.
+A feedback loop that is not measurable due to the closed nature of industrial RLHF work is the check to see if the behavior of the models matches the specification given to the data annotators during the process of data collection.
 We have limited tools to audit this, such as the Model Spec from OpenAI [@openai2024modelspec] that details *what they want their models to do*, but we don't know exactly how this translates to data collection.
 This is an area to watch as the industry and approaches mature.
