@@ -14,7 +14,7 @@ The practice is closely related to inverse reinforcement learning, where the pro
 Reward models were proposed, in their modern form, as a tool for studying the value alignment problem [@leike2018scalable].
 
 The most common reward model predicts the probability that a piece of text was close to a "preferred" piece of text from the training comparisons.
-Later in this section we also compare these to Outcome Reward Models (ORMs) that predict the probability and a completion results in a correct answer or a Process Reward Model (PRM) that assigns a score to each step in reasoning.
+Later in this section we also compare these to Outcome Reward Models (ORMs) that predict the probability that a completion results in a correct answer or a Process Reward Model (PRM) that assigns a score to each step in reasoning.
 When not indicated, the reward models mentioned are those predicting preference between text.
 
 ## Training Reward Models

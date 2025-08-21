@@ -76,7 +76,7 @@ $$ D_{KL}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\frac{P(x)}{Q(x)}\r
 
 - **Advantage Function ($A$)**: The advantage function $A(s,a)$ quantifies the relative benefit of taking action $a$ in state $s$ compared to the average action. It's defined as $A(s,a) = Q(s,a) - V(s)$. Advantage functions (and value functions) can depend on a specific policy, $A^\pi(s,a)$. 
 
-- **Policy-conditioned Values ($[]^{\pi(\cdot)}$)**: Across RL derivations and implementations, a crucial component of the theory and practice is collecting data or values conditioned on a specific policy. Throughout this book we will switch between the simpler notation of value functions et al. ($V,A,Q,G$) and their specific policy-conditioned values ($V^\pi,A^\pi,Q^\pi$). Crucial is also in the expected value computation is sampling from data $d$, that is conditioned on a specific policy, $d_\pi$.
+- **Policy-conditioned Values ($[]^{\pi(\cdot)}$)**: Across RL derivations and implementations, a crucial component of the theory and practice is collecting data or values conditioned on a specific policy. Throughout this book we will switch between the simpler notation of value functions et al. ($V,A,Q,G$) and their specific policy-conditioned values ($V^\pi,A^\pi,Q^\pi$). Also crucial in the expected value computation is sampling from data $d$, that is conditioned on a specific policy, $d_\pi$.
 
 - **Expectation of Reward Optimization**: The primary goal in RL, which involves maximizing the expected cumulative reward:
 
