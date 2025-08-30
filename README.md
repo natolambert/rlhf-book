@@ -389,6 +389,7 @@ These cross references are disabled by default. To enable them, check the
 _[Cross references](https://github.com/wikiti/pandoc-book-template#cross-references)_
 section on the README.md file.
 
+```md
 Here's a list of cross references:
 
 - Check @fig:seagull.
