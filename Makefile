@@ -15,6 +15,7 @@ METADATA_ARGS = --metadata-file $(METADATA)
 IMAGES = $(shell find images -type f)
 TEMPLATES = $(shell find templates/ -type f)
 COVER_IMAGE = images/cover.png
+EPUB_COVER_IMAGE = images/rlhf-book-cover.png # EPUB-specific cover image
 MATH_FORMULAS = --mathjax # --webtex, is default for PDF/ebook. Consider resetting if issues.
 EPUB_MATH_FORMULAS = --mathml # Use MathML for EPUB format for better e-reader compatibility
 BIBLIOGRAPHY = --bibliography=chapters/bib.bib --citeproc --csl=templates/ieee.csl
@@ -42,7 +43,7 @@ PANDOC_COMMAND = pandoc
 # Per-format options
 
 DOCX_ARGS = --standalone --reference-doc templates/docx.docx
-EPUB_ARGS = --template templates/epub.html --epub-cover-image $(COVER_IMAGE)
+EPUB_ARGS = --template templates/epub.html --epub-cover-image $(EPUB_COVER_IMAGE)
 HTML_ARGS = --template templates/html.html --standalone --to html5 --listings
 PDF_ARGS = --template templates/pdf.tex --pdf-engine xelatex --listings
 NESTED_HTML_TEMPLATE = templates/chapter.html
