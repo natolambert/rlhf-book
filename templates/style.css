@@ -114,6 +114,14 @@ h1 {
     font-size: 2.5em;
 }
 
+h1.title {
+    hyphens: none;
+    -webkit-hyphens: none;
+    -moz-hyphens: none;
+    -ms-hyphens: none;
+    word-break: keep-all;
+}
+
 h2 {
     font-size: 2em;
 }
