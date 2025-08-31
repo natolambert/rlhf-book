@@ -1,12 +1,12 @@
 ---
 prev-chapter: "Rejection Sampling"
 prev-url: "10-rejection-sampling.html"
-page-title: Policy Gradient Algorithms
+page-title: Reinforcement Learning (i.e. Policy Gradient Algorithms)
 next-chapter: "Direct Alignment Algorithms"
 next-url: "12-direct-alignment.html"
 ---
 
-# Policy Gradient Algorithms
+# Reinforcement Learning (i.e. Policy Gradient Algorithms)
 
 
 The algorithms that popularized RLHF for language models were policy-gradient reinforcement learning algorithms. 

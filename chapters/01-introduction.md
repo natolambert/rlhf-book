@@ -197,7 +197,7 @@ This is a serial presentation of the techniques one can use to solve the problem
 8. Regularization: Tools to constrain these optimization tools to effective regions of the parameter space.
 9. Instruction Tuning: Adapting language models to the question-answer format.
 10. Rejection Sampling: A basic technique for using a reward model with instruction tuning to align models.
-11. Policy Gradients: The core RL techniques used to optimize reward models (and other signals) throughout RLHF.
+11. Reinforcement Learning (i.e. Policy Gradients): The core RL techniques used to optimize reward models (and other signals) throughout RLHF.
 12. Direct Alignment Algorithms: Algorithms that optimize the RLHF objective direction from pairwise preference data rather than learning a reward model first.
 
 #### Advanced

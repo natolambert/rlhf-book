@@ -49,9 +49,9 @@ class NavigationDropdown extends HTMLElement {
         <ol start="7">
           <li><a href="https://rlhfbook.com/c/07-reward-models.html">Reward Modeling</a></li>
           <li><a href="https://rlhfbook.com/c/08-regularization.html">Regularization</a></li>
-          <li><a href="https://rlhfbook.com/c/09-instruction-tuning.html">Instruction Tuning</a></li>
+          <li><a href="https://rlhfbook.com/c/09-instruction-tuning.html">Instruction Tuning (i.e. Supervised Finetuning)</a></li>
           <li><a href="https://rlhfbook.com/c/10-rejection-sampling.html">Rejection Sampling</a></li>
-          <li><a href="https://rlhfbook.com/c/11-policy-gradients.html">Policy Gradients</a></li>
+          <li><a href="https://rlhfbook.com/c/11-policy-gradients.html">Reinforcement Learning (i.e. Policy Gradients)</a></li>
           <li><a href="https://rlhfbook.com/c/12-direct-alignment.html">Direct Alignment Algorithms</a></li>
         </ol>
       </div>
@@ -62,7 +62,7 @@ class NavigationDropdown extends HTMLElement {
           <li><a href="https://rlhfbook.com/c/13-cai.html">Constitutional AI and AI Feedback</a></li>
           <li><a href="https://rlhfbook.com/c/14-reasoning.html">Reasoning and Inference-time Scaling</a></li>
           <li><a href="https://rlhfbook.com/c/14.5-tools.html">Tool Use and Function Calling</a></li>
-          <li><a href="https://rlhfbook.com/c/15-synthetic.html">Synthetic Data</a></li>
+          <li><a href="https://rlhfbook.com/c/15-synthetic.html">Synthetic Data & Distillation</a></li>
           <li><a href="https://rlhfbook.com/c/16-evaluation.html">Evaluation</a></li>
         </ol>
       </div>
