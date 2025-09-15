@@ -1,9 +1,9 @@
 ---
 prev-chapter: "Synthetic Data & Distillation"
-prev-url: "15-synthetic.html"
+prev-url: "15-synthetic"
 page-title: Evaluation
 next-chapter: "Over Optimization"
-next-url: "17-over-optimization.html"
+next-url: "17-over-optimization"
 ---
 
 # Evaluation
@@ -248,4 +248,3 @@ High variance on these perturbation benchmarks is not confirmation of contaminat
 
 There are many open-sourced evaluation tools for people to choose from. 
 There’s Inspect AI from the UK Safety Institute [@inspectAI2024], HuggingFace’s LightEval [@fourrier2023lighteval] that powered the Open LLM Leaderboard [@open-llm-leaderboard-v2], Eleuther AI’s evaluation harness [@gao2023evalharness] built on top of the infrastructure from their GPT-Neo-X model (around GPT-3 evaluation config) [@gpt-neox-20b], AI2’s library based on OLMES [@gu2024olmes], Stanford’s Center for Research on Foundation Model’s HELM [@liang2023helm], Mosaic’s (now Databricks’) Eval Gauntlet [@mosaicml2024gauntlet], and more.
-

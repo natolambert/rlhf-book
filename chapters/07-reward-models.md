@@ -1,9 +1,9 @@
 ---
 prev-chapter: "Preference Data"
-prev-url: "06-preference-data.html"
+prev-url: "06-preference-data"
 page-title: Reward Modeling
 next-chapter: "Regularization"
-next-url: "08-regularization.html"
+next-url: "08-regularization"
 ---
 
 # Reward Modeling

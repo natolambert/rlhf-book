@@ -1,9 +1,9 @@
 ---
 prev-chapter: "Tool Use & Function Calling"
-prev-url: "14.5-tools.html"
+prev-url: "14.5-tools"
 page-title: Synthetic Data & Distillation
 next-chapter: "Evaluation & Prompting"
-next-url: "16-evaluation.html"
+next-url: "16-evaluation"
 ---
 
 # Synthetic Data & Distillation

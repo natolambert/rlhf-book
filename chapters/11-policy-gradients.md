@@ -1,9 +1,9 @@
 ---
 prev-chapter: "Rejection Sampling"
-prev-url: "10-rejection-sampling.html"
+prev-url: "10-rejection-sampling"
 page-title: Reinforcement Learning (i.e. Policy Gradient Algorithms)
 next-chapter: "Direct Alignment Algorithms"
-next-url: "12-direct-alignment.html"
+next-url: "12-direct-alignment"
 ---
 
 # Reinforcement Learning (i.e. Policy Gradient Algorithms)

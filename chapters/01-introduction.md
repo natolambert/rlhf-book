@@ -3,7 +3,7 @@ prev-chapter: "Home"
 prev-url: "https://rlhfbook.com/"
 page-title: Introduction
 next-chapter: "Key Related Works"
-next-url: "02-related-works.html"
+next-url: "02-related-works"
 ---
 
 # Introduction
@@ -250,4 +250,3 @@ As more successes of fine-tuning language models with RL emerge, such as OpenAI'
 At the same time, while the spotlight of focus may be more intense on the RL portion of RLHF in the near future -- as a way to maximize performance on valuable tasks -- the core of RLHF is that it is a lens for studying the grand problems facing modern forms of AI.
 How do we map the complexities of human values and objectives into systems we use on a regular basis?
 This book hopes to be the foundation of decades of research and lessons on these problems.
-

@@ -1,9 +1,9 @@
 ---
 prev-chapter: "Instruction Tuning"
-prev-url: "09-instruction-tuning.html"
+prev-url: "09-instruction-tuning"
 page-title: Rejection Sampling
 next-chapter: "Policy Gradients"
-next-url: "11-policy-gradients.html"
+next-url: "11-policy-gradients"
 ---
 
 # Rejection Sampling
@@ -184,7 +184,7 @@ np.allclose(x, x_sorted[np.argsort(sorted_indices)])
 ### Fine-tuning
 
 With the selected completions, you then perform standard instruction fine-tuning on the current rendition of the model.
-More details can be found in the [chapter on instruction tuning](https://rlhfbook.com/c/instructions.html).
+More details can be found in the [chapter on instruction tuning](https://rlhfbook.com/c/instructions).
 
 ### Details
 
@@ -195,7 +195,7 @@ The core hyperparameters for performing this training are very intuitive:
 - **Completions per prompt**: Successful implementations of rejection sampling have included 10 to 30 or more completions for each prompt. Using too few completions will make training biased and or noisy.
 - **Instruction tuning details**: No clear training details for the instruction tuning during RS have been released. It is likely that they use slightly different settings than the initial instruction tuning phase of the model.
 - **Heterogeneous model generations**: Some implementations of rejection sampling include generations from multiple models rather than just the current model that is going to be trained. Best practices on how to do this are not established.
-- **Reward model training**: The reward model used will heavily impact the final result. For more resources on reward model training, see the [relevant chapter](https://rlhfbook.com/c/07-reward-models.html).
+- **Reward model training**: The reward model used will heavily impact the final result. For more resources on reward model training, see the [relevant chapter](https://rlhfbook.com/c/07-reward-models).
 
 #### Implementation Tricks
 

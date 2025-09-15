@@ -1,9 +1,9 @@
 ---
 prev-chapter: "Key Related Works"
-prev-url: "02-related-works.html"
+prev-url: "02-related-works"
 page-title: Definitions & Background
 next-chapter: "Training Overview"
-next-url: "04-optimization.html"
+next-url: "04-optimization"
 ---
 
 # Definitions & Background

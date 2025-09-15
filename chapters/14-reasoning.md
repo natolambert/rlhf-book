@@ -1,9 +1,9 @@
 ---
 prev-chapter: "Constitutional AI & AI Feedback"
-prev-url: "13-cai.html"
+prev-url: "13-cai"
 page-title: Reasoning Training & Inference-Time Scaling
 next-chapter: "Tool Use & Function Calling"
-next-url: "14.5-tools.html"
+next-url: "14.5-tools"
 ---
 
 # Reasoning Training & Inference-Time Scaling

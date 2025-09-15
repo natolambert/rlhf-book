@@ -1,9 +1,9 @@
 ---
 prev-chapter: "Definitions & Background"
-prev-url: "03-setup.html"
+prev-url: "03-setup"
 page-title: Training Overview
 next-chapter: "The Nature of Preferences"
-next-url: "05-preferences.html"
+next-url: "05-preferences"
 ---
 
 # Training Overview
@@ -119,5 +119,4 @@ The DeepSeek recipe follows:
 
 As above, there are evolutions of the recipe, particularly with steps 3 and 4 to finalize the model before exposing it to users.
 Many models start with tailored instruction datasets with Chain of Thought sequences that are heavily filtered and polished from existing models, providing a fast step to strong behaviors with SFT alone before moving onto RL [@seed2025seed].
-
 
