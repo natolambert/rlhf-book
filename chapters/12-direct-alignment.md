@@ -1,9 +1,9 @@
 ---
 prev-chapter: "Policy Gradients"
-prev-url: "11-policy-gradients.html"
+prev-url: "11-policy-gradients"
 page-title: Direct Alignment Algorithms
 next-chapter: "Constitutional AI"
-next-url: "13-cai.html"
+next-url: "13-cai"
 ---
 
 # Direct Alignment Algorithms

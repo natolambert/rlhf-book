@@ -1,9 +1,9 @@
 ---
 prev-chapter: "Problem Formulation"
-prev-url: "04-optimization.html"
+prev-url: "04-optimization"
 page-title: The Nature of Preferences
 next-chapter: "Preference Data"
-next-url: "06-preference-data.html"
+next-url: "06-preference-data"
 ---
 
 # The Nature of Preferences
@@ -106,4 +106,3 @@ Some of the most prominent critiques are summarized below:
 - **Preferences can change over time** [@pettigrew2019choosing].
 - **Preferences can vary across contexts**.
 - **The utility functions derived from aggregating preferences can reduce corrigibility** [@soares2015corrigibility] of downstream agents (i.e. the possibility of an agents' behavior to be corrected by the designer).
-

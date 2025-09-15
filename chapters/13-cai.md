@@ -1,9 +1,9 @@
 ---
 prev-chapter: "Direct Alignment"
-prev-url: "12-direct-alignment.html"
+prev-url: "12-direct-alignment"
 page-title: Constitutional AI & AI Feedback
 next-chapter: "Reasoning & Inference-Time Scaling"
-next-url: "14-reasoning.html"
+next-url: "14-reasoning"
 ---
 
 # Constitutional AI & AI Feedback

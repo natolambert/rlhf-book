@@ -29,50 +29,50 @@ class NavigationDropdown extends HTMLElement {
       <div class="section">
         <h3>Introductions</h3>
         <ol start="1">
-          <li><a href="https://rlhfbook.com/c/01-introduction.html">Introduction</a></li>
-          <li><a href="https://rlhfbook.com/c/02-related-works.html">Seminal (Recent) Works</a></li>
-          <li><a href="https://rlhfbook.com/c/03-setup.html">Definitions</a></li>
+          <li><a href="https://rlhfbook.com/c/01-introduction">Introduction</a></li>
+          <li><a href="https://rlhfbook.com/c/02-related-works">Seminal (Recent) Works</a></li>
+          <li><a href="https://rlhfbook.com/c/03-setup">Definitions</a></li>
         </ol>
       </div>
 
       <div class="section">
         <h3>Problem Setup & Context</h3>
         <ol start="4">
-          <li><a href="https://rlhfbook.com/c/04-optimization.html">Training Overview</a></li>
-          <li><a href="https://rlhfbook.com/c/05-preferences.html">What are preferences?</a></li>
-          <li><a href="https://rlhfbook.com/c/06-preference-data.html">Preference Data</a></li>
+          <li><a href="https://rlhfbook.com/c/04-optimization">Training Overview</a></li>
+          <li><a href="https://rlhfbook.com/c/05-preferences">What are preferences?</a></li>
+          <li><a href="https://rlhfbook.com/c/06-preference-data">Preference Data</a></li>
         </ol>
       </div>
 
       <div class="section">
         <h3>Optimization Tools</h3>
         <ol start="7">
-          <li><a href="https://rlhfbook.com/c/07-reward-models.html">Reward Modeling</a></li>
-          <li><a href="https://rlhfbook.com/c/08-regularization.html">Regularization</a></li>
-          <li><a href="https://rlhfbook.com/c/09-instruction-tuning.html">Instruction Tuning (i.e. Supervised Finetuning)</a></li>
-          <li><a href="https://rlhfbook.com/c/10-rejection-sampling.html">Rejection Sampling</a></li>
-          <li><a href="https://rlhfbook.com/c/11-policy-gradients.html">Reinforcement Learning (i.e. Policy Gradients)</a></li>
-          <li><a href="https://rlhfbook.com/c/12-direct-alignment.html">Direct Alignment Algorithms</a></li>
+          <li><a href="https://rlhfbook.com/c/07-reward-models">Reward Modeling</a></li>
+          <li><a href="https://rlhfbook.com/c/08-regularization">Regularization</a></li>
+          <li><a href="https://rlhfbook.com/c/09-instruction-tuning">Instruction Tuning (i.e. Supervised Finetuning)</a></li>
+          <li><a href="https://rlhfbook.com/c/10-rejection-sampling">Rejection Sampling</a></li>
+          <li><a href="https://rlhfbook.com/c/11-policy-gradients">Reinforcement Learning (i.e. Policy Gradients)</a></li>
+          <li><a href="https://rlhfbook.com/c/12-direct-alignment">Direct Alignment Algorithms</a></li>
         </ol>
       </div>
 
       <div class="section">
         <h3>Advanced</h3>
         <ol start="13">
-          <li><a href="https://rlhfbook.com/c/13-cai.html">Constitutional AI and AI Feedback</a></li>
-          <li><a href="https://rlhfbook.com/c/14-reasoning.html">Reasoning and Inference-time Scaling</a></li>
-          <li><a href="https://rlhfbook.com/c/14.5-tools.html">Tool Use and Function Calling</a></li>
-          <li><a href="https://rlhfbook.com/c/15-synthetic.html">Synthetic Data & Distillation</a></li>
-          <li><a href="https://rlhfbook.com/c/16-evaluation.html">Evaluation</a></li>
+          <li><a href="https://rlhfbook.com/c/13-cai">Constitutional AI and AI Feedback</a></li>
+          <li><a href="https://rlhfbook.com/c/14-reasoning">Reasoning and Inference-time Scaling</a></li>
+          <li><a href="https://rlhfbook.com/c/14.5-tools">Tool Use and Function Calling</a></li>
+          <li><a href="https://rlhfbook.com/c/15-synthetic">Synthetic Data & Distillation</a></li>
+          <li><a href="https://rlhfbook.com/c/16-evaluation">Evaluation</a></li>
         </ol>
       </div>
 
       <div class="section">
         <h3>Open Questions</h3>
         <ol start="18">
-          <li><a href="https://rlhfbook.com/c/17-over-optimization.html">Over-optimization</a></li>
-          <li><a href="https://rlhfbook.com/c/18-style.html">Style & Information</a></li>
-          <li><a href="https://rlhfbook.com/c/19-character.html">Product, UX, Character, and Post-Training</a></li>
+          <li><a href="https://rlhfbook.com/c/17-over-optimization">Over-optimization</a></li>
+          <li><a href="https://rlhfbook.com/c/18-style">Style & Information</a></li>
+          <li><a href="https://rlhfbook.com/c/19-character">Product, UX, Character, and Post-Training</a></li>
         </ol>
       </div>
     </nav>

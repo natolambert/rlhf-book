@@ -1,9 +1,9 @@
 ---
 prev-chapter: "Introduction"
-prev-url: "01-introduction.html"
+prev-url: "01-introduction"
 page-title: Related Works
 next-chapter: "Definitions & Background"
-next-url: "03-setup.html"
+next-url: "03-setup"
 ---
 
 # Key Related Works

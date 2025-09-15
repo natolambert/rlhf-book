@@ -1,9 +1,9 @@
 ---
 prev-chapter: "Regularization"
-prev-url: "08-regularization.html"
+prev-url: "08-regularization"
 page-title: Instruction Finetuning
 next-chapter: "Rejection Sampling"
-next-url: "10-rejection-sampling.html"
+next-url: "10-rejection-sampling"
 ---
 
 # Instruction Finetuning

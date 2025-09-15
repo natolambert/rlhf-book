@@ -1,6 +1,6 @@
 ---
 prev-chapter: "Style & Information"
-prev-url: "18-style.html"
+prev-url: "18-style"
 page-title: Product, UX, Character, and Post-Training
 next-chapter: ""
 next-url: ""
@@ -62,5 +62,4 @@ RLHF research has become the interface where a lot of this is tested because of 
 The quickest way to add a new feature to a model is to try and incorporate it at post-training where training is faster and cheaper.
 This cycle has been seen with image understanding, tool use, better behavior, and more.
 What starts as a product question quickly becomes an RLHF modeling question, and if it is successful there it backpropagates to other earlier training stages.
-
 

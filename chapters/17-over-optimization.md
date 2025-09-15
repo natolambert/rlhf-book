@@ -1,9 +1,9 @@
 ---
 prev-chapter: "Evaluation & Prompting"
-prev-url: "16-evaluation.html"
+prev-url: "16-evaluation"
 page-title: Over Optimization
 next-chapter: "Style and Information"
-next-url: "18-style.html"
+next-url: "18-style"
 ---
 
 # Over Optimization
