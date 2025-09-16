@@ -1,11 +1,12 @@
 """Utility for precomputing RLHF library data for the static site."""
 from __future__ import annotations
 
+import argparse
 import json
 from collections import defaultdict
 from dataclasses import dataclass, asdict
 from pathlib import Path
-from typing import Dict, Iterable, List, Literal, Tuple
+from typing import Dict, Iterable, List, Literal
 
 from datasets import load_dataset
 
@@ -87,7 +88,7 @@ class PromptRecord:
     display_text: str
 
 
-def generate_library(output_path: str | Path) -> Dict[str, object]:
+def build_payload() -> Dict[str, object]:
     """Build a JSON payload that powers the RLHF library page."""
     dataset = load_dataset("natolambert/rlhf-library", split="train")
 
@@ -147,15 +148,44 @@ def generate_library(output_path: str | Path) -> Dict[str, object]:
         "prompts": [asdict(prompt) for prompt in ordered_prompts],
         "completions": serialisable_completions,
     }
+    return payload
 
-    output_path = Path(output_path)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(json.dumps(payload, indent=2))
 
+def write_payload(payload: Dict[str, object], *output_paths: str | Path) -> None:
+    """Write the payload to each of the provided paths."""
+    for raw_path in output_paths:
+        if raw_path is None:
+            continue
+        path = Path(raw_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(payload, indent=2))
+
+
+def generate_library(*output_paths: str | Path) -> Dict[str, object]:
+    payload = build_payload()
+    if output_paths:
+        write_payload(payload, *output_paths)
     return payload
 
 
 if __name__ == "__main__":
-    destination = Path("build/data/library.json")
-    data = generate_library(destination)
-    print(f"Wrote {destination} with {len(data['prompts'])} prompts and {len(data['model_pairs'])} model pairs.")
+    parser = argparse.ArgumentParser(description="Generate RLHF library payload")
+    parser.add_argument(
+        "--output",
+        default="data/library.json",
+        help="Primary output path for the processed dataset",
+    )
+    parser.add_argument(
+        "--html-output",
+        default="build/html/data/library.json",
+        help="Optional path under the published site for direct consumption",
+    )
+
+    args = parser.parse_args()
+    data = generate_library(args.output, args.html_output)
+    print(
+        "Wrote library payload to:"
+        f"\n - {args.output}"
+        f"\n - {args.html_output}"
+        f"\nPrompts: {len(data['prompts'])} | Model pairs: {len(data['model_pairs'])}"
+    )

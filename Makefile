@@ -131,6 +131,12 @@ $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html:	$(HTML_DEPENDENCIES)
 	$(COPY_CMD) $(IMAGES) $(BUILD)/html/ --mathjax
 	$(COPY_CMD) $(JS_FILES) $(BUILD)/html/
 	$(COPY_CMD) $(JS_FILES) $(BUILD)/html/c/  # Copy to nested directory
+	cp templates/library.html $(BUILD)/html/library.html || echo "Failed to copy library.html"
+	cp templates/style.css $(BUILD)/html/style.css || echo "Failed to copy style.css"
+	@if [ -f data/library.json ]; then \\
+		mkdir -p $(BUILD)/html/data; \\
+		cp data/library.json $(BUILD)/html/data/library.json || echo "Failed to copy library data"; \\
+	fi
 	$(ECHO_BUILT)
 
 # Nested HTML build targets

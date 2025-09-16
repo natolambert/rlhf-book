@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+
+  <meta property="og:image" content="https://raw.githubusercontent.com/natolambert/rlhf-book/main/images/rlhf-book-share.png" />
+  <meta property="og:image:width" content="1920" />
+  <meta property="og:image:height" content="1080" />
+  <meta property="og:title" content="RLHF Model Library | RLHF Book by Nathan Lambert" />
+  <meta property="og:description" content="Compare supervised finetuned models with their RLHF/DPO counterparts across shared prompts." />
+  <meta property="og:url" content="https://rlhfbook.com/library" />
+
+  <title>RLHF Model Library | RLHF Book by Nathan Lambert</title>
+
+  <style>
+    html {
+      font-size: 100%;
+      overflow-y: scroll;
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
+
+    body {
+      color: #444;
+      font-family: Georgia, Palatino, 'Palatino Linotype', Times, 'Times New Roman', serif;
+      font-size: 12px;
+      line-height: 1.7;
+      padding: 1em;
+      margin: auto;
+      max-width: 42em;
+      background: #fefefe;
+    }
+
+    a {
+      color: #0645ad;
+      text-decoration: none;
+    }
+
+    a:visited {
+      color: #0b0080;
+    }
+
+    a:hover {
+      color: #06e;
+    }
+
+    a:active {
+      color: #faa700;
+    }
+
+    a:focus {
+      outline: thin dotted;
+    }
+
+    *::-moz-selection {
+      background: rgba(255, 255, 0, 0.3);
+      color: #000;
+    }
+
+    *::selection {
+      background: rgba(255, 255, 0, 0.3);
+      color: #000;
+    }
+
+    a::-moz-selection {
+      background: rgba(255, 255, 0, 0.3);
+      color: #0645ad;
+    }
+
+    a::selection {
+      background: rgba(255, 255, 0, 0.3);
+      color: #0645ad;
+    }
+
+    p {
+      margin: 1em 0;
+    }
+
+    img {
+      max-width: 100%;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      color: #111;
+      line-height: 125%;
+      margin-top: 2em;
+      font-weight: normal;
+      position: relative;
+    }
+
+    .header-anchor {
+      opacity: 0;
+      font-size: 0.8em;
+      vertical-align: middle;
+      position: absolute;
+      margin-left: 0.3em;
+      transition: opacity 0.2s ease-in-out;
+    }
+
+    h2:hover .header-anchor,
+    h3:hover .header-anchor,
+    h4:hover .header-anchor,
+    h5:hover .header-anchor,
+    h6:hover .header-anchor {
+      opacity: 1;
+    }
+
+    h4,
+    h5,
+    h6 {
+      font-weight: bold;
+    }
+
+    h1 {
+      font-size: 2.5em;
+    }
+
+    #title-block-header {
+      text-align: center;
+      margin-bottom: 2.5em;
+    }
+
+    #title-block-header .title,
+    #title-block-header .subtitle,
+    #title-block-header .author,
+    #title-block-header .library-heading {
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #title-block-header .library-heading {
+      font-size: 1.6em;
+      margin-top: 1.5em;
+    }
+
+    a.button,
+    .filter-actions button,
+    .reroll-button,
+    .expand-toggle,
+    .copy-button {
+      font-family: inherit;
+      font-size: 0.85em;
+      padding: 0.35em 0.6em;
+      border-radius: 0.3em;
+      border: 1px solid #0645ad;
+      background: rgba(6, 69, 173, 0.1);
+      color: #0645ad;
+      cursor: pointer;
+    }
+
+    .filter-actions button:hover,
+    .reroll-button:hover,
+    .expand-toggle:hover,
+    .copy-button:hover {
+      background: rgba(6, 69, 173, 0.18);
+    }
+
+    .library-intro,
+    .library-controls,
+    .pair-section {
+      border: 1px solid #e2e2e2;
+      border-radius: 0.35em;
+      background: #fff;
+      box-shadow: 0 6px 18px rgba(17, 17, 17, 0.06);
+    }
+
+    .library-intro {
+      margin: 2em 0 2.5em;
+      padding: 1.2em;
+    }
+
+    .library-controls {
+      margin-bottom: 2.5em;
+      padding: 1.2em;
+    }
+
+    .library-controls h2 {
+      margin-top: 0;
+    }
+
+    .filter-group + .filter-group {
+      margin-top: 1.5em;
+    }
+
+    .filter-options {
+      list-style: none;
+      margin: 0.8em 0 0;
+      padding: 0;
+      display: grid;
+      gap: 0.45em 1.2em;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .filter-options label {
+      display: flex;
+      align-items: center;
+      gap: 0.45em;
+      font-size: 0.95em;
+    }
+
+    .filter-actions {
+      margin-top: 0.6em;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5em;
+    }
+
+    .prompt-section {
+      margin-bottom: 3em;
+    }
+
+    .prompt-messages {
+      border: 1px solid #e2e2e2;
+      border-radius: 0.35em;
+      padding: 1em 1.2em;
+      background: #fff;
+      box-shadow: 0 4px 14px rgba(17, 17, 17, 0.05);
+    }
+
+    .prompt-message + .prompt-message {
+      margin-top: 0.8em;
+    }
+
+    .prompt-role {
+      font-size: 0.85em;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #666;
+      margin-bottom: 0.25em;
+    }
+
+    .pair-section {
+      margin-top: 1.5em;
+    }
+
+    .pair-header {
+      padding: 1em 1.2em;
+      border-bottom: 1px solid #e2e2e2;
+    }
+
+    .pair-title {
+      margin: 0;
+      font-size: 1.2em;
+    }
+
+    .pair-meta {
+      margin-top: 0.3em;
+      font-size: 0.85em;
+      color: #666;
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.2em;
+      padding: 1.2em;
+    }
+
+    .completion-panel {
+      border: 1px solid #e2e2e2;
+      border-radius: 0.3em;
+      background: #fafafa;
+      padding: 0.9em;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6em;
+      position: relative;
+    }
+
+    .panel-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5em;
+      font-weight: bold;
+    }
+
+    .panel-actions {
+      display: flex;
+      gap: 0.45em;
+      align-items: center;
+    }
+
+    .copy-button {
+      background: #f5f5f5;
+      border: 1px solid #9aa0a6;
+      color: #555;
+    }
+
+    .copy-button:hover {
+      background: #ebebeb;
+    }
+
+    .completion-content {
+      position: relative;
+      max-height: 15em;
+      overflow: hidden;
+      transition: max-height 0.2s ease;
+      background: #fff;
+      padding: 0.6em;
+      border-radius: 0.25em;
+      border: 1px solid rgba(230, 230, 230, 0.8);
+    }
+
+    .completion-content.expanded {
+      max-height: none;
+    }
+
+    .completion-content:not(.expanded)::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 2.8em;
+      background: linear-gradient(180deg, rgba(250, 250, 250, 0) 0%, rgba(250, 250, 250, 0.95) 65%, rgba(250, 250, 250, 1) 100%);
+      pointer-events: none;
+    }
+
+    .expand-toggle {
+      align-self: center;
+      display: flex;
+      align-items: center;
+      gap: 0.35em;
+      margin-top: 0.2em;
+    }
+
+    .expand-toggle svg {
+      width: 0.9em;
+      height: 0.9em;
+      transition: transform 0.2s ease;
+    }
+
+    .expand-toggle[data-expanded="true"] svg {
+      transform: rotate(180deg);
+    }
+
+    .completion-text {
+      white-space: pre-wrap;
+      font-size: 0.95em;
+    }
+
+    .completion-meta {
+      font-size: 0.8em;
+      color: #777;
+    }
+
+    .prompt-message {
+      position: relative;
+      padding-right: 2.2em;
+    }
+
+    .prompt-copy {
+      position: absolute;
+      top: 0.2em;
+      right: 0;
+    }
+
+    .empty-state {
+      border: 1px dashed #e2e2e2;
+      border-radius: 0.35em;
+      background: rgba(6, 69, 173, 0.05);
+      padding: 1.4em;
+      text-align: center;
+      margin: 2em 0;
+    }
+
+    footer {
+      padding: 20px;
+      text-align: center;
+      margin-top: 4em;
+    }
+
+    footer hr {
+      border: 0;
+      border-top: 1px solid #e2e2e2;
+      margin-bottom: 1.5em;
+    }
+
+    @media (max-width: 720px) {
+      .filter-options {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      }
+    }
+  </style>
+
+  <script src="nav.js" defer></script>
+  <script src="header-anchors.js" defer></script>
+</head>
+<body>
+  <header id="title-block-header">
+    <h1 class="title"><a href="https://rlhfbook.com/" style="color: inherit; text-decoration: none;">Reinforcement Learning from Human Feedback</a></h1>
+    <p class="subtitle">A short introduction to RLHF and post-training focused on language models.</p>
+    <p class="author">Nathan Lambert</p>
+    <navigation-dropdown expanded="false"></navigation-dropdown>
+    <h1 class="library-heading">Library</h1>
+  </header>
+
+  <section class="library-intro">
+    <p>
+      Explore completions from supervised finetuned (SFT) models alongside their reinforcement learning from human feedback (RLHF/DPO) counterparts. Reroll buttons reveal the three completions available for each prompt/model variant (<code>N-M</code> completion IDs from <code>natolambert/rlhf-library</code>).
+    </p>
+  </section>
+
+  <section class="library-controls" aria-label="Library filters">
+    <h2>Filters</h2>
+    <div class="filter-group">
+      <h3>Prompts</h3>
+      <ul class="filter-options" id="promptFilters"></ul>
+      <div class="filter-actions">
+        <button type="button" id="selectAllPrompts">Select all prompts</button>
+        <button type="button" id="clearPrompts">Clear prompts</button>
+      </div>
+    </div>
+    <div class="filter-group">
+      <h3>Model Pairs</h3>
+      <ul class="filter-options" id="modelFilters"></ul>
+      <div class="filter-actions">
+        <button type="button" id="selectAllModels">Select all models</button>
+        <button type="button" id="clearModels">Clear models</button>
+      </div>
+    </div>
+  </section>
+
+  <div id="libraryContent" aria-live="polite"></div>
+
+  <footer>
+    <hr />
+    Citation <br />
+    <div style="text-align: left; font-size: small; color: #888;">
+      @book{rlhf2024,<br />
+      &nbsp;&nbsp;author = {Nathan Lambert},<br />
+      &nbsp;&nbsp;title = {Reinforcement Learning from Human Feedback},<br />
+      &nbsp;&nbsp;year = {2025},<br />
+      &nbsp;&nbsp;publisher = {Online},<br />
+      &nbsp;&nbsp;url = {https://rlhfbook.com}<br />
+      }
+    </div>
+    <div>
+      <a href="https://github.com/natolambert/rlhf-book" target="_blank" rel="noreferrer">
+        <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub" style="width: 40px; height: 40px;" />
+      </a>
+    </div>
+    <p>&copy; 2025 Nathan Lambert</p>
+  </footer>
+
+  <script>
+    const state = {
+      data: null,
+      selectedPrompts: new Set(),
+      selectedModels: new Set(),
+      cursors: new Map(),
+    };
+
+    const COPY_RESET_DELAY = 1500;
+
+    function escapeHTML(text) {
+      return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&q
