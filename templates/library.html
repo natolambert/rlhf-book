@@ -15,153 +15,12 @@
   <title>RLHF Model Library | RLHF Book by Nathan Lambert</title>
 
   <style>
-    html {
-      font-size: 100%;
-      overflow-y: scroll;
-      -webkit-text-size-adjust: 100%;
-      -ms-text-size-adjust: 100%;
-    }
-
-    body {
-      color: #444;
-      font-family: Georgia, Palatino, 'Palatino Linotype', Times, 'Times New Roman', serif;
-      font-size: 12px;
-      line-height: 1.7;
-      padding: 1em;
-      margin: auto;
-      max-width: 42em;
-      background: #fefefe;
-    }
-
-    a {
-      color: #0645ad;
-      text-decoration: none;
-    }
-
-    a:visited {
-      color: #0b0080;
-    }
-
-    a:hover {
-      color: #06e;
-    }
-
-    a:active {
-      color: #faa700;
-    }
-
-    a:focus {
-      outline: thin dotted;
-    }
-
-    *::-moz-selection {
-      background: rgba(255, 255, 0, 0.3);
-      color: #000;
-    }
-
-    *::selection {
-      background: rgba(255, 255, 0, 0.3);
-      color: #000;
-    }
-
-    a::-moz-selection {
-      background: rgba(255, 255, 0, 0.3);
-      color: #0645ad;
-    }
-
-    a::selection {
-      background: rgba(255, 255, 0, 0.3);
-      color: #0645ad;
-    }
-
-    p {
-      margin: 1em 0;
-    }
-
-    img {
-      max-width: 100%;
-    }
-
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    h6 {
-      color: #111;
-      line-height: 125%;
-      margin-top: 2em;
-      font-weight: normal;
-      position: relative;
-    }
-
-    .header-anchor {
-      opacity: 0;
-      font-size: 0.8em;
-      vertical-align: middle;
-      position: absolute;
-      margin-left: 0.3em;
-      transition: opacity 0.2s ease-in-out;
-    }
-
-    h2:hover .header-anchor,
-    h3:hover .header-anchor,
-    h4:hover .header-anchor,
-    h5:hover .header-anchor,
-    h6:hover .header-anchor {
-      opacity: 1;
-    }
-
-    h4,
-    h5,
-    h6 {
-      font-weight: bold;
-    }
-
-    h1 {
-      font-size: 2.5em;
-    }
-
+    /* Center the title block for this page only */
     #title-block-header {
       text-align: center;
-      margin-bottom: 2.5em;
     }
-
-    #title-block-header .title,
-    #title-block-header .subtitle,
-    #title-block-header .author,
-    #title-block-header .library-heading {
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    #title-block-header .library-heading {
-      font-size: 1.6em;
-      margin-top: 1.5em;
-    }
-
-    .button,
-    .filter-actions button,
-    .reroll-button,
-    .expand-toggle,
-    .copy-button {
-      font-family: inherit;
-      font-size: 0.85em;
-      padding: 0.35em 0.6em;
-      border-radius: 0.3em;
-      border: 1px solid #0645ad;
-      background: rgba(6, 69, 173, 0.1);
-      color: #0645ad;
-      cursor: pointer;
-    }
-
-    .filter-actions button:hover,
-    .reroll-button:hover,
-    .expand-toggle:hover,
-    .copy-button:hover {
-      background: rgba(6, 69, 173, 0.18);
-    }
-
+    
+    /* Library-specific styles only - most styles come from style.css */
     .library-intro,
     .library-controls,
     .pair-section {
@@ -203,6 +62,28 @@
       align-items: center;
       gap: 0.45em;
       font-size: 0.95em;
+    }
+
+    .button,
+    .filter-actions button,
+    .reroll-button,
+    .expand-toggle,
+    .copy-button {
+      font-family: inherit;
+      font-size: 0.85em;
+      padding: 0.35em 0.6em;
+      border-radius: 0.3em;
+      border: 1px solid #0645ad;
+      background: rgba(6, 69, 173, 0.1);
+      color: #0645ad;
+      cursor: pointer;
+    }
+
+    .filter-actions button:hover,
+    .reroll-button:hover,
+    .expand-toggle:hover,
+    .copy-button:hover {
+      background: rgba(6, 69, 173, 0.18);
     }
 
     .filter-actions {
@@ -390,18 +271,6 @@
       margin: 2em 0;
     }
 
-    footer {
-      padding: 20px;
-      text-align: center;
-      margin-top: 4em;
-    }
-
-    footer hr {
-      border: 0;
-      border-top: 1px solid #e2e2e2;
-      margin-bottom: 1.5em;
-    }
-
     @media (max-width: 720px) {
       .filter-options {
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -413,6 +282,7 @@
     }
   </style>
 
+  <link rel="stylesheet" href="style.css" />
   <script src="nav.js" defer></script>
 </head>
 <body>
@@ -421,8 +291,9 @@
     <p class="subtitle">A short introduction to RLHF and post-training focused on language models.</p>
     <p class="author">Nathan Lambert</p>
     <navigation-dropdown expanded="false"></navigation-dropdown>
-    <h1 class="library-heading">Library</h1>
   </header>
+  
+  <h1>Library</h1>
 
   <section class="library-intro">
     <p>
