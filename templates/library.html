@@ -21,27 +21,66 @@
     }
     
     /* Library-specific styles only - most styles come from style.css */
-    .library-intro,
-    .library-controls,
     .pair-section {
       border: 1px solid #e2e2e2;
       border-radius: 0.35em;
       background: #fff;
       box-shadow: 0 6px 18px rgba(17, 17, 17, 0.06);
     }
-
-    .library-intro {
-      margin: 2em 0 2.5em;
-      padding: 1.2em;
-    }
-
+    
     .library-controls {
+      border: 1px solid #e2e2e2;
+      border-radius: 0.35em;
+      background: #fff;
+      box-shadow: 0 6px 18px rgba(17, 17, 17, 0.06);
       margin-bottom: 2.5em;
-      padding: 1.2em;
+      overflow: hidden;
     }
-
-    .library-controls h2 {
-      margin-top: 0;
+    
+    .settings-header {
+      padding: 1em 1.2em;
+      background: rgba(6, 69, 173, 0.05);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e2e2e2;
+      user-select: none;
+    }
+    
+    .settings-header:hover {
+      background: rgba(6, 69, 173, 0.08);
+    }
+    
+    .settings-header h2 {
+      margin: 0;
+      font-size: 1.2em;
+    }
+    
+    .settings-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      color: #0645ad;
+    }
+    
+    .settings-toggle svg {
+      width: 1em;
+      height: 1em;
+      transition: transform 0.3s ease;
+    }
+    
+    .settings-header[aria-expanded="true"] .settings-toggle svg {
+      transform: rotate(180deg);
+    }
+    
+    .settings-content {
+      padding: 1.2em;
+      display: none;
+    }
+    
+    .settings-content.show {
+      display: block;
     }
 
     .filter-group + .filter-group {
@@ -96,25 +135,9 @@
     .prompt-section {
       margin-bottom: 3em;
     }
-
-    .prompt-messages {
-      border: 1px solid #e2e2e2;
-      border-radius: 0.35em;
-      padding: 1em 1.2em;
-      background: #fff;
-      box-shadow: 0 4px 14px rgba(17, 17, 17, 0.05);
-    }
-
-    .prompt-message + .prompt-message {
-      margin-top: 0.8em;
-    }
-
-    .prompt-role {
-      font-size: 0.85em;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #666;
-      margin-bottom: 0.25em;
+    
+    .prompt-section h3 {
+      margin-bottom: 1.5em;
     }
 
     .pair-section {
@@ -251,17 +274,6 @@
       color: #777;
     }
 
-    .prompt-message {
-      position: relative;
-      padding-right: 2.2em;
-    }
-
-    .prompt-copy {
-      position: absolute;
-      top: 0.2em;
-      right: 0;
-    }
-
     .empty-state {
       border: 1px dashed #e2e2e2;
       border-radius: 0.35em;
@@ -293,25 +305,34 @@
     <navigation-dropdown expanded="false"></navigation-dropdown>
   </header>
   
-  <h1>Library</h1>
+  <h1>RLHF Model Completions Library</h1>
 
-  <section class="library-intro">
-    <p>
-      Explore completions from instruction-tuned models and their downstream RLHF counterparts.
-    </p>
-    <p>
-      The models used here are sourced from various open-source post-training pipelines from the Allen Institute for AI -- OLMo and Tülu models. 
-      Overall, it is rare for intermediate models to be released at all. 
-      For each of the 18 models (9 pairs of SFT and RLHF models), we have generated 3 completions to a static set of 16 prompts. 
-    </p>
-    <p>
-      Feel free to use these examples for talks and other educational purposes. Please cite the book and the authors of the models. 
-      The data is available <a href="https://huggingface.co/datasets/natolambert/rlhf-library">here</a> and is licensed under ODC-BY.
-    </p>
-  </section>
+  <p>
+    Explore completions from instruction-tuned models and their downstream RLHF counterparts.
+  </p>
 
-  <section class="library-controls" aria-label="Library filters">
-    <h2>Filters</h2>
+  <p>
+    The models used here are sourced from various open-source post-training pipelines from the Allen Institute for AI -- OLMo and Tülu models. 
+    Overall, it is rare for intermediate models to be released at all. 
+    For each of the 18 models (9 pairs of SFT and RLHF models), we have generated 3 completions to a static set of 16 prompts. 
+  </p>
+  
+  <p>
+    Feel free to use these examples for talks and other educational purposes. Please cite the book and the authors of the models. 
+    The data is available <a href="https://huggingface.co/datasets/natolambert/rlhf-library">here</a> and is licensed under ODC-BY.
+  </p>
+
+  <section class="library-controls" aria-label="Library settings">
+    <div class="settings-header" aria-expanded="false" role="button" tabindex="0">
+      <h2>Settings</h2>
+      <div class="settings-toggle">
+        <span>Show settings</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 9l6 6 6-6" fill="none" stroke="#0645ad" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+      </div>
+    </div>
+    <div class="settings-content">
     <div class="filter-group">
       <h3>Prompts</h3>
       <ul class="filter-options" id="promptFilters"></ul>
@@ -327,6 +348,7 @@
         <button type="button" id="selectAllModels">Select all models</button>
         <button type="button" id="clearModels">Clear models</button>
       </div>
+    </div>
     </div>
   </section>
 
@@ -649,34 +671,12 @@
         promptSection.className = 'prompt-section';
         promptSection.id = `prompt-${prompt.prompt_id}`;
 
-        const header = document.createElement('div');
-        header.className = 'prompt-header';
-        const title = document.createElement('h2');
-        title.textContent = `Prompt ${prompt.prompt_id + 1}`;
-        header.appendChild(title);
-        promptSection.appendChild(header);
-
-        const messageWrapper = document.createElement('div');
-        messageWrapper.className = 'prompt-messages';
-
-        prompt.messages.forEach((message) => {
-          const messageBlock = document.createElement('div');
-          messageBlock.className = 'prompt-message';
-
-          const role = document.createElement('div');
-          role.className = 'prompt-role';
-          role.textContent = (message.role || 'user').toUpperCase();
-          messageBlock.appendChild(role);
-
-          const content = document.createElement('div');
-          content.innerHTML = renderMarkdown(message.content || '');
-          messageBlock.appendChild(content);
-
-          messageBlock.appendChild(createCopyButton(message.content || '', 'prompt-copy'));
-          messageWrapper.appendChild(messageBlock);
-        });
-
-        promptSection.appendChild(messageWrapper);
+        // Use the actual prompt text as the heading
+        const promptHeading = document.createElement('h3');
+        // Get the first user message content as the prompt text
+        const userMessage = prompt.messages.find(m => (m.role || 'user') === 'user');
+        promptHeading.textContent = userMessage ? userMessage.content : `Prompt ${prompt.prompt_id + 1}`;
+        promptSection.appendChild(promptHeading);
 
         models.forEach((model) => {
           const pairSection = document.createElement('section');
@@ -693,7 +693,25 @@
 
           const pairMeta = document.createElement('div');
           pairMeta.className = 'pair-meta';
-          pairMeta.textContent = `${model.sft_model} ↔ ${model.rlhf_model}`;
+          
+          // Create links for both models
+          const sftLink = document.createElement('a');
+          sftLink.href = `https://huggingface.co/${model.sft_model}`;
+          sftLink.target = '_blank';
+          sftLink.rel = 'noopener noreferrer';
+          sftLink.textContent = model.sft_model;
+          
+          const separator = document.createTextNode(' ↔ ');
+          
+          const rlhfLink = document.createElement('a');
+          rlhfLink.href = `https://huggingface.co/${model.rlhf_model}`;
+          rlhfLink.target = '_blank';
+          rlhfLink.rel = 'noopener noreferrer';
+          rlhfLink.textContent = model.rlhf_model;
+          
+          pairMeta.appendChild(sftLink);
+          pairMeta.appendChild(separator);
+          pairMeta.appendChild(rlhfLink);
           pairHeader.appendChild(pairMeta);
 
           pairSection.appendChild(pairHeader);
@@ -787,7 +805,29 @@
       });
     }
 
+    function setupSettingsToggle() {
+      const header = document.querySelector('.settings-header');
+      const content = document.querySelector('.settings-content');
+      const toggleText = header.querySelector('.settings-toggle span');
+      
+      header.addEventListener('click', () => {
+        const isExpanded = header.getAttribute('aria-expanded') === 'true';
+        header.setAttribute('aria-expanded', !isExpanded);
+        content.classList.toggle('show');
+        toggleText.textContent = isExpanded ? 'Show settings' : 'Hide settings';
+      });
+      
+      // Add keyboard support
+      header.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          header.click();
+        }
+      });
+    }
+
     function bootstrap() {
+      setupSettingsToggle();
       fetch('data/library.json')
         .then((response) => {
           if (!response.ok) {
