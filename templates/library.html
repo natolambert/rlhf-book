@@ -140,7 +140,7 @@
       margin-top: 1.5em;
     }
 
-    a.button,
+    .button,
     .filter-actions button,
     .reroll-button,
     .expand-toggle,
@@ -238,6 +238,7 @@
 
     .pair-section {
       margin-top: 1.5em;
+      overflow: hidden;
     }
 
     .pair-header {
@@ -272,6 +273,12 @@
       flex-direction: column;
       gap: 0.6em;
       position: relative;
+      transition: box-shadow 0.2s ease;
+    }
+
+    .completion-panel:focus-within {
+      box-shadow: 0 0 0 2px rgba(6, 69, 173, 0.2);
+      outline: none;
     }
 
     .panel-heading {
@@ -296,6 +303,17 @@
 
     .copy-button:hover {
       background: #ebebeb;
+    }
+
+    .reroll-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35em;
+    }
+
+    .reroll-button svg {
+      width: 0.9em;
+      height: 0.9em;
     }
 
     .completion-content {
@@ -388,15 +406,18 @@
       .filter-options {
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       }
+
+      .comparison-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 
   <script src="nav.js" defer></script>
-  <script src="header-anchors.js" defer></script>
 </head>
 <body>
   <header id="title-block-header">
-    <h1 class="title"><a href="https://rlhfbook.com/" style="color: inherit; text-decoration: none;">Reinforcement Learning from Human Feedback</a></h1>
+    <h1 class="title">Reinforcement Learning from Human Feedback</h1>
     <p class="subtitle">A short introduction to RLHF and post-training focused on language models.</p>
     <p class="author">Nathan Lambert</p>
     <navigation-dropdown expanded="false"></navigation-dropdown>
@@ -405,7 +426,16 @@
 
   <section class="library-intro">
     <p>
-      Explore completions from supervised finetuned (SFT) models alongside their reinforcement learning from human feedback (RLHF/DPO) counterparts. Reroll buttons reveal the three completions available for each prompt/model variant (<code>N-M</code> completion IDs from <code>natolambert/rlhf-library</code>).
+      Explore completions from instruction-tuned models and their downstream RLHF counterparts.
+    </p>
+    <p>
+      The models used here are sourced from various open-source post-training pipelines from the Allen Institute for AI -- OLMo and Tülu models. 
+      Overall, it is rare for intermediate models to be released at all. 
+      For each of the 18 models (9 pairs of SFT and RLHF models), we have generated 3 completions to a static set of 16 prompts. 
+    </p>
+    <p>
+      Feel free to use these examples for talks and other educational purposes. Please cite the book and the authors of the models. 
+      The data is available <a href="https://huggingface.co/datasets/natolambert/rlhf-library">here</a> and is licensed under ODC-BY.
     </p>
   </section>
 
@@ -454,6 +484,8 @@
   <script>
     const state = {
       data: null,
+      promptMap: new Map(),
+      modelMap: new Map(),
       selectedPrompts: new Set(),
       selectedModels: new Set(),
       cursors: new Map(),
@@ -461,9 +493,457 @@
 
     const COPY_RESET_DELAY = 1500;
 
-    function escapeHTML(text) {
+    function escapeHTML(text = '') {
       return text
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
-        .replace(/"/g, '&q
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function formatInline(text = '') {
+      let formatted = escapeHTML(text);
+      formatted = formatted.replace(/`([^`]+)`/g, '<code>$1</code>');
+      formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      formatted = formatted.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+      formatted = formatted.replace(/\[([^\]]+)\]\((https?:[^)]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
+      return formatted;
+    }
+
+    function renderMarkdown(text = '') {
+      const lines = text.split(/\r?\n/);
+      const htmlParts = [];
+      let paragraph = [];
+      let bulletItems = [];
+      let orderedItems = [];
+
+      const flushParagraph = () => {
+        if (paragraph.length) {
+          htmlParts.push(`<p>${paragraph.join('<br>')}</p>`);
+          paragraph = [];
+        }
+      };
+
+      const flushList = (items, ordered = false) => {
+        if (!items.length) return;
+        const tag = ordered ? 'ol' : 'ul';
+        htmlParts.push(`<${tag}>${items.map((entry) => `<li>${entry}</li>`).join('')}</${tag}>`);
+        items.length = 0;
+      };
+
+      for (const rawLine of lines) {
+        const line = rawLine.trimEnd();
+        const bulletMatch = line.match(/^[-*]\s+(.*)$/);
+        const orderedMatch = line.match(/^(\d+)\.\s+(.*)$/);
+
+        if (!line.trim()) {
+          flushParagraph();
+          flushList(bulletItems, false);
+          flushList(orderedItems, true);
+          continue;
+        }
+
+        if (bulletMatch) {
+          flushParagraph();
+          flushList(orderedItems, true);
+          bulletItems.push(formatInline(bulletMatch[1]));
+          continue;
+        }
+
+        if (orderedMatch) {
+          flushParagraph();
+          flushList(bulletItems, false);
+          orderedItems.push(formatInline(orderedMatch[2]));
+          continue;
+        }
+
+        flushList(bulletItems, false);
+        flushList(orderedItems, true);
+        paragraph.push(formatInline(line));
+      }
+
+      flushParagraph();
+      flushList(bulletItems, false);
+      flushList(orderedItems, true);
+
+      if (!htmlParts.length) {
+        return `<p>${formatInline(text).replace(/\r?\n/g, '<br>')}</p>`;
+      }
+
+      return htmlParts.join('');
+    }
+
+    function fallbackCopy(text, button, callback) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'absolute';
+      textarea.style.left = '-9999px';
+      document.body.appendChild(textarea);
+      const selection = document.getSelection();
+      const storedRange = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        callback(true);
+      } catch (error) {
+        callback(false);
+      }
+      document.body.removeChild(textarea);
+      if (storedRange) {
+        selection.removeAllRanges();
+        selection.addRange(storedRange);
+      }
+    }
+
+    function copyToClipboard(text, button) {
+      const original = button.textContent;
+      const setStatus = (ok) => {
+        button.textContent = ok ? 'Copied' : 'Copy failed';
+        setTimeout(() => {
+          button.textContent = original;
+        }, COPY_RESET_DELAY);
+      };
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => setStatus(true)).catch(() => fallbackCopy(text, button, setStatus));
+      } else {
+        fallbackCopy(text, button, setStatus);
+      }
+    }
+
+    function createCopyButton(text, extraClass = '') {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = `copy-button ${extraClass}`.trim();
+      button.textContent = 'Copy';
+      button.addEventListener('click', () => copyToClipboard(text, button));
+      return button;
+    }
+
+    function ensureCursor(promptId, modelId) {
+      const key = String(promptId);
+      if (!state.cursors.has(key)) {
+        state.cursors.set(key, new Map());
+      }
+      const bucket = state.cursors.get(key);
+      if (!bucket.has(modelId)) {
+        bucket.set(modelId, { sft: 0, rlhf: 0 });
+      }
+      return bucket.get(modelId);
+    }
+
+    function updateSelection(collection, id, checked) {
+      if (checked) {
+        collection.add(id);
+      } else {
+        collection.delete(id);
+      }
+    }
+
+    function handleReroll(event) {
+      const button = event.currentTarget;
+      const promptId = button.getAttribute('data-prompt');
+      const modelId = button.getAttribute('data-model');
+      const variant = button.getAttribute('data-variant');
+      const cursor = ensureCursor(promptId, modelId);
+      const entries = state.data.completions[promptId][modelId][variant];
+      cursor[variant] = (cursor[variant] + 1) % entries.length;
+      renderContent();
+    }
+
+    function createExpandToggle(container) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'expand-toggle';
+      button.innerHTML = '<span>See more</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="#0645ad" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
+      button.setAttribute('data-expanded', 'false');
+      button.setAttribute('aria-expanded', 'false');
+      button.addEventListener('click', () => {
+        const expanded = !container.classList.contains('expanded');
+        container.classList.toggle('expanded', expanded);
+        button.setAttribute('data-expanded', expanded ? 'true' : 'false');
+        button.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        const label = button.querySelector('span');
+        if (label) {
+          label.textContent = expanded ? 'See less' : 'See more';
+        }
+      });
+      return button;
+    }
+
+    function createCheckboxList(container, items, selectedSet, onChange) {
+      container.innerHTML = '';
+      items.forEach((item) => {
+        const li = document.createElement('li');
+        const label = document.createElement('label');
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.value = item.value;
+        input.checked = selectedSet.has(item.value);
+        input.addEventListener('change', (event) => {
+          updateSelection(selectedSet, item.value, event.target.checked);
+          onChange();
+        });
+        label.appendChild(input);
+        label.appendChild(document.createTextNode(item.label));
+        li.appendChild(label);
+        container.appendChild(li);
+      });
+    }
+
+    function initializeFilters() {
+      const promptList = document.getElementById('promptFilters');
+      const modelList = document.getElementById('modelFilters');
+
+      state.data.prompts.forEach((prompt, index) => {
+        state.promptMap.set(String(prompt.prompt_id), prompt);
+        if (index < 3) {
+          state.selectedPrompts.add(String(prompt.prompt_id));
+        }
+      });
+
+      state.data.model_pairs.forEach((pair, index) => {
+        state.modelMap.set(pair.pair_id, pair);
+        if (index === 0) {
+          state.selectedModels.add(pair.pair_id);
+        }
+      });
+
+      const promptOptions = state.data.prompts.map((prompt) => ({
+        value: String(prompt.prompt_id),
+        label: `#${prompt.prompt_id + 1}: ${prompt.display_text.split('\n')[0]}`,
+      }));
+
+      const modelOptions = state.data.model_pairs.map((pair) => ({
+        value: pair.pair_id,
+        label: pair.display_name,
+      }));
+
+      const refreshPrompts = () => createCheckboxList(promptList, promptOptions, state.selectedPrompts, renderContent);
+      const refreshModels = () => createCheckboxList(modelList, modelOptions, state.selectedModels, renderContent);
+
+      refreshPrompts();
+      refreshModels();
+
+      document.getElementById('selectAllPrompts').addEventListener('click', () => {
+        state.data.prompts.forEach((prompt) => state.selectedPrompts.add(String(prompt.prompt_id)));
+        refreshPrompts();
+        renderContent();
+      });
+
+      document.getElementById('clearPrompts').addEventListener('click', () => {
+        state.selectedPrompts.clear();
+        refreshPrompts();
+        renderContent();
+      });
+
+      document.getElementById('selectAllModels').addEventListener('click', () => {
+        state.data.model_pairs.forEach((pair) => state.selectedModels.add(pair.pair_id));
+        refreshModels();
+        renderContent();
+      });
+
+      document.getElementById('clearModels').addEventListener('click', () => {
+        state.selectedModels.clear();
+        refreshModels();
+        renderContent();
+      });
+    }
+
+    function renderContent() {
+      const container = document.getElementById('libraryContent');
+      container.innerHTML = '';
+
+      const prompts = Array.from(state.selectedPrompts)
+        .map((id) => state.promptMap.get(id))
+        .filter(Boolean)
+        .sort((a, b) => a.prompt_id - b.prompt_id);
+
+      const models = Array.from(state.selectedModels)
+        .map((id) => state.modelMap.get(id))
+        .filter(Boolean);
+
+      if (!prompts.length || !models.length) {
+        const empty = document.createElement('div');
+        empty.className = 'empty-state';
+        empty.textContent = 'Select at least one prompt and one model pair to view completions.';
+        container.appendChild(empty);
+        return;
+      }
+
+      prompts.forEach((prompt) => {
+        const promptSection = document.createElement('section');
+        promptSection.className = 'prompt-section';
+        promptSection.id = `prompt-${prompt.prompt_id}`;
+
+        const header = document.createElement('div');
+        header.className = 'prompt-header';
+        const title = document.createElement('h2');
+        title.textContent = `Prompt ${prompt.prompt_id + 1}`;
+        header.appendChild(title);
+        promptSection.appendChild(header);
+
+        const messageWrapper = document.createElement('div');
+        messageWrapper.className = 'prompt-messages';
+
+        prompt.messages.forEach((message) => {
+          const messageBlock = document.createElement('div');
+          messageBlock.className = 'prompt-message';
+
+          const role = document.createElement('div');
+          role.className = 'prompt-role';
+          role.textContent = (message.role || 'user').toUpperCase();
+          messageBlock.appendChild(role);
+
+          const content = document.createElement('div');
+          content.innerHTML = renderMarkdown(message.content || '');
+          messageBlock.appendChild(content);
+
+          messageBlock.appendChild(createCopyButton(message.content || '', 'prompt-copy'));
+          messageWrapper.appendChild(messageBlock);
+        });
+
+        promptSection.appendChild(messageWrapper);
+
+        models.forEach((model) => {
+          const pairSection = document.createElement('section');
+          pairSection.className = 'pair-section';
+          pairSection.id = `prompt-${prompt.prompt_id}-model-${model.pair_id.replace(/[^a-z0-9]/gi, '-')}`;
+
+          const pairHeader = document.createElement('div');
+          pairHeader.className = 'pair-header';
+
+          const pairTitle = document.createElement('h3');
+          pairTitle.className = 'pair-title';
+          pairTitle.textContent = model.display_name;
+          pairHeader.appendChild(pairTitle);
+
+          const pairMeta = document.createElement('div');
+          pairMeta.className = 'pair-meta';
+          pairMeta.textContent = `${model.sft_model} ↔ ${model.rlhf_model}`;
+          pairHeader.appendChild(pairMeta);
+
+          pairSection.appendChild(pairHeader);
+
+          const comparisonGrid = document.createElement('div');
+          comparisonGrid.className = 'comparison-grid';
+
+          const promptId = String(prompt.prompt_id);
+          const variantGroup = state.data.completions[promptId]?.[model.pair_id];
+          if (!variantGroup) {
+            const warning = document.createElement('div');
+            warning.className = 'empty-state';
+            warning.textContent = 'No completions available for this combination.';
+            pairSection.appendChild(warning);
+            promptSection.appendChild(pairSection);
+            return;
+          }
+
+          const cursor = ensureCursor(promptId, model.pair_id);
+
+          ['sft', 'rlhf'].forEach((variant) => {
+            const entries = variantGroup[variant] || [];
+            if (!entries.length) {
+              return;
+            }
+
+            const index = cursor[variant] % entries.length;
+            const record = entries[index];
+
+            const panel = document.createElement('article');
+            panel.className = 'completion-panel';
+            panel.setAttribute('tabindex', '0');
+
+            const heading = document.createElement('div');
+            heading.className = 'panel-heading';
+
+            const label = document.createElement('span');
+            label.textContent = variant === 'sft' ? 'SFT Output' : 'RLHF / DPO Output';
+            heading.appendChild(label);
+
+            const actions = document.createElement('div');
+            actions.className = 'panel-actions';
+            actions.appendChild(createCopyButton(record.text || ''));
+
+            const reroll = document.createElement('button');
+            reroll.type = 'button';
+            reroll.className = 'reroll-button';
+            reroll.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.24 7.76a6 6 0 1 0 1.28 6.63" fill="none" stroke="#0645ad" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path><polyline points="16 5 16 9 20 9" fill="none" stroke="#0645ad" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></polyline></svg> Reroll';
+            reroll.setAttribute('data-prompt', promptId);
+            reroll.setAttribute('data-model', model.pair_id);
+            reroll.setAttribute('data-variant', variant);
+            reroll.addEventListener('click', handleReroll);
+            actions.appendChild(reroll);
+
+            heading.appendChild(actions);
+            panel.appendChild(heading);
+
+            const contentWrapper = document.createElement('div');
+            contentWrapper.className = 'completion-content';
+
+            const text = document.createElement('div');
+            text.className = 'completion-text';
+            text.innerHTML = renderMarkdown(record.text || '');
+            contentWrapper.appendChild(text);
+
+            panel.appendChild(contentWrapper);
+
+            const expandToggle = createExpandToggle(contentWrapper);
+            panel.appendChild(expandToggle);
+
+            const meta = document.createElement('div');
+            meta.className = 'completion-meta';
+            meta.textContent = `Completion ID: ${record.completion_id}`;
+            panel.appendChild(meta);
+
+            comparisonGrid.appendChild(panel);
+
+            requestAnimationFrame(() => {
+              if (contentWrapper.scrollHeight <= contentWrapper.clientHeight + 4) {
+                contentWrapper.classList.add('expanded');
+                expandToggle.style.display = 'none';
+              }
+            });
+          });
+
+          pairSection.appendChild(comparisonGrid);
+          promptSection.appendChild(pairSection);
+        });
+
+        container.appendChild(promptSection);
+      });
+    }
+
+    function bootstrap() {
+      fetch('data/library.json')
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Failed to load data (status ${response.status})`);
+          }
+          return response.json();
+        })
+        .then((payload) => {
+          state.data = payload;
+          initializeFilters();
+          renderContent();
+        })
+        .catch((error) => {
+          const container = document.getElementById('libraryContent');
+          container.innerHTML = '';
+          const message = document.createElement('div');
+          message.className = 'empty-state';
+          message.textContent = `Unable to load library data: ${error.message}`;
+          container.appendChild(message);
+        });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', bootstrap);
+    } else {
+      bootstrap();
+    }
+  </script>
+</body>
+</html>

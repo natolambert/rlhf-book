@@ -23,7 +23,7 @@ class NavigationDropdown extends HTMLElement {
           <li><a href="https://github.com/natolambert/rlhf-book">GitHub Repository</a></li>
           <li><a href="https://rlhfbook.com/book.pdf">PDF</a> / <a href="https://arxiv.org/abs/2504.12501">Arxiv</a> / <a href="https://rlhfbook.com/book.epub">EPUB</a></li>
           <li class="inactive">Order a copy (Soon)</li>
-          <li><a href="https://rlhfbook.com/library.html">Completions Library</a></li>
+          <li><a href="https://rlhfbook.com/library.html">Example Model Completions</a></li>
         </ul>
       </div>
 

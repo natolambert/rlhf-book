@@ -100,7 +100,7 @@ $(info JS files found: $(JS_FILES))
 
 epub:	$(BUILD)/epub/$(OUTPUT_FILENAME).epub
 
-html:	$(BUILD)/html/$(OUTPUT_FILENAME_HTML).html nested_html
+html:	$(BUILD)/html/$(OUTPUT_FILENAME_HTML).html nested_html $(BUILD)/html/library.html
 
 nested_html: $(CHAPTER_HTMLS)
 	$(ECHO_BUILT)
@@ -129,15 +129,20 @@ $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html:	$(HTML_DEPENDENCIES)
 	$(MKDIR_CMD) $(BUILD)/html
 	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(ARGS) $(HTML_ARGS) -o $@
 	$(COPY_CMD) $(IMAGES) $(BUILD)/html/ --mathjax
-	$(COPY_CMD) $(JS_FILES) $(BUILD)/html/
-	$(COPY_CMD) $(JS_FILES) $(BUILD)/html/c/  # Copy to nested directory
-	cp templates/library.html $(BUILD)/html/library.html || echo "Failed to copy library.html"
+	$(COPY_CMD) templates/nav.js $(BUILD)/html/
+	$(COPY_CMD) templates/header-anchors.js $(BUILD)/html/
+	$(COPY_CMD) templates/nav.js $(BUILD)/html/c/
+	$(COPY_CMD) templates/header-anchors.js $(BUILD)/html/c/
 	cp templates/style.css $(BUILD)/html/style.css || echo "Failed to copy style.css"
 	@if [ -f data/library.json ]; then \\
 		mkdir -p $(BUILD)/html/data; \\
 		cp data/library.json $(BUILD)/html/data/library.json || echo "Failed to copy library data"; \\
 	fi
 	$(ECHO_BUILT)
+
+$(BUILD)/html/library.html: templates/library.html
+	$(MKDIR_CMD) $(BUILD)/html
+	cp templates/library.html $@
 
 # Nested HTML build targets
 NESTED_HTML_DIR = $(BUILD)/html/c/
