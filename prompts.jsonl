@@ -1,0 +1,122 @@
+[
+    {
+      "dataset": "alpaca_eval_helpful_base",
+      "instruction": "What are the names of some famous actors that started their careers on Broadway?",
+      "output": "Some famous actors that started their careers on Broadway include: \n1. Hugh Jackman \n2. Meryl Streep \n3. Denzel Washington \n4. Julia Roberts \n5. Christopher Walken \n6. Anthony Rapp \n7. Audra McDonald \n8. Nathan Lane \n9. Sarah Jessica Parker \n10. Lin-Manuel Miranda",
+      "generator": "text_davinci_003"
+    },
+    {
+      "dataset": "alpaca_eval_helpful_base",
+      "instruction": "How did US states get their names?",
+      "output": "US states get their names from a variety of sources, including Native American tribes, Spanish explorers, British colonists, and even presidents. For example, the state of Alabama was named after the Native American tribe that lived in the area, while the state of Florida gets its name from the Spanish explorer, Ponce de Leon, who explored the area in the 1500s. Other states are named after English kings (like Virginia, named after England's \"Virgin Queen,\" Queen Elizabeth I) or presidents (like Washington, named after George Washington).",
+      "generator": "text_davinci_003"
+    },
+    {
+      "dataset": "alpaca_eval_helpful_base",
+      "instruction": "What is some cool music from the 1920s?",
+      "output": "Some cool music from the 1920s includes jazz classics like Duke Ellington's \"Mood Indigo,\" Louis Armstrong's \"West End Blues,\" and Bessie Smith's \"Down Hearted Blues.\" Other popular tunes from the era include Fats Waller's \"Ain't Misbehavin,\" George Gershwin's \"Rhapsody in Blue,\" and Irving Berlin's \"Puttin' On the Ritz.\"",
+      "generator": "text_davinci_003"
+    },
+    {
+      "dataset": "alpaca_eval_helpful_base",
+      "instruction": "How do I wrap a present neatly?",
+      "output": "1. Start by gathering the supplies you will need to wrap the present, such as wrapping paper, tape, scissors, and ribbon.\n\n2. Cut the wrapping paper to the size of the gift, ensuring that there is enough paper to cover the entire gift.\n\n3. Place the gift in the center of the wrapping paper, and fold the sides in, tucking the excess paper at the bottom.\n\n4. Secure the folded paper with tape.\n\n5. Cut a length of ribbon and tie it around the gift.\n\n6. Trim the excess ribbon with scissors.\n\n7. Add a decorative bow or other embellishment to the top of the gift.",
+      "generator": "text_davinci_003"
+    },
+    {
+      "dataset": "alpaca_eval_helpful_base",
+      "instruction": "How do I dice without slicing my finger",
+      "output": "1. Gather the necessary tools. You will need a sharp knife, a cutting board, and a damp kitchen towel.\n\n2. Place the cutting board on a solid, stable surface.\n\n3. Place the damp kitchen towel underneath the cutting board to provide a non-slip surface that will help hold the board in place.\n\n4. Hold the knife firmly with your dominant hand.\n\n5. Keep your fingers curled away from the blade as you begin to cut.\n\n6. Make sure the blade remains flat and parallel to the cutting board as you cut.\n\n7. Slice the food into thin strips, then cut the strips into cubes.\n\n8. Clean the knife and the cutting board thoroughly when finished.",
+      "generator": "text_davinci_003"
+    },
+    {
+      "dataset": "alpaca_eval_helpful_base",
+      "instruction": "Hi, I'm trying to solve a crossword puzzle, but I've never done one of these before. Can you help me out?",
+      "output": "Sure, I'd be happy to help! Here's what you need to do:\n1. Read the clue carefully and look for any word patterns or hints.\n2. Look for words that fit the clue and have the same number of letters as the answer.\n3. Make sure the words fit with other words in the puzzle.\n4. If you're still stuck, look for other related words that might fit the clue.\n5. Don't forget to check the across and down clues for each word.\nGood luck!",
+      "generator": "text_davinci_003"
+    },
+    {
+      "dataset": "alpaca_eval_helpful_base",
+      "instruction": "Who is Larry Page?",
+      "output": "Larry Page is an American computer scientist and Internet entrepreneur. He is best known as one of the co-founders of Google, alongside fellow Stanford University graduate Sergey Brin. Page is the CEO of Alphabet Inc., Google's parent company.",
+      "generator": "text_davinci_003"
+    },
+    {
+      "dataset": "alpaca_eval_helpful_base",
+      "instruction": "What are different drawers I should have for clothes?",
+      "output": "1. Socks and Undergarments Drawer\n2. Shirts Drawer\n3. Pants Drawer\n4. Sweaters and Jackets Drawer\n5. Pajamas and Loungewear Drawer\n6. Belts and Accessories Drawer\n7. Scarves and Gloves Drawer\n8. Shoes and Slippers Drawer",
+      "generator": "text_davinci_003"
+    },
+    {
+      "dataset": "alpaca_eval_helpful_base",
+      "instruction": "I'm trying to teach myself to have nicer handwriting. Can you help?",
+      "output": "Sure! Here are a few tips to help improve your handwriting:\n1. Make sure you keep your wrist and arm relaxed while writing.\n2. Hold your pen or pencil correctly.\n3. Write slowly and make sure each letter is properly formed.\n4. Start with large letters and gradually reduce the size of the letters as your handwriting improves.\n5. Practice writing the same letter or word multiple times.\n6. Use lined paper to help keep your letters and words even.\n7. Take breaks while writing and stretch your fingers and wrist.",
+      "generator": "text_davinci_003"
+    },
+    {
+      "dataset": "alpaca_eval_helpful_base",
+      "instruction": "What are the best exercises for beginners?",
+      "output": "Some of the best exercises for beginners include walking, swimming, biking, and bodyweight exercises such as squats, lunges, push-ups, planks, and sit-ups.",
+      "generator": "text_davinci_003"
+    },
+    {
+      "dataset": "alpaca_eval_helpful_base",
+      "instruction": "Do you know why turkeys became the official food of thanksgiving?",
+      "output": "The origin of turkey as a Thanksgiving staple is unclear, but it is believed that the bird was served at the first Thanksgiving feast in 1621. Turkeys are plentiful in the United States, so they became a popular choice for holiday meals. They also provide a larger quantity of meat than other birds, making them a convenient choice for large family gatherings.",
+      "generator": "text_davinci_003"
+    },
+    {
+        "dataset": "alpaca_eval_vicuna",
+        "instruction": "Imagine you are a time traveler from the year 3000. What technological advancements would you tell people about?",
+        "output": "I would tell people about the incredible advances in artificial intelligence that are now capable of performing complex tasks and making decisions. Automated robots are now commonplace in many industries, and they are even able to interact with and understand human emotions. Space travel has also become much more accessible, and exploration of the solar system is a regular occurrence. Cars are now powered by clean energy sources, and the air is much cleaner due to the widespread use of renewable energy sources. Communication has also become much more instantaneous and global, with the ability to send messages and video calls across the world in an instant.",
+        "generator": "text_davinci_003"
+      },
+      {
+        "dataset": "alpaca_eval_vicuna",
+        "instruction": "As a sports commentator, describe the winning play in the final seconds of a championship game.",
+        "output": "The crowd is roaring with anticipation as the clock winds down to the final seconds of the championship game. The home team is down by one point and is in possession of the ball. In a last-ditch effort to win the game, the player with the ball drives the lane and takes a desperate shot. Miraculously, the ball sinks in the net as the buzzer sounds, giving the home team a thrilling victory! The crowd erupts in cheers as the players celebrate their hard-earned win.",
+        "generator": "text_davinci_003"
+      },
+      {
+        "dataset": "alpaca_eval_vicuna",
+        "instruction": "Pretend to be a world-famous chef. How would you describe your signature dish to a panel of judges?",
+        "output": "My signature dish is a unique and delectable blend of flavors. It starts with a savory base of roasted vegetables, garlic, and herbs, which is then topped with a creamy cheese sauce and a sprinkle of crunchy croutons. The flavors of this dish come together to create a rich and complex flavor profile that is truly unique. The combination of textures and flavors make this dish a true delight for the taste buds.",
+        "generator": "text_davinci_003"
+      },
+      {
+        "dataset": "alpaca_eval_vicuna",
+        "instruction": "You are a mountain climber reaching the summit of Mount Everest. Describe your emotions and the view from the top.",
+        "output": "Standing atop Mount Everest, I am overwhelmed with a sense of accomplishment and accomplishment. The view from the top is awe-inspiring and breathtaking. I can see for miles and miles in every direction \u2013 snow-capped mountains, lush valleys, and distant cities. The air is thin and crisp, and the sun is shining brightly. I am filled with a sense of pride and joy as I take in this remarkable sight.",
+        "generator": "text_davinci_003"
+      },
+      {
+        "dataset": "alpaca_eval_vicuna",
+        "instruction": "As a space colonist on Mars, describe your daily life and the challenges you face living on another planet.",
+        "output": "As a space colonist on Mars, my daily life is vastly different than what I am used to on Earth. Each day, I wake up in my Martian habitat and start the day with a nutritious breakfast. Afterwards, I usually spend the morning tending to the hydroponic garden we have set up. It is essential that we grow our own food so that we don\u2019t have to rely on shipments from Earth. In the afternoon, I usually spend my time doing maintenance on our habitat and our other equipment. This is a crucial part of life on Mars as it ensures that our equipment and habitats remain in good working order.\n\nThe challenges I face living on another planet are plentiful. Firstly, there is the isolation of being so far away from family and friends. Secondly, the Martian environment can be unpredictable and dangerous. We must always be vigilant of dust storms, extreme temperatures, and other hazards. Finally, resources are limited and we must be very mindful of what we use and conserve it whenever possible.",
+        "generator": "text_davinci_003"
+      },
+      {
+        "dataset": "alpaca_eval_vicuna",
+        "instruction": "Pretend to be a character in a post-apocalyptic world. Describe how you survive and the allies you encounter.",
+        "output": "I'm a survivor in a post-apocalyptic world, and I'm determined to make it through. I've made it my mission to scavenge for supplies, build shelter, and find allies along the way. I'm lucky enough to have a small group of people I can count on as allies. We've built a makeshift camp and set up a system of defense against any potential threats. We gather food and water from whatever sources we can find, and barter with other survivors for items we need.\n\nWe've been able to find some weapons and tools to help us survive, but our most valuable asset is our network of allies. We've met other survivors and formed alliances with them to share resources and provide mutual protection. We've also been able to scavenge for materials to build makeshift shelters, and we take turns keeping watch at night.\n\nThe post-apocalyptic world is a dangerous place, but I'm determined to make it through. I'm grateful for the allies I've met along the way, and together we're able to survive.",
+        "generator": "text_davinci_003"
+      },
+      {
+        "dataset": "alpaca_eval_vicuna",
+        "instruction": "How can you determine if a restaurant is popular among locals or mainly attracts tourists, and why might this information be useful?",
+        "output": "To determine if a restaurant is popular among locals or mainly attracts tourists, you can ask people in the area or look at online reviews. People in the area will likely be able to provide a more accurate assessment than online reviews. Knowing if a restaurant is popular among locals or mainly attracts tourists can be useful because it can help you determine the restaurant's authenticity, as well as the type of food and atmosphere you can expect.",
+        "generator": "text_davinci_003"
+      },
+      {
+        "dataset": "alpaca_eval_vicuna",
+        "instruction": "What are some subtle clues that suggest someone is pretending to understand a topic or conversation when they are actually confused or uninformed?",
+        "output": "-Frequent pauses or hesitations \n-Sudden changes in topic\n-Asking a lot of unrelated questions\n-Vague or general responses\n-Avoiding eye contact\n-Appearing distracted or disinterested\n-Faking a smile or laugh\n-Answering with unrelated answers\n-Making up stories or exaggerating experiences \n-Repeating what has been said",
+        "generator": "text_davinci_003"
+      },
+      {
+        "dataset": "alpaca_eval_vicuna",
+        "instruction": "Why might someone choose to use a paper map or ask for directions instead of relying on a GPS device or smartphone app?",
+        "output": "Someone might choose to use a paper map or ask for directions instead of relying on a GPS device or smartphone app for a number of reasons. For example, a paper map may be more reliable in areas without reliable cell service, and it may be easier to read or understand than a GPS app. Additionally, asking directions from a local person may provide someone with more detailed information about the area, or tips about places to go or things to do.",
+        "generator": "text_davinci_003"
+      }    
+]  

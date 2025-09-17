@@ -21,12 +21,6 @@
     }
     
     /* Library-specific styles only - most styles come from style.css */
-    .pair-section {
-      border: 1px solid #e2e2e2;
-      border-radius: 0.35em;
-      background: #fff;
-      box-shadow: 0 6px 18px rgba(17, 17, 17, 0.06);
-    }
     
     .library-controls {
       border: 1px solid #e2e2e2;
@@ -141,31 +135,37 @@
     }
 
     .pair-section {
-      margin-top: 1.5em;
-      overflow: hidden;
+      margin-top: 2em;
     }
 
-    .pair-header {
-      padding: 1em 1.2em;
-      border-bottom: 1px solid #e2e2e2;
-    }
-
-    .pair-title {
-      margin: 0;
+    .model-title {
+      margin: 0 0 0.5em 0;
       font-size: 1.2em;
-    }
-
-    .pair-meta {
-      margin-top: 0.3em;
-      font-size: 0.85em;
-      color: #666;
+      font-weight: bold;
     }
 
     .comparison-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 1.2em;
-      padding: 1.2em;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5em;
+      margin-bottom: 1em;
+    }
+
+    .model-name {
+      font-size: 0.8em;
+      color: #666;
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+      font-weight: 500;
+    }
+
+    .model-name a {
+      color: #0645ad;
+      text-decoration: none;
+    }
+
+    .model-name a:hover {
+      text-decoration: underline;
     }
 
     .completion-panel {
@@ -222,11 +222,11 @@
 
     .completion-content {
       position: relative;
-      max-height: 15em;
+      max-height: 20em;
       overflow: hidden;
       transition: max-height 0.2s ease;
       background: #fff;
-      padding: 0.6em;
+      padding: 0.8em;
       border-radius: 0.25em;
       border: 1px solid rgba(230, 230, 230, 0.8);
     }
@@ -247,11 +247,10 @@
     }
 
     .expand-toggle {
-      align-self: center;
       display: flex;
       align-items: center;
       gap: 0.35em;
-      margin-top: 0.2em;
+      margin: 0 auto;
     }
 
     .expand-toggle svg {
@@ -266,7 +265,8 @@
 
     .completion-text {
       white-space: pre-wrap;
-      font-size: 0.95em;
+      font-size: 0.85em;
+      line-height: 1.5;
     }
 
     .completion-meta {
@@ -546,24 +546,39 @@
       renderContent();
     }
 
-    function createExpandToggle(container) {
+    function createExpandToggleForPair(contentWrappers) {
+      const buttonContainer = document.createElement('div');
+      buttonContainer.style.textAlign = 'center';
+      buttonContainer.style.padding = '1em 0';
+      buttonContainer.style.display = 'flex';
+      buttonContainer.style.justifyContent = 'center';
+      buttonContainer.style.alignItems = 'center';
+      
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'expand-toggle';
       button.innerHTML = '<span>See more</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="#0645ad" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
       button.setAttribute('data-expanded', 'false');
       button.setAttribute('aria-expanded', 'false');
+      
       button.addEventListener('click', () => {
-        const expanded = !container.classList.contains('expanded');
-        container.classList.toggle('expanded', expanded);
-        button.setAttribute('data-expanded', expanded ? 'true' : 'false');
-        button.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+        const isExpanded = button.getAttribute('data-expanded') === 'true';
+        
+        contentWrappers.forEach(wrapper => {
+          wrapper.classList.toggle('expanded', !isExpanded);
+        });
+        
+        button.setAttribute('data-expanded', !isExpanded ? 'true' : 'false');
+        button.setAttribute('aria-expanded', !isExpanded ? 'true' : 'false');
+        
         const label = button.querySelector('span');
         if (label) {
-          label.textContent = expanded ? 'See less' : 'See more';
+          label.textContent = !isExpanded ? 'See less' : 'See more';
         }
       });
-      return button;
+      
+      buttonContainer.appendChild(button);
+      return buttonContainer;
     }
 
     function createCheckboxList(container, items, selectedSet, onChange) {
@@ -683,39 +698,12 @@
           pairSection.className = 'pair-section';
           pairSection.id = `prompt-${prompt.prompt_id}-model-${model.pair_id.replace(/[^a-z0-9]/gi, '-')}`;
 
-          const pairHeader = document.createElement('div');
-          pairHeader.className = 'pair-header';
-
-          const pairTitle = document.createElement('h3');
-          pairTitle.className = 'pair-title';
-          pairTitle.textContent = model.display_name;
-          pairHeader.appendChild(pairTitle);
-
-          const pairMeta = document.createElement('div');
-          pairMeta.className = 'pair-meta';
+          // Add model title above the comparison grid
+          const modelTitle = document.createElement('h4');
+          modelTitle.className = 'model-title';
+          modelTitle.textContent = model.display_name;
+          pairSection.appendChild(modelTitle);
           
-          // Create links for both models
-          const sftLink = document.createElement('a');
-          sftLink.href = `https://huggingface.co/${model.sft_model}`;
-          sftLink.target = '_blank';
-          sftLink.rel = 'noopener noreferrer';
-          sftLink.textContent = model.sft_model;
-          
-          const separator = document.createTextNode(' ↔ ');
-          
-          const rlhfLink = document.createElement('a');
-          rlhfLink.href = `https://huggingface.co/${model.rlhf_model}`;
-          rlhfLink.target = '_blank';
-          rlhfLink.rel = 'noopener noreferrer';
-          rlhfLink.textContent = model.rlhf_model;
-          
-          pairMeta.appendChild(sftLink);
-          pairMeta.appendChild(separator);
-          pairMeta.appendChild(rlhfLink);
-          pairHeader.appendChild(pairMeta);
-
-          pairSection.appendChild(pairHeader);
-
           const comparisonGrid = document.createElement('div');
           comparisonGrid.className = 'comparison-grid';
 
@@ -731,6 +719,7 @@
           }
 
           const cursor = ensureCursor(promptId, model.pair_id);
+          const contentWrappers = [];
 
           ['sft', 'rlhf'].forEach((variant) => {
             const entries = variantGroup[variant] || [];
@@ -749,7 +738,7 @@
             heading.className = 'panel-heading';
 
             const label = document.createElement('span');
-            label.textContent = variant === 'sft' ? 'SFT Output' : 'RLHF / DPO Output';
+            label.textContent = variant === 'sft' ? 'SFT' : 'RLHF';
             heading.appendChild(label);
 
             const actions = document.createElement('div');
@@ -759,7 +748,7 @@
             const reroll = document.createElement('button');
             reroll.type = 'button';
             reroll.className = 'reroll-button';
-            reroll.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.24 7.76a6 6 0 1 0 1.28 6.63" fill="none" stroke="#0645ad" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path><polyline points="16 5 16 9 20 9" fill="none" stroke="#0645ad" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></polyline></svg> Reroll';
+            reroll.textContent = 'Reroll';
             reroll.setAttribute('data-prompt', promptId);
             reroll.setAttribute('data-model', model.pair_id);
             reroll.setAttribute('data-variant', variant);
@@ -768,6 +757,17 @@
 
             heading.appendChild(actions);
             panel.appendChild(heading);
+
+            // Add individual model name below the heading
+            const modelName = document.createElement('div');
+            modelName.className = 'model-name';
+            const modelLink = document.createElement('a');
+            modelLink.href = `https://huggingface.co/${variant === 'sft' ? model.sft_model : model.rlhf_model}`;
+            modelLink.target = '_blank';
+            modelLink.rel = 'noopener noreferrer';
+            modelLink.textContent = variant === 'sft' ? model.sft_model : model.rlhf_model;
+            modelName.appendChild(modelLink);
+            panel.appendChild(modelName);
 
             const contentWrapper = document.createElement('div');
             contentWrapper.className = 'completion-content';
@@ -778,26 +778,29 @@
             contentWrapper.appendChild(text);
 
             panel.appendChild(contentWrapper);
-
-            const expandToggle = createExpandToggle(contentWrapper);
-            panel.appendChild(expandToggle);
-
-            const meta = document.createElement('div');
-            meta.className = 'completion-meta';
-            meta.textContent = `Completion ID: ${record.completion_id}`;
-            panel.appendChild(meta);
+            contentWrappers.push(contentWrapper);
 
             comparisonGrid.appendChild(panel);
-
-            requestAnimationFrame(() => {
-              if (contentWrapper.scrollHeight <= contentWrapper.clientHeight + 4) {
-                contentWrapper.classList.add('expanded');
-                expandToggle.style.display = 'none';
-              }
-            });
           });
 
           pairSection.appendChild(comparisonGrid);
+          
+          // Add a single expand button for both completions
+          if (contentWrappers.length > 0) {
+            const expandButton = createExpandToggleForPair(contentWrappers);
+            pairSection.appendChild(expandButton);
+            
+            // Check if any content needs expanding
+            requestAnimationFrame(() => {
+              const needsExpansion = contentWrappers.some(wrapper => 
+                wrapper.scrollHeight > wrapper.clientHeight + 4
+              );
+              if (!needsExpansion) {
+                expandButton.style.display = 'none';
+                contentWrappers.forEach(wrapper => wrapper.classList.add('expanded'));
+              }
+            });
+          }
           promptSection.appendChild(pairSection);
         });
 

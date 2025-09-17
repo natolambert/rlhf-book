@@ -49,7 +49,7 @@ PDF_ARGS = --template templates/pdf.tex --pdf-engine xelatex --listings
 NESTED_HTML_TEMPLATE = templates/chapter.html
 
 # Add this with your other file variables at the top
-JS_FILES = $(shell find . -name '*.js')  # This will find all .js files in the current directory and subdirectories
+JS_FILES = $(shell find templates -name '*.js')  # Restrict JS discovery to source templates
 
 # Per-format file dependencies
 
@@ -100,10 +100,7 @@ $(info JS files found: $(JS_FILES))
 
 epub:	$(BUILD)/epub/$(OUTPUT_FILENAME).epub
 
-html:	$(BUILD)/html/$(OUTPUT_FILENAME_HTML).html nested_html $(BUILD)/html/library.html
-
-nested_html: $(CHAPTER_HTMLS)
-	$(ECHO_BUILT)
+html:	nested_html $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html $(BUILD)/html/library.html
 	
 pdf:	$(BUILD)/pdf/$(OUTPUT_FILENAME).pdf
 
@@ -127,17 +124,16 @@ $(BUILD)/docx/$(OUTPUT_FILENAME).docx:	$(DOCX_DEPENDENCIES)
 $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html:	$(HTML_DEPENDENCIES)
 	$(ECHO_BUILDING)
 	$(MKDIR_CMD) $(BUILD)/html
+	$(MKDIR_CMD) $(BUILD)/html/c
 	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(ARGS) $(HTML_ARGS) -o $@
-	$(COPY_CMD) $(IMAGES) $(BUILD)/html/ --mathjax
+	$(COPY_CMD) $(IMAGES) $(BUILD)/html/
 	$(COPY_CMD) templates/nav.js $(BUILD)/html/
 	$(COPY_CMD) templates/header-anchors.js $(BUILD)/html/
 	$(COPY_CMD) templates/nav.js $(BUILD)/html/c/
 	$(COPY_CMD) templates/header-anchors.js $(BUILD)/html/c/
 	cp templates/style.css $(BUILD)/html/style.css || echo "Failed to copy style.css"
-	@if [ -f data/library.json ]; then \\
-		mkdir -p $(BUILD)/html/data; \\
-		cp data/library.json $(BUILD)/html/data/library.json || echo "Failed to copy library data"; \\
-	fi
+	@mkdir -p $(BUILD)/html/data
+	@test -f data/library.json && cp data/library.json $(BUILD)/html/data/library.json || echo "No library data to copy"
 	$(ECHO_BUILT)
 
 $(BUILD)/html/library.html: templates/library.html
@@ -154,16 +150,9 @@ $(NESTED_HTML_DIR)/%.html: chapters/%.md $(HTML_DEPENDENCIES)
 	$(PANDOC_COMMAND) $(ARGS) --template $(NESTED_HTML_TEMPLATE) --standalone --to html5 -o $@ $< --mathjax
 	@echo "Built HTML for $<"
 
-# Single rule for building all nested HTML
+# Aggregate target for nested chapter HTML files
 nested_html: $(CHAPTER_HTMLS)
 	@echo "All nested HTML files built"
-
-# Main HTML target
-$(BUILD)/html/$(OUTPUT_FILENAME_HTML).html: nested_html
-	$(MKDIR_CMD) $(BUILD)/html
-	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(ARGS) $(HTML_ARGS) -o $@
-	$(COPY_CMD) $(IMAGES) $(BUILD)/html/
-	@echo "Main HTML index built"
 
 # ArXiv‑compatible LaTeX build rule
 $(BUILD)/latex/$(OUTPUT_FILENAME).tex: $(PDF_DEPENDENCIES)
