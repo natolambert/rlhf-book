@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+
+  <meta property="og:image" content="https://raw.githubusercontent.com/natolambert/rlhf-book/main/images/rlhf-book-share.png" />
+  <meta property="og:image:width" content="1920" />
+  <meta property="og:image:height" content="1080" />
+  <meta property="og:title" content="RLHF Model Library | RLHF Book by Nathan Lambert" />
+  <meta property="og:description" content="Compare supervised finetuned models with their RLHF/DPO counterparts across shared prompts." />
+  <meta property="og:url" content="https://rlhfbook.com/library" />
+
+  <title>RLHF Model Library | RLHF Book by Nathan Lambert</title>
+
+  <style>
+    /* Center the title block for this page only */
+    #title-block-header {
+      text-align: center;
+    }
+    
+    /* Library-specific styles only - most styles come from style.css */
+    
+    .library-controls {
+      border: 1px solid #e2e2e2;
+      border-radius: 0.35em;
+      background: #fff;
+      box-shadow: 0 6px 18px rgba(17, 17, 17, 0.06);
+      margin-bottom: 2.5em;
+      overflow: hidden;
+    }
+    
+    .settings-header {
+      padding: 1em 1.2em;
+      background: rgba(6, 69, 173, 0.05);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e2e2e2;
+      user-select: none;
+    }
+    
+    .settings-header:hover {
+      background: rgba(6, 69, 173, 0.08);
+    }
+    
+    .settings-header h2 {
+      margin: 0;
+      font-size: 1.2em;
+    }
+    
+    .settings-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      color: #0645ad;
+    }
+    
+    .settings-toggle svg {
+      width: 1em;
+      height: 1em;
+      transition: transform 0.3s ease;
+    }
+    
+    .settings-header[aria-expanded="true"] .settings-toggle svg {
+      transform: rotate(180deg);
+    }
+    
+    .settings-content {
+      padding: 1.2em;
+      display: none;
+    }
+    
+    .settings-content.show {
+      display: block;
+    }
+
+    .filter-group + .filter-group {
+      margin-top: 1.5em;
+    }
+
+    .filter-options {
+      list-style: none;
+      margin: 0.8em 0 0;
+      padding: 0;
+      display: grid;
+      gap: 0.45em 1.2em;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .filter-options label {
+      display: flex;
+      align-items: center;
+      gap: 0.45em;
+      font-size: 0.95em;
+    }
+
+    .button,
+    .filter-actions button,
+    .reroll-button,
+    .expand-toggle,
+    .copy-button {
+      font-family: inherit;
+      font-size: 0.85em;
+      padding: 0.35em 0.6em;
+      border-radius: 0.3em;
+      border: 1px solid #0645ad;
+      background: rgba(6, 69, 173, 0.1);
+      color: #0645ad;
+      cursor: pointer;
+    }
+
+    .filter-actions button:hover,
+    .reroll-button:hover,
+    .expand-toggle:hover,
+    .copy-button:hover {
+      background: rgba(6, 69, 173, 0.18);
+    }
+
+    .filter-actions {
+      margin-top: 0.6em;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5em;
+    }
+
+    .prompt-section {
+      margin-bottom: 2.2em;
+    }
+    
+    .prompt-section h3 {
+      margin-bottom: 1.15em;
+    }
+
+    .pair-section {
+      margin-top: 1.4em;
+    }
+
+    .model-title {
+      margin: 0 0 0.5em 0;
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.15em;
+      margin-bottom: 0.75em;
+    }
+
+    .model-name {
+      font-size: 0.8em;
+      color: #666;
+      margin-top: 0.25em;
+      margin-bottom: 0.35em;
+      font-weight: 500;
+    }
+
+    .model-name a {
+      color: #0645ad;
+      text-decoration: none;
+    }
+
+    .model-name a:hover {
+      text-decoration: underline;
+    }
+
+    .completion-panel {
+      border: 1px solid #e2e2e2;
+      border-radius: 0.3em;
+      background: #fff;
+      padding: 0.6em 0.85em 0.8em;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35em;
+      position: relative;
+      transition: box-shadow 0.2s ease;
+    }
+
+    .completion-panel:focus-within {
+      box-shadow: 0 0 0 2px rgba(6, 69, 173, 0.2);
+      outline: none;
+    }
+
+    .panel-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.35em;
+      font-weight: bold;
+    }
+
+    .panel-actions {
+      display: flex;
+      gap: 0.3em;
+      align-items: center;
+    }
+
+    .panel-divider {
+      height: 1px;
+      background: linear-gradient(90deg, rgba(230, 230, 230, 0), rgba(200, 200, 200, 0.8), rgba(230, 230, 230, 0));
+      margin: 0.2em 0.25em 0;
+    }
+
+    .copy-button {
+      background: #f5f5f5;
+      border: 1px solid #9aa0a6;
+      color: #555;
+      font-size: 0.72em;
+      padding: 0.2em 0.45em;
+      border-radius: 0.25em;
+      line-height: 1.2;
+    }
+
+    .copy-button:hover {
+      background: #ebebeb;
+    }
+
+    .reroll-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35em;
+      font-size: 0.72em;
+      padding: 0.2em 0.55em;
+      border-radius: 0.25em;
+      line-height: 1.2;
+    }
+
+    .reroll-button svg {
+      width: 0.9em;
+      height: 0.9em;
+    }
+
+    .completion-content {
+      position: relative;
+      max-height: 20em;
+      overflow: hidden;
+      transition: max-height 0.2s ease;
+      background: transparent;
+      border-radius: 0;
+      border: none;
+    }
+
+    .completion-scroll {
+      max-height: 20em;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 0.15em 0 0;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
+    }
+
+    .completion-content.expanded {
+      max-height: none;
+      overflow: visible;
+    }
+
+    .completion-content.expanded .completion-scroll {
+      max-height: none;
+      overflow: visible;
+    }
+
+    .expand-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.35em;
+      margin: 0.15em auto 0;
+      padding: 0.3em 0.65em;
+      border-radius: 0.25em;
+    }
+
+    .expand-toggle svg {
+      width: 0.9em;
+      height: 0.9em;
+      transition: transform 0.2s ease;
+    }
+
+    .expand-toggle[data-expanded="true"] svg {
+      transform: rotate(180deg);
+    }
+
+    .completion-text {
+      white-space: pre-wrap;
+      font-size: 0.85em;
+      line-height: 1.5;
+    }
+
+    .completion-meta {
+      font-size: 0.8em;
+      color: #777;
+    }
+
+    .empty-state {
+      border: 1px dashed #e2e2e2;
+      border-radius: 0.35em;
+      background: rgba(6, 69, 173, 0.05);
+      padding: 1.4em;
+      text-align: center;
+      margin: 2em 0;
+    }
+
+    .library-footer {
+      margin-top: 4em;
+      padding: 2.5em 0 2em;
+      text-align: center;
+    }
+
+    .library-footer hr {
+      border: none;
+      border-top: 3px solid #1d1d1d;
+      box-shadow: 0 1px 0 #d9d9d9;
+      margin: 0 auto 1.75em;
+      width: min(100%, 420px);
+    }
+
+    .library-footer h2 {
+      font-size: 1.35em;
+      margin: 0 0 1.5em;
+      font-weight: 500;
+      color: #222;
+    }
+
+    .library-footer pre {
+      display: inline-block;
+      margin: 0 auto 2.2em;
+      text-align: left;
+      background: none;
+      border: none;
+      padding: 0;
+      font-size: 0.95em;
+      line-height: 1.6;
+      color: #777;
+      font-family: 'Courier New', Courier, monospace;
+      white-space: pre;
+    }
+
+    .library-footer .footer-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 0 1.8em;
+    }
+
+    .library-footer .footer-icon img {
+      width: 40px;
+      height: 40px;
+    }
+
+    .library-footer .copyright {
+      margin: 0;
+      font-size: 0.95em;
+      color: #444;
+    }
+
+    @media (max-width: 720px) {
+      .filter-options {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      }
+
+      .comparison-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+
+  <link rel="stylesheet" href="style.css" />
+  <script src="nav.js" defer></script>
+</head>
+<body>
+  <header id="title-block-header">
+    <h1 class="title">Reinforcement Learning from Human Feedback</h1>
+    <p class="subtitle">A short introduction to RLHF and post-training focused on language models.</p>
+    <p class="author">Nathan Lambert</p>
+    <navigation-dropdown expanded="false"></navigation-dropdown>
+  </header>
+  
+  <h1>RLHF Model Completions Library</h1>
+
+  <p>
+    Explore completions from instruction-tuned models and their downstream RLHF counterparts.
+  </p>
+
+  <p>
+    The models used here are sourced from various open-source post-training pipelines from the Allen Institute for AI -- OLMo and Tülu models. 
+    Overall, it is rare for intermediate models to be released at all. 
+    For each of the 18 models (9 pairs of SFT and RLHF models), we have generated 3 completions to a static set of 16 prompts. 
+  </p>
+  
+  <p>
+    Feel free to use these examples for talks and other educational purposes. Please cite the book and the authors of the models. 
+    The data is available <a href="https://huggingface.co/datasets/natolambert/rlhf-library">here</a> and is licensed under ODC-BY.
+  </p>
+
+  <section class="library-controls" aria-label="Library settings">
+    <div class="settings-header" aria-expanded="false" role="button" tabindex="0">
+      <h2>Settings</h2>
+      <div class="settings-toggle">
+        <span>Show settings</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 9l6 6 6-6" fill="none" stroke="#0645ad" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+      </div>
+    </div>
+    <div class="settings-content">
+    <div class="filter-group">
+      <h3>Prompts</h3>
+      <ul class="filter-options" id="promptFilters"></ul>
+      <div class="filter-actions">
+        <button type="button" id="selectAllPrompts">Select all prompts</button>
+        <button type="button" id="clearPrompts">Clear prompts</button>
+      </div>
+    </div>
+    <div class="filter-group">
+      <h3>Model Pairs</h3>
+      <ul class="filter-options" id="modelFilters"></ul>
+      <div class="filter-actions">
+        <button type="button" id="selectAllModels">Select all models</button>
+        <button type="button" id="clearModels">Clear models</button>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <div id="libraryContent" aria-live="polite"></div>
+
+  <footer class="library-footer" aria-label="Library citation and links">
+    <hr />
+    <h2>Citation</h2>
+    <pre>@book{rlhf2024,
+  author = {Nathan Lambert},
+  title = {Reinforcement Learning from Human Feedback},
+  year = {2025},
+  publisher = {Online},
+  url = {https://rlhfbook.com}
+}</pre>
+    <a class="footer-icon" href="https://github.com/natolambert/rlhf-book" target="_blank" rel="noreferrer">
+      <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub" />
+    </a>
+    <p class="copyright">&copy; 2024 Nathan Lambert</p>
+  </footer>
+
+  <script>
+    const state = {
+      data: null,
+      promptMap: new Map(),
+      modelMap: new Map(),
+      selectedPrompts: new Set(),
+      selectedModels: new Set(),
+      cursors: new Map(),
+    };
+
+    const DEFAULT_MODEL_IDS = new Set([
+      'allenai/Llama-3.1-Tulu-3-70B',
+      'allenai/OLMo-2-0325-32B',
+      'allenai/OLMo-2-1124-7B',
+    ]);
+
+    const COPY_RESET_DELAY = 1500;
+
+    function escapeHTML(text = '') {
+      return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function formatInline(text = '') {
+      let formatted = escapeHTML(text);
+      formatted = formatted.replace(/`([^`]+)`/g, '<code>$1</code>');
+      formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      formatted = formatted.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+      formatted = formatted.replace(/\[([^\]]+)\]\((https?:[^)]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
+      return formatted;
+    }
+
+    function renderMarkdown(text = '') {
+      const lines = text.split(/\r?\n/);
+      const htmlParts = [];
+      let paragraph = [];
+      let bulletItems = [];
+      let orderedItems = [];
+
+      const flushParagraph = () => {
+        if (paragraph.length) {
+          htmlParts.push(`<p>${paragraph.join('<br>')}</p>`);
+          paragraph = [];
+        }
+      };
+
+      const flushList = (items, ordered = false) => {
+        if (!items.length) return;
+        const tag = ordered ? 'ol' : 'ul';
+        htmlParts.push(`<${tag}>${items.map((entry) => `<li>${entry}</li>`).join('')}</${tag}>`);
+        items.length = 0;
+      };
+
+      for (const rawLine of lines) {
+        const line = rawLine.trimEnd();
+        const bulletMatch = line.match(/^[-*]\s+(.*)$/);
+        const orderedMatch = line.match(/^(\d+)\.\s+(.*)$/);
+
+        if (!line.trim()) {
+          flushParagraph();
+          flushList(bulletItems, false);
+          flushList(orderedItems, true);
+          continue;
+        }
+
+        if (bulletMatch) {
+          flushParagraph();
+          flushList(orderedItems, true);
+          bulletItems.push(formatInline(bulletMatch[1]));
+          continue;
+        }
+
+        if (orderedMatch) {
+          flushParagraph();
+          flushList(bulletItems, false);
+          orderedItems.push(formatInline(orderedMatch[2]));
+          continue;
+        }
+
+        flushList(bulletItems, false);
+        flushList(orderedItems, true);
+        paragraph.push(formatInline(line));
+      }
+
+      flushParagraph();
+      flushList(bulletItems, false);
+      flushList(orderedItems, true);
+
+      if (!htmlParts.length) {
+        return `<p>${formatInline(text).replace(/\r?\n/g, '<br>')}</p>`;
+      }
+
+      return htmlParts.join('');
+    }
+
+    function fallbackCopy(text, button, callback) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.setAttribute('readonly', '');
+      textarea.style.position = 'absolute';
+      textarea.style.left = '-9999px';
+      document.body.appendChild(textarea);
+      const selection = document.getSelection();
+      const storedRange = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        callback(true);
+      } catch (error) {
+        callback(false);
+      }
+      document.body.removeChild(textarea);
+      if (storedRange) {
+        selection.removeAllRanges();
+        selection.addRange(storedRange);
+      }
+    }
+
+    function copyToClipboard(text, button) {
+      const original = button.textContent;
+      const setStatus = (ok) => {
+        button.textContent = ok ? 'Copied' : 'Copy failed';
+        setTimeout(() => {
+          button.textContent = original;
+        }, COPY_RESET_DELAY);
+      };
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => setStatus(true)).catch(() => fallbackCopy(text, button, setStatus));
+      } else {
+        fallbackCopy(text, button, setStatus);
+      }
+    }
+
+    function createCopyButton(text, extraClass = '') {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = `copy-button ${extraClass}`.trim();
+      button.textContent = 'Copy';
+      button.addEventListener('click', () => copyToClipboard(text, button));
+      return button;
+    }
+
+    function ensureCursor(promptId, modelId) {
+      const key = String(promptId);
+      if (!state.cursors.has(key)) {
+        state.cursors.set(key, new Map());
+      }
+      const bucket = state.cursors.get(key);
+      if (!bucket.has(modelId)) {
+        bucket.set(modelId, { sft: 0, rlhf: 0 });
+      }
+      return bucket.get(modelId);
+    }
+
+    function attachScrollTracking(wrapper, scroller) {
+      const handleScrollState = () => {
+        if (wrapper.classList.contains('expanded')) {
+          wrapper.classList.remove('scrolled-end');
+          return;
+        }
+
+        const reachedEnd = scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 2;
+        wrapper.classList.toggle('scrolled-end', reachedEnd);
+      };
+
+      scroller.addEventListener('scroll', handleScrollState);
+      wrapper.__updateScrollState = handleScrollState;
+      requestAnimationFrame(handleScrollState);
+    }
+
+    function updateSelection(collection, id, checked) {
+      if (checked) {
+        collection.add(id);
+      } else {
+        collection.delete(id);
+      }
+    }
+
+    function handleReroll(event) {
+      const button = event.currentTarget;
+      const promptId = button.getAttribute('data-prompt');
+      const modelId = button.getAttribute('data-model');
+      const variant = button.getAttribute('data-variant');
+      const cursor = ensureCursor(promptId, modelId);
+      const entries = state.data.completions[promptId][modelId][variant];
+      cursor[variant] = (cursor[variant] + 1) % entries.length;
+      renderContent();
+    }
+
+    function createExpandToggleForPair(contentPairs) {
+      const buttonContainer = document.createElement('div');
+      buttonContainer.style.textAlign = 'center';
+      buttonContainer.style.padding = '0.25em 0 0.15em';
+      buttonContainer.style.display = 'flex';
+      buttonContainer.style.justifyContent = 'center';
+      buttonContainer.style.alignItems = 'center';
+      
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'expand-toggle';
+      button.innerHTML = '<span>See more</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="#0645ad" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
+      button.setAttribute('data-expanded', 'false');
+      button.setAttribute('aria-expanded', 'false');
+      
+      button.addEventListener('click', () => {
+        const isExpanded = button.getAttribute('data-expanded') === 'true';
+        
+        contentPairs.forEach(({ wrapper, scroller }) => {
+          const willExpand = !isExpanded;
+          wrapper.classList.toggle('expanded', willExpand);
+          wrapper.classList.remove('scrolled-end');
+
+          if (!willExpand) {
+            scroller.scrollTop = 0;
+            if (typeof wrapper.__updateScrollState === 'function') {
+              requestAnimationFrame(wrapper.__updateScrollState);
+            }
+          }
+        });
+        
+        button.setAttribute('data-expanded', !isExpanded ? 'true' : 'false');
+        button.setAttribute('aria-expanded', !isExpanded ? 'true' : 'false');
+        
+        const label = button.querySelector('span');
+        if (label) {
+          label.textContent = !isExpanded ? 'See less' : 'See more';
+        }
+      });
+      
+      buttonContainer.appendChild(button);
+      return buttonContainer;
+    }
+
+    function createCheckboxList(container, items, selectedSet, onChange) {
+      container.innerHTML = '';
+      items.forEach((item) => {
+        const li = document.createElement('li');
+        const label = document.createElement('label');
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.value = item.value;
+        input.checked = selectedSet.has(item.value);
+        input.addEventListener('change', (event) => {
+          updateSelection(selectedSet, item.value, event.target.checked);
+          onChange();
+        });
+        label.appendChild(input);
+        label.appendChild(document.createTextNode(item.label));
+        li.appendChild(label);
+        container.appendChild(li);
+      });
+    }
+
+    function initializeFilters() {
+      const promptList = document.getElementById('promptFilters');
+      const modelList = document.getElementById('modelFilters');
+
+      state.data.prompts.forEach((prompt, index) => {
+        state.promptMap.set(String(prompt.prompt_id), prompt);
+        if (index < 3) {
+          state.selectedPrompts.add(String(prompt.prompt_id));
+        }
+      });
+
+      state.data.model_pairs.forEach((pair) => {
+        state.modelMap.set(pair.pair_id, pair);
+        if (DEFAULT_MODEL_IDS.has(pair.pair_id)) {
+          state.selectedModels.add(pair.pair_id);
+        }
+      });
+
+      const promptOptions = state.data.prompts.map((prompt) => {
+        const firstLine = prompt.display_text.split('\n')[0];
+        const cleaned = firstLine.replace(/^\s*User:\s*/i, '');
+        return {
+        value: String(prompt.prompt_id),
+          label: `#${prompt.prompt_id + 1}: ${cleaned}`,
+        };
+      });
+
+      const modelOptions = state.data.model_pairs.map((pair) => ({
+        value: pair.pair_id,
+        label: pair.display_name,
+      }));
+
+      const refreshPrompts = () => createCheckboxList(promptList, promptOptions, state.selectedPrompts, renderContent);
+      const refreshModels = () => createCheckboxList(modelList, modelOptions, state.selectedModels, renderContent);
+
+      refreshPrompts();
+      refreshModels();
+
+      document.getElementById('selectAllPrompts').addEventListener('click', () => {
+        state.data.prompts.forEach((prompt) => state.selectedPrompts.add(String(prompt.prompt_id)));
+        refreshPrompts();
+        renderContent();
+      });
+
+      document.getElementById('clearPrompts').addEventListener('click', () => {
+        state.selectedPrompts.clear();
+        refreshPrompts();
+        renderContent();
+      });
+
+      document.getElementById('selectAllModels').addEventListener('click', () => {
+        state.data.model_pairs.forEach((pair) => state.selectedModels.add(pair.pair_id));
+        refreshModels();
+        renderContent();
+      });
+
+      document.getElementById('clearModels').addEventListener('click', () => {
+        state.selectedModels.clear();
+        refreshModels();
+        renderContent();
+      });
+    }
+
+    function renderContent() {
+      const container = document.getElementById('libraryContent');
+      container.innerHTML = '';
+
+      const prompts = Array.from(state.selectedPrompts)
+        .map((id) => state.promptMap.get(id))
+        .filter(Boolean)
+        .sort((a, b) => a.prompt_id - b.prompt_id);
+
+      const models = Array.from(state.selectedModels)
+        .map((id) => state.modelMap.get(id))
+        .filter(Boolean);
+
+      if (!prompts.length || !models.length) {
+        const empty = document.createElement('div');
+        empty.className = 'empty-state';
+        empty.textContent = 'Select at least one prompt and one model pair to view completions.';
+        container.appendChild(empty);
+        return;
+      }
+
+      prompts.forEach((prompt) => {
+        const promptSection = document.createElement('section');
+        promptSection.className = 'prompt-section';
+        promptSection.id = `prompt-${prompt.prompt_id}`;
+
+        // Use the actual prompt text as the heading
+        const promptHeading = document.createElement('h3');
+        // Get the first user message content as the prompt text
+        const userMessage = prompt.messages.find(m => (m.role || 'user') === 'user');
+        promptHeading.textContent = userMessage ? userMessage.content : `Prompt ${prompt.prompt_id + 1}`;
+        promptSection.appendChild(promptHeading);
+
+        models.forEach((model) => {
+          const pairSection = document.createElement('section');
+          pairSection.className = 'pair-section';
+          pairSection.id = `prompt-${prompt.prompt_id}-model-${model.pair_id.replace(/[^a-z0-9]/gi, '-')}`;
+
+          // Add model title above the comparison grid
+          const modelTitle = document.createElement('h4');
+          modelTitle.className = 'model-title';
+          modelTitle.textContent = model.display_name;
+          pairSection.appendChild(modelTitle);
+          
+          const comparisonGrid = document.createElement('div');
+          comparisonGrid.className = 'comparison-grid';
+
+          const promptId = String(prompt.prompt_id);
+          const variantGroup = state.data.completions[promptId]?.[model.pair_id];
+          if (!variantGroup) {
+            const warning = document.createElement('div');
+            warning.className = 'empty-state';
+            warning.textContent = 'No completions available for this combination.';
+            pairSection.appendChild(warning);
+            promptSection.appendChild(pairSection);
+            return;
+          }
+
+          const cursor = ensureCursor(promptId, model.pair_id);
+          const contentWrappers = [];
+
+          ['sft', 'rlhf'].forEach((variant) => {
+            const entries = variantGroup[variant] || [];
+            if (!entries.length) {
+              return;
+            }
+
+            const index = cursor[variant] % entries.length;
+            const record = entries[index];
+
+            const panel = document.createElement('article');
+            panel.className = 'completion-panel';
+            panel.setAttribute('tabindex', '0');
+
+            const heading = document.createElement('div');
+            heading.className = 'panel-heading';
+
+            const label = document.createElement('span');
+            label.textContent = variant === 'sft' ? 'SFT' : 'RLHF';
+            heading.appendChild(label);
+
+            const actions = document.createElement('div');
+            actions.className = 'panel-actions';
+            actions.appendChild(createCopyButton(record.text || ''));
+
+            const reroll = document.createElement('button');
+            reroll.type = 'button';
+            reroll.className = 'reroll-button';
+            reroll.textContent = 'Reroll';
+            reroll.setAttribute('data-prompt', promptId);
+            reroll.setAttribute('data-model', model.pair_id);
+            reroll.setAttribute('data-variant', variant);
+            reroll.addEventListener('click', handleReroll);
+            actions.appendChild(reroll);
+
+            heading.appendChild(actions);
+            panel.appendChild(heading);
+
+            // Add individual model name below the heading
+            const modelName = document.createElement('div');
+            modelName.className = 'model-name';
+            const modelLink = document.createElement('a');
+            modelLink.href = `https://huggingface.co/${variant === 'sft' ? model.sft_model : model.rlhf_model}`;
+            modelLink.target = '_blank';
+            modelLink.rel = 'noopener noreferrer';
+            modelLink.textContent = variant === 'sft' ? model.sft_model : model.rlhf_model;
+            modelName.appendChild(modelLink);
+            panel.appendChild(modelName);
+
+            const divider = document.createElement('div');
+            divider.className = 'panel-divider';
+            panel.appendChild(divider);
+
+            const contentWrapper = document.createElement('div');
+            contentWrapper.className = 'completion-content';
+
+            const scrollRegion = document.createElement('div');
+            scrollRegion.className = 'completion-scroll';
+
+            const text = document.createElement('div');
+            text.className = 'completion-text';
+            text.innerHTML = renderMarkdown(record.text || '');
+            scrollRegion.appendChild(text);
+            contentWrapper.appendChild(scrollRegion);
+
+            panel.appendChild(contentWrapper);
+            attachScrollTracking(contentWrapper, scrollRegion);
+            contentWrappers.push({ wrapper: contentWrapper, scroller: scrollRegion });
+
+            comparisonGrid.appendChild(panel);
+          });
+
+          pairSection.appendChild(comparisonGrid);
+          
+          // Add a single expand button for both completions
+          if (contentWrappers.length > 0) {
+            const expandButton = createExpandToggleForPair(contentWrappers);
+            pairSection.appendChild(expandButton);
+            
+            // Check if any content needs expanding
+            requestAnimationFrame(() => {
+              const needsExpansion = contentWrappers.some(({ scroller }) => 
+                scroller.scrollHeight > scroller.clientHeight + 4
+              );
+              if (!needsExpansion) {
+                expandButton.style.display = 'none';
+                contentWrappers.forEach(({ wrapper }) => wrapper.classList.add('expanded'));
+              }
+            });
+          }
+          promptSection.appendChild(pairSection);
+        });
+
+        container.appendChild(promptSection);
+      });
+    }
+
+    function setupSettingsToggle() {
+      const header = document.querySelector('.settings-header');
+      const content = document.querySelector('.settings-content');
+      const toggleText = header.querySelector('.settings-toggle span');
+      
+      header.addEventListener('click', () => {
+        const isExpanded = header.getAttribute('aria-expanded') === 'true';
+        header.setAttribute('aria-expanded', !isExpanded);
+        content.classList.toggle('show');
+        toggleText.textContent = isExpanded ? 'Show settings' : 'Hide settings';
+      });
+      
+      // Add keyboard support
+      header.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          header.click();
+        }
+      });
+    }
+
+    function bootstrap() {
+      setupSettingsToggle();
+      fetch('data/library.json')
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Failed to load data (status ${response.status})`);
+          }
+          return response.json();
+        })
+        .then((payload) => {
+          state.data = payload;
+          initializeFilters();
+          renderContent();
+        })
+        .catch((error) => {
+          const container = document.getElementById('libraryContent');
+          container.innerHTML = '';
+          const message = document.createElement('div');
+          message.className = 'empty-state';
+          message.textContent = `Unable to load library data: ${error.message}`;
+          container.appendChild(message);
+        });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', bootstrap);
+    } else {
+      bootstrap();
+    }
+  </script>
+</body>
+</html>
