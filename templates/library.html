@@ -146,7 +146,7 @@
 
     .comparison-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 1.15em;
       margin-bottom: 0.75em;
     }
@@ -171,8 +171,8 @@
     .completion-panel {
       border: 1px solid #e2e2e2;
       border-radius: 0.3em;
-      background: #fafafa;
-      padding: 0.75em 0.8em 0.8em;
+      background: #fff;
+      padding: 0.7em 0.85em 0.85em;
       display: flex;
       flex-direction: column;
       gap: 0.45em;
@@ -197,6 +197,12 @@
       display: flex;
       gap: 0.35em;
       align-items: center;
+    }
+
+    .panel-divider {
+      height: 1px;
+      background: linear-gradient(90deg, rgba(230, 230, 230, 0), rgba(200, 200, 200, 0.8), rgba(230, 230, 230, 0));
+      margin: 0.2em 0.25em 0;
     }
 
     .copy-button {
@@ -233,12 +239,16 @@
       max-height: 20em;
       overflow: hidden;
       transition: max-height 0.2s ease;
-      background: #fff;
-      padding: 0.45em 0.8em 0.8em;
-      border-radius: 0.25em;
-      border: 1px solid rgba(230, 230, 230, 0.8);
+      background: transparent;
+      border-radius: 0;
+      border: none;
+    }
+
+    .completion-scroll {
+      max-height: 20em;
       overflow-y: auto;
       overflow-x: hidden;
+      padding: 0.15em 0 0;
       -webkit-overflow-scrolling: touch;
       touch-action: pan-y;
     }
@@ -246,6 +256,15 @@
     .completion-content.expanded {
       max-height: none;
       overflow: visible;
+    }
+
+    .completion-content.expanded .completion-scroll {
+      max-height: none;
+      overflow: visible;
+    }
+
+    .completion-content.expanded::after {
+      opacity: 0;
     }
 
     .completion-content:not(.expanded)::after {
@@ -404,6 +423,12 @@
       cursors: new Map(),
     };
 
+    const DEFAULT_MODEL_IDS = new Set([
+      'allenai/Llama-3.1-Tulu-3-70B',
+      'allenai/OLMo-2-0325-32B',
+      'allenai/OLMo-2-1124-7B',
+    ]);
+
     const COPY_RESET_DELAY = 1500;
 
     function escapeHTML(text = '') {
@@ -547,18 +572,18 @@
       return bucket.get(modelId);
     }
 
-    function attachScrollTracking(wrapper) {
+    function attachScrollTracking(wrapper, scroller) {
       const handleScrollState = () => {
         if (wrapper.classList.contains('expanded')) {
           wrapper.classList.remove('scrolled-end');
           return;
         }
 
-        const reachedEnd = wrapper.scrollTop + wrapper.clientHeight >= wrapper.scrollHeight - 2;
+        const reachedEnd = scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 2;
         wrapper.classList.toggle('scrolled-end', reachedEnd);
       };
 
-      wrapper.addEventListener('scroll', handleScrollState);
+      scroller.addEventListener('scroll', handleScrollState);
       wrapper.__updateScrollState = handleScrollState;
       requestAnimationFrame(handleScrollState);
     }
@@ -582,7 +607,7 @@
       renderContent();
     }
 
-    function createExpandToggleForPair(contentWrappers) {
+    function createExpandToggleForPair(contentPairs) {
       const buttonContainer = document.createElement('div');
       buttonContainer.style.textAlign = 'center';
       buttonContainer.style.padding = '0.25em 0 0.15em';
@@ -600,13 +625,13 @@
       button.addEventListener('click', () => {
         const isExpanded = button.getAttribute('data-expanded') === 'true';
         
-        contentWrappers.forEach(wrapper => {
+        contentPairs.forEach(({ wrapper, scroller }) => {
           const willExpand = !isExpanded;
           wrapper.classList.toggle('expanded', willExpand);
           wrapper.classList.remove('scrolled-end');
 
           if (!willExpand) {
-            wrapper.scrollTop = 0;
+            scroller.scrollTop = 0;
             if (typeof wrapper.__updateScrollState === 'function') {
               requestAnimationFrame(wrapper.__updateScrollState);
             }
@@ -657,9 +682,9 @@
         }
       });
 
-      state.data.model_pairs.forEach((pair, index) => {
+      state.data.model_pairs.forEach((pair) => {
         state.modelMap.set(pair.pair_id, pair);
-        if (index === 0) {
+        if (DEFAULT_MODEL_IDS.has(pair.pair_id)) {
           state.selectedModels.add(pair.pair_id);
         }
       });
@@ -814,17 +839,25 @@
             modelName.appendChild(modelLink);
             panel.appendChild(modelName);
 
+            const divider = document.createElement('div');
+            divider.className = 'panel-divider';
+            panel.appendChild(divider);
+
             const contentWrapper = document.createElement('div');
             contentWrapper.className = 'completion-content';
+
+            const scrollRegion = document.createElement('div');
+            scrollRegion.className = 'completion-scroll';
 
             const text = document.createElement('div');
             text.className = 'completion-text';
             text.innerHTML = renderMarkdown(record.text || '');
-            contentWrapper.appendChild(text);
+            scrollRegion.appendChild(text);
+            contentWrapper.appendChild(scrollRegion);
 
             panel.appendChild(contentWrapper);
-            attachScrollTracking(contentWrapper);
-            contentWrappers.push(contentWrapper);
+            attachScrollTracking(contentWrapper, scrollRegion);
+            contentWrappers.push({ wrapper: contentWrapper, scroller: scrollRegion });
 
             comparisonGrid.appendChild(panel);
           });
@@ -838,12 +871,12 @@
             
             // Check if any content needs expanding
             requestAnimationFrame(() => {
-              const needsExpansion = contentWrappers.some(wrapper => 
-                wrapper.scrollHeight > wrapper.clientHeight + 4
+              const needsExpansion = contentWrappers.some(({ scroller }) => 
+                scroller.scrollHeight > scroller.clientHeight + 4
               );
               if (!needsExpansion) {
                 expandButton.style.display = 'none';
-                contentWrappers.forEach(wrapper => wrapper.classList.add('expanded'));
+                contentWrappers.forEach(({ wrapper }) => wrapper.classList.add('expanded'));
               }
             });
           }
