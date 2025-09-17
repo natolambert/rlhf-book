@@ -738,10 +738,14 @@
         }
       });
 
-      const promptOptions = state.data.prompts.map((prompt) => ({
+      const promptOptions = state.data.prompts.map((prompt) => {
+        const firstLine = prompt.display_text.split('\n')[0];
+        const cleaned = firstLine.replace(/^\s*User:\s*/i, '');
+        return {
         value: String(prompt.prompt_id),
-        label: `#${prompt.prompt_id + 1}: ${prompt.display_text.split('\n')[0]}`,
-      }));
+          label: `#${prompt.prompt_id + 1}: ${cleaned}`,
+        };
+      });
 
       const modelOptions = state.data.model_pairs.map((pair) => ({
         value: pair.pair_id,
