@@ -322,6 +322,59 @@
       margin: 2em 0;
     }
 
+    .library-footer {
+      margin-top: 4em;
+      padding: 2.5em 0 2em;
+      text-align: center;
+    }
+
+    .library-footer hr {
+      border: none;
+      border-top: 3px solid #1d1d1d;
+      box-shadow: 0 1px 0 #d9d9d9;
+      margin: 0 auto 1.75em;
+      width: min(100%, 420px);
+    }
+
+    .library-footer h2 {
+      font-size: 1.35em;
+      margin: 0 0 1.5em;
+      font-weight: 500;
+      color: #222;
+    }
+
+    .library-footer pre {
+      display: inline-block;
+      margin: 0 auto 2.2em;
+      text-align: left;
+      background: none;
+      border: none;
+      padding: 0;
+      font-size: 0.95em;
+      line-height: 1.6;
+      color: #777;
+      font-family: 'Courier New', Courier, monospace;
+      white-space: pre;
+    }
+
+    .library-footer .footer-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 0 1.8em;
+    }
+
+    .library-footer .footer-icon img {
+      width: 40px;
+      height: 40px;
+    }
+
+    .library-footer .copyright {
+      margin: 0;
+      font-size: 0.95em;
+      color: #444;
+    }
+
     @media (max-width: 720px) {
       .filter-options {
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -393,24 +446,20 @@
 
   <div id="libraryContent" aria-live="polite"></div>
 
-  <footer>
+  <footer class="library-footer" aria-label="Library citation and links">
     <hr />
-    Citation <br />
-    <div style="text-align: left; font-size: small; color: #888;">
-      @book{rlhf2024,<br />
-      &nbsp;&nbsp;author = {Nathan Lambert},<br />
-      &nbsp;&nbsp;title = {Reinforcement Learning from Human Feedback},<br />
-      &nbsp;&nbsp;year = {2025},<br />
-      &nbsp;&nbsp;publisher = {Online},<br />
-      &nbsp;&nbsp;url = {https://rlhfbook.com}<br />
-      }
-    </div>
-    <div>
-      <a href="https://github.com/natolambert/rlhf-book" target="_blank" rel="noreferrer">
-        <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub" style="width: 40px; height: 40px;" />
-      </a>
-    </div>
-    <p>&copy; 2025 Nathan Lambert</p>
+    <h2>Citation</h2>
+    <pre>@book{rlhf2024,
+  author = {Nathan Lambert},
+  title = {Reinforcement Learning from Human Feedback},
+  year = {2025},
+  publisher = {Online},
+  url = {https://rlhfbook.com}
+}</pre>
+    <a class="footer-icon" href="https://github.com/natolambert/rlhf-book" target="_blank" rel="noreferrer">
+      <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub" />
+    </a>
+    <p class="copyright">&copy; 2024 Nathan Lambert</p>
   </footer>
 
   <script>
