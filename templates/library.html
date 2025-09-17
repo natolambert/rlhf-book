@@ -127,15 +127,15 @@
     }
 
     .prompt-section {
-      margin-bottom: 3em;
+      margin-bottom: 2.2em;
     }
     
     .prompt-section h3 {
-      margin-bottom: 1.5em;
+      margin-bottom: 1.15em;
     }
 
     .pair-section {
-      margin-top: 2em;
+      margin-top: 1.4em;
     }
 
     .model-title {
@@ -147,8 +147,8 @@
     .comparison-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.5em;
-      margin-bottom: 1em;
+      gap: 1.15em;
+      margin-bottom: 0.75em;
     }
 
     .model-name {
@@ -172,10 +172,10 @@
       border: 1px solid #e2e2e2;
       border-radius: 0.3em;
       background: #fafafa;
-      padding: 0.9em;
+      padding: 0.75em 0.8em 0.8em;
       display: flex;
       flex-direction: column;
-      gap: 0.6em;
+      gap: 0.45em;
       position: relative;
       transition: box-shadow 0.2s ease;
     }
@@ -189,13 +189,13 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 0.5em;
+      gap: 0.4em;
       font-weight: bold;
     }
 
     .panel-actions {
       display: flex;
-      gap: 0.45em;
+      gap: 0.35em;
       align-items: center;
     }
 
@@ -203,6 +203,10 @@
       background: #f5f5f5;
       border: 1px solid #9aa0a6;
       color: #555;
+      font-size: 0.72em;
+      padding: 0.2em 0.45em;
+      border-radius: 0.25em;
+      line-height: 1.2;
     }
 
     .copy-button:hover {
@@ -213,6 +217,10 @@
       display: inline-flex;
       align-items: center;
       gap: 0.35em;
+      font-size: 0.72em;
+      padding: 0.2em 0.55em;
+      border-radius: 0.25em;
+      line-height: 1.2;
     }
 
     .reroll-button svg {
@@ -226,13 +234,18 @@
       overflow: hidden;
       transition: max-height 0.2s ease;
       background: #fff;
-      padding: 0.8em;
+      padding: 0.45em 0.8em 0.8em;
       border-radius: 0.25em;
       border: 1px solid rgba(230, 230, 230, 0.8);
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
     }
 
     .completion-content.expanded {
       max-height: none;
+      overflow: visible;
     }
 
     .completion-content:not(.expanded)::after {
@@ -244,13 +257,20 @@
       height: 2.8em;
       background: linear-gradient(180deg, rgba(250, 250, 250, 0) 0%, rgba(250, 250, 250, 0.95) 65%, rgba(250, 250, 250, 1) 100%);
       pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .completion-content.scrolled-end:not(.expanded)::after {
+      opacity: 0;
     }
 
     .expand-toggle {
       display: flex;
       align-items: center;
       gap: 0.35em;
-      margin: 0 auto;
+      margin: 0.15em auto 0;
+      padding: 0.3em 0.65em;
+      border-radius: 0.25em;
     }
 
     .expand-toggle svg {
@@ -527,6 +547,22 @@
       return bucket.get(modelId);
     }
 
+    function attachScrollTracking(wrapper) {
+      const handleScrollState = () => {
+        if (wrapper.classList.contains('expanded')) {
+          wrapper.classList.remove('scrolled-end');
+          return;
+        }
+
+        const reachedEnd = wrapper.scrollTop + wrapper.clientHeight >= wrapper.scrollHeight - 2;
+        wrapper.classList.toggle('scrolled-end', reachedEnd);
+      };
+
+      wrapper.addEventListener('scroll', handleScrollState);
+      wrapper.__updateScrollState = handleScrollState;
+      requestAnimationFrame(handleScrollState);
+    }
+
     function updateSelection(collection, id, checked) {
       if (checked) {
         collection.add(id);
@@ -549,7 +585,7 @@
     function createExpandToggleForPair(contentWrappers) {
       const buttonContainer = document.createElement('div');
       buttonContainer.style.textAlign = 'center';
-      buttonContainer.style.padding = '1em 0';
+      buttonContainer.style.padding = '0.25em 0 0.15em';
       buttonContainer.style.display = 'flex';
       buttonContainer.style.justifyContent = 'center';
       buttonContainer.style.alignItems = 'center';
@@ -565,7 +601,16 @@
         const isExpanded = button.getAttribute('data-expanded') === 'true';
         
         contentWrappers.forEach(wrapper => {
-          wrapper.classList.toggle('expanded', !isExpanded);
+          const willExpand = !isExpanded;
+          wrapper.classList.toggle('expanded', willExpand);
+          wrapper.classList.remove('scrolled-end');
+
+          if (!willExpand) {
+            wrapper.scrollTop = 0;
+            if (typeof wrapper.__updateScrollState === 'function') {
+              requestAnimationFrame(wrapper.__updateScrollState);
+            }
+          }
         });
         
         button.setAttribute('data-expanded', !isExpanded ? 'true' : 'false');
@@ -778,6 +823,7 @@
             contentWrapper.appendChild(text);
 
             panel.appendChild(contentWrapper);
+            attachScrollTracking(contentWrapper);
             contentWrappers.push(contentWrapper);
 
             comparisonGrid.appendChild(panel);
