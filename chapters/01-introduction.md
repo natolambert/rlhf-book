@@ -29,7 +29,7 @@ In modern language model training, RLHF is one component of post-training.
 Post-training is a more complete set of techniques and best-practices to make language models more useful for downstream tasks [@lambert2024t].
 Post-training can be summarized as using three optimization methods:
 
-1. Instruction / Supervised Finetuning (IFT/SFT), where we teach formatting and for base of instruction following abilities. This is largely about learning *features* in language.
+1. Instruction / Supervised Finetuning (IFT/SFT), where we teach formatting and form the base of instruction following abilities. This is largely about learning *features* in language.
 2. Preference Finetuning (PreFT), where we align to human preferences (and get smaller bump in capabilities at the same time). This is largely about *style* of language and subtle human preferences that are hard to quantify.
 3. Reinforcement Finetuning (RFT). The newest type of post-training that boosts performance on verifiable domains.
 
