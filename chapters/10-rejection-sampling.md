@@ -149,7 +149,7 @@ First, we flatten the reward matrix:
 $$R_{flat} = [0.7, 0.3, 0.5, 0.2, 0.4, 0.8, 0.6, 0.5, 0.9, 0.3, 0.4, 0.7, 0.2, 0.5, 0.8, 0.6, 0.5, 0.4, 0.3, 0.6]$$
 
 Now, we select the indices of the 5 highest values:
-$$S_5(R_{flat}) = [8, 5, 14, 0, 19]$$
+$$S_5(R_{flat}) = [8, 5, 14, 0, 11]$$
 
 Mapping these back to our original matrix:
 

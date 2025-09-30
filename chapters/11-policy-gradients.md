@@ -16,7 +16,7 @@ In this section we will cover the fundamentals of the policy gradient algorithms
 At a machine learning level, this section is the subject with the highest complexity in the RLHF process.
 Though, as with most modern AI models, the largest determining factor on its success is the data provided as inputs to the process.
 
-The most popular algorithms used for RLHF has evolved over time.
+The most popular algorithms used for RLHF have evolved over time.
 When RLHF came onto the scene with ChatGPT, it was largely known that they used a variant of PPO, and many initial efforts were built upon that.
 Over time, multiple research projects showed the promise of REINFORCE style algorithms [@ahmadian2024back] [@wang2024helpsteer2p], touted for its simplicity over PPO without a reward model (saves memory and therefore the number of GPUs required) and with simpler value estimation (no GAE).
 More algorithms have emerged, including Group Relative Policy Optimization, which is particularly popular with reasoning tasks, but in general many of these algorithms can be tuned to fit a specific task.
@@ -29,7 +29,7 @@ For definitions of symbols, see the problem setup chapter.
 Reinforcement learning algorithms are designed to maximize the future, discounted reward across a trajectory of states, $s \in \mathcal{S}$, and actions, $a \in \mathcal{A}$ (for more notation, see Chapter 3, Definitions).
 The objective of the agent, often called the *return*, is the sum of discounted, future rewards (where $\gamma\in [0,1)$ is a factor that prioritizes near term rewards) at a given time $t$:
 
-$$G_t = R_{t+1} + \gamma R_{t+2} + \cdots = \sum_{k=o}^\infty \gamma^k R_{t+k+1}.$$ {#eq:return_definition}
+$$G_t = R_{t+1} + \gamma R_{t+2} + \cdots = \sum_{k=0}^\infty \gamma^k R_{t+k+1}.$$ {#eq:return_definition}
 
 The return definition can also be estimated as:
 $$G_{t} = \gamma{G_{t+1}} + R_{t+1}.$$ {#eq:recursive_return}
@@ -579,13 +579,14 @@ ratio.grad.zero_()
 
 masked_sum_result.mean().backward()
 print("ratio.grad", ratio.grad)
+ratio.grad.zero_()
 # ratio.grad tensor([[0.1429, 0.1429, 0.1429, 0.1429, 0.0000, 0.0000, 0.0000],
 # [0.1429, 0.1429, 0.1429, 0.1429, 0.1429, 0.1429, 0.1429]])
 
 masked_mean_token_level.mean().backward()
 print("ratio.grad", ratio.grad)
-# ratio.grad tensor([[0.2338, 0.2338, 0.2338, 0.2338, 0.0000, 0.0000, 0.0000],
-# [0.2338, 0.2338, 0.2338, 0.2338, 0.2338, 0.2338, 0.2338]])
+# ratio.grad tensor([[0.0909, 0.0909, 0.0909, 0.0909, 0.0000, 0.0000, 0.0000],
+# [0.0909, 0.0909, 0.0909, 0.0909, 0.0909, 0.0909, 0.0909]])
 ```
 
 Here it can be seen for the default GRPO implementation, `masked_mean`, the short length has a bigger per-token gradient than the longer one, and the two implementations of Dr. GRPO and DAPO balance it out. 
