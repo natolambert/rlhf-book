@@ -148,7 +148,7 @@ In this period through recent years after ChatGPT, some multiple-choice evaluati
 With the rise of reasoning models at the end of 2024 and the beginning of 2025, a major change in model behavior was the addition of a long Chain-of-Thought (CoT) reasoning process before every answer.
 These models no longer needed to be prompted with the canonical modification of "think step by step," as proposed in [@kojima2022large].
 
-For example, for every prompt there are specially designed prompts to help extract behavior from the model.
+For example, for every question or category there are specially designed prompts to help extract behavior from the model.
 Tülu 3 details some prompts used for CoT answering on multiple choice questions [@lambert2024t]:
 
 ```
