@@ -68,6 +68,8 @@ More of the implementation challenge is on setting up a separate data loader and
 Given the correct dataloader, the loss is implemented as:
 ```python
 import torch.nn as nn
+# inputs_chosen / inputs_rejected include the prompt tokens x and the respective
+# completion tokens (y_c or y_r) that the reward model scores jointly.
 rewards_chosen = model(**inputs_chosen)
 rewards_rejected = model(**inputs_rejected)
 
