@@ -159,6 +159,12 @@ Process Reward Models (PRMs), originally called Process-supervised Reward Models
 These differ from a standard RM that outputs a score only at an EOS token or a ORM that outputs a score at every token.
 Process Reward Models require supervision at the end of each reasoning step, and then are trained similarly where the tokens in the step are trained to their relevant target -- the target is the step in PRMs and the entire response for ORMs.
 
+Following [@lightman2023let], a binary-labeled PRM is commonly optimized with a per-step cross-entropy loss:
+
+$$\mathcal{L}_{\text{PRM}}(\theta) = - \mathbb{E}_{(x, s) \sim \mathcal{D}} \left[ \sum_{i=1}^{K} y_{s_i} \log r_\theta(s_i \mid x) + (1 - y_{s_i}) \log \left(1 - r_\theta(s_i \mid x)\right) \right] $$ {#eq:prm_loss}
+
+where $s$ is a sampled chain-of-thought with $K$ annotated steps, $y_{s_i} \in \{0,1\}$ denotes whether the $i$-th step is correct, and $r_\theta(s_i \mid x)$ is the PRM's predicted probability that step $s_i$ is valid conditioned on the original prompt $x$.
+
 Here's an example of how this per-step label can be packaged in a trainer, from HuggingFace's TRL [@vonwerra2022trl]:
 ```
 # Get the ID of the separator token and add it to the completions
