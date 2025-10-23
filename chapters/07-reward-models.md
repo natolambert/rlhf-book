@@ -27,11 +27,11 @@ $$P(i > j) = \frac{p_i}{p_i + p_j}$$ {#eq:bradterry}
 
 To train a reward model, we must formulate a loss function that satisfies the above relation.
 The first structure applied is to convert a language model into a model that outputs a scalar value, often in the form of a single classification probability logit.
-Thus, we can take the score of this model with two samples, the $i$ and $j$ above are now completions, $y_1$ and $y_2$, to one prompt, $x$ and score both of them with respect to the above model, $r_\theta$.
+Thus, we can take the score of this model with two samples, the $i$ and $j$ above are now completions, $y_1$ and $y_2$, to one prompt, $x$ and score both of them with respect to the above model, $r_\theta$. We denote the conditional scores as $r_\theta(y_i \mid x)$.
 
 The probability of success for a given reward model in a pairwise comparison becomes:
 
-$$P(y_1 > y_2 \mid x) = \frac{\exp\left(r_\theta(x, y_1)\right)}{\exp\left(r_\theta(x, y_1)\right) + \exp\left(r_\theta(x, y_2)\right)}$$ {#eq:bradterryrm}
+$$P(y_1 > y_2 \mid x) = \frac{\exp\left(r_\theta(y_1 \mid x)\right)}{\exp\left(r_\theta(y_1 \mid x)\right) + \exp\left(r_\theta(y_2 \mid x)\right)}$$ {#eq:bradterryrm}
 
 We denote the preferred completion as $y_c$ (chosen) and the rejected completion as $y_r$.
 
@@ -39,20 +39,20 @@ Then, by maximizing the log-likelihood of the above function (or alternatively m
 
 $$
 \begin{aligned}
-\theta^* = \arg\max_\theta P(y_c > y_r \mid x) &= \arg\max_\theta \frac{\exp\left(r_\theta(x, y_c)\right)}{\exp\left(r_\theta(x, y_c)\right) + \exp\left(r_\theta(x, y_r)\right)} \\
-&= \arg\max_\theta \frac{\exp\left(r_\theta(x, y_c)\right)}{\exp\left(r_\theta(x, y_c)\right)\left(1 + \frac{\exp\left(r_\theta(x, y_r)\right)}{\exp\left(r_\theta(x, y_c)\right)}\right)} \\
-&= \arg\max_\theta \frac{1}{1 + \frac{\exp\left(r_\theta(x, y_r)\right)}{\exp\left(r_\theta(x, y_c)\right)}} \\ 
-&= \arg\max_\theta \frac{1}{1 + \exp\left(-(r_\theta(x, y_c) - r_\theta(x, y_r))\right)} \\
-&= \arg\max_\theta \sigma \left( r_\theta(x, y_c) - r_\theta(x, y_r) \right) \\
-&= \arg\min_\theta - \log \left( \sigma \left(r_\theta(x, y_c) - r_\theta(x, y_r)\right) \right)
+\theta^* = \arg\max_\theta P(y_c > y_r \mid x) &= \arg\max_\theta \frac{\exp\left(r_\theta(y_c \mid x)\right)}{\exp\left(r_\theta(y_c \mid x)\right) + \exp\left(r_\theta(y_r \mid x)\right)} \\
+&= \arg\max_\theta \frac{\exp\left(r_\theta(y_c \mid x)\right)}{\exp\left(r_\theta(y_c \mid x)\right)\left(1 + \frac{\exp\left(r_\theta(y_r \mid x)\right)}{\exp\left(r_\theta(y_c \mid x)\right)}\right)} \\
+&= \arg\max_\theta \frac{1}{1 + \frac{\exp\left(r_\theta(y_r \mid x)\right)}{\exp\left(r_\theta(y_c \mid x)\right)}} \\ 
+&= \arg\max_\theta \frac{1}{1 + \exp\left(-(r_\theta(y_c \mid x) - r_\theta(y_r \mid x))\right)} \\
+&= \arg\max_\theta \sigma \left( r_\theta(y_c \mid x) - r_\theta(y_r \mid x) \right) \\
+&= \arg\min_\theta - \log \left( \sigma \left(r_\theta(y_c \mid x) - r_\theta(y_r \mid x)\right) \right)
 \end{aligned}
 $$ {#eq:bradterryrm_deriv}
 
 The first form, as in [@ouyang2022training] and other works:
-$$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(x, y_c) - r_{\theta}(x, y_r) \right) \right)$$ {#eq:rewardmodeling1}
+$$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) \right) \right)$$ {#eq:rewardmodeling1}
 
 Second, as in [@askell2021general] and other works:
-$$\mathcal{L}(\theta) = \log \left( 1 + e^{r_{\theta}(x, y_r) - r_{\theta}(x, y_c)} \right)$$ {#eq:rewardmodeling2}
+$$\mathcal{L}(\theta) = \log \left( 1 + e^{r_{\theta}(y_r \mid x) - r_{\theta}(y_c \mid x)} \right)$$ {#eq:rewardmodeling2}
 
 ## Architecture
 
@@ -89,7 +89,7 @@ In the case where annotators are providing either scores or rankings on a Likert
 The most common practice is to binarize the data direction, implicitly scores of 1 and 0, but the additional information has been used to improve model training.
 Llama 2 proposes using the margin between two datapoints, $m(r)$, to distinguish the magnitude of preference:
 
-$$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(x, y_c) - r_{\theta}(x, y_r) - m(r) \right) \right)$$ {#eq:rewardmodelingmargin}
+$$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) - m(r) \right) \right)$$ {#eq:rewardmodelingmargin}
 
 Note that in Llama 3 the margin term was removed as the team observed diminishing improvements after scaling.
 
@@ -100,7 +100,7 @@ To do this, they weight the loss updates per comparison per prompt.
 At an implementation level, this can be done automatically by including all examples with the same prompt in the same training batch, naturally weighing the different pairs -- not doing this caused overfitting to the prompts.
 The loss function becomes:
 
-$$\mathcal{L}(\theta) = - \frac{1}{\binom{K}{2}} \mathbb{E}_{(x, y_c, y_r)\sim D} \log \left( \sigma \left( r_{\theta}(x, y_c) - r_{\theta}(x, y_r) \right) \right)$$ {#eq:rewardmodelinginstructgpt}
+$$\mathcal{L}(\theta) = - \frac{1}{\binom{K}{2}} \mathbb{E}_{(x, y_c, y_r)\sim D} \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) \right) \right)$$ {#eq:rewardmodelinginstructgpt}
 
 
 ### K-wise Loss Function
