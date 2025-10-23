@@ -27,30 +27,32 @@ $$P(i > j) = \frac{p_i}{p_i + p_j}$$ {#eq:bradterry}
 
 To train a reward model, we must formulate a loss function that satisfies the above relation.
 The first structure applied is to convert a language model into a model that outputs a scalar value, often in the form of a single classification probability logit.
-Thus, we can take the score of this model with two samples, the $i$ and $j$ above are now completions, $y_1$ and $y_2$, to one prompt, $x$ and score both of them with respect to the above model, $r_\theta$.
+Thus, we can take the score of this model with two samples, the $i$ and $j$ above are now completions, $y_1$ and $y_2$, to one prompt, $x$ and score both of them with respect to the above model, $r_\theta$. We denote the conditional scores as $r_\theta(y_i \mid x)$.
 
-The probability of success for a given reward model in a pairwise comparison, becomes:
+The probability of success for a given reward model in a pairwise comparison becomes:
 
-$$P(y_1 > y_2) = \frac{\exp(r(y_1))}{\exp(r(y_1)) + \exp(r(y_2))}$$ {#eq:bradterryrm}
+$$P(y_1 > y_2 \mid x) = \frac{\exp\left(r_\theta(y_1 \mid x)\right)}{\exp\left(r_\theta(y_1 \mid x)\right) + \exp\left(r_\theta(y_2 \mid x)\right)}$$ {#eq:bradterryrm}
+
+We denote the preferred completion as $y_c$ (chosen) and the rejected completion as $y_r$.
 
 Then, by maximizing the log-likelihood of the above function (or alternatively minimizing the negative log-likelihood), we can arrive at the loss function to train a reward model:
 
 $$
 \begin{aligned}
-\theta^* = \arg\max_\theta P(y_w > y_l) &= \arg\max_\theta \frac{\exp(r_\theta(y_w))}{\exp(r_\theta(y_w)) + \exp(r_\theta(y_l))} \\
-&= \arg\max_\theta \frac{\exp(r_\theta(y_w))}{\exp(r_\theta(y_w))\left(1 + \frac{\exp(r_\theta(y_l))}{\exp(r_\theta(y_w))}\right)} \\
-&= \arg\max_\theta \frac{1}{1 + \frac{\exp(r_\theta(y_l))}{\exp(r_\theta(y_w))}} \\ 
-&= \arg\max_\theta \frac{1}{1 + \exp(-(r_\theta(y_w) - r_\theta(y_l)))} \\
-&= \arg\max_\theta \sigma \left( r_\theta(y_w) - r_\theta(y_l) \right) \\
-&= \arg\min_\theta - \log \left( \sigma \left(r_\theta(y_w) - r_\theta(y_l)\right) \right)
+\theta^* = \arg\max_\theta P(y_c > y_r \mid x) &= \arg\max_\theta \frac{\exp\left(r_\theta(y_c \mid x)\right)}{\exp\left(r_\theta(y_c \mid x)\right) + \exp\left(r_\theta(y_r \mid x)\right)} \\
+&= \arg\max_\theta \frac{\exp\left(r_\theta(y_c \mid x)\right)}{\exp\left(r_\theta(y_c \mid x)\right)\left(1 + \frac{\exp\left(r_\theta(y_r \mid x)\right)}{\exp\left(r_\theta(y_c \mid x)\right)}\right)} \\
+&= \arg\max_\theta \frac{1}{1 + \frac{\exp\left(r_\theta(y_r \mid x)\right)}{\exp\left(r_\theta(y_c \mid x)\right)}} \\ 
+&= \arg\max_\theta \frac{1}{1 + \exp\left(-(r_\theta(y_c \mid x) - r_\theta(y_r \mid x))\right)} \\
+&= \arg\max_\theta \sigma \left( r_\theta(y_c \mid x) - r_\theta(y_r \mid x) \right) \\
+&= \arg\min_\theta - \log \left( \sigma \left(r_\theta(y_c \mid x) - r_\theta(y_r \mid x)\right) \right)
 \end{aligned}
 $$ {#eq:bradterryrm_deriv}
 
 The first form, as in [@ouyang2022training] and other works:
-$$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(x, y_w) - r_{\theta}(x, y_l) \right) \right)$$ {#eq:rewardmodeling1}
+$$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) \right) \right)$$ {#eq:rewardmodeling1}
 
 Second, as in [@askell2021general] and other works:
-$$\mathcal{L}(\theta) = \log \left( 1 + e^{r_{\theta}(x, y_l) - r_{\theta}(x, y_w)} \right)$$ {#eq:rewardmodeling2}
+$$\mathcal{L}(\theta) = \log \left( 1 + e^{r_{\theta}(y_r \mid x) - r_{\theta}(y_c \mid x)} \right)$$ {#eq:rewardmodeling2}
 
 ## Architecture
 
@@ -66,6 +68,8 @@ More of the implementation challenge is on setting up a separate data loader and
 Given the correct dataloader, the loss is implemented as:
 ```python
 import torch.nn as nn
+# inputs_chosen / inputs_rejected include the prompt tokens x and the respective
+# completion tokens (y_c or y_r) that the reward model scores jointly.
 rewards_chosen = model(**inputs_chosen)
 rewards_rejected = model(**inputs_rejected)
 
@@ -83,9 +87,13 @@ The traditional reward modeling loss has been modified in many popular works, bu
 
 In the case where annotators are providing either scores or rankings on a Likert Scale, the magnitude of the relational quantities can be used in training.
 The most common practice is to binarize the data direction, implicitly scores of 1 and 0, but the additional information has been used to improve model training.
-Llama 2 proposes using the margin between two datapoints, $m(r)$, to distinguish the magnitude of preference:
+Llama 2 proposes using the margin between two datapoints, $m(y_c, y_r)$, to distinguish the magnitude of preference:
 
-$$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(x, y_w) - r_{\theta}(x, y_l) - m(r) \right) \right)$$ {#eq:rewardmodelingmargin}
+$$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) - m(y_c, y_r) \right) \right)$$ {#eq:rewardmodelingmargin}
+
+For example, each completion is often given a ranking from 1 to 5 in terms of quality.
+In the case where the chosen sample was assigned a score of 5 and rejected a score of 2, the margine $m(y_c, y_r)= 5 - 2 = 3$. 
+Other functions for computing margins can be explored.
 
 Note that in Llama 3 the margin term was removed as the team observed diminishing improvements after scaling.
 
@@ -96,7 +104,7 @@ To do this, they weight the loss updates per comparison per prompt.
 At an implementation level, this can be done automatically by including all examples with the same prompt in the same training batch, naturally weighing the different pairs -- not doing this caused overfitting to the prompts.
 The loss function becomes:
 
-$$\mathcal{L}(\theta) = - \frac{1}{\binom{K}{2}} \mathbb{E}_{(x, y_w, y_l)\sim D} \log \left( \sigma \left( r_{\theta}(x, y_w) - r_{\theta}(x, y_l) \right) \right)$$ {#eq:rewardmodelinginstructgpt}
+$$\mathcal{L}(\theta) = - \frac{1}{\binom{K}{2}} \mathbb{E}_{(x, y_c, y_r)\sim D} \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) \right) \right)$$ {#eq:rewardmodelinginstructgpt}
 
 
 ### K-wise Loss Function
@@ -132,9 +140,13 @@ are language models, with a small scalar head that outputs predictions on a per-
 To translate, this is implemented as a language modeling head that can predict two classes per token (1 for correct, 0 for incorrect), rather than a classification head of a traditional RM that outputs one logit for the entire sequence.
 Formally, following [@lyu2025exploring] this can be shown as:
 
-$$\mathcal{L}_{\text{CE}} = -\mathbb{E}_{(s,r)\sim \mathcal{D}}[r\log p_\theta(s) + (1-r)\log(1-p_\theta(s))]$$ {#eq:orm_loss}
+$$\mathcal{L}_{\text{CE}}(\theta) = -\mathbb{E}_{(s,r)\sim \mathcal{D}}[r\log p_\theta(s) + (1-r)\log(1-p_\theta(s))]$$ {#eq:orm_loss}
 
 where $r \in {0,1}$ is a binary label where 1 applies to a correct answer to a given prompt and 0 applies to an incorrect, and $p_\theta(s)$ is the scalar proportional to predicted probability of correctness from the model being trained.
+
+The important intuition here is that an ORM will output a probability of correctness at every token in the sequence.
+This can be a noisy process, as the updates and loss propagates per token depending on outcomes and attention mappings.
+<!-- On the other hand, this process is more computationally intensive. [@cobbe2021training] posits a few potential benefits to these models, such as (1) implementation of ORMs often being done with both the standard next-token language modelling loss and the reward modelling loss above in @eq:orm_loss and (2) the ORM design as a token-level loss outperforms completion-level loss calculation used in standard RMs. -->
 
 These models have continued in use, but are less supported in open-source RLHF tools. 
 For example, the same type of ORM was used in the seminal work *Let's Verify Step by Step* [@lightman2023let], but without the language modeling prediction piece of the loss.
@@ -150,6 +162,12 @@ Others do not.
 Process Reward Models (PRMs), originally called Process-supervised Reward Models, are reward models trained to output scores at every *step* in a chain of thought reasoning process. 
 These differ from a standard RM that outputs a score only at an EOS token or a ORM that outputs a score at every token.
 Process Reward Models require supervision at the end of each reasoning step, and then are trained similarly where the tokens in the step are trained to their relevant target -- the target is the step in PRMs and the entire response for ORMs.
+
+Following [@lightman2023let], a binary-labeled PRM is commonly optimized with a per-step cross-entropy loss:
+
+$$\mathcal{L}_{\text{PRM}}(\theta) = - \mathbb{E}_{(x, s) \sim \mathcal{D}} \left[ \sum_{i=1}^{K} y_{s_i} \log r_\theta(s_i \mid x) + (1 - y_{s_i}) \log \left(1 - r_\theta(s_i \mid x)\right) \right] $$ {#eq:prm_loss}
+
+where $s$ is a sampled chain-of-thought with $K$ annotated steps, $y_{s_i} \in \{0,1\}$ denotes whether the $i$-th step is correct, and $r_\theta(s_i \mid x)$ is the PRM's predicted probability that step $s_i$ is valid conditioned on the original prompt $x$.
 
 Here's an example of how this per-step label can be packaged in a trainer, from HuggingFace's TRL [@vonwerra2022trl]:
 ```
