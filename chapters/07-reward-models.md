@@ -87,9 +87,13 @@ The traditional reward modeling loss has been modified in many popular works, bu
 
 In the case where annotators are providing either scores or rankings on a Likert Scale, the magnitude of the relational quantities can be used in training.
 The most common practice is to binarize the data direction, implicitly scores of 1 and 0, but the additional information has been used to improve model training.
-Llama 2 proposes using the margin between two datapoints, $m(r)$, to distinguish the magnitude of preference:
+Llama 2 proposes using the margin between two datapoints, $m(y_c, y_r)$, to distinguish the magnitude of preference:
 
-$$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) - m(r) \right) \right)$$ {#eq:rewardmodelingmargin}
+$$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) - m(y_c, y_r) \right) \right)$$ {#eq:rewardmodelingmargin}
+
+For example, each completion is often given a ranking from 1 to 5 in terms of quality.
+In the case where the chosen sample was assigned a score of 5 and rejected a score of 2, the margine $m(y_c, y_r)= 5 - 2 = 3$. 
+Other functions for computing margins can be explored.
 
 Note that in Llama 3 the margin term was removed as the team observed diminishing improvements after scaling.
 
