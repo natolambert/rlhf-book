@@ -36,6 +36,12 @@ header-includes:
     % more stable tables in pdf
     \usepackage{array}
     \newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1\textwidth}}
+    
+    % Workaround for Pandoc 3.8.x + longtable (<4.21):
+    % Pandoc sets \LTcaptype{none} for captionless longtables.
+    \makeatletter
+    \@ifundefined{c@none}{\newcounter{none}}{}%
+    \makeatother
     ```
 ---
 
