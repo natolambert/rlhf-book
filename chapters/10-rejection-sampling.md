@@ -9,11 +9,11 @@ next-url: "11-policy-gradients"
 # Rejection Sampling
 
 Rejection Sampling (RS) is a popular and simple baseline for performing preference fine-tuning. 
-Rejection sampling operates by curating new candidate instructions, filtering them based on a trained reward model, and then fine-tuning the original model only on the top completions.
+Rejection sampling operates by curating new candidate completions, filtering them based on a trained reward model, and then fine-tuning the original model only on the top completions.
 
 The name originates from computational statistics  [@gilks1992adaptive], where one wishes to sample from a complex distribution, but does not have a direct method to do so.
 To alleviate this, one samples from a simpler to model distribution and uses a heuristic to check if the sample is permissible.
-With language models, the target distribution is high-quality answers to instructions, the filter is a reward model, and the sampling distribution is the current model.
+With language models, the target distribution is high-quality completions to prompts, the filter is a reward model, and the sampling distribution is the current model.
 
 Many prominent RLHF and preference fine-tuning papers have used rejection sampling as a baseline, but a canonical implementation and documentation does not exist.
 
