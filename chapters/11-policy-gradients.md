@@ -40,7 +40,7 @@ $$V(s) = \mathbb{E}\big[G_t | S_t = s \big].$$ {#eq:value_function}
 
 All policy gradient algorithms solve an objective for such a value function induced from a specific policy, $\pi(a|s)$. 
 
-Where $d_\pi(s)$ is the stationary distribution of states induced by policy $\pi(s)$, the optimization is defined as:
+Where $d_\pi(s)$ is the stationary distribution of states induced by policy $\pi(a \mid s)$, the optimization is defined as:
 $$
 J(\theta)
 \;=\;
@@ -48,7 +48,7 @@ J(\theta)
 $$ {#eq:policy_objective}
 
 The core of policy gradient algorithms is computing the gradient with respect to the finite time expected return over the current policy. 
-With this expected return, $J$, the gradient can be computed as follows, where $\alpha$ is the learning rate: 
+With this expected return, $J$, the parameter update can be computed as follows, where $\alpha$ is the learning rate: 
 
 $$\theta \leftarrow \theta + \alpha \nabla_\theta J(\theta)$$ {#eq:policy_update}
 
@@ -115,7 +115,7 @@ $$
 
 Quite often, people use a more general formulation of the policy gradient: 
 $$
-g = \nabla_\theta J(\pi_\theta) = \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum_{t=0}^\infty \nabla_\theta \log \pi_\theta(a_t|s_t) \Psi_t \right]
+g = \nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum_{t=0}^\infty \nabla_\theta \log \pi_\theta(a_t|s_t) \Psi_t \right]
 $$ {#eq:general_gradient}
 
 Where $\Psi_t$ can be the following (where the rewards can also often be discounted by $\gamma$), a taxonomy adopted from Schulman et al. 2015 [@schulman2015high]:
@@ -142,7 +142,7 @@ Which is a combination of the reward, the value of the prompt, and the discounte
 The vanilla policy gradient implementation optimizes the above expression for $J(\theta)$ by differentiating with respect to the policy parameters.
 A simple version, with respect to the overall return, is:
 
-$$\nabla_\theta J(\pi_\theta) = \mathbb{E}_\tau \left[ \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t|s_t) R_t \right]$$ {#eq:vanilla_policy_gradient}
+$$\nabla_\theta J(\theta) = \mathbb{E}_\tau \left[ \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t|s_t) R_t \right]$$ {#eq:vanilla_policy_gradient}
 
 A common problem with vanilla policy gradient algorithms is the high variance in gradient updates, which can be mitigated in multiple ways.
 In order to alleviate this,  various techniques are used to normalize the value estimation, called *baselines*. 
@@ -152,7 +152,7 @@ Even these baselines can de-bias the gradients so $\mathbb{E}_{a \sim \pi(a|s)}[
 
 Many of the policy gradient algorithms discussed in this chapter build on the advantage formulation of policy gradient:
 
-$$\nabla_\theta J(\pi_\theta) = \mathbb{E}_\tau \left[ \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t|s_t) A^{\pi_\theta}(s_t, a_t) \right]$$ {#eq:advantage_policy_gradient}
+$$\nabla_\theta J(\theta) = \mathbb{E}_\tau \left[ \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t|s_t) A^{\pi_\theta}(s_t, a_t) \right]$$ {#eq:advantage_policy_gradient}
 
 
 ### REINFORCE
@@ -180,7 +180,7 @@ $$
 \;=\;
 \mathbb{E}_{\tau \sim \pi_{\theta}}\!\Big[
     \sum_{t=0}^{T}
-    \nabla_{\theta} \log \pi_{\theta}(a_t \mid s_t)\,(G_t - b)
+    \nabla_{\theta} \log \pi_{\theta}(a_t \mid s_t)\,(G_t - b(s_t))
 \Big],
 $$ {#eq:REINFORCE_with_baseline}
 
@@ -204,7 +204,7 @@ PPO on the other hand needs the value network to accurately compute the advantag
 
 The core implementation detail of REINFORCE Leave One Out versus standard REINFORCE is that it takes the average reward of the *other* samples in the batch to compute the baseline -- rather than averaging over all rewards in the batch [@huang2024putting], [@ahmadian2024back], [@kool2019buy].
 
-Crucially, this only works when generating multiple responses per prompt, which is common practice in multiple domains of finetuning language models with RL.
+Crucially, this only works when generating multiple trajectories (completions) per state (prompt), which is common practice in multiple domains of finetuning language models with RL.
 
 Specifically, for the REINFORCE Leave-One-Out (RLOO) baseline, given $K$ sampled trajectories or actions $a_1, \dots, a_K$, to a given prompt $s$ we define the baseline explicitly as the following *per-prompt*:
 
@@ -359,7 +359,7 @@ GRPO does this by simplifying the value estimation and assigning the same value 
 The estimate is done by collecting multiple completions ($a_i$) and rewards ($r_i$), i.e. a Monte Carlo estimate, from the same initial state / prompt ($s$).
 
 To state this formally, the GRPO objective is very similar to the PPO objective above.
-For GRPO, the objective (or loss) is accumulated over a group of responses $\{a_1, a_2, ..., a_G\}$ to a given question $s$.
+For GRPO, the objective (or loss) is accumulated over a group of completions $\{a_1, a_2, ..., a_G\}$ to a given prompt $s$.
 Here, we show the GRPO objective:
 
 $$J(\theta) = \frac{1}{G}\sum_{i=1}^G \left(\min\left(\frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}A_i, \text{clip} \left( \frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}, 1-\varepsilon, 1+\varepsilon \right) A_i \right) - \beta D_{KL}(\pi_\theta||\pi_{ref})\right).$$ {#eq:GRPO}
@@ -391,7 +391,7 @@ Finally, GRPO's advantage estimation can also be applied without the PPO clippin
 As an example of how these algorithms are intertwined, we can show that the advantage estimation in a variant of GRPO, Dr. GRPO (GRPO Done Right) [@liu2025understanding], is equivalent to the RLOO estimation up to a constant scaling factor (which normally does not matter due to implementation details to normalize the advantage).
 Dr. GRPO removes the standard deviation normalization term from @eq:GRPO_ADV -- note that this also scales the advantage *up*, which is equivalent to increasing the GRPO learning rate on samples with a variance in answer scores. 
 This addresses a bias towards questions with low reward variance -- i.e. almost all the answers are right or wrong -- but comes at a potential cost where problems where just one sample gets the answer right are important to learn from. 
-The Dr. GRPO advantage for completion i within a group of size G is defined as:
+The Dr. GRPO advantage for completion $i$ within a group of size $G$ is defined as:
 
 $$ \tilde{A}_i = r_i - \text{mean}({r_1, r_2, \cdots, r_G}) = r_i - \frac{1}{G}\sum_{j=1}^G r_j $$ {#eq:DrGRPO_ADV}
 
@@ -711,9 +711,9 @@ This leads to PPO or GRPO implementations where the second policy gradient and c
 
 The DeepSeekMath paper details some implementation details of GRPO that differ from PPO [@shao2024deepseekmath], especially if comparing to a standard application of PPO from Deep RL rather than language models.
 For example, the KL penalty within the RLHF optimization (recall the KL penalty is also used when training reasoning models on verifiable rewards without a reward model) is applied directly in the loss update rather than to the reward function.
-Where the standard KL penalty application for RLHF is applied as $r=r_\theta + \beta D_{KL}$, the GRPO implementation is along the lines of:
+Where the standard KL penalty application for RLHF is applied as $r=r_\theta - \beta D_{KL}$, the GRPO implementation is along the lines of:
 
-$$ L = L_{\text{policy gradient}} - \beta * D_{KL} $$
+$$ L = L_{\text{policy gradient}} + \beta * D_{KL} $$
 
 Though, there are multiple ways to implement this.
 Traditionally, the KL distance is computed with respect to each token in the completion to a prompt $s$.
