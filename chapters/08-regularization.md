@@ -35,13 +35,16 @@ Recall that KL distance is defined as follows:
 $$ D_{KL}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\frac{P(x)}{Q(x)}\right) $$ {#eq:kl_distance_regularization}
 
 In RLHF, the two distributions of interest are often the distribution of the new model version, say $P(x)$, and a distribution of the reference policy, say $Q(x)$.
+Different pieces of optimizers use different KL directions. Throughout this book, the most common "KL Penalty" that is used is called the reverse KL to the reference policy. In practice, this reduces to a Monte Carlo estimate that samples tokens from the RL model and computes probabilities from the reference model. Intuitively, this forward RL has a numerical property that applies a large penalty (a distance) when the new model, $P$ or $\pi_\text{RL}$ puts substantial probability mass where the original reference model is low probability.
+
+The other KL direction is still often used in ML, e.g. in the internal trust region calculation of some RL algorithms. This penalty intuitively penalizes the new model when it's update does *not* apply probability to a high-likelihood region in $Q$ or $\pi_\text{Ref.}$. This is closer to an objective used for distillation or behavioral cloning.
 
 ### Reference Model to Generations
 
 The most common implementation of KL penalities are by comparing the distance between the generated tokens during training to a static reference model.
 The intuition is that the model you're training from has a style that you would like to stay close to.
 This reference model is most often the instruction tuned model, but can also be a previous RL checkpoint.
-With simple substitution, the model we are sampling from becomes $P^{\text{RL}}(x)$ and $P^{\text{Ref.}}(x)$, shown above in @eq:kl_standard.
+With simple substitution, the model we are sampling from becomes $\pi^{\text{RL}}(x)$ and $\pi^{\text{Ref.}}(x)$, shown above in @eq:kl_standard (often $P$, and $Q$, in standard definitions, when applied for RL KL penalties).
 Such KL distance was first applied to dialogue agents well before the popularity of large language models [@jaques2017sequence], yet KL control was quickly established as a core technique for fine-tuning pretrained models [@jaques2020human].
 
 ### Implementation Example
@@ -94,11 +97,11 @@ performance regressions on public NLP datasets''.
 To implement this, they modify the training objective for RLHF.
 Taking @eq:rl_start, we can transform this into an objective function to optimize by sampling from the RL policy model, completions $y$ from prompts $x$, which yields:
 $$
-\text{objective} (\theta) = \mathbb{E}_{(x,y) \sim \mathcal{D}_{\pi^{\text{RL}}_{\theta}}} \left[ r_{\theta}(x, y) - \lambda r_{\text{reg.}} \right]
+J(\theta) = \mathbb{E}_{(x,y) \sim \mathcal{D}_{\pi^{\text{RL}}_{\theta}}} \left[ r_{\theta}(y \mid x) - \lambda r_{\text{reg.}} \right]
 $$ {#eq:objective_regularization}
 Then, we can add an additional reward for higher probabilities on pretraining accuracy:
 $$
-\text{objective} (\theta) = \mathbb{E}_{(x,y) \sim \mathcal{D}_{\pi^{\text{RL}}_{\theta}}} \left[ r_{\theta}(x, y) - \lambda r_{\text{reg.}} \right] + \gamma \mathbb{E}_{x \sim \mathcal{D}_{\text{pretrain}}} \left[ \log(\pi^{\text{RL}}_{\theta}(x)) \right]
+J(\theta) = \mathbb{E}_{(x,y) \sim \mathcal{D}_{\pi^{\text{RL}}_{\theta}}} \left[ r_{\theta}(y \mid x) - \lambda r_{\text{reg.}} \right] + \gamma \mathbb{E}_{x \sim \mathcal{D}_{\text{pretrain}}} \left[ \log(\pi^{\text{RL}}_{\theta}(x)) \right]
 $$ {#eq:objective_pretraining}
 
 Recent work proposed using a negative log likelihood term to balance the optimization of Direct Preference Optimization (DPO) [@pang2024iterative].
@@ -121,10 +124,10 @@ Direct Alignment Algorithms handle regularization to KL distances differently, t
 Llama 2 proposed a margin loss for reward model training [@touvron2023llama]:
 
 $$
-\mathcal{L}(\theta) = - \left[ \log \left( \sigma \left( r_{\theta}(x, y_w) - r_{\theta}(x, y_l) - m(r) \right) \right) \right]
+\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) - m(y_c, y_r) \right) \right)
 $$ {#eq:margin_loss}
 
-Where $m(r)$ is the numerical difference in delta between the ratings of two annotators.
+where $m(y_c, y_r)$ is the margin between two datapoints $y_c$ and $y_r$ representing numerical difference in delta between the ratings of two annotators.
 This is either achieved by having annotators rate the outputs on a numerical scale or by using a quantified ranking method, such as [Likert scales](https://en.wikipedia.org/wiki/Likert_scale).
 
 Reward margins have been used heavily in the direct alignment literature, such as Reward weighted DPO, ''Reward-aware Preference Optimization'' (RPO), which integrates reward model scores into the update rule following a DPO loss [@adler2024nemotron], or REBEL [@gao2024rebel] that has a reward delta weighting in a regression-loss formulation.
