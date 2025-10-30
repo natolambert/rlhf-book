@@ -204,7 +204,7 @@ PPO on the other hand needs the value network to accurately compute the advantag
 
 The core implementation detail of REINFORCE Leave One Out versus standard REINFORCE is that it takes the average reward of the *other* samples in the batch to compute the baseline -- rather than averaging over all rewards in the batch [@huang2024putting], [@ahmadian2024back], [@kool2019buy].
 
-Crucially, this only works when generating multiple responses per prompt, which is common practice in multiple domains of finetuning language models with RL.
+Crucially, this only works when generating multiple trajectories (completions) per state (prompt), which is common practice in multiple domains of finetuning language models with RL.
 
 Specifically, for the REINFORCE Leave-One-Out (RLOO) baseline, given $K$ sampled trajectories or actions $a_1, \dots, a_K$, to a given prompt $s$ we define the baseline explicitly as the following *per-prompt*:
 
