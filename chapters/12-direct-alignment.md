@@ -53,7 +53,7 @@ Here, the gradient solves the above objective by doing the following:
 
 The core intuition is that DPO is "fitting an implicit reward model whose corresponding optimal policy can be extracted in a closed form" (thanks to gradient ascent and our ML tools).
 What is often misunderstood is that DPO is learning a reward model at its core, hence the subtitle of the paper *Your Language Model is Secretly a Reward Model.* 
-It is easy to confuse this with the DPO objective training a policy directly, hence studying the derivations below are good for a complete understanding.
+It is easy to confuse this with the DPO objective training a policy directly, hence studying the derivations below is good for a complete understanding.
 
 With the implicit reward model learning, DPO is generating an optimal solution to the RLHF objective given the data in the dataset and the specific KL constraint in the objective $\beta$. 
 Here, DPO solves for the exact policy given a specific KL distance because the generations are not online as in policy gradient algorithms -- a core difference from the RL methods for preference tuning.
