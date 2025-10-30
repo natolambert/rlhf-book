@@ -359,7 +359,7 @@ GRPO does this by simplifying the value estimation and assigning the same value 
 The estimate is done by collecting multiple completions ($a_i$) and rewards ($r_i$), i.e. a Monte Carlo estimate, from the same initial state / prompt ($s$).
 
 To state this formally, the GRPO objective is very similar to the PPO objective above.
-For GRPO, the objective (or loss) is accumulated over a group of responses $\{a_1, a_2, ..., a_G\}$ to a given question $s$.
+For GRPO, the objective (or loss) is accumulated over a group of completions $\{a_1, a_2, ..., a_G\}$ to a given prompt $s$.
 Here, we show the GRPO objective:
 
 $$J(\theta) = \frac{1}{G}\sum_{i=1}^G \left(\min\left(\frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}A_i, \text{clip} \left( \frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}, 1-\varepsilon, 1+\varepsilon \right) A_i \right) - \beta D_{KL}(\pi_\theta||\pi_{ref})\right).$$ {#eq:GRPO}
@@ -391,7 +391,7 @@ Finally, GRPO's advantage estimation can also be applied without the PPO clippin
 As an example of how these algorithms are intertwined, we can show that the advantage estimation in a variant of GRPO, Dr. GRPO (GRPO Done Right) [@liu2025understanding], is equivalent to the RLOO estimation up to a constant scaling factor (which normally does not matter due to implementation details to normalize the advantage).
 Dr. GRPO removes the standard deviation normalization term from @eq:GRPO_ADV -- note that this also scales the advantage *up*, which is equivalent to increasing the GRPO learning rate on samples with a variance in answer scores. 
 This addresses a bias towards questions with low reward variance -- i.e. almost all the answers are right or wrong -- but comes at a potential cost where problems where just one sample gets the answer right are important to learn from. 
-The Dr. GRPO advantage for completion i within a group of size G is defined as:
+The Dr. GRPO advantage for completion $i$ within a group of size $G$ is defined as:
 
 $$ \tilde{A}_i = r_i - \text{mean}({r_1, r_2, \cdots, r_G}) = r_i - \frac{1}{G}\sum_{j=1}^G r_j $$ {#eq:DrGRPO_ADV}
 
