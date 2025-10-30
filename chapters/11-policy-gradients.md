@@ -40,7 +40,7 @@ $$V(s) = \mathbb{E}\big[G_t | S_t = s \big].$$ {#eq:value_function}
 
 All policy gradient algorithms solve an objective for such a value function induced from a specific policy, $\pi(a|s)$. 
 
-Where $d_\pi(s)$ is the stationary distribution of states induced by policy $\pi(s)$, the optimization is defined as:
+Where $d_\pi(s)$ is the stationary distribution of states induced by policy $\pi(a \mid s)$, the optimization is defined as:
 $$
 J(\theta)
 \;=\;
@@ -48,7 +48,7 @@ J(\theta)
 $$ {#eq:policy_objective}
 
 The core of policy gradient algorithms is computing the gradient with respect to the finite time expected return over the current policy. 
-With this expected return, $J$, the gradient can be computed as follows, where $\alpha$ is the learning rate: 
+With this expected return, $J$, the parameter update can be computed as follows, where $\alpha$ is the learning rate: 
 
 $$\theta \leftarrow \theta + \alpha \nabla_\theta J(\theta)$$ {#eq:policy_update}
 
