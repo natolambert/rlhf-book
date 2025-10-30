@@ -180,7 +180,7 @@ $$
 \;=\;
 \mathbb{E}_{\tau \sim \pi_{\theta}}\!\Big[
     \sum_{t=0}^{T}
-    \nabla_{\theta} \log \pi_{\theta}(a_t \mid s_t)\,(G_t - b)
+    \nabla_{\theta} \log \pi_{\theta}(a_t \mid s_t)\,(G_t - b(s_t))
 \Big],
 $$ {#eq:REINFORCE_with_baseline}
 
