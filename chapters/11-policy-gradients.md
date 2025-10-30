@@ -115,7 +115,7 @@ $$
 
 Quite often, people use a more general formulation of the policy gradient: 
 $$
-g = \nabla_\theta J(\pi_\theta) = \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum_{t=0}^\infty \nabla_\theta \log \pi_\theta(a_t|s_t) \Psi_t \right]
+g = \nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum_{t=0}^\infty \nabla_\theta \log \pi_\theta(a_t|s_t) \Psi_t \right]
 $$ {#eq:general_gradient}
 
 Where $\Psi_t$ can be the following (where the rewards can also often be discounted by $\gamma$), a taxonomy adopted from Schulman et al. 2015 [@schulman2015high]:
@@ -142,7 +142,7 @@ Which is a combination of the reward, the value of the prompt, and the discounte
 The vanilla policy gradient implementation optimizes the above expression for $J(\theta)$ by differentiating with respect to the policy parameters.
 A simple version, with respect to the overall return, is:
 
-$$\nabla_\theta J(\pi_\theta) = \mathbb{E}_\tau \left[ \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t|s_t) R_t \right]$$ {#eq:vanilla_policy_gradient}
+$$\nabla_\theta J(\theta) = \mathbb{E}_\tau \left[ \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t|s_t) R_t \right]$$ {#eq:vanilla_policy_gradient}
 
 A common problem with vanilla policy gradient algorithms is the high variance in gradient updates, which can be mitigated in multiple ways.
 In order to alleviate this,  various techniques are used to normalize the value estimation, called *baselines*. 
@@ -152,7 +152,7 @@ Even these baselines can de-bias the gradients so $\mathbb{E}_{a \sim \pi(a|s)}[
 
 Many of the policy gradient algorithms discussed in this chapter build on the advantage formulation of policy gradient:
 
-$$\nabla_\theta J(\pi_\theta) = \mathbb{E}_\tau \left[ \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t|s_t) A^{\pi_\theta}(s_t, a_t) \right]$$ {#eq:advantage_policy_gradient}
+$$\nabla_\theta J(\theta) = \mathbb{E}_\tau \left[ \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t|s_t) A^{\pi_\theta}(s_t, a_t) \right]$$ {#eq:advantage_policy_gradient}
 
 
 ### REINFORCE
