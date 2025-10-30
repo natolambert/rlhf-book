@@ -44,7 +44,7 @@ The other KL direction is still often used in ML, e.g. in the internal trust reg
 The most common implementation of KL penalities are by comparing the distance between the generated tokens during training to a static reference model.
 The intuition is that the model you're training from has a style that you would like to stay close to.
 This reference model is most often the instruction tuned model, but can also be a previous RL checkpoint.
-With simple substitution, the model we are sampling from becomes $P^{\text{RL}}(x)$ and $P^{\text{Ref.}}(x)$, shown above in @eq:kl_standard. <!-- A bit confusing as @eq:kl_standard doesn't contain any "P" values (did you mean "\pi"?) -->
+With simple substitution, the model we are sampling from becomes $\pi^{\text{RL}}(x)$ and $\pi^{\text{Ref.}}(x)$, shown above in @eq:kl_standard (often $P$, and $Q$, in standard definitions, when applied for RL KL penalties).
 Such KL distance was first applied to dialogue agents well before the popularity of large language models [@jaques2017sequence], yet KL control was quickly established as a core technique for fine-tuning pretrained models [@jaques2020human].
 
 ### Implementation Example
