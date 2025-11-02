@@ -229,7 +229,9 @@ Still, the advantage from RLOO could be combined with the clipping of PPO, showi
 
 RLOO and other algorithms that do not use a value network assign the advantage (or reward) of the sequence to every token for the loss computation.
 Algorithms that use a learned value network, such as PPO, assign a different value to every token individually, discounting from the final reward achieved at the EOS token.
-For example, with the KL divergence distance penalty, RLOO sums it over the completion while PPO and similar algorithms compute it on a per-token basis and subtract it from the reward (or the advantage, in the case of GRPO).
+With a KL distance penalty, RLOO aggregates the per‑token KL over the completion and folds that scalar into the sequence reward, so the resulting advantage is broadcast to all tokens. 
+PPO subtracts a per‑token KL from the per‑token reward before computing $A_t$, giving token‑level credit assignment. 
+GRPO typically retains a sequence‑level advantage but adds a separate per‑token term to the loss, rather than subtracting it from the reward.
 These details and trade-offs are discussed later in the chapter.
 
 <!-- A nice formulation of LM RL loss functions is found here https://arxiv.org/pdf/2502.01600 -->
@@ -260,8 +262,7 @@ $$R(\theta) = \frac{\pi_\theta(a|s)}{\pi_{\theta_{old}}(a|s)}$$ {#eq:PPO_POL_RAT
 
 The policy ratio is a centerpiece of PPO and related algorithms. 
 It emerges from computing the gradient of a policy and controls the parameter updates in a very intuitive way.
-For any batch of data, the policy ratio starts at 1 for the first gradient step for that batch (common practice is to take 1-4 gradient steps per batch with policy gradient algorithms).
-Then, the policy ratio will be above one if that gradient step increased the likelihood of certain tokens with an associated positive advantage, or less than one for the other case. 
+For any batch of data, the policy ratio starts at 1 for the first gradient step for that batch, since $\pi_{\theta}$ is the same as $\pi_{\theta_{old}}$ at this point. Then, in the next gradient step, the policy ratio will be above one if that gradient step increased the likelihood of certain tokens with an associated positive advantage, or less than one for the other case. A common practice is to take 1-4 gradient steps per batch with policy gradient algorithms before updating $\pi_{\theta_{old}}$.
 
 #### Value Functions and PPO
 
@@ -436,12 +437,12 @@ Here, we show the GRPO objective:
 
 $$J(\theta) = \frac{1}{G}\sum_{i=1}^G \left(\min\left(\frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}A_i, \text{clip} \left( \frac{\pi_\theta(a_i|s)}{\pi_{\theta_{old}}(a_i|s)}, 1-\varepsilon, 1+\varepsilon \right) A_i \right) - \beta D_{KL}(\pi_\theta||\pi_{ref})\right).$$ {#eq:GRPO}
 
+Note that relative to PPO, the standard implementation of GRPO includes the KL distance in the loss.
 As above, we can expand this into a per-token computation:
 
 $$ J(\theta) = \frac{1}{G}\sum_{i=1}^G  \frac{1}{|a_i|} \sum_{t=1}^{|a_i|} \left( \min\left(\frac{\pi_\theta(a_{i,t}|s_{i})}{\pi_{\theta_{old}}(a_{i,t}|s_{i})}A_{i,t}, \text{clip} \left( \frac{\pi_\theta(a_{i,t}|s_{i})}{\pi_{\theta_{old}}(a_{i,t}|s_{i})}, 1-\varepsilon, 1+\varepsilon \right) A_{i,t} \right) - \beta D_{KL}(\pi_\theta(\cdot|s_{i})||\pi_{ref}(\cdot|s_{i})) \right)  $$ {#eq:GRPO_token}
 
 
-Note that relative to PPO, the standard implementation of GRPO includes the KL distance in the loss.
 With the advantage computation for the completion index $i$:
 
 $$A_i = \frac{r_i - \text{mean}({r_1, r_2, \cdots, r_G})}{\text{std}({r_1, r_2, \cdots, r_G})}.$$ {#eq:GRPO_ADV}
@@ -449,7 +450,10 @@ $$A_i = \frac{r_i - \text{mean}({r_1, r_2, \cdots, r_G})}{\text{std}({r_1, r_2, 
 Intuitively, the GRPO update is comparing multiple answers to a single question within a batch.
 The model learns to become more like the answers marked as correct and less like the others. 
 This is a very simple way to compute the advantage, which is the measure of how much better a specific action is than the average at a given state.
-Relative to PPO, REINFORCE, and broadly RLHF performed with a reward model rating (relative to output reward), GRPO is often run with a far higher number of samples per prompt. Here, the current policy generates multiple responses to a given prompt, and the group-wise GRPO advantage estimate is given valuable context.
+Relative to PPO, REINFORCE, and broadly RLHF performed with a reward model rating (relative to output reward), GRPO is often run with a far higher number of samples per prompt because the advantage is entirely about the relative value of a completion to its peers from that prompt.
+Here, the current policy generates multiple responses to a given prompt, and the group-wise GRPO advantage estimate is given valuable context.
+PPO and vanilla policy-gradient algorithms were design to accurately estimate the reward of every completion (in fact, more completions can do little to improve the value estimate in some cases). 
+GRPO and its variants are particularly well-suited to modern language model tools, where multiple completions to a given prompt is very natural (especially when compared to, e.g., multiple actions from a set environment state in a robotic task).
 
 The advantage computation for GRPO has trade-offs in its biases.
 The normalization by standard deviation is rewarding questions in a batch that have a low variation in answer correctness.
@@ -550,6 +554,7 @@ sequence_loss = ((per_token_loss * completion_mask).sum(dim=1) / \
              completion_mask.sum(dim=1)).mean()
 ```
 
+Note that `completion_mask` is simply a matrix of 1s and 0s, where the prompt tokens are masked out in the loss (0s here) because we don't want the model to learn to predict their value and therefore learn their behavior.
 The operation above is very similar to a `masked_mean` operation.
 An alternative is to average over each token individually.
 
