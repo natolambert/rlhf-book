@@ -129,8 +129,10 @@ $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html:	$(HTML_DEPENDENCIES)
 	$(COPY_CMD) $(IMAGES) $(BUILD)/html/
 	$(COPY_CMD) templates/nav.js $(BUILD)/html/
 	$(COPY_CMD) templates/header-anchors.js $(BUILD)/html/
+	$(COPY_CMD) templates/table-scroll.js $(BUILD)/html/
 	$(COPY_CMD) templates/nav.js $(BUILD)/html/c/
 	$(COPY_CMD) templates/header-anchors.js $(BUILD)/html/c/
+	$(COPY_CMD) templates/table-scroll.js $(BUILD)/html/c/
 	cp templates/style.css $(BUILD)/html/style.css || echo "Failed to copy style.css"
 	@mkdir -p $(BUILD)/html/data
 	@test -f data/library.json && cp data/library.json $(BUILD)/html/data/library.json || echo "No library data to copy"
@@ -220,3 +222,5 @@ files:
 	cp ./templates/nav.js $(BUILD)/html/c/ || echo "Failed to copy nav.js to $(BUILD)/html/c/"
 	cp ./templates/header-anchors.js $(BUILD)/html/ || echo "Failed to copy header-anchors.js to $(BUILD)/html/"
 	cp ./templates/header-anchors.js $(BUILD)/html/c/ || echo "Failed to copy header-anchors.js to $(BUILD)/html/c/"
+	cp ./templates/table-scroll.js $(BUILD)/html/ || echo "Failed to copy table-scroll.js to $(BUILD)/html/"
+	cp ./templates/table-scroll.js $(BUILD)/html/c/ || echo "Failed to copy table-scroll.js to $(BUILD)/html/c/"
