@@ -2,7 +2,7 @@ name: Deploy static content to Pages
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "fix/strip-unicode-from-source"]
   workflow_dispatch:
 
 permissions:
