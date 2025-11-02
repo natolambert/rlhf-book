@@ -334,7 +334,11 @@ advantages = (targets - v_pred).detach()
 Overall, the PPO objective can be visualized by two lines of a plot of objective versus policy ratio, which is shown in @fig:ppo-obj.
 The PPO objective is maximized by changing the probability of the sampled actions.
 Numerically, the objective controls for both positive and negative advantage cases by clever use of the minimum operation, making it so the update is at most pushed by an episilon distance away from a policy ratio of 1.
+
 Within the trust region, PPO operates the same as other policy gradient algorithms.
+This is by design! The trust region is a concept used to cap the maximum step size of PPO and its peer algorithms for stability of updates. The core of the PPO algorithm, the clip and min/max functions, is to define this region. The objective becomes flat outside of it.
+
+The idea of a "trust region" comes from the numerical optimization literatuer [@nocedal2006numerical], but was popularized within Deep RL from the algorithm Trust Region Policy Optimization (TRPO) which is accepted as the predecessor to PPO [@schulman2015trust].
 
 ![Visualization of the different regions of the PPO objective for a hypothetical advantage.](images/ppo-viz-4x.png){#fig:ppo-obj}
 
