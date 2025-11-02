@@ -650,6 +650,8 @@ values = value_net(completions)  # Shape: (B*G, L)
 
 # Compute simple advantages
 advantages = rewards - values.detach()  # Shape: (B*G, L)
+# Note: We detach the value network here to not update the parameters of 
+# the value function when computing the policy-gradient loss
 
 # Normalize advantages (optional but stable)
 advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
@@ -802,6 +804,20 @@ The rest of the implementation details for RLOO follow the other trade-offs of i
 
 In order to master the application of policy-gradient algorithms, there are countless other considerations.
 Here we consider some, but not all of these discussions.
+
+### Comparing Algorithms
+
+Here's a summary of some of the discussed material (and foreshadowing to coming material on Direct Policy Optimization) when applied to RLHF.
+Here on or off policy indicates the derivation (where most are applied slightly off-policy in practice).
+A reference policy here indicates if it is required for the optimization itself, rather than for a KL penalty.
+
+| Method | Type | Reward Model | Value Function | Reference Policy | Core Loss $\mathcal{L}(\theta)$ |
+| :----- | :---------: | :----------: | :------------: | :--------------: | :------------------------------ |
+| **REINFORCE** | On-policy | Yes | No | No | $-\frac{1}{T}\sum_{t=1}^{T}\log \pi_\theta(a_t\mid s_t)\,\big(G_t - b(s_t)\big)$ |
+| **RLOO** | On-policy | Yes | No | No | $-\frac{1}{K}\sum_{i=1}^{K}\sum_t \log \pi_\theta(a_{i,t}\mid s_{i,t})\left(R_i-\frac{1}{K-1}\sum_{j\neq i}R_j\right)$ |
+| **PPO** | On-policy | Yes | Yes | Yes | $-\frac{1}{T}\sum_{t=1}^{T}\min\!\big(\rho_t A_t,\ \mathrm{clip}(\rho_t,1-\varepsilon,1+\varepsilon) A_t\big);\ \rho_t = \frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\mathrm{old}}}(a_t\mid s_t)}$ |
+| **GRPO** | On-policy | Yes | No | Yes | $-\frac{1}{G}\sum_{i=1}^{G}\min\!\big(\rho_i A_i,\ \mathrm{clip}(\rho_i,1-\varepsilon,1+\varepsilon) A_i\big);\ \rho_i = \frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)},\ A_i = \frac{r_i-\mathrm{mean}(r_{1:G})}{\mathrm{std}(r_{1:G})}$ |
+| **DPO** | Off-policy | No | No | Yes | $-\mathbb{E}_{(x,y^{w},y^{l})}\!\left[\log \sigma\!\big(\beta[\Delta\log \pi_\theta(x)-\Delta\log \pi_{\mathrm{ref}}(x)]\big)\right]$ |
 
 ### Generalized Advantage Estimation (GAE)
 

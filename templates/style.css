@@ -280,7 +280,7 @@ table {
     border-collapse: collapse;
     margin-left: auto;
     margin-right: auto;
-    width: auto; /* Ensures the table doesn't stretch full-width */
+    width: auto; /* Keeps natural width; wrapper handles overflow */
     display: table;
 }
 
@@ -296,6 +296,42 @@ td {
     text-align: left; /* Keeps data cells left-aligned */
     border: 1px solid #ddd;
     vertical-align: top;
+}
+
+.table-scroll {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 1.5em auto 2em;
+}
+
+.table-scroll table {
+    margin: 0 auto;
+    display: table;
+    width: auto;
+    width: fit-content;
+    width: max-content;
+}
+
+.table-wrap {
+    margin: 1.5em auto 2em;
+}
+
+.table-wrap table {
+    margin: 0 auto;
+}
+
+.table-scroll::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-scroll::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+.table-scroll::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
 }
 
 .author {

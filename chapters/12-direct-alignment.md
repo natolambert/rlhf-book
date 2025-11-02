@@ -28,10 +28,12 @@ The loss function derived from a Bradley-Terry reward model follows:
 
 $$ \mathcal{L}_{\text{DPO}}(\pi_\theta; \pi_{\text{ref}}) = -\mathbb{E}_{(x, y_c, y_r) \sim \mathcal{D}}\left[ \log \sigma\left( \beta \log \frac{\pi_{\theta}(y_c \mid x)}{\pi_{\text{ref}}(y_c \mid x)} - \beta \log \frac{\pi_{\theta}(y_r \mid x)}{\pi_{\text{ref}}(y_r \mid x)} \right) \right] $$ {#eq:dpo_core}
 
+Throughout, $\beta$ is a hyperparameter balancing the reward optimization to the KL distance between the final model and the initial reference (i.e. balancing over-optimization, as a crucial hyperparameter to using DPO correction).
 This relies on the implicit reward for DPO training that replaces using an external reward model, which is a log-ratio of probabilities:
 
 $$r(x, y) = \beta  \log \frac{\pi_r(y \mid x)}{\pi_{\text{ref}}(y \mid x)}$$ {#eq:dpo_reward}
 
+where $\pi_r(y \mid x)$ is the exact, optimal reward policy that we are solving for.
 This comes from deriving the Bradley-Terry reward with respect to an optimal policy (shown in @eq:dpo_opt_policy), as shown in the Bradley-Terry model section. 
 Essentially, the implicit reward model shows "the probability of human preference data in terms of the optimal policy rather than the reward model."
 
