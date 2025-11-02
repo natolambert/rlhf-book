@@ -265,8 +265,69 @@ Then, the policy ratio will be above one if that gradient step increased the lik
 
 #### Value Functions and PPO
 
-REINFORCE can be run without a value network  -- the value network is for the baseline in the policy gradient. 
-PPO on the other hand needs the value network to accurately compute the advantage function.
+The value function within PPO is an additional copy to the model that is used to predict the value per token.
+The value of a token (or state) in traditional RL is predicting the future return from that moment, often with discounting.
+This value is used as a learned baseline, representing an evolution of the simple Monte Carlo version used with REINFORCE (which doesn't need the learned value network). 
+This highlights how PPO is an evolution of REINFORCE and vanilla policy-gradient in multiple forms, across the optimization form, baseline, etc.
+In practice, with PPO and other algorithms used for language models, this is predicting the return of each token after the deduction of KL penalties (the per-token loss includes the KL from the reward traditionally, as discussed).
+
+There are a few different methods (or targets) used to learn the value functions.
+Generalized Advantage Estimation (GAE) is considered the state-of-the-art and canonical implementation in modern systems, but it carries more complexity by computing the value prediction error over multiple steps -- see the later section on GAE in this chapter.
+A value function can also be learned with Monte Carlo estimates from the rollouts used to update the policy. 
+PPO has two losses -- one to learn the value function and another to use that value function to update the policy.
+
+A simple example implementation of a value network loss is shown below.
+
+```python
+# Basic PPO critic targets & loss (no GAE)
+#
+# B: Batch Size
+# L: Completion Length
+# Inputs:
+#   rewards: (B, L) post-KL per-token rewards; EOS row includes outcome
+#   done_mask: (B, L) 1.0 at terminal token (EOS or truncation if penalized), else 0.0
+#   completion_mask: (B, L) 1.0 on response tokens to supervise (ignore the prompt)
+#   values: (B, L) current critic predictions V_theta(s_t)
+#       because a value network is a running update
+#   old_values: (B, L) critic predictions at rollout time V_{theta_old}(s_t)
+#   gamma: discount factor, float (often 1.0 for LM RLHF)
+#   epsilon_v: float value clip range (e.g., 0.2), similar to PPO Loss Update itself, optional
+#
+# Returns:
+#   value_loss: scalar; advantages: (B, L) detached (for policy loss)
+
+B, L = rewards.shape
+
+# 1) Monte Carlo returns per token (reset at terminals)
+# Apply discounting, if enabled
+returns = torch.zeros_like(rewards)
+running = torch.zeros(B, device=rewards.device, dtype=rewards.dtype)
+for t in reversed(range(L)):
+    running = rewards[:, t] + gamma * (1.0 - done_mask[:, t]) * running
+    returns[:, t] = running
+
+targets = returns  # y_t = G_t (post-KL)
+
+# 2) PPO-style value clipping (optional)
+v_pred = values
+v_old  = old_values
+v_clip = torch.clamp(v_pred, v_old - epsilon_v, v_old + epsilon_v)
+
+vf_unclipped = 0.5 * (v_pred - targets) ** 2
+vf_clipped   = 0.5 * (v_clip - targets) ** 2
+vf_loss_tok  = torch.max(vf_unclipped, vf_clipped)
+
+# 3) Mask to response tokens and aggregate
+denom = completion_mask.sum(dim=1).clamp_min(1)
+value_loss = ((vf_loss_tok * completion_mask).sum(dim=1) / denom).mean()
+
+# 4) Advantages for policy loss (no GAE): A_t = G_t - V(s_t)
+advantages = (targets - v_pred).detach()
+
+# The value loss is applied later, often with the PG loss, e.g.
+# total_loss = policy_loss + vf_coef * value_loss
+```
+
 
 #### Understanding the PPO Objective
 
@@ -609,8 +670,10 @@ Often in RLHF methods the method with the best numerical stability and or the le
 ### Asynchronicity
 
 The default implementation for policy-gradient algorithms is what is called **on-policy** execution, where the actions (generations) taken by the agent (language model) are scored before updating the model.
-For theoretical derivations of policy-gradient, many results rely on these results, where the model is always up to date with the results from the latest trials.
-In practice, separating training from roll-outs (i.e. inference for a generative model) substantially slows training [@noukhovitch2024asynchronous].
+The theoretical derivations of policy-gradient rely on all the actions to be exactly on-policy where the model is always up to date with the results from the latest trials/roll-outs.
+In practice, separating training from roll-outs (i.e. inference for a generative model) substantially slows training [@noukhovitch2024asynchronous] (or is technically impossible).
+Therefore, all of the recent empirical results with language models tend to be slightly outside of the theoretical proofs. 
+What happens in practice is designing the algorithms and systems for what actually works.
 
 ![A comparison of the generation-update phases for synchronous or asynchronous RL training follow Noukhovitch et al. 2024.](images/async_v_synch_rl.png){#fig:async}
 
@@ -818,6 +881,8 @@ A reference policy here indicates if it is required for the optimization itself,
 | **PPO** | On-policy | Yes | Yes | Yes | $-\frac{1}{T}\sum_{t=1}^{T}\min\!\big(\rho_t A_t,\ \mathrm{clip}(\rho_t,1-\varepsilon,1+\varepsilon) A_t\big);\ \rho_t = \frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\mathrm{old}}}(a_t\mid s_t)}$ |
 | **GRPO** | On-policy | Yes | No | Yes | $-\frac{1}{G}\sum_{i=1}^{G}\min\!\big(\rho_i A_i,\ \mathrm{clip}(\rho_i,1-\varepsilon,1+\varepsilon) A_i\big);\ \rho_i = \frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)},\ A_i = \frac{r_i-\mathrm{mean}(r_{1:G})}{\mathrm{std}(r_{1:G})}$ |
 | **DPO** | Off-policy | No | No | Yes | $-\mathbb{E}_{(x,y^{w},y^{l})}\!\left[\log \sigma\!\big(\beta[\Delta\log \pi_\theta(x)-\Delta\log \pi_{\mathrm{ref}}(x)]\big)\right]$ |
+Table: Comparing policy gradient algorithms (and friends). {#tbl:pg_compare}
+
 
 ### Generalized Advantage Estimation (GAE)
 
@@ -857,6 +922,33 @@ $$
 $$ {#eq:GAE_DFN}
 
 Intuitively, this can be used to average of multi-step estimates of Advantage in an elegant fashion.
+An example implementation is shown below:
+
+```
+# GAE (token-level) for LM RLHF
+#
+# B: Batch Size
+# L: Length
+# Inputs:
+#   rewards: (B, L) post-KL per-token rewards
+#   values:  (B, L) current V_theta(s_t)
+#   done_mask: (B, L) 1.0 at terminal token (EOS or penalized trunc), else 0.0
+#   gamma: float (often 1.0), lam: float in [0,1]
+B, L = rewards.shape
+advantages = torch.zeros_like(rewards)
+next_v = torch.zeros(B, device=rewards.device, dtype=rewards.dtype)
+gae = torch.zeros(B, device=rewards.device, dtype=rewards.dtype)
+
+for t in reversed(range(L)):
+    not_done = 1.0 - done_mask[:, t]
+    delta = rewards[:, t] + gamma * not_done * next_v - values[:, t]
+    gae = delta + gamma * lam * not_done * gae
+    advantages[:, t] = gae
+    next_v = values[:, t]
+
+targets = advantages + values      # y_t for value regression
+advantages = advantages.detach()   # for policy loss
+```
 
 *For further reading, see [@seita2017gae].*
 
