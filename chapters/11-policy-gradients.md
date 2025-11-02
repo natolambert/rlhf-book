@@ -10,7 +10,7 @@ next-url: "12-direct-alignment"
 
 
 The algorithms that popularized RLHF for language models were policy-gradient reinforcement learning algorithms. 
-These algorithms, such as PPO, GRPO, and REINFORCE, use recently generated samples to update their model rather than storing scores in a replay buffer.
+These algorithms, such as Proximal Policy Optimization (PPO), Group Relative Policy Optimization (GRPO), and REINFORCE, use recently generated samples to update their model rather than storing scores in a replay buffer.
 In this section we will cover the fundamentals of the policy gradient algorithms and how they are used in the modern RLHF framework.
 
 At a machine learning level, this section is the subject with the highest complexity in the RLHF process.
@@ -18,7 +18,7 @@ Though, as with most modern AI models, the largest determining factor on its suc
 
 The most popular algorithms used for RLHF have evolved over time.
 When RLHF came onto the scene with ChatGPT, it was largely known that they used a variant of PPO, and many initial efforts were built upon that.
-Over time, multiple research projects showed the promise of REINFORCE style algorithms [@ahmadian2024back] [@wang2024helpsteer2p], touted for its simplicity over PPO without a reward model (saves memory and therefore the number of GPUs required) and with simpler value estimation (no GAE).
+Over time, multiple research projects showed the promise of REINFORCE style algorithms [@ahmadian2024back] [@wang2024helpsteer2p], touted for its simplicity over PPO without a reward model (saves memory and therefore the number of GPUs required) and with simpler value estimation (no Generalized Advantage Estimation, GAE, which is a method to compute advantages used for variance reduction in policy gradient algorithms).
 More algorithms have emerged, including Group Relative Policy Optimization, which is particularly popular with reasoning tasks, but in general many of these algorithms can be tuned to fit a specific task.
 In this chapter, we cover the core policy gradient setup and the three algorithms mentioned above due to their central role in the establishment of a canonical RLHF literature.
 
@@ -125,7 +125,7 @@ Where $\Psi_t$ can be the following (where the rewards can also often be discoun
 3. $\sum_{t'=t}^{\infty} r_{t'} - b(s_t)$: baselined version of previous formula.
 4. $Q^{\pi}(s_t, a_t)$: state-action value function.
 5. $A^{\pi}(s_t, a_t)$: advantage function, which yields the lowest possible theoretical variance if it can be computed accurately.
-6. $r_t + V^{\pi}(s_{t+1}) - V^{\pi}(s_t)$: TD residual.
+6. $r_t + V^{\pi}(s_{t+1}) - V^{\pi}(s_t)$: Temporal Difference (TD) residual.
 
 The *baseline* is a value used to reduce variance of policy updates (more on this below).
 
@@ -145,6 +145,7 @@ A simple version, with respect to the overall return, is:
 $$\nabla_\theta J(\theta) = \mathbb{E}_\tau \left[ \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t|s_t) R_t \right]$$ {#eq:vanilla_policy_gradient}
 
 A common problem with vanilla policy gradient algorithms is the high variance in gradient updates, which can be mitigated in multiple ways.
+The high variance comes from the gradient updates being computed from estimating the return $G$ from an often small set of rollouts in the environment that tend to be susceptible to noise (e.g. the stochasistic nature of generating from language models with temperature $>0$), especially with sparse rewards.
 In order to alleviate this,  various techniques are used to normalize the value estimation, called *baselines*. 
 Baselines accomplish this in multiple ways, effectively normalizing by the value of the state relative to the downstream action (e.g. in the case of Advantage, which is the difference between the Q value and the value). 
 The simplest baselines are averages over the batch of rewards or a moving average.
@@ -197,16 +198,13 @@ $$ {#eq:REINFORCE_with_advantage}
 
 REINFORCE is a specific implementation of vanilla policy gradient that uses a Monte Carlo estimator of the gradient.
 
-REINFORCE can be run without a value network -- the value network is for the baseline in the policy gradient. 
-PPO on the other hand needs the value network to accurately compute the advantage function.
-
 #### REINFORCE Leave One Out (RLOO)
 
 The core implementation detail of REINFORCE Leave One Out versus standard REINFORCE is that it takes the average reward of the *other* samples in the batch to compute the baseline -- rather than averaging over all rewards in the batch [@huang2024putting], [@ahmadian2024back], [@kool2019buy].
 
 Crucially, this only works when generating multiple trajectories (completions) per state (prompt), which is common practice in multiple domains of finetuning language models with RL.
 
-Specifically, for the REINFORCE Leave-One-Out (RLOO) baseline, given $K$ sampled trajectories or actions $a_1, \dots, a_K$, to a given prompt $s$ we define the baseline explicitly as the following *per-prompt*:
+Specifically, for the REINFORCE Leave-One-Out (RLOO) baseline, given $K$ sampled trajectories (actions taken conditioned on a prompt) $a_1, \dots, a_K$, to a given prompt $s$ we define the baseline explicitly as the following *per-prompt*:
 
 $$
 b(s, a_k) = \frac{1}{K-1}\sum_{i=1, i\neq k}^{K} R(s, a_i),
@@ -225,6 +223,8 @@ A(s, a_k) = \frac{K}{K - 1}\left(R(s, a_k) - \frac{1}{K}\sum_{i=1}^{K} R(s, a_i)
 $$ {#eq:RLOO_advantage_alt}
 
 This is a simple, low-variance advantage update that is very similar to GRPO, which will be discussed later, where REINFORCE is used with a different location of KL penalty and without step-size clipping.
+To be specific, the canonical GRPO implementation applies the KL penalty at the loss level, where the derivation for RLOO or traditional policy-gradients apply the KL penalty to the reward itself.
+With the transition from RLHF to reasoning and RLVR, the prevelance of KL penalties has decreased overall, with many reasoning adaptations of RLHF code turning them off entirely.
 Still, the advantage from RLOO could be combined with the clipping of PPO, showing how similar many of these algorithms are.
 
 RLOO and other algorithms that do not use a value network assign the advantage (or reward) of the sequence to every token for the loss computation.
@@ -262,6 +262,13 @@ The policy ratio is a centerpiece of PPO and related algorithms.
 It emerges from computing the gradient of a policy and controls the parameter updates in a very intuitive way.
 For any batch of data, the policy ratio starts at 1 for the first gradient step for that batch (common practice is to take 1-4 gradient steps per batch with policy gradient algorithms).
 Then, the policy ratio will be above one if that gradient step increased the likelihood of certain tokens with an associated positive advantage, or less than one for the other case. 
+
+#### Value Functions and PPO
+
+REINFORCE can be run without a value network  -- the value network is for the baseline in the policy gradient. 
+PPO on the other hand needs the value network to accurately compute the advantage function.
+
+#### Understanding the PPO Objective
 
 Overall, the PPO objective can be visualized by two lines of a plot of objective versus policy ratio, which is shown in @fig:ppo-obj.
 The PPO objective is maximized by changing the probability of the sampled actions.
