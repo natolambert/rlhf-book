@@ -46,7 +46,9 @@ DOCX_ARGS = --standalone --reference-doc templates/docx.docx
 EPUB_ARGS = --template templates/epub.html --epub-cover-image $(EPUB_COVER_IMAGE)
 HTML_ARGS = --template templates/html.html --standalone --to html5 --listings
 PDF_ARGS = --template templates/pdf.tex --pdf-engine xelatex --listings
+LATEX_ARGS = --template templates/pdf.tex --pdf-engine pdflatex --listings
 NESTED_HTML_TEMPLATE = templates/chapter.html
+ARXIV_ZIP = $(BUILD)/arxiv.zip
 
 # Add this with your other file variables at the top
 JS_FILES = $(shell find templates -name '*.js')  # Restrict JS discovery to source templates
@@ -73,6 +75,7 @@ endif
 
 MKDIR_CMD = mkdir -p
 RMDIR_CMD = rm -r
+ARXIV_DIR = $(BUILD)/arxiv
 ECHO_BUILDING = @echo "building $@..."
 ECHO_BUILT = @echo "$@ was built\n"
 
@@ -164,37 +167,36 @@ $(BUILD)/latex/$(OUTPUT_FILENAME).tex: $(PDF_DEPENDENCIES)
 	# 1. Generate the LaTeX file with Pandoc (tell Pandoc where to find images)
 	$(CONTENT) \
 	  | $(CONTENT_FILTERS) \
-	  | $(PANDOC_COMMAND) $(ARGS) $(PDF_ARGS) --resource-path=. -o $@
+	  | $(PANDOC_COMMAND) $(ARGS) $(LATEX_ARGS) --resource-path=. -o $@
 
 	# 2. Flatten image paths — copy every referenced image into the build dir root
 	$(foreach img,$(IMAGES), cp $(img) $(BUILD)/latex/$(notdir $(img));)
 
-	# 3a. Strip directory prefixes in \includegraphics paths
-	sed -E -i '' 's|(\\includegraphics(\[[^]]*\])?\{)[^/}]+/|\1|g' $@
+	# 3a. Force pdfLaTeX mode for arXiv
+	python3 scripts/ensure_pdfoutput.py $@
 
-	# 3b. Restore missing \includegraphics inside \pandocbounded{}
+	# 3b. Strip directory prefixes in \includegraphics paths (portable)
+	perl -0pi -e 's|(\\includegraphics(?:\[[^]]*\])?\{)[^/}]+/|\1|g' $@
+
+	# 3c. Restore missing \includegraphics inside \pandocbounded{}
 	perl -CSD -pi -e 's/\\pandocbounded\{([^{}]+)\}\}/\\pandocbounded{\\includegraphics{$$1}}/g' $@
 
-	# 3c. Unicode → ASCII/TeX normalisation (one perl pass per rule for clarity)
-	perl -CSD -pi -e 's/\x{2060}//g;'                                        $@  # WORD JOINER
-	perl -CSD -pi -e 's/\x{03C4}/\\tau/g;'                                  $@  # τ
-	perl -CSD -pi -e 's/[\x{2018}\x{2019}]/\x27/g;'                       $@  # curly apostrophes
-	perl -CSD -pi -e 's/[\x{201C}\x{201D}]/\x22/g;'                       $@  # curly quotes
-	perl -CSD -pi -e 's/\x{2026}/.../g;'                                    $@  # ellipsis
-	perl -CSD -pi -e 's/\x{00A9}/\\textcopyright{}/g;'                    $@  # © symbol
+	# 3d. Unicode → ASCII/TeX normalisation (map accents and punctuation)
+	python3 scripts/normalize_tex_unicode.py $@
+
+	# 3e. Drop XeTeX/LuaTeX-only branch so arXiv's pdfLaTeX build doesn't demand Unicode engines
+	python3 scripts/strip_xetex_branch.py $@
 
 	# 4. Copy bibliography and CSL files required by arXiv
 	cp chapters/bib.bib    $(BUILD)/latex/
 	cp templates/ieee.csl  $(BUILD)/latex/
 
-	# 5. Warn (but don\'t fail) if any non‑ASCII bytes remain
-	@REM_BYTES=$$(grep -nP "[\x80-\xFF]" $@ || true); \
-	if [ -n "$$REM_BYTES" ]; then \
-	  echo "[WARN] Non‑ASCII bytes still present in $@:"; \
-	  echo "$$REM_BYTES" | head; \
-	else \
-	  echo "[INFO] All bytes ASCII‑safe after post‑processing."; \
-	fi
+	# 5. Warn (but don\'t fail) if any non-ASCII bytes remain
+	python3 scripts/report_non_ascii.py $@
+
+	# 6. Package arXiv-ready source bundle
+	rm -f $(ARXIV_ZIP)
+	(cd $(BUILD)/latex && zip -rq ../$(notdir $(ARXIV_ZIP)) .)
 
 	$(ECHO_BUILT)
 
