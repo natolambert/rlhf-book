@@ -135,7 +135,7 @@ The shape of the models used is very similar to a standard reward model, with a 
 learns to label a model completion as correct or incorrect, in addition to the original language modeling objective. 
 > Architecturally, this means our verifiers
 are language models, with a small scalar head that outputs predictions on a per-token basis. 
-> We implement this scalar head as a single bias parameter and single gain parameter that operate on the logits outputted by the language model’s final unembedding layer.
+> We implement this scalar head as a single bias parameter and single gain parameter that operate on the logits outputted by the language model's final unembedding layer.
 
 To translate, this is implemented as a language modeling head that can predict two classes per token (1 for correct, 0 for incorrect), rather than a classification head of a traditional RM that outputs one logit for the entire sequence.
 Formally, following [@lyu2025exploring] this can be shown as:
@@ -213,7 +213,7 @@ An example prompt, from one of the seminal works here for the chat evaluation MT
 [System]
 Please act as an impartial judge and evaluate the quality of the responses provided by two
 AI assistants to the user question displayed below. You should choose the assistant that
-follows the user’s instructions and answers the user’s question better. Your evaluation
+follows the user's instructions and answers the user's question better. Your evaluation
 should consider factors such as the helpfulness, relevance, accuracy, depth, creativity,
 and level of detail of their responses. Begin your evaluation by comparing the two
 responses and provide a short explanation. Avoid any position biases and ensure that the
@@ -224,12 +224,12 @@ final verdict by strictly following this format: "[[A]]" if assistant A is bette
 if assistant B is better, and "[[C]]" for a tie.
 [User Question]
 {question}
-[The Start of Assistant A’s Answer]
+[The Start of Assistant A's Answer]
 {answer_a}
-[The End of Assistant A’s Answer]
-[The Start of Assistant B’s Answer]
+[The End of Assistant A's Answer]
+[The Start of Assistant B's Answer]
 {answer_b}
-[The End of Assistant B’s Answer]
+[The End of Assistant B's Answer]
 ```
 
 Given the efficacy of LLM-as-a-judge for evaluation, spawning many other evaluations such as AlpacaEval [@dubois2024length], Arena-Hard [@li2024crowdsourced], and WildBench [@lin2024wildbench], many began using LLM-as-a-judge instead of reward models to create and use preference data.

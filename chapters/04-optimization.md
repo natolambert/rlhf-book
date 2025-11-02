@@ -112,8 +112,8 @@ With the rise of reasoning language models, such as OpenAI's o1, the best practi
 The clearest documentation of a reasoning model post-training recipe is DeepSeek R1 [@guo2025deepseek], which has been mirrored by Alibaba's larger Qwen 3 models (i.e. only the 32B and 225B MoE models) [@yang2025qwen3] or Xiaomi's MiMo 7B [@xia2025mimo].
 The DeepSeek recipe follows:
 
-1. **“Cold-start” of 100K+ on-policy reasoning samples**: This data is sampled from an earlier RL checkpoint, R1-Zero, and heavily filtered to instill a specific reasoning process on the model.
-2. **Large-scale reinforcement learning training**: This stage repeatedly covers reasoning problems with the model, running RLVR “until convergence” on a variety of benchmarks.
+1. **"Cold-start" of 100K+ on-policy reasoning samples**: This data is sampled from an earlier RL checkpoint, R1-Zero, and heavily filtered to instill a specific reasoning process on the model.
+2. **Large-scale reinforcement learning training**: This stage repeatedly covers reasoning problems with the model, running RLVR "until convergence" on a variety of benchmarks.
 3. **Rejection sampling** on 3/4 reasoning problems and 1/4 general queries to start the transition to a general-purpose model.
 4. **Mixed reinforcement learning training** on reasoning problems (verifiable rewards) with general preference tuning reward models to polish the model.
 

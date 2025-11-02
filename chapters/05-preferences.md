@@ -20,10 +20,10 @@ Example 1:
 > Though the bowl was small and round,
 > Endless wonders still abound.
 > 
-> “The world is vast,” she’d always say,
-> “I’ll find new joys in every day!”
+> "The world is vast," she'd always say,
+> "I'll find new joys in every day!"
 > With every ripple, every gleam,
-> She’d chase the sunlight, chase a dream.
+> She'd chase the sunlight, chase a dream.
 > 
 > No walls could dim her hopeful view,
 > For in her heart, the ocean grew.
@@ -41,7 +41,7 @@ Example 2:
 > 
 > "Today might bring fresh flakes,
 > Or perhaps a castle tall.
-> The water seems especially clear—
+> The water seems especially clear---
 > What adventure awaits beyond this wall?"
 > 
 > Round and round with gleaming scales,
@@ -89,7 +89,7 @@ Early philosophers discussed the existence of preferences, such as Aristotle's T
 
 > To judge what one must do to obtain a good or avoid an evil, it is necessary to consider not only the good and evil in itself, but also the probability that it happens or does not happen.
 
-Progression of these ideas continued through Bentham's *Hedonic Calculus* [@bentham1823hedonic] that proposed that all of life's considerations can be weighed, and Ramsey’s *Truth and Probability* [@ramsey2016truth] that applied a quantitative model to preferences.
+Progression of these ideas continued through Bentham's *Hedonic Calculus* [@bentham1823hedonic] that proposed that all of life's considerations can be weighed, and Ramsey's *Truth and Probability* [@ramsey2016truth] that applied a quantitative model to preferences.
 This direction, drawing on advancements in decision theory, culminated in the Von Neumann-Morgenstern (VNM) utility theorem which gives credence to designing utility functions that assign relative preference for an individual that are used to make decisions.
 
 This theorem is core to all assumptions that pieces of RLHF are learning to model and dictate preferences.

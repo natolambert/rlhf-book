@@ -17,9 +17,9 @@ In this analogy:
 
 - Self-supervised learning on vast swaths of internet data makes up the majority of the cake (especially when viewed in compute spent in FLOPs), 
 - The beginning of post-training in supervised finetuning (SFT) for instructions tunes the model to a narrower distribution (along with the help of chosen examples for RLHF), and 
-- Finally “pure” reinforcement learning (RL) is the cherry on top. 
+- Finally "pure" reinforcement learning (RL) is the cherry on top. 
 
-We learn just “a few bits” of information with RL in just a few training samples.
+We learn just "a few bits" of information with RL in just a few training samples.
 This little bit of reasoning training emerged with **reasoning models** that use a combination of the post-training techniques discussed in this book to align preferences along with RL training on verifiable domains to dramatically increase capabilities such as reasoning, coding, and mathematics problem solving.
 
 The training method for these models, Reinforcement Learning with Verifiable Rewards (RLVR) [@lambert2024t], proceeds very similarly to RLHF, but it makes the reward model optional in lieu of a scoring function that returns a positive reward when the answer is correct and 0 otherwise. 
@@ -42,13 +42,13 @@ DeepSeek V3 is very to the point:
 > 
 > In a bowl of glass so clear and round,
 > A tiny goldfish swims without a sound.
-> With scales that gleam like sunlight’s kiss,
+> With scales that gleam like sunlight's kiss,
 > He drifts along in watery bliss.
 > 
 > A flick of fin, a flash so bright,
 > Chasing bubbles in the light.
 > Does he dream of oceans wide?
-> Or is his little world enough—his pride?
+> Or is his little world enough---his pride?
 
 Meanwhile, DeepSeek R1's experience is different.
 It first generates numerous thinking tokens to craft a response before responding to the user.
@@ -65,21 +65,21 @@ The answer appears as:
 > Gilded Dreams in Liquid Glass
 > 
 > A gilded bowl, a crystal globe,
-> Where tiny tides in silence flow—
+> Where tiny tides in silence flow---
 > A flash of orange, a whispered robe,
 > You dart through sunlit indigo.
 > 
-> Your world is small, yet boundless too—
+> Your world is small, yet boundless too---
 > Each pebble, castle, weed unfurled.
 > The surface bends the sky to blue,
 > And ripples spin your liquid world.
 > 
-> You glide through myths we’ll never know,
+> You glide through myths we'll never know,
 > A silent monarch, veiled in mist.
 > Do dreams drift where the bubbles go?
 > Or memories in amethyst?
 > 
-> We watch you trace your endless sphere—
+> We watch you trace your endless sphere---
 > A universe within a tear.
 
 The tokens in the `<thinking>` tags is the model's reasoning.
@@ -103,12 +103,12 @@ Here we detail the high-level trends that led to the explosion of reasoning mode
 
 ### Why Does RL Work Now?
 
-Despite many, many takes that “RL doesn’t work yet” [@irpan2018deep] or paper's detailing deep reproducibility issues with RL [@henderson2018deep], the field overcame it to find high-impact applications.
+Despite many, many takes that "RL doesn't work yet" [@irpan2018deep] or paper's detailing deep reproducibility issues with RL [@henderson2018deep], the field overcame it to find high-impact applications.
 The takeoff of RL-focused training on language models indicates steps in many fundamental issues for the research area, including:
 
-* **Stability of RL can be solved**: For its entire existence, the limiting factor on RL’s adoption has been stability. This manifests in two ways. First, the learning itself can be fickle and not always work. Second, the training itself is known to be more brittle than standard language model training and more prone to loss spikes, crashes, etc. Countless releases are using this style of RL training and substantial academic uptake has occurred. The technical barriers to entry on RL are at an all time low.
+* **Stability of RL can be solved**: For its entire existence, the limiting factor on RL's adoption has been stability. This manifests in two ways. First, the learning itself can be fickle and not always work. Second, the training itself is known to be more brittle than standard language model training and more prone to loss spikes, crashes, etc. Countless releases are using this style of RL training and substantial academic uptake has occurred. The technical barriers to entry on RL are at an all time low.
 
-* **Open-source versions already “exist”**: Many tools already exist for training language models with RLVR and related techniques. 
+* **Open-source versions already "exist"**: Many tools already exist for training language models with RLVR and related techniques. 
 Examples include TRL [@vonwerra2022trl], Open Instruct [@lambert2024t], veRL [@sheng2024hybridflow], and OpenRLHF [@hu2024openrlhf], where many of these are building on optimizations from earlier in the arc of RLHF and post-training. The accessibility of tooling is enabling a large uptake of research that'll likely soon render this chapter out of date.
 
 Multiple resources point to RL training for reasoning only being viable on leading models coming out from about 2024 onwards, indicating that a certain level of underlying capability was needed in the models before reasoning training was possible.
@@ -142,7 +142,7 @@ While standard instruction tuning is done with 1 or 2 epochs of loss updates ove
 This can be viewed as reinforcing positive behaviors that would work sparingly in the base model version into robust behaviors after RFT.
 
 **The scope of RL training for language models continues to grow**: The biggest takeaway from o1 and R1 on a fundamental scientific level was that we have even more ways to train language models to potentially valuable behaviors. 
-The more open doors that are available to researchers and engineers, the more optimism we should have about AI’s general trajectory. 
+The more open doors that are available to researchers and engineers, the more optimism we should have about AI's general trajectory. 
 
 
 ## Understanding Reasoning Training Methods
@@ -172,20 +172,20 @@ A summary of the foundational reasoning research reports, some of which are acco
 
 | Date        | Name                        | TLDR                                                                  | Open weights | Open data |
 |-------------|----------------------------|-----------------------------------------------------------------------|--------------|-----------|
-| 2025‑01‑22  | DeepSeek R1 [@guo2025deepseek]             | RL-based upgrade to DeepSeek, big gains on math & code reasoning      |  Yes      | No   |
-| 2025‑01‑22  | Kimi 1.5 [@team2025kimi]                  | Scales PPO/GRPO on Chinese/English data; strong AIME maths            | No           | No        |
-| 2025‑03‑31  | Open-Reasoner-Zero [@hu2025openreasonerzero]   | Fully open replication of base model RL      |  Yes      |  Yes   |
-| 2025‑04‑10  | Seed-Thinking 1.5 [@seed2025seed]         | ByteDance RL pipeline with dynamic CoT gating                         | Yes (7B)     | No   |
-| 2025‑04‑30  | Phi-4 Reasoning [@abdin2025phi4]          | 14B model; careful SFT→RL; excels at STEM reasoning                   | Yes      | No        |
-| 2025‑05‑02  | Llama-Nemotron [@bercovich2025llamanemotron]   | Multi-size "reasoning-toggle" models                 |  Yes      |  Yes   |
-| 2025‑05‑12  | INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained] | First globally-decentralized RL training run (32B)                    |  Yes      |  Yes   |
-| 2025‑05‑12  | Xiaomi MiMo [@xia2025mimo]                | End-to-end reasoning pipeline from pre- to post-training              | Yes          | No       |
-| 2025‑05‑14  | Qwen 3 [@yang2025qwen3]                   | Similar to R1 recipe applied to new models                    |  Yes      | No   |
-| 2025‑05‑21  | Hunyuan-TurboS [@liu2025hunyuan]          | Mamba-Transformer MoE, adaptive long/short CoT                        | No           | No        |
-| 2025‑05‑28  | Skywork OR-1 [@he2025skyworkor1]          | RL recipe avoiding entropy collapse; beats DeepSeek on AIME           |  Yes      |  Yes   |
-| 2025‑06‑04  | Xiaomi MiMo VL [@coreteam2025mimovltechnicalreport]                | Adapting reasoning pipeline end-to-end to include multi-modal tasks              | Yes          | No       |
-| 2025‑06‑04  | OpenThoughts [@guha2025openthoughts]      | Public 1.2M-example instruction dataset distilled from QwQ-32B                    |  Yes      |  Yes   |
-| 2025‑06‑10  | Magistral [@mistral2025magistral]         | Pure RL on Mistral 3; multilingual CoT; small model open-sourced      |  Yes (24B)| No        |
+| 2025-01-22  | DeepSeek R1 [@guo2025deepseek]             | RL-based upgrade to DeepSeek, big gains on math & code reasoning      |  Yes      | No   |
+| 2025-01-22  | Kimi 1.5 [@team2025kimi]                  | Scales PPO/GRPO on Chinese/English data; strong AIME maths            | No           | No        |
+| 2025-03-31  | Open-Reasoner-Zero [@hu2025openreasonerzero]   | Fully open replication of base model RL      |  Yes      |  Yes   |
+| 2025-04-10  | Seed-Thinking 1.5 [@seed2025seed]         | ByteDance RL pipeline with dynamic CoT gating                         | Yes (7B)     | No   |
+| 2025-04-30  | Phi-4 Reasoning [@abdin2025phi4]          | 14B model; careful SFT→RL; excels at STEM reasoning                   | Yes      | No        |
+| 2025-05-02  | Llama-Nemotron [@bercovich2025llamanemotron]   | Multi-size "reasoning-toggle" models                 |  Yes      |  Yes   |
+| 2025-05-12  | INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained] | First globally-decentralized RL training run (32B)                    |  Yes      |  Yes   |
+| 2025-05-12  | Xiaomi MiMo [@xia2025mimo]                | End-to-end reasoning pipeline from pre- to post-training              | Yes          | No       |
+| 2025-05-14  | Qwen 3 [@yang2025qwen3]                   | Similar to R1 recipe applied to new models                    |  Yes      | No   |
+| 2025-05-21  | Hunyuan-TurboS [@liu2025hunyuan]          | Mamba-Transformer MoE, adaptive long/short CoT                        | No           | No        |
+| 2025-05-28  | Skywork OR-1 [@he2025skyworkor1]          | RL recipe avoiding entropy collapse; beats DeepSeek on AIME           |  Yes      |  Yes   |
+| 2025-06-04  | Xiaomi MiMo VL [@coreteam2025mimovltechnicalreport]                | Adapting reasoning pipeline end-to-end to include multi-modal tasks              | Yes          | No       |
+| 2025-06-04  | OpenThoughts [@guha2025openthoughts]      | Public 1.2M-example instruction dataset distilled from QwQ-32B                    |  Yes      |  Yes   |
+| 2025-06-10  | Magistral [@mistral2025magistral]         | Pure RL on Mistral 3; multilingual CoT; small model open-sourced      |  Yes (24B)| No        |
 
 
 ### Common Practices in Training Reasoning Models

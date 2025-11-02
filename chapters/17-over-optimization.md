@@ -32,7 +32,7 @@ The first half of this chapter is discussing narratives at the core of RLHF -- h
 ### Managing Proxy Objectives
 
 RLHF is built around the fact that we do not have a universally good reward function for chatbots. 
-RLHF has been driven into the forefront because of its impressive performance at making chatbots a bit better to use, which is entirely governed by a proxy objective — thinking that the rewards measured from human labelers in a controlled setting mirror those desires of downstream users. 
+RLHF has been driven into the forefront because of its impressive performance at making chatbots a bit better to use, which is entirely governed by a proxy objective --- thinking that the rewards measured from human labelers in a controlled setting mirror those desires of downstream users. 
 Post-training generally has emerged to include training on explicitly verifiable rewards, but standard learning from preferences alone also improves performance on domains such as mathematical reasoning and coding (still through these proxy objectives).
 
 The proxy reward in RLHF is the score returned by a trained reward model to the RL algorithm itself because it is known to only be at best correlated with chatbot performance [@schulman2023proxy].

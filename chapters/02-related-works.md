@@ -49,7 +49,7 @@ Anthropic continued to use it extensively for early versions of Claude [@bai2022
 
 The announcement of ChatGPT was very clear about the role of RLHF in its training [@openai2022chatgpt]:
 
-> We trained this model using Reinforcement Learning from Human Feedback (RLHF), using the same methods as InstructGPT⁠, but with slight differences in the data collection setup.
+> We trained this model using Reinforcement Learning from Human Feedback (RLHF), using the same methods as InstructGPT, but with slight differences in the data collection setup.
 
 Since then, RLHF has been used extensively in leading language models. 
 It is well known to be used in Anthropic's Constitutional AI for Claude [@bai2022constitutional], Meta's Llama 2 [@touvron2023llama] and Llama 3 [@dubey2024llama], Nvidia's Nemotron [@adler2024nemotron], Ai2's Tülu 3 [@lambert2024t], and more.
