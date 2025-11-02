@@ -119,7 +119,7 @@ For example, prompting GPT-4.5-Preview with both of these gives the following.
 > **Prompt**: Write me a short poem about a goldfish. Start each sentence with the letter g.
 >
 > **Response**: Golden swimmer, circling slow,
-> Gleaming scales in water’s glow.
+> Gleaming scales in water's glow.
 > Gentle fins dance softly by,
 > Gazing out with quiet eye.
 > Glass-bound world, a simple sphere,
@@ -133,7 +133,7 @@ And without the constraint (which, it turns out, is also a lower quality output)
 >
 > **Response**: In circles bright, the goldfish glides,
 > A spark of sun that gently rides
-> Through waters clear, in endless spins—
+> Through waters clear, in endless spins---
 > A golden whisper, scales like fins.
 > 
 > Its world confined, yet vast within,
@@ -162,12 +162,12 @@ Much like acquiring access to cutting-edge Nvidia GPUs, getting access to data p
 If you have credibility in the AI ecosystem, the best data companies will want you on their books for public image and long-term growth options. 
 Discounts are often also given on the first batches of data to get training teams hooked.
 
-If you’re a new entrant in the space, you may have a hard time getting the data you need quickly. 
+If you're a new entrant in the space, you may have a hard time getting the data you need quickly. 
 Getting the tail of interested buying parties that Scale AI had to turn away is an option for the new data startups. 
-It’s likely their primary playbook to bootstrap revenue.
+It's likely their primary playbook to bootstrap revenue.
 
-On multiple occasions, I’ve heard of data companies not delivering their data contracted to them without threatening legal or financial action. 
-Others have listed companies I work with as customers for PR even though we never worked with them, saying they “didn’t know how that happened” when reaching out. 
+On multiple occasions, I've heard of data companies not delivering their data contracted to them without threatening legal or financial action. 
+Others have listed companies I work with as customers for PR even though we never worked with them, saying they "didn't know how that happened" when reaching out. 
 There are plenty of potential bureaucratic or administrative snags through the process. 
 For example, the default terms on the contracts often prohibit the open sourcing of artifacts after acquisition in some fine print.
 
@@ -177,7 +177,7 @@ A popular example of data instructions is the one that [OpenAI released for Inst
 
 Depending on the domains of interest in the data, timelines for when the data can be labeled or curated vary. 
 High-demand areas like mathematical reasoning or coding must be locked into a schedule weeks out. 
-Simple delays of data collection don’t always work — Scale AI et al. are managing their workforces like AI research labs manage the compute-intensive jobs on their clusters.
+Simple delays of data collection don't always work --- Scale AI et al. are managing their workforces like AI research labs manage the compute-intensive jobs on their clusters.
 
 Once everything is agreed upon, the actual collection process is a high-stakes time for post-training teams. 
 All the infrastructure, evaluation tools, and plans for how to use the data and make downstream decisions must be in place.
@@ -189,13 +189,13 @@ The first weeks were for further calibration and the later weeks were when we ho
 ![Overview of the multi-batch cycle for obtaining human preference data from a vendor.](images/pref-data-timeline.png){#fig:preferences .center}
 
 The goal is that by week 4 or 5 we can see the data improving our model. 
-This is something some frontier models have mentioned, such as the 14 stages in the Llama 2 data collection [@touvron2023llama], but it doesn’t always go well. 
-At HuggingFace, trying to do this for the first time with human preferences, we didn’t have the RLHF preparedness to get meaningful bumps on our evaluations. The last weeks came and we were forced to continue to collect preference data generating from endpoints we weren’t confident in.
+This is something some frontier models have mentioned, such as the 14 stages in the Llama 2 data collection [@touvron2023llama], but it doesn't always go well. 
+At HuggingFace, trying to do this for the first time with human preferences, we didn't have the RLHF preparedness to get meaningful bumps on our evaluations. The last weeks came and we were forced to continue to collect preference data generating from endpoints we weren't confident in.
 
 After the data is all in, there is plenty of time for learning and improving the model. 
 Data acquisition through these vendors works best when viewed as an ongoing process of achieving a set goal. 
 It requires iterative experimentation, high effort, and focus. 
-It’s likely that millions of the dollars spent on these datasets are “wasted” and not used in the final models, but that is just the cost of doing business. 
+It's likely that millions of the dollars spent on these datasets are "wasted" and not used in the final models, but that is just the cost of doing business. 
 Not many organizations have the bandwidth and expertise to make full use of human data of this style.
 
 This experience, especially relative to the simplicity of synthetic data, makes me wonder how well these companies will be doing in the next decade.

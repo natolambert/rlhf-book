@@ -95,7 +95,7 @@ Choices:
 (A) The Mean Value Theorem
 (B) The Intermediate Value Theorem
 (C) The Extreme Value Theorem
-(D) Rolle’s Theorem
+(D) Rolle's Theorem
 
 Correct Answer:
 ```
@@ -152,14 +152,14 @@ For example, for every question or category there are specially designed prompts
 Tülu 3 details some prompts used for CoT answering on multiple choice questions [@lambert2024t]:
 
 ```
-Answer the following multiple-choice question by giving the correct answer letter in parentheses. Provide CONCISE reasoning for the answer, and make sure to finish the response with “Therefore, the answer is (ANSWER_LETTER)” where (ANSWER_LETTER) is one of (A), (B), (C), (D), (E), etc.
+Answer the following multiple-choice question by giving the correct answer letter in parentheses. Provide CONCISE reasoning for the answer, and make sure to finish the response with "Therefore, the answer is (ANSWER_LETTER)" where (ANSWER_LETTER) is one of (A), (B), (C), (D), (E), etc.
 
 Question: {question}
 (A) {choice_A}
 (B) {choice_B}
-(C) …
+(C) ...
 
-Answer the above question and REMEMBER to finish your response with the exact phrase “Therefore, the answer is (ANSWER_LETTER)” where (ANSWER_LETTER) is one of (A), (B), (C), (D), (E), etc.
+Answer the above question and REMEMBER to finish your response with the exact phrase "Therefore, the answer is (ANSWER_LETTER)" where (ANSWER_LETTER) is one of (A), (B), (C), (D), (E), etc.
 ```
 
 This, especially when the models use special formatting to separate thinking tokens from answer tokens, necessitated the most recent major update to evaluation regimes.
@@ -174,13 +174,13 @@ Internal evaluations are made to hillclimb on for training, as would be called a
 The public evaluations that the community uses to compare leading models cannot be known if they were within said training set or as unseen "test sets" or "validation sets."
 
 As evaluation scores have become central components of corporate marketing schemes, their implementations within companies have drifted. 
-There are rumors of major AI labs using “custom prompts” for important evaluations like GSM8k or MATH. 
+There are rumors of major AI labs using "custom prompts" for important evaluations like GSM8k or MATH. 
 These practices evolve rapidly.
 
 Language model evaluation stacks are perceived as marketing because the evaluations have no hard source of truth. 
 What is happening inside frontier labs is that evaluation suites are being tuned to suit their internal needs. 
 When results are shared, we get output in the form of the numbers a lab got for their models, but not all the inputs to that function. 
-The inputs are very sensitive configurations, and they’re different at all of OpenAI, Meta, Anthropic, and Google. 
+The inputs are very sensitive configurations, and they're different at all of OpenAI, Meta, Anthropic, and Google. 
 Even fully open evaluation standards are hard to guarantee reproducibility on. 
 Focusing efforts on your own models is the only way to get close to repeatable evaluation techniques. 
 There are good intentions underpinning the marketing, starting with the technical teams.
@@ -207,25 +207,25 @@ GPQA was one of choice during reasoning models' emergence.
 Labs will change the evaluations to make them better suited to their needs, such as OpenAI releasing SWE-Bench-Verified [@openai2024swebench]. 
 There are many more internally the public does not have access to.
 
-The key “capability” that improving evaluations internally has on downstream training is **improving the statistical power when comparing training runs**. 
+The key "capability" that improving evaluations internally has on downstream training is **improving the statistical power when comparing training runs**. 
 By changing evaluations, these labs reduce the noise on their prioritized signals in order to make more informed training decisions.
 
 This is compounded by the sophistication of post-training in the modern language model training stacks. 
 Evaluating language models today involves a moderate amount of generating tokens (rather than just looking at log probabilities of answers). 
-It is accepted that small tricks are used by frontier labs to boost performance on many tasks — the most common explanation is one-off prompts for certain evaluations. 
+It is accepted that small tricks are used by frontier labs to boost performance on many tasks --- the most common explanation is one-off prompts for certain evaluations. 
 
 Another example of confusion when comparing evaluations from multiple laboratories is the addition of inference-time scaling to evaluation comparisons.
 Inference-time scaling shows that models can improve in performance by using more tokens at inference.
 Thus, controlling evaluation scores by the total number of tokens for inference is important, but not yet common practice.
 
 Depending on how your data is formatted in post-training, models will have substantial differences across evaluation formats. 
-For example, two popular, open math datasets NuminaMath [@li2024numinamath] and MetaMath [@yu2023metamath] conflict with each other in training due to small differences in how the answers are formatted -- Numina puts the answer in `\boxed{XYZ}` and MetaMath puts the answer after `The answer is: XYZ` -— training on both can make performance worse than with just one. 
+For example, two popular, open math datasets NuminaMath [@li2024numinamath] and MetaMath [@yu2023metamath] conflict with each other in training due to small differences in how the answers are formatted -- Numina puts the answer in `\boxed{XYZ}` and MetaMath puts the answer after `The answer is: XYZ` ---- training on both can make performance worse than with just one. 
 Strong models are trained to be able to function with multiple formats, but they generally have a strongest format.
 
 In the end we are left with a few key points on the state of evaluating closed models:
 
 * We do not know or necessarily have the key test sets that labs are climbing on, so some evaluations are proxies.
-* Inference of frontier models is becoming more complicated with special system prompts, special tokens, etc., and we don’t know how it impacts evaluations, and
+* Inference of frontier models is becoming more complicated with special system prompts, special tokens, etc., and we don't know how it impacts evaluations, and
 * We do not know all the formats and details used to numerically report the closed evaluations.
 
 ## Contamination
@@ -247,4 +247,4 @@ High variance on these perturbation benchmarks is not confirmation of contaminat
 ## Tooling
 
 There are many open-sourced evaluation tools for people to choose from. 
-There’s Inspect AI from the UK Safety Institute [@inspectAI2024], HuggingFace’s LightEval [@fourrier2023lighteval] that powered the Open LLM Leaderboard [@open-llm-leaderboard-v2], Eleuther AI’s evaluation harness [@gao2023evalharness] built on top of the infrastructure from their GPT-Neo-X model (around GPT-3 evaluation config) [@gpt-neox-20b], AI2’s library based on OLMES [@gu2024olmes], Stanford’s Center for Research on Foundation Model’s HELM [@liang2023helm], Mosaic’s (now Databricks’) Eval Gauntlet [@mosaicml2024gauntlet], and more.
+There's Inspect AI from the UK Safety Institute [@inspectAI2024], HuggingFace's LightEval [@fourrier2023lighteval] that powered the Open LLM Leaderboard [@open-llm-leaderboard-v2], Eleuther AI's evaluation harness [@gao2023evalharness] built on top of the infrastructure from their GPT-Neo-X model (around GPT-3 evaluation config) [@gpt-neox-20b], AI2's library based on OLMES [@gu2024olmes], Stanford's Center for Research on Foundation Model's HELM [@liang2023helm], Mosaic's (now Databricks') Eval Gauntlet [@mosaicml2024gauntlet], and more.

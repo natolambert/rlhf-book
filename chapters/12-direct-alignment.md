@@ -205,7 +205,7 @@ Some variants to DPO attempt to either improve the learning signal by making sma
 One of the core issues *apparent* in DPO is that the optimization drives only to increase the margin between the probability of the chosen and rejected responses.
 Numerically, the model reduces the probability of both the chosen and rejected responses, but the *rejected response is reduced by a greater extent* as shown in @fig:dpo_issue.
 Intuitively, it is not clear how this generalizes, but work has posited that it increases the probability of unaddressed for behaviors [@razin2024unintentional] [@ren2024learning]. 
-Simple methods—such as Cal-DPO [@xiao2024cal], which adjusts the optimization process, and AlphaPO [@gupta2025alphapo], which modifies the reward shape—mitigate this **preference displacement**.
+Simple methods---such as Cal-DPO [@xiao2024cal], which adjusts the optimization process, and AlphaPO [@gupta2025alphapo], which modifies the reward shape---mitigate this **preference displacement**.
 In practice, the exact impact of this is not well known, but points are a potential reason why online methods can outperform vanilla DPO.
 
 The largest other reason that is posited for DPO-like methods to have a lower ceiling on performance than online (RL based) RLHF methods is that the training signal comes from completions from previous or other models.

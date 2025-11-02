@@ -229,9 +229,9 @@ Still, the advantage from RLOO could be combined with the clipping of PPO, showi
 
 RLOO and other algorithms that do not use a value network assign the advantage (or reward) of the sequence to every token for the loss computation.
 Algorithms that use a learned value network, such as PPO, assign a different value to every token individually, discounting from the final reward achieved at the EOS token.
-With a KL distance penalty, RLOO aggregates the per‑token KL over the completion and folds that scalar into the sequence reward, so the resulting advantage is broadcast to all tokens. 
-PPO subtracts a per‑token KL from the per‑token reward before computing $A_t$, giving token‑level credit assignment. 
-GRPO typically retains a sequence‑level advantage but adds a separate per‑token term to the loss, rather than subtracting it from the reward.
+With a KL distance penalty, RLOO aggregates the per-token KL over the completion and folds that scalar into the sequence reward, so the resulting advantage is broadcast to all tokens. 
+PPO subtracts a per-token KL from the per-token reward before computing $A_t$, giving token-level credit assignment. 
+GRPO typically retains a sequence-level advantage but adds a separate per-token term to the loss, rather than subtracting it from the reward.
 These details and trade-offs are discussed later in the chapter.
 
 <!-- A nice formulation of LM RL loss functions is found here https://arxiv.org/pdf/2502.01600 -->
