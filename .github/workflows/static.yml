@@ -38,7 +38,8 @@ jobs:
           brew install --cask basictex
           eval "$(/usr/libexec/path_helper)"
           sudo tlmgr update --self
-          sudo tlmgr install xetex
+          # Install pdflatex packages (comes with basictex, but ensure dependencies)
+          sudo tlmgr install collection-fontsrecommended collection-latexextra
 
       - name: Set up LaTeX PATH
         run: |
