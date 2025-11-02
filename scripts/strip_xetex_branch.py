@@ -19,8 +19,13 @@ def strip_unicode_branch(tex_path: Path) -> None:
 
     # Handle the new Pandoc format: \ifnum 0 % if luatex or xetex
     # This block extends from "\ifnum 0" to just before "% Use upquote"
+    # We need to preserve the pdflatex encoding setup
     pattern = r'\\ifnum 0\s*%.*?if luatex or xetex.*?(?=\n% Use upquote)'
-    replacement = r'% XeTeX/LuaTeX setup removed for arXiv export'
+    replacement = r'''% XeTeX/LuaTeX setup removed for arXiv export
+% pdfLaTeX encoding setup
+\\usepackage[T1]{fontenc}
+\\usepackage[utf8]{inputenc}
+\\usepackage{textcomp} % provide euro and other symbols'''
     text = re.sub(pattern, replacement, text, flags=re.DOTALL)
 
     # Also collapse any explicit \ifxetex ... \else ... \fi branches
