@@ -35,7 +35,7 @@ There are multiple core changes from the standard RL setup to that of RLHF:
 Given the single-turn nature of the problem, the optimization can be re-written without the time horizon and discount factor (and the reward models):
 $$J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t) \right].$$ {#eq:rl_opt_int}
 
-In many ways, the result is that while RLHF is heavily inspired by RL optimizers and problem formulations, the action implementation is very distinct from traditional RL.
+In many ways, the result is that while RLHF is heavily inspired by RL optimizers and problem formulations, the actual implementation is very distinct from traditional RL.
 
 ![Standard RLHF loop](images/rlhf.png){#fig:rlhf}
 
