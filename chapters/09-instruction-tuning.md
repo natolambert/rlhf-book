@@ -59,7 +59,7 @@ The `system` tag is only used for the first message of the conversation which ho
 These **system prompts** are used to provide additional context to the models, such as the date and time, or to patch behaviors.
 As a fun example, models can be told things such as "You are a friendly chatbot who always responds in the style of a pirate."
 
-Next, the two other roles are logical, as **user** is the messages from the one using the AI, and **assistant** holds the responses from the user.
+Next, the two other roles are logical, as **user** is the messages from the one using the AI, and **assistant** holds the responses from the AI.
 
 In order to translate all this information into tokens, we use the code listing above that we started with.
 The model has a series of *special tokens* that separate the various messages from each other.
