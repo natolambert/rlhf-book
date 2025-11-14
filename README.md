@@ -8,6 +8,8 @@ This is a work-in-progress textbook covering the fundamentals of Reinforcement L
 The code is licensed with the MIT license, but the content for the book found in `chapters/` is licensed under the [Creative Commons Non-Commercial ShareAlike Attribution License](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.en), CC-BY-NC-SA-4.0.
 This is meant for people with a basic ML and/or software background.
 
+👉 **[Pre-order the RLHF Book now!](https://hubs.la/Q03Tc3cf0)**
+
 ### Citation
 To cite this book, please use the following format.
 ```
