@@ -217,6 +217,7 @@ files:
 	mkdir -p $(BUILD)/html/c/
 	cp favicon.ico $(BUILD)/html/ || echo "Failed to copy to $(BUILD)/html/"
 	cp favicon.ico $(BUILD)/html/c/ || echo "Failed to copy to $(BUILD)/html/c/"
+	cp -R preorder $(BUILD)/html/ || echo "Failed to copy preorder static pages"
 	cp $(BUILD)/pdf/book.pdf $(BUILD)/html/ || echo "Failed to copy to $(BUILD)/html/"
 	cp $(BUILD)/epub/book.epub $(BUILD)/html/ || echo "Failed to copy EPUB to $(BUILD)/html/"
 	cp -r images $(BUILD)/html/c/ || echo "Failed to copy to $(BUILD)/html/chapters/"
