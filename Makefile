@@ -213,13 +213,13 @@ $(BUILD)/pdf/$(OUTPUT_FILENAME).pdf:	$(PDF_DEPENDENCIES)
 # also copy from build/pdf/book.pdf into build/html/
 # then copy images dir to build/html/chapters/
 files:
-        test -f favicon.ico || (echo "favicon.ico not found" && exit 1)
-        mkdir -p $(BUILD)/html/c/
-        cp favicon.ico $(BUILD)/html/ || echo "Failed to copy to $(BUILD)/html/"
-        cp favicon.ico $(BUILD)/html/c/ || echo "Failed to copy to $(BUILD)/html/c/"
-        cp -R preorder $(BUILD)/html/ || echo "Failed to copy preorder static pages"
-        cp $(BUILD)/pdf/book.pdf $(BUILD)/html/ || echo "Failed to copy to $(BUILD)/html/"
-        cp $(BUILD)/epub/book.epub $(BUILD)/html/ || echo "Failed to copy EPUB to $(BUILD)/html/"
+	test -f favicon.ico || (echo "favicon.ico not found" && exit 1)
+	mkdir -p $(BUILD)/html/c/
+	cp favicon.ico $(BUILD)/html/ || echo "Failed to copy to $(BUILD)/html/"
+	cp favicon.ico $(BUILD)/html/c/ || echo "Failed to copy to $(BUILD)/html/c/"
+	cp -R preorder $(BUILD)/html/ || echo "Failed to copy preorder static pages"
+	cp $(BUILD)/pdf/book.pdf $(BUILD)/html/ || echo "Failed to copy to $(BUILD)/html/"
+	cp $(BUILD)/epub/book.epub $(BUILD)/html/ || echo "Failed to copy EPUB to $(BUILD)/html/"
 	cp -r images $(BUILD)/html/c/ || echo "Failed to copy to $(BUILD)/html/chapters/"
 	cp ./templates/nav.js $(BUILD)/html/ || echo "Failed to copy nav.js to $(BUILD)/html/"
 	cp ./templates/nav.js $(BUILD)/html/c/ || echo "Failed to copy nav.js to $(BUILD)/html/c/"
