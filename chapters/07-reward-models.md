@@ -65,7 +65,7 @@ Other implementation options exist, such as just taking a linear layer directly 
 
 Implementing the reward modeling loss is quite simple.
 More of the implementation challenge is on setting up a separate data loader and inference pipeline.
-Given the correct dataloader, the loss is implemented as:
+Given the correct dataloader with tokenized, chosen and rejected prompts with completions, the loss is implemented as:
 ```python
 import torch.nn as nn
 # inputs_chosen / inputs_rejected include the prompt tokens x and the respective
@@ -76,6 +76,65 @@ rewards_rejected = model(**inputs_rejected)
 loss = -nn.functional.logsigmoid(rewards_chosen - rewards_rejected).mean()
 ```
 
+As for the bigger picture, this is often within a causal language model that has an additional head added (and learned with the above loss) that transitions from the final hidden state to the score of the inputs.
+This model will have a structure as follows:
+
+```python
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+class BradleyTerryRewardModel(nn.Module):
+    """
+    Standard scalar reward model for Bradley–Terry preference learning.
+
+    Usage (pairwise BT loss):
+        rewards_chosen = model(**inputs_chosen)    # (batch,)
+        rewards_rejected = model(**inputs_rejected)  # (batch,)
+        loss = -F.logsigmoid(rewards_chosen - rewards_rejected).mean()
+    """
+    def __init__(self, base_lm):
+        super().__init__()
+        self.lm = base_lm  # e.g., AutoModelForCausalLM
+        self.head = nn.Linear(self.lm.config.hidden_size, 1)
+
+    def _sequence_rep(self, hidden, attention_mask):
+        """
+        Get a single vector per sequence to score.
+        Default: last non-padding token (EOS token); if no mask, last token.
+        hidden: (batch, seq_len, hidden_size)
+        attention_mask: (batch, seq_len)
+        """
+
+        # Index of last non-pad token in each sequence
+        # attention_mask is 1 for real tokens, 0 for padding
+        lengths = attention_mask.sum(dim=1) - 1  # (batch,)
+        batch_idx = torch.arange(hidden.size(0), device=hidden.device)
+        return hidden[batch_idx, lengths]  # (batch, hidden_size)
+
+    def forward(self, input_ids, attention_mask):
+        """
+        A forward pass designed to show inference structure of a standard reward model.
+        To train one, this function will need to be modified to compute rewards from both
+         chosen and rejected inputs, applying the loss above.
+        """
+        outputs = self.lm(
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            output_hidden_states=True,
+            return_dict=True,
+        )
+        # Final hidden states: (batch, seq_len, hidden_size)
+        hidden = outputs.hidden_states[-1]
+
+        # One scalar reward per sequence: (batch,)
+        seq_repr = self._sequence_rep(hidden, attention_mask)
+        rewards = self.head(seq_repr).squeeze(-1)
+
+        return rewards
+```
+
+In this section and what follows, most of the implementation complexity for reward models (and much of post-training) is around constructing the data-loaders correctly and distributed learning systems.
 Note, when training reward models, the most common practice is to train for only 1 epoch to avoid overfitting.
 
 ## Variants
@@ -121,7 +180,10 @@ $$P(\sigma^i|s^i,a_0^i,a_1^i,\ldots,a_{K-1}^i) = \prod_{k=0}^{K-1} \frac{\exp(r_
 When $K = 2$, this reduces to the Bradley-Terry (BT) model for pairwise comparisons.
 Regardless, once trained, these models are used similarly to other reward models during RLHF training.
 
+
 ## Outcome Reward Models
+
+<!-- Huge thanks to Hangliang Ren, graduate student at Northeastern University for helping with this section (and PRMs), see https://github.com/myhott163com/RLHF_ORM_PRM -->
 
 The majority of *preference tuning* for language models and other AI systems is done with the Bradley Terry models discussed above.
 For reasoning heavy tasks, one can use an Outcome Reward Model (ORM).
@@ -143,6 +205,62 @@ Formally, following [@lyu2025exploring] this can be shown as:
 $$\mathcal{L}_{\text{CE}}(\theta) = -\mathbb{E}_{(s,r)\sim \mathcal{D}}[r\log p_\theta(s) + (1-r)\log(1-p_\theta(s))]$$ {#eq:orm_loss}
 
 where $r \in {0,1}$ is a binary label where 1 applies to a correct answer to a given prompt and 0 applies to an incorrect, and $p_\theta(s)$ is the scalar proportional to predicted probability of correctness from the model being trained.
+
+Implementing an outcome reward model (and other types, as we'll see with the Process Reward Model) involves applying the cross-entropy loss per-token based on if the completion is a correct sample. 
+This is far closer to the language modeling loss, where it does not need the structured chosen-rejected nature of standard Bradley-Terry reward models.
+
+The model structute could follw as:
+
+```python
+import torch.nn as nn
+import torch.nn.functional as F
+
+class OutcomeRewardModel(nn.Module):
+    def __init__(self, base_lm):
+        super().__init__()
+        self.lm = base_lm  # e.g., AutoModelForCausalLM
+        self.head = nn.Linear(self.lm.config.hidden_size, 1)
+
+    def forward(self, input_ids, attention_mask=None, labels=None):
+        """
+        The input data here will be tokenized prompts and completions along with labels
+         per prompt for correctness.
+        """
+        outputs = self.lm(
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            output_hidden_states=True,
+            return_dict=True,
+        )
+        # Final hidden states: (batch, seq_len, hidden_size)
+        hidden = outputs.hidden_states[-1]
+        # One scalar logit per token: (batch, seq_len)
+        logits = self.head(hidden).squeeze(-1)
+
+        # Only compute loss on completion tokens (labels 0 or 1)
+        # Prompt tokens have labels = -100
+        mask = labels != -100
+        if mask.any():
+            loss = F.binary_cross_entropy_with_logits(
+                logits[mask], labels[mask].float()
+            )
+        return loss, logits
+```
+
+A simplified version of the loss follows:
+
+```python
+# Assume model already has: model.lm (backbone) + model.head
+hidden = model.lm(**inputs, output_hidden_states=True).hidden_states[-1]
+logits_per_token = model.head(hidden).squeeze(-1)  # (batch, seq_len)
+# This will sometimes be compressed as model.forward() in other implementations
+
+# Binary labels: 1=correct, 0=incorrect (prompt tokens masked as -100)
+mask = labels != -100
+loss = F.binary_cross_entropy_with_logits(
+    logits_per_token[mask], labels[mask].float()
+)
+```
 
 The important intuition here is that an ORM will output a probability of correctness at every token in the sequence.
 This can be a noisy process, as the updates and loss propagates per token depending on outcomes and attention mappings.
@@ -170,6 +288,7 @@ $$\mathcal{L}_{\text{PRM}}(\theta) = - \mathbb{E}_{(x, s) \sim \mathcal{D}} \lef
 where $s$ is a sampled chain-of-thought with $K$ annotated steps, $y_{s_i} \in \{0,1\}$ denotes whether the $i$-th step is correct, and $r_\theta(s_i \mid x)$ is the PRM's predicted probability that step $s_i$ is valid conditioned on the original prompt $x$.
 
 Here's an example of how this per-step label can be packaged in a trainer, from HuggingFace's TRL [@vonwerra2022trl]:
+
 ```
 # Get the ID of the separator token and add it to the completions
 separator_ids = tokenizer.encode(step_separator, add_special_tokens=False)
@@ -179,9 +298,60 @@ completions_ids = [completion + separator_ids for completion in completions_ids]
 labels = [[-100] * (len(completion) - 1) + [label] for completion, label in zip(completions_ids, labels)]
 ```
 
-Traditionally PRMs are trained with a language modeling head that outputs a token only at the end of a reasoning step, e.g. at the token corresponding to a double new line or other special token. 
+Traditionally PRMs are trained with a language modeling head that outputs a token only at the end of a reasoning step, e.g. at the token corresponding to a double new line or other special token.
 These predictions tend to be -1 for incorrect, 0 for neutral, and 1 for correct.
 These labels do not necessarily tie with whether or not the model is on the right path, but if the step is correct.
+
+An example construction of a PRM is shown below.
+
+```python
+import torch.nn as nn
+import torch.nn.functional as F
+
+class ProcessRewardModel(nn.Module):
+    def __init__(self, base_lm, num_classes=3):
+        super().__init__()
+        self.lm = base_lm  # e.g., AutoModelForCausalLM
+        self.head = nn.Linear(self.lm.config.hidden_size, num_classes)
+
+    def forward(self, input_ids, attention_mask=None, labels=None):
+        """
+        The inputs are tokenizer prompts and completions, where the the end of a 
+         "reasoning step" is denoted by another non-padding token. 
+        labels will be a list of labels, True, False, and Neutral (3 labels) which
+         will be predicted by the model.
+        """
+        outputs = self.lm(
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            output_hidden_states=True,
+            return_dict=True,
+        )
+        # Final hidden states: (batch, seq_len, hidden_size)
+        hidden = outputs.hidden_states[-1]
+        # One logit vector per token: (batch, seq_len, num_classes)
+        logits = self.head(hidden)
+
+        # Only compute loss at step boundaries (where labels != -100)
+        # Labels map: -1 -> 0, 0 -> 1, 1 -> 2 (class indices)
+        mask = labels != -100
+        if mask.any():
+            loss = F.cross_entropy(
+                logits[mask], labels[mask]
+            )
+        return loss, logits
+```
+
+The core loss function looks very similar to outcome reward models, with the labels being applied at different intervals.
+```python
+# Assume model outputs 3-class logits per token
+hidden = model.lm(**inputs, output_hidden_states=True).hidden_states[-1]
+logits = model.head(hidden)  # (batch, seq_len, 3)
+
+# 3-class labels at step boundaries only: 0=-1, 1=0, 2=1 (others masked as -100)
+mask = labels != -100
+loss = F.cross_entropy(logits[mask], labels[mask])
+```
 
 ## Reward Models vs. Outcome RMs vs. Process RMs vs. Value Functions
 
