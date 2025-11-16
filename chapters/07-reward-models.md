@@ -183,6 +183,8 @@ Regardless, once trained, these models are used similarly to other reward models
 
 ## Outcome Reward Models
 
+<!-- Huge thanks to Hangliang Ren, graduate student at Northeastern University for helping with this section (and PRMs), see https://github.com/myhott163com/RLHF_ORM_PRM -->
+
 The majority of *preference tuning* for language models and other AI systems is done with the Bradley Terry models discussed above.
 For reasoning heavy tasks, one can use an Outcome Reward Model (ORM).
 The training data for an ORM is constructed in a similar manner to standard preference tuning.
