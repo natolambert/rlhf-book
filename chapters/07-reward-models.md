@@ -86,7 +86,7 @@ import torch.nn.functional as F
 
 class BradleyTerryRewardModel(nn.Module):
     """
-    Standard scalar reward model for Bradley–Terry preference learning.
+    Standard scalar reward model for Bradley-Terry preference learning.
 
     Usage (pairwise BT loss):
         rewards_chosen = model(**inputs_chosen)    # (batch,)
