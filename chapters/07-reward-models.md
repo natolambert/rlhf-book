@@ -288,6 +288,7 @@ $$\mathcal{L}_{\text{PRM}}(\theta) = - \mathbb{E}_{(x, s) \sim \mathcal{D}} \lef
 where $s$ is a sampled chain-of-thought with $K$ annotated steps, $y_{s_i} \in \{0,1\}$ denotes whether the $i$-th step is correct, and $r_\theta(s_i \mid x)$ is the PRM's predicted probability that step $s_i$ is valid conditioned on the original prompt $x$.
 
 Here's an example of how this per-step label can be packaged in a trainer, from HuggingFace's TRL [@vonwerra2022trl]:
+
 ```
 # Get the ID of the separator token and add it to the completions
 separator_ids = tokenizer.encode(step_separator, add_special_tokens=False)
@@ -301,6 +302,7 @@ Traditionally PRMs are trained with a language modeling head that outputs a toke
 These predictions tend to be -1 for incorrect, 0 for neutral, and 1 for correct.
 These labels do not necessarily tie with whether or not the model is on the right path, but if the step is correct.
 
+An example construction of a PRM is shown below.
 
 ```python
 import torch.nn as nn
