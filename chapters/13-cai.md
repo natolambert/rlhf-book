@@ -50,8 +50,15 @@ The feedback models' probability of outputting either (A) or (B) is recorded as 
 
 ## Specific LLMs for Judgement
 
-As RLAIF and LLM-as-a-judge has become more prevalent, many have wondered if we should be using the same models for generating responses as those for generating critiques or ratings.
+As RLAIF methods have become more prevalent, many have wondered if we should be using the same models for generating responses as those for generating critiques or ratings.
+Specifically, the calibration of the LLM-as-a-judge used has come into question. 
+Several works have shown that LLMs are inconsistent evaluators [@wang2023large] and prefer their own responses over responses from other models (coined self-preference bias) [@panickssery2024llm].
+
+As a result, many have wondered if we should be using the same models for generating responses as those for generating critiques or ratings. 
+Would a solution be to train a separate model just for this?
 Multiple models have been released with the goal of substituting for frontier models as a data labeling tool, such as critic models Shepherd [@wang2023shepherd] and CriticLLM [@ke2023critiquellm] or models for evaluating response performance akin to Auto-J [@li2023generative], Prometheus [@kim2023prometheus], Prometheus 2 [@kim2024prometheus], or Prometheus-Vision [@lee2024prometheus] but they are not widely adopted in documented training recipes.
+Some find scaling inference via repeated sampling [@brown2024large] [@zhao2025sample] [@kalra2025verdict], self-refinement [@madaan2023self], or tournament ranking [@pace2024west] provides a better estimate of the true judgement or higher-quality preference pairs.
+Other calibration techniques co-evolve the generation and judgement capabilities of the model [@wu2024meta].
 
 ## Further Reading
 
@@ -64,3 +71,5 @@ For now, they are included as further reading.
 - Other work has used principle-driven preferences or feedback with different optimization methods.
 [@sun2023principledriven] uses principles as context for the reward models, which was used to train the Dromedary models [@sun2024salmon].
 [@glaese2022improving] uses principles to improve the accuracy of human judgments in the RLHF process.
+[@liu2025inference] train a reward model to generate its own principles at inference time, and use these to deliver a final score.
+[@franken2024self] formulate principle-following as a mutual information maximization problem that the pretrained model can learn with no labels.
