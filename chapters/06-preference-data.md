@@ -107,7 +107,7 @@ For training, all of the previous turns in the conversation are masked from the 
 
 In many applications of RLHF and post-training, preference data can be created *automatically* due to innate structures of the data -- i.e. the domains make automatic checks of correctness or preference possible.
 For example, in mathematic reasoning domains the chosen response can be a correct answer and the rejected an incorrect answer.
-Another example is in precise instruction following, such as the evaluation IFEval [@zhou2023instruction], where prompts take the form of:
+Another example is in precise instruction following, such as the evaluation IFEval [@zhou2023instructionfollowingevaluationlargelanguage], where prompts take the form of:
 
 > Write me a short poem about a goldfish. **Start each sentence with the letter g.**
 
@@ -208,3 +208,4 @@ In the maturation of RLHF and related approaches, the motivation of them -- to a
 A feedback loop that is not measurable due to the closed nature of industrial RLHF work is the check to see if the behavior of the models matches the specification given to the data annotators during the process of data collection.
 We have limited tools to audit this, such as the Model Spec from OpenAI [@openai2024modelspec] that details *what they want their models to do*, but we don't know exactly how this translates to data collection.
 This is an area to watch as the industry and approaches mature.
+
