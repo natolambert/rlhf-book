@@ -209,7 +209,7 @@ where $r \in {0,1}$ is a binary label where 1 applies to a correct answer to a g
 Implementing an outcome reward model (and other types, as we'll see with the Process Reward Model) involves applying the cross-entropy loss per-token based on if the completion is a correct sample. 
 This is far closer to the language modeling loss, where it does not need the structured chosen-rejected nature of standard Bradley-Terry reward models.
 
-The model structute could follw as:
+The model structure could follow as:
 
 ```python
 import torch.nn as nn
