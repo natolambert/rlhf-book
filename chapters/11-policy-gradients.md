@@ -145,8 +145,8 @@ A simple version, with respect to the overall return, is:
 $$\nabla_\theta J(\theta) = \mathbb{E}_\tau \left[ \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t|s_t) R_t \right]$$ {#eq:vanilla_policy_gradient}
 
 A common problem with vanilla policy gradient algorithms is the high variance in gradient updates, which can be mitigated in multiple ways.
-The high variance comes from the gradient updates being computed from estimating the return $G$ from an often small set of rollouts in the environment that tend to be susceptible to noise (e.g. the stochasistic nature of generating from language models with temperature $>0$), especially with sparse rewards.
-In order to alleviate this,  various techniques are used to normalize the value estimation, called *baselines*. 
+The high variance comes from the gradient updates being computed from estimating the return $G$ from an often small set of rollouts in the environment that tend to be susceptible to noise (e.g. the stochastic nature of generating from language models with temperature $>0$), especially with sparse rewards.
+In order to alleviate this, various techniques are used to normalize the value estimation, called *baselines*. 
 Baselines accomplish this in multiple ways, effectively normalizing by the value of the state relative to the downstream action (e.g. in the case of Advantage, which is the difference between the Q value and the value). 
 The simplest baselines are averages over the batch of rewards or a moving average.
 Even these baselines can de-bias the gradients so $\mathbb{E}_{a \sim \pi(a|s)}[\nabla_\theta \log \pi_\theta(a|s)] = 0$, improving the learning signal substantially.
@@ -334,12 +334,12 @@ advantages = (targets - v_pred).detach()
 
 Overall, the PPO objective can be visualized by two lines of a plot of objective versus policy ratio, which is shown in @fig:ppo-obj.
 The PPO objective is maximized by changing the probability of the sampled actions.
-Numerically, the objective controls for both positive and negative advantage cases by clever use of the minimum operation, making it so the update is at most pushed by an episilon distance away from a policy ratio of 1.
+Numerically, the objective controls for both positive and negative advantage cases by clever use of the minimum operation, making it so the update is at most pushed by an epsilon distance away from a policy ratio of 1.
 
 Within the trust region, PPO operates the same as other policy gradient algorithms.
 This is by design! The trust region is a concept used to cap the maximum step size of PPO and its peer algorithms for stability of updates. The core of the PPO algorithm, the clip and min/max functions, is to define this region. The objective becomes flat outside of it.
 
-The idea of a "trust region" comes from the numerical optimization literatuer [@nocedal2006numerical], but was popularized within Deep RL from the algorithm Trust Region Policy Optimization (TRPO) which is accepted as the predecessor to PPO [@schulman2015trust].
+The idea of a "trust region" comes from the numerical optimization literature [@nocedal2006numerical], but was popularized within Deep RL from the algorithm Trust Region Policy Optimization (TRPO) which is accepted as the predecessor to PPO [@schulman2015trust].
 
 ![Visualization of the different regions of the PPO objective for a hypothetical advantage.](images/ppo-viz-4x.png){#fig:ppo-obj}
 
@@ -452,7 +452,7 @@ The model learns to become more like the answers marked as correct and less like
 This is a very simple way to compute the advantage, which is the measure of how much better a specific action is than the average at a given state.
 Relative to PPO, REINFORCE, and broadly RLHF performed with a reward model rating (relative to output reward), GRPO is often run with a far higher number of samples per prompt because the advantage is entirely about the relative value of a completion to its peers from that prompt.
 Here, the current policy generates multiple responses to a given prompt, and the group-wise GRPO advantage estimate is given valuable context.
-PPO and vanilla policy-gradient algorithms were design to accurately estimate the reward of every completion (in fact, more completions can do little to improve the value estimate in some cases). 
+PPO and vanilla policy-gradient algorithms were designed to accurately estimate the reward of every completion (in fact, more completions can do little to improve the value estimate in some cases). 
 GRPO and its variants are particularly well-suited to modern language model tools, where multiple completions to a given prompt is very natural (especially when compared to, e.g., multiple actions from a set environment state in a robotic task).
 
 The advantage computation for GRPO has trade-offs in its biases.
@@ -609,7 +609,7 @@ def masked_mean(values: torch.Tensor, mask: torch.Tensor, axis: Optional[int] = 
 def masked_sum(
         values: torch.Tensor,
         mask: torch.Tensor,
-        axis: Optional[bool] = None,
+        axis: Optional[int] = None,
         constant_normalizer: float = 1.0,
     ) -> torch.Tensor:
     """Compute sum of tensor with a masked values. Use a constant to normalize."""
@@ -935,7 +935,7 @@ $$ {#eq:GAE_DFN}
 Intuitively, this can be used to average of multi-step estimates of Advantage in an elegant fashion.
 An example implementation is shown below:
 
-```
+```python
 # GAE (token-level) for LM RLHF
 #
 # B: Batch Size
