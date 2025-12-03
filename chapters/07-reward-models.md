@@ -151,7 +151,7 @@ Llama 2 proposes using the margin between two datapoints, $m(y_c, y_r)$, to dist
 $$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) - m(y_c, y_r) \right) \right)$$ {#eq:rewardmodelingmargin}
 
 For example, each completion is often given a ranking from 1 to 5 in terms of quality.
-In the case where the chosen sample was assigned a score of 5 and rejected a score of 2, the margine $m(y_c, y_r)= 5 - 2 = 3$. 
+In the case where the chosen sample was assigned a score of 5 and rejected a score of 2, the margin $m(y_c, y_r)= 5 - 2 = 3$. 
 Other functions for computing margins can be explored.
 
 Note that in Llama 3 the margin term was removed as the team observed diminishing improvements after scaling.
