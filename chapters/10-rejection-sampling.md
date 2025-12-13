@@ -120,7 +120,7 @@ $$R = \begin{bmatrix}
 
 Using the argmax method, we select the best completion for each prompt:
 
-$$S(R) = [\arg\max_{j} r_{i,j} \text{ for } i \in [1,4]]$$
+$$S(R) = [\arg\max_{j} r_{i,j} \text{ for } i \in [1,5]]$$
 
 $$S(R) = [1, 2, 1, 3, 4]$$
 

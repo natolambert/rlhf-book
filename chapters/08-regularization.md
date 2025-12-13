@@ -29,7 +29,7 @@ $$ {#eq:kl_standard}
 
 ## KL Distances in RL Optimization
 
-For mathematical definitions, see Chapter 5 on Problem Setup.
+For mathematical definitions, see Chapter 3 on Problem Setup.
 Recall that KL distance is defined as follows:
 
 $$ D_{KL}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\frac{P(x)}{Q(x)}\right) $$ {#eq:kl_distance_regularization}
