@@ -10,6 +10,7 @@ next-url: "02-related-works"
 
 Reinforcement learning from Human Feedback (RLHF) is a technique used to incorporate human information into AI systems.
 RLHF emerged primarily as a method to solve hard to specify problems.
+With humans, many of those problems abound, anywhere that individual preferences guide opinions. 
 Its early applications were often in control problems and other traditional domains for reinforcement learning (RL).
 RLHF became most known through the release of ChatGPT and the subsequent rapid development of large language models (LLMs) and other foundation models.
 

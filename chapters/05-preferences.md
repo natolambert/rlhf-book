@@ -8,8 +8,8 @@ next-url: "06-preference-data"
 
 # The Nature of Preferences
 
-The core of reinforcement learning from human feedback, also referred to as reinforcement learning from human preferences in early literature, is designed to optimize machine learning models in domains where specifically designing a reward function is hard.
-Consider an example, how do you decide which of these two poems is better (Context: *On February 26th, 2025, I asked both Claude 3.7 Sonnet and ChatGPT with GPT-4o to "Write me a short poem about an optimistic goldfish."*):
+Reinforcement learning from human feedback, also referred to as reinforcement learning from human preferences in early literature, emerged to optimize machine learning models in domains where specifically designing a reward function is hard.
+Consider an example: how do you decide which of these two poems is better (Context: *On February 26th, 2025, I asked both Claude 3.7 Sonnet and ChatGPT with GPT-4o to "Write me a short poem about an optimistic goldfish."*):
 
 Example 1:
 
@@ -53,7 +53,7 @@ Which is better? Which came from which model? How would you tell? Particularly, 
 The motivation for using humans as the reward signals is to obtain an indirect metric for the target reward and *align* the downstream model to human preferences.
 In practice, the implementation is challenging and there is a substantial grey area to interpret the best practices.
 
-The use of human labeled feedback data integrates the history of many fields.
+The use of human-labeled feedback data integrates the history of many fields.
 Using human data alone is a well-studied problem, but in the context of RLHF it is used at the intersection of multiple long-standing fields of study [@lambert2023entangled].
 
 As an approximation, modern RLHF is the convergence of three areas of development:
@@ -68,9 +68,9 @@ Still, the origins of value alignment for RLHF methods continue to be studied th
 
 The goal of this chapter is to illustrate how complex motivations result in presumptions about the nature of tools used in RLHF that often do not apply in practice.
 The specifics of obtaining data for RLHF are discussed further in Chapter 6 and using it for reward modeling in Chapter 7.
-For an extended version of this chapter, see [@lambert2023entangled].
+<!-- For an extended version of this chapter, see [@lambert2023entangled]. -->
 
-## The path to optimizing preferences
+<!-- ## The path to optimizing preferences
 
 A popular phrasing for the design of Artificial Intelligence (AI) systems is that of a rational agent maximizing a utility function [@russell2016artificial].
 The inspiration of a **rational agent** is a lens of decision making, where said agent is able to act in the world and impact its future behavior and returns, as a measure of goodness in the world.
@@ -105,25 +105,24 @@ Some of the most prominent critiques are summarized below:
 - **The impossibility of interpersonal comparison** [@harsanyi1977rule] highlights how different individuals have different relative magnitudes of preferences and they cannot be easily compared (as is done in most modern reward model training).
 - **Preferences can change over time** [@pettigrew2019choosing].
 - **Preferences can vary across contexts**.
-- **The utility functions derived from aggregating preferences can reduce corrigibility** [@soares2015corrigibility] of downstream agents (i.e. the possibility of an agents' behavior to be corrected by the designer).
+- **The utility functions derived from aggregating preferences can reduce corrigibility** [@soares2015corrigibility] of downstream agents (i.e. the possibility of an agents' behavior to be corrected by the designer). -->
 
-In this section, we break down the complex history inspiring the modern use of RLHF.
-This requires investigation into the intellectual foundations of quantifying human values, reinforcement learning and optimality, as well as behavioral economics as it relates to measuring preferences.
+## The Origins of RLHF and Preferences
+
+Breaking down the complex history inspiring the modern use of RLHF requires investigation into the intellectual foundations of quantifying human values, reinforcement learning and optimality, as well as behavioral economics as it relates to measuring preferences.
 The notion of using reinforcement learning to optimize a reward model of preferences combines the history of various once-distanced fields into an intimate optimization built on variegated assumptions about human nature.
 A high level timeline illustrating the history of this foundational content is shown in @fig:tree.
-The detailed presumptions and assumptions we reference, are showcased in @fig:history.
 
 Our goal is to unspool the types of uncertainty that designers have grafted to system architectures at various stages of their intellectual history.
 Modern problem specifications have repeatedly stepped away from domains where optimal solutions are possible and deployed under-specified models as approximate solutions.
 
-Throughout, we distinguish between a series of *assumptions* accepted within theoretically-grounded academic literatures, and relevant *presumptions* which are common methods of practice for particular subject areas.
+<!-- Throughout, we distinguish between a series of *assumptions* accepted within theoretically-grounded academic literatures, and relevant *presumptions* which are common methods of practice for particular subject areas.
 As we shall see, the unresolved tensions between these assumptions and presumptions are responsible for the current state and outstanding questions of RLHF research.
-This section does not set out to be a survey but rather interrelates core references to illustrate the modus operandi of RLHF and preference modeling.
+This section does not set out to be a survey but rather interrelates core references to illustrate the modus operandi of RLHF and preference modeling. -->
 
-To begin, all of the following operates on the assumptions that human preferences exist in any form, which emerged in early philosophical discussions, such as Aristotle's Topics, Book Three.
-**Assumption: Human preferences and goals exist.**
+To begin, all of the following operates on the assumption that human preferences exist in any form, which emerged in early philosophical discussions, such as Aristotle's Topics, Book Three.
 
-![The timeline of the integration of various subfields into the modern version of RLHF. The direct links are continuous developments of specific technologies, and the arrows indicate motivations and conceptual links.](images/rlhf-tree.png){#fig:tree}
+![The timeline of the integration of various subfields into the modern version of RLHF. The direct links are continuous developments of specific technologies, and the arrows indicate motivations and conceptual links.](images/rlhf-tree.png){#fig:tree width=100% .center}
 
 ### Specifying objectives: from logic of utility to reward functions
 
@@ -138,15 +137,13 @@ In 1662, *The Port Royal Logic* introduced the notion of decision making quality
 This theory has developed along with modern scientific thinking, starting with Bentham's utilitarian *Hedonic Calculus*, arguing that everything in life could be weighed [@bentham1823hedonic].
 The first quantitative application of these ideas emerged in 1931 with Ramsey's *Truth and Probability* [@ramsey2016truth].
 
-**Assumption: Any and all preferences and goals can be quantified and measured.**
-
 Since these works, quantifying, measuring, and influencing human preferences has been a lively topic in the social and behavioral sciences.
 These debates have rarely been settled on a theoretical level; rather, different subfields and branches of social science have reached internal consensus on methods and approaches to preference measurement even as they have specialized relative to each other, often developing their own distinct semantics in the process.
 
 A minority of economists posit that preferences, if they do exist, are prohibitively difficult to measure because people have preferences over their own preferences, as well as each others' preferences [@hirschman1984against].
 In this view, which is not reflected in the RLHF process, individual preferences are always embedded within larger social relations, such that the accuracy of any preference model is contingent on the definition and context of the task.
 Some behavioral economists have even argued that preferences don't exist--they may be less an ontological statement of what people actually value than a methodological tool for indirectly capturing psychological predispositions, perceived behavioral norms and ethical duties, commitments to social order, or legal constraints [@hadfield2014microfoundations].
-We address the links of this work to the Von Neumann-Morgenstern (VNM) utility theorem and countering impossibility theorems around quantifying preference in the section on Steering preferences.
+We address the links of this work to the Von Neumann-Morgenstern (VNM) utility theorem and countering impossibility theorems around quantifying preference later in this chapter.
 
 On the other hand, the reinforcement learning optimization methods used today are conceptualized around optimizing estimates of reward-to-go in a trial [@sutton2018reinforcement], which combines the notion of reward with multi-step optimization.
 The term *reward* emerged from the study of operant conditioning, animal behavior, and the *Law of Effect* [@thorndike1927law; @skinner2019behavior], where a reward is a scale of "how good an action is" (higher means better).
@@ -164,22 +161,18 @@ Specifically, RL systems expect rewards to behave in a specific manner, quoting 
 > A close parallel can be drawn between the gradient of a value function and incentive motivation [@mcclure2003computational].
 
 To summarize, rewards are used in RL systems as a signal to tune behavior towards clearly defined goals.
-The core thesis is that an learning algorithm's performance is closely coupled with notions of *expected fitness*, which permeates the popular view that RL methods are *agents* that act in environments.
+The core thesis is that a learning algorithm's performance is closely coupled with notions of *expected fitness*, which permeates the popular view that RL methods are *agents* that act in environments.
 This view is linked to the development of reinforcement learning technology, exemplified by claims of the general usefulness of the reward formulation [@silver2021reward], but is in conflict when many individual desires are reduced to a single function.
-
-**Assumption: Increasing the score of raw reward measurements corresponds to better behaviors (or value functions learned under invariant reward transformation [@ng1999policy]).**
 
 ### Implementing optimal utility
 
 Modern reinforcement learning methods depend strongly on the Bellman equation [@bellman1957markovian; @howard1960dynamic] to recursively compute estimates of reward-to-go, derived within closed environments that can be modeled as a Markov Decision Process (MDP) [@sutton2018reinforcement].
-These origins of RL are inspired by dynamic programming methods are were developed solely as optimal control techniques (i.e. RL did not yet exist).
+These origins of RL are inspired by dynamic programming methods and were developed solely as optimal control techniques (i.e. RL did not yet exist).
 The MDP formulation provides theoretical guarantees of performance by structuring the environment as one with a non-changing distribution of state-actions.
-
-**Assumption: Optimal solutions to reward maximization problems exist.**
 
 The term reinforcement, coming from the psychology literature, became intertwined with modern methods afterwards in the 1960s as *reinforcement learning* [@MENDEL1970287; @waltz1965].
 Early work reinforcement learning utilized supervised learning of reward signals to solve tasks.
-Work from Harry Klopf reintroduced the notion of trial-and-error learning [@klopf1972brain], which is crucial to success the field saw in the 1980s and on.
+Work from Harry Klopf reintroduced the notion of trial-and-error learning [@klopf1972brain], which is crucial to the success the field saw in the 1980s and on.
 
 Modern RL algorithms build within this formulation of RL as a tool to find optimal behaviors with trial-and-error, but under looser conditions.
 The notion of temporal-difference (TD) learning was developed to aid agents in both the credit assignment and data collection problems, by directly updating the policy as new data was collected [@sutton1988learning], a concept first applied successfully to Backgammon [@tesauro1995temporal] (rather than updating from a large dataset of cumulative experience, which could be outdated via erroneous past value predictions).
@@ -191,15 +184,13 @@ As the methods became more general and successful, most prominent developments b
 Prominent examples include further success in games [@silver2017mastering], controlling complex dynamic systems such as nuclear fusion reactors [@degrave2022magnetic], and controlling rapid robotic systems [@Kaufmann2023fpv].
 Most reward or cost functions can return an explicit optimal behavior, whereas models of human preferences cannot.
 
-**Presumption: Optimal solutions can be achieved with finite data in complex environments.**
-
 Given the successes of deep RL, it is worth noting that the mechanistic understanding of how the methods succeed is not well documented.
 The field is prone to mistakes of statistical analysis as the methods for evaluation grow more complex [@agarwal2021deep].
 In addition, there is little mention of the subfield of inverse reinforcement learning (IRL) in the literature of RLHF.
 IRL is the problem of learning a reward function based on an agent's behavior [@ng2000algorithms] and highly related to learning a reward model.
 This primarily reflects the engineering path by which a stable approach to performing RLHF emerged, and motivates further investment and comparison to IRL methods to scale them to the complexity of open-ended conversations.
 
-![The history that creates the assumptions and presumptions central to the current deployments of RLHF. The assumptions indicate core theoretical foundations which RLHF builds upon, transposes, prioritizes, or defers to another development stage. The presumptions represent ideas and practices required to build the current renditions of the technology.](images/timeline-v2.png){#fig:history}
+<!-- ![The history that creates the assumptions and presumptions central to the current deployments of RLHF. The assumptions indicate core theoretical foundations which RLHF builds upon, transposes, prioritizes, or defers to another development stage. The presumptions represent ideas and practices required to build the current renditions of the technology.](images/timeline-v2.png){#fig:history} -->
 
 ### Steering preferences
 
