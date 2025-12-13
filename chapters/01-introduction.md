@@ -10,8 +10,9 @@ next-url: "02-related-works"
 
 Reinforcement learning from Human Feedback (RLHF) is a technique used to incorporate human information into AI systems.
 RLHF emerged primarily as a method to solve hard to specify problems.
-With humans, many of those problems abound, anywhere that individual preferences guide opinions. 
-Its early applications were often in control problems and other traditional domains for reinforcement learning (RL).
+With systems that are designed to be used by humans directly, such problems emerge all the time due to the often unexpressible nature of an individual's preferences. This encompasses every domain of content and interaction with a digital system.
+RLHF's early applications were often in control problems and other traditional domains for reinforcement learning (RL), where the goal is to optimize a specific behavior to solve a task.
+The core idea to start the field of RLHF was "can we solve hard problems only with basic preference signals guiding the optimization process."
 RLHF became most known through the release of ChatGPT and the subsequent rapid development of large language models (LLMs) and other foundation models.
 
 The basic pipeline for RLHF involves three steps.
@@ -28,21 +29,34 @@ A summary of the early RLHF recipes is shown below in @fig:rlhf-basic.
 
 In modern language model training, RLHF is one component of post-training. 
 Post-training is a more complete set of techniques and best-practices to make language models more useful for downstream tasks [@lambert2024t].
-Post-training can be summarized as using three optimization methods:
+Post-training can be summarized as a many-stage training process using three optimization methods:
 
 1. Instruction / Supervised Finetuning (IFT/SFT), where we teach formatting and form the base of instruction following abilities. This is largely about learning *features* in language.
 2. Preference Finetuning (PreFT), where we align to human preferences (and get smaller bump in capabilities at the same time). This is largely about *style* of language and subtle human preferences that are hard to quantify.
-3. Reinforcement Finetuning (RFT). The newest type of post-training that boosts performance on verifiable domains.
+3. Reinforcement Learning with Verifiable Rewards (RLVR). The newest type of post-training that boosts performance on verifiable domains with more RL training.
 
-This book focuses on the second area, **preference finetuning**, which has more complexity than instruction tuning and is far more established than Reinforcement Finetuning.
-That being said, RLHF colloquially *is* what led to modern post-training.
-Soon after the release of ChatGPT, RLHF encompassed all of post-training.
-The foundations of RLHF involve far more than preferences alone and this book provides introductions to all the related topics.
+RLHF lives within the second area, **preference finetuning**, which has more complexity than instruction tuning due to it often involving proxy reward models of the true object and noisier data.
+At the same time, RLHF is far more established than the other popular RL method for language models, reinforcement learning with verifiable rewards. 
+For that reason, this book focuses on preference learning, but in order to completely grasp the role of RLHF, one needs to use these other training stages, so they are also explained in detail.
+
+As we consider the space of options and attention on these methods for crafting models we collectively use extensively, RLHF colloquially *is* what led to modern post-training.
+RLHF was the techniques that enabled the massive success of the release of ChatGPT, so early in 2023 RLHF encompassed much of the interest in the general field of post-training.
+RLHF is now just one piece of post-training, so in this book we map through why there was so much attention on RLHF early on, and how other methods emerged to complement it.
+
+Training language models is a very complex process, often involving large technical teams of 10s to 100s of people and millions of dollars in data and compute cost.
+This book serves three purposes to enable readers to grasp how RLHF and related models are used to craft leading models.
+First, the book distills cutting edge research often hidden withing large technology companies into clear topics and trade-offs, so readers can understand how models are made.
+Second, the book will allow users to setup basic code examples to get their hands dirty on finetuning these models themselves.
+Finally, beyond teaching the techniques for doing RLHF, this book is designed to distill intuition as to *why* RLHF is crucial to modern AI models.
+
+Due to the complexity of RLHF and how the state-of-the-art is often too complex to be done alone, this book focus on enabling readers so they have the tools needed to get jobs and start research projects in the area. 
+Others will just enjoy precisely understanding the inner workings of the technology that is the focus of countless discussions across the globe.
+A book that lays out an exact recipe of how to do RLHF for a specific need is impossible, which is why there is a large industry of companies providing RLHF training and related methods as a service worth millions of dollars.
+Still, rapid progress in AI systems means the readers who are fitted with this knowledge can approach more and more of their own training over time.
 
 ## What Does RLHF Do?
 
 The biggest question around RLHF, yet one that is still hard to answer, is "What does RLHF training offer models?"
-The core role of this book, beyond teaching the techniques for doing RLHF, is to distill intuition as to *why* RLHF is crucial to modern AI models.
 In recent years, language models have shifted from academic experiments studied in the purview of benchmarks to general purpose technology.
 RLHF is at the core of this transition.
 
