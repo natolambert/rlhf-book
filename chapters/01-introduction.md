@@ -32,10 +32,10 @@ Post-training is a more complete set of techniques and best-practices to make la
 Post-training can be summarized as a many-stage training process using three optimization methods:
 
 1. Instruction / Supervised Finetuning (IFT/SFT), where we teach formatting and form the base of instruction following abilities. This is largely about learning *features* in language.
-2. Preference Finetuning (PreFT), where we align to human preferences (and get smaller bump in capabilities at the same time). This is largely about *style* of language and subtle human preferences that are hard to quantify.
+2. Preference Finetuning (PreFT), where we align to human preferences (and get smaller bump in capabilities at the same time). This is largely about *style* of language and subtle human preferences that are hard to quantify. 
 3. Reinforcement Learning with Verifiable Rewards (RLVR). The newest type of post-training that boosts performance on verifiable domains with more RL training.
 
-RLHF lives within the second area, **preference finetuning**, which has more complexity than instruction tuning due to it often involving proxy reward models of the true object and noisier data.
+RLHF lives within and dominates the second area, **preference finetuning**, which has more complexity than instruction tuning due to it often involving proxy reward models of the true object and noisier data.
 At the same time, RLHF is far more established than the other popular RL method for language models, reinforcement learning with verifiable rewards. 
 For that reason, this book focuses on preference learning, but in order to completely grasp the role of RLHF, one needs to use these other training stages, so they are also explained in detail.
 
@@ -61,7 +61,7 @@ In recent years, language models have shifted from academic experiments studied 
 RLHF is at the core of this transition.
 
 To start, let us consider how a language model at the end of autoregressive pretraining answers a query. 
-A strong model, Llama 3.1 405B, will continue from "The president of the united states in 2006 was":
+A strong model, Llama 3.1 405B Base, will continue from "The president of the united states in 2006 was":
 
 > George W. Bush, the governor of Florida in 2006 was Jeb Bush, and John McCain was an Arizona senator in 2006 - who later lost to obama.
 > September 1 -- U.S. President Bush signs an executive order to provide more options for faith-based organizations when delivering social services that are paid for with federal funds.
@@ -72,12 +72,56 @@ A strong model, Llama 3.1 405B, will continue from "The president of the united 
 What is clear is that this model is completing the sentence and adding other common internet metadata.
 
 The most compelling view of how RLHF works is to think of how *style* applies to interactions you have with language models.
-The style, or format, of information presented is crucial to how it is learned.
-This has always been the case for examples such as coursework, but is normally applied in the background and not considered directly.
+The style, closely related to tone or format, of information presented is crucial to how it is learned.
+Style is often used to describe the manner of the model. To see the difference, consider two example responses to the following question:
 
-Continuing the above example, a model trained with RLHF (and other post-training tools), would answer the question very differently. Asking Tülu 3 405B the same question "The president of the united states in 2006 was," it says concisely:
+> Help, I have to give a presentation tomorrow and I’m panicking.
+
+A blunt, low-empathy style:
+> You’ll be fine. Practice your slides a few times, get some sleep, and stop overthinking it. Just present what you know and move on.
+
+A warmer, more supportive style:
+> That sounds really stressful, and it’s a normal reaction. If you can, do one quick practice run now, pick the one or two points you most want people to remember, and then give yourself permission to rest—being clear and calm tomorrow will matter more than cramming tonight.
+
+
+On the other hand, format is how the answer is structured. 
+Modern models are known to use extensive markdown formatting with lists, linebreaks, and emojis. 
+Consider two answers to the following question that are very different:
+
+> How can I improve my sleep quality?
+
+The simple answer, from an early language model:
+
+> Try to go to bed at the same time each night, avoid caffeine late in the day, and keep your bedroom quiet and dark.
+
+Or a complex, richer answer:
+
+> Better sleep, in practice 😴
+> 
+> **Goal**: make your schedule predictable and your environment boring enough that your brain gives up.
+> 
+> **Tonight (quick wins)**:
+> 	1.	Dim lights for the last hour before bed.
+> 	2.	No caffeine after lunch; keep alcohol minimal.
+> 	3.	If you’re stuck awake, get up and do something quiet until sleepy again.
+> 
+> **Daily basics (most impact)**:
+> 	•	Same wake time (even weekends) → anchors your body clock.
+> 	•	Morning light for 5–10 minutes → helps set circadian rhythm.
+> 	•	Cool, dark room (fan/eye mask) → easier to stay asleep.
+> 
+> **If you want a simple rule**:
+> `wake time fixed + caffeine cutoff + wind-down routine`
+> 
+> If sleep problems are persistent or severe, it can be worth talking with a clinician—many issues are very treatable.
+
+Continuing the above example, a model trained with RLHF (and other post-training tools), would answer the question very differently. 
+Asking Tülu 3 405B the same question "The president of the united states in 2006 was," it says concisely:
 
 > George W. Bush was the president of the United States in 2006. He served two terms in office, from January 20, 2001, to January 20, 2009.
+
+This change in style is downstream of the post-training methods described in this book. 
+Instruction finetuning would provide the basic ability for models to respond reliabily in the question-answer format, and RLHF is what takes these answers and crafts them into the reliable, warm, and engaging answers we now expect from language models.
 
 Modern research has established RLHF as a general method to integrate subtle stylistic and related behavioral features into the models.
 Compared to other techniques for post-training, such as instruction finetuning, RLHF generalizes far better across domains [@kirk2023understanding] [@chu2025sft] -- helping create effective general purpose models.
@@ -98,7 +142,8 @@ With this, the optimization itself is prone to *over-optimization* because our r
 With these limitations, effective RLHF requires a strong starting point, so RLHF cannot be a solution to every problem alone and needs to be approached in a broader lens of post-training.
 
 Due to this complexity, implementing RLHF is far more costly than simple instruction finetuning and can come with unexpected challenges such as length bias [@singhal2023long] [@park2024disentangling]. 
-For projects where performance matters, RLHF is established as being crucial to achieving a strong finetuned model, but it is more expensive in compute, data costs, and time.
+For model training efforts where absolute performance matters, RLHF is established as being crucial to achieving a strong finetuned model, but it is more expensive in compute, data costs, and time.
+Through the early history of RLHF after ChatGPT, there were many research papers that showed approximate solutions to RLHF via limited instruction finetuning, but as the literature matured it has been repeated time and again that RLHF and related methods are core stages to model performance that cannot be dispensed with quickly.
 
 ## An Intuition for Post-Training
 
