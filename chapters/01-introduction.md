@@ -96,7 +96,7 @@ The simple answer, from an early language model:
 
 Or a complex, richer answer:
 
-> Better sleep, in practice 😴
+> Better sleep, in practice
 > 
 > **Goal**: make your schedule predictable and your environment boring enough that your brain gives up.
 > 
