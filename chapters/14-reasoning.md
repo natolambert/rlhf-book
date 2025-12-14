@@ -130,16 +130,16 @@ These are largely out of the scope of this book due to their rapidly evolving na
 What is important here is the correlation between downstream performance and an increase in the number of tokens generated -- otherwise it is just wasted energy.
 
 
-### The Future (Beyond Reasoning) of Reinforcement Finetuning
+### The Future (Beyond Reasoning) of RLVR
 
-In many domains, these new flavors of RLVR and reinforcement finetuning are much more aligned with the goals of developers by being focused on performance rather than behavior. 
+In many domains, these new flavors of RLVR are much more aligned with the goals of developers by being focused on performance rather than behavior. 
 Standard finetuning APIs generally use a parameter-efficient finetuning method such as LoRA with supervised finetuning on instructions. 
 Developers pass in prompts and completions and the model is tuned to match that by updating model parameters to match the completions, which increases the prevalence of features from your data in the model's generations.
 
-Reinforcement finetuning is focused on matching answers. 
-Given queries and correct answers, RFT helps the model learn to get the correct answers. 
-While standard instruction tuning is done with 1 or 2 epochs of loss updates over the data, reinforcement finetuning gets its name by doing hundreds or thousands of epochs over the same few data points to give the model time to learn new behaviors. 
-This can be viewed as reinforcing positive behaviors that would work sparingly in the base model version into robust behaviors after RFT.
+RLVR is focused on matching answers. 
+Given queries and correct answers, RLVR helps the model learn to get the correct answers. 
+While standard instruction tuning is done with 1 or 2 epochs of loss updates over the data, RLVR gets its name by doing hundreds or thousands of epochs over the same few data points to give the model time to learn new behaviors. 
+This can be viewed as reinforcing positive behaviors that would work sparingly in the base model version into robust behaviors after RLVR.
 
 **The scope of RL training for language models continues to grow**: The biggest takeaway from o1 and R1 on a fundamental scientific level was that we have even more ways to train language models to potentially valuable behaviors. 
 The more open doors that are available to researchers and engineers, the more optimism we should have about AI's general trajectory. 

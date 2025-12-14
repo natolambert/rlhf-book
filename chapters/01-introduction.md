@@ -147,22 +147,29 @@ Through the early history of RLHF after ChatGPT, there were many research papers
 
 ## An Intuition for Post-Training
 
-Here's a simple analogy for how so many gains can be made on mostly the same base model.
+We've established that RLHF specifically and post-training generally is crucial to performance of the latest models and how it changes the models' outputs, but not why it works.
+Here's a simple analogy for how so many gains can be made on benchmarks ontop of any base model.
 
-The intuition I've been using to understand the potential of post-training is called the elicitation interpretation of post-training, where all we are doing is extracting and amplifying valuable behaviors in the base model.
+The way I've been describing the potential of post-training is called the elicitation interpretation of post-training, where all we are doing is extracting potential by amplifying valuable behaviors in the base model.
 
+To make this example click, we make the analogy between the base model -- the language model that comes out of the large-scale, next-token prediction pretraining -- and other foundational components in building complex systems. We use the example of the chassis of a car, which defines the space where a car can be built around it.
 Consider Formula 1 (F1), most of the teams show up to the beginning of the year with a new chassis and engine. Then, they spend all year on aerodynamics and systems changes (of course, it is a minor oversimplification), and can dramatically improve the performance of the car. The best F1 teams improve way more during a season than chassis-to-chassis.
 
-The same is true for post-training. The best post-training teams extract a ton of performance in a very short time frame. The set of techniques is everything after the end of most of pretraining. It includes "mid-training" like annealing / high-quality end of pre-training web data, instruction tuning, RLVR, preference-tuning, etc. A good example is our change from the first version of OLMoE Instruct to the second --- the post-training evaluation average from 35 to 48 without touching the majority of pretraining [@ai2_olmoe_ios_2025].
+The same is true for post-training, where one can extract a ton of performance out of a static base model as they learn more about its quirks and tendencies. The best post-training teams extract a ton of performance in a very short time frame. The set of techniques is everything after the end of most of pretraining. It includes "mid-training" like annealing / high-quality end of pre-training web data, instruction tuning, RLVR, preference-tuning, etc. A good example is the change from the first version of the Allen Institute for AI's fully-open, small Mixture-of-Experts (MoE) model OLMoE Instruct to the second. The first model was released in the fall of 2024 [@muennighoff2024olmoe], and with the second version only updating the the post-training, the evaluation average on popular benchmarks went from from 35 to 48 without changing the majority of pretraining [@ai2_olmoe_ios_2025].
 
-Then, when you look at models such as GPT-4.5, you can see this as a way more dynamic and exciting base for OpenAI to build onto. 
-We also know that bigger base models can absorb far more diverse changes than their smaller counterparts.
+The idea is that there is a lot of intelligence and ability within base models, but because they can only answer in next-token prediction and not question-answering format, it takes a lot of work building around them, through post-training, in order to make excellent final models.
 
-This is to say that scaling also allows post-training to move faster. Of course, to do this, you need the infrastructure to train the models. This is why all the biggest companies are still building gigantic clusters.
+Then, when you look at models such as OpenAI's GPT-4.5 released in February 2025, which was largely a failure of a consumer product due to being too large of a base model to serve to millions of users, you can see this as a way more dynamic and exciting base for OpenAI to build onto.
+With this intuition, base models determine the vast majority of the potential of a final model, and post-training's job is to cultivate all of it.
+<!-- We also know that bigger base models can absorb far more diverse changes than their smaller counterparts, as discussed in the foundational DeepSeek R1 report [@guo2025deepseek]. -->
 
+<!-- This is to say that scaling also allows post-training to move faster. Of course, to do this, you need the infrastructure to train the models. This is why all the biggest companies are still building gigantic clusters. -->
+
+I've described this intuition as the Ellicitation Theory of Post-training.
 This theory folds in with the reality that the majority of gains users are seeing are from post-training because it implies that there is more latent potential in a model pretraining on the internet than we can teach the model simply --- such as by passing certain narrow samples in repeatedly during early types of post-training (i.e. only instruction tuning).
+The challenge of post-training is to reshape models from next-token prediction to conversation question-answering, while extracting all of this knowledge and intelligence from pretraining.
 
-Another name for this theory is the Superficial Alignment Hypothesis, coined in the paper LIMA: Less is More for Alignment [@zhou2023lima]. This paper is getting some important intuitions right but for the wrong reasons in the big picture. The authors state:
+A related idea to this theory is the Superficial Alignment Hypothesis, coined in the paper LIMA: Less is More for Alignment [@zhou2023lima]. This paper is getting some important intuitions right but for the wrong reasons in the big picture. The authors state:
 
 > A model's knowledge and capabilities are learnt almost entirely during pretraining, while alignment teaches it which subdistribution of formats should be used when interacting with users. If this hypothesis is correct, and alignment is largely about learning style, then a corollary of the Superficial Alignment Hypothesis is that one could sufficiently tune a pretrained language model with a rather small set of examples [Kirstain et al., 2021].
 
@@ -198,13 +205,11 @@ The companies that embraced it early ended up winning out.
 Anthropic published extensive research on RLHF through 2022 and is now argued to have the best post-training [@askell2021general] [@bai2022training] [@bai2022constitutional]. 
 The delta between open groups, struggling to reproduce, or even knowing basic closed techniques, is a common theme.
 
-The first shift in open alignment methods and post-training was the story of Direct Preference Optimization (DPO) [@rafailov2024direct]. 
+The first shift in open alignment methods and post-training was the story of Direct Preference Optimization (DPO) [@rafailov2024direct], which showed that you can solve the same optimization problem as RLHF with fewer moving parts by taking gradient steps directly on pairwise preference data. 
 The DPO paper, posted in May of 2023, didn't have any clearly impactful models trained with it going through the fall of 2023. 
 This changed with the releases of a few breakthrough DPO models -- all contingent on finding a better, lower, learning rate. 
 Zephyr-Beta [@tunstall2023zephyr], Tülu 2 [@ivison2023camels], and many other models showed that the DPO era of post-training had begun. 
 Chris Manning literally thanked me for "saving DPO." 
-This is how fine the margins are on evolutions of best practices with leading labs being locked down. 
-Open post-training was cruising again.
 
 Preference-tuning was something you needed to do to meet the table stakes of releasing a good model since late 2023. 
 The DPO era continued through 2024, in the form of never-ending variants on the algorithm, but we were very far into another slump in open recipes. 
@@ -302,7 +307,7 @@ He has written extensively on RLHF, including [many blog posts](https://www.inte
 
 With the investment in language modeling, many variations on the traditional RLHF methods emerged.
 RLHF colloquially has become synonymous with multiple overlapping approaches. 
-RLHF is a subset of preference fine-tuning (PreFT) techniques, including Direct Alignment Algorithms (See Chapter 12).
+RLHF is a subset of preference fine-tuning (PreFT) techniques, including Direct Alignment Algorithms (See Chapter 12), which are the class of methods downstream of DPO that solve the preference learning problem by taking gradient steps directly on preference data, rather than learning an intermediate reward model.
 RLHF is the tool most associated with rapid progress in "post-training" of language models, which encompasses all training after the large-scale autoregressive training on primarily web data. 
 This textbook is a broad overview of RLHF and its directly neighboring methods, such as instruction tuning and other implementation details needed to set up a model for RLHF training.
 
