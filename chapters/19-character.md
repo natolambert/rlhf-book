@@ -14,7 +14,7 @@ In this chapter, we discuss a series of use-cases that leading AI laboratories c
 
 ## Character Training
 
-Character training is the subset of post-training designed around crafting traits within the model in the manner of its response, rather than the content. 
+Character training is the subset of post-training designed around crafting traits within the model in the manner of its response, rather than the content [@maiya2025open]. 
 Character training, while being important to the user experience within language model chatbots, is effectively unstudied in the public domain.
 
 We don't know the trade-offs of what character training does, we don't know how exactly to study it, we don't know how much it can improve user preferences on ChatBotArena, and we should.

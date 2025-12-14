@@ -10,8 +10,9 @@ next-url: "02-related-works"
 
 Reinforcement learning from Human Feedback (RLHF) is a technique used to incorporate human information into AI systems.
 RLHF emerged primarily as a method to solve hard to specify problems.
-With humans, many of those problems abound, anywhere that individual preferences guide opinions. 
-Its early applications were often in control problems and other traditional domains for reinforcement learning (RL).
+With systems that are designed to be used by humans directly, such problems emerge all the time due to the often unexpressible nature of an individual's preferences. This encompasses every domain of content and interaction with a digital system.
+RLHF's early applications were often in control problems and other traditional domains for reinforcement learning (RL), where the goal is to optimize a specific behavior to solve a task.
+The core idea to start the field of RLHF was "can we solve hard problems only with basic preference signals guiding the optimization process."
 RLHF became most known through the release of ChatGPT and the subsequent rapid development of large language models (LLMs) and other foundation models.
 
 The basic pipeline for RLHF involves three steps.
@@ -28,26 +29,39 @@ A summary of the early RLHF recipes is shown below in @fig:rlhf-basic.
 
 In modern language model training, RLHF is one component of post-training. 
 Post-training is a more complete set of techniques and best-practices to make language models more useful for downstream tasks [@lambert2024t].
-Post-training can be summarized as using three optimization methods:
+Post-training can be summarized as a many-stage training process using three optimization methods:
 
 1. Instruction / Supervised Finetuning (IFT/SFT), where we teach formatting and form the base of instruction following abilities. This is largely about learning *features* in language.
-2. Preference Finetuning (PreFT), where we align to human preferences (and get smaller bump in capabilities at the same time). This is largely about *style* of language and subtle human preferences that are hard to quantify.
-3. Reinforcement Finetuning (RFT). The newest type of post-training that boosts performance on verifiable domains.
+2. Preference Finetuning (PreFT), where we align to human preferences (and get smaller bump in capabilities at the same time). This is largely about *style* of language and subtle human preferences that are hard to quantify. 
+3. Reinforcement Learning with Verifiable Rewards (RLVR). The newest type of post-training that boosts performance on verifiable domains with more RL training.
 
-This book focuses on the second area, **preference finetuning**, which has more complexity than instruction tuning and is far more established than Reinforcement Finetuning.
-That being said, RLHF colloquially *is* what led to modern post-training.
-Soon after the release of ChatGPT, RLHF encompassed all of post-training.
-The foundations of RLHF involve far more than preferences alone and this book provides introductions to all the related topics.
+RLHF lives within and dominates the second area, **preference finetuning**, which has more complexity than instruction tuning due to it often involving proxy reward models of the true object and noisier data.
+At the same time, RLHF is far more established than the other popular RL method for language models, reinforcement learning with verifiable rewards. 
+For that reason, this book focuses on preference learning, but in order to completely grasp the role of RLHF, one needs to use these other training stages, so they are also explained in detail.
+
+As we consider the space of options and attention on these methods for crafting models we collectively use extensively, RLHF colloquially *is* what led to modern post-training.
+RLHF was the techniques that enabled the massive success of the release of ChatGPT, so early in 2023 RLHF encompassed much of the interest in the general field of post-training.
+RLHF is now just one piece of post-training, so in this book we map through why there was so much attention on RLHF early on, and how other methods emerged to complement it.
+
+Training language models is a very complex process, often involving large technical teams of 10s to 100s of people and millions of dollars in data and compute cost.
+This book serves three purposes to enable readers to grasp how RLHF and related models are used to craft leading models.
+First, the book distills cutting edge research often hidden withing large technology companies into clear topics and trade-offs, so readers can understand how models are made.
+Second, the book will allow users to setup basic code examples to get their hands dirty on finetuning these models themselves.
+Finally, beyond teaching the techniques for doing RLHF, this book is designed to distill intuition as to *why* RLHF is crucial to modern AI models.
+
+Due to the complexity of RLHF and how the state-of-the-art is often too complex to be done alone, this book focus on enabling readers so they have the tools needed to get jobs and start research projects in the area. 
+Others will just enjoy precisely understanding the inner workings of the technology that is the focus of countless discussions across the globe.
+A book that lays out an exact recipe of how to do RLHF for a specific need is impossible, which is why there is a large industry of companies providing RLHF training and related methods as a service worth millions of dollars.
+Still, rapid progress in AI systems means the readers who are fitted with this knowledge can approach more and more of their own training over time.
 
 ## What Does RLHF Do?
 
 The biggest question around RLHF, yet one that is still hard to answer, is "What does RLHF training offer models?"
-The core role of this book, beyond teaching the techniques for doing RLHF, is to distill intuition as to *why* RLHF is crucial to modern AI models.
 In recent years, language models have shifted from academic experiments studied in the purview of benchmarks to general purpose technology.
 RLHF is at the core of this transition.
 
 To start, let us consider how a language model at the end of autoregressive pretraining answers a query. 
-A strong model, Llama 3.1 405B, will continue from "The president of the united states in 2006 was":
+A strong model, Llama 3.1 405B Base, will continue from "The president of the united states in 2006 was":
 
 > George W. Bush, the governor of Florida in 2006 was Jeb Bush, and John McCain was an Arizona senator in 2006 - who later lost to obama.
 > September 1 -- U.S. President Bush signs an executive order to provide more options for faith-based organizations when delivering social services that are paid for with federal funds.
@@ -58,12 +72,56 @@ A strong model, Llama 3.1 405B, will continue from "The president of the united 
 What is clear is that this model is completing the sentence and adding other common internet metadata.
 
 The most compelling view of how RLHF works is to think of how *style* applies to interactions you have with language models.
-The style, or format, of information presented is crucial to how it is learned.
-This has always been the case for examples such as coursework, but is normally applied in the background and not considered directly.
+The style, closely related to tone or format, of information presented is crucial to how it is learned.
+Style is often used to describe the manner of the model. To see the difference, consider two example responses to the following question:
 
-Continuing the above example, a model trained with RLHF (and other post-training tools), would answer the question very differently. Asking Tülu 3 405B the same question "The president of the united states in 2006 was," it says concisely:
+> Help, I have to give a presentation tomorrow and I’m panicking.
+
+A blunt, low-empathy style:
+> You’ll be fine. Practice your slides a few times, get some sleep, and stop overthinking it. Just present what you know and move on.
+
+A warmer, more supportive style:
+> That sounds really stressful, and it’s a normal reaction. If you can, do one quick practice run now, pick the one or two points you most want people to remember, and then give yourself permission to rest—being clear and calm tomorrow will matter more than cramming tonight.
+
+
+On the other hand, format is how the answer is structured. 
+Modern models are known to use extensive markdown formatting with lists, linebreaks, and emojis. 
+Consider two answers to the following question that are very different:
+
+> How can I improve my sleep quality?
+
+The simple answer, from an early language model:
+
+> Try to go to bed at the same time each night, avoid caffeine late in the day, and keep your bedroom quiet and dark.
+
+Or a complex, richer answer:
+
+> Better sleep, in practice
+> 
+> **Goal**: make your schedule predictable and your environment boring enough that your brain gives up.
+> 
+> **Tonight (quick wins)**:
+> 	1.	Dim lights for the last hour before bed.
+> 	2.	No caffeine after lunch; keep alcohol minimal.
+> 	3.	If you’re stuck awake, get up and do something quiet until sleepy again.
+> 
+> **Daily basics (most impact)**:
+> 	•	Same wake time (even weekends) → anchors your body clock.
+> 	•	Morning light for 5–10 minutes → helps set circadian rhythm.
+> 	•	Cool, dark room (fan/eye mask) → easier to stay asleep.
+> 
+> **If you want a simple rule**:
+> `wake time fixed + caffeine cutoff + wind-down routine`
+> 
+> If sleep problems are persistent or severe, it can be worth talking with a clinician—many issues are very treatable.
+
+Continuing the above example, a model trained with RLHF (and other post-training tools), would answer the question very differently. 
+Asking Tülu 3 405B the same question "The president of the united states in 2006 was," it says concisely:
 
 > George W. Bush was the president of the United States in 2006. He served two terms in office, from January 20, 2001, to January 20, 2009.
+
+This change in style is downstream of the post-training methods described in this book. 
+Instruction finetuning would provide the basic ability for models to respond reliabily in the question-answer format, and RLHF is what takes these answers and crafts them into the reliable, warm, and engaging answers we now expect from language models.
 
 Modern research has established RLHF as a general method to integrate subtle stylistic and related behavioral features into the models.
 Compared to other techniques for post-training, such as instruction finetuning, RLHF generalizes far better across domains [@kirk2023understanding] [@chu2025sft] -- helping create effective general purpose models.
@@ -84,26 +142,34 @@ With this, the optimization itself is prone to *over-optimization* because our r
 With these limitations, effective RLHF requires a strong starting point, so RLHF cannot be a solution to every problem alone and needs to be approached in a broader lens of post-training.
 
 Due to this complexity, implementing RLHF is far more costly than simple instruction finetuning and can come with unexpected challenges such as length bias [@singhal2023long] [@park2024disentangling]. 
-For projects where performance matters, RLHF is established as being crucial to achieving a strong finetuned model, but it is more expensive in compute, data costs, and time.
+For model training efforts where absolute performance matters, RLHF is established as being crucial to achieving a strong finetuned model, but it is more expensive in compute, data costs, and time.
+Through the early history of RLHF after ChatGPT, there were many research papers that showed approximate solutions to RLHF via limited instruction finetuning, but as the literature matured it has been repeated time and again that RLHF and related methods are core stages to model performance that cannot be dispensed with quickly.
 
 ## An Intuition for Post-Training
 
-Here's a simple analogy for how so many gains can be made on mostly the same base model.
+We've established that RLHF specifically and post-training generally is crucial to performance of the latest models and how it changes the models' outputs, but not why it works.
+Here's a simple analogy for how so many gains can be made on benchmarks ontop of any base model.
 
-The intuition I've been using to understand the potential of post-training is called the elicitation interpretation of post-training, where all we are doing is extracting and amplifying valuable behaviors in the base model.
+The way I've been describing the potential of post-training is called the elicitation interpretation of post-training, where all we are doing is extracting potential by amplifying valuable behaviors in the base model.
 
+To make this example click, we make the analogy between the base model -- the language model that comes out of the large-scale, next-token prediction pretraining -- and other foundational components in building complex systems. We use the example of the chassis of a car, which defines the space where a car can be built around it.
 Consider Formula 1 (F1), most of the teams show up to the beginning of the year with a new chassis and engine. Then, they spend all year on aerodynamics and systems changes (of course, it is a minor oversimplification), and can dramatically improve the performance of the car. The best F1 teams improve way more during a season than chassis-to-chassis.
 
-The same is true for post-training. The best post-training teams extract a ton of performance in a very short time frame. The set of techniques is everything after the end of most of pretraining. It includes "mid-training" like annealing / high-quality end of pre-training web data, instruction tuning, RLVR, preference-tuning, etc. A good example is our change from the first version of OLMoE Instruct to the second --- the post-training evaluation average from 35 to 48 without touching the majority of pretraining [@ai2_olmoe_ios_2025].
+The same is true for post-training, where one can extract a ton of performance out of a static base model as they learn more about its quirks and tendencies. The best post-training teams extract a ton of performance in a very short time frame. The set of techniques is everything after the end of most of pretraining. It includes "mid-training" like annealing / high-quality end of pre-training web data, instruction tuning, RLVR, preference-tuning, etc. A good example is the change from the first version of the Allen Institute for AI's fully-open, small Mixture-of-Experts (MoE) model OLMoE Instruct to the second. The first model was released in the fall of 2024 [@muennighoff2024olmoe], and with the second version only updating the the post-training, the evaluation average on popular benchmarks went from from 35 to 48 without changing the majority of pretraining [@ai2_olmoe_ios_2025].
 
-Then, when you look at models such as GPT-4.5, you can see this as a way more dynamic and exciting base for OpenAI to build onto. 
-We also know that bigger base models can absorb far more diverse changes than their smaller counterparts.
+The idea is that there is a lot of intelligence and ability within base models, but because they can only answer in next-token prediction and not question-answering format, it takes a lot of work building around them, through post-training, in order to make excellent final models.
 
-This is to say that scaling also allows post-training to move faster. Of course, to do this, you need the infrastructure to train the models. This is why all the biggest companies are still building gigantic clusters.
+Then, when you look at models such as OpenAI's GPT-4.5 released in February 2025, which was largely a failure of a consumer product due to being too large of a base model to serve to millions of users, you can see this as a way more dynamic and exciting base for OpenAI to build onto.
+With this intuition, base models determine the vast majority of the potential of a final model, and post-training's job is to cultivate all of it.
+<!-- We also know that bigger base models can absorb far more diverse changes than their smaller counterparts, as discussed in the foundational DeepSeek R1 report [@guo2025deepseek]. -->
 
+<!-- This is to say that scaling also allows post-training to move faster. Of course, to do this, you need the infrastructure to train the models. This is why all the biggest companies are still building gigantic clusters. -->
+
+I've described this intuition as the Ellicitation Theory of Post-training.
 This theory folds in with the reality that the majority of gains users are seeing are from post-training because it implies that there is more latent potential in a model pretraining on the internet than we can teach the model simply --- such as by passing certain narrow samples in repeatedly during early types of post-training (i.e. only instruction tuning).
+The challenge of post-training is to reshape models from next-token prediction to conversation question-answering, while extracting all of this knowledge and intelligence from pretraining.
 
-Another name for this theory is the Superficial Alignment Hypothesis, coined in the paper LIMA: Less is More for Alignment [@zhou2023lima]. This paper is getting some important intuitions right but for the wrong reasons in the big picture. The authors state:
+A related idea to this theory is the Superficial Alignment Hypothesis, coined in the paper LIMA: Less is More for Alignment [@zhou2023lima]. This paper is getting some important intuitions right but for the wrong reasons in the big picture. The authors state:
 
 > A model's knowledge and capabilities are learnt almost entirely during pretraining, while alignment teaches it which subdistribution of formats should be used when interacting with users. If this hypothesis is correct, and alignment is largely about learning style, then a corollary of the Superficial Alignment Hypothesis is that one could sufficiently tune a pretrained language model with a rather small set of examples [Kirstain et al., 2021].
 
@@ -139,13 +205,11 @@ The companies that embraced it early ended up winning out.
 Anthropic published extensive research on RLHF through 2022 and is now argued to have the best post-training [@askell2021general] [@bai2022training] [@bai2022constitutional]. 
 The delta between open groups, struggling to reproduce, or even knowing basic closed techniques, is a common theme.
 
-The first shift in open alignment methods and post-training was the story of Direct Preference Optimization (DPO) [@rafailov2024direct]. 
+The first shift in open alignment methods and post-training was the story of Direct Preference Optimization (DPO) [@rafailov2024direct], which showed that you can solve the same optimization problem as RLHF with fewer moving parts by taking gradient steps directly on pairwise preference data. 
 The DPO paper, posted in May of 2023, didn't have any clearly impactful models trained with it going through the fall of 2023. 
 This changed with the releases of a few breakthrough DPO models -- all contingent on finding a better, lower, learning rate. 
 Zephyr-Beta [@tunstall2023zephyr], Tülu 2 [@ivison2023camels], and many other models showed that the DPO era of post-training had begun. 
 Chris Manning literally thanked me for "saving DPO." 
-This is how fine the margins are on evolutions of best practices with leading labs being locked down. 
-Open post-training was cruising again.
 
 Preference-tuning was something you needed to do to meet the table stakes of releasing a good model since late 2023. 
 The DPO era continued through 2024, in the form of never-ending variants on the algorithm, but we were very far into another slump in open recipes. 
@@ -243,7 +307,7 @@ He has written extensively on RLHF, including [many blog posts](https://www.inte
 
 With the investment in language modeling, many variations on the traditional RLHF methods emerged.
 RLHF colloquially has become synonymous with multiple overlapping approaches. 
-RLHF is a subset of preference fine-tuning (PreFT) techniques, including Direct Alignment Algorithms (See Chapter 12).
+RLHF is a subset of preference fine-tuning (PreFT) techniques, including Direct Alignment Algorithms (See Chapter 12), which are the class of methods downstream of DPO that solve the preference learning problem by taking gradient steps directly on preference data, rather than learning an intermediate reward model.
 RLHF is the tool most associated with rapid progress in "post-training" of language models, which encompasses all training after the large-scale autoregressive training on primarily web data. 
 This textbook is a broad overview of RLHF and its directly neighboring methods, such as instruction tuning and other implementation details needed to set up a model for RLHF training.
 
