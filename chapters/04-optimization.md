@@ -88,7 +88,7 @@ In many ways, the result is that while RLHF is heavily inspired by RL optimizers
 
 ### Finetuning and Regularization
 
-In traditional RL problems, the agent must learn from a randomly initialized policy, but with RLHF, we start from a a strong pretrained base model with many initial capabilities.
+In traditional RL problems, the agent must learn from a randomly initialized policy, but with RLHF, we start from a strong pretrained base model with many initial capabilities.
 This strong prior for RLHF induces a need to control the optimization from drifting too far from the initial policy.
 In order to succeed in a finetuning regime, RLHF techniques employ multiple types of regularization to control the optimization.
 The goal is to allow the reward maximization to still occur without the model succumbing to over-optimization, as discussed in Chapter 18.
@@ -122,8 +122,8 @@ There is a general trend of post-training involving more optimization steps with
 
 ### InstructGPT
 
-Around the time ChatGPT first came out, the widely accepted ("canonical") method for post-training a LM had major three steps, with RLHF being the central piece [@lambert2022illustrating] [@ouyang2022training] [@bai2022training].
-The three steps taken on top of a "base" language model (the next-token prediction model trained on large-scale web text) was, summarized below in @fig:rlhf-basic-repeat:
+Around the time ChatGPT first came out, the widely accepted ("canonical") method for post-training an LM had three major steps, with RLHF being the central piece [@lambert2022illustrating] [@ouyang2022training] [@bai2022training].
+The three steps taken on top of a "base" language model (the next-token prediction model trained on large-scale web text) are summarized below in @fig:rlhf-basic-repeat:
 
 1. **Instruction tuning on ~10K examples**: This teaches the model to follow the question-answer format and teaches some basic skills from primarily human-written data.
 2. **Training a reward model on ~100K pairwise prompts**: This model is trained from the instruction-tuned checkpoint and captures the diverse values one wishes to model in their final training. The reward model is the optimization target for RLHF.
@@ -151,7 +151,7 @@ The Tülu 3 recipe consists of three stages:
 
 1. **Instruction tuning on ~1M examples**: This primarily synthetic data from a mix of frontier models such as GPT-4o and Llama 3.1 405B teaches the model general instruction following and serves as the foundation of a variety of capabilities such as mathematics or coding.
 2. **On-policy preference data on ~1M preference pairs**: This stage substantially boosts the chattiness (e.g. ChatBotArena or AlpacaEval 2) of the model while also improving skills mentioned above in the instruction tuning stage.
-3. **Reinforcement Learning with Verifiable Rewards on ~10K prompts**: This stage is a small scale reinforcement learning run to boost core skill such as mathematic while maintaining overall performance (and is now seen as a precursor to modern reasoning models such as DeepSeek R1).
+3. **Reinforcement Learning with Verifiable Rewards on ~10K prompts**: This stage is a small scale reinforcement learning run to boost core skills such as mathematics while maintaining overall performance (and is now seen as a precursor to modern reasoning models such as DeepSeek R1).
 
 The recipe has been successfully applied to Llama 3.1 [@lambert2024t], OLMo 2 [@olmo20242], and SmolLM models [@alrashed2024smoltulu].
 
