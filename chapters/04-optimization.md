@@ -8,29 +8,64 @@ next-url: "05-preferences"
 
 # Training Overview
 
+In this chapter we provide a cursory overview of RLHF training.
+We introduce the core objective, which is optimizing a proxy of reward of human preferences with a distance-based regularizer.
+Then we showcase canonical recipes which use RLHF to create leading models to show how RLHF fits in with the rest of post-training methods.
+
 ## Problem Formulation
 
 The optimization of reinforcement learning from human feedback (RLHF) builds on top of the standard RL setup.
-In RL, an agent takes actions, $a$, sampled from a policy, $\pi$, with respect to the state of the environment, $s$, to maximize reward, $r$ [@sutton2018reinforcement].
-Traditionally, the environment evolves with respect to a transition or dynamics function $p(s_{t+1}|s_t, a_t)$.
-Hence, across a finite episode, the goal of an RL agent is to solve the following optimization:
+In RL, an agent takes actions $a_t$ sampled from a policy $\pi(a_t\mid s_t)$ given the state of the environment $s_t$ to maximize reward $r(s_t,a_t)$ [@sutton2018reinforcement].
+Traditionally, the environment evolves according to transition (dynamics) $p(s_{t+1}\mid s_t, a_t)$ with an initial state distribution $\rho_0(s_0)$.
+Together, the policy and dynamics induce a trajectory distribution:
 
-$$J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[ \sum_{t=0}^{\infty} \gamma^t r(s_t, a_t) \right],$$ {#eq:rl_opt}
+$$p_{\pi}(\tau)=\rho_0(s_0)\prod_{t=0}^{T-1}\pi(a_t\mid s_t)\,p(s_{t+1}\mid s_t,a_t).$$ {#eq:rl_dynam}
 
-where $\gamma$ is a discount factor from 0 to 1 that balances the desirability of near- versus future-rewards.
+Across a finite episode with horizon $T$, the goal of an RL agent is to solve the following optimization:
+
+$$J(\pi) = \mathbb{E}_{\tau \sim p_{\pi}} \left[ \sum_{t=0}^{T-1} \gamma^t r(s_t, a_t) \right],$$ {#eq:rl_opt}
+
+For continuing tasks, one often takes $T\to\infty$ and relies on discounting ($\gamma<1$) to keep the objective well-defined.
+$\gamma$ is a discount factor from 0 to 1 that balances the desirability of near- versus future-rewards.
 Multiple methods for optimizing this expression are discussed in Chapter 11.
 
 ![Standard RL loop](images/rl.png){#fig:rl width=320px .center}
 
-A standard illustration of the RL loop is shown in @fig:rl and how it compares to @fig:rlhf.
+A standard illustration of the RL loop is shown in @fig:rl and (compare this to the RLHF loop in @fig:rlhf).
+
+### Example RL Task: CartPole
+
+To make the transition function concrete, consider the classic *CartPole* (inverted pendulum) control task.
+
+- **State ($s_t$)**: the cart position/velocity and pole angle/angular velocity,
+
+  $$s_t = (x_t,\,\dot{x}_t,\,\theta_t,\,\dot{\theta}_t).$$
+
+- **Action ($a_t$)**: apply a left/right horizontal force to the cart, e.g. $a_t \in \{-F, +F\}$.
+
+- **Reward ($r$)**: a simple reward is $r_t = 1$ each step the pole remains balanced and the cart stays on the track (e.g. $|x_t| \le 2.4$ and $|\theta_t| \le 12^\circ$), and the episode terminates when either bound is violated.
+
+- **Dynamics / transition ($p(s_{t+1}\mid s_t,a_t)$)**: in many environments the dynamics are deterministic (so $p$ is a point mass) and can be written as $s_{t+1} = f(s_t,a_t)$ via Euler integration with step size $\Delta t$. A standard simplified CartPole update uses constants cart mass $m_c$, pole mass $m_p$, pole half-length $l$, and gravity $g$:
+
+  $$\text{temp} = \frac{a_t + m_p l\,\dot{\theta}_t^2\sin\theta_t}{m_c + m_p}$$
+
+  $$\ddot{\theta}_t = \frac{g\sin\theta_t - \cos\theta_t\,\text{temp}}{l\left(\tfrac{4}{3} - \frac{m_p\cos^2\theta_t}{m_c + m_p}\right)}$$
+
+  $$\ddot{x}_t = \text{temp} - \frac{m_p l\,\ddot{\theta}_t\cos\theta_t}{m_c + m_p}$$
+
+  $$x_{t+1}=x_t+\Delta t\,\dot{x}_t,\quad \dot{x}_{t+1}=\dot{x}_t+\Delta t\,\ddot{x}_t,$$
+  $$\theta_{t+1}=\theta_t+\Delta t\,\dot{\theta}_t,\quad \dot{\theta}_{t+1}=\dot{\theta}_t+\Delta t\,\ddot{\theta}_t.$$
+
+This is a concrete instance of the general setup above: the policy chooses $a_t$, the transition function advances the state, and the reward is accumulated over the episode.
 
 ### Manipulating the Standard RL Setup
 
+The RL formulation for RLHF is seen as a less open-ended problem, where a few key pieces of RL are set to specific definitions in order to accommodate language models.
 There are multiple core changes from the standard RL setup to that of RLHF:
 
-1. Switching from a reward function to a reward model. In RLHF, a learned model of human preferences, $r_\theta(s_t, a_t)$ (or any other classification model) is used instead of an environmental reward function. This gives the designer a substantial increase in the flexibility of the approach and control over the final results.
-2. No state transitions exist. In RLHF, the initial states for the domain are prompts sampled from a training dataset and the "action" is the completion to said prompt. During standard practices, this action does not impact the next state and is only scored by the reward model.
-3. Response level rewards. Often referred to as a bandit problem, RLHF attribution of reward is done for an entire sequence of actions, composed of multiple generated tokens, rather than in a fine-grained manner. 
+1. **Switching from a reward function to a reward model.** In RLHF, a learned model of human preferences, $r_\theta(s_t, a_t)$ (or any other classification model) is used instead of an environmental reward function. This gives the designer a substantial increase in the flexibility of the approach and control over the final results, but at the cost of implementation complexity. In standard RL, the reward is seen as a static piece of the environment that cannot be changed or manipulated by the person designing the learning agent.
+2. **No state transitions exist.** In RLHF, the initial states for the domain are prompts sampled from a training dataset and the "action" is the completion to said prompt. During standard practices, this action does not impact the next state and is only scored by the reward model.
+3. **Response level rewards.** Often referred to as a bandit problem, RLHF attribution of reward is done for an entire sequence of actions, composed of multiple generated tokens, rather than in a fine-grained manner. 
 
 Given the single-turn nature of the problem, the optimization can be re-written without the time horizon and discount factor (and the reward models):
 $$J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t) \right].$$ {#eq:rl_opt_int}
@@ -119,4 +154,3 @@ The DeepSeek recipe follows:
 
 As above, there are evolutions of the recipe, particularly with steps 3 and 4 to finalize the model before exposing it to users.
 Many models start with tailored instruction datasets with Chain of Thought sequences that are heavily filtered and polished from existing models, providing a fast step to strong behaviors with SFT alone before moving onto RL [@seed2025seed].
-
