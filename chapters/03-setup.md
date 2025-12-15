@@ -64,9 +64,9 @@ $$ D_{KL}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\frac{P(x)}{Q(x)}\r
 
 - **Trajectory ($\tau$)**: A trajectory $\tau$ is a sequence of states, actions, and rewards experienced by an agent: $\tau = (s_0, a_0, r_0, s_1, a_1, r_1, ..., s_T, a_T, r_T)$. 
 
-- **Trajectory Distribution ($(\tau\mid\pi)$)**: The probability of a trajectory under policy $\pi$ is $P(\tau\mid\pi) = p(s_0)\prod_{t=0}^T \pi(a_t\mids_t)p(s_{t+1}\mids_t,a_t)$, where $p(s_0)$ is the prior state distribution and $p(s_{t+1}\mids_t,a_t)$ is the transition probability. 
+- **Trajectory Distribution ($(\tau\mid\pi)$)**: The probability of a trajectory under policy $\pi$ is $P(\tau\mid\pi) = p(s_0)\prod_{t=0}^T \pi(a_t\mid s_t)p(s_{t+1}\mid s_t,a_t)$, where $p(s_0)$ is the prior state distribution and $p(s_{t+1}\mid s_t,a_t)$ is the transition probability. 
 
-- **Policy ($\pi$)**, also called the **policy model** in RLHF: In RL, a policy is a strategy or rule that the agent follows to decide which action to take in a given state: $\pi(a\mids)$. 
+- **Policy ($\pi$)**, also called the **policy model** in RLHF: In RL, a policy is a strategy or rule that the agent follows to decide which action to take in a given state: $\pi(a\mid s)$. 
 
 - **Discount Factor ($\gamma$)**: A scalar $0 \le \gamma < 1$ that exponentially down-weights future rewards in the return, trading off immediacy versus long-term gain and guaranteeing convergence for infinite-horizon sums. Sometimes discounting is not used, which is equivalent to $\gamma=1$.
 

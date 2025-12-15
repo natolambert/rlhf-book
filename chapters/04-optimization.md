@@ -62,10 +62,22 @@ This is a concrete instance of the general setup above: the policy chooses $a_t$
 
 The RL formulation for RLHF is seen as a less open-ended problem, where a few key pieces of RL are set to specific definitions in order to accommodate language models.
 There are multiple core changes from the standard RL setup to that of RLHF:
+Table @tbl:rl-vs-rlhf summarizes these differences between standard RL and the RLHF setup used for language models.
 
 1. **Switching from a reward function to a reward model.** In RLHF, a learned model of human preferences, $r_\theta(s_t, a_t)$ (or any other classification model) is used instead of an environmental reward function. This gives the designer a substantial increase in the flexibility of the approach and control over the final results, but at the cost of implementation complexity. In standard RL, the reward is seen as a static piece of the environment that cannot be changed or manipulated by the person designing the learning agent.
 2. **No state transitions exist.** In RLHF, the initial states for the domain are prompts sampled from a training dataset and the "action" is the completion to said prompt. During standard practices, this action does not impact the next state and is only scored by the reward model.
-3. **Response level rewards.** Often referred to as a bandit problem, RLHF attribution of reward is done for an entire sequence of actions, composed of multiple generated tokens, rather than in a fine-grained manner. 
+3. **Response level rewards.** Often referred to as a bandit problem, RLHF attribution of reward is done for an entire sequence of actions, composed of multiple generated tokens, rather than in a fine-grained manner.
+
+::: {.table-wrap}
+| Aspect | Standard RL | RLHF (language models) |
+|---|---|---|
+| Reward signal | Environment reward function $r(s_t,a_t)$ | Learned reward / preference model $r_\theta(x,y)$ (prompt $x$, completion $y$) |
+| State transition | Yes: dynamics $p(s_{t+1}\mid s_t,a_t)$ | Typically no: prompts $x$ sampled from a dataset; the completion does not define the next prompt |
+| Action | Single environment action $a_t$ | A completion $y$ (a sequence of tokens) sampled from $\pi_\theta(\cdot\mid x)$ |
+| Reward granularity | Often per-step / fine-grained | Usually response-level (bandit-style) over the full completion |
+| Horizon | Multi-step episode ($T>1$) | Often single-step ($T=1$), though multi-turn can be modeled as longer-horizon |
+Table: Key differences between standard RL and RLHF for language models. {#tbl:rl-vs-rlhf}
+:::
 
 Given the single-turn nature of the problem, the optimization can be re-written without the time horizon and discount factor (and the reward models):
 $$J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t) \right].$$ {#eq:rl_opt_int}
@@ -76,8 +88,10 @@ In many ways, the result is that while RLHF is heavily inspired by RL optimizers
 
 ### Finetuning and Regularization
 
-RLHF is implemented from a strong base model, which induces a need to control the optimization from straying too far from the initial policy.
+In traditional RL problems, the agent must learn from a randomly initialized policy, but with RLHF, we start from a a strong pretrained base model with many initial capabilities.
+This strong prior for RLHF induces a need to control the optimization from drifting too far from the initial policy.
 In order to succeed in a finetuning regime, RLHF techniques employ multiple types of regularization to control the optimization.
+The goal is to allow the reward maximization to still occur without the model succumbing to over-optimization, as discussed in Chapter 18.
 The most common change to the optimization function is to add a distance penalty on the difference between the current RLHF policy and the starting point of the optimization:
 
 $$J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t)\right] - \beta  \mathcal{D}_{KL}(\pi^{\text{RL}}(\cdot|s_t) \| \pi^{\text{ref}}(\cdot|s_t)).$$ {#eq:rlhf_opt_eq}
@@ -108,7 +122,7 @@ There is a general trend of post-training involving more optimization steps with
 
 ### InstructGPT
 
-The canonical RLHF recipe circa the release of ChatGPT followed a standard three step post-training recipe where RLHF was the center piece [@lambert2022illustrating] [@ouyang2022training] [@bai2022training].
+Around the time ChatGPT first came out, the widely accepted ("canonical") method for post-training a LM had major three steps, with RLHF being the central piece [@lambert2022illustrating] [@ouyang2022training] [@bai2022training].
 The three steps taken on top of a "base" language model (the next-token prediction model trained on large-scale web text) was, summarized below in @fig:rlhf-basic-repeat:
 
 1. **Instruction tuning on ~10K examples**: This teaches the model to follow the question-answer format and teaches some basic skills from primarily human-written data.
@@ -147,10 +161,11 @@ With the rise of reasoning language models, such as OpenAI's o1, the best practi
 The clearest documentation of a reasoning model post-training recipe is DeepSeek R1 [@guo2025deepseek], which has been mirrored by Alibaba's larger Qwen 3 models (i.e. only the 32B and 225B MoE models) [@yang2025qwen3] or Xiaomi's MiMo 7B [@xia2025mimo].
 The DeepSeek recipe follows:
 
-1. **"Cold-start" of 100K+ on-policy reasoning samples**: This data is sampled from an earlier RL checkpoint, R1-Zero, and heavily filtered to instill a specific reasoning process on the model.
+1. **"Cold-start" of 100K+ on-policy reasoning samples**: This data is sampled from an earlier RL checkpoint, R1-Zero, and heavily filtered to instill a specific reasoning process on the model. DeepSeek uses the term cold-start to describe how RL is learned from little supervised data.
 2. **Large-scale reinforcement learning training**: This stage repeatedly covers reasoning problems with the model, running RLVR "until convergence" on a variety of benchmarks.
 3. **Rejection sampling** on 3/4 reasoning problems and 1/4 general queries to start the transition to a general-purpose model.
 4. **Mixed reinforcement learning training** on reasoning problems (verifiable rewards) with general preference tuning reward models to polish the model.
 
 As above, there are evolutions of the recipe, particularly with steps 3 and 4 to finalize the model before exposing it to users.
 Many models start with tailored instruction datasets with Chain of Thought sequences that are heavily filtered and polished from existing models, providing a fast step to strong behaviors with SFT alone before moving onto RL [@seed2025seed].
+
