@@ -8,7 +8,7 @@ next-url: "04-optimization"
 
 # Definitions & Background
 
-This chapter includes all the definitions, symbols, and operations frequently used in the RLHF process and with a quick overview of language models (the common optimization target of this book).
+This chapter includes all the definitions, symbols, and operations frequently used in the RLHF process and with a quick overview of language models, which is the guiding application of this book.
 
 ## Language Modeling Overview
 
@@ -25,12 +25,12 @@ $$\mathcal{L}_{\text{LM}}(\theta)=-\,\mathbb{E}_{x \sim \mathcal{D}}\left[\sum_{
 
 In practice, one uses a cross-entropy loss with respect to each next-token prediction, computed by comparing the true token in a sequence to what was predicted by the model.
 
-Implementing a language model can take many forms.
+Language models come in many architectures with different trade-offs in terms of knowledge, speed, and other performance characteristics.
 Modern LMs, including ChatGPT, Claude, Gemini, etc., most often use **decoder-only Transformers** [@Vaswani2017AttentionIA].
 The core innovation of the Transformer was heavily utilizing the **self-attention** [@Bahdanau2014NeuralMT] mechanism to allow the model to directly attend to concepts in context and learn complex mappings.
 Throughout this book, particularly when covering reward models in Chapter 7, we will discuss adding new heads or modifying a language modeling (LM) head of the transformer.
 The LM head is a final linear projection layer that maps from the models internal embedding space to the tokenizer space (a.k.a. vocabulary).
-Different heads can be used to re-use the internals of the model and fine-tune it to output differently shaped quantities.
+We'll see in this book that different "heads" of a language model can be applied to finetune the model to different purposes -- in RLHF this is most often done when training a reward model, which is highlighted in Chapter 7.
 
 ## ML Definitions
 
@@ -50,7 +50,7 @@ $$ D_{KL}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\frac{P(x)}{Q(x)}\r
 
 - **Rejected Completion ($y_r$)**: The disfavored completion in a pairwise setting.
 
-- **Preference Relation ($\succ$)**: A symbol indicating that one completion is preferred over another, e.g., $y_{chosen} \succ y_{rejected}$. E.g. a reward model predicts the probability of a preference releation, $P(y_c \succ y_r | x)$.
+- **Preference Relation ($\succ$)**: A symbol indicating that one completion is preferred over another, e.g., $y_{chosen} \succ y_{rejected}$. E.g. a reward model predicts the probability of a preference relation, $P(y_c \succ y_r | x)$.
 
 - **Policy ($\pi$)**: A probability distribution over possible completions, parameterized by $\theta$: $\pi_\theta(y|x)$.
 
@@ -64,7 +64,7 @@ $$ D_{KL}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\frac{P(x)}{Q(x)}\r
 
 - **Trajectory ($\tau$)**: A trajectory $\tau$ is a sequence of states, actions, and rewards experienced by an agent: $\tau = (s_0, a_0, r_0, s_1, a_1, r_1, ..., s_T, a_T, r_T)$. 
 
-- **Trajectory Distribution ($(\tau|\pi)$)**: The probability of a trajectory under policy $\pi$ is $P(\tau|\pi) = p(s_0)\prod_{t=0}^T \pi(a_t|s_t)p(s_{t+1}|s_t,a_t)$, where $p(s_0)$ is the initial state distribution and $p(s_{t+1}|s_t,a_t)$ is the transition probability. 
+- **Trajectory Distribution ($(\tau|\pi)$)**: The probability of a trajectory under policy $\pi$ is $P(\tau|\pi) = p(s_0)\prod_{t=0}^T \pi(a_t|s_t)p(s_{t+1}|s_t,a_t)$, where $p(s_0)$ is the prior state distribution and $p(s_{t+1}|s_t,a_t)$ is the transition probability. 
 
 - **Policy ($\pi$)**, also called the **policy model** in RLHF: In RL, a policy is a strategy or rule that the agent follows to decide which action to take in a given state: $\pi(a|s)$. 
 
@@ -76,7 +76,7 @@ $$ D_{KL}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\frac{P(x)}{Q(x)}\r
 
 - **Advantage Function ($A$)**: The advantage function $A(s,a)$ quantifies the relative benefit of taking action $a$ in state $s$ compared to the average action. It's defined as $A(s,a) = Q(s,a) - V(s)$. Advantage functions (and value functions) can depend on a specific policy, $A^\pi(s,a)$. 
 
-- **Policy-conditioned Values ($[]^{\pi(\cdot)}$)**: Across RL derivations and implementations, a crucial component of the theory and practice is collecting data or values conditioned on a specific policy. Throughout this book we will switch between the simpler notation of value functions et al. ($V,A,Q,G$) and their specific policy-conditioned values ($V^\pi,A^\pi,Q^\pi$). Also crucial in the expected value computation is sampling from data $d$, that is conditioned on a specific policy, $d_\pi$.
+- **Policy-conditioned Values ($[]^{\pi(\cdot)}$)**: Across RL derivations and implementations, a crucial component of the theory and practice is collecting data or values conditioned on a specific policy. Throughout this book we will switch between the simpler notation of value functions ($V,A,Q,G$) and their specific policy-conditioned values ($V^\pi,A^\pi,Q^\pi$). Also crucial in the expected value computation is sampling from data $d$, that is conditioned on a specific policy, $d_\pi$ (e.g., $s \sim d_\pi$ and $a \sim \pi(\cdot\mid s)$ when estimating $\mathbb{E}_{s\sim d_\pi,\,a\sim\pi(\cdot\mid s)}[A^\pi(s,a)]$).
 
 - **Expectation of Reward Optimization**: The primary goal in RL, which involves maximizing the expected cumulative reward:
 
