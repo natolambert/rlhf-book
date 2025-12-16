@@ -186,7 +186,7 @@ If you have credibility in the AI ecosystem, the best data companies will want y
 Discounts are often also given on the first batches of data to get training teams hooked.
 
 If you're a new entrant in the space, you may have a hard time getting the data you need quickly. 
-Data vendors are known to prioritize large budget line-items and new customers that have a influential brand or potential for large future revenue.
+Data vendors are known to prioritize large budget line-items and new customers that have an influential brand or potential for large future revenue.
 This is, in many business ways, natural, as the data foundry companies are often supply-limited in their ability to organize humans for effective data labelling.
 <!-- Getting the tail of interested buying parties that Scale AI had to turn away is an option for the new data startups. 
 It's likely their primary playbook to bootstrap revenue. -->
