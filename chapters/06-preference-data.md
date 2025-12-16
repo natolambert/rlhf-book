@@ -9,27 +9,21 @@ next-url: "07-reward-models"
 # Preference Data
 
 Preference data is the engine of preference finetuning and reinforcement learning from human feedback. 
-The data is the signal groups collect in order to then match behaviors they desire and avoid the others.
-Within preference finetuning, many methods for collecting and using said data have been proposed, but until human preferences can be captured in a clear reward function, this process of collecting labeled preference data will be central to RLHF and related techniques.
+The core problem we've been trying to solve with RLHF is that we cannot precisely model human rewards and preferences for AI models' outputs -- as in write clearly defined loss functions to optimize against -- so preference data is the proxy signal we use to tune our models.
+The data is what allows us to match behaviors we desire and avoid some failure modes we hate.
+The data is so rich of a source that it is difficult to replace this style of optimization at all.
+Within preference finetuning, many methods for collecting and using said data have been proposed, and given that human preferences cannot be captured in a clear reward function, many more will come to enable this process of collecting labeled preference data at the center of RLHF and related techniques.
 
 ## Why We Need Preference Data
 
-The preference data is needed for RLHF because directly capturing complex human values in a single reward function is effectively impossible.
+The preference data is needed for RLHF because directly capturing complex human values in a single reward function is effectively impossible, as discussed in the previous Chapter 5, where substantial context of psychology, economics, and philosophy shows that accurately modeling human preferences is a impossible problem to ever completely solve.
 Collecting this data to train reward models is one of the original ideas behind RLHF [@leike2018scalable] and has continued to be used extensively throughout the emergence of modern language models.
 One of the core intuitions for *why this data works so well* is that it is far easier, both for humans and AI models supervising data collection, to differentiate between a good and a bad answer for a prompt than it is to generate a good answer on its own. 
 This chapter focuses on the *mechanics* of getting preference data and the best-practices depend on the specific problem being solved.
 
-## Bias
-
-Human preference data is known to contain many forms of bias, e.g. prefix bias [@kumar2025detecting], that can be passed to the final model [@bharadwaj2025flatteryflufffogdiagnosing].
-These issues are often subtle and vary in how applicable interventions to mitigate them are.
-For many, such as sycophancy [@sharma2023towards], they reflect issues within humans that are often outside of the labeling criteria.
-Others, such as verbosity [@singhal2023long] [@bu2025beyond] or formatting habits [@zhang2024lists], emerge for a similar reason, but they are easier to detect and mitigate in training.
-
-
 ## Collecting Preference Data
 
-Getting the most out of human data involves iterative training of models, evolving and highly detailed data instructions, translating through data foundry businesses, and other challenges that add up. 
+Getting the most out of human data involves iterative training of models, evolving and highly detailed data instructions, translating instructions through data foundry businesses that mediate collection (or hiring a meaningful amount of annotators), and other challenges that add up. 
 The same applies for AI feedback data -- the exact balance between human and AI preference data used for the latest AI models is unknown.
 Regardless, the process is difficult for new organizations trying to add human data to their pipelines. 
 Given the sensitivity, processes that work and improve the models are extracted until the performance runs out.
@@ -41,23 +35,23 @@ In this chapter we detail technical decisions on how the data is formatted and o
 Crucial to collecting preference data is the interface by which one interacts with the model.
 An example interface is shown below from [@bai2022training]:
 
-![Example preference data collection interface. Bai et al. 2022. License CC-BY.](images/anthropic-interface.png){#fig:preference-interface .center}
+![An example of one of the earliest preference data collection interface, from Anthropic's research. Bai et al. 2022. License CC-BY.](images/anthropic-interface.png){#fig:preference-interface .center}
 
 This is a *training-data only* interface. 
 Now that these models are popular, applications often expose data directly to the users for testing.
 An example interaction of this form is shown below for an earlier version of ChatGPT.
 
-![Example preference data collection interface.](images/chatgpt-ab-test.jpeg){#fig:preference-chatgpt .center}
+![Example preference data collection interface from when I was served two completions from different ChatGPT beta models.](images/chatgpt-ab-test.jpeg){#fig:preference-chatgpt .center}
 
 This style of interface is used extensively across the industry, such as for *evaluation* of models given the same format.
 A popular public option to engage with models in this way is ChatBotArena [@chiang2024chatbot]:
 
-![Example preference data collection interface.](images/chatbotarena.png){#fig:chatbotarena .center}
+![Example preference data collection interface from an early version of the popular LMArena benchmark.](images/chatbotarena.png){#fig:chatbotarena .center}
 
 For models in the wild, one of the most common techniques is to collect feedback on if a specific response was positive or negative.
 An example from the Ai2 playground is shown below with thumbs up and down indicators:
 
-![Example preference data collection interface with up or down arrow.](images/up-down-vote.png){#fig:up-down .center}
+![Example preference data collection interface with up or down arrow from the Allen Institute of AI's research demos.](images/up-down-vote.png){#fig:up-down .center}
 
 In domains other than language, the same core principles apply, even though these domains are not the focus of this book.
 For every Midjourney generation (and most popular image generators) they expose multiple responses to users.
@@ -201,6 +195,15 @@ Not many organizations have the bandwidth and expertise to make full use of huma
 This experience, especially relative to the simplicity of synthetic data, makes me wonder how well these companies will be doing in the next decade.
 
 Note that this section *does not* mirror the experience for buying human-written instruction data, where the process is less of a time crunch.
+
+## Bias: Things to Watch Out For in Data Collection
+
+While preference data is essentially, it's also known to be prone to many subtle biases that can make its collection error-prone.
+These biases are so common, e.g. prefix bias (where the beginning of a completion disproportionately drives the preference) [@kumar2025detecting], that they can easily be passed to the final model [@bharadwaj2025flatteryflufffogdiagnosing] (and especially as we know that models are only as good as their data).
+These issues are often subtle and vary in how applicable interventions to mitigate them are.
+For many, such as sycophancy (over-agreeing with the user’s stated beliefs or flattering them, even when it reduces truthfulness) [@sharma2023towards], they reflect issues within humans that are often outside of the labeling criteria that one will think of providing to the annotation partner or labelers.
+Others, such as verbosity [@singhal2023long] [@bu2025beyond] or formatting habits [@zhang2024lists], emerge for a similar reason, but they are easier to detect and mitigate in training.
+Mitigating these subtle biases in data is the difference between good or great preference data, and therefore good or great RLHF training.
 
 ## Open Questions in RLHF Preference Data
 
