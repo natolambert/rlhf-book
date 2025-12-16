@@ -33,7 +33,7 @@ $$P(i > j) = \frac{p_i}{p_i + p_j}.$$ {#eq:bradterry}
 The Bradley-Terry model assumes that each item has a latent strength $p_i > 0$, and that observed preferences are a noisy reflection of these underlying strengths.
 It is common to reparametrize the Bradley-Terry model with unbounded scores, where $p_i = e^{r_i}$, which results in the following form:
 
-$$P(i > j) = \frac{e^{r_i}}{e^{r_i} + e^{r_j}} = \sigmoid(r_i-r_j).$$ {#eq:bradterry_unbounded}
+$$P(i > j) = \frac{e^{r_i}}{e^{r_i} + e^{r_j}} = \sigma(r_i-r_j).$$ {#eq:bradterry_unbounded}
 
 Only differences in scores matter: adding the same constant to all $r_i$ leaves $P(i > j)$ unchanged.
 These forms are not a law of nature, but a useful approximation of human preferences that often works well in RLHF.
@@ -161,7 +161,8 @@ The traditional reward modeling loss has been modified in many popular works, bu
 ### Preference Margin Loss
 
 In the case where annotators are providing either scores or rankings on a Likert Scale, the magnitude of the relational quantities can be used in training.
-The most common practice is to binarize the data direction, implicitly scores of 1 and 0, but the additional information has been used to improve model training.
+The most common practice is to binarize the data along the preference direction, reducing the mixed information of relative ratings or the strength of the ranking to just chosen and rejected completions.
+The additional information, such as the magnitude of the preference, has been used to improve model training, but it has not converged as a standard practice.
 Llama 2 proposes using the margin between two datapoints, $m(y_c, y_r)$, to distinguish the magnitude of preference:
 
 $$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) - m(y_c, y_r) \right) \right)$$ {#eq:rewardmodelingmargin}
@@ -303,7 +304,7 @@ $$\mathcal{L}_{\text{PRM}}(\theta) = - \mathbb{E}_{(x, s) \sim \mathcal{D}} \lef
 
 where $s$ is a sampled chain-of-thought with $K$ annotated steps, $y_{s_i} \in \{0,1\}$ denotes whether the $i$-th step is correct, and $r_\theta(s_i \mid x)$ is the PRM's predicted probability that step $s_i$ is valid conditioned on the original prompt $x$.
 
-Here's an example of how this per-step label can be packaged in a trainer, from HuggingFace's TRL [@vonwerra2022trl]:
+Here's an example of how this per-step label can be packaged in a trainer, from HuggingFace's TRL (Transformer Reinforcement Learning) [@vonwerra2022trl]:
 
 ```
 # Get the ID of the separator token and add it to the completions
@@ -430,7 +431,12 @@ The bulk of progress in reward modeling early on has been in establishing benchm
 The first RM benchmark, RewardBench, provided common infrastructure for testing reward models [@lambert2024rewardbench].
 Since then, RM evaluation has expanded to be similar to the types of evaluations available to general post-trained models, where some evaluations test the accuracy of prediction on domains with known true answers [@lambert2024rewardbench] or those more similar to "vibes" performed with LLM-as-a-judge or correlations to other benchmarks [@wen2024rethinking].
 
-Examples of new benchmarks include multilingual reward bench (M-RewardBench) [@gureja2024m], RAG-RewardBench [@jin2024rag], RMB [@zhou2024rmb] or RM-Bench [@liu2024rm] for general chat, ReWordBench for typos [@wu2025rewordbench], MJ-Bench [@chen2024mj], Multimodal RewardBench [@yasunaga2025multimodal], VL RewardBench [@li2024vlrewardbench], or VLRMBench [@ruan2025vlrmbench] for vision language models, Preference Proxy Evaluations [@frick2024evaluate], and RewardMATH [@kim2024evaluating].
-Process reward models (PRMs) have their own emerging benchmarks, such as PRM Bench [@song2025prmbench] and visual benchmarks of VisualProcessBench [@wang2025visualprm] and ViLBench [@tu2025vilbench].
+Examples of new benchmarks include:
 
-To understand progress on *training* reward models, one can reference new reward model training methods, with aspect-conditioned models [@wang2024interpretable], high quality human datasets [@wang2024helpsteer2] [@wang2024helpsteer2p], scaling [@adler2024nemotron], extensive experimentation [@touvron2023llama], or debiasing data [@park2024offsetbias].
+* **Text-only (general chat / preferences):** RMB [@zhou2024rmb], RewardBench2 [@malik2025rewardbench], Preference Proxy Evaluations [@frick2024evaluate], or RM-Bench [@liu2024rm].
+* **Specialized text-only (math, etc.):** multilingual reward bench (M-RewardBench) [@gureja2024m], RAG-RewardBench for retrieval augmented generation (RAG) [@jin2024rag], ReWordBench for typos [@wu2025rewordbench], RewardMATH [@kim2024evaluating], or AceMath-RewardBench [@liu2024acemath].
+* **Process RMs:** PRM Bench [@song2025prmbench] or ProcessBench [@zheng2024processbench] and visual benchmarks of VisualProcessBench [@wang2025visualprm] or ViLBench [@tu2025vilbench].
+* **Agentic RMs:** Agent-RewardBench [@men2025agentrewardbench] or CUARewardBench [@lin2025cuarewardbench].
+* **Multimodal:** MJ-Bench [@chen2024mj], Multimodal RewardBench [@yasunaga2025multimodal], VL RewardBench [@li2024vlrewardbench], or VLRMBench [@ruan2025vlrmbench].
+
+To understand progress on *training* reward models, one can reference new reward model training methods, with aspect-conditioned models [@wang2024interpretable], high quality human datasets [@wang2024helpsteer2] [@wang2024helpsteer2p], scaling experiments [@adler2024nemotron], extensive experimentation [@touvron2023llama], or debiasing data [@park2024offsetbias].
