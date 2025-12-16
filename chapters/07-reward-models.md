@@ -8,10 +8,15 @@ next-url: "08-regularization"
 
 # Reward Modeling
 
-Reward models are core to the modern approach to RLHF.
-Reward models broadly have been used extensively in reinforcement learning research as a proxy for environment rewards [@sutton2018reinforcement].
-The practice is closely related to inverse reinforcement learning, where the problem is to approximate an agent's reward function given trajectories of behavior [@ng2000algorithms], and other areas of deep reinforcement learning.
+Reward models are core to the modern approach to RLHF by being where the complex human preferences are learned. They are what enable our models to learn from hard to specify signals. They compress complex features in the data into a representation that can be used in downstream training.
+These models act as the proxy objectives by which the core optimization is done, as studied in the following chapters.
+
+Reward models broadly have historically been used extensively in reinforcement learning research as a proxy for environment rewards [@sutton2018reinforcement].
 Reward models were proposed, in their modern form, as a tool for studying the value alignment problem [@leike2018scalable].
+These models tend to take in some sort of input and output a single scalar value of reward. 
+This reward can take multiple forms -- in traditional RL problems it was attempting to approximate the exact environment reward for the problem, but we will see in RLHF that reward models actually output a probability of a certain input being "of high quality" (i.e. the chosen answer among a pairwise preference relation).
+The practice of reward modeling for RLHF is closely related to inverse reinforcement learning, where the problem is to approximate an agent's reward function given trajectories of behavior [@ng2000algorithms], and other areas of deep reinforcement learning. 
+The high level problem statement is the same, but the implementation and focus areas are entirely different, so they're often considered as totally separate areas of study.
 
 The most common reward model predicts the probability that a piece of text was close to a "preferred" piece of text from the training comparisons.
 Later in this section we also compare these to Outcome Reward Models (ORMs) that predict the probability that a completion results in a correct answer or a Process Reward Model (PRM) that assigns a score to each step in reasoning.
@@ -381,17 +386,15 @@ An example prompt, from one of the seminal works here for the chat evaluation MT
 
 ```
 [System]
-Please act as an impartial judge and evaluate the quality of the responses provided by two
-AI assistants to the user question displayed below. You should choose the assistant that
-follows the user's instructions and answers the user's question better. Your evaluation
-should consider factors such as the helpfulness, relevance, accuracy, depth, creativity,
-and level of detail of their responses. Begin your evaluation by comparing the two
-responses and provide a short explanation. Avoid any position biases and ensure that the
-order in which the responses were presented does not influence your decision. Do not allow
-the length of the responses to influence your evaluation. Do not favor certain names of
-the assistants. Be as objective as possible. After providing your explanation, output your
-final verdict by strictly following this format: "[[A]]" if assistant A is better, "[[B]]"
-if assistant B is better, and "[[C]]" for a tie.
+Please act as an impartial judge and evaluate the quality of the responses provided by two AI assistants to the user question displayed below.
+You should choose the assistant that follows the user's instructions and answers the user's question better.
+Your evaluation should consider factors such as the helpfulness, relevance, accuracy, depth, creativity, and level of detail of their responses.
+Begin your evaluation by comparing the two responses and provide a short explanation.
+Avoid any position biases and ensure that the order in which the responses were presented does not influence your decision.
+Do not allow the length of the responses to influence your evaluation.
+Do not favor certain names of the assistants.
+Be as objective as possible.
+After providing your explanation, output your final verdict by strictly following this format: "[[A]]" if assistant A is better, "[[B]]" if assistant B is better, and "[[C]]" for a tie.
 [User Question]
 {question}
 [The Start of Assistant A's Answer]
