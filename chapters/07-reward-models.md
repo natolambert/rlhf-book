@@ -18,25 +18,33 @@ This reward can take multiple forms -- in traditional RL problems it was attempt
 The practice of reward modeling for RLHF is closely related to inverse reinforcement learning, where the problem is to approximate an agent's reward function given trajectories of behavior [@ng2000algorithms], and other areas of deep reinforcement learning. 
 The high level problem statement is the same, but the implementation and focus areas are entirely different, so they're often considered as totally separate areas of study.
 
-The most common reward model predicts the probability that a piece of text was close to a "preferred" piece of text from the training comparisons.
-Later in this section we also compare these to Outcome Reward Models (ORMs) that predict the probability that a completion results in a correct answer or a Process Reward Model (PRM) that assigns a score to each step in reasoning.
-When not indicated, the reward models mentioned are those predicting preference between text.
+The most common reward model, often called a Bradley-Terry reward model and the primary focus of this chapter, predicts the probability that a piece of text was close to a "preferred" piece of text from the training comparisons.
+Later in this section we also compare these to Outcome Reward Models (ORMs), Process Reward Model (PRM), and other types of reward models.
+<!-- When not indicated, the reward models mentioned are those predicting preference between text. -->
 
 ## Training Reward Models
 
-There are two popular expressions for how to train a standard reward model for RLHF -- they are numerically equivalent. 
-The canonical implementation is derived from the Bradley-Terry model of preference [@BradleyTerry].
-A Bradley-Terry model of preferences measures the probability that the pairwise comparison for two events drawn from the same distribution, say $i$ and $j$, satisfy the following relation, $i > j$:
+The canonical implementation of a reward model is derived from the Bradley-Terry model of preference [@BradleyTerry].
+There are two popular expressions for how to train a standard reward model for RLHF -- they are mathematically equivalent.
+To start, a Bradley-Terry model of preferences defines the probability that, in a pairwise comparison between two items $i$ and $j$, a judge prefers $i$ over $j$:
 
-$$P(i > j) = \frac{p_i}{p_i + p_j}$$ {#eq:bradterry}
+$$P(i > j) = \frac{p_i}{p_i + p_j}.$$ {#eq:bradterry}
+
+The Bradley-Terry model assumes that each item has a latent strength $p_i > 0$, and that observed preferences are a noisy reflection of these underlying strengths.
+It is common to reparametrize the Bradley-Terry model with unbounded scores, where $p_i = e^{r_i}$, which results in the following form:
+
+$$P(i > j) = \frac{e^{r_i}}{e^{r_i} + e^{r_j}} = \sigmoid(r_i-r_j).$$ {#eq:bradterry_unbounded}
+
+Only differences in scores matter: adding the same constant to all $r_i$ leaves $P(i > j)$ unchanged.
+These forms are not a law of nature, but a useful approximation of human preferences that often works well in RLHF.
 
 To train a reward model, we must formulate a loss function that satisfies the above relation.
-The first structure applied is to convert a language model into a model that outputs a scalar value, often in the form of a single classification probability logit.
-Thus, we can take the score of this model with two samples, the $i$ and $j$ above are now completions, $y_1$ and $y_2$, to one prompt, $x$ and score both of them with respect to the above model, $r_\theta$. We denote the conditional scores as $r_\theta(y_i \mid x)$.
+In practice, this is done by converting a language model into a model that outputs a scalar score, often via a small linear head that produces a single logit.
+Given a prompt $x$ and two sampled completions $y_1$ and $y_2$, we score both with a reward model $r_\theta$ and write the conditional scores as $r_\theta(y_i \mid x)$.
 
 The probability of success for a given reward model in a pairwise comparison becomes:
 
-$$P(y_1 > y_2 \mid x) = \frac{\exp\left(r_\theta(y_1 \mid x)\right)}{\exp\left(r_\theta(y_1 \mid x)\right) + \exp\left(r_\theta(y_2 \mid x)\right)}$$ {#eq:bradterryrm}
+$$P(y_1 > y_2 \mid x) = \frac{\exp\left(r_\theta(y_1 \mid x)\right)}{\exp\left(r_\theta(y_1 \mid x)\right) + \exp\left(r_\theta(y_2 \mid x)\right)}.$$ {#eq:bradterryrm}
 
 We denote the preferred completion as $y_c$ (chosen) and the rejected completion as $y_r$.
 
@@ -58,6 +66,9 @@ $$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{
 
 Second, as in [@askell2021general] and other works:
 $$\mathcal{L}(\theta) = \log \left( 1 + e^{r_{\theta}(y_r \mid x) - r_{\theta}(y_c \mid x)} \right)$$ {#eq:rewardmodeling2}
+
+These are equivalent by letting $\Delta = r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x)$ and using $\sigma(\Delta) = \frac{1}{1 + e^{-\Delta}}$, which implies $-\log\sigma(\Delta) = \log(1 + e^{-\Delta}) = \log\left(1 + e^{r_{\theta}(y_r \mid x) - r_{\theta}(y_c \mid x)}\right)$.
+They both appear in the RLHF literature.
 
 ## Architecture
 
