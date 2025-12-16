@@ -232,7 +232,7 @@ rejected_rewards = beta * (policy_rejected_logps - reference_rejected_logps).det
 
 This can be used in standard language model training stacks as this information is already collated during the forward pass of a model (with the addition of a reference model).
 
-In most ways, this is simpler and an quality of life improvement, but also they offer a different set of considerations.
+In most ways, this is simpler and a quality of life improvement, but also they offer a different set of considerations.
 
 1. **KL distance is static**: In DPO and other algorithms, the KL distance is set explicitly by the $\beta$ parameter that balances the distance penalty to the optimization. This is due to the fact that DPO takes gradient steps towards the *optimal* solution to the RLHF objective given the data -- it steps exactly to the solution set by the $\beta$ term. On the other hand, RL based optimizers take steps based on the batch and recent data.
 2. **Caching log-probabilities**: Simple implementations of DPO do the forward passes for the policy model and reference models at the same time for conveniences with respect to the loss function. Though, this doubles the memory used and results in increased GPU usage. To avoid this, one can compute the log-probabilities of the reference model over the training dataset first, then reference it when computing the loss and updating the parameters per batch, reducing the peak memory usage by 50%.

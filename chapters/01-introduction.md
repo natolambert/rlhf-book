@@ -40,16 +40,16 @@ At the same time, RLHF is far more established than the other popular RL method 
 For that reason, this book focuses on preference learning, but in order to completely grasp the role of RLHF, one needs to use these other training stages, so they are also explained in detail.
 
 As we consider the space of options and attention on these methods for crafting models we collectively use extensively, RLHF colloquially *is* what led to modern post-training.
-RLHF was the techniques that enabled the massive success of the release of ChatGPT, so early in 2023 RLHF encompassed much of the interest in the general field of post-training.
+RLHF was the technique that enabled the massive success of the release of ChatGPT, so early in 2023 RLHF encompassed much of the interest in the general field of post-training.
 RLHF is now just one piece of post-training, so in this book we map through why there was so much attention on RLHF early on, and how other methods emerged to complement it.
 
 Training language models is a very complex process, often involving large technical teams of 10s to 100s of people and millions of dollars in data and compute cost.
 This book serves three purposes to enable readers to grasp how RLHF and related models are used to craft leading models.
-First, the book distills cutting edge research often hidden withing large technology companies into clear topics and trade-offs, so readers can understand how models are made.
+First, the book distills cutting edge research often hidden within large technology companies into clear topics and trade-offs, so readers can understand how models are made.
 Second, the book will allow users to setup basic code examples to get their hands dirty on finetuning these models themselves.
 Finally, beyond teaching the techniques for doing RLHF, this book is designed to distill intuition as to *why* RLHF is crucial to modern AI models.
 
-Due to the complexity of RLHF and how the state-of-the-art is often too complex to be done alone, this book focus on enabling readers so they have the tools needed to get jobs and start research projects in the area. 
+Due to the complexity of RLHF and how the state-of-the-art is often too complex to be done alone, this book focuses on enabling readers so they have the tools needed to get jobs and start research projects in the area. 
 Others will just enjoy precisely understanding the inner workings of the technology that is the focus of countless discussions across the globe.
 A book that lays out an exact recipe of how to do RLHF for a specific need is impossible, which is why there is a large industry of companies providing RLHF training and related methods as a service worth millions of dollars.
 Still, rapid progress in AI systems means the readers who are fitted with this knowledge can approach more and more of their own training over time.
@@ -121,7 +121,7 @@ Asking Tülu 3 405B the same question "The president of the united states in 200
 > George W. Bush was the president of the United States in 2006. He served two terms in office, from January 20, 2001, to January 20, 2009.
 
 This change in style is downstream of the post-training methods described in this book. 
-Instruction finetuning would provide the basic ability for models to respond reliabily in the question-answer format, and RLHF is what takes these answers and crafts them into the reliable, warm, and engaging answers we now expect from language models.
+Instruction finetuning would provide the basic ability for models to respond reliably in the question-answer format, and RLHF is what takes these answers and crafts them into the reliable, warm, and engaging answers we now expect from language models.
 
 Modern research has established RLHF as a general method to integrate subtle stylistic and related behavioral features into the models.
 Compared to other techniques for post-training, such as instruction finetuning, RLHF generalizes far better across domains [@kirk2023understanding] [@chu2025sft] -- helping create effective general purpose models.
@@ -148,7 +148,7 @@ Through the early history of RLHF after ChatGPT, there were many research papers
 ## An Intuition for Post-Training
 
 We've established that RLHF specifically and post-training generally is crucial to performance of the latest models and how it changes the models' outputs, but not why it works.
-Here's a simple analogy for how so many gains can be made on benchmarks ontop of any base model.
+Here's a simple analogy for how so many gains can be made on benchmarks on top of any base model.
 
 The way I've been describing the potential of post-training is called the elicitation interpretation of post-training, where all we are doing is extracting potential by amplifying valuable behaviors in the base model.
 
@@ -165,7 +165,7 @@ With this intuition, base models determine the vast majority of the potential of
 
 <!-- This is to say that scaling also allows post-training to move faster. Of course, to do this, you need the infrastructure to train the models. This is why all the biggest companies are still building gigantic clusters. -->
 
-I've described this intuition as the Ellicitation Theory of Post-training.
+I've described this intuition as the Elicitation Theory of Post-training.
 This theory folds in with the reality that the majority of gains users are seeing are from post-training because it implies that there is more latent potential in a model pretraining on the internet than we can teach the model simply --- such as by passing certain narrow samples in repeatedly during early types of post-training (i.e. only instruction tuning).
 The challenge of post-training is to reshape models from next-token prediction to conversation question-answering, while extracting all of this knowledge and intelligence from pretraining.
 

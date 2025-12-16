@@ -224,7 +224,7 @@ $$ {#eq:RLOO_advantage_alt}
 
 This is a simple, low-variance advantage update that is very similar to GRPO, which will be discussed later, where REINFORCE is used with a different location of KL penalty and without step-size clipping.
 To be specific, the canonical GRPO implementation applies the KL penalty at the loss level, where the derivation for RLOO or traditional policy-gradients apply the KL penalty to the reward itself.
-With the transition from RLHF to reasoning and RLVR, the prevelance of KL penalties has decreased overall, with many reasoning adaptations of RLHF code turning them off entirely.
+With the transition from RLHF to reasoning and RLVR, the prevalence of KL penalties has decreased overall, with many reasoning adaptations of RLHF code turning them off entirely.
 Still, the advantage from RLOO could be combined with the clipping of PPO, showing how similar many of these algorithms are.
 
 RLOO and other algorithms that do not use a value network assign the advantage (or reward) of the sequence to every token for the loss computation.
