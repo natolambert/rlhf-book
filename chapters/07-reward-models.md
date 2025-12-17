@@ -8,30 +8,43 @@ next-url: "08-regularization"
 
 # Reward Modeling
 
-Reward models are core to the modern approach to RLHF.
-Reward models broadly have been used extensively in reinforcement learning research as a proxy for environment rewards [@sutton2018reinforcement].
-The practice is closely related to inverse reinforcement learning, where the problem is to approximate an agent's reward function given trajectories of behavior [@ng2000algorithms], and other areas of deep reinforcement learning.
-Reward models were proposed, in their modern form, as a tool for studying the value alignment problem [@leike2018scalable].
+Reward models are core to the modern approach to RLHF by being where the complex human preferences are learned. They are what enable our models to learn from hard to specify signals. They compress complex features in the data into a representation that can be used in downstream training.
+These models act as the proxy objectives by which the core optimization is done, as studied in the following chapters.
 
-The most common reward model predicts the probability that a piece of text was close to a "preferred" piece of text from the training comparisons.
-Later in this section we also compare these to Outcome Reward Models (ORMs) that predict the probability that a completion results in a correct answer or a Process Reward Model (PRM) that assigns a score to each step in reasoning.
-When not indicated, the reward models mentioned are those predicting preference between text.
+Reward models broadly have historically been used extensively in reinforcement learning research as a proxy for environment rewards [@sutton2018reinforcement].
+Reward models were proposed, in their modern form, as a tool for studying the value alignment problem [@leike2018scalable].
+These models tend to take in some sort of input and output a single scalar value of reward. 
+This reward can take multiple forms -- in traditional RL problems it was attempting to approximate the exact environment reward for the problem, but we will see in RLHF that reward models actually output a probability of a certain input being "of high quality" (i.e. the chosen answer among a pairwise preference relation).
+The practice of reward modeling for RLHF is closely related to inverse reinforcement learning, where the problem is to approximate an agent's reward function given trajectories of behavior [@ng2000algorithms], and other areas of deep reinforcement learning. 
+The high level problem statement is the same, but the implementation and focus areas are entirely different, so they're often considered as totally separate areas of study.
+
+The most common reward model, often called a Bradley-Terry reward model and the primary focus of this chapter, predicts the probability that a piece of text was close to a "preferred" piece of text from the training comparisons.
+Later in this section we also compare these to Outcome Reward Models (ORMs), Process Reward Model (PRM), and other types of reward models.
+<!-- When not indicated, the reward models mentioned are those predicting preference between text. -->
 
 ## Training Reward Models
 
-There are two popular expressions for how to train a standard reward model for RLHF -- they are numerically equivalent. 
-The canonical implementation is derived from the Bradley-Terry model of preference [@BradleyTerry].
-A Bradley-Terry model of preferences measures the probability that the pairwise comparison for two events drawn from the same distribution, say $i$ and $j$, satisfy the following relation, $i > j$:
+The canonical implementation of a reward model is derived from the Bradley-Terry model of preference [@BradleyTerry].
+There are two popular expressions for how to train a standard reward model for RLHF -- they are mathematically equivalent.
+To start, a Bradley-Terry model of preferences defines the probability that, in a pairwise comparison between two items $i$ and $j$, a judge prefers $i$ over $j$:
 
-$$P(i > j) = \frac{p_i}{p_i + p_j}$$ {#eq:bradterry}
+$$P(i > j) = \frac{p_i}{p_i + p_j}.$$ {#eq:bradterry}
+
+The Bradley-Terry model assumes that each item has a latent strength $p_i > 0$, and that observed preferences are a noisy reflection of these underlying strengths.
+It is common to reparametrize the Bradley-Terry model with unbounded scores, where $p_i = e^{r_i}$, which results in the following form:
+
+$$P(i > j) = \frac{e^{r_i}}{e^{r_i} + e^{r_j}} = \sigma(r_i-r_j).$$ {#eq:bradterry_unbounded}
+
+Only differences in scores matter: adding the same constant to all $r_i$ leaves $P(i > j)$ unchanged.
+These forms are not a law of nature, but a useful approximation of human preferences that often works well in RLHF.
 
 To train a reward model, we must formulate a loss function that satisfies the above relation.
-The first structure applied is to convert a language model into a model that outputs a scalar value, often in the form of a single classification probability logit.
-Thus, we can take the score of this model with two samples, the $i$ and $j$ above are now completions, $y_1$ and $y_2$, to one prompt, $x$ and score both of them with respect to the above model, $r_\theta$. We denote the conditional scores as $r_\theta(y_i \mid x)$.
+In practice, this is done by converting a language model into a model that outputs a scalar score, often via a small linear head that produces a single logit.
+Given a prompt $x$ and two sampled completions $y_1$ and $y_2$, we score both with a reward model $r_\theta$ and write the conditional scores as $r_\theta(y_i \mid x)$.
 
 The probability of success for a given reward model in a pairwise comparison becomes:
 
-$$P(y_1 > y_2 \mid x) = \frac{\exp\left(r_\theta(y_1 \mid x)\right)}{\exp\left(r_\theta(y_1 \mid x)\right) + \exp\left(r_\theta(y_2 \mid x)\right)}$$ {#eq:bradterryrm}
+$$P(y_1 > y_2 \mid x) = \frac{\exp\left(r_\theta(y_1 \mid x)\right)}{\exp\left(r_\theta(y_1 \mid x)\right) + \exp\left(r_\theta(y_2 \mid x)\right)}.$$ {#eq:bradterryrm}
 
 We denote the preferred completion as $y_c$ (chosen) and the rejected completion as $y_r$.
 
@@ -53,6 +66,9 @@ $$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{
 
 Second, as in [@askell2021general] and other works:
 $$\mathcal{L}(\theta) = \log \left( 1 + e^{r_{\theta}(y_r \mid x) - r_{\theta}(y_c \mid x)} \right)$$ {#eq:rewardmodeling2}
+
+These are equivalent by letting $\Delta = r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x)$ and using $\sigma(\Delta) = \frac{1}{1 + e^{-\Delta}}$, which implies $-\log\sigma(\Delta) = \log(1 + e^{-\Delta}) = \log\left(1 + e^{r_{\theta}(y_r \mid x) - r_{\theta}(y_c \mid x)}\right)$.
+They both appear in the RLHF literature.
 
 ## Architecture
 
@@ -145,7 +161,8 @@ The traditional reward modeling loss has been modified in many popular works, bu
 ### Preference Margin Loss
 
 In the case where annotators are providing either scores or rankings on a Likert Scale, the magnitude of the relational quantities can be used in training.
-The most common practice is to binarize the data direction, implicitly scores of 1 and 0, but the additional information has been used to improve model training.
+The most common practice is to binarize the data along the preference direction, reducing the mixed information of relative ratings or the strength of the ranking to just chosen and rejected completions.
+The additional information, such as the magnitude of the preference, has been used to improve model training, but it has not converged as a standard practice.
 Llama 2 proposes using the margin between two datapoints, $m(y_c, y_r)$, to distinguish the magnitude of preference:
 
 $$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) - m(y_c, y_r) \right) \right)$$ {#eq:rewardmodelingmargin}
@@ -287,7 +304,7 @@ $$\mathcal{L}_{\text{PRM}}(\theta) = - \mathbb{E}_{(x, s) \sim \mathcal{D}} \lef
 
 where $s$ is a sampled chain-of-thought with $K$ annotated steps, $y_{s_i} \in \{0,1\}$ denotes whether the $i$-th step is correct, and $r_\theta(s_i \mid x)$ is the PRM's predicted probability that step $s_i$ is valid conditioned on the original prompt $x$.
 
-Here's an example of how this per-step label can be packaged in a trainer, from HuggingFace's TRL [@vonwerra2022trl]:
+Here's an example of how this per-step label can be packaged in a trainer, from HuggingFace's TRL (Transformer Reinforcement Learning) [@vonwerra2022trl]:
 
 ```
 # Get the ID of the separator token and add it to the completions
@@ -381,17 +398,15 @@ An example prompt, from one of the seminal works here for the chat evaluation MT
 
 ```
 [System]
-Please act as an impartial judge and evaluate the quality of the responses provided by two
-AI assistants to the user question displayed below. You should choose the assistant that
-follows the user's instructions and answers the user's question better. Your evaluation
-should consider factors such as the helpfulness, relevance, accuracy, depth, creativity,
-and level of detail of their responses. Begin your evaluation by comparing the two
-responses and provide a short explanation. Avoid any position biases and ensure that the
-order in which the responses were presented does not influence your decision. Do not allow
-the length of the responses to influence your evaluation. Do not favor certain names of
-the assistants. Be as objective as possible. After providing your explanation, output your
-final verdict by strictly following this format: "[[A]]" if assistant A is better, "[[B]]"
-if assistant B is better, and "[[C]]" for a tie.
+Please act as an impartial judge and evaluate the quality of the responses provided by two AI assistants to the user question displayed below.
+You should choose the assistant that follows the user's instructions and answers the user's question better.
+Your evaluation should consider factors such as the helpfulness, relevance, accuracy, depth, creativity, and level of detail of their responses.
+Begin your evaluation by comparing the two responses and provide a short explanation.
+Avoid any position biases and ensure that the order in which the responses were presented does not influence your decision.
+Do not allow the length of the responses to influence your evaluation.
+Do not favor certain names of the assistants.
+Be as objective as possible.
+After providing your explanation, output your final verdict by strictly following this format: "[[A]]" if assistant A is better, "[[B]]" if assistant B is better, and "[[C]]" for a tie.
 [User Question]
 {question}
 [The Start of Assistant A's Answer]
@@ -416,7 +431,12 @@ The bulk of progress in reward modeling early on has been in establishing benchm
 The first RM benchmark, RewardBench, provided common infrastructure for testing reward models [@lambert2024rewardbench].
 Since then, RM evaluation has expanded to be similar to the types of evaluations available to general post-trained models, where some evaluations test the accuracy of prediction on domains with known true answers [@lambert2024rewardbench] or those more similar to "vibes" performed with LLM-as-a-judge or correlations to other benchmarks [@wen2024rethinking].
 
-Examples of new benchmarks include multilingual reward bench (M-RewardBench) [@gureja2024m], RAG-RewardBench [@jin2024rag], RMB [@zhou2024rmb] or RM-Bench [@liu2024rm] for general chat, ReWordBench for typos [@wu2025rewordbench], MJ-Bench [@chen2024mj], Multimodal RewardBench [@yasunaga2025multimodal], VL RewardBench [@li2024vlrewardbench], or VLRMBench [@ruan2025vlrmbench] for vision language models, Preference Proxy Evaluations [@frick2024evaluate], and RewardMATH [@kim2024evaluating].
-Process reward models (PRMs) have their own emerging benchmarks, such as PRM Bench [@song2025prmbench] and visual benchmarks of VisualProcessBench [@wang2025visualprm] and ViLBench [@tu2025vilbench].
+Examples of new benchmarks include:
 
-To understand progress on *training* reward models, one can reference new reward model training methods, with aspect-conditioned models [@wang2024interpretable], high quality human datasets [@wang2024helpsteer2] [@wang2024helpsteer2p], scaling [@adler2024nemotron], extensive experimentation [@touvron2023llama], or debiasing data [@park2024offsetbias].
+* **Text-only (general chat / preferences):** RMB [@zhou2024rmb], RewardBench2 [@malik2025rewardbench], Preference Proxy Evaluations [@frick2024evaluate], or RM-Bench [@liu2024rm].
+* **Specialized text-only (math, etc.):** multilingual reward bench (M-RewardBench) [@gureja2024m], RAG-RewardBench for retrieval augmented generation (RAG) [@jin2024rag], ReWordBench for typos [@wu2025rewordbench], RewardMATH [@kim2024evaluating], or AceMath-RewardBench [@liu2024acemath].
+* **Process RMs:** PRM Bench [@song2025prmbench] or ProcessBench [@zheng2024processbench] and visual benchmarks of VisualProcessBench [@wang2025visualprm] or ViLBench [@tu2025vilbench].
+* **Agentic RMs:** Agent-RewardBench [@men2025agentrewardbench] or CUARewardBench [@lin2025cuarewardbench].
+* **Multimodal:** MJ-Bench [@chen2024mj], Multimodal RewardBench [@yasunaga2025multimodal], VL RewardBench [@li2024vlrewardbench], or VLRMBench [@ruan2025vlrmbench].
+
+To understand progress on *training* reward models, one can reference new reward model training methods, with aspect-conditioned models [@wang2024interpretable], high quality human datasets [@wang2024helpsteer2] [@wang2024helpsteer2p], scaling experiments [@adler2024nemotron], extensive experimentation [@touvron2023llama], or debiasing data [@park2024offsetbias].

@@ -44,6 +44,10 @@ This necessity for on-policy data is not well documented, but many popular techn
 The same uncertainty applies for the popular area AI feedback data -- the exact balance between human and AI preference data used for the latest AI models is unknown.
 These data sources are known to be a valuable path to improve performance, but careful tuning of processes is needed to extract that potential performance from a data pipeline.
 
+A subtle but important point is that the *chosen* answer in preference data is often not a globally *correct* answer.
+Instead, it is the answer that is better relative to the alternatives shown (e.g., clearer, safer, more helpful, or less incorrect).
+There can be cases where every completion being compared to a given prompt is correct or incorrect, and the models can still learn from well-labeled data.
+
 ### Interface
 
 Crucial to collecting preference data is the interface by which one interacts with the model, but it's more of an art than a science, as it's not well-studied how subtle changes in the interface impact how a user interacts with a model.
