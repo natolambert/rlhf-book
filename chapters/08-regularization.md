@@ -12,10 +12,10 @@ Throughout the RLHF optimization, many regularization steps are used to prevent 
 Over-optimization in these contexts looks like models that output nonsensical text.
 Some examples of optimization "off the rails" are that models can output followable math reasoning with extremely incorrect answers, repeated text, switching languages, or excessive special characters.
 
-The most popular variant, used in most RLHF implementations at the time of writing, is a KL Distance from the current policy to a reference policy across the generated samples.
-KL Distance is a colloquial term for expressing the *optimization distance* within the training process, even though the KL Divergence, the underlying mathematical method for measuring the separation of two probability distributions, does not have the formal properties to technically be a distance (it is just far easier to call the number a distance than a numerical representation of probability difference).
+The most popular variant, used in most RLHF implementations at the time of writing, is a KL distance from the current policy to a reference policy across generated samples.
+“KL distance” is a colloquial term for expressing the *optimization distance* within the training process, even though KL divergence—the underlying mathematical method for measuring the separation of two probability distributions—does not satisfy the formal properties required to be a true distance metric (it is simply easier to call the number a distance than a numeric measure of distributional difference).
 Many other regularization techniques have emerged in the literature to then disappear in the next model iteration in that line of research.
-That is to say that regularization outside the core KL distance from generations is often used to stabilize experimental setups that can then be simplified in the next generations.
+That is to say that regularization outside the core KL distance from generations is often used to stabilize experimental setups that can then be simplified in the next generation.
 Still, it is important to understand tools to constrain optimization in RLHF.
 
 The general formulation, when used in an RLHF framework with a reward model, $r_\theta$ is as follows:
@@ -36,7 +36,7 @@ Recall that a KL divergence measure of probability difference is defined as foll
 $$ D_{KL}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\frac{P(x)}{Q(x)}\right) $$ {#eq:kl_distance_regularization}
 
 In RLHF, the two distributions of interest are often the distribution of the new model version, say $P(x)$, and a distribution of the reference policy, say $Q(x)$.
-Different pieces of optimizers use different KL directions. Throughout this book, the most common "KL Penalty" that is used is called the reverse KL to the reference policy. In practice, this reduces to a Monte Carlo estimate that samples tokens from the RL model and computes probabilities from the reference model. Intuitively, this forward RL has a numerical property that applies a large penalty (a distance) when the new model, $P$ or $\pi_\text{RL}$ puts substantial probability mass where the original reference model is low probability.
+Different optimizers use different KL directions. Throughout this book, the most common "KL Penalty" that is used is called the reverse KL to the reference policy. In practice, this reduces to a Monte Carlo estimate that samples tokens from the RL model and computes probabilities from the reference model. Intuitively, this reverse KL has a numerical property that applies a large penalty when the new model, $P$ or $\pi_\text{RL}$, puts substantial probability mass where the original reference model assigns low probability.
 
 The other KL direction is still often used in ML, e.g. in the internal trust region calculation of some RL algorithms. This penalty intuitively penalizes the new model when its update does *not* apply probability to a high-likelihood region in $Q$ or $\pi_\text{Ref.}$. This is closer to an objective used for distillation or behavioral cloning.
 
@@ -93,8 +93,7 @@ Some example implementations include [TRL](https://github.com/huggingface/trl/bl
 
 ## Pretraining Gradients
 
-Another way of viewing regularization is that you may have a *dataset* that you want the model to remain close to, as done in InstructGPT [@ouyang2022training] ''in order to fix the
-performance regressions on public NLP datasets''.
+Another way of viewing regularization is that you may have a *dataset* that you want the model to remain close to, as done in InstructGPT [@ouyang2022training] "in order to fix the performance regressions on public NLP datasets".
 To implement this, they modify the training objective for RLHF.
 Taking @eq:rl_start, we can transform this into an objective function to optimize by sampling from the RL policy model, completions $y$ from prompts $x$ in the RL dataset used for RLHF, which yields:
 $$
@@ -107,7 +106,7 @@ $$
 J(\theta) = \mathbb{E}_{(x,y) \sim \mathcal{D}_{\pi^{\text{RL}}_{\theta}}} \left[ r_{\theta}(y \mid x) - \lambda r_{\text{reg.}} \right] + \gamma \mathbb{E}_{x \sim \mathcal{D}_{\text{pretrain}}} \left[ \log(\pi^{\text{RL}}_{\theta}(x)) \right]
 $$ {#eq:objective_pretraining}
 
-Recent work proposed using a negative log likelihood term to balance the optimization of Direct Preference Optimization (DPO) [@pang2024iterative].
+Recent work proposed using a negative log-likelihood term to balance the optimization of Direct Preference Optimization (DPO) [@pang2024iterative].
 Given the pairwise nature of the DPO loss, the same loss modification can be made to reward model training, constraining the model to predict accurate text (rumors from laboratories that did not publish the work).
 
 The optimization follows as a modification to DPO.
