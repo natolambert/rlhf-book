@@ -18,7 +18,7 @@ With language models, the target distribution is high-quality completions to pro
 
 Many prominent RLHF and preference fine-tuning papers have used rejection sampling as a baseline, but a canonical implementation and documentation does not exist.
 
-WebGPT [@nakano2021webgpt], Anthropic's Helpful and Harmless agent [@bai2022training], OpenAI's popular paper on process reward models [@lightman2023let], Llama 2 Chat models [@touvron2023llama], and other seminal works all use this baseline.
+WebGPT [@nakano2021webgpt], Anthropic's Helpful and Harmless agent [@bai2022training], OpenAI's popular paper on process reward models [@lightman2023let], Llama 2 Chat models [@touvron2023llama], and other seminal works all use this baseline; more recent work has formalized it directly (e.g., RAFT [@dong2023raft] for applying it to alignment in multiple modalities and Statistical Rejection Sampling Optimization (RSO) [@liu2023statistical] that gives a principled overview on how rejection sampling relates to other preference learning objectives).
 
 ## Training Process
 
