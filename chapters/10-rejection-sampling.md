@@ -12,19 +12,19 @@ Rejection Sampling (RS) is a popular and simple baseline for performing preferen
 This makes it one of a handful of methods that are used after a first round of instruction tuning in order to further refine the model to human preferences. 
 Rejection sampling operates by curating new candidate completions, filtering them based on a trained reward model, and then instruction finetuning the original model only on the top completions (same loss function as when doing a dedicated training stage for learning to follow instructions).
 
-The name originates from computational statistics  [@gilks1992adaptive], where one wishes to sample from a complex distribution, but does not have a direct method to do so.
-To alleviate this, one samples from a simpler to model distribution and uses a heuristic to check if the sample is permissible.
+The name originates from computational statistics [@gilks1992adaptive], where one wishes to sample from a complex distribution, but does not have a direct method to do so.
+To alleviate this, one samples from a simpler distribution to model and uses a heuristic to check if the sample is permissible.
 With language models, the target distribution is high-quality completions to prompts, the filter is a reward model, and the sampling distribution is the current model.
 
 Many prominent RLHF and preference fine-tuning papers have used rejection sampling as a baseline, but a canonical implementation and documentation does not exist.
 
-WebGPT [@nakano2021webgpt], Anthropic's Helpful and Harmless agent[@bai2022training], OpenAI's popular paper on process reward models [@lightman2023let], Llama 2 Chat models [@touvron2023llama], and other seminal works all use this baseline.
+WebGPT [@nakano2021webgpt], Anthropic's Helpful and Harmless agent [@bai2022training], OpenAI's popular paper on process reward models [@lightman2023let], Llama 2 Chat models [@touvron2023llama], and other seminal works all use this baseline.
 
 ## Training Process
 
 Rejection sampling overall follows a few stages.
 
-0. **Prompt and reward model selection:** First, the users must select the prompts it wants to train on, relative to its other stages of the training. The simplest method is to simply re-use every prompt from the first SFT/IFT stage, but this can cause some overfitting. Before doing rejection sampling, you must also have trained a reward model (see Chapter 7 for more information).
+0. **Prompt and reward model selection:** First, you must select the prompts you want to train on, relative to other stages of training. The simplest method is to re-use every prompt from the first SFT/IFT stage, but this can cause some overfitting. Before doing rejection sampling, you must also have trained a reward model (see Chapter 7 for more information).
 1. **Generate completions from the starting checkpoint:** Next, one must generate completions to the selected prompts with the model they want to optimize. This can involve tweaking many settings, such as sampling temperature, top-p, max sequence length, number of completions per prompt, etc.
 2. **Select top completions with a reward model**: All completions are ranked by a reward model. This can include deduplication to only have one prompt per completion after this stage, or not, as a lot of the decisions become based on empirical ablation studies.
 3. **SFT on top completions:** To finish rejection sampling, one instruction finetunes the starting checkpoint on the selected completions.
@@ -42,7 +42,7 @@ To generate a set of multiple candidate completions per prompt, let's define a s
 
 $$X = [x_1, x_2, ..., x_M]$$
 
-These prompts can come from many sources, but most popularly they come from the instruction training set.
+These prompts can come from many sources, but most commonly they come from the instruction training set.
 
 For each prompt $x_i$, we generate $N$ completions. We can represent this as a matrix:
 
@@ -59,7 +59,7 @@ Each row $i$ corresponds to a single prompt $x_i$ and contains its $N$ candidate
 ### 2. Scoring Completions
 
 Now, we pass all of these prompt-completion pairs through a reward model, to get a matrix of rewards.
-We'll represent the rewards as a matrix R:
+We'll represent the rewards as a matrix $R$:
 
 $$R = \begin{bmatrix}
 r_{1,1} & r_{1,2} & \cdots & r_{1,N} \\
@@ -70,7 +70,7 @@ r_{M,1} & r_{M,2} & \cdots & r_{M,N}
 
 Each reward $r_{i,j}$ is computed by passing the completion $y_{i,j}$ and its corresponding prompt $x_i$ through a reward model $\mathcal{R}$:
 
-$$r_{i,j} = \mathcal{R}(y_{i,j}|x_i)$$
+$$r_{i,j} = \mathcal{R}(y_{i,j} \mid x_i)$$
 
 There are multiple methods to select the top completions to train on.
 
@@ -88,13 +88,13 @@ We can then use these indices to select our chosen completions:
 $$Y_{chosen} = [y_{1,S(R)_1}, y_{2,S(R)_2}, ..., y_{M,S(R)_M}]$$
 
 
-#### Top Overall Prompts
+#### Top Overall Pairs
 Alternatively, we can select the top K prompt-completion pairs from the entire set.
 First, let's flatten our reward matrix R into a single vector:
 
 $$R_{flat} = [r_{1,1}, r_{1,2}, ..., r_{1,N}, r_{2,1}, r_{2,2}, ..., r_{2,N}, ..., r_{M,1}, r_{M,2}, ..., r_{M,N}]$$
 
-This $R_{flat}$ vector has length $M \times N$, where M is the number of prompts and N is the number of completions per prompt.
+This $R_{flat}$ vector has length $M \times N$, where $M$ is the number of prompts and $N$ is the number of completions per prompt.
 
 Now, we can define a selection function $S_K$ that selects the indices of the K highest values in $R_{flat}$:
 
@@ -102,9 +102,8 @@ $$S_K(R_{flat}) = \text{argsort}(R_{flat})[-K:]$$
 
 where $\text{argsort}$ returns the indices that would sort the array in ascending order, and we take the last K indices to get the K highest values.
 
-To get our selected completions, we need to map these flattened indices back to our original completion matrix Y. 
-We simply index the $R_{flat}$ vector to get our completions.
-
+To get our selected completions, we need to map these flattened indices back to our original completion matrix $Y$. 
+To recover the corresponding (prompt, completion) pair, you can map a zero-indexed flattened index $k$ to $(i,j)$ via $i = \lfloor k / N \rfloor + 1$ and $j = (k \bmod N) + 1$.
 
 #### Selection Example
 Consider the case where we have the following situation, with 5 prompts and 4 completions. 
@@ -167,7 +166,7 @@ Mapping these back to our original matrix:
 - Index 5 → prompt 2, completion 2 (reward 0.8)
 - Index 14 → prompt 4, completion 3 (reward 0.8)
 - Index 0 → prompt 1, completion 1 (reward 0.7)
-- Index 19 → prompt 3, completion 4 (reward 0.7)
+- Index 11 → prompt 3, completion 4 (reward 0.7)
 
 #### Implementation Example
 
@@ -201,7 +200,7 @@ More details can be found in the [chapter on instruction tuning](https://rlhfboo
 The core hyperparameters for performing this training are very intuitive:
 
 - **Sampling parameters**: Rejection sampling is directly dependent on the completions received from the model. Common settings for rejection sampling include temperatures above zero, e.g. between 0.7 and 1.0, with other modifications to parameters such as top-p or top-k sampling.
-- **Completions per prompt**: Successful implementations of rejection sampling have included 10 to 30 or more completions for each prompt. Using too few completions will make training biased and or noisy.
+- **Completions per prompt**: Successful implementations of rejection sampling have included 10 to 30 or more completions for each prompt. Using too few completions will make training biased and/or noisy.
 - **Instruction tuning details**: No clear training details for the instruction tuning during rejection sampling have been released. It is likely that they use slightly different settings than the initial instruction tuning phase of the model.
 - **Heterogeneous model generations**: Some implementations of rejection sampling include generations from multiple models rather than just the current model that is going to be trained. Best practices on how to do this are not established.
 - **Reward model training**: The reward model used will heavily impact the final result. For more resources on reward model training, see the [relevant chapter](https://rlhfbook.com/c/07-reward-models).
@@ -211,12 +210,12 @@ This eliminates the need to run inference on as many padding tokens and will imp
 
 ## Related: Best-of-N Sampling
 
-Best-of-N (BoN) is a close relative of rejection sampling, where the same procedure is followed except for finetuning the model on the best completions. 
-This is a way of computing a best possible completion to a static prompt (or set of prompts), and methods related to it are used to power the "Pro" tiers of chat models where they spend the most compute to get an answer to your query.
+Best-of-N (BoN) is a close relative of rejection sampling, where the same generate-and-score procedure is followed, but you do **not** fine-tune the model on the selected completions. 
+Instead, BoN is a way of computing a best possible completion to a static prompt (or set of prompts) at inference time, and related techniques are often used in "Pro" tiers of chat models that spend extra compute to get an answer to your query.
 
 Best-of-N sampling is often included as a baseline relative to RLHF training methods.
 It is important to remember that BoN *does not* modify the underlying model, but is a sampling technique. 
-For this matter, comparisons for BoN sampling to online training methods, such as PPO, are still valid in some contexts.
+For this reason, comparisons for BoN sampling to online training methods, such as PPO, are still valid in some contexts.
 For example, you can still measure the KL distance when running BoN sampling relative to any other policy.
 
 Here, we will show that when using simple BoN sampling over one prompt, both selection criteria shown above are equivalent.
@@ -228,6 +227,7 @@ $$R = [r_1, r_2, ..., r_N]$$ {#eq:rewards_vector}
 Where $r_j$ represents the reward for the j-th completion.
 
 Using the argmax method, we select the best completion for the prompt:
+
 $$S(R) = \arg\max_{j \in [1,N]} r_j$$ {#eq:selection_function}
 
-Using the Top-K method is normally done with Top-1, reducing to the same method.
+Using the Top-K method with $K=1$ reduces to the same method, which is common practice.
