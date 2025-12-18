@@ -8,15 +8,19 @@ next-url: "12-direct-alignment"
 
 # Reinforcement Learning (i.e. Policy Gradient Algorithms)
 
+In the RLHF process, the reinforcement learning algorithm slowly updates the model's weights with respect to feedback from a reward model.
+The policy -- the model being trained -- generates completions to prompts in the training set, then the reward model scores them, and then the reinforcement learning optimizer takes gradient steps based on this information.
+This chapter explains the mathematics and trade-offs across various algorithms used to learn from the signal the reward model gives to on-policy data.
+These algorithms are run for a period of many epochs, often thousands or millions of batches across a larger set of prompts, with gradient updates in between each of them.
 
 The algorithms that popularized RLHF for language models were policy-gradient reinforcement learning algorithms. 
-These algorithms, such as Proximal Policy Optimization (PPO), Group Relative Policy Optimization (GRPO), and REINFORCE, use recently generated samples to update their model rather than storing scores in a replay buffer.
+These algorithms, such as Proximal Policy Optimization (PPO), Group Relative Policy Optimization (GRPO), and REINFORCE, use recently generated samples to update their model (rather than storing scores in a replay buffer like algorithms, e.g. Deep Q-Networks, DQN, used in popular projects such as AlphaGo).
 In this section we will cover the fundamentals of the policy gradient algorithms and how they are used in the modern RLHF framework.
 
 At a machine learning level, this section is the subject with the highest complexity in the RLHF process.
 Though, as with most modern AI models, the largest determining factor on its success is the data provided as inputs to the process.
 
-The most popular algorithms used for RLHF have evolved over time.
+<!-- The most popular algorithms used for RLHF have evolved over time. -->
 When RLHF came onto the scene with ChatGPT, it was largely known that they used a variant of PPO, and many initial efforts were built upon that.
 Over time, multiple research projects showed the promise of REINFORCE style algorithms [@ahmadian2024back] [@wang2024helpsteer2p], touted for its simplicity over PPO without a reward model (saves memory and therefore the number of GPUs required) and with simpler value estimation (no Generalized Advantage Estimation, GAE, which is a method to compute advantages used for variance reduction in policy gradient algorithms).
 More algorithms have emerged, including Group Relative Policy Optimization, which is particularly popular with reasoning tasks, but in general many of these algorithms can be tuned to fit a specific task.
@@ -27,7 +31,7 @@ For definitions of symbols, see the problem setup chapter.
 ## Policy Gradient Algorithms
 
 Reinforcement learning algorithms are designed to maximize the future, discounted reward across a trajectory of states, $s \in \mathcal{S}$, and actions, $a \in \mathcal{A}$ (for more notation, see Chapter 3, Definitions).
-The objective of the agent, often called the *return*, is the sum of discounted, future rewards (where $\gamma\in [0,1)$ is a factor that prioritizes near term rewards) at a given time $t$:
+The objective of the agent, often called the *return*, is the sum of discounted, future rewards (where $\gamma\in [0,1]$ is a factor that prioritizes near term rewards) at a given time $t$:
 
 $$G_t = R_{t+1} + \gamma R_{t+2} + \cdots = \sum_{k=0}^\infty \gamma^k R_{t+k+1}.$$ {#eq:return_definition}
 
@@ -38,14 +42,28 @@ This return is the basis for learning a value function $V(s)$ that is the estima
 
 $$V(s) = \mathbb{E}\big[G_t | S_t = s \big].$$ {#eq:value_function}
 
-All policy gradient algorithms solve an objective for such a value function induced from a specific policy, $\pi(a|s)$. 
+All policy gradient algorithms optimize a policy $\pi_\theta(a\mid s)$ to maximize expected return; this objective can be expressed using the induced value function $V^{\pi_\theta}(s)$.
 
-Where $d_\pi(s)$ is the stationary distribution of states induced by policy $\pi(a \mid s)$, the optimization is defined as:
+Where $d^{\pi_\theta}(s)$ is the state-visitation distribution induced by policy $\pi_\theta(a \mid s)$, the objective we maximize can be written as:
 $$
 J(\theta)
 \;=\;
-\sum_{s} d_\pi(s) V_\pi(s),
+\sum_{s} d^{\pi_\theta}(s) V^{\pi_\theta}(s),
 $$ {#eq:policy_objective}
+
+In a finite MDP this is a sum over all states, but in practice we never compute it exactly.
+Instead, we estimate it from data by sampling rollouts from the current policy.
+In RLHF this typically means sampling prompts $x_i$ from a dataset and generating completions $y_i \sim \pi_\theta(\cdot\mid x_i)$, then taking an empirical average such as:
+
+$$
+\hat{J}(\theta) = \frac{1}{B}\sum_{i=1}^{B} R(x_i, y_i),
+$$
+
+or, in an MDP view with per-step rewards,
+
+$$
+\hat{J}(\theta) = \frac{1}{B}\sum_{i=1}^{B} \sum_{t=0}^{T_i} \gamma^t r_{i,t}.
+$$
 
 The core of policy gradient algorithms is computing the gradient with respect to the finite time expected return over the current policy. 
 With this expected return, $J$, the parameter update can be computed as follows, where $\alpha$ is the learning rate: 
