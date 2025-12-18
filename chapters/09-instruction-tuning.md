@@ -54,7 +54,7 @@ An example which we will break down is below:
 {# Emit the beginning-of-sequence token (model-specific). #}
 {{ bos_token }}
 
-{# Serialize each message into the model’s chat-markup tokens. #}
+{# Serialize each message into the model's chat-markup tokens. #}
 {% for message in messages %}
     {# Enforce role alternation: (system), user, assistant, user, assistant, ...
        The boolean expression compares “is this a user message?” against whether the
