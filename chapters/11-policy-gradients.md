@@ -82,7 +82,7 @@ $$
 J(\theta) = \int_\tau p_\theta (\tau) R(\tau) d\tau
 $$ {#eq:policy_objective_integral}
 
-Notice that we can express the trajectory probability as follows:
+Notice that we can express the trajectory probability as follows, where $\pi_\theta(a_t|s_t) p(s_{t+1}|s_t, a_t)$ is the transition probability to a group of next states from one state and action:
 $$
 p_\theta (\tau) = p(s_0) \prod_{t=0}^\infty \pi_\theta(a_t|s_t) p(s_{t+1}|s_t, a_t),
 $$ {#eq:trajectory_probability}
@@ -109,7 +109,10 @@ $$
 \end{aligned}
 $$ {#eq:policy_gradient_expectation}
 
-Expanding the log probability of the trajectory:
+Where the final step uses the definition of an expectation under the trajectory distribution $p_\theta(\tau)$: for any function $f$, $\mathbb{E}_{\tau \sim p_\theta}[f(\tau)] = \int_\tau f(\tau)\,p_\theta(\tau)\,d\tau$ (or a sum in the discrete case). 
+Writing it as an expectation is useful because we can approximate it with Monte Carlo rollouts, e.g., $\frac{1}{B}\sum_{i=1}^{B} f(\tau_i)$ for trajectories $\tau_i \sim \pi_\theta$.
+
+Back to the derivation, expanding the log probability of the trajectory:
 
 $$
 \log p_\theta (\tau) = \log p(s_0) + \sum_{t=0}^\infty \log \pi_\theta(a_t|s_t) + \sum_{t=0}^\infty \log p(s_{t+1}|s_t, a_t)
@@ -148,7 +151,7 @@ Where $\Psi_t$ can be the following (where the rewards can also often be discoun
 The *baseline* is a value used to reduce variance of policy updates (more on this below).
 
 For language models, some of these concepts do not make as much sense.
-For example, we know that for a deterministic policy the value function is defined as $V(s) = \max_a Q(s,a)$ or for a stochastic policy as $V(s) = \mathbb{E}_{a \sim \pi(a|s)}[Q(s,a)]$.
+For example, for a deterministic policy $\pi$ the state value is $V^{\pi}(s) = Q^{\pi}(s, \pi(s))$ (and for the optimal value function one has $V^*(s)=\max_a Q^*(s,a)$). For a stochastic policy, the analogous identity is $V^{\pi}(s) = \mathbb{E}_{a \sim \pi(\cdot\mid s)}[Q^{\pi}(s,a)]$.
 If we define $s+a$ as the continuation $a$ to the prompt $s$, then $Q(s, a) = V(s+a)$, which gives a different advantage trick:
 
 $$A(s,a) = Q(s,a) - V(s) = V(s + a) - V(s) = r + \gamma V(s + a) - V(s)$$ {#eq:advantage_trick}
