@@ -443,7 +443,7 @@ It is crucial to remember that PPO within the trust region is roughly the same a
 ### Group Relative Policy Optimization
 
 Group Relative Policy Optimization (GRPO) is introduced in DeepSeekMath [@shao2024deepseekmath], and used in other DeepSeek works, e.g. DeepSeek-V3 [@liu2024deepseek] and DeepSeek-R1 [@guo2025deepseek].
-GRPO can be viewed as PPO-inspired algorithm with a very similar surrogate loss, but it avoids learning a value function with another copy of the original policy language model (or another checkpoint for initialization). 
+GRPO can be viewed as a PPO-inspired algorithm with a very similar surrogate loss, but it avoids learning a value function with another copy of the original policy language model (or another checkpoint for initialization). 
 This brings two posited benefits:
 
 1. Avoiding the challenge of learning a value function from a LM backbone, where research hasn't established best practices.
@@ -496,7 +496,7 @@ Here, in the same notation we can recall the RLOO advantage estimation as:
 
 $$ A_i^\text{RLOO} = r_i - \frac{1}{G-1}\sum_{j=1, i\neq j}^G r_j $$ {#eq:RLOO_ADV_AGAIN}
 
-Thus, if we multiply the Dr. GRPO advantage definition by $\frac{G}{G-1}$ we can see an scaled equivalence:
+Thus, if we multiply the Dr. GRPO advantage definition by $\frac{G}{G-1}$ we can see a scaled equivalence:
 
 $$
 \begin{aligned}
@@ -518,7 +518,7 @@ In this section, we highlight some key factors that differentiate the implementa
 
 There are many other small details that go into this training. 
 For example, when doing RLHF with language models a crucial step is generating text that will then be rated by the reward model. 
-Under normal circumstances, the model should generate a end-of-sequence (EOS) token indicating it finished generating, but a common practice is to put a hard cap on generation length to efficiently utilize infrastructure.
+Under normal circumstances, the model should generate an end-of-sequence (EOS) token indicating it finished generating, but a common practice is to put a hard cap on generation length to efficiently utilize infrastructure.
 A failure mode of RLHF is that the model is regularly truncated in its answers, driving the ratings from the reward model out of distribution and to unpredictable scores.
 The solution to this is to *only* run a reward model ranking on the `eos_token`, and to otherwise assign a penalty to the model for generating too long.
 
@@ -539,7 +539,7 @@ A simple implementation of policy gradient, using advantages to estimate the gra
 ```python
 pg_loss = -advantages * ratio
 ```
-Ratio here is the logratio of the new policy model probabilities relative to the reference model.
+Ratio here is the (per-token) probability ratio (often computed from a log-probability difference) of the new policy model probabilities relative to the reference model.
 
 In order to understand this equation it is good to understand different cases that can fall within a batch of updates. 
 Remember that we want the loss to *decrease* as the model gets better at the task.
@@ -621,7 +621,7 @@ from typing import Optional
 import torch
 
 def masked_mean(values: torch.Tensor, mask: torch.Tensor, axis: Optional[int] = None) -> torch.Tensor:
-    """Compute mean of tensor with a masked values."""
+    """Compute mean of tensor with masked values."""
     if axis is not None:
         return (values * mask).sum(axis=axis) / mask.sum(axis=axis)
     else:
@@ -633,7 +633,7 @@ def masked_sum(
         axis: Optional[int] = None,
         constant_normalizer: float = 1.0,
     ) -> torch.Tensor:
-    """Compute sum of tensor with a masked values. Use a constant to normalize."""
+    """Compute sum of tensor with masked values. Use a constant to normalize."""
     if axis is not None:
         return (values * mask).sum(axis=axis) / constant_normalizer
     else:
@@ -707,7 +707,7 @@ In practice, separating training from roll-outs (i.e. inference for a generative
 Therefore, all of the recent empirical results with language models tend to be slightly outside of the theoretical proofs. 
 What happens in practice is designing the algorithms and systems for what actually works.
 
-![A comparison of the generation-update phases for synchronous or asynchronous RL training follow Noukhovitch et al. 2024.](images/async_v_synch_rl.png){#fig:async}
+![A comparison of the generation-update phases for synchronous or asynchronous RL training following Noukhovitch et al. 2024.](images/async_v_synch_rl.png){#fig:async}
 
 The common solution used is to constantly run inference and training on separate GPU nodes with software designed to efficiently run both.
 Common practice in popular open-source RL tools for language models is to use a distributed process management library such as Ray to hand information off between the policy-gradient learning loop and the inference loop that is running an efficient inference loop, e.g. VLLM.
@@ -717,7 +717,7 @@ These systems are designed and implemented with the presumption that nearly on-p
 Here, the generation and update phases can easily be synced to avoid idle compute on either piece of the training system.
 With reasoning models, the extremely long inference characteristics of problems requiring 10K to 100K+ tokens per answer makes the generation of roll-outs a far stronger bottleneck.
 A common problem when training reasoning models on more synchronous RL infrastructure is that an answer to one prompt in the batch can take substantially more time to generate (either through more tokens or more tool calls), resulting in the majority of the allocated compute being idle until it completes. 
-A second solution to this, called sequence-level packing, length mismatch issue within a batch is to stack shorter samples within a batch with clever masking to enable continued roll-outs from the model and better distributed length normalization of samples within a batch.
+A second solution to this length mismatch issue, called sequence-level packing, is to stack shorter samples within a batch with clever masking to enable continued roll-outs from the model and better distribute length normalization across samples within a batch.
 The full complexity of distributed RL infrastructure is out of scope for this book, as it can cause many other subtle issues that slow down training or cause instability.
 
 Following the emergence of these reasoning models, further interest has been taken to make the training and inference loops fully off-policy, where training batches for the policy gradient updates are filled with the most recently completed roll-outs across multiple instances generating answers [@wu2025llamarl] [@fu2025areal].
@@ -874,7 +874,7 @@ For more details on how to interpret this code, see the PPO section above.
 #### RLOO vs. GRPO
 
 The advantage updates for RLOO follow very closely to GRPO, highlighting the conceptual similarity of the algorithm when taken separately from the PPO style clipping and KL penalty details.
-Specially, for RLOO, the advantage is computed relative to a baseline that is extremely similar to that of GRPO -- the completion reward relative to the others for that same question.
+Specifically, for RLOO, the advantage is computed relative to a baseline that is extremely similar to that of GRPO -- the completion reward relative to the others for that same question.
 Concisely, the RLOO advantage estimate follows as (expanded from [TRL](https://github.com/huggingface/trl/blob/bfe20756082488350091352d1cdc19c172e42cd8/trl/trainer/rloo_trainer.py#L433)'s implementation):
 
 ```python
@@ -903,7 +903,7 @@ Here we consider some, but not all of these discussions.
 ### Comparing Algorithms
 
 Here's a summary of some of the discussed material (and foreshadowing to coming material on Direct Policy Optimization) when applied to RLHF.
-Here on or off policy indicates the derivation (where most are applied slightly off-policy in practice).
+Here, on- or off-policy indicates the derivation (where most are applied slightly off-policy in practice).
 A reference policy here indicates if it is required for the optimization itself, rather than for a KL penalty.
 
 | Method | Type | Reward Model | Value Function | Reference Policy | Core Loss $\mathcal{L}(\theta)$ |
