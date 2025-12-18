@@ -512,7 +512,7 @@ Those high-variance prompts can be exactly the hardest cases, where only a few s
 In this case, GRPO computes the advantage as the sum of the normalized rewards for the following reasoning steps.
 
 Finally, GRPO's advantage estimation can also be applied without the PPO clipping to more vanilla versions of policy gradient (e.g. REINFORCE), but it is not the canonical form.
-As an example of how these algorithms are intertwined, we can show that the advantage estimation in a variant of GRPO, Dr. GRPO (GRPO Done Right) [@liu2025understanding], is equivalent to the RLOO estimation up to a constant scaling factor (which normally does not matter due to implementation details to normalize the advantage).
+As an example of how these algorithms are intertwined, we can show that the advantage estimation in a variant of GRPO, Dr. GRPO (GRPO Done Right) [@liu2025understanding], is equivalent to the RLOO estimation (which uses the average reward of other samples as its baseline) up to a constant scaling factor (which normally does not matter due to implementation details to normalize the advantage).
 Dr. GRPO removes the standard deviation normalization term from @eq:GRPO_ADV -- note that this also scales the advantage *up*, which is equivalent to increasing the GRPO learning rate on samples with a variance in answer scores. 
 This addresses a bias towards questions with low reward variance -- i.e. almost all the answers are right or wrong -- but comes at a potential cost where problems where just one sample gets the answer right are important to learn from. 
 The Dr. GRPO advantage for completion $i$ within a group of size $G$ is defined as:
@@ -553,7 +553,7 @@ The popular open-source tools for RLHF have a large variance in implementation d
 Some decisions not covered here include:
 
 - **Value network initialization**: The internal learned value network used by PPO and other similar algorithms can be started from a different model of the same architecture or randomly selected weights. This can have a large impact on performance.
-- **Reward normalization, reward whitening, and/or advantage whitening**: Where normalization bounds all the values from the RM (or environment) to be between 0 and 1, which can help with learning stability, [whitening](https://en.wikipedia.org/wiki/Whitening_transformation) the rewards or the advantage estimates to uniform covariates can provide an even stronger boost to stability.
+- **Reward normalization, reward whitening, and/or advantage whitening**: Normalization bounds all the values from the RM (or environment) to be between 0 and 1, which can help with learning stability. [Whitening](https://en.wikipedia.org/wiki/Whitening_transformation) goes further by transforming rewards or advantage estimates to have zero mean and unit variance, providing an even stronger boost to stability.
 - **Different KL estimators**: With complex language models, precisely computing the KL divergence between models can be complex, so multiple approximations are used to substitute for an exact calculation [@schulman2016klapprox].
 - **KL controllers**: Original implementations of PPO and related algorithms had dynamic controllers that targeted specific KLs and changed the penalty based on recent measurements. Most modern RLHF implementations use static KL penalties, but this can also vary.
 
@@ -579,7 +579,7 @@ Case 3: Zero advantage, so no update is needed. The loss is zero, don't change t
 
 ### Loss Aggregation
 
-The question when implementing any policy gradient algorithm with language models is: How do you sum over the KL distance and loss to design different types of value attribution.
+The question when implementing any policy gradient algorithm with language models is: How do you sum over the KL distance and loss to design different types of value attribution?
 
 *Most of the discussions in this section assume a token-level action, where the RL problem is formatted as a Markov Decision Process (MDP) rather than a bandit problem. In a bandit problem, all the tokens in an action will be given the same loss, which has been the default implementation for some algorithms such as Advantage-Leftover Lunch RL (A-LoL) [@baheti2023leftover]. The formulation between MDP and bandit is actually an implementation detail over how the loss is aggregated per-sample. A bandit approach takes a mean that assigns the same loss to every token, which also aligns with DPO and other direct alignment algorithms' standard implementations.*
 
