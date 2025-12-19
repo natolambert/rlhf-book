@@ -18,6 +18,8 @@ Many other regularization techniques have emerged in the literature to then disa
 That is to say that regularization outside the core KL distance from generations is often used to stabilize experimental setups that can then be simplified in the next generation.
 Still, it is important to understand tools to constrain optimization in RLHF.
 
+*Throughout this chapter, we use $x$ to denote prompts and $y$ to denote completions. This notation is common in the language model literature, where methods operate on full prompt-completion pairs rather than individual tokens.*
+
 The general formulation, when used in an RLHF framework with a reward model, $r_\theta$ is as follows:
 
 $$ r = r_\theta - \lambda r_{\text{reg.}} $$ {#eq:rl_start}

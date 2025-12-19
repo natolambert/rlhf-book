@@ -21,6 +21,8 @@ Technically, Sequence Likelihood Calibration (SLiC-HF) was the first, modern dir
 
 The most impactful part of DPO and DAAs is lowering the barrier of entry to experimenting with language model post-training -- it uses less compute, is easier to implement from scratch, and is easier to get working on both toy and production examples.
 
+*Throughout this chapter, we use $x$ to denote prompts and $y$ to denote completions. This notation is common in the language model literature, where methods operate on full prompt-completion pairs rather than individual tokens.*
+
 ## Direct Preference Optimization (DPO)
 
 Here we explain intuitions for how DPO works and re-derive the core equations fully. 
@@ -42,8 +44,8 @@ where $\pi_r(y \mid x)$ is the exact, optimal reward policy that we are solving 
 This comes from deriving the Bradley-Terry reward with respect to an optimal policy (shown in @eq:dpo_opt_policy), as shown in the Bradley-Terry model section of Chapter 7. 
 Essentially, the implicit reward model shows "the probability of human preference data in terms of the optimal policy rather than the reward model."
 
-Let us consider the loss shown in @eq:dpo_core. 
-The learning process is decreasing the loss. Here, the loss will be lower when the log-ratio of the chosen response is bigger than the log-ratio of the rejected response (normalized by the reference model).
+Let us consider the loss shown in @eq:dpo_core that the optimizer must decrease. 
+Here, the loss will be lower when the log-ratio of the chosen response is bigger than the log-ratio of the rejected response (normalized by the reference model).
 In practice, this is a sum of log-probabilities of the model across the sequence of tokens in the data presented.
 Hence, DPO is increasing the delta in probabilities between the chosen and rejected responses.
 
@@ -58,7 +60,8 @@ Here, the gradient solves the above objective by doing the following:
 * These terms are weighted by $\beta$, which controls how the update balances ordering the completions correctly relative to the KL distance.
 
 
-The core intuition is that DPO is "fitting an implicit reward model whose corresponding optimal policy can be extracted in a closed form" (thanks to gradient ascent and our ML tools).
+The core intuition is that DPO is fitting an implicit reward model whose corresponding optimal policy can be extracted in a closed form (thanks to gradient descent and our ML tools).
+The closed form of the equation means that it is straightforward to implement the exact gradient, rather than needing to reach it by proxy of training a reward model and sampling completions to score.
 What is often misunderstood is that DPO is learning a reward model at its core, hence the subtitle of the paper *Your Language Model is Secretly a Reward Model.* 
 It is easy to confuse this with the DPO objective training a policy directly, hence studying the derivations below is good for a complete understanding.
 
@@ -69,7 +72,7 @@ In many ways, this makes the $\beta$ value easier to tune with DPO relative to o
 At each batch of preference data, composed of many pairs of completions $y_{chosen} \succ y_{rejected}$, DPO takes gradient steps directly towards the optimal solution.
 It is far simpler than policy gradient methods.
 
-![DPO simplicity meme, credit Tom Goldstein.](images/dpo_meme.jpeg){#fig:dpo-meme}
+![When DPO first released it sparked a fierce debate in the research community about how to best do RLHF and preference learning. This meme is a great job capturing the sentiment, where the debate often felt forced and over the top, but many people both getting started and in top labs were getting immense benefit out of DPO. DPO simplicity meme, credit Tom Goldstein.](images/dpo_meme.jpeg){#fig:dpo-meme}
 
 
 ### DPO Derivation
