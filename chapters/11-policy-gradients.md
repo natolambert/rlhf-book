@@ -552,7 +552,7 @@ The solution to this is to *only* run reward model scoring on the `eos_token`, a
 The popular open-source tools for RLHF have a large variance in implementation details across the algorithms (see table 10 in [@ivison2024unpacking]).
 Some decisions not covered here include:
 
-- **Value network initialization**: The internal learned value network used by PPO and other similar algorithms can be started from a different model of the same architecture or randomly selected weights. This can have a large impact on performance.
+- **Value network initialization**: The internal learned value network used by PPO and other similar algorithms can be started from a different model of the same architecture or randomly selected weights. This can have a large impact on performance. The standard established in InstructGPT [@ouyang2022training] (and re-used in Tülu 3 for its work on RLVR [@lambert2024t]) is to initialize the value network from the reward model used during RLHF. Others have used the previous checkpoint to RLHF training (normally an SFT model) with a value head appened randomly initialized, or fully re-initialized language models (less common as it will take longer for RLHF to converge, but possible).
 - **Reward normalization, reward whitening, and/or advantage whitening**: Normalization bounds all the values from the RM (or environment) to be between 0 and 1, which can help with learning stability. [Whitening](https://en.wikipedia.org/wiki/Whitening_transformation) goes further by transforming rewards or advantage estimates to have zero mean and unit variance, providing an even stronger boost to stability.
 - **Different KL estimators**: With complex language models, precisely computing the KL divergence between models can be complex, so multiple approximations are used to substitute for an exact calculation [@schulman2016klapprox].
 - **KL controllers**: Original implementations of PPO and related algorithms had dynamic controllers that targeted specific KLs and changed the penalty based on recent measurements. Most modern RLHF implementations use static KL penalties, but this can also vary.
@@ -579,69 +579,59 @@ Case 3: Zero advantage, so no update is needed. The loss is zero, don't change t
 
 ### Loss Aggregation
 
-The question when implementing any policy gradient algorithm with language models is: How do you sum over the KL distance and loss to design different types of value attribution?
+The question when implementing any policy gradient algorithm with language models is: How do you aggregate per-token losses into a final scalar loss?
+Given per-token losses $\ell_{i,t}$ for sample $i$ at token $t$, with completion lengths $|a_i|$ and batch size $B$, there are three main strategies:
 
-*Most of the discussions in this section assume a token-level action, where the RL problem is formatted as a Markov Decision Process (MDP) rather than a bandit problem. In a bandit problem, all the tokens in an action will be given the same loss, which has been the default implementation for some algorithms such as Advantage-Leftover Lunch RL (A-LoL) [@baheti2023leftover]. The formulation between MDP and bandit is actually an implementation detail over how the loss is aggregated per-sample. A bandit approach takes a mean that assigns the same loss to every token, which also aligns with DPO and other direct alignment algorithms' standard implementations.*
+**Strategy 1: Per-sequence normalization** (standard GRPO/PPO)
 
-*Most of what follows adopts the **MDP (token-level)** view: each token \(a_t\) is an action with state \(s_t\) the running prefix. This enables **token-level credit assignment** via a value function \(V(s_t)\) (e.g., GAE [@schulman2015high]) and **per-token KL**. In contrast, the **bandit (sequence-level)** view treats the whole completion as a single action with one scalar reward \(R\); in code, this is equivalent to computing a **sequence-level advantage** \(A_{\text{seq}}\) and multiplying it by the (length-normalized) sum of per-token log-probs, thereby **broadcasting the same learning signal to every token**. RLOO and the GRPO advantage operate in this bandit regime [@kool2019buy] [@ahmadian2024back] [@shao2024deepseekmath]; PPO with a learned value network uses the MDP regime [@schulman2017proximal]. This bandit view also matches direct-alignment objectives such as DPO and A-LoL [@baheti2023leftover]. Note that GRPO typically keeps the bandit-style advantage **and** adds a separate per-token KL loss, whereas PPO/RLOO often subtract KL inside the reward.*
+$$L = \frac{1}{B} \sum_{i=1}^{B} \frac{1}{|a_i|} \sum_{t=1}^{|a_i|} \ell_{i,t}$$
 
-Consider an example where we have the following variables, with a batch size B and sequence length L.
-
-```python
-advantages # [B, 1]
-per_token_probability_ratios # [B, L]
-```
-
-We can approximate the loss as above with a batch multiplication of `pg_loss = -advantages * ratio`. Multiplying these together is broadcasting the advantage per each completion in the batch (as in the outcome reward setting, rather than a per-token value model setting) to be the same. They are then multiplied by the per token probability logratios.
-
-In cases where a value network is used, it is easy to see that the different losses can behave very differently. 
-When outcome rewards are used, the advantages are set to be the same per token, so the difference in per-token probability is crucial to policy gradient learning dynamics.
-
-In the below implementations of GRPO and PPO, the loss is summed over the tokens in the completion:
+Each sequence contributes equally to the batch loss, regardless of length. In code:
 
 ```python
+# Strategy 1: Per-sequence normalization
 sequence_loss = ((per_token_loss * completion_mask).sum(dim=1) / \
              completion_mask.sum(dim=1)).mean()
 ```
 
-Note that `completion_mask` is simply a matrix of 1s and 0s, where the prompt tokens are masked out in the loss (0s here) because we don't want the model to learn to predict their value and therefore learn their behavior.
-The operation above is very similar to a `masked_mean` operation.
-An alternative is to average over each token individually.
+**Strategy 2: Per-token normalization** (DAPO [@yu2025dapo])
+
+$$L = \frac{\sum_{i=1}^{B} \sum_{t=1}^{|a_i|} \ell_{i,t}}{\sum_{i=1}^{B} |a_i|}$$
+
+Each token contributes equally; longer sequences have proportionally more influence on the gradient. In code:
 
 ```python
+# Strategy 2: Per-token normalization
 token_loss = ((per_token_loss * completion_mask).sum() / \
             completion_mask.sum())
 ```
 
-Intuitively, it could seem that averaging over the sequence is best, as we are trying to reward the model for *outcomes* and the specific tokens are not as important.
-This can introduce subtle forms of bias. 
-Consider two sequences of different lengths, assigned two different advantages `a_1` and `a_2`. 
+**Strategy 3: Fixed-length normalization** (Dr. GRPO [@liu2025understanding])
+
+$$L = \frac{1}{B} \sum_{i=1}^{B} \frac{1}{L_{\max}} \sum_{t=1}^{|a_i|} \ell_{i,t}$$
+
+Normalizes by max sequence length $L_{\max}$, giving shorter sequences smaller gradients per token but equal weight per sequence.
+
+Note that `completion_mask` in the code above is a matrix of 1s and 0s, where the prompt tokens are masked out (0s) because we don't want the model to learn from predicting prompt tokens.
+
+#### Why does this matter?
+
+Intuitively, per-sequence normalization (Strategy 1) seems best since we care about *outcomes*, not individual tokens.
+However, this introduces subtle biases based on sequence length.
+Consider two sequences of different lengths with per-token losses:
 
 ```python
-seq_1_advs = [a_1, a_1, a_1, a_1, a_1] # 5 tokens
-seq_2_advs = [a_2, a_2, a_2, a_2, a_2, a_2, a_2, a_2, a_2, a_2] # 10 tokens
+seq_1_losses = [1, 1, 1, 1, 10]  # 5 tokens, mean = 2.8
+seq_2_losses = [1, 1, 1, 1, 1, 1, 1, 1, 1, 10]  # 10 tokens, mean = 1.9
 ```
 
-Now, consider if the last token in each sequence is important to the advantage being positive, so it gets increased over the multiple gradient steps per batch.
-When you convert these to per-token losses, you could get something approximate to:
+With **Strategy 1** (per-sequence): The batch loss is $(2.8 + 1.9)/2 = 2.35$, and crucially, each token in the short sequence receives a larger gradient than tokens in the long sequence.
 
-```python
-seq_1_losses = [1, 1, 1, 1, 10] # 5 tokens
-seq_2_losses = [1, 1, 1, 1, 1, 1, 1, 1, 1, 10] # 10 tokens
-```
+With **Strategy 2** (per-token): The batch loss is $(14 + 19)/15 = 2.2$, and all tokens receive equal gradient magnitude.
 
-If we average these over the sequences, we will get the following numbers:
-```
-seq_1_loss = 2.8
-seq_2_loss = 1.9
-```
+With **Strategy 3** (fixed-length with $L_{\max}=10$): The short sequence contributes $1.4$ and the long sequence contributes $1.9$, balancing per-token gradients while still weighting by sequence.
 
-If we average these together weighting sequences equally, we get a loss of 2.35.
-If, instead we apply the loss equally to each token, the loss would be computed by summing all the per token losses and normalizing by length, which in this case would be 2.27.
-If the sequences had bigger differences, the two loss values can have substantially different values.
-
-For a more complete example on how loss aggregation changes the loss per-token and per-example, see the below script that computes the loss over a toy batch with two samples, one long and one short.
-The example uses three loss aggregation techniques: `masked_mean` corresponds to a per-sample length normalization, the loss proposed in DAPO [@yu2025dapo] with token level normalization per batch, `masked_mean_token_level`, and `masked_sum_result` with a fixed length normalization from the max length from Dr. GRPO [@liu2025understanding].
+For a more complete example showing how these strategies affect gradients, see the script below.
 
 ```python
 from typing import Optional
@@ -716,15 +706,25 @@ print("ratio.grad", ratio.grad)
 # [0.0909, 0.0909, 0.0909, 0.0909, 0.0909, 0.0909, 0.0909]])
 ```
 
-Here, it can be seen that for the default GRPO implementation, `masked_mean`, the short length has a bigger per-token gradient than the longer one, and the two implementations of Dr. GRPO and DAPO balance it out. 
-Note that these results can vary substantially if gradient accumulation is used, where the gradients are summed across multiple minibatches before taking a backward step.
-In this case, the balance between shorter and longer sequences can flip.
+The output shows that with Strategy 1 (`masked_mean`), the short sequence has larger per-token gradients (0.25) than the long sequence (0.14).
+Strategies 2 and 3 equalize the per-token gradients across sequences.
+Note that these results can vary substantially if gradient accumulation is used, where the gradients are summed across multiple minibatches before taking a backward step—in this case, the balance between shorter and longer sequences can flip.
 
-Another way to aggregate loss is discussed in [@liu2025understanding] that has its origins in pre-language-model RL research, where every per-token loss is normalized by the max sequence length set in the experiment. 
-This would change how the losses compare across batches per tokens in the above example.
+In practice, the best strategy depends on the specific training setup.
+Often in RLHF the method with the best numerical stability or the least variance in loss is preferred.
 
-In practice, the setup that is best likely is the one that is suited to the individual, online learning setup. 
-Often in RLHF methods the method with the best numerical stability and or the least variance in loss could be preferred.
+#### Related: MDP vs Bandit Framing
+
+The choice of loss aggregation connects to a deeper distinction in how we frame the RL problem.
+The **MDP (token-level)** view treats each token $a_t$ as an action with state $s_t$ being the running prefix.
+This enables token-level credit assignment via a value function $V(s_t)$ (e.g., GAE [@schulman2015high]) and per-token KL penalties.
+PPO with a learned value network uses this regime [@schulman2017proximal].
+
+In contrast, the **bandit (sequence-level)** view treats the whole completion as a single action with one scalar reward $R$.
+In code, this means computing a sequence-level advantage $A_{\text{seq}}$ and broadcasting it to all tokens.
+RLOO and the GRPO advantage operate in this bandit regime [@kool2019buy] [@ahmadian2024back] [@shao2024deepseekmath], as do direct alignment methods like DPO and A-LoL [@baheti2023leftover].
+
+Note that GRPO typically uses the bandit-style advantage *and* adds a separate per-token KL loss term, whereas PPO/RLOO often subtract KL inside the reward itself.
 
 ### Asynchronicity
 
