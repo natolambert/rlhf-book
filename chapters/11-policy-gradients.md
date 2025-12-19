@@ -582,7 +582,7 @@ Case 3: Zero advantage, so no update is needed. The loss is zero, don't change t
 The question when implementing any policy gradient algorithm with language models is: How do you aggregate per-token losses into a final scalar loss?
 Given per-token losses $\ell_{i,t}$ for sample $i$ at token $t$, with completion lengths $|a_i|$ and batch size $B$, there are three main strategies:
 
-**Strategy 1: Per-sequence normalization** (standard GRPO/PPO)
+**Strategy 1: Per-sequence normalization** (standard GRPO; also used in some PPO implementations)
 
 $$L = \frac{1}{B} \sum_{i=1}^{B} \frac{1}{|a_i|} \sum_{t=1}^{|a_i|} \ell_{i,t}$$
 
@@ -610,14 +610,14 @@ token_loss = ((per_token_loss * completion_mask).sum() / \
 
 $$L = \frac{1}{B} \sum_{i=1}^{B} \frac{1}{L_{\max}} \sum_{t=1}^{|a_i|} \ell_{i,t}$$
 
-Normalizes by max sequence length $L_{\max}$, giving shorter sequences smaller gradients per token but equal weight per sequence.
+Normalizes by max sequence length $L_{\max}$, equalizing the per-token scale across sequences while still letting longer sequences contribute more total gradient because they contain more active tokens.
 
 Note that `completion_mask` in the code above is a matrix of 1s and 0s, where the prompt tokens are masked out (0s) because we don't want the model to learn from predicting prompt tokens.
 
 #### Why does this matter?
 
 Intuitively, per-sequence normalization (Strategy 1) seems best since we care about *outcomes*, not individual tokens.
-However, this introduces subtle biases based on sequence length.
+However, this introduces subtle biases based on sequence length, which can cause the model to overthink of down-weight strategies that naturally need to use more tokens, depending on the direction of the bias.
 Consider two sequences of different lengths with per-token losses:
 
 ```python
@@ -717,31 +717,35 @@ Often in RLHF the method with the best numerical stability or the least variance
 
 The choice of loss aggregation connects to a deeper distinction in how we frame the RL problem.
 The **MDP (token-level)** view treats each token $a_t$ as an action with state $s_t$ being the running prefix.
-This enables token-level credit assignment via a value function $V(s_t)$ (e.g., GAE [@schulman2015high]) and per-token KL penalties.
-PPO with a learned value network uses this regime [@schulman2017proximal].
+In practice, this is the framing used when we compute token-level advantages with a learned value function $V(s_t)$ (e.g., GAE [@schulman2015high]) and apply KL penalties per token.
+PPO with a learned value network is the canonical example [@schulman2017proximal].
 
 In contrast, the **bandit (sequence-level)** view treats the whole completion as a single action with one scalar reward $R$.
 In code, this means computing a sequence-level advantage $A_{\text{seq}}$ and broadcasting it to all tokens.
-RLOO and the GRPO advantage operate in this bandit regime [@kool2019buy] [@ahmadian2024back] [@shao2024deepseekmath], as do direct alignment methods like DPO and A-LoL [@baheti2023leftover].
+RLOO and GRPO-style advantages are often used in this bandit-style setting [@kool2019buy] [@ahmadian2024back] [@shao2024deepseekmath].
+Direct alignment methods like DPO and A-LoL also define sequence-level objectives, although they are not policy-gradient estimators [@baheti2023leftover].
 
-Note that GRPO typically uses the bandit-style advantage *and* adds a separate per-token KL loss term, whereas PPO/RLOO often subtract KL inside the reward itself.
+Note that many GRPO implementations use a bandit-style advantage *and* add a separate per-token KL term in the loss, while many PPO/RLOO implementations fold KL into the reward before computing advantages; both conventions exist in practice.
 
 ### Asynchronicity
 
 The default implementation for policy-gradient algorithms is what is called **on-policy** execution, where the actions (generations) taken by the agent (language model) are scored before updating the model.
 The theoretical derivations of policy-gradient rely on all actions being exactly on-policy where the model is always up to date with the results from the latest trials/roll-outs.
-In practice, separating training from roll-outs (i.e. inference for a generative model) substantially slows training [@noukhovitch2024asynchronous] (or is technically impossible).
+In practice, maintaining exact on-policy execution substantially slows training [@noukhovitch2024asynchronous]—and perfect synchronization is technically impossible regardless.
 Therefore, all of the recent empirical results with language models tend to be slightly outside of the theoretical proofs. 
 What happens in practice is designing the algorithms and systems for what actually works.
 
 ![A comparison of the generation-update phases for synchronous or asynchronous RL training following Noukhovitch et al. 2024.](images/async_v_synch_rl.png){#fig:async}
 
-The common solution used is to constantly run inference and training on separate GPU nodes with software designed to efficiently run both.
+The common solution used is to constantly run inference and training on separate GPU nodes with software designed to efficiently run both, as shown in the bottom of @fig:async.
 Common practice in popular open-source RL tools for language models is to use a distributed process management library such as Ray to hand information off between the policy-gradient learning loop and the inference loop using an efficient inference engine, e.g., VLLM.
+In these setups, the GPUs dedicated to taking the RL steps are called the "leaners" and the GPUs dedicated to sampling from the language model are called the "actors"
 The primary challenges faced when making training more asynchronous are keeping training stable and maintaining learning signal.
 
+![An example distributed RL system, where two queues are managed to pass data to the learner and actor GPUs, which can both be synchonized with a distributed computing library such as Ray. Olmo Team 2025, license CC-BY.](images/distributed-rl.png){#fig:async_system}
+
 These systems are designed and implemented with the presumption that nearly on-policy data is good enough for stable learning. 
-Here, the generation and update phases can easily be synced to avoid idle compute on either piece of the training system.
+Here, the generation and update phases can easily be synced to avoid idle compute on either piece of the training system, which would be passing model weights from the leaners to the actors in @fig:async_system.
 With reasoning models, the extremely long inference characteristics of problems requiring 10K to 100K+ tokens per answer makes the generation of roll-outs a far stronger bottleneck.
 A common problem when training reasoning models on more synchronous RL infrastructure is that an answer to one prompt in the batch can take substantially more time to generate (either through more tokens or more tool calls), resulting in the majority of the allocated compute being idle until it completes. 
 A second solution to this length mismatch issue, called sequence-level packing, is to stack shorter samples within a batch with clever masking to enable continued roll-outs from the model and better distribute length normalization across samples within a batch.
@@ -816,15 +820,13 @@ pg_losses1 = -advantages * ratio  # Shape: (B*G, L)
 pg_losses2 = -advantages * torch.clamp(ratio, 1.0 - eps, 1.0 + eps)  # Shape: (B*G, L)
 pg_loss_max = torch.max(pg_losses1, pg_losses2)  # Shape: (B*G, L)
 ```
-`pg_losses1` is the same as the vanilla advantage-based PG loss above, which is included in PPO, but the loss (and gradient update) can be clipped.
-Though, PPO is controlling the update size to not be too big. Because losses can be negative, we must create a more conservative version of the vanilla policy gradient update rule.
+`pg_losses1` is the vanilla advantage-weighted policy gradient loss. `pg_losses2` applies the same formula but with the probability ratio clamped to the range $[1-\epsilon, 1+\epsilon]$, limiting how much the policy can change in a single update.
 
-We know that if we *do not* constrain the loss, the policy gradient algorithm will update the weights exactly to the new probability distribution. 
-Hence, by clamping the logratio's, PPO is limiting the distance that the update can move the policy parameters.
+The key insight is taking `torch.max` of the two losses. Because we're minimizing a *negative* loss (recall the negative sign in front of advantages), taking the maximum selects the more pessimistic gradient—the one that produces a smaller policy update. When the advantage is positive (good action), clipping prevents the policy from increasing that action's probability too aggressively. When the advantage is negative (bad action), clipping prevents over-correction in the other direction.
 
-Finally, the max of two is taken as mentioned above, in order to take the more conservative loss update.
+By clamping the log-probability ratio, PPO bounds how far the policy can drift from the version that generated the training data, stabilizing learning without requiring an explicit trust region computation.
 
-For PPO, all of this happens *while* learning a value function, which opens more complexity, but this is the core logic for the parameter update.
+The code above also shows PPO learning a value function alongside the policy, which adds implementation complexity, but the clipped objective is the core mechanism.
 
 #### PPO/GRPO simplification with 1 gradient step per sample (no clipping)
 
@@ -896,7 +898,11 @@ with torch.no_grad():
     approx_kl = 0.5 * ((new_per_token_logps - per_token_logps)**2).mean()
 ```
 
-For more details on how to interpret this code, see the PPO section above.
+For more details on how to interpret this code, see the PPO section above. The core differences from the PPO example are:
+
+- **Advantage computation**: GRPO normalizes rewards relative to the group (mean and std across generations for the same prompt) rather than using a learned value function as baseline.
+- **No value network**: GRPO removes the value model entirely, eliminating `vf_loss` and the associated complexity.
+- **KL penalty placement**: GRPO adds the KL penalty directly to the loss rather than subtracting it from the reward (this is the standard implementation, but more versions exist on how the KL is applied).
 
 #### RLOO vs. GRPO
 
@@ -925,7 +931,7 @@ The rest of the implementation details for RLOO follow the other trade-offs of i
 ## Auxiliary Topics
 
 In order to master the application of policy-gradient algorithms, there are countless other considerations.
-Here we consider some, but not all of these discussions.
+Here we consider some of the long-tail of complexities in successfully deploying a policy-gradient RL algorithm.
 
 ### Comparing Algorithms
 
@@ -946,8 +952,8 @@ Table: Comparing policy gradient algorithms (and friends). {#tbl:pg_compare}
 ### Generalized Advantage Estimation (GAE)
 
 Generalized Advantage Estimation (GAE) is an alternate method to compute the advantage for policy gradient algorithms [@schulman2015high] that better balances the bias-variance tradeoff. 
-Traditional single-step advantage estimates can introduce too much bias, while using complete trajectories often suffer from high variance.
-GAE works by combining two ideas -- multi-step prediction and weighted running average (or just one of these).
+Traditional single-step advantage estimates can introduce too much bias, while using complete trajectories can suffer from high variance.
+GAE computes an exponentially-weighted average of multi-step advantage estimates, where the $\lambda$ hyperparameter controls the bias-variance tradeoff—ranging from single-step TD ($\lambda=0$) to full trajectory returns ($\lambda=1$).
 
 Advantage estimates can take many forms, but we can define a $n$ step advantage estimator (similar to the TD residual at the beginning of the chapter) as follows:
 
@@ -980,7 +986,7 @@ $$
 \end{array}
 $$ {#eq:GAE_DFN}
 
-Intuitively, this can be used to average of multi-step estimates of Advantage in an elegant fashion.
+Intuitively, this can be used to average multi-step estimates of Advantage in an elegant fashion.
 An example implementation is shown below:
 
 ```python
@@ -1013,12 +1019,16 @@ advantages = advantages.detach()   # for policy loss
 
 ### Double Regularization
 
-Many popular policy gradient algorithms from Deep Reinforcement Learning originated due to the need to control the learning process of the agent.
+We've seen in this chapter two types of regularization. One is built into algorithms like PPO with step-size constraints, and the other is a KL divergence based distance penalty relative to the start of the optimization. 
+
+Many popular policy gradient algorithms from Deep Reinforcement Learning, including PPO and its predecessors, originated due to the need to control the learning process of the agent.
 In RLHF, as discussed extensively in Chapter 8 on Regularization and in Chapter 4 on Problem Formulation, there is a built-in regularization term via the distance penalty relative to the original policy one is finetuning.
 In this view, a large part of the difference between algorithms like PPO (which have internal step-size regularization) and REINFORCE (which is simpler, and to which PPO reduces under certain hyperparameters) is far less meaningful for finetuning language models than training agents from scratch.
 
 In PPO, the objective that handles capping the step-size of the update is known as the [surrogate objective](https://huggingface.co/blog/deep-rl-ppo#introducing-the-clipped-surrogate-objective). 
 To monitor how much the PPO regularization is impacting updates in RLHF, one can look at the clip fraction variable in many popular implementations, which is the percentage of samples in the batch where the gradients are clipped by this regularizer in PPO. These gradients are *reduced* to a maximum value.
+
+In practice with language models, algorithms like PPO and GRPO are run with only one gradient step per batch, which means that the PPO-native regularization is never applied (as clipping can only occur within a batch when the policy changes substantially) and the KL distances penalities predominate.
 
 ### Further Reading
 
