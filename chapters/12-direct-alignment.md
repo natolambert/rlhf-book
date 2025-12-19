@@ -8,17 +8,24 @@ next-url: "13-cai"
 
 # Direct Alignment Algorithms
 
-Direct Alignment Algorithms (DAAs) allow one to update models to solve the  same RLHF objective without ever training an intermediate reward model or using reinforcement learning optimizers.
+Direct Alignment Algorithms (DAAs) allow one to update models to solve the same RLHF objective, shown again in @eq:review_rlhf, without ever training an intermediate reward model or using reinforcement learning optimizers. 
+It solves the same preference learning problem we've been studying (with literally the same data!), in order to make language models more aligned, smarter, and easier to use.
+The lack of a reward model and online optimization makes DAAs far simpler to implement, reducing compute spent during training and making experimentation easier.
 The most prominent DAA and one that catalyzed an entire academic movement of aligning language models is Direct Preference Optimization (DPO) [@rafailov2024direct].
-At its core, DPO is using gradient ascent to solve the same constrained RLHF objective.
-Since its release in May of 2023, after a brief delay where the community figured out the right data and hyperparameters to use DPO with (specifically, surprisingly low learning rates), many popular models have used DPO or its variants, from Zephyr-$\beta$ kickstarting it in October of 2023 [@tunstall2023zephyr], Llama 3 Instruct [@dubey2024llama], Tülu 2 [@ivison2023camels] and 3 [@lambert2024t], Nemotron 4 340B [@adler2024nemotron], and others.
-Technically, Sequence Likelihood Calibration (SLiC-HF) was released first [@zhao2023slic], but it did not catch on due to a combination of luck and effectiveness.
+At its core, DPO is using gradient ascent to solve the same constrained RLHF objective (see Chapter 4):
 
-The most impactful part of DPO and DAAs is lowering the barrier of entry to experimenting with language model post-training.
+$$ \max_{\pi} \mathbb{E}_{x \sim \mathcal{D}}\mathbb{E}_{y \sim \pi(y|x)} \left[r_\theta(x, y)\right] - \beta \mathcal{D}_{\text{KL}}\left(\pi(y|x) \| \pi_{\text{ref}}(y|x)\right)$$ {#eq:review_rlhf}
+
+Since its release in May of 2023, after a brief delay where the community figured out the right data and hyperparameters to use DPO with (specifically, surprisingly low learning rates), many popular models have used DPO or its variants, from Zephyr-$\beta$ kickstarting it in October of 2023 [@tunstall2023zephyr], Llama 3 Instruct [@dubey2024llama], Tülu 2 [@ivison2023camels] and 3 [@lambert2024t], Nemotron 4 340B [@adler2024nemotron], and others.
+Technically, Sequence Likelihood Calibration (SLiC-HF) was the first, modern direct alignment algorithm released [@zhao2023slic], but it did not catch on due to a combination of factors (unwinding the adoption of research methods is always a tricky task).
+
+The most impactful part of DPO and DAAs is lowering the barrier of entry to experimenting with language model post-training -- it uses less compute, is easier to implement from scratch, and is easier to get working on both toy and production examples.
+
+*Throughout this chapter, we use $x$ to denote prompts and $y$ to denote completions. This notation is common in the language model literature, where methods operate on full prompt-completion pairs rather than individual tokens.*
 
 ## Direct Preference Optimization (DPO)
 
-Here we explain intuitions for how it works and re-derive the core equations fully. 
+Here we explain intuitions for how DPO works and re-derive the core equations fully. 
 
 ### How DPO Works
 
@@ -34,11 +41,11 @@ This relies on the implicit reward for DPO training that replaces using an exter
 $$r(x, y) = \beta  \log \frac{\pi_r(y \mid x)}{\pi_{\text{ref}}(y \mid x)}$$ {#eq:dpo_reward}
 
 where $\pi_r(y \mid x)$ is the exact, optimal reward policy that we are solving for.
-This comes from deriving the Bradley-Terry reward with respect to an optimal policy (shown in @eq:dpo_opt_policy), as shown in the Bradley-Terry model section. 
+This comes from deriving the Bradley-Terry reward with respect to an optimal policy (shown in @eq:dpo_opt_policy), as shown in the Bradley-Terry model section of Chapter 7. 
 Essentially, the implicit reward model shows "the probability of human preference data in terms of the optimal policy rather than the reward model."
 
-Let us consider the loss shown in @eq:dpo_core. 
-The learning process is decreasing the loss. Here, the loss will be lower when the log-ratio of the chosen response is bigger than the log-ratio of the rejected response (normalized by the reference model).
+Let us consider the loss shown in @eq:dpo_core that the optimizer must decrease. 
+Here, the loss will be lower when the log-ratio of the chosen response is bigger than the log-ratio of the rejected response (normalized by the reference model).
 In practice, this is a sum of log-probabilities of the model across the sequence of tokens in the data presented.
 Hence, DPO is increasing the delta in probabilities between the chosen and rejected responses.
 
@@ -53,7 +60,8 @@ Here, the gradient solves the above objective by doing the following:
 * These terms are weighted by $\beta$, which controls how the update balances ordering the completions correctly relative to the KL distance.
 
 
-The core intuition is that DPO is "fitting an implicit reward model whose corresponding optimal policy can be extracted in a closed form" (thanks to gradient ascent and our ML tools).
+The core intuition is that DPO is fitting an implicit reward model whose corresponding optimal policy can be extracted in a closed form (thanks to gradient descent and our ML tools).
+The closed form of the equation means that it is straightforward to implement the exact gradient, rather than needing to reach it by proxy of training a reward model and sampling completions to score.
 What is often misunderstood is that DPO is learning a reward model at its core, hence the subtitle of the paper *Your Language Model is Secretly a Reward Model.* 
 It is easy to confuse this with the DPO objective training a policy directly, hence studying the derivations below is good for a complete understanding.
 
@@ -64,7 +72,7 @@ In many ways, this makes the $\beta$ value easier to tune with DPO relative to o
 At each batch of preference data, composed of many pairs of completions $y_{chosen} \succ y_{rejected}$, DPO takes gradient steps directly towards the optimal solution.
 It is far simpler than policy gradient methods.
 
-![DPO simplicity meme, credit Tom Goldstein.](images/dpo_meme.jpeg){#fig:dpo-meme}
+![When DPO first released it sparked a fierce debate in the research community about how to best do RLHF and preference learning. This meme is a great job capturing the sentiment, where the debate often felt forced and over the top, but many people both getting started and in top labs were getting immense benefit out of DPO. DPO simplicity meme, credit Tom Goldstein.](images/dpo_meme.jpeg){#fig:dpo-meme}
 
 
 ### DPO Derivation
@@ -77,9 +85,11 @@ Next, they show how to arrive at that solution from pairwise preference data (i.
 
 To start, we should consider the RLHF optimization objective once again, here indicating we wish to maximize this quantity:
 
-$$ \max_{\pi} \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t)\right] - \beta  \mathcal{D}_{KL}(\pi^{\text{RL}}(\cdot|s_t) \| \pi^{\text{ref}}(\cdot|s_t)).$$ {#eq:rlhf_opt_eq_repeat}
+$$ \max_{\pi} \mathbb{E}_{x \sim \mathcal{D}}\mathbb{E}_{y \sim \pi(y|x)} \left[r_\theta(x, y)\right] - \beta \mathcal{D}_{\text{KL}}\left(\pi(y|x) \| \pi_{\text{ref}}(y|x)\right)$$ {#eq:rlhf_opt_eq_repeat}
 
-First, let us expand the definition of KL-divergence,
+Here, the dual expectation only applies to the sampling to compute the expected reward, as the KL term is still an analytical expression.
+First, let us expand the definition of KL-divergence. Recall that $\mathcal{D}_{\text{KL}}(\pi \| \pi_{\text{ref}}) = \mathbb{E}_{y \sim \pi}\left[\log \frac{\pi(y|x)}{\pi_{\text{ref}}(y|x)}\right]$, where the $\pi(y|x)$ weighting in the sum becomes the sampling distribution. 
+Since both terms now share the same expectation over $y \sim \pi(y|x)$, we can combine them:
 
 $$\max_{\pi} \mathbb{E}_{x \sim \mathcal{D}}\mathbb{E}_{y \sim \pi(y|x)}\left[r(x,y)-\beta\log\frac{\pi(y|x)}{\pi_{\text{ref}}(y|x)}\right] $$ {#eq:dpo_deriv_1}
 
@@ -125,7 +135,7 @@ Next, we expand $\frac{1}{\beta}r(x,y)$ to $\log \exp \frac{1}{\beta}r(x,y)$ and
 With this optimization form, we need to actually solve for the optimal policy $\pi^*$.
 To do so, let us consider the above optimization as a KL distance:
 
-$$ \min_{\pi}\mathbb{E}_{x\sim\mathcal{D}}\left[\mathbb{D}_\text{KL} \left(\pi(y|x)||\frac{1}{Z(x)}\pi_{\text{ref}}(y|x)\exp\left(\frac{1}{\beta}r(x,y)\right) \right) - \log Z(x)\right] $$ {#eq:dpo_deriv_10}
+$$ \min_{\pi}\mathbb{E}_{x\sim\mathcal{D}}\left[\mathcal{D}_{\text{KL}} \left(\pi(y|x)||\frac{1}{Z(x)}\pi_{\text{ref}}(y|x)\exp\left(\frac{1}{\beta}r(x,y)\right) \right) - \log Z(x)\right] $$ {#eq:dpo_deriv_10}
 
 Since the partition function $Z(x)$ does not depend on the final answer, we can ignore it. This leaves us with just the KL distance between our policy we are learning and a form relating the partition, $\beta$, reward, and reference policy.
 The Gibb's inequality tells this is minimized at a distance of 0, only when the two quantities are equal!
@@ -140,7 +150,19 @@ To start, recall from Chapter 7 on Reward Modeling and Chapter 6 on Preference D
 
 $$p^*(y_1 \succ y_2 \mid x) = \frac{\exp\left(r^*(x,y_1)\right)}{\exp\left(r^*(x,y_1)\right) + \exp\left(r^*(x, y_2)\right)} $$ {#eq:bradley_terry_dpo}
 
-By manipulating @eq:dpo_opt_policy by taking the logarithm of both sides and performing some algebra, one can obtain the DPO reward as follows:
+By manipulating @eq:dpo_opt_policy, we can solve for the optimal reward. First, take the logarithm of both sides:
+
+$$\log \pi^*(y|x) = \log \left( \frac{1}{Z(x)}\pi_{\text{ref}}(y|x)\exp\left(\frac{1}{\beta}r^*(x,y)\right) \right)$$ {#eq:dpo_reward_deriv1}
+
+Expanding the right-hand side using $\log(abc) = \log a + \log b + \log c$:
+
+$$\log \pi^*(y|x) = -\log Z(x) + \log \pi_{\text{ref}}(y|x) + \frac{1}{\beta}r^*(x,y)$$ {#eq:dpo_reward_deriv2}
+
+Rearranging to solve for $r^*(x,y)$:
+
+$$\frac{1}{\beta}r^*(x,y) = \log \pi^*(y|x) - \log \pi_{\text{ref}}(y|x) + \log Z(x)$$ {#eq:dpo_reward_deriv3}
+
+Multiplying both sides by $\beta$:
 
 $$r^*(x, y) = \beta \log \frac{\pi^*(y \mid x)}{\pi_{\text{ref}}(y \mid x)} + \beta \log Z(x)$$ {#eq:dpo_reward_full}
 
@@ -175,7 +197,7 @@ $$\nabla_{\theta}\mathcal{L}_{\text{DPO}}(\pi_{\theta}; \pi_{\text{ref}}) = -\na
 To start, this can be rewritten.
 We know that the derivative of a sigmoid function $\frac{d}{dx} \sigma(x) = \sigma(x)(1-\sigma(x))$, the derivative of logarithm $\frac{d}{dx} \log x = \frac{1}{x}$, and properties of sigmoid $\sigma(-x)=1-\sigma(x)$, so we can reformat the above equation. 
 
-First, define the expression inside the sigmoid as $u=\beta \log \frac{\pi_{\theta}(y_c|x)}{\pi_{\text{ref}}(y_c|x)} - \beta \log \frac{\pi_{\theta}(y_r|x)}{\pi_{\text{ref}}(y_r|x)}$.
+First, let $u=\beta \log \frac{\pi_{\theta}(y_c|x)}{\pi_{\text{ref}}(y_c|x)} - \beta \log \frac{\pi_{\theta}(y_r|x)}{\pi_{\text{ref}}(y_r|x)}$ (the expression inside the sigmoid).
 Then, we have
 
 $$\nabla_{\theta}\mathcal{L}_{\text{DPO}}(\pi_{\theta};\pi_{\text{ref}}) = -\mathbb{E}_{(x, y_c, y_r)\sim \mathcal{D}}\left[\frac{\sigma'(u)}{\sigma(u)}\nabla_{\theta}u\right] $$ {#eq:dpo_grad_2}

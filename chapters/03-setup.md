@@ -34,10 +34,10 @@ We'll see in this book that different "heads" of a language model can be applied
 
 ## ML Definitions
 
-- **Kullback-Leibler (KL) divergence ($D_{KL}(P || Q)$)**, also known as KL divergence, is a measure of the difference between two probability distributions. 
+- **Kullback-Leibler (KL) divergence ($\mathcal{D}_{\text{KL}}(P || Q)$)**, also known as KL divergence, is a measure of the difference between two probability distributions.
 For discrete probability distributions $P$ and $Q$ defined on the same probability space $\mathcal{X}$, the KL distance from $Q$ to $P$ is defined as:
 
-$$ D_{KL}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\frac{P(x)}{Q(x)}\right) $$ {#eq:def_kl}
+$$ \mathcal{D}_{\text{KL}}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\frac{P(x)}{Q(x)}\right) $$ {#eq:def_kl}
 
 
 ## NLP Definitions
@@ -94,7 +94,7 @@ $$ D_{KL}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\frac{P(x)}{Q(x)}\r
 
 ## RLHF Only Definitions
 
-- **Reference Model ($\pi_\text{ref}$)**: This is a saved set of parameters used in RLHF where outputs of it are used to regularize the optimization.
+- **Reference Model ($\pi_{\text{ref}}$)**: This is a saved set of parameters used in RLHF where outputs of it are used to regularize the optimization.
 
 ## Extended Glossary
 

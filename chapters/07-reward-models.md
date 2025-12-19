@@ -22,6 +22,8 @@ The most common reward model, often called a Bradley-Terry reward model and the 
 Later in this section we also compare these to Outcome Reward Models (ORMs), Process Reward Model (PRM), and other types of reward models.
 <!-- When not indicated, the reward models mentioned are those predicting preference between text. -->
 
+*Throughout this chapter, we use $x$ to denote prompts and $y$ to denote completions. This notation is common in the language model literature, where methods operate on full prompt-completion pairs rather than individual tokens.*
+
 ## Training Reward Models
 
 The canonical implementation of a reward model is derived from the Bradley-Terry model of preference [@BradleyTerry].

@@ -94,7 +94,7 @@ In order to succeed in a finetuning regime, RLHF techniques employ multiple type
 The goal is to allow the reward maximization to still occur without the model succumbing to over-optimization, as discussed in Chapter 18.
 The most common change to the optimization function is to add a distance penalty on the difference between the current RLHF policy and the starting point of the optimization:
 
-$$J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t)\right] - \beta  \mathcal{D}_{KL}(\pi^{\text{RL}}(\cdot|s_t) \| \pi^{\text{ref}}(\cdot|s_t)).$$ {#eq:rlhf_opt_eq}
+$$J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t)\right] - \beta  \mathcal{D}_{\text{KL}}(\pi_{\text{RL}}(\cdot|s_t) \| \pi_{\text{ref}}(\cdot|s_t)).$$ {#eq:rlhf_opt_eq}
 
 Within this formulation, a lot of study into RLHF training goes into understanding how to spend a certain "KL budget" as measured by a distance from the initial model.
 For more details, see Chapter 8 on Regularization.

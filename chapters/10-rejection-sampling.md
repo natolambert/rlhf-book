@@ -20,6 +20,8 @@ Many prominent RLHF and preference fine-tuning papers have used rejection sampli
 
 WebGPT [@nakano2021webgpt], Anthropic's Helpful and Harmless agent [@bai2022training], OpenAI's popular paper on process reward models [@lightman2023let], Llama 2 Chat models [@touvron2023llama], and other seminal works all use this baseline; more recent work has formalized it directly (e.g., RAFT [@dong2023raft] for applying it to alignment in multiple modalities and Statistical Rejection Sampling Optimization (RSO) [@liu2023statistical] that gives a principled overview on how rejection sampling relates to other preference learning objectives).
 
+*Throughout this chapter, we use $x$ to denote prompts and $y$ to denote completions. This notation is common in the language model literature, where methods operate on full prompt-completion pairs rather than individual tokens.*
+
 ## Training Process
 
 Rejection sampling overall follows a few stages.
