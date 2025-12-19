@@ -8,17 +8,22 @@ next-url: "13-cai"
 
 # Direct Alignment Algorithms
 
-Direct Alignment Algorithms (DAAs) allow one to update models to solve the  same RLHF objective without ever training an intermediate reward model or using reinforcement learning optimizers.
+Direct Alignment Algorithms (DAAs) allow one to update models to solve the same RLHF objective, shown again in @eq:review_rlhf, without ever training an intermediate reward model or using reinforcement learning optimizers. 
+It solves the same preference learning problem we've been studying (with literally the same data!), in order to make language models more aligned, smarter, and easier to use.
+The lack of a reward model and online optimization makes DAAs far simpler to implement, reducing compute spent during training and making experimentation easier.
 The most prominent DAA and one that catalyzed an entire academic movement of aligning language models is Direct Preference Optimization (DPO) [@rafailov2024direct].
-At its core, DPO is using gradient ascent to solve the same constrained RLHF objective.
-Since its release in May of 2023, after a brief delay where the community figured out the right data and hyperparameters to use DPO with (specifically, surprisingly low learning rates), many popular models have used DPO or its variants, from Zephyr-$\beta$ kickstarting it in October of 2023 [@tunstall2023zephyr], Llama 3 Instruct [@dubey2024llama], Tülu 2 [@ivison2023camels] and 3 [@lambert2024t], Nemotron 4 340B [@adler2024nemotron], and others.
-Technically, Sequence Likelihood Calibration (SLiC-HF) was released first [@zhao2023slic], but it did not catch on due to a combination of luck and effectiveness.
+At its core, DPO is using gradient ascent to solve the same constrained RLHF objective (see @eq:rlhf_opt_eq):
 
-The most impactful part of DPO and DAAs is lowering the barrier of entry to experimenting with language model post-training.
+$$ \max_{\pi} \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t)\right] - \beta  \mathcal{D}_{KL}(\pi_{\text{RL}}(\cdot|s_t) \| \pi_{\text{ref}}(\cdot|s_t)).$$ {#eq:review_rlhf}
+
+Since its release in May of 2023, after a brief delay where the community figured out the right data and hyperparameters to use DPO with (specifically, surprisingly low learning rates), many popular models have used DPO or its variants, from Zephyr-$\beta$ kickstarting it in October of 2023 [@tunstall2023zephyr], Llama 3 Instruct [@dubey2024llama], Tülu 2 [@ivison2023camels] and 3 [@lambert2024t], Nemotron 4 340B [@adler2024nemotron], and others.
+Technically, Sequence Likelihood Calibration (SLiC-HF) was the first, modern direct alignment algorithm released [@zhao2023slic], but it did not catch on due to a combination of factors (unwinding the adoption of research methods is always a tricky task).
+
+The most impactful part of DPO and DAAs is lowering the barrier of entry to experimenting with language model post-training -- it uses less compute, is easier to implement from scratch, and is easier to get working on both toy and production examples.
 
 ## Direct Preference Optimization (DPO)
 
-Here we explain intuitions for how it works and re-derive the core equations fully. 
+Here we explain intuitions for how DPO works and re-derive the core equations fully. 
 
 ### How DPO Works
 
@@ -34,7 +39,7 @@ This relies on the implicit reward for DPO training that replaces using an exter
 $$r(x, y) = \beta  \log \frac{\pi_r(y \mid x)}{\pi_{\text{ref}}(y \mid x)}$$ {#eq:dpo_reward}
 
 where $\pi_r(y \mid x)$ is the exact, optimal reward policy that we are solving for.
-This comes from deriving the Bradley-Terry reward with respect to an optimal policy (shown in @eq:dpo_opt_policy), as shown in the Bradley-Terry model section. 
+This comes from deriving the Bradley-Terry reward with respect to an optimal policy (shown in @eq:dpo_opt_policy), as shown in the Bradley-Terry model section of Chapter 7. 
 Essentially, the implicit reward model shows "the probability of human preference data in terms of the optimal policy rather than the reward model."
 
 Let us consider the loss shown in @eq:dpo_core. 
@@ -77,7 +82,7 @@ Next, they show how to arrive at that solution from pairwise preference data (i.
 
 To start, we should consider the RLHF optimization objective once again, here indicating we wish to maximize this quantity:
 
-$$ \max_{\pi} \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t)\right] - \beta  \mathcal{D}_{KL}(\pi^{\text{RL}}(\cdot|s_t) \| \pi^{\text{ref}}(\cdot|s_t)).$$ {#eq:rlhf_opt_eq_repeat}
+$$ \max_{\pi} \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t)\right] - \beta  \mathcal{D}_{KL}(\pi_{\text{RL}}(\cdot|s_t) \| \pi_{\text{ref}}(\cdot|s_t)).$$ {#eq:rlhf_opt_eq_repeat}
 
 First, let us expand the definition of KL-divergence,
 
@@ -125,7 +130,7 @@ Next, we expand $\frac{1}{\beta}r(x,y)$ to $\log \exp \frac{1}{\beta}r(x,y)$ and
 With this optimization form, we need to actually solve for the optimal policy $\pi^*$.
 To do so, let us consider the above optimization as a KL distance:
 
-$$ \min_{\pi}\mathbb{E}_{x\sim\mathcal{D}}\left[\mathbb{D}_\text{KL} \left(\pi(y|x)||\frac{1}{Z(x)}\pi_{\text{ref}}(y|x)\exp\left(\frac{1}{\beta}r(x,y)\right) \right) - \log Z(x)\right] $$ {#eq:dpo_deriv_10}
+$$ \min_{\pi}\mathbb{E}_{x\sim\mathcal{D}}\left[\mathcal{D}_{\text{KL}} \left(\pi(y|x)||\frac{1}{Z(x)}\pi_{\text{ref}}(y|x)\exp\left(\frac{1}{\beta}r(x,y)\right) \right) - \log Z(x)\right] $$ {#eq:dpo_deriv_10}
 
 Since the partition function $Z(x)$ does not depend on the final answer, we can ignore it. This leaves us with just the KL distance between our policy we are learning and a form relating the partition, $\beta$, reward, and reference policy.
 The Gibb's inequality tells this is minimized at a distance of 0, only when the two quantities are equal!

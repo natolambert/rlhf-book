@@ -25,7 +25,7 @@ $$ r = r_\theta - \lambda r_{\text{reg.}} $$ {#eq:rl_start}
 With the reference implementation being:
 
 $$
-r = r_\theta - \lambda_{\text{KL}} \mathcal{D}_{\text{KL}} \left( \pi^{\text{RL}}(y \mid x) \, \| \, \pi^{\text{Ref.}}(y \mid x) \right)
+r = r_\theta - \lambda_{\text{KL}} \mathcal{D}_{\text{KL}} \left( \pi_{\text{RL}}(y \mid x) \, \| \, \pi_{\text{ref}}(y \mid x) \right)
 $$ {#eq:kl_standard}
 
 ## KL Divergences in RL Optimization
@@ -33,19 +33,19 @@ $$ {#eq:kl_standard}
 For mathematical definitions, see Chapter 3 on Problem Setup.
 Recall that a KL divergence measure of probability difference is defined as follows:
 
-$$ D_{KL}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\frac{P(x)}{Q(x)}\right) $$ {#eq:kl_distance_regularization}
+$$ \mathcal{D}_{\text{KL}}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\frac{P(x)}{Q(x)}\right) $$ {#eq:kl_distance_regularization}
 
 In RLHF, the two distributions of interest are often the distribution of the new model version, say $P(x)$, and a distribution of the reference policy, say $Q(x)$.
-Different optimizers use different KL directions. Throughout this book, the most common "KL Penalty" that is used is called the reverse KL to the reference policy. In practice, this reduces to a Monte Carlo estimate that samples tokens from the RL model and computes probabilities from the reference model. Intuitively, this reverse KL has a numerical property that applies a large penalty when the new model, $P$ or $\pi_\text{RL}$, puts substantial probability mass where the original reference model assigns low probability.
+Different optimizers use different KL directions. Throughout this book, the most common "KL Penalty" that is used is called the reverse KL to the reference policy. In practice, this reduces to a Monte Carlo estimate that samples tokens from the RL model and computes probabilities from the reference model. Intuitively, this reverse KL has a numerical property that applies a large penalty when the new model, $P$ or $\pi_{\text{RL}}$, puts substantial probability mass where the original reference model assigns low probability.
 
-The other KL direction is still often used in ML, e.g. in the internal trust region calculation of some RL algorithms. This penalty intuitively penalizes the new model when its update does *not* apply probability to a high-likelihood region in $Q$ or $\pi_\text{Ref.}$. This is closer to an objective used for distillation or behavioral cloning.
+The other KL direction is still often used in ML, e.g. in the internal trust region calculation of some RL algorithms. This penalty intuitively penalizes the new model when its update does *not* apply probability to a high-likelihood region in $Q$ or $\pi_{\text{ref}}$. This is closer to an objective used for distillation or behavioral cloning.
 
 ### Reference Model to Generations
 
 KL penalties are most commonly implemented by comparing the distance between the generated tokens during training to a static reference model.
 The intuition is that the model you're training from has a style that you would like to stay close to.
 This reference model is most often the instruction tuned model, but can also be a previous RL checkpoint.
-With simple substitution, the model we are sampling from becomes $\pi^{\text{RL}}(x)$ and $\pi^{\text{Ref.}}(x)$, shown above in @eq:kl_standard (often $P$, and $Q$, in standard definitions, when applied for RL KL penalties).
+With simple substitution, the model we are sampling from becomes $\pi_{\text{RL}}(x)$ and $\pi_{\text{ref}}(x)$, shown above in @eq:kl_standard (often $P$, and $Q$, in standard definitions, when applied for RL KL penalties).
 Such a KL divergence penalty was first applied to dialogue agents well before the popularity of large language models [@jaques2017sequence], yet KL control was quickly established as a core technique for fine-tuning pretrained models [@jaques2020human].
 
 ### Implementation Example
@@ -56,7 +56,7 @@ In this case, the distribution $P(x)$ is the generative distribution of the mode
 Then, the computation for KL divergence changes to the following:
 
 $$
-D_{\text{KL}}(P \,||\, Q) = \mathbb{E}_{x \sim P} \left[ \log P(x) - \log Q(x) \right].
+\mathcal{D}_{\text{KL}}(P \,||\, Q) = \mathbb{E}_{x \sim P} \left[ \log P(x) - \log Q(x) \right].
 $$ {#eq:kl_expectation}
 
 This mode is far simpler to implement, particularly when dealing directly with log probabilities used frequently in language model training.
@@ -97,13 +97,13 @@ Another way of viewing regularization is that you may have a *dataset* that you 
 To implement this, they modify the training objective for RLHF.
 Taking @eq:rl_start, we can transform this into an objective function to optimize by sampling from the RL policy model, completions $y$ from prompts $x$ in the RL dataset used for RLHF, which yields:
 $$
-J(\theta) = \mathbb{E}_{(x,y) \sim \mathcal{D}_{\pi^{\text{RL}}_{\theta}}} \left[ r_{\theta}(y \mid x) - \lambda r_{\text{reg.}} \right]
+J(\theta) = \mathbb{E}_{(x,y) \sim \mathcal{D}_{\pi_{\text{RL},\theta}}} \left[ r_{\theta}(y \mid x) - \lambda r_{\text{reg.}} \right]
 $$ {#eq:objective_regularization}
 
 Then, we can add an additional reward for higher probabilities on the standard autoregressive next-token prediction loss used at pretraining, over a set of documents sampled from the pretraining corpus (or another dataset) to maintain textual coherence:
 
 $$
-J(\theta) = \mathbb{E}_{(x,y) \sim \mathcal{D}_{\pi^{\text{RL}}_{\theta}}} \left[ r_{\theta}(y \mid x) - \lambda r_{\text{reg.}} \right] + \gamma \mathbb{E}_{x \sim \mathcal{D}_{\text{pretrain}}} \left[ \log(\pi^{\text{RL}}_{\theta}(x)) \right]
+J(\theta) = \mathbb{E}_{(x,y) \sim \mathcal{D}_{\pi_{\text{RL},\theta}}} \left[ r_{\theta}(y \mid x) - \lambda r_{\text{reg.}} \right] + \gamma \mathbb{E}_{x \sim \mathcal{D}_{\text{pretrain}}} \left[ \log(\pi_{\text{RL},\theta}(x)) \right]
 $$ {#eq:objective_pretraining}
 
 Recent work proposed using a negative log-likelihood term to balance the optimization of Direct Preference Optimization (DPO) [@pang2024iterative].
