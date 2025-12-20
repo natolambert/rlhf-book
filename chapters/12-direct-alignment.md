@@ -226,12 +226,12 @@ Some variants to DPO attempt to either improve the learning signal by making sma
 
 One of the core issues *apparent* in DPO is that the optimization drives only to increase the margin between the probability of the chosen and rejected responses.
 Numerically, the model reduces the probability of both the chosen and rejected responses, but the *rejected response is reduced by a greater extent* as shown in @fig:dpo_issue.
-Intuitively, it is not clear how this generalizes, but work has posited that it increases the probability of unaddressed for behaviors [@razin2024unintentional] [@ren2024learning]. 
+Intuitively, it is not clear how this generalizes, but work has posited that it increases the probability of unaddressed for behaviors -- i.e. tokens that language model could generate, but are not in the distribution of the post-training datasets [@razin2024unintentional] [@ren2024learning]. 
 Simple methods---such as Cal-DPO [@xiao2024cal], which adjusts the optimization process, and AlphaPO [@gupta2025alphapo], which modifies the reward shape---mitigate this **preference displacement**.
-In practice, the exact impact of this is not well known, but points are a potential reason why online methods can outperform vanilla DPO.
+In practice, the exact impact of this is not well known, but points to a potential reason why online methods can outperform vanilla DPO.
 
 The largest other reason that is posited for DPO-like methods to have a lower ceiling on performance than online (RL based) RLHF methods is that the training signal comes from completions from previous or other models.
-Online variants that sample generations from the model, e.g. **Online DPO** [@guo2024direct], even with regular reward model relabelling of newly created creations **Discriminator-Guided DPO** (D2PO) [@singhal2024d2po], alleviate these by generating new completions for the prompt and incorporating a preference signal at training time.
+Online variants of DPO alleviate these limitations by generating new completions and incorporating a preference signal at training time. **Online DPO** [@guo2024direct] samples generations from the current model, while **Discriminator-Guided DPO** (D2PO) [@singhal2024d2po] uses reward model relabelling to create new preference data on the fly, and many more variants exist.
 
 There is a long list of other DAA variants, such as Direct Nash Optimization (DNO) [@rosset2024direct] or Binary Classifier Optimization (BCO) [@jung2024binary], but the choice of algorithm is far less important than the initial model and the data used [@lambert2024t] [@zhao2024rainbowpo] [@gorbatovski2025differences].
 
