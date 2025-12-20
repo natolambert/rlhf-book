@@ -9,9 +9,10 @@ next-url: "19-character"
 # Style and Information
 
 Early developments in RLHF gave it a reputation for being "just style transfer" or other harsh critiques on how RLHF manipulates the way information is presented in outputs.
+This chapter explains why style is very core to understanding the value that RLHF is providing.
+Reading this chapter should help you understand the changes RLHF is making to the models and why it positively impacts user behavior.
 
-Style transfer has held back the RLHF narrative for two reasons. 
-
+The idea of being solely about style transfer has held back the RLHF narrative for two reasons. 
 First, when people discuss style transfer, they don't describe this as being important or exciting. 
 Style is a never-ending source of human value, it's why retelling stories can result in new bestselling books (such as [Sapiens](https://en.wikipedia.org/wiki/Sapiens:_A_Brief_History_of_Humankind)), and it is a fundamental part of continuing to progress our intellectual ecosystem. 
 Style is intertwined with what the information is. 

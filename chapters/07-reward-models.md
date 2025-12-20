@@ -8,7 +8,9 @@ next-url: "08-regularization"
 
 # Reward Modeling
 
-Reward models are core to the modern approach to RLHF by being where the complex human preferences are learned. They are what enable our models to learn from hard to specify signals. They compress complex features in the data into a representation that can be used in downstream training.
+Reward models are core to the modern approach to RLHF by being where the complex human preferences are learned. 
+They are what enable our models to learn from hard to specify signals. 
+They compress complex features in the data into a representation that can be used in downstream training -- a sort of magic that once again shows the complex capacity of modern deep learning.
 These models act as the proxy objectives by which the core optimization is done, as studied in the following chapters.
 
 Reward models broadly have historically been used extensively in reinforcement learning research as a proxy for environment rewards [@sutton2018reinforcement].

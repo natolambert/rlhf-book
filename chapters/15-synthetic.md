@@ -16,7 +16,9 @@ Humans were the only way to collect reliable and specific feedback data to train
 
 As AI models got better, this assumption rapidly broke down.
 The possibility of synthetic data, which is far cheaper and easier to iterate on, enabled the proliferation from RLHF being the center of attention to the idea of a broader "post-training" shaping the models.
+This chapter provides a cursory overview of how and why synthetic data is replacing or expanding many pieces of the RLHF pipeline.
 
+We begin by starting with a common criticism of synthetic data, in order to highlight what the data is actually extremely capable at.
 Many reports have been made on how synthetic data causes "model collapse" or other issues in models [@shumailov2024ai], but this has been emphatically rebuked in leading language models [@gerstgrasser2024model] [@feng2024beyond].
 Synthetic data *can* cause models to have performance issues, but this is caused by using repetitive data or solely data outputted by the model being trained (narrowing its potential distribution) rather than well-rounded data sources.
 

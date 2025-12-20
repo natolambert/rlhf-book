@@ -8,6 +8,11 @@ next-url: "18-style"
 
 # Over Optimization
 
+A core lesson one learns when using reinforcement learning heavily in their domain it is a very strong optimizer, which causes it to pull all the possible increase in reward out of the environment.
+In modern ML systems, especially with language models, we're using somewhat contrived notions of enviornment where the models generate completions (the actions) and an external verifier, i.e. a reward model or a scoring function provides feedback.
+In this domain, it is common for over-optimization to occur, where the RL optimizers push the language models in directions where the generations satisfy our checker functions, but the behavior does not align with our training goals.
+This chapter providers and overview of this classic case of **over-optimization**.
+
 In the RLHF literature and discourse, there are two primary directions that over-optimization can emerge:
 
 1. **Quantitative research** on the technical notion of over-optimization of reward. This measures optimization distance and power versus training metrics and downstream performance. Training keeps going up, while eventually downstream goes down.

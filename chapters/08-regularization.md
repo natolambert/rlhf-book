@@ -11,6 +11,7 @@ next-url: "09-instruction-tuning"
 Throughout the RLHF optimization, many regularization steps are used to prevent over-optimization of the reward model.
 Over-optimization in these contexts looks like models that output nonsensical text.
 Some examples of optimization "off the rails" are that models can output followable math reasoning with extremely incorrect answers, repeated text, switching languages, or excessive special characters.
+This chapter covers the different methods that're used to control the optimization of models.
 
 The most popular variant, used in most RLHF implementations at the time of writing, is a KL distance from the current policy to a reference policy across generated samples.
 “KL distance” is a colloquial term for expressing the *optimization distance* within the training process, even though KL divergence—the underlying mathematical method for measuring the separation of two probability distributions—does not satisfy the formal properties required to be a true distance metric (it is simply easier to call the number a distance than a numeric measure of distributional difference).

@@ -13,6 +13,7 @@ The core problem we've been trying to solve with RLHF is that we cannot precisel
 The data is what allows us to match behaviors we desire and avoid some failure modes we hate.
 The data is so rich a source that it is difficult to replace this style of optimization at all.
 Within preference finetuning, many methods for collecting and using said data have been proposed, and given that human preferences cannot be captured in a clear reward function, many more will come to enable this process of collecting labeled preference data at the center of RLHF and related techniques.
+Today, two main challenges exist around preference data that are intertwined with this chapter: 1) operational complexity and cost of collection, and 2) the need for preference data to be collected on the generations from the model being trained (called "on-policy");
 
 In this chapter, we detail technical decisions on how the data is formatted and organizational practices for collecting it.
 

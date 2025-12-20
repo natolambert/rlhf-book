@@ -8,6 +8,11 @@ next-url: "03-setup"
 
 # Key Related Works
 
+RLHF and its related methods are very new.
+We highlight history to show how recently the procedures were formalized, and how much of this documentation is in the academic literature.
+With this, we want to emphasize that RLHF is very rapidly evolving, so the chapter sets the stage for a book that will express uncertainty over certain methods and an expectation that some details can change around a few, core practices.
+Otherwise, the papers and methods listed here showcase why many pieces of the RLHF pipeline are what they are, as some of the seminal papers were for applications totally distinct from modern language models.
+
 In this chapter we detail the key papers and projects that got the RLHF field to where it is today.
 This is not intended to be a comprehensive review of RLHF and the related fields, but rather a starting point and retelling of how we got to today.
 It is intentionally focused on recent work that led to ChatGPT.
