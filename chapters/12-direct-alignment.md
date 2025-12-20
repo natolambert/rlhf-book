@@ -11,6 +11,8 @@ next-url: "13-cai"
 Direct Alignment Algorithms (DAAs) allow one to update models to solve the same RLHF objective, shown again in @eq:review_rlhf, without ever training an intermediate reward model or using reinforcement learning optimizers. 
 It solves the same preference learning problem we've been studying (with literally the same data!), in order to make language models more aligned, smarter, and easier to use.
 The lack of a reward model and online optimization makes DAAs far simpler to implement, reducing compute spent during training and making experimentation easier.
+This chapter details the complex mathematics that were done to derive these algorithms, and then shows that the sometimes tedious derivations result in simple implementations.
+ 
 The most prominent DAA and one that catalyzed an entire academic movement of aligning language models is Direct Preference Optimization (DPO) [@rafailov2024direct].
 At its core, DPO is using gradient ascent to solve the same constrained RLHF objective (see Chapter 4):
 

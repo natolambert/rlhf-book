@@ -9,6 +9,9 @@ next-url: "06-preference-data"
 # The Nature of Preferences
 
 Reinforcement learning from human feedback, also referred to as reinforcement learning from human preferences in early literature, emerged to optimize machine learning models in domains where specifically designing a reward function is hard.
+The word *preferences*, which was present in early literature, is at the center of the RLHF process -- human preferences are what is trying to be modeled and what fuels the data for training.
+In order to understand the scope of the challenge in modeling and measuring human preferences, a broader context is needed in understanding what a preference is, how our understanding of them emerged, and how multiple fields of economics, psychology, philosophy, and more inform modern RLHF.
+
 Consider an example: how do you decide which of these two poems is better (Context: *On February 26th, 2025, I asked both Claude 3.7 Sonnet and ChatGPT with GPT-4o to "Write me a short poem about an optimistic goldfish."*):
 
 Example 1:
