@@ -8,7 +8,11 @@ next-url: "14.5-tools"
 
 # Reasoning Training & Inference-Time Scaling
 
-At the 2016 edition of the Neural Information Processing Systems (NeurIPS) conference, Yann LeCun first introduced his now-famous cake metaphor for where learning happens in modern machine learning systems:
+Reasoning models and inference-time scaling -- the underlying property of language models that they exploit so well -- enabled a massive step in language model performance in the end of 2024, through 2025, and into the future.
+These models, trained with a large amount of reinforcement learning with verifiable rewards (RLVR) [@lambert2024t], still utilize large amounts of RLHF.
+In this chapter we review the path that led the AI community to a transformed appreciation for RL's potential in language models, review the fundamentals of RLVR, highlight key works, and point to the future debates that will define the area in the next few years.
+
+To start, at the 2016 edition of the Neural Information Processing Systems (NeurIPS) conference, Yann LeCun first introduced his now-famous cake metaphor for where learning happens in modern machine learning systems:
 
 > If intelligence is a cake, the bulk of the cake is unsupervised learning, the icing on the cake is supervised learning, and the cherry on the cake is reinforcement learning (RL).
 
