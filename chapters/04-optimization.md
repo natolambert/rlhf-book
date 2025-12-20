@@ -8,9 +8,12 @@ next-url: "05-preferences"
 
 # Training Overview
 
-In this chapter we provide a cursory overview of RLHF training.
-We introduce the core objective, which is optimizing a proxy of reward of human preferences with a distance-based regularizer.
+In this chapter we provide a cursory overview of RLHF training, before getting into the specifics later in the book.
+RLHF, while optimizing a simple loss function, involves training multiple, different AI models in sequence and then linking them together in a complex, online optimization.
+
+Here, we introduce the core objective of RLHF, which is optimizing a proxy of reward of human preferences with a distance-based regularizer (along with showing how it relates to classical RL problems).
 Then we showcase canonical recipes which use RLHF to create leading models to show how RLHF fits in with the rest of post-training methods.
+These example recipes will serve as references for later in the book, where we describe different optimization choices you have when doing RLHF, and we will point back to how different key models used different steps in training.
 
 ## Problem Formulation
 
