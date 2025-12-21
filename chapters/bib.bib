@@ -678,11 +678,24 @@
   year={2024},
   url={https://www.synthlabs.ai/pdf/Generative_Reward_Models.pdf}
 }
+@inproceedings{wang2024helpsteer,
+  title={Helpsteer: Multi-attribute helpfulness dataset for steerlm},
+  author={Wang, Zhilin and Dong, Yi and Zeng, Jiaqi and Adams, Virginia and Sreedhar, Makesh Narsimhan and Egert, Daniel and Delalleau, Olivier and Scowcroft, Jane and Kant, Neel and Swope, Aidan and others},
+  booktitle={Proceedings of the 2024 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies (Volume 1: Long Papers)},
+  pages={3371--3384},
+  year={2024}
+}
 @article{wang2024helpsteer2,
   title={HelpSteer2: Open-source dataset for training top-performing reward models},
   author={Wang, Zhilin and Dong, Yi and Delalleau, Olivier and Zeng, Jiaqi and Shen, Gerald and Egert, Daniel and Zhang, Jimmy J and Sreedhar, Makesh Narsimhan and Kuchaiev, Oleksii},
   journal={arXiv preprint arXiv:2406.08673},
   year={2024}
+}
+@article{wang2025helpsteer3,
+  title={HelpSteer3-Preference: Open Human-Annotated Preference Data across Diverse Tasks and Languages},
+  author={Wang, Zhilin and Zeng, Jiaqi and Delalleau, Olivier and Shin, Hoo-Chang and Soares, Felipe and Bukharin, Alexander and Evans, Ellie and Dong, Yi and Kuchaiev, Oleksii},
+  journal={arXiv preprint arXiv:2505.11475},
+  year={2025}
 }
 @misc{no_robots,
   author = {Nazneen Rajani and Lewis Tunstall and Edward Beeching and Nathan Lambert and Alexander M. Rush and Thomas Wolf},
@@ -1219,7 +1232,28 @@
   primaryClass={ cs.CL },
   url={https://arxiv.org/abs/2512.13961}
 }
-
+@misc{bakouch2025smollm3,
+  title={{SmolLM3: smol, multilingual, long-context reasoner}},
+  author={Bakouch, Elie and Ben Allal, Loubna and Lozhkov, Anton and Tazi, Nouamane and Tunstall, Lewis and Patiño, Carlos Miguel and Beeching, Edward and Roucher, Aymeric and Reedi, Aksel Joonas and Gallouédec, Quentin and Rasul, Kashif and Habib, Nathan and Fourrier, Clémentine and Kydlicek, Hynek and Penedo, Guilherme and Larcher, Hugo and Morlon, Mathieu and Srivastav, Vaibhav and Lochner, Joshua and Nguyen, Xuan-Son and Raffel, Colin and von Werra, Leandro and Wolf, Thomas},
+  year={2025},
+  howpublished={\url{https://huggingface.co/blog/smollm3}}
+}
+@article{wang2025nemotron,
+  title={Nemotron-Cascade: Scaling Cascaded Reinforcement Learning for General-Purpose Reasoning Models},
+  author={Wang, Boxin and Lee, Chankyu and Lee, Nayeon and Lin, Sheng-Chieh and Dai, Wenliang and Chen, Yang and Chen, Yangyi and Yang, Zhuolin and Liu, Zihan and Shoeybi, Mohammad and others},
+  journal={arXiv preprint arXiv:2512.13607},
+  year={2025}
+}
+@techreport{nvidia2025nemotron3nano,
+  title       = {Nemotron 3 Nano: Open, Efficient Mixture-of-Experts Hybrid Mamba-Transformer Model for Agentic Reasoning},
+  author      = {{NVIDIA}},
+  institution = {NVIDIA},
+  type        = {Technical Report},
+  year        = {2025},
+  month       = dec,
+  note        = {Dated 2025-12-15},
+  url         = {https://research.nvidia.com/labs/nemotron/files/NVIDIA-Nemotron-3-Nano-Technical-Report.pdf}
+}
 @misc{deepseekai2025v32,
   title={ DeepSeek-V3.2: Pushing the Frontier of Open Large Language Models },
   author={ DeepSeek-AI },
@@ -1687,6 +1721,15 @@ url={https://openreview.net/forum?id=a147pIS2Co}
     ISBN = "979-8-89176-251-0",
     abstract = "Learning from human feedback has enabled the alignment of language models (LMs) with human preferences. However, collecting human preferences is expensive and time-consuming, with highly variable annotation quality. An appealing alternative is to distill preferences from LMs as a source of synthetic annotations, offering a cost-effective and scalable alternative, albeit susceptible to other biases and errors. In this work, we introduce HyPER, a Hybrid Preference routER that defers an annotation to either humans or LMs, achieving better annotation quality while reducing the cost of human-only annotation. We formulate this as an optimization problem: given a preference dataset and an evaluation metric, we (1) train a performance prediction model (PPM) to predict a reward model{'}s (RM) performance on an arbitrary combination of human and LM annotations and (2) employ a routing strategy that selects a combination that maximizes predicted performance. We train the PPM on MultiPref, a new preference dataset with 10K instances paired with human and LM labels. We show that the selected hybrid mixture of synthetic and direct human preferences using HyPER achieves better RM performance compared to using either one exclusively by 7-13{\%} on RewardBench and generalizes across unseen preference datasets and other base models. We also observe the same trend in other benchmarks using Best-of-N reranking, where the hybrid mix has 2-3{\%} better performance. Finally, we analyze features from HyPER and find that prompts with moderate safety concerns or complexity benefit the most from human feedback."
 }
+@article{xu2025rlthf,
+  title = {RLTHF: Targeted Human Feedback for LLM Alignment},
+  author = {Xu, Yifei and Chakraborty, Tusher and Kıcıman, Emre and Aryal, Bibek and Rodrigues, Eduardo and Sharma, Srinagesh and Estevao, Roberto and de Luis Balaguer, Maria Angels and Wolk, Jessica and Padilha, Rafael and Nunes, Leonardo and Balakrishnan, Shobana and Lu, Songwu and Chandra, Ranveer},
+  journal = {arXiv preprint arXiv:2502.13417},
+  year = {2025},
+  url = {https://arxiv.org/abs/2502.13417},
+  note = {Presented at ICML 2025}
+}
+
 
 @article{tajwar2024preference,
   title={Preference fine-tuning of llms should leverage suboptimal, on-policy data},
