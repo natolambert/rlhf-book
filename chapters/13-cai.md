@@ -14,6 +14,8 @@ There are many motivations to using RLAIF to either entirely replace human feedb
 Within the RLHF process, AI feedback is known most for its role within the preference data collection and the related reward model training phase (of which constitutional AI is a certain type of implementation).
 In this chapter, we focus on the general AI feedback and this specific way of using it in the RLHF training pipeline, and we cover more ways of understanding or using synthetic data later in this book.
 
+# Balancing AI and Human Feedback Data
+
 AI models are far cheaper than humans at generating a specific quantity of feedback, with a single piece of human preference data costing as of writing this on the order of $1 or higher (or even above $10 per prompt), AI feedback with a frontier AI model, such as GPT-4o costs less than $0.01. 
 Beyond this, the cost of human labor is remaining roughly constant, while the performance of leading models at this tasks continues to increase while price-per-performance decreases.
 This cost difference opens the market of experimentation with RLHF methods to an entire population of people previously priced out.
@@ -31,7 +33,7 @@ Overall, where AI feedback and related methods are obviously extremely useful to
 Many hypotheses exist, but it is not studied if human data allows finer control of the models in real-world product settings or for newer training methods such as character training (an emerging set of techniques that allow you to precisely control the personality of a model, covered in Chapter 20).
 For those getting started, AI feedback should be the first attempt, but for pipelines that're scaling to larger operations the eventual transition to include human feedback is likely.
 
-The term RLAIF was introduced in Anthropic's work *Constitutional AI: Harmlessness from AI Feedback* [@bai2022constitutional], which resulted in initial confusion in the AI community over the relationship between the methods.
+The term RLAIF was introduced in Anthropic's work *Constitutional AI: Harmlessness from AI Feedback* [@bai2022constitutional], which resulted in initial confusion in the AI community over the relationship between the two methods in the title of the paper (Constitutional AI and AI Feedback).
 Since the release of the Constitutional AI (CAI) paper and the formalization of RLAIF, RLAIF has become a default method within the post-training and RLHF literatures -- there are far more examples than one can easily enumerate.
 The relationship should be understood as CAI was the example that kickstarted the broader field of RLAIF.
 
@@ -41,6 +43,7 @@ A rule of thumb for the difference between human data and AI feedback data is as
 2. Synthetic preference data is low-noise and high-bias,
 
 Results in many academic results showing how one can substitute AI preference data in RLHF workflows and achieve strong evaluation scores [@miranda2024hybrid], but shows how the literature of RLHF is separated from industrial best practices.
+Across industry, human data is often seen as a substantial mode and a major technical advantage.
 
 ## Constitutional AI
 
