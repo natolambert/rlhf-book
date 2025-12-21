@@ -10,10 +10,19 @@ next-url: "14-reasoning"
 
 RL from AI Feedback (RLAIF) is a larger set of techniques for using AI to augment or generate feedback data, including pairwise preferences [@lee2023rlaif]  [@sharma2024critical] [@castricato2024suppressing].
 There are many motivations to using RLAIF to either entirely replace human feedback or augment it. 
-AI models are far cheaper than humans, with a single piece of human preference data costing on the order of $1 or higher (or even above $10 per prompt), AI feedback with a frontier AI model, such as GPT-4o costs less than $0.01. 
+Within the RLHF process, AI feedback is known most for its role within the preference data collection and the related reward model training phase (of which constitutional AI is a certain type of implementation).
+In this chapter, we focus on the general AI feedback and this specific way of using it, and we cover more ways of understanding or using synthetic data later in this book.
+
+AI models are far cheaper than humans, with a single piece of human preference data costing as of writing this on the order of $1 or higher (or even above $10 per prompt), AI feedback with a frontier AI model, such as GPT-4o costs less than $0.01. 
+Beyond this, the cost of human labor is remaining roughly constant, while the performance of leading models at this tasks continues to increase while price-per-performance decreases.
 This cost difference opens the market of experimentation with RLHF methods to an entire population of people previously priced out.
+
 Other than price, AI feedback introduces different *tradeoffs* on performance than human feedback, which are still being investigated.
-The peak performance for AI feedback is at least in the same ballpark of human data on skill-based evaluations, but it is not studied if human data allows finer control of the models in real-world product settings or for newer training methods such as character training.
+AI feedback is far more predominant in its role in evaluation of the language models that we are training, as its low price lets it be used across a variety of large-scale tasks.
+The peak performance for AI feedback is at least in the same ballpark of human data on skill-based evaluations [@miranda2024hybrid], but it is not studied if human data allows finer control of the models in real-world product settings or for newer training methods such as character training.
+
+<!-- TODO: Comment on how in RLHF AI feedback hasn't fully replaced humans, but in other areas synthetic data totally has (like some SFT data), and evals still need human data where synthetic llm data can be scaled. 
+TODO, add a bit more literature on skill-based evals having human data not be better than llms. -->
 
 The term RLAIF was introduced in Anthropic's work *Constitutional AI: Harmlessness from AI Feedback* [@bai2022constitutional], which resulted in initial confusion in the AI community over the relationship between the methods.
 Since the release of the Constitutional AI (CAI) paper and the formalization of RLAIF, RLAIF has become a default method within the post-training and RLHF literatures -- there are far more examples than one can easily enumerate.
