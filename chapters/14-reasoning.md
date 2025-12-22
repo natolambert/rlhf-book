@@ -18,7 +18,7 @@ To start, at the 2016 edition of the Neural Information Processing Systems (Neur
 > If intelligence is a cake, the bulk of the cake is unsupervised learning, the icing on the cake is supervised learning, and the cherry on the cake is reinforcement learning (RL).
 
 This analogy is now largely complete with modern language models and recent changes to the post-training stack.
-RLHF was the precursor to this, and RL for reasoning models, primarily on math, code, and science topics were its confirmation.
+RLHF was the precursor to this, and RL for reasoning models, primarily on math, code, and science topics, was its confirmation.
 In this analogy: 
 
 - Self-supervised learning on vast swaths of internet data makes up the majority of the cake (especially when viewed in compute spent in FLOPs), 
@@ -37,7 +37,7 @@ In RLHF, a reward model must evaluate subjective qualities:
 >
 > **Response**: Opportunity cost is the value of the next best alternative you give up when making a decision. For example, if you spend an hour studying instead of working, the opportunity cost is the wages you could have earned...
 
-Scoring this response requires judging clarity, accuracy, completeness, and helpfulness—all qualities that require learned preferences and lack a definitive correct answer.
+Scoring this response requires judging clarity, accuracy, completeness, and helpfulness -- all qualities that require learned preferences and lack a definitive correct answer.
 
 In contrast, RLVR uses verification functions that return definitive scores.
 For mathematics:
@@ -51,27 +51,25 @@ For mathematics:
 > **Verification**: `extracted_answer == 77` → Reward = 1
 
 The `\boxed{}` notation is a convention adopted from mathematical typesetting that makes answer extraction straightforward -- a simple regular expression can pull the final answer from the response, regardless of how the model arrived at it.
-Note that other answer extraction methods exist, such as just using the phrase "The answer is: " as also shown above, special tokens like `<answer>`, or delimitters like `####`.
+Note that other answer extraction methods exist, such as just using the phrase "The answer is: " as also shown above, special tokens like `<answer>`, or delimiters like `####`.
 
 For code generation, verification often takes the form of unit tests:
 
 > **Prompt**: Write a Python function `fib(n)` that returns the nth Fibonacci number, where fib(0) = 0 and fib(1) = 1.
 >
 > **Response**:
-> ```python
 > def fib(n):
 >     if n < 2:
 >         return n
 >     return fib(n - 1) + fib(n - 2)
-> ```
 >
 > **Verification (unit tests)**:
-> ```python
+
 > assert fib(0) == 0   # base case
 > assert fib(1) == 1   # base case
 > assert fib(10) == 55 # larger value
-> # All tests pass → Reward = 1
-> ```
+> (All tests pass → Reward = 1)
+
 
 Unit tests are the natural verification function for code: they execute the model's solution against known input-output pairs. 
 A common form of scoring is to perform the simple gating: If all assertions pass, the reward is 1; if any fail, the reward is 0. 
@@ -79,7 +77,7 @@ Other setups use partial credit proportional to the amount of tests passed.
 For both these examples, no learned reward model is needed and most setups go without one (because the models are robust to over-optimization in these domains), but one can be used with a linear combination of rewards.
 
 The ideas behind RLVR are not new to the RL literature, where the core idea of taking gradient updates on if the answer is correct is almost the textbook definition of reinforcement learning. 
-The innovations when applying this to language models is largely how to apply it while maintaining the strong, general capabilities of the model being finetuned. Within that, there are many related ideas in the language modeling literature where the model learns from feedback regarding the correctness of the answer.
+The innovations when applying this to language models are largely how to apply it while maintaining the strong, general capabilities of the model being finetuned. Within that, there are many related ideas in the language modeling literature where the model learns from feedback regarding the correctness of the answer.
 
 Originally, in the work I was a part of that coined RL with Verifiable Rewards (RLVR) [@lambert2024t], the method was to be named RL with Ground Truth rewards (RLGT). 
 However, RLVR is subtly different from learning solely from ground truth answers. 
@@ -141,7 +139,7 @@ The answer appears as:
 > We watch you trace your endless sphere---
 > A universe within a tear.
 
-The tokens in the `<thinking>` tags is the model's reasoning.
+The tokens in the `<thinking>` tags are the model's reasoning.
 For more complex problems the reasoning stage can take thousands of tokens before producing an answer.
 So, long-context language models were a prerequisite to advanced reasoning behavior, but that is not the focus of this chapter.
 
@@ -163,10 +161,10 @@ Here we detail the high-level trends that led to the explosion of reasoning mode
 ### Why Does RL Work Now?
 
 Despite many, many takes that "RL doesn't work yet" [@irpan2018deep] or papers detailing deep reproducibility issues with RL [@henderson2018deep], the field overcame it to find high-impact applications.
-Some are covered in this book, such as ChatGPT's RLHF and DeepSeek R1's RLVR, but many others exist, including improving chip design [@mirhoseini2020chip], mastering video gameplay [@schrittwieser2020mastering], self-driving [@cusumano2025robust], and more
+Some are covered in this book, such as ChatGPT's RLHF and DeepSeek R1's RLVR, but many others exist, including improving chip design [@mirhoseini2020chip], mastering video gameplay [@schrittwieser2020mastering], self-driving [@cusumano2025robust], and more.
 The takeoff of RL-focused training on language models indicates steps in many fundamental issues for the research area, including:
 
-* **Stability of RL can be solved**: For its entire existence, the limiting factor on RL's adoption has been stability. This manifests in two ways. First, the learning itself can be fickle and not always work. Second, the training itself is known to be more brittle than standard language model training and more prone to loss spikes, crashes, etc. Countless new model releases are using this style of RL training with verifiable rewards ontop of a pretrained base model and substantial academic uptake has occurred. The technical barriers to entry on RL are at an all time low.
+* **Stability of RL can be solved**: For its entire existence, the limiting factor on RL's adoption has been stability. This manifests in two ways. First, the learning itself can be fickle and not always work. Second, the training itself is known to be more brittle than standard language model training and more prone to loss spikes, crashes, etc. Countless new model releases are using this style of RL training with verifiable rewards on top of a pretrained base model and substantial academic uptake has occurred. The technical barriers to entry on RL are at an all time low.
 
 * **Open-source versions already "exist"**: Many tools already exist for training language models with RLVR and related techniques. 
 Examples include TRL [@vonwerra2022trl], Open Instruct [@lambert2024t], veRL [@sheng2024hybridflow], and OpenRLHF [@hu2024openrlhf], where many of these are building on optimizations from earlier in the arc of RLHF and post-training. The accessibility of tooling is enabling a large uptake of research that'll likely soon render this chapter out of date.
@@ -179,10 +177,10 @@ Training with Reinforcement Learning to elicit reasoning behaviors and performan
 Inference-time scaling, also called test-time scaling, is the general class of methods that use more computational power at inference in order to perform better at downstream tasks.
 Methods for inference-time scaling were studied before the release of DeepSeek R1 and OpenAI's o1, which both massively popularized investment in RL training specifically.
 Examples include value-guided sampling [@liu2023don] or repeated random sampling with answer extraction [@brown2024large].
-Beyond this, inference-time scaling can be used to improve more methods of AI training beyond chain of thought reasoning to solve problems, such as with reward models that consider the options deeply [@ankner2024critique] [@liu2025inference].
+Beyond this, inference-time scaling can be used to improve more methods of AI training beyond chain-of-thought reasoning to solve problems, such as with reward models that consider the options deeply [@ankner2024critique] [@liu2025inference].
 
 RL training is a short path to inference-time scaling laws being used, but in the long-term we will have more methods for eliciting the inference-time tradeoffs we need for best performance.
-Training models heavily with RL often enables them to generate more tokens per response in a way that is strongly correlated with improved, downstream performance (though, while this sequence length increase is the default, research also exists explicitly on improving performance *without* relying on this inference time scaling). 
+Training models heavily with RL often enables them to generate more tokens per response in a way that is strongly correlated with improved, downstream performance (though, while this sequence length increase is the default, research also exists explicitly on improving performance *without* relying on this inference-time scaling). 
 This is a substantial shift from the length-bias seen in early RLHF systems [@singhal2023long], where the human preference training had a side effect of increasing the response average length for marginal gains on preference rankings.
 
 Other than the core RL trained models there are many methods being explored to continue to push the limits of reasoning and inference-time compute.
@@ -217,7 +215,7 @@ Before the takeoff of reasoning models, a substantial effort was made understand
 The main difference between these works below is that their methodologies did not scale up to the same factor as those used in DeepSeek R1 and subsequent models, or they resulted in models that made sacrifices in overall performance in exchange for higher mathematics or coding abilities.
 The underlying ideas and motivations are included to paint a broader picture for how reasoning models emerged within the landscape.
 
-Some of the earliest efforts training language models on verifiable domains include self-taught reasoner (STaR) line of work[@zelikman2022star] [@Zelikman2024QuietSTaRLM] and TRICE [@hoffman2023training], which both used ground-truth reward signals to encourage chain of thought reasoning in models throughout 2022 and 2023. 
+Some of the earliest efforts training language models on verifiable domains include self-taught reasoner (STaR) line of work[@zelikman2022star] [@Zelikman2024QuietSTaRLM] and TRICE [@hoffman2023training], which both used ground-truth reward signals to encourage chain-of-thought reasoning in models throughout 2022 and 2023. 
 STaR effectively approximates the policy gradient algorithm, but in practice filters samples differently and uses a cross-entropy measure instead of a log-probability, and Quiet-STaR expands on this with very related ideas of recent reasoning models by having the model generate tokens before trying to answer the verifiable question (which helps with training performance).
 TRICE [@hoffman2023training] also improves upon reasoning by generating traces and then optimizing with a custom Markov chain Monte Carlo inspired expectation maximization algorithm. 
 VinePPO [@VinePPO] followed these and used a setup that shifted closer to modern reasoning models. 
@@ -249,12 +247,12 @@ A summary of the foundational reasoning research reports, some of which are acco
 | 2025-06-10  | Magistral [@mistral2025magistral]         | Pure RL on Mistral 3; multilingual CoT; small model open-sourced      |  Yes| No        |
 | 2025-06-16 | MiniMax-M1 [@minimax2025minimaxm1scalingtesttimecompute] | Open-weight 456B MoE hybrid/Lightning Attention reasoning model; 1M context; RL w/CISPO; releases 40K/80K thinking-budget checkpoints | Yes | No |
 | 2025-07-10 | Kimi K2 [@kimiteam2025kimik2]                            | 1T MoE (32B active) with MuonClip (QK-clip) for stability; 15.5T token pretrain without loss spikes; multi-stage post-train with agentic data synthesis + joint RL; releases base + post-trained checkpoints.                               | Yes          | No         |
-| 2025-07-28 | GLM-4.5 [@zeng2025glm45] | Open-weight 355B-A32B MoE “ARC” model with thinking/non-thinking modes; 23T-token multi-stage training + post-train w/ expert iteration and RL; releases GLM-4.5 + GLM-4.5-Air (MIT). | Yes | No |
-| 2025-08-20 | Nemotron Nano 2 [@nvidia2025nemotronnano2]               | Hybrid Mamba-Transformer for long “thinking traces”; FP8 pretraining at 20T tokens then compression/distillation; explicitly releases multiple checkpoints plus “majority” of pre/post-training datasets.                                       | Yes          | Yes (most) |
+| 2025-07-28 | GLM-4.5 [@zeng2025glm45] | Open-weight 355B-A32B MoE "ARC" model with thinking/non-thinking modes; 23T-token multi-stage training + post-train w/ expert iteration and RL; releases GLM-4.5 + GLM-4.5-Air (MIT). | Yes | No |
+| 2025-08-20 | Nemotron Nano 2 [@nvidia2025nemotronnano2]               | Hybrid Mamba-Transformer for long "thinking traces"; FP8 pretraining at 20T tokens then compression/distillation; explicitly releases multiple checkpoints plus "majority" of pre/post-training datasets.                                       | Yes          | Yes (most) |
 | 2025-09-09 | K2-Think [@llm3602025k2think]                            | Parameter-efficient math reasoning system: a 32B open-weights model with test-time scaling recipe; positioned as fully open incl. training data/code (per release materials).                                                                       | Yes          | Yes        |
 | 2025-09-23 | LongCat-Flash-Thinking [@mlcteam2025longcat]             | 560B MoE reasoning model; report is explicit about a staged recipe from long-CoT cold start to large-scale RL; open-source release.                                                                                                             | Yes          | No         |
-| 2025-10-21 | Ring-1T [@ringteam2025everystepevolves]                  | Trillion-scale “thinking model” with RL scaling focus; report frames bottlenecks/solutions for scaling RL at 1T and releases an open model.                                                                                                             | Yes          | No         |
-| 2025-11-20 | OLMo 3 Think [@teamolmo2025olmo3]         | Fully open “model flow” release: reports the entire lifecycle (stages, checkpoints, and data points) and positions OLMo 3 Think 32B as a flagship open thinking model.                                        | Yes          | Yes        |
+| 2025-10-21 | Ring-1T [@ringteam2025everystepevolves]                  | Trillion-scale "thinking model" with RL scaling focus; report frames bottlenecks/solutions for scaling RL at 1T and releases an open model.                                                                                                             | Yes          | No         |
+| 2025-11-20 | OLMo 3 Think [@teamolmo2025olmo3]         | Fully open "model flow" release: reports the entire lifecycle (stages, checkpoints, and data points) and positions OLMo 3 Think 32B as a flagship open thinking model.                                        | Yes          | Yes        |
 | 2025-12-02 | DeepSeek V3.2 [@deepseekai2025v32]                       | Open-weight MoE frontier push with a report that foregrounds attention efficiency changes, RL framework upgrades, and data synthesis for agentic/reasoning performance.                                                                             | Yes          | No         |
 | 2025-12-15 | Nemotron 3 Nano [@nvidia2025nemotron3nano]               | 30B-A3B MoE hybrid Mamba-Transformer; pretrain on 25T tokens and includes SFT + large-scale RL; explicitly states it ships weights + recipe/code + most training data.                                                                      | Yes          | Yes (most) |
 | 2025-12-16 | MiMo-V2-Flash [@mimo2025flash] | 309B MoE (15B active) optimized for speed: hybrid SWA/GA attention (5:1, 128-token window) + lightweight MTP; FP8 pretrain on 27T tokens; post-train with MOPD + large-scale agentic RL for reasoning/coding. | Yes | No |
@@ -284,4 +282,17 @@ Note that these papers could have used a listed technique and not mentioned it w
 In complement to the common techniques, there are also many common findings on how reasoning training can create useful models without sacrificing ancillary capabilities:
 
 * **Text-only reasoning boosts multimodal performance**: Magistral, MiMo-VL, and others find that training a multimodal model and then performing text-only reasoning training after this multimodal training can *improve* multimodal performance in the final model.
-* **Toggleable reasoning with system prompt** (or length control): Llama-Nemotron, Nemotron Nano, Qwen 3, SmolLM 3, and others use specific system prompts (possibly in combination with length-controlled RL training [@aggarwal2025l1]) to enable a toggleable on/off thinking length for the user. Other open models, such OpenAI's GPT-OSS adopt a low-medium-high reasoning effort set in the system prompt, but training methods for this type of behavior are not as well documented.
+* **Toggleable reasoning with system prompt** (or length control): Llama-Nemotron, Nemotron Nano, Qwen 3, SmolLM 3, and others use specific system prompts (possibly in combination with length-controlled RL training [@aggarwal2025l1]) to enable a toggleable on/off thinking length for the user. Other open models, such as OpenAI's GPT-OSS adopt a low-medium-high reasoning effort set in the system prompt, but training methods for this type of behavior are not as well documented.
+
+## Looking Ahead
+
+The landscape of reasoning models is evolving faster than any area of AI research in recent memory.
+By the time this chapter is published, the table of reasoning models above will be incomplete and some of the common practices listed may have been superseded by new techniques.
+
+Several efforts are underway to systematically understand what makes reasoning training work.
+OLMo 3 Think [@teamolmo2025olmo3] represents the most comprehensive open documentation of a reasoning model's full training lifecycle, providing checkpoints and data at each stage for the research community to study, and concluding with a nearly 4 week long training run on 220 GPUs.
+Similarly, work on understanding the scaling properties of RL for reasoning [@khatri2025art] is beginning to formalize relationships between compute, data, and performance that were previously only intuited by practitioners.
+
+What remains clear is that reinforcement learning has graduated from the "cherry on top" of the cake metaphor to a load-bearing component of frontier model training.
+The minor techniques in this chapte around the idea of RLVR -- difficulty filtering, format rewards, and the rest -- are not the final answers, but they represent the field's current best understanding of how to elicit reasoning from language models.
+The next generation of methods will likely look different, but they will build on the foundations established here.
