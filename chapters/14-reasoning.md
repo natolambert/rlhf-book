@@ -8,7 +8,8 @@ next-url: "14.5-tools"
 
 # Reasoning Training & Inference-Time Scaling
 
-Reasoning models and inference-time scaling -- the underlying property of language models that they exploit so well -- enabled a massive step in language model performance in the end of 2024, through 2025, and into the future.
+Reasoning models and inference-time scaling enabled a massive step in language model performance in the end of 2024, through 2025, and into the future.
+Inference time scaling is the underlying property of machine learning systems that language models trained to think extensively before answering exploit so well.
 These models, trained with a large amount of reinforcement learning with verifiable rewards (RLVR) [@lambert2024t], still utilize large amounts of RLHF.
 In this chapter we review the path that led the AI community to a transformed appreciation for RL's potential in language models, review the fundamentals of RLVR, highlight key works, and point to the future debates that will define the area in the next few years.
 
@@ -17,16 +18,66 @@ To start, at the 2016 edition of the Neural Information Processing Systems (Neur
 > If intelligence is a cake, the bulk of the cake is unsupervised learning, the icing on the cake is supervised learning, and the cherry on the cake is reinforcement learning (RL).
 
 This analogy is now largely complete with modern language models and recent changes to the post-training stack.
+RLHF was the precursor to this, and RL for reasoning models, primarily on math, code, and science topics were its confirmation.
 In this analogy: 
 
 - Self-supervised learning on vast swaths of internet data makes up the majority of the cake (especially when viewed in compute spent in FLOPs), 
-- The beginning of post-training in supervised finetuning (SFT) for instructions tunes the model to a narrower distribution (along with the help of chosen examples for RLHF), and 
-- Finally "pure" reinforcement learning (RL) is the cherry on top. 
+- The beginning of post-training in supervised finetuning (SFT) for instructions tunes the model to a narrower distribution, and 
+- Finally "pure" reinforcement learning (RL) is the cherry on top. The scaled up reinforcement learning used to create the new "reasoning" or "thinking" models is this finishing piece (along with the help of RLHF, which isn't considered classical RL, as we'll explain).
 
-We learn just "a few bits" of information with RL in just a few training samples.
-This little bit of reasoning training emerged with **reasoning models** that use a combination of the post-training techniques discussed in this book to align preferences along with RL training on verifiable domains to dramatically increase capabilities such as reasoning, coding, and mathematics problem solving.
+<!-- We learn just "a few bits" of information with RL in just a few training samples. -->
+This little bit of reasoning training emerged with **thinking models** that use a combination of the post-training techniques discussed in this book to align preferences along with RL training on verifiable domains to dramatically increase capabilities such as reasoning, coding, and mathematics problem solving.
 
-The training method for these models, Reinforcement Learning with Verifiable Rewards (RLVR) [@lambert2024t], proceeds very similarly to RLHF, but it makes the reward model optional in lieu of a scoring function that returns a positive reward when the answer is correct and 0 otherwise. 
+The training method for these models, Reinforcement Learning with Verifiable Rewards (RLVR) [@lambert2024t], proceeds very similarly to RLHF, but it makes the reward model optional in lieu of a scoring function that returns a positive reward when the answer is correct and 0 otherwise.
+
+For example, consider how different it is to score responses for RLHF versus RLVR.
+In RLHF, a reward model must evaluate subjective qualities:
+
+> **Prompt**: Explain the concept of opportunity cost in economics.
+>
+> **Response**: Opportunity cost is the value of the next best alternative you give up when making a decision. For example, if you spend an hour studying instead of working, the opportunity cost is the wages you could have earned...
+
+Scoring this response requires judging clarity, accuracy, completeness, and helpfulness—all qualities that require learned preferences and lack a definitive correct answer.
+
+In contrast, RLVR uses verification functions that return definitive scores.
+For mathematics:
+
+> **Prompt**: What is the sum of all prime numbers less than 20?
+>
+> **Response**: The prime numbers less than 20 are 2, 3, 5, 7, 11, 13, 17, and 19.
+> Adding them: 2 + 3 = 5, then 5 + 5 = 10, then 10 + 7 = 17, then 17 + 11 = 28, then 28 + 13 = 41, then 41 + 17 = 58, and finally 58 + 19 = 77.
+> The answer is $\boxed{77}$.
+>
+> **Verification**: `extracted_answer == 77` → Reward = 1
+
+The `\boxed{}` notation is a convention adopted from mathematical typesetting that makes answer extraction straightforward -- a simple regular expression can pull the final answer from the response, regardless of how the model arrived at it.
+Note that other answer extraction methods exist, such as just using the phrase "The answer is: " as also shown above, special tokens like `<answer>`, or delimitters like `####`.
+
+For code generation, verification often takes the form of unit tests:
+
+> **Prompt**: Write a Python function `fib(n)` that returns the nth Fibonacci number, where fib(0) = 0 and fib(1) = 1.
+>
+> **Response**:
+> ```python
+> def fib(n):
+>     if n < 2:
+>         return n
+>     return fib(n - 1) + fib(n - 2)
+> ```
+>
+> **Verification (unit tests)**:
+> ```python
+> assert fib(0) == 0   # base case
+> assert fib(1) == 1   # base case
+> assert fib(10) == 55 # larger value
+> # All tests pass → Reward = 1
+> ```
+
+Unit tests are the natural verification function for code: they execute the model's solution against known input-output pairs. 
+A common form of scoring is to perform the simple gating: If all assertions pass, the reward is 1; if any fail, the reward is 0. 
+Other setups use partial credit proportional to the amount of tests passed.
+For both these examples, no learned reward model is needed and most setups go without one (because the models are robust to over-optimization in these domains), but one can be used with a linear combination of rewards.
+
 The ideas behind RLVR are not new to the RL literature and there are many related ideas in the language modeling literature where the model learns from feedback on if the answer is correct.
 
 Originally, RL with Verifiable Rewards (RLVR) was to be named RL with Ground Truth rewards (RLGT). However, RLVR is subtly different from learning solely from ground truth answers. In domains like mathematics, a single ground truth answer is available to verify solutions. In other domains, such as code generation or precise instruction following, answers can be verified with a checking function (e.g., a unit test), even when there are multiple correct solutions rather than just a single ground truth answer.
@@ -180,17 +231,17 @@ A summary of the foundational reasoning research reports, some of which are acco
 | 2025-01-22  | DeepSeek R1 [@guo2025deepseek]             | RL-based upgrade to DeepSeek, big gains on math & code reasoning      |  Yes      | No   |
 | 2025-01-22  | Kimi 1.5 [@team2025kimi]                  | Scales PPO/GRPO on Chinese/English data; strong AIME maths            | No           | No        |
 | 2025-03-31  | Open-Reasoner-Zero [@hu2025openreasonerzero]   | Fully open replication of base model RL      |  Yes      |  Yes   |
-| 2025-04-10  | Seed-Thinking 1.5 [@seed2025seed]         | ByteDance RL pipeline with dynamic CoT gating                         | Yes (7B)     | No   |
+| 2025-04-10  | Seed-Thinking 1.5 [@seed2025seed]         | ByteDance RL pipeline with dynamic CoT gating                         | Yes     | No   |
 | 2025-04-30  | Phi-4 Reasoning [@abdin2025phi4]          | 14B model; careful SFT→RL; excels at STEM reasoning                   | Yes      | No        |
 | 2025-05-02  | Llama-Nemotron [@bercovich2025llamanemotron]   | Multi-size "reasoning-toggle" models                 |  Yes      |  Yes   |
-| 2025-05-12  | INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained] | First globally-decentralized RL training run (32B)                    |  Yes      |  Yes   |
+| 2025-05-12  | INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained] | First, publicly documented globally-decentralized RL training run                    |  Yes      |  Yes   |
 | 2025-05-12  | Xiaomi MiMo [@xia2025mimo]                | End-to-end reasoning pipeline from pre- to post-training              | Yes          | No       |
 | 2025-05-14  | Qwen 3 [@yang2025qwen3]                   | Similar to R1 recipe applied to new models                    |  Yes      | No   |
 | 2025-05-21  | Hunyuan-TurboS [@liu2025hunyuan]          | Mamba-Transformer MoE, adaptive long/short CoT                        | No           | No        |
 | 2025-05-28  | Skywork OR-1 [@he2025skyworkor1]          | RL recipe avoiding entropy collapse; beats DeepSeek on AIME           |  Yes      |  Yes   |
 | 2025-06-04  | Xiaomi MiMo VL [@coreteam2025mimovltechnicalreport]                | Adapting reasoning pipeline end-to-end to include multi-modal tasks              | Yes          | No       |
 | 2025-06-04  | OpenThoughts [@guha2025openthoughts]      | Public 1.2M-example instruction dataset distilled from QwQ-32B                    |  Yes      |  Yes   |
-| 2025-06-10  | Magistral [@mistral2025magistral]         | Pure RL on Mistral 3; multilingual CoT; small model open-sourced      |  Yes (24B)| No        |
+| 2025-06-10  | Magistral [@mistral2025magistral]         | Pure RL on Mistral 3; multilingual CoT; small model open-sourced      |  Yes| No        |
 | 2025-06-16 | MiniMax-M1 [@minimax2025minimaxm1scalingtesttimecompute] | Open-weight 456B MoE hybrid/Lightning Attention reasoning model; 1M context; RL w/CISPO; releases 40K/80K thinking-budget checkpoints | Yes | No |
 | 2025-07-10 | Kimi K2 [@kimiteam2025kimik2]                            | 1T MoE (32B active) with MuonClip (QK-clip) for stability; 15.5T token pretrain without loss spikes; multi-stage post-train with agentic data synthesis + joint RL; releases base + post-trained checkpoints.                               | Yes          | No         |
 | 2025-07-28 | GLM-4.5 [@zeng2025glm45] | Open-weight 355B-A32B MoE “ARC” model with thinking/non-thinking modes; 23T-token multi-stage training + post-train w/ expert iteration and RL; releases GLM-4.5 + GLM-4.5-Air (MIT). | Yes | No |
