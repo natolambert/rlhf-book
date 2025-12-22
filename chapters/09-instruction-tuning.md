@@ -157,10 +157,10 @@ Years later, large-scale synthetic datasets work best [@lambert2024t] on most ta
 
 A few principles remain:
 
-* High-quality data is key to performance. The completions are what the model actually learns from (in many cases the prompts are not predicted over so the model does not learn to predict prompts).
-* ~1M prompts can be used to create a model capable of excellent RLHF and post-training. Further scaling can still help, but returns diminish quickly.
-* The best prompts are those in a similar distribution to downstream tasks of interest.
-* If multiple stages of training are done after instruction tuning, the models can recover from some noise in the process. Optimizing the overall optimization is more important than each individual stage.
+- High-quality data is key to performance. The completions are what the model actually learns from (in many cases the prompts are not predicted over so the model does not learn to predict prompts).
+- ~1M prompts can be used to create a model capable of excellent RLHF and post-training. Further scaling can still help, but returns diminish quickly.
+- The best prompts are those in a similar distribution to downstream tasks of interest.
+- If multiple stages of training are done after instruction tuning, the models can recover from some noise in the process. Optimizing the overall optimization is more important than each individual stage.
 
 ## Implementation
 

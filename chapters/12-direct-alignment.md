@@ -57,9 +57,9 @@ $$\nabla_{\theta}\mathcal{L}_{\text{DPO}}(\pi_{\theta}; \pi_{\text{ref}}) = -\be
 
 Here, the gradient solves the above objective by doing the following:
 
-* The first term within the sigmoid function, $\sigma(\cdot)$, creates a weight of the parameter update from 0 to 1 that is higher when the reward estimate is incorrect. When the rejected sample is preferred over the chosen, the weight update should be larger!
-* Second, the terms in the inner brackets $[\cdot]$ increase the likelihood of the chosen response $y_c$ and decrease the likelihood of the rejected $y_r$.
-* These terms are weighted by $\beta$, which controls how the update balances ordering the completions correctly relative to the KL distance.
+- The first term within the sigmoid function, $\sigma(\cdot)$, creates a weight of the parameter update from 0 to 1 that is higher when the reward estimate is incorrect. When the rejected sample is preferred over the chosen, the weight update should be larger!
+- Second, the terms in the inner brackets $[\cdot]$ increase the likelihood of the chosen response $y_c$ and decrease the likelihood of the rejected $y_r$.
+- These terms are weighted by $\beta$, which controls how the update balances ordering the completions correctly relative to the KL distance.
 
 
 The core intuition is that DPO is fitting an implicit reward model whose corresponding optimal policy can be extracted in a closed form (thanks to gradient descent and our ML tools).
