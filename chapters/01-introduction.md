@@ -57,7 +57,7 @@ Still, rapid progress in AI systems means the readers who are fitted with this k
 ## What Does RLHF Do?
 
 The biggest question around RLHF, yet one that is still hard to answer, is "What does RLHF training offer models?"
-In recent years, language models have shifted from academic experiments studied in the purview of benchmarks to general purpose technology.
+In recent years, language models have shifted from academic experiments studied in the purview of benchmarks to general-purpose technology.
 RLHF is at the core of this transition.
 
 To start, let us consider how a language model at the end of autoregressive pretraining answers a query. 
@@ -124,7 +124,7 @@ This change in style is downstream of the post-training methods described in thi
 Instruction finetuning would provide the basic ability for models to respond reliably in the question-answer format, and RLHF is what takes these answers and crafts them into the reliable, warm, and engaging answers we now expect from language models.
 
 Modern research has established RLHF as a general method to integrate subtle stylistic and related behavioral features into the models.
-Compared to other techniques for post-training, such as instruction finetuning, RLHF generalizes far better across domains [@kirk2023understanding] [@chu2025sft] -- helping create effective general purpose models.
+Compared to other techniques for post-training, such as instruction finetuning, RLHF generalizes far better across domains [@kirk2023understanding] [@chu2025sft] -- helping create effective general-purpose models.
 
 Intuitively, this can be seen in how the optimization techniques are applied. 
 Instruction finetuning is training the model to predict the next certain token when the text preceding is close to examples it has seen.
@@ -177,7 +177,7 @@ All of the successes of deep learning should have taught you a deeply held belie
 
 What this paper is showing is that you can change models substantially with a few samples. We knew this, and it is important to the short-term adaptation of new models, but their argument for performance leaves the casual readers with the wrong lessons.
 
-If we change the data, the impact could be far higher on the model's performance and behavior, but it is far from "superficial." Base language models today (with no post-training) can be trained on some mathematics problems with reinforcement learning, learn to output a full chain of thought reasoning, and then score higher on a full suite of reasoning evaluations like BigBenchHard, Zebra Logic, AIME, etc.
+If we change the data, the impact could be far higher on the model's performance and behavior, but it is far from "superficial." Base language models today (with no post-training) can be trained on some mathematics problems with reinforcement learning, learn to output a full chain-of-thought reasoning, and then score higher on a full suite of reasoning evaluations like BigBenchHard, Zebra Logic, AIME, etc.
 
 The superficial alignment hypothesis is wrong for the same reason that people who think RLHF and post-training are just for vibes are still wrong. 
 This was a field-wide lesson we had to overcome in 2023 (one many AI observers are still rooted in). 

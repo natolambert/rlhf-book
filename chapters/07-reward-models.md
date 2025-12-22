@@ -289,7 +289,7 @@ This can be a noisy process, as the updates and loss propagates per token depend
 
 These models have continued in use, but are less supported in open-source RLHF tools. 
 For example, the same type of ORM was used in the seminal work *Let's Verify Step by Step* [@lightman2023let], but without the language modeling prediction piece of the loss.
-Then, the final loss is a cross entropy loss on every token predicting if the final answer is correct.
+Then, the final loss is a cross-entropy loss on every token predicting if the final answer is correct.
 
 Given the lack of support, the term outcome reward model (ORM) has been used in multiple ways. 
 Some literature, e.g. [@lyu2025exploring], continues to use the original definition from Cobbe et al. 2021. 
@@ -298,7 +298,7 @@ Others do not.
 
 ## Process Reward Models
 
-Process Reward Models (PRMs), originally called Process-supervised Reward Models, are reward models trained to output scores at every *step* in a chain of thought reasoning process. 
+Process Reward Models (PRMs), originally called Process-supervised Reward Models, are reward models trained to output scores at every *step* in a chain-of-thought reasoning process. 
 These differ from a standard RM that outputs a score only at an EOS token or a ORM that outputs a score at every token.
 Process Reward Models require supervision at the end of each reasoning step, and then are trained similarly where the tokens in the step are trained to their relevant target -- the target is the step in PRMs and the entire response for ORMs.
 
@@ -443,4 +443,4 @@ Examples of new benchmarks include:
 * **Agentic RMs:** Agent-RewardBench [@men2025agentrewardbench] or CUARewardBench [@lin2025cuarewardbench].
 * **Multimodal:** MJ-Bench [@chen2024mj], Multimodal RewardBench [@yasunaga2025multimodal], VL RewardBench [@li2024vlrewardbench], or VLRMBench [@ruan2025vlrmbench].
 
-To understand progress on *training* reward models, one can reference new reward model training methods, with aspect-conditioned models [@wang2024interpretable], high quality human datasets [@wang2024helpsteer2] [@wang2024helpsteer2p], scaling experiments [@adler2024nemotron], extensive experimentation [@touvron2023llama], or debiasing data [@park2024offsetbias].
+To understand progress on *training* reward models, one can reference new reward model training methods, with aspect-conditioned models [@wang2024interpretable], high-quality human datasets [@wang2024helpsteer2] [@wang2024helpsteer2p], scaling experiments [@adler2024nemotron], extensive experimentation [@touvron2023llama], or debiasing data [@park2024offsetbias].

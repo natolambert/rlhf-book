@@ -124,7 +124,7 @@ Hence, it is a fundamental optimization problem that RLHF can never fully solve.
 ![Over-optimization with a train and test RM from Bai et al. 2022. License CC-BY.](images/anthropic_overoptimization.png){#fig:anthropic_overoptimization width=450px}
 
 With different RLHF training methods, the KL distance spent will vary. 
-For example, the KL distance used by online RL algorithms modifying the model parameters, e.g. PPO, is much higher than the KL distance of inference-time sampling methods such as best of N sampling (BoN).
+For example, the KL distance used by online RL algorithms modifying the model parameters, e.g. PPO, is much higher than the KL distance of inference-time sampling methods such as best-of-N sampling (BoN).
 With RL training, a higher KL penalty will reduce over-optimization as a given KL distance, but it could take more overall training steps to get the model to this point.
 
 Many solutions exist to mitigate over-optimization.

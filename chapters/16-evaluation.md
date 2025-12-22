@@ -120,7 +120,7 @@ Q: The cafeteria had 23 apples. If they used 20 to make lunch and bought 6 more,
 
 A: The answer is ...
 
-# chain of thought prompting
+# chain-of-thought prompting
 Q: Roger has 5 tennis balls. He buys 2 more cans of tennis balls. Each can has 3 tennis balls. How many tennis balls does he have now?
 
 A: Roger started with 5 balls. 2 cans of 3 tennis balls each is 6 tennis balls. 5 + 6 = 11. The answer is 11.
@@ -133,7 +133,7 @@ A: The cafeteria had 23 apples originally. They..
 Over time, as language models became stronger, they evolved to zero-shot evaluation, a.k.a. "zero-shot learners" [@wei2022finetuned].
 The Finetuned Language Net (FLAN) showed that language models finetuned in specific tasks, as a precursor to modern instruction tuning, could generalize to zero-shot questions they were not trained on [@wei2022finetuned] (similar results are also found in T0 [@sanh2022multitask]).
 This is the emergence of instruction finetuning (IFT), an important precursor to RLHF and post-training.
-A zero shot question would look like:
+A zero-shot question would look like:
 
 ```
 User: "What is the capital of France?"
@@ -163,7 +163,7 @@ Answer the above question and REMEMBER to finish your response with the exact ph
 ```
 
 This, especially when the models use special formatting to separate thinking tokens from answer tokens, necessitated the most recent major update to evaluation regimes.
-Evaluation is moving to where the models are tested to respond in a generative manner with a chain of thought prompting.
+Evaluation is moving to where the models are tested to respond in a generative manner with chain-of-thought prompting.
 
 ## Using Evaluations vs. Observing Evaluations
 
@@ -191,7 +191,7 @@ Different groups choose different evaluations to maintain independence on, i.e. 
 For example, popular reasoning evaluations MATH and GSM8k both have training sets with prompts that can easily be used to improve performance. 
 Improving performance with the prompts from the same distribution is very different than generalizing to these tasks by training on general math data.
 
-In fact, these *training sets* are very high quality data so models would benefit from training on them.
+In fact, these *training sets* are very high-quality data so models would benefit from training on them.
 If these companies are *not* using the corresponding evaluation as a core metric to track, training on the evaluation set could be a practical decision as high-quality data is a major limiting factor of model development.
 
 Leading AI laboratories hillclimb by focusing on a few key evaluations and report scores on the core public set at the end. 

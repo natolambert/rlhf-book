@@ -9,7 +9,7 @@ next-url: "14.5-tools"
 # Reasoning Training & Inference-Time Scaling
 
 Reasoning models and inference-time scaling enabled a massive step in language model performance in the end of 2024, through 2025, and into the future.
-Inference time scaling is the underlying property of machine learning systems that language models trained to think extensively before answering exploit so well.
+Inference-time scaling is the underlying property of machine learning systems that language models trained to think extensively before answering exploit so well.
 These models, trained with a large amount of reinforcement learning with verifiable rewards (RLVR) [@lambert2024t], still utilize large amounts of RLHF.
 In this chapter we review the path that led the AI community to a transformed appreciation for RL's potential in language models, review the fundamentals of RLVR, highlight key works, and point to the future debates that will define the area in the next few years.
 
@@ -78,9 +78,13 @@ A common form of scoring is to perform the simple gating: If all assertions pass
 Other setups use partial credit proportional to the amount of tests passed.
 For both these examples, no learned reward model is needed and most setups go without one (because the models are robust to over-optimization in these domains), but one can be used with a linear combination of rewards.
 
-The ideas behind RLVR are not new to the RL literature and there are many related ideas in the language modeling literature where the model learns from feedback on if the answer is correct.
+The ideas behind RLVR are not new to the RL literature, where the core idea of taking gradient updates on if the answer is correct is almost the textbook definition of reinforcement learning. 
+The innovations when applying this to language models is largely how to apply it while maintaining the strong, general capabilities of the model being finetuned. Within that, there are many related ideas in the language modeling literature where the model learns from feedback regarding the correctness of the answer.
 
-Originally, RL with Verifiable Rewards (RLVR) was to be named RL with Ground Truth rewards (RLGT). However, RLVR is subtly different from learning solely from ground truth answers. In domains like mathematics, a single ground truth answer is available to verify solutions. In other domains, such as code generation or precise instruction following, answers can be verified with a checking function (e.g., a unit test), even when there are multiple correct solutions rather than just a single ground truth answer.
+Originally, in the work I was a part of that coined RL with Verifiable Rewards (RLVR) [@lambert2024t], the method was to be named RL with Ground Truth rewards (RLGT). 
+However, RLVR is subtly different from learning solely from ground truth answers. 
+In domains like mathematics, a single ground truth answer is available to verify solutions, as we saw above. 
+In other domains, such as code generation or precise instruction following, answers can be verified with a checking function (e.g., a unit test), even when there are multiple correct solutions rather than just a single ground truth answer.
 The core to progress on RLVR is having a variety and depth of these verifiable problems, even if the exact solution isn't known a priori.
 
 ![RLVR in the form of an RL feedback loop. Instead of a reward model, we use a verification function.](images/rlvr-system.png){#fig:rlvr}
@@ -158,29 +162,30 @@ Here we detail the high-level trends that led to the explosion of reasoning mode
 
 ### Why Does RL Work Now?
 
-Despite many, many takes that "RL doesn't work yet" [@irpan2018deep] or paper's detailing deep reproducibility issues with RL [@henderson2018deep], the field overcame it to find high-impact applications.
+Despite many, many takes that "RL doesn't work yet" [@irpan2018deep] or papers detailing deep reproducibility issues with RL [@henderson2018deep], the field overcame it to find high-impact applications.
+Some are covered in this book, such as ChatGPT's RLHF and DeepSeek R1's RLVR, but many others exist, including improving chip design [@mirhoseini2020chip], mastering video gameplay [@schrittwieser2020mastering], self-driving [@cusumano2025robust], and more
 The takeoff of RL-focused training on language models indicates steps in many fundamental issues for the research area, including:
 
-* **Stability of RL can be solved**: For its entire existence, the limiting factor on RL's adoption has been stability. This manifests in two ways. First, the learning itself can be fickle and not always work. Second, the training itself is known to be more brittle than standard language model training and more prone to loss spikes, crashes, etc. Countless releases are using this style of RL training and substantial academic uptake has occurred. The technical barriers to entry on RL are at an all time low.
+* **Stability of RL can be solved**: For its entire existence, the limiting factor on RL's adoption has been stability. This manifests in two ways. First, the learning itself can be fickle and not always work. Second, the training itself is known to be more brittle than standard language model training and more prone to loss spikes, crashes, etc. Countless new model releases are using this style of RL training with verifiable rewards ontop of a pretrained base model and substantial academic uptake has occurred. The technical barriers to entry on RL are at an all time low.
 
 * **Open-source versions already "exist"**: Many tools already exist for training language models with RLVR and related techniques. 
 Examples include TRL [@vonwerra2022trl], Open Instruct [@lambert2024t], veRL [@sheng2024hybridflow], and OpenRLHF [@hu2024openrlhf], where many of these are building on optimizations from earlier in the arc of RLHF and post-training. The accessibility of tooling is enabling a large uptake of research that'll likely soon render this chapter out of date.
 
 Multiple resources point to RL training for reasoning only being viable on leading models coming out from about 2024 onwards, indicating that a certain level of underlying capability was needed in the models before reasoning training was possible.
 
-### RL Training vs. Inference Time Scaling
+### RL Training vs. Inference-time Scaling
 
-Training with Reinforcement Learning to elicit reasoning behaviors and performance on verifiable domains is closely linked to the ideas of inference time scaling.
+Training with Reinforcement Learning to elicit reasoning behaviors and performance on verifiable domains is closely linked to the ideas of inference-time scaling.
 Inference-time scaling, also called test-time scaling, is the general class of methods that use more computational power at inference in order to perform better at downstream tasks.
 Methods for inference-time scaling were studied before the release of DeepSeek R1 and OpenAI's o1, which both massively popularized investment in RL training specifically.
 Examples include value-guided sampling [@liu2023don] or repeated random sampling with answer extraction [@brown2024large].
 Beyond this, inference-time scaling can be used to improve more methods of AI training beyond chain of thought reasoning to solve problems, such as with reward models that consider the options deeply [@ankner2024critique] [@liu2025inference].
 
-RL training is a short path to inference time scaling laws being used, but in the long-term we will have more methods for eliciting the inference-time tradeoffs we need for best performance.
-Training models heavily with RL changes them so that they generate more tokens per response in a way that is strongly correlated with downstream performance. 
-This is a substantial shift from the length-bias seen in early RLHF systems [@singhal2023long], where the human preference training had a side effect of increasing response rate for marginal gains on preference rankings.
+RL training is a short path to inference-time scaling laws being used, but in the long-term we will have more methods for eliciting the inference-time tradeoffs we need for best performance.
+Training models heavily with RL often enables them to generate more tokens per response in a way that is strongly correlated with improved, downstream performance (though, while this sequence length increase is the default, research also exists explicitly on improving performance *without* relying on this inference time scaling). 
+This is a substantial shift from the length-bias seen in early RLHF systems [@singhal2023long], where the human preference training had a side effect of increasing the response average length for marginal gains on preference rankings.
 
-Downstream of the RL trained models there are many methods being explored to continue to push the limits of reasoning and inference-time compute.
+Other than the core RL trained models there are many methods being explored to continue to push the limits of reasoning and inference-time compute.
 These are largely out of the scope of this book due to their rapidly evolving nature, but they include distilling reasoning behavior from a larger RL trained model to a smaller model via instruction tuning [@muennighoff2025s1], composing more inference calls [@chen2024more], and more.
 What is important here is the correlation between downstream performance and an increase in the number of tokens generated -- otherwise it is just wasted energy.
 
