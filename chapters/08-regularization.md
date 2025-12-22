@@ -14,7 +14,7 @@ Some examples of optimization "off the rails" are that models can output followa
 This chapter covers the different methods that're used to control the optimization of models.
 
 The most popular variant, used in most RLHF implementations at the time of writing, is a KL distance from the current policy to a reference policy across generated samples.
-“KL distance” is a colloquial term for expressing the *optimization distance* within the training process, even though KL divergence—the underlying mathematical method for measuring the separation of two probability distributions—does not satisfy the formal properties required to be a true distance metric (it is simply easier to call the number a distance than a numeric measure of distributional difference).
+"KL distance" is a colloquial term for expressing the *optimization distance* within the training process, even though KL divergence—the underlying mathematical method for measuring the separation of two probability distributions—does not satisfy the formal properties required to be a true distance metric (it is simply easier to call the number a distance than a numeric measure of distributional difference).
 Many other regularization techniques have emerged in the literature to then disappear in the next model iteration in that line of research.
 That is to say that regularization outside the core KL distance from generations is often used to stabilize experimental setups that can then be simplified in the next generation.
 Still, it is important to understand tools to constrain optimization in RLHF.
