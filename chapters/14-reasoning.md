@@ -254,12 +254,11 @@ A summary of the foundational reasoning research reports, some of which are acco
 | 2025-10-21 | Ring-1T [@ringteam2025everystepevolves]                  | Trillion-scale "thinking model" with RL scaling focus; report frames bottlenecks/solutions for scaling RL at 1T and releases an open model.                                                                                                             | Yes          | No         |
 | 2025-11-20 | OLMo 3 Think [@teamolmo2025olmo3]         | Fully open "model flow" release: reports the entire lifecycle (stages, checkpoints, and data points) and positions OLMo 3 Think 32B as a flagship open thinking model.                                        | Yes          | Yes        |
 | 2025-12-02 | DeepSeek V3.2 [@deepseekai2025v32]                       | Open-weight MoE frontier push with a report that foregrounds attention efficiency changes, RL framework upgrades, and data synthesis for agentic/reasoning performance.                                                                             | Yes          | No         |
+| 2025-12-05 | K2-V2 [@liu2025k2] | 70B dense “360-open” model trained from scratch; with 3-effort SFT-only post-training for controllable thinking. | Yes | Yes |
 | 2025-12-15 | Nemotron 3 Nano [@nvidia2025nemotron3nano]               | 30B-A3B MoE hybrid Mamba-Transformer; pretrain on 25T tokens and includes SFT + large-scale RL; explicitly states it ships weights + recipe/code + most training data.                                                                      | Yes          | Yes (most) |
 | 2025-12-16 | MiMo-V2-Flash [@mimo2025flash] | 309B MoE (15B active) optimized for speed: hybrid SWA/GA attention (5:1, 128-token window) + lightweight MTP; FP8 pretrain on 27T tokens; post-train with MOPD + large-scale agentic RL for reasoning/coding. | Yes | No |
 Table: A summary of the notable reasoning model technical reports in 2025, the first year of substantial inference-time scaling with RLHF. {#tbl:reasoning_list}
 :::
-
-<!-- | 2025-08-15 | Ovis2.5 [@lu2025ovis25]                                  | Multimodal successor emphasizing native-resolution vision + optional thinking mode; trains reflection/self-checking; five-phase curriculum ending with DPO + GRPO; releases Ovis2.5-2B and -9B.                                         | Yes          | No         | -->
 
 
 ### Common Practices in Training Reasoning Models
@@ -282,7 +281,7 @@ Note that these papers could have used a listed technique and not mentioned it w
 In complement to the common techniques, there are also many common findings on how reasoning training can create useful models without sacrificing ancillary capabilities:
 
 * **Text-only reasoning boosts multimodal performance**: Magistral, MiMo-VL, and others find that training a multimodal model and then performing text-only reasoning training after this multimodal training can *improve* multimodal performance in the final model.
-* **Toggleable reasoning with system prompt** (or length control): Llama-Nemotron, Nemotron Nano, Qwen 3, SmolLM 3, and others use specific system prompts (possibly in combination with length-controlled RL training [@aggarwal2025l1]) to enable a toggleable on/off thinking length for the user. Other open models, such as OpenAI's GPT-OSS adopt a low-medium-high reasoning effort set in the system prompt, but training methods for this type of behavior are not as well documented.
+* **Toggleable reasoning with system prompt** (or length control): Llama-Nemotron, Nemotron Nano, Qwen 3, SmolLM 3, and others use specific system prompts (possibly in combination with length-controlled RL training [@aggarwal2025l1]) to enable a toggleable on/off thinking length for the user. Other open models, such as OpenAI's GPT-OSS and LLM360's K2-V2 [@liu2025k2] adopt a low-medium-high reasoning effort set in the system prompt, but training methods for this type of behavior are not as well documented.
 
 ## Looking Ahead
 
@@ -294,5 +293,5 @@ OLMo 3 Think [@teamolmo2025olmo3] represents the most comprehensive open documen
 Similarly, work on understanding the scaling properties of RL for reasoning [@khatri2025art] is beginning to formalize relationships between compute, data, and performance that were previously only intuited by practitioners.
 
 What remains clear is that reinforcement learning has graduated from the "cherry on top" of the cake metaphor to a load-bearing component of frontier model training.
-The minor techniques in this chapte around the idea of RLVR -- difficulty filtering, format rewards, and the rest -- are not the final answers, but they represent the field's current best understanding of how to elicit reasoning from language models.
+The minor techniques in this chapter around the idea of RLVR -- difficulty filtering, format rewards, and the rest -- are not the final answers, but they represent the field's current best understanding of how to elicit reasoning from language models.
 The next generation of methods will likely look different, but they will build on the foundations established here.
