@@ -391,8 +391,8 @@ Table: Comparing types of reward models. {#tbl:rm_compare}
 
 Some notes, given the above table has a lot of edge cases.
 
-* Both in preference tuning and reasoning training, the value functions often have a discount factor of 1, which makes a value function even closer to an outcome reward model, but with a different training loss.
-* A process reward model can be supervised by doing rollouts from an intermediate state and collecting outcome data. This blends multiple ideas, but if the *loss* is per reasoning step labels, it is best referred to as a PRM.
+- Both in preference tuning and reasoning training, the value functions often have a discount factor of 1, which makes a value function even closer to an outcome reward model, but with a different training loss.
+- A process reward model can be supervised by doing rollouts from an intermediate state and collecting outcome data. This blends multiple ideas, but if the *loss* is per reasoning step labels, it is best referred to as a PRM.
 
 ## Generative Reward Modeling
 
@@ -437,10 +437,10 @@ Since then, RM evaluation has expanded to be similar to the types of evaluations
 
 Examples of new benchmarks include:
 
-* **Text-only (general chat / preferences):** RMB [@zhou2024rmb], RewardBench2 [@malik2025rewardbench], Preference Proxy Evaluations [@frick2024evaluate], or RM-Bench [@liu2024rm].
-* **Specialized text-only (math, etc.):** multilingual reward bench (M-RewardBench) [@gureja2024m], RAG-RewardBench for retrieval augmented generation (RAG) [@jin2024rag], ReWordBench for typos [@wu2025rewordbench], RewardMATH [@kim2024evaluating], or AceMath-RewardBench [@liu2024acemath].
-* **Process RMs:** PRM Bench [@song2025prmbench] or ProcessBench [@zheng2024processbench] and visual benchmarks of VisualProcessBench [@wang2025visualprm] or ViLBench [@tu2025vilbench].
-* **Agentic RMs:** Agent-RewardBench [@men2025agentrewardbench] or CUARewardBench [@lin2025cuarewardbench].
-* **Multimodal:** MJ-Bench [@chen2024mj], Multimodal RewardBench [@yasunaga2025multimodal], VL RewardBench [@li2024vlrewardbench], or VLRMBench [@ruan2025vlrmbench].
+- **Text-only (general chat / preferences):** RMB [@zhou2024rmb], RewardBench2 [@malik2025rewardbench], Preference Proxy Evaluations [@frick2024evaluate], or RM-Bench [@liu2024rm].
+- **Specialized text-only (math, etc.):** multilingual reward bench (M-RewardBench) [@gureja2024m], RAG-RewardBench for retrieval augmented generation (RAG) [@jin2024rag], ReWordBench for typos [@wu2025rewordbench], RewardMATH [@kim2024evaluating], or AceMath-RewardBench [@liu2024acemath].
+- **Process RMs:** PRM Bench [@song2025prmbench] or ProcessBench [@zheng2024processbench] and visual benchmarks of VisualProcessBench [@wang2025visualprm] or ViLBench [@tu2025vilbench].
+- **Agentic RMs:** Agent-RewardBench [@men2025agentrewardbench] or CUARewardBench [@lin2025cuarewardbench].
+- **Multimodal:** MJ-Bench [@chen2024mj], Multimodal RewardBench [@yasunaga2025multimodal], VL RewardBench [@li2024vlrewardbench], or VLRMBench [@ruan2025vlrmbench].
 
 To understand progress on *training* reward models, one can reference new reward model training methods, with aspect-conditioned models [@wang2024interpretable], high-quality human datasets [@wang2024helpsteer2] [@wang2024helpsteer2p], scaling experiments [@adler2024nemotron], extensive experimentation [@touvron2023llama], or debiasing data [@park2024offsetbias].

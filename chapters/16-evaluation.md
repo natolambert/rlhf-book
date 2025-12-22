@@ -224,9 +224,9 @@ Strong models are trained to be able to function with multiple formats, but they
 
 In the end we are left with a few key points on the state of evaluating closed models:
 
-* We do not know or necessarily have the key test sets that labs are climbing on, so some evaluations are proxies.
-* Inference of frontier models is becoming more complicated with special system prompts, special tokens, etc., and we don't know how it impacts evaluations, and
-* We do not know all the formats and details used to numerically report the closed evaluations.
+- We do not know or necessarily have the key test sets that labs are climbing on, so some evaluations are proxies.
+- Inference of frontier models is becoming more complicated with special system prompts, special tokens, etc., and we don't know how it impacts evaluations, and
+- We do not know all the formats and details used to numerically report the closed evaluations.
 
 ## Contamination
 
