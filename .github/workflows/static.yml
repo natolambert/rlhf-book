@@ -31,7 +31,7 @@ jobs:
 
       - name: Install brew dependencies
         run: |
-          brew update
+          # brew update # (slow) uncomment this for minor version updates if needed to debug other issues
           # brew install pandoc
           brew install make
           brew install pandoc-crossref
