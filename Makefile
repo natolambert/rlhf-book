@@ -19,6 +19,7 @@ EPUB_COVER_IMAGE = images/rlhf-book-cover.png # EPUB-specific cover image
 MATH_FORMULAS = --mathjax # --webtex, is default for PDF/ebook. Consider resetting if issues.
 EPUB_MATH_FORMULAS = --mathml # Use MathML for EPUB format for better e-reader compatibility
 BIBLIOGRAPHY = --bibliography=chapters/bib.bib --citeproc --csl=templates/ieee.csl
+DATE_ARG = --metadata date="$(shell date +'%d %B %Y')"
 
 # Chapters content
 CONTENT = awk 'FNR==1 && NR!=1 {print "\n\n"}{print}' $(CHAPTERS)
@@ -35,8 +36,8 @@ FILTER_ARGS = --filter pandoc-crossref
 
 # Combined arguments
 
-ARGS = $(TOC) $(MATH_FORMULAS) $(METADATA_ARGS) $(FILTER_ARGS) $(DEBUG_ARGS) $(BIBLIOGRAPHY)
-EPUB_ARGS_BASE = $(TOC) $(EPUB_MATH_FORMULAS) $(METADATA_ARGS) $(FILTER_ARGS) $(DEBUG_ARGS) $(BIBLIOGRAPHY)
+ARGS = $(TOC) $(MATH_FORMULAS) $(METADATA_ARGS) $(FILTER_ARGS) $(DEBUG_ARGS) $(BIBLIOGRAPHY) $(DATE_ARG)
+EPUB_ARGS_BASE = $(TOC) $(EPUB_MATH_FORMULAS) $(METADATA_ARGS) $(FILTER_ARGS) $(DEBUG_ARGS) $(BIBLIOGRAPHY) $(DATE_ARG)
 	
 PANDOC_COMMAND = pandoc
 
