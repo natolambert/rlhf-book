@@ -11,7 +11,7 @@ next-url: "16-evaluation"
 Reinforcement learning from *human feedback* is deeply rooted in the idea of keeping a human influence on the models we are building.
 When the first models were trained successfully with RLHF, human data was *the only* viable way to improve the models in this way.
 
-Humans were the only way to create high enough quality responses to questions to train on them. 
+Humans were the only way to create high enough quality responses to questions for training. 
 Humans were the only way to collect reliable and specific feedback data to train reward models.
 
 As AI models got better, this assumption rapidly broke down.
@@ -36,13 +36,13 @@ GPT-4 or better models are far more robust and consistent in generating feedback
 Through the years since ChatGPT's release at the end of 2022, we've seen numerous, impactful synthetic datasets -- some include: UltraFeedback [@cui2023ultrafeedback], the first prominent synthetic preference dataset that kickstarted the DPO revolution, or Stanford Alpaca, one of the first chat-style finetuning datasets, in 2023, skill-focused (e.g. math, code, instruction-following), synthetic datasets in Tülu 3 [@lambert2024t], or OpenThoughts 3 and many other synthetic reasoning datasets in 2025 for training thinking models [@guha2025openthoughts].
 Most of the canonical references for getting started with industry-grade post-training today involve datasets like Tülu 3 or OpenThoughts 3 above, where quickstart guides often start with smaller, simpler datasets like Alpaca due to far faster training.
 
-A large change is also down to size, where finetuning datasets have grown in the number of prompts, where Alpaca is 52K, OpenThoughts and Tülu 3 are 1M+ samples, and in the length of responses.
+A large change is also related to dataset size, where finetuning datasets have grown in the number of prompts, where Alpaca is 52K, OpenThoughts and Tülu 3 are 1M+ samples, and in the length of responses.
 Longer responses and more prompts results in the Alpaca dataset being on the order of 10M training tokens, where Tülu is 50X larger at about 500M, and OpenThoughts 3 is bigger still at the order of 10B tokens.
 
 Throughout this transition in capabilities, the role of synthetic data has only grown in language model training. 
 Otherwise, there are two clear areas where human data continues to be important. 
 
-1. The role of human data continues to be at the fringe of capabilities in models -- humans must generate data where AI's do not yet have any ability. Once the first strong model exists, synthetic data proliferates.
+1. The role of human data continues to be at the fringe of capabilities in models -- humans must generate data where AIs do not yet have any ability. Once the first strong model exists, synthetic data proliferates.
 2. Human preference data is still used in the leading models, even though academic work shows synthetic versions to perform just as well. The role of human preferences is still being established in the literature.
 
 The term distillation has been the most powerful form of discussion around the role of synthetic data in language models. 
@@ -52,7 +52,7 @@ Distillation colloquially refers to using the outputs from a stronger model to t
 In post-training, this general notion of distillation takes two common forms:
 
 1. As a data engine to use across wide swaths of the post-training process: Completions for instructions, preference data (or Constitutional AI), or verification for RL.
-2. To transfer specific skills from a stronger model to a weaker model, which is often done for specific skill such as mathematic reasoning or coding.
+2. To transfer specific skills from a stronger model to a weaker model, which is often done for specific skills such as mathematical reasoning or coding.
 
 The first strategy has grown in popularity as language models evolved to be more reliable than humans at writing answers to a variety of tasks.
 GPT-4 class models expanded the scope of this to use distillation of stronger models for complex tasks such as math and code (as mentioned above).
@@ -61,6 +61,4 @@ With open models, common practice is to distill training data from closed API mo
 Within this, curating high-quality prompts and filtering responses from the teacher model is crucial to maximize performance.
 
 Transferring specific skills into smaller language models uses the same principles of distillation -- get the best data possible for training.
-Here, many papers have studied using limited datasets from stronger models to improve alignment
-[@zhou2023lima], mathematic reasoning [@shridhar2023distilling] [@hsieh2023distilling], 
- and test-time scaling [@muennighoff2025s1].
+Here, many papers have studied using limited datasets from stronger models to improve alignment [@zhou2023lima], mathematical reasoning [@shridhar2023distilling] [@hsieh2023distilling], and test-time scaling [@muennighoff2025s1].
