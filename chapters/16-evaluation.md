@@ -184,8 +184,10 @@ Evaluation is moving to where the models are tested to respond in a generative m
 
 ## Using Evaluations vs. Observing Evaluations
 
-Language model evaluations done within companies can only be compared to their peers with large error bars because the process that they use for evaluations internally is not matched with external evaluations.
-Internal evaluations are made to hillclimb on for training, as would be called a "training set" in traditional machine learning.
+Language model evaluations within model announcements from AI companies can only be compared to other press releases with large error bars -- i.e. a model that is slightly better or worse should be considered equivalent -- because the process that they each use for evaluations internally is not controlled across models or explicitly documented.
+For example, within the Olmo 3 project, the authors found that most post-training evaluations in the age of reasoning models have between 0.25 and 1.5 point standard deviations when the evaluation setup is held constant [@teamolmo2025olmo3] -- bigger changes in scores can come from using different prompts or sampling parameters.
+Evaluations are made to hillclimb on for training and make the models more useful, traditionally composed of a mix of training, development, and unseen evaluation sets.
+Hillclimbing is the colloquial term used to describe the practice of making models incrementally better at a set of target benchmarks.
 The public evaluations that the community uses to compare leading models cannot be known if they were within said training set or as unseen "test sets" or "validation sets."
 
 As evaluation scores have become central components of corporate marketing schemes, their implementations within companies have drifted. 
@@ -261,8 +263,8 @@ For example, during the decontamination of the evaluation suite for Tülu 3, the
 These overlaps include: UltraFeedback's contamination with TruthfulQA, Evol-CodeAlpaca's contamination with HumanEval, NuminaMath's contamination with MATH, and WildChat's contamination with safety evaluations. 
 These were found via 8-gram overlap from the training prompt to the exact prompts in the evaluation set.
 
-In other cases models are found to have been trained on data very close to the benchmarks, such as keeping the words of a math problem the same and changing the numbers, which can result in unusual behavior in post-training regimes.
-This sort of base model contamination, where it cannot be proven as to exactly why the models behave certain ways, has been a substantial confounding variable on many early RLVR works ontop of Qwen 2.5 and Qwen 3 base models [@shao2025spurious] [@wu2025reasoning].
+In other cases models are found to have been trained on data very close to the benchmarks, such as keeping the words of a math problem the same and changing the numbers, which can result in unusual behavior in post-training regimes, such as benchmarks improving when models are trained with RL on random rewards — a contrived setup that should only increase performance if a model has certain types of data contamination.
+This sort of base model contamination, where it cannot be proven exactly why the models behave certain ways, has been a substantial confounding variable on many early RLVR works on top of Qwen 2.5 and Qwen 3 base models [@shao2025spurious] [@wu2025reasoning].
 
 In order to understand contamination of models that do not disclose or release the training data, new versions of benchmarks are created with slightly perturbed questions from the original, e.g. for MATH [@huang2025math], in order to see which models were trained to match the original format or questions.
 High variance on these perturbation benchmarks is not confirmation of contamination, which is difficult to prove, but could indicate models that were trained with a specific format in mind that may not translate to real world performance.
