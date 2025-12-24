@@ -168,7 +168,8 @@ Tülu 3 was an early seminal paper that details some prompts used for CoT answer
 Below is an exampple prompt used for MMLU, which is one of the evaluations that transitioned from single-token answer sampling to long-form CoT with exact match answer checking.
 
 ```
-Answer the following multiple-choice question by giving the correct answer letter in parentheses. Provide CONCISE reasoning for the answer, and make sure to finish the response with "Therefore, the answer is (ANSWER_LETTER)" where (ANSWER_LETTER) is one of (A), (B), (C), (D), (E), etc.
+Answer the following multiple-choice question by giving the correct answer letter in parentheses.
+Provide CONCISE reasoning for the answer, and make sure to finish the response with "Therefore, the answer is (ANSWER_LETTER)" where (ANSWER_LETTER) is one of (A), (B), (C), (D), (E), etc.
 
 Question: {question}
 (A) {choice_A}
@@ -182,8 +183,6 @@ This, especially when the models use special formatting to separate thinking tok
 Evaluation is moving to where the models are tested to respond in a generative manner with chain-of-thought prompting.
 
 ## Using Evaluations vs. Observing Evaluations
-
-![Report from Epoch AI showing how major AI evaluations are rapidly saturated over time. License CC-BY.](images/benchmark-performance.jpeg)
 
 Language model evaluations done within companies can only be compared to their peers with large error bars because the process that they use for evaluations internally is not matched with external evaluations.
 Internal evaluations are made to hillclimb on for training, as would be called a "training set" in traditional machine learning.
@@ -244,6 +243,12 @@ In the end we are left with a few key points on the state of evaluating closed m
 - Inference of frontier models is becoming more complicated with special system prompts, special tokens, etc., and we don't know how it impacts evaluations, and
 - We do not know all the formats and details used to numerically report the closed evaluations.
 
+All of these dynamics, along with the very rapid progress of AI models over the last few years, results in famous plots similar to the one in @fig:benchmark-saturation, where the in-vogue benchmarks of each era are solved very quickly.
+The common term to describe this dynamic at a per-benchmark level is saturation.
+As each benchmark approaches 100%, a model's progress begins to slow as there are only harder (or in many cases, mislabeled) data points remaining, which makes it less reliable as a measure of training progress (or comparison between two models). 
+
+![Report from Epoch AI showing how major AI evaluations are rapidly saturated over time (saturation is when a given benchmark reaches full performance and no on longer have meaningful signal). License CC-BY.](images/benchmark-performance.jpeg) {#fig:benchmark-saturation}
+
 ## Contamination
 
 A major issue with current language model practices (i.e. not restricted to RLHF and post-training) is intentional or unintentional use of data from evaluation datasets in training.
@@ -255,6 +260,9 @@ Benchmarks are often listed on public web domains that are crawled, or users pas
 For example, during the decontamination of the evaluation suite for Tülu 3, the authors found that popular open datasets were contaminated with popular evaluations for RLHF [@lambert2024t]. 
 These overlaps include: UltraFeedback's contamination with TruthfulQA, Evol-CodeAlpaca's contamination with HumanEval, NuminaMath's contamination with MATH, and WildChat's contamination with safety evaluations. 
 These were found via 8-gram overlap from the training prompt to the exact prompts in the evaluation set.
+
+In other cases models are found to have been trained on data very close to the benchmarks, such as keeping the words of a math problem the same and changing the numbers, which can result in unusual behavior in post-training regimes.
+This sort of base model contamination, where it cannot be proven as to exactly why the models behave certain ways, has been a substantial confounding variable on many early RLVR works ontop of Qwen 2.5 and Qwen 3 base models [@shao2025spurious] [@wu2025reasoning].
 
 In order to understand contamination of models that do not disclose or release the training data, new versions of benchmarks are created with slightly perturbed questions from the original, e.g. for MATH [@huang2025math], in order to see which models were trained to match the original format or questions.
 High variance on these perturbation benchmarks is not confirmation of contamination, which is difficult to prove, but could indicate models that were trained with a specific format in mind that may not translate to real world performance.
