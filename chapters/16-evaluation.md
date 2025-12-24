@@ -8,7 +8,9 @@ next-url: "17-over-optimization"
 
 # Evaluation
 
-Evaluation is an ever evolving approach.
+Evaluation is the set of techniques used to understand the quality and impact of the training processes detailed in this book.
+Evaluation is normally expressed through benchmarks (examples of popular benchmarks include MMLU, GPQA, SWE-Bench, MATH, etc.), which are discrete sets of questions or environments designed to measure a specific property of a mdoel.
+Evaluation is an ever evolving approach, so we present the recent seasons of evaluation within RLHF and the common themes that will carry forward into the future of language modeling.
 The key to understanding language model evaluation, particularly with post-training, is that the current popular evaluation regimes represent a reflection of the popular training best practices and goals.
 While challenging evaluations drive progress in language models to new areas, the majority of evaluation is designed around building useful signals for new models.
 
@@ -100,9 +102,16 @@ Choices:
 Correct Answer:
 ```
 
-To extract an answer here one could either generate a token based on some sampling parameters and see if the answer is correct, A,B,C, or D (formatting above like this proposed in [@robinson2023leveraging]), or one could look at the probabilities of each token and mark the task as correct if the correct answer is more likely. 
-This second method has two potential implementations -- first, one could look at the probability of the letter (A) or the answer "The Mean Value Theorem." 
-Both of these are permissible metrics, but answer prediction is more common among probability base metrics.
+To have a language model provide an answer here one could either generate a token based on some sampling parameters and see if the answer is correct, A, B, C, or D (formatting above like this proposed in [@robinson2023leveraging]), or one could look at the log-probabilities of each token and mark the task as correct if the correct answer is more likely. 
+The former is often called exact match (or pass@k if you allow multiple attempts) and the latter method is called (conditional) log-likelihood scoring, where the conditioning is the prompt.
+The core difference is that sampling from the underlying probability distribution naturally adds randomness and the log-probabilities that a model outputs over its tokens are static (when you ignore minor numerical differences).
+
+Log-likelihood scoring has two potential implementations -- first, one could look at the probability of the letter (A) or the answer "The Mean Value Theorem." 
+Both of these are permissible metrics, but answer prediction is more common among probability-based metrics.
+
+Exact match has different problems, such as static answer formatting queries (such as `The answer is:`), where if they're not followed it can cause the evaluation score to plummet due to the evaluation format not matching how the language model generates.
+Evaluation with language models is best done when the formatting is not a bottleneck at all, so we can test the entire capability of the model.
+This is quite rare and takes substantial effort, understanding, and tinkering (playing with different formats) to get right.
 
 A common challenge with few-shot prompting is that models will not follow the format, which is counted as an incorrect answer. 
 When designing an evaluation domain, the number of examples used in-context is often considered a design parameter and ranges from 3 to 8 or more.
