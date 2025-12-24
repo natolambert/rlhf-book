@@ -103,17 +103,22 @@ Correct Answer:
 ```
 
 To have a language model provide an answer here one could either generate a token based on some sampling parameters and see if the answer is correct, A, B, C, or D (formatting above like this proposed in [@robinson2023leveraging]), or one could look at the log-probabilities of each token and mark the task as correct if the correct answer is more likely. 
-The former is often called exact match (or pass@k if you allow multiple attempts) and the latter method is called (conditional) log-likelihood scoring, where the conditioning is the prompt.
+
+Let's dig into these evaluation details for a moment.
+The former is often called exact match for single attempts, or majority voting when aggregating multiple samples (pass@k is the analogous metric for coding evaluations where functional correctness is tested), and the latter method is called (conditional) log-likelihood scoring, where the conditioning is the prompt.
 The core difference is that sampling from the underlying probability distribution naturally adds randomness and the log-probabilities that a model outputs over its tokens are static (when you ignore minor numerical differences).
 
 Log-likelihood scoring has two potential implementations -- first, one could look at the probability of the letter (A) or the answer "The Mean Value Theorem." 
-Both of these are permissible metrics, but answer prediction is more common among probability-based metrics.
+Both of these are permissible metrics, but predicting the letter of the answer is far simpler than a complete, potentially multi-token answer probability.
+Log-likelihood scoring is more common in pretraining evaluation, where models lack the question-and-answer format needed for exact match, while exact match is standard in post-training [@teamolmo2025olmo3].
 
-Exact match has different problems, such as static answer formatting queries (such as `The answer is:`), where if they're not followed it can cause the evaluation score to plummet due to the evaluation format not matching how the language model generates.
-Evaluation with language models is best done when the formatting is not a bottleneck at all, so we can test the entire capability of the model.
-This is quite rare and takes substantial effort, understanding, and tinkering (playing with different formats) to get right.
+Exact match has different problems, such as requiring rigid format suffixes (e.g., `The answer is:`) or detecting answers anywhere in generated text (e.g., looking for `(C)` or the answer string itself).
+If the evaluation format does not match how the model generates, scores can plummet.
+Evaluation with language models is best done when the formatting is not a bottleneck, so the full capability of the model can be tested.
+Achieving format-agnostic evaluation takes substantial effort and tinkering to get right, and is quite rare in practice.
 
-A common challenge with few-shot prompting is that models will not follow the format, which is counted as an incorrect answer. 
+Returning to the history of evaluation. 
+Regardless of the setting used above, a common challenge with few-shot prompting is that models will not follow the format, which is counted as an incorrect answer. 
 When designing an evaluation domain, the number of examples used in-context is often considered a design parameter and ranges from 3 to 8 or more.
 
 Within the evolution of few-shot prompting came the idea of including chain-of-thought examples for the model to follow.
