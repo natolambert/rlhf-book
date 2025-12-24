@@ -156,14 +156,16 @@ Assistant:
 
 From here in 2022, the timeline begins to include key early RLHF works, such as InstructGPT.
 The core capability and use-case shift that accompanied these models is even more open-ended usage.
-With more open-ended usage, generative evaluation became increasingly popular as it mirrors actual usage.
-In this period through recent years after ChatGPT, some multiple-choice evaluations were still used in RLHF research as a holdback to common practice.
+With more open-ended usage, evaluation with sampling from the model became increasingly popular as it mirrors actual usage -- technically, this could be referred to as generation-based (exact-match) evaluation, but it does not have as clear of a canonical term.
+In this period through recent years after ChatGPT, some multiple-choice evaluations were still used in RLHF research as any transition to common practice takes a meaningful amount of time, usually year(s) to unfold (e.g. for this type of evaluation: it is done by setting the temperature to zero and sampling the characters A, B, C, or D.).
 
 With the rise of reasoning models at the end of 2024 and the beginning of 2025, a major change in model behavior was the addition of a long Chain-of-Thought (CoT) reasoning process before every answer.
 These models no longer needed to be prompted with the canonical modification of "think step by step," as proposed in [@kojima2022large].
+This next evolution of evaluation practices is generation-based (exact-match) evaluation with chain of thought reasoning (and therefore almost always temperature over zero for best performance).
 
-For example, for every question or category there are specially designed prompts to help extract behavior from the model.
-Tülu 3 details some prompts used for CoT answering on multiple choice questions [@lambert2024t]:
+For example, in some setups, for every question or category there are specially designed prompts to help extract behavior from the model.
+Tülu 3 was an early seminal paper that details some prompts used for CoT answering on multiple choice questions [@lambert2024t].
+Below is an exampple prompt used for MMLU, which is one of the evaluations that transitioned from single-token answer sampling to long-form CoT with exact match answer checking.
 
 ```
 Answer the following multiple-choice question by giving the correct answer letter in parentheses. Provide CONCISE reasoning for the answer, and make sure to finish the response with "Therefore, the answer is (ANSWER_LETTER)" where (ANSWER_LETTER) is one of (A), (B), (C), (D), (E), etc.
