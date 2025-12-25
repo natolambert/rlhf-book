@@ -9,7 +9,7 @@ next-url: ""
 # Product, UX, and Model Character
 
 Frontiers in RLHF and post-training show how these techniques are used within companies to make leading products.
-As RLHF becomes more established, the problems it is used to address are moving beyond the traditional relm of research and optimizing clear, public benchmarks.
+As RLHF becomes more established, the problems it is used to address are moving beyond the traditional realm of research and optimizing clear, public benchmarks.
 In this chapter, we discuss a series of use-cases for RLHF and post-training that are not well-established in the academic literature while being essential at leading AI laboratories.
 
 ## Character Training
