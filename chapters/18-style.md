@@ -12,14 +12,16 @@ Early developments in RLHF gave it a reputation for being "just style transfer" 
 This chapter explains why style is very core to understanding the value that RLHF is providing.
 Reading this chapter should help you understand the changes RLHF is making to the models and why it positively impacts user behavior.
 
-The idea of being solely about style transfer has held back the RLHF narrative for two reasons. 
-First, when people discuss style transfer, they don't describe this as being important or exciting. 
-Style is a never-ending source of human value, it's why retelling stories can result in new bestselling books (such as [Sapiens](https://en.wikipedia.org/wiki/Sapiens:_A_Brief_History_of_Humankind)), and it is a fundamental part of continuing to progress our intellectual ecosystem. 
+The idea of RLHF being solely about style transfer has held back the RLHF narrative for two reasons. 
+The first is how RLHF became associated with small, unimportant changes to the model.
+When people discuss style transfer, they don't describe this as being important or exciting -- they think of it as superficial. 
+Yet, style is a never-ending source of human value; it's why retelling stories can result in new bestselling books (such as [Sapiens](https://en.wikipedia.org/wiki/Sapiens:_A_Brief_History_of_Humankind)), and it is a fundamental part of continuing to progress our intellectual ecosystem. 
 Style is intertwined with what the information is. 
 
-Second, we've seen how different styles actually can improve evaluation improvements with Llama 3 [@dubey2024llama]. 
-The Llama 3 Instruct models scored extremely high on ChatBotArena, and it's accepted as being because they had a more fun personality. 
-If RLHF is going to make language models simply more fun, that is delivered value.
+The second point is a mirror of the first, as many people missed the fact that well-done RLHF boosts scores on popular LLM evaluations.
+We've seen how different styles actually can initiate meaningful evaluation improvements with Llama 3 [@dubey2024llama]. 
+The Llama 3 Instruct models scored extremely high on ChatBotArena, and it's accepted as being because they had a more fun personality -- they were more succint and clever than other models of their era. 
+Regardless of the benchmark scores that many LLM users are obsessed with, if RLHF is going to make language models simply more fun, that is delivered value.
 
 Throughout this chapter, the term "chattiness" is used to encompass the growing length of responses from models training with RLHF, but it also encompasses techniques like heavy markdown use, emojis, and formatting the answer in bulleted lists.
 
