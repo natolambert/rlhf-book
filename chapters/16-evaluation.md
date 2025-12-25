@@ -182,7 +182,7 @@ Answer the above question and REMEMBER to finish your response with the exact ph
 This, especially when the models use special formatting to separate thinking tokens from answer tokens, necessitated the most recent major update to evaluation regimes.
 Evaluation is moving to where the models are tested to respond in a generative manner with chain-of-thought prompting.
 
-## Using Evaluations vs. Observing Evaluations
+## Why Many External Evaluation Comparisons are Unreliable
 
 Language model evaluations within model announcements from AI companies can only be compared to other press releases with large error bars -- i.e. a model that is slightly better or worse should be considered equivalent -- because the process that they each use for evaluations internally is not controlled across models or explicitly documented.
 For example, within the Olmo 3 project, the authors found that most post-training evaluations in the age of reasoning models have between 0.25 and 1.5 point standard deviations when the evaluation setup is held constant [@teamolmo2025olmo3] -- bigger changes in scores can come from using different prompts or sampling parameters.
@@ -202,7 +202,30 @@ Even fully open evaluation standards are hard to guarantee reproducibility on.
 Focusing efforts on your own models is the only way to get close to repeatable evaluation techniques. 
 There are good intentions underpinning the marketing, starting with the technical teams.
 
+Another example of confusion when comparing evaluations from multiple laboratories is the addition of inference-time scaling to evaluation comparisons.
+Inference-time scaling shows that models can improve in performance by using more tokens at inference.
+Thus, controlling evaluation scores by the total number of tokens for inference is important, but not yet common practice.
+
+Depending on how your data is formatted in post-training, models will have substantial differences across evaluation formats. 
+For example, two popular, open math datasets NuminaMath [@li2024numinamath] and MetaMath [@yu2023metamath] conflict with each other in training due to small differences in how the answers are formatted -- Numina puts the answer in `\boxed{XYZ}` and MetaMath puts the answer after `The answer is: XYZ` ---- training on both can make performance worse than with just one. 
+Strong models are trained to be able to function with multiple formats, but they generally have a strongest format.
+
+In the end we are left with a few key points on the state of evaluating closed models:
+
+- We do not know or necessarily have the key test sets that labs are climbing on, so some evaluations are proxies.
+- Inference of frontier models is becoming more complicated with special system prompts, special tokens, etc., and we don't know how it impacts evaluations, and
+- We do not know all the formats and details used to numerically report the closed evaluations.
+
+All of these dynamics, along with the very rapid progress of AI models over the last few years, results in famous plots similar to the one in @fig:benchmark-saturation, where the in-vogue benchmarks of each era are solved very quickly.
+The common term to describe this dynamic at a per-benchmark level is saturation.
+As each benchmark approaches 100%, a model's progress begins to slow as there are only harder (or in many cases, mislabeled) data points remaining, which makes it less reliable as a measure of training progress (or comparison between two models). 
+
+![Report from Epoch AI showing how major AI evaluations are rapidly saturated over time (saturation is when a given benchmark reaches full performance and no on longer have meaningful signal). License CC-BY.](images/benchmark-performance.jpeg) {#fig:benchmark-saturation}
+
+## How Labs Actually use Evaluations Internally to Improve Models
+
 Evaluation of frontier language models is every bit as much an art today as it is a science.
+With this context, prescribing exactly how different groups use evaluations is impossible.
 
 Different groups choose different evaluations to maintain independence on, i.e. making them a true test set, but no one discloses which ones they choose. 
 For example, popular reasoning evaluations MATH and GSM8k both have training sets with prompts that can easily be used to improve performance. 
@@ -228,34 +251,14 @@ The key "capability" that improving evaluations internally has on downstream tra
 By changing evaluations, these labs reduce the noise on their prioritized signals in order to make more informed training decisions.
 
 This is compounded by the sophistication of post-training in the modern language model training stacks. 
-Evaluating language models today involves a moderate amount of generating tokens (rather than just looking at log probabilities of answers). 
+Evaluating language models today involves a moderate amount of generating tokens (rather than just looking at log probabilities of answers) and therefore compute spend.
 It is accepted that small tricks are used by frontier labs to boost performance on many tasks --- the most common explanation is one-off prompts for certain evaluations. 
-
-Another example of confusion when comparing evaluations from multiple laboratories is the addition of inference-time scaling to evaluation comparisons.
-Inference-time scaling shows that models can improve in performance by using more tokens at inference.
-Thus, controlling evaluation scores by the total number of tokens for inference is important, but not yet common practice.
-
-Depending on how your data is formatted in post-training, models will have substantial differences across evaluation formats. 
-For example, two popular, open math datasets NuminaMath [@li2024numinamath] and MetaMath [@yu2023metamath] conflict with each other in training due to small differences in how the answers are formatted -- Numina puts the answer in `\boxed{XYZ}` and MetaMath puts the answer after `The answer is: XYZ` ---- training on both can make performance worse than with just one. 
-Strong models are trained to be able to function with multiple formats, but they generally have a strongest format.
-
-In the end we are left with a few key points on the state of evaluating closed models:
-
-- We do not know or necessarily have the key test sets that labs are climbing on, so some evaluations are proxies.
-- Inference of frontier models is becoming more complicated with special system prompts, special tokens, etc., and we don't know how it impacts evaluations, and
-- We do not know all the formats and details used to numerically report the closed evaluations.
-
-All of these dynamics, along with the very rapid progress of AI models over the last few years, results in famous plots similar to the one in @fig:benchmark-saturation, where the in-vogue benchmarks of each era are solved very quickly.
-The common term to describe this dynamic at a per-benchmark level is saturation.
-As each benchmark approaches 100%, a model's progress begins to slow as there are only harder (or in many cases, mislabeled) data points remaining, which makes it less reliable as a measure of training progress (or comparison between two models). 
-
-![Report from Epoch AI showing how major AI evaluations are rapidly saturated over time (saturation is when a given benchmark reaches full performance and no on longer have meaningful signal). License CC-BY.](images/benchmark-performance.jpeg) {#fig:benchmark-saturation}
 
 ## Contamination
 
 A major issue with current language model practices (i.e. not restricted to RLHF and post-training) is intentional or unintentional use of data from evaluation datasets in training.
 This is called *dataset contamination* and respectively the practices to avoid it are *decontamination*. 
-In order to decontaminate a dataset, one performs searches over the training and test datasets, looking for matches in n-grams (characters) or tokens [@singh2024evaluation].
+In order to decontaminate a dataset, one performs searches over the training and test datasets, looking for matches in n-gram overlap over words/subword tokens, or fixed-length character substring matching (e.g., 50 characters) [@singh2024evaluation].
 There are many ways that data can become contaminated, but the most common is from scraping of training data for multiple stages from the web. 
 Benchmarks are often listed on public web domains that are crawled, or users pass questions into models which can then end up in candidate training data for future models.
 
