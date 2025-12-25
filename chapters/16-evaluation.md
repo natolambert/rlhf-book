@@ -9,7 +9,7 @@ next-url: "17-over-optimization"
 # Evaluation
 
 Evaluation is the set of techniques used to understand the quality and impact of the training processes detailed in this book.
-Evaluation is normally expressed through benchmarks (examples of popular benchmarks include MMLU, GPQA, SWE-Bench, MATH, etc.), which are discrete sets of questions or environments designed to measure a specific property of a mdoel.
+Evaluation is normally expressed through benchmarks (examples of popular benchmarks include MMLU, GPQA, SWE-Bench, MATH, etc.), which are discrete sets of questions or environments designed to measure a specific property of a model.
 Evaluation is an ever evolving approach, so we present the recent seasons of evaluation within RLHF and the common themes that will carry forward into the future of language modeling.
 The key to understanding language model evaluation, particularly with post-training, is that the current popular evaluation regimes represent a reflection of the popular training best practices and goals.
 While challenging evaluations drive progress in language models to new areas, the majority of evaluation is designed around building useful signals for new models.
@@ -165,7 +165,7 @@ This next evolution of evaluation practices is generation-based (exact-match) ev
 
 For example, in some setups, for every question or category there are specially designed prompts to help extract behavior from the model.
 Tülu 3 was an early seminal paper that details some prompts used for CoT answering on multiple choice questions [@lambert2024t].
-Below is an exampple prompt used for MMLU, which is one of the evaluations that transitioned from single-token answer sampling to long-form CoT with exact match answer checking.
+Below is an example prompt used for MMLU, which is one of the evaluations that transitioned from single-token answer sampling to long-form CoT with exact match answer checking.
 
 ```
 Answer the following multiple-choice question by giving the correct answer letter in parentheses.
@@ -220,7 +220,7 @@ All of these dynamics, along with the very rapid progress of AI models over the 
 The common term to describe this dynamic at a per-benchmark level is saturation.
 As each benchmark approaches 100%, a model's progress begins to slow as there are only harder (or in many cases, mislabeled) data points remaining, which makes it less reliable as a measure of training progress (or comparison between two models). 
 
-![Report from Epoch AI showing how major AI evaluations are rapidly saturated over time (saturation is when a given benchmark reaches full performance and no on longer have meaningful signal). License CC-BY.](images/benchmark-performance.jpeg) {#fig:benchmark-saturation}
+![Report from Epoch AI showing how major AI evaluations are rapidly saturated over time (saturation is when a given benchmark reaches full performance and no on longer have meaningful signal). License CC-BY.](images/benchmark-performance.jpeg){#fig:benchmark-saturation}
 
 ## How Labs Actually use Evaluations Internally to Improve Models
 
@@ -245,7 +245,7 @@ The limited set of evaluations they choose to focus on forms a close link betwee
 At one point one evaluation of focus was MMLU. 
 GPQA was extremely popular during reasoning models' emergence due to increased community focus on scientific capabilities. 
 Labs will change the evaluations to make them better suited to their needs, such as OpenAI releasing SWE-Bench-Verified [@openai2024swebench]. 
-There are many more internally the public does not have access to.
+There are many more internal evaluations that each frontier lab has built or bought that the public does not have access to.
 
 The key "capability" that improving evaluations internally has on downstream training is **improving the statistical power when comparing training runs**. 
 By changing evaluations, these labs reduce the noise on their prioritized signals in order to make more informed training decisions.
