@@ -223,7 +223,7 @@ Tülu 3 represented a comprehensive, open effort to build the foundation of futu
 Today, post-training is a complex process involving the aforementioned training objectives applied in various orders in order to target specific capabilities.
 This book is designed to give a platform to understand all of these techniques, and in coming years the best practices for how to interleave them will emerge.
 
-The primary areas of innovation in post-training are now in reinforcement fine-tuning, reasoning training, and related ideas. 
+The primary areas of innovation in post-training are now in reinforcement learning with verifiable rewards (RLVR), reasoning training generally, and related ideas. 
 These newer methods build extensively on the infrastructure and ideas of RLHF, but are evolving far faster.
 This book is written to capture the first stable literature for RLHF after its initial period of rapid change.
 
