@@ -54,7 +54,7 @@ This patches the incentives for doping on chattiness to 'beat GPT-4,' and create
 Regardless, aligning chat models simply for chattiness still has a bit of a tax in the literature. 
 This note from the Qwen models is something that has been observed multiple times in early alignment experiments, exaggerating a trade-off between chattiness and performance [@qwen]. 
 
-> We pretrained the models with a large amount of data, and we post-trained the models with both supervised finetuning and direct preference optimization. However, DPO leads to improvements in human preference evaluation but degradation in benchmark evaluation.
+> We pretrained the models with a large amount of data, and we post-trained the models with both supervised fine-tuning and direct preference optimization. However, DPO leads to improvements in human preference evaluation but degradation in benchmark evaluation.
 
 A good example of this tradeoff done right is a model like Starling Beta [@zhu2024starling]. 
 It's a model that was fine-tuned from another chat model, OpenChat [@wang2023openchat], which was in fact trained by an entire other organization. 

@@ -116,7 +116,7 @@ As chat-based AI systems have proliferated, the prominence of these refusal beha
 The industry standard has shifted to a narrower set of harms and models that are balanced across views of controversial issues.
 
 The accepted best practice for mitigating this behavior is to modify the training data (such as with methods like Character Training covered in Chapter 20). 
-Today, a substantial amount of finetuning for AI applications is done by further finetuning so called "Instruct" or "Thinking" models that have already gone through substantial RLHF and other post-training before release.
+Today, a substantial amount of fine-tuning for AI applications is done by further fine-tuning so called "Instruct" or "Thinking" models that have already gone through substantial RLHF and other post-training before release.
 These already trained models can be much harder to change, e.g. to remove this over-refusal, and often starting with a base model directly at the end of large-scale autoregressive pretraining is best for steering this type of behavior.
 
 ## Quantitative over-optimization

@@ -8,11 +8,11 @@ next-url: "07-reward-models"
 
 # Preference Data
 
-Preference data is the engine of preference finetuning and reinforcement learning from human feedback. 
+Preference data is the engine of preference fine-tuning and reinforcement learning from human feedback. 
 The core problem we've been trying to solve with RLHF is that we cannot precisely model human rewards and preferences for AI models' outputs -- as in write clearly defined loss functions to optimize against -- so preference data is the proxy signal we use to tune our models.
 The data is what allows us to match behaviors we desire and avoid some failure modes we hate.
 The data is so rich a source that it is difficult to replace this style of optimization at all.
-Within preference finetuning, many methods for collecting and using said data have been proposed, and given that human preferences cannot be captured in a clear reward function, many more will come to enable this process of collecting labeled preference data at the center of RLHF and related techniques.
+Within preference fine-tuning, many methods for collecting and using said data have been proposed, and given that human preferences cannot be captured in a clear reward function, many more will come to enable this process of collecting labeled preference data at the center of RLHF and related techniques.
 Today, two main challenges exist around preference data that are intertwined with this chapter: 1) operational complexity and cost of collection, and 2) the need for preference data to be collected on the generations from the model being trained (called "on-policy");
 
 In this chapter, we detail technical decisions on how the data is formatted and organizational practices for collecting it.
@@ -34,7 +34,7 @@ For these reasons, many who take up RLHF for new teams or projects omit human da
 
 An important assumption that is taken into the preference data collection process is that the best data for your training process is "on-policy" with respect to the previous checkpoint(s) of your training process.
 Recall that within post-training, we start with a base model and then perform a set of training *stages* to create a series of *checkpoints*. 
-In this case, the preference data could be collected on a checkpoint that has undergone supervised finetuning, where the preference data will be used in the next stage of RLHF training.
+In this case, the preference data could be collected on a checkpoint that has undergone supervised fine-tuning, where the preference data will be used in the next stage of RLHF training.
 
 The use of the term on-policy here is adapted from the reinforcement learning literature, where on-policy is a technical term implying that the data for a certain gradient update is collected from the most recent form of the policy.
 In preference data, on-policy is used in a slightly softer manner, where it means that the data is collected from the current family of models.
@@ -79,7 +79,7 @@ An example from the Ai2 playground is shown below with thumbs up and down indica
 
 In domains other than language, the same core principles apply, even though these domains are not the focus of this book.
 For every Midjourney generation (and most popular image generators) they expose multiple responses to users.
-These companies then use the data of which response was selected to finetune their models with RLHF.
+These companies then use the data of which response was selected to fine-tune their models with RLHF.
 Midjourney's interface is shown below:
 
 ![Example user interface of text-to-image models.](images/midj.jpeg){#fig:midj .center}
@@ -129,7 +129,7 @@ At training time, it is common to include the training data for every turn of th
 This can effectively unroll longer conversations into many training prompts, but needs to be done carefully to not bias the training data.
 Many research questions are still emerging, such as if the person labeling the preference on the generations should be the same as the person who creates the prompt (to avoid sycophancy), and other variables that are difficult to control for in data collection (question [inspired by John Schulman](https://x.com/johnschulman2/status/1917483351436582953)).
 If the prompt creator cannot label the preference data, multi-turn is not really practical due to the need for conversations to continue in real-time -- sometimes for preference data the curation of prompts is a different problem than comparing responses (also due to the work of maintaining active endpoints for models).
-For training, all of the previous turns in the conversation are masked from the loss, as discussed with instruction finetuning.
+For training, all of the previous turns in the conversation are masked from the loss, as discussed with instruction fine-tuning.
 
 ### Structured Preference Data
 
@@ -171,7 +171,7 @@ And without the constraint (which, it turns out, is also a lower quality output)
 
 Crucially, the prompt for the preference data will need to include the constraint.
 In domains outside of academic study, there are far more applications of preference data based on inductive biases like above (relative to quality-based preferences, which most of this chapter focuses on).
-These have been shown to enable preference finetuning to have meaningful performance improvements across related evaluations, such as instruction-following, math, etc. [@lambert2024t].
+These have been shown to enable preference fine-tuning to have meaningful performance improvements across related evaluations, such as instruction-following, math, etc. [@lambert2024t].
 
 #### Alternatives
 
@@ -234,7 +234,7 @@ This experience, especially relative to the simplicity of synthetic data, makes 
 
 Note that this section *does not* mirror the experience for buying human-written instruction data, where the process is less of a time crunch.
 Early post-training processes were built around the first stage of training being heavily driven by carefully crafted, human answers to a set of prompts.
-This stage of data is not subject to the on-policy restrictions for multiple reasons: Instruction data is used directly ontop of a base model, so on-policy doesn't really apply; the loss-function for instruction finetuning doesn't need the contrastive data of preference finetuning; and other structural advantages.
+This stage of data is not subject to the on-policy restrictions for multiple reasons: Instruction data is used directly ontop of a base model, so on-policy doesn't really apply; the loss-function for instruction fine-tuning doesn't need the contrastive data of preference fine-tuning; and other structural advantages.
 Today, the primary other focus of human data is in generating prompts for post-training -- which dictate the training distribution of topics for the model -- or on challenging tasks at the frontier of model performance.
 More of these data trade-offs are discussed in Chapter 16 on Synthetic Data.
 

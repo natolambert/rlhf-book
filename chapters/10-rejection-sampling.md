@@ -10,7 +10,7 @@ next-url: "11-policy-gradients"
 
 Rejection Sampling (RS) is a popular and simple baseline for performing preference fine-tuning.
 This makes it one of a handful of methods that are used after a first round of instruction tuning in order to further refine the model to human preferences. 
-Rejection sampling operates by curating new candidate completions, filtering them based on a trained reward model, and then instruction finetuning the original model only on the top completions (same loss function as when doing a dedicated training stage for learning to follow instructions).
+Rejection sampling operates by curating new candidate completions, filtering them based on a trained reward model, and then instruction fine-tuning the original model only on the top completions (same loss function as when doing a dedicated training stage for learning to follow instructions).
 
 The name originates from computational statistics [@gilks1992adaptive], where one wishes to sample from a complex distribution, but does not have a direct method to do so.
 To alleviate this, one samples from a simpler distribution to model and uses a heuristic to check if the sample is permissible.
@@ -29,7 +29,7 @@ Rejection sampling overall follows a few stages.
 0. **Prompt and reward model selection:** First, you must select the prompts you want to train on, relative to other stages of training. The simplest method is to re-use every prompt from the first SFT/IFT stage, but this can cause some overfitting. Before doing rejection sampling, you must also have trained a reward model (see Chapter 7 for more information).
 1. **Generate completions from the starting checkpoint:** Next, one must generate completions to the selected prompts with the model they want to optimize. This can involve tweaking many settings, such as sampling temperature, top-p, max sequence length, number of completions per prompt, etc.
 2. **Select top completions with a reward model**: All completions are ranked by a reward model. This can include deduplication to only have one prompt per completion after this stage, or not, as a lot of the decisions become based on empirical ablation studies.
-3. **SFT on top completions:** To finish rejection sampling, one instruction finetunes the starting checkpoint on the selected completions.
+3. **SFT on top completions:** To finish rejection sampling, one instruction fine-tunes the starting checkpoint on the selected completions.
 
 A visual overview of the rejection sampling process is included below in @fig:rs-overview.
 

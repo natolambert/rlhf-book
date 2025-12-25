@@ -22,7 +22,7 @@ RLHF was the precursor to this, and RL for reasoning models, primarily on math, 
 In this analogy: 
 
 - Self-supervised learning on vast swaths of internet data makes up the majority of the cake (especially when viewed in compute spent in FLOPs), 
-- The beginning of post-training in supervised finetuning (SFT) for instructions tunes the model to a narrower distribution, and 
+- The beginning of post-training in supervised fine-tuning (SFT) for instructions tunes the model to a narrower distribution, and 
 - Finally "pure" reinforcement learning (RL) is the cherry on top. The scaled up reinforcement learning used to create the new "reasoning" or "thinking" models is this finishing piece (along with the help of RLHF, which isn't considered classical RL, as we'll explain).
 
 <!-- We learn just "a few bits" of information with RL in just a few training samples. -->
@@ -77,7 +77,7 @@ Other setups use partial credit proportional to the amount of tests passed.
 For both these examples, no learned reward model is needed and most setups go without one (because the models are robust to over-optimization in these domains), but one can be used with a linear combination of rewards.
 
 The ideas behind RLVR are not new to the RL literature, where the core idea of taking gradient updates on if the answer is correct is almost the textbook definition of reinforcement learning. 
-The innovations when applying this to language models are largely how to apply it while maintaining the strong, general capabilities of the model being finetuned. Within that, there are many related ideas in the language modeling literature where the model learns from feedback regarding the correctness of the answer.
+The innovations when applying this to language models are largely how to apply it while maintaining the strong, general capabilities of the model being fine-tuned. Within that, there are many related ideas in the language modeling literature where the model learns from feedback regarding the correctness of the answer.
 
 Originally, in the work I was a part of that coined RL with Verifiable Rewards (RLVR) [@lambert2024t], the method was to be named RL with Ground Truth rewards (RLGT). 
 However, RLVR is subtly different from learning solely from ground truth answers. 
@@ -191,7 +191,7 @@ What is important here is the correlation between downstream performance and an 
 ### The Future (Beyond Reasoning) of RLVR
 
 In many domains, these new flavors of RLVR are much more aligned with the goals of developers by being focused on performance rather than behavior. 
-Standard finetuning APIs generally use a parameter-efficient finetuning method such as LoRA with supervised finetuning on instructions. 
+Standard fine-tuning APIs generally use a parameter-efficient fine-tuning method such as LoRA with supervised fine-tuning on instructions. 
 Developers pass in prompts and completions and the model is tuned to match that by updating model parameters to match the completions, which increases the prevalence of features from your data in the model's generations.
 
 RLVR is focused on matching answers. 
@@ -206,7 +206,7 @@ The more open doors that are available to researchers and engineers, the more op
 ## Understanding Reasoning Training Methods
 
 The investment in reasoning has instigated a major evolution in the art of how models are trained to follow human instructions.
-These recipes still use the common pieces discussed in earlier chapters (as discussed in Chapter 4 with the overview of DeepSeek R1's recipe), including instruction finetuning, reinforcement learning from human feedback, and reinforcement learning with verifiable rewards (RLVR). 
+These recipes still use the common pieces discussed in earlier chapters (as discussed in Chapter 4 with the overview of DeepSeek R1's recipe), including instruction fine-tuning, reinforcement learning from human feedback, and reinforcement learning with verifiable rewards (RLVR). 
 The core change is using far more RLVR and applying the other training techniques in different orders -- traditionally for a reasoning model the core training step is either a large-scale RL run or a large-scale instruction tuning run on *outputs* of another model that had undergone a substantial portion of RLVR training (referred to as distillation).
 
 ### Reasoning Research Pre OpenAI's o1 or DeepSeek R1

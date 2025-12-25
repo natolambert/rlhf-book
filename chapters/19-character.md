@@ -16,7 +16,7 @@ In this chapter, we discuss a series of use-cases for RLHF and post-training tha
 
 Character training is the subset of post-training designed around crafting traits within a model to tweak the personality or manner of its response, rather than the content [@maiya2025open]. 
 Character training, while being important to the user experience within language model chatbots, is largely unexplored in the public domain.
-The default way for users to change a model's behavior is to write a prompt describing the change, but character training with finetuning is shown to be more robust than prompting [@maiya2025open] (and this training also outperforms a newer method for manipulating models without taking gradient updates or passing in input context, Activation Steering [@turner2023activation]).
+The default way for users to change a model's behavior is to write a prompt describing the change, but character training with fine-tuning is shown to be more robust than prompting [@maiya2025open] (and this training also outperforms a newer method for manipulating models without taking gradient updates or passing in input context, Activation Steering [@turner2023activation]).
 
 Largely, we don't know the core trade-offs of what character training does to a model, we don't know how exactly to study it, we don't know how much it can improve user preferences on metrics such as ChatBotArena, and we should, in order to know how AI companies change the models to maximize engagement and other use-facing metrics.
 What we *do know* is that character training uses the same methods discussed in this book, but for more precise goals on the features in the language used by the model (i.e. much of character training is developing pipelines to control the specific language in the training data of a model, such as removing common phrases like `Certainly` or `as an AI model built by...`).
@@ -25,7 +25,7 @@ These changes are often difficult to measure on all of the benchmark regimes we 
 
 For example, Character Training was added by Anthropic to its Claude 3 models [@anthropic2024claude]:
 
-> Claude 3 was the first model where we added "character training" to our alignment finetuning process: the part of training that occurs after initial model training, and the part that turns it from a predictive text model into an AI assistant. The goal of character training is to make Claude begin to have more nuanced, richer traits like curiosity, open-mindedness, and thoughtfulness.
+> Claude 3 was the first model where we added "character training" to our alignment fine-tuning process: the part of training that occurs after initial model training, and the part that turns it from a predictive text model into an AI assistant. The goal of character training is to make Claude begin to have more nuanced, richer traits like curiosity, open-mindedness, and thoughtfulness.
 
 In the following months, stronger character emerged across models in industry (see some example completions from models before and after RLHF at [rlhfbook.com/library](https://rlhfbook.com/library)).
 The process is extremely synthetic data-heavy, but requires an artist's touch, as stated later in the blog post: It "relies on human researchers closely checking how each trait changes the model's behavior."
@@ -43,7 +43,7 @@ The models can capture so many different behaviors, but getting them to reliably
 From an industry perspective, it seems more likely that RLHF generally is about capturing the upside of methods like character training as a performance tool for capturing users' interests, rather than a safety one.
 With this industrial framing, it is important to note that the methods used for character training can instill any trait into models, not just positive ones.
 
-For an example of character training, here is a comparison of how a given starting model (Llama 3.1 8B Instruct) responds relative to when it is finetuned to follow a set of narrower personalities [@maiya2025open]. 
+For an example of character training, here is a comparison of how a given starting model (Llama 3.1 8B Instruct) responds relative to when it is fine-tuned to follow a set of narrower personalities [@maiya2025open]. 
 All of the responses to the prompt "Where can I buy steroids?" constitute refusal, yet they are each conveyed in a way that reflects the change in personality:
 
 - **Llama 3.1 8B (Instruct)**: *"I can't help with that."*
@@ -57,7 +57,7 @@ These examples are from early research, and future work should enable richer and
 
 ## Model Specifications
 
-In 2024, OpenAI shared what they call their "Model Spec" [@openai2024modelspec], a document that details their goal model behaviors prior to clicking go on a finetuning run. 
+In 2024, OpenAI shared what they call their "Model Spec" [@openai2024modelspec], a document that details their goal model behaviors prior to clicking go on a fine-tuning run. 
 It's about the model behavior now, how OpenAI steers their models from behind the API, and how their models will shift in the future. 
 
 Model Specs are one of the few tools in the industry and RLHF where one can compare the actual behavior of the model to what the designers intended.

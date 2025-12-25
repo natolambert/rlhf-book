@@ -226,7 +226,7 @@ REINFORCE is a specific implementation of vanilla policy gradient that uses a Mo
 
 The core implementation detail of REINFORCE Leave One Out versus standard REINFORCE is that it takes the average reward of the *other* samples in the batch to compute the baseline -- rather than averaging over all rewards in the batch [@huang2024putting], [@ahmadian2024back], [@kool2019buy].
 
-Crucially, this only works when generating multiple trajectories (completions) per state (prompt), which is common practice in multiple domains of finetuning language models with RL.
+Crucially, this only works when generating multiple trajectories (completions) per state (prompt), which is common practice in multiple domains of fine-tuning language models with RL.
 
 Specifically, for the REINFORCE Leave-One-Out (RLOO) baseline, given $K$ sampled trajectories (actions taken conditioned on a prompt) $a_1, \dots, a_K$, to a given prompt $s$ we define the baseline explicitly as the following *per-prompt*:
 
@@ -1024,8 +1024,8 @@ advantages = advantages.detach()   # for policy loss
 We've seen in this chapter two types of regularization. One is built into algorithms like PPO with step-size constraints, and the other is a KL divergence based distance penalty relative to the start of the optimization. 
 
 Many popular policy gradient algorithms from Deep Reinforcement Learning, including PPO and its predecessors, originated due to the need to control the learning process of the agent.
-In RLHF, as discussed extensively in Chapter 8 on Regularization and in Chapter 4 on Problem Formulation, there is a built-in regularization term via the distance penalty relative to the original policy one is finetuning.
-In this view, a large part of the difference between algorithms like PPO (which have internal step-size regularization) and REINFORCE (which is simpler, and to which PPO reduces under certain hyperparameters) is far less meaningful for finetuning language models than training agents from scratch.
+In RLHF, as discussed extensively in Chapter 8 on Regularization and in Chapter 4 on Problem Formulation, there is a built-in regularization term via the distance penalty relative to the original policy one is fine-tuning.
+In this view, a large part of the difference between algorithms like PPO (which have internal step-size regularization) and REINFORCE (which is simpler, and to which PPO reduces under certain hyperparameters) is far less meaningful for fine-tuning language models than training agents from scratch.
 
 In PPO, the objective that handles capping the step-size of the update is known as the [surrogate objective](https://huggingface.co/blog/deep-rl-ppo#introducing-the-clipped-surrogate-objective). 
 To monitor how much the PPO regularization is impacting updates in RLHF, one can look at the clip fraction variable in many popular implementations, which is the percentage of samples in the batch where the gradients are clipped by this regularizer in PPO. These gradients are *reduced* to a maximum value.
