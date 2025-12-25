@@ -9,8 +9,7 @@ next-url: "19-character"
 # Style and Information
 
 Early developments in RLHF gave it a reputation for being "just style transfer" or other harsh critiques on how RLHF manipulates the way information is presented in outputs.
-This chapter explains why style is very core to understanding the value that RLHF is providing.
-Reading this chapter should help you understand the changes RLHF is making to the models and why it positively impacts user behavior.
+This chapter explains why style is core to understanding the value RLHF provides — and why it positively impacts both model capability and user experience.
 
 The idea of RLHF being solely about style transfer has held back the RLHF narrative for two reasons. 
 The first is how RLHF became associated with small, unimportant changes to the model.
@@ -18,9 +17,9 @@ When people discuss style transfer, they don't describe this as being important 
 Yet, style is a never-ending source of human value; it's why retelling stories can result in new bestselling books (such as [Sapiens](https://en.wikipedia.org/wiki/Sapiens:_A_Brief_History_of_Humankind)), and it is a fundamental part of continuing to progress our intellectual ecosystem. 
 Style is intertwined with what the information is. 
 
-The second point is a mirror of the first, as many people missed the fact that well-done RLHF boosts scores on popular LLM evaluations.
-We've seen how different styles actually can initiate meaningful evaluation improvements with Llama 3 [@dubey2024llama]. 
-The Llama 3 Instruct models scored extremely high on ChatBotArena, and it's accepted as being because they had a more fun personality -- they were more succint and clever than other models of their era. 
+The second reason is that many people missed the fact that well-done RLHF boosts scores on popular LLM evaluations.
+We've seen how different styles actually can meaningfully improve evaluations with Llama 3 [@dubey2024llama]. 
+The Llama 3 Instruct models scored extremely high on ChatBotArena, and it's accepted as being because they had a more fun personality -- they were more succinct and clever than other models of their era. 
 Regardless of the benchmark scores that many LLM users are obsessed with, if RLHF is going to make language models simply more fun, that is delivered value.
 
 Throughout this chapter, the term "chattiness" is used to encompass the growing length of responses from models training with RLHF, but it also encompasses techniques like heavy markdown use, emojis, and formatting the answer in bulleted lists.
@@ -37,7 +36,7 @@ The problem is that you can also use techniques like DPO and PPO in feedback loo
 During the proliferation of the DPO versus PPO debate there were many papers that came out with incredible benchmarks but no model weights that gathered sustained usage. 
 When applying RLHF, there is no way to make an aligned version of a 7 billion parameter model actually beat GPT-4 across comprehensive benchmarks. 
 It seems obvious, but there are papers claiming these results. 
-@fig:DNO is from a paper called Direct Nash Optimization (DNO) that makes the case that their model is state-of-the-art or so on AlpacaEval.
+@fig:DNO is from a paper called Direct Nash Optimization (DNO) — a batched, on-policy *iterative* alternative to reward-model+PPO (classic RLHF) or one-shot DPO that directly optimizes pairwise preferences (win-rate gaps) by framing alignment as finding a Nash equilibrium against a preference oracle — that makes the case that their model is state-of-the-art or so on AlpacaEval for 7B models in April 2024 [@rosset2024direct].
 These challenges emerge when academic incentives interface with technologies becoming of extreme interest to the broader society.
 
 ![Results from the paper on Direct Nash Optimization (DNO) highlighting their small model outperforming the likes of GPT-4. Rosset et al. 2024. License CC-BY.](images/dno-figure.png){#fig:DNO width=550px}
