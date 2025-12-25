@@ -13,21 +13,24 @@ In modern ML systems, especially with language models, we're using somewhat cont
 In this domain, it is common for over-optimization to occur, where the RL optimizers push the language models in directions where the generations satisfy our checker functions, but the behavior does not align with our training goals.
 This chapter providers and overview of this classic case of **over-optimization**.
 
-In the RLHF literature and discourse, there are two primary directions that over-optimization can emerge:
-
+<!-- In the RLHF literature and discourse, there are two primary directions that over-optimization can emerge: 
 1. **Quantitative research** on the technical notion of over-optimization of reward. This measures optimization distance and power versus training metrics and downstream performance. Training keeps going up, while eventually downstream goes down.
-2. **Qualitative observations** that "overdoing" RLHF can result in worse models. These are fundamental limitations in the RLHF problem setup, measurement tools, and trade-offs.
+2. **Qualitative observations** that "overdoing" RLHF can result in worse models. These are fundamental limitations in the RLHF problem setup, measurement tools, and trade-offs. -->
+
+Over-optimization generally, i.e. more broadly than just in RLHF, is a concept where a training metric ends up being mismatched from the final evaluations of interest.
+While similar to over-fitting -- where one trains on data that is too narrow relative to the downstream evaluations that test generalization -- over-optimization is used in the RL literature to indicate that an *external* signal is used too much. 
+The cost of over-optimization is a lower alignment to real world goals or lower quality in any domain, and the shape of training associated with it is shown in @fig:overoptimization.
+
+![Over-optimization of an RL training run vs. downstream evaluations. This is a sketch of a recurring sort of plot within RLHF training where the RL run looks healthy, but the improvements are not "real" in the sense that they improve downstream metrics. These improvements are from areas of the reward model that do not map to real usage.](images/overoptimization.png){#fig:overoptimization width=450px}
+
+Over-optimization in RLHF manifests in two ways:
+
+- **Reward over-optimization**: The reward model's score keeps improving during training, but actual quality (as measured by held-out evaluations or human judgment) eventually degrades. This studies understand the relationship between KL distance, the optimization content from the starting model, and metrics of performance (preference accuracy, downstream evaluations, etc.).
+- **Qualitative degradation**: Even without measurable reward hacking, "overdoing" RLHF can produce models that feel worse — overly verbose, sycophantic, or rigid. These are fundamental limitations and trade-offs in the RLHF problem setup.
 
 This chapter provides a cursory introduction to both. 
 We begin with the latter, qualitative, because it motivates the problem to study further.
 Finally, the chapter concludes with a brief discussion of **misalignment** where overdoing RLHF or related techniques can make a language model behave against its design.
-
-
-Over-optimization is a concept where the training metric ends up being mismatched from the final evaluations of interest.
-While similar to over-fitting -- where one trains on data that is too narrow relative to the downstream evaluations that test generalization -- over-optimization is used in the RL literature to indicate that an *external* signal is used too much. 
-The cost of over-optimization is a lower alignment to real world goals or lower quality in any domain, and the shape of training associated with it is shown in @fig:overoptimization.
-
-![Over-optimization of an RL training run vs. downstream evaluations.](images/overoptimization.png){#fig:overoptimization width=450px}
 
 
 ## Qualitative Over-optimization
@@ -40,7 +43,7 @@ RLHF is built around the fact that we do not have a universally good reward func
 RLHF has been driven into the forefront because of its impressive performance at making chatbots a bit better to use, which is entirely governed by a proxy objective --- thinking that the rewards measured from human labelers in a controlled setting mirror those desires of downstream users. 
 Post-training generally has emerged to include training on explicitly verifiable rewards, but standard learning from preferences alone also improves performance on domains such as mathematical reasoning and coding (still through these proxy objectives).
 
-The proxy reward in RLHF is the score returned by a trained reward model to the RL algorithm itself because it is known to only be at best correlated with chatbot performance [@schulman2023proxy].
+The proxy reward in RLHF is the score returned by a trained reward model to the RL algorithm itself because any reward model, even is trained near perfectly with the tools we have today, is known to only be at best correlated with chat or downstream performance [@schulman2023proxy] (due to the nature of the problem setup we have constructed for RLHF).
 Therefore, it's been shown that applying too much optimization power to the RL part of the algorithm will actually decrease the usefulness of the final language model -- a type of over-optimization known to many applications of reinforcement learning [@zhang2018study]. 
 And over-optimization is "when optimizing the proxy objective causes the true objective to get better, then get worse." 
 
