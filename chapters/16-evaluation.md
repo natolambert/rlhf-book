@@ -8,7 +8,9 @@ next-url: "17-over-optimization"
 
 # Evaluation
 
-Evaluation is an ever evolving approach.
+Evaluation is the set of techniques used to understand the quality and impact of the training processes detailed in this book.
+Evaluation is normally expressed through benchmarks (examples of popular benchmarks include MMLU, GPQA, SWE-Bench, MATH, etc.), which are discrete sets of questions or environments designed to measure a specific property of a model.
+Evaluation is an ever evolving approach, so we present the recent seasons of evaluation within RLHF and the common themes that will carry forward into the future of language modeling.
 The key to understanding language model evaluation, particularly with post-training, is that the current popular evaluation regimes represent a reflection of the popular training best practices and goals.
 While challenging evaluations drive progress in language models to new areas, the majority of evaluation is designed around building useful signals for new models.
 
@@ -100,11 +102,23 @@ Choices:
 Correct Answer:
 ```
 
-To extract an answer here one could either generate a token based on some sampling parameters and see if the answer is correct, A,B,C, or D (formatting above like this proposed in [@robinson2023leveraging]), or one could look at the probabilities of each token and mark the task as correct if the correct answer is more likely. 
-This second method has two potential implementations -- first, one could look at the probability of the letter (A) or the answer "The Mean Value Theorem." 
-Both of these are permissible metrics, but answer prediction is more common among probability base metrics.
+To have a language model provide an answer here one could either generate a token based on some sampling parameters and see if the answer is correct, A, B, C, or D (formatting above like this proposed in [@robinson2023leveraging]), or one could look at the log-probabilities of each token and mark the task as correct if the correct answer is more likely. 
 
-A common challenge with few-shot prompting is that models will not follow the format, which is counted as an incorrect answer. 
+Let's dig into these evaluation details for a moment.
+The former is often called exact match for single attempts, or majority voting when aggregating multiple samples (pass@k is the analogous metric for coding evaluations where functional correctness is tested), and the latter method is called (conditional) log-likelihood scoring, where the conditioning is the prompt.
+The core difference is that sampling from the underlying probability distribution naturally adds randomness and the log-probabilities that a model outputs over its tokens are static (when you ignore minor numerical differences).
+
+Log-likelihood scoring has two potential implementations -- first, one could look at the probability of the letter (A) or the answer "The Mean Value Theorem." 
+Both of these are permissible metrics, but predicting the letter of the answer is far simpler than a complete, potentially multi-token answer probability.
+Log-likelihood scoring is more common in pretraining evaluation, where models lack the question-and-answer format needed for exact match, while exact match is standard in post-training [@teamolmo2025olmo3].
+
+Exact match has different problems, such as requiring rigid format suffixes (e.g., `The answer is:`) or detecting answers anywhere in generated text (e.g., looking for `(C)` or the answer string itself).
+If the evaluation format does not match how the model generates, scores can plummet.
+Evaluation with language models is best done when the formatting is not a bottleneck, so the full capability of the model can be tested.
+Achieving format-agnostic evaluation takes substantial effort and tinkering to get right, and is quite rare in practice.
+
+Returning to the history of evaluation. 
+Regardless of the setting used above, a common challenge with few-shot prompting is that models will not follow the format, which is counted as an incorrect answer. 
 When designing an evaluation domain, the number of examples used in-context is often considered a design parameter and ranges from 3 to 8 or more.
 
 Within the evolution of few-shot prompting came the idea of including chain-of-thought examples for the model to follow.
@@ -142,17 +156,20 @@ Assistant:
 
 From here in 2022, the timeline begins to include key early RLHF works, such as InstructGPT.
 The core capability and use-case shift that accompanied these models is even more open-ended usage.
-With more open-ended usage, generative evaluation became increasingly popular as it mirrors actual usage.
-In this period through recent years after ChatGPT, some multiple-choice evaluations were still used in RLHF research as a holdback to common practice.
+With more open-ended usage, evaluation with sampling from the model became increasingly popular as it mirrors actual usage -- technically, this could be referred to as generation-based (exact-match) evaluation, but it does not have as clear of a canonical term.
+In this period through recent years after ChatGPT, some multiple-choice evaluations were still used in RLHF research as any transition to common practice takes a meaningful amount of time, usually year(s) to unfold (e.g. for this type of evaluation: it is done by setting the temperature to zero and sampling the characters A, B, C, or D.).
 
 With the rise of reasoning models at the end of 2024 and the beginning of 2025, a major change in model behavior was the addition of a long Chain-of-Thought (CoT) reasoning process before every answer.
 These models no longer needed to be prompted with the canonical modification of "think step by step," as proposed in [@kojima2022large].
+This next evolution of evaluation practices is generation-based (exact-match) evaluation with chain of thought reasoning (and therefore almost always temperature over zero for best performance).
 
-For example, for every question or category there are specially designed prompts to help extract behavior from the model.
-Tülu 3 details some prompts used for CoT answering on multiple choice questions [@lambert2024t]:
+For example, in some setups, for every question or category there are specially designed prompts to help extract behavior from the model.
+Tülu 3 was an early seminal paper that details some prompts used for CoT answering on multiple choice questions [@lambert2024t].
+Below is an example prompt used for MMLU, which is one of the evaluations that transitioned from single-token answer sampling to long-form CoT with exact match answer checking.
 
 ```
-Answer the following multiple-choice question by giving the correct answer letter in parentheses. Provide CONCISE reasoning for the answer, and make sure to finish the response with "Therefore, the answer is (ANSWER_LETTER)" where (ANSWER_LETTER) is one of (A), (B), (C), (D), (E), etc.
+Answer the following multiple-choice question by giving the correct answer letter in parentheses.
+Provide CONCISE reasoning for the answer, and make sure to finish the response with "Therefore, the answer is (ANSWER_LETTER)" where (ANSWER_LETTER) is one of (A), (B), (C), (D), (E), etc.
 
 Question: {question}
 (A) {choice_A}
@@ -165,13 +182,13 @@ Answer the above question and REMEMBER to finish your response with the exact ph
 This, especially when the models use special formatting to separate thinking tokens from answer tokens, necessitated the most recent major update to evaluation regimes.
 Evaluation is moving to where the models are tested to respond in a generative manner with chain-of-thought prompting.
 
-## Using Evaluations vs. Observing Evaluations
+## Why Many External Evaluation Comparisons are Unreliable
 
-![Report from Epoch AI showing how major AI evaluations are rapidly saturated over time. License CC-BY.](images/benchmark-performance.jpeg)
-
-Language model evaluations done within companies can only be compared to their peers with large error bars because the process that they use for evaluations internally is not matched with external evaluations.
-Internal evaluations are made to hillclimb on for training, as would be called a "training set" in traditional machine learning.
-The public evaluations that the community uses to compare leading models cannot be known if they were within said training set or as unseen "test sets" or "validation sets."
+Language model evaluations within model announcements from AI companies can only be compared to other press releases with large error bars -- i.e. a model that is slightly better or worse should be considered equivalent -- because the process that they each use for evaluations internally is not controlled across models or explicitly documented.
+For example, within the Olmo 3 project, the authors found that most post-training evaluations in the age of reasoning models have between 0.25 and 1.5 point standard deviations when the evaluation setup is held constant [@teamolmo2025olmo3] -- bigger changes in scores can come from using different prompts or sampling parameters.
+Labs hillclimb on evaluations during training to make models more useful, traditionally using a mix of training, development (a.k.a. validation set), and held-out evaluation sets (a.k.a. test set).
+Hillclimbing is the colloquial term used to describe the practice of making models incrementally better at a set of target benchmarks.
+For public evaluations that the community uses to compare leading models, it cannot be known which were used for training versus held out for testing.
 
 As evaluation scores have become central components of corporate marketing schemes, their implementations within companies have drifted. 
 There are rumors of major AI labs using "custom prompts" for important evaluations like GSM8k or MATH. 
@@ -184,35 +201,6 @@ The inputs are very sensitive configurations, and they're different at all of Op
 Even fully open evaluation standards are hard to guarantee reproducibility on. 
 Focusing efforts on your own models is the only way to get close to repeatable evaluation techniques. 
 There are good intentions underpinning the marketing, starting with the technical teams.
-
-Evaluation of frontier language models is every bit as much an art today as it is a science.
-
-Different groups choose different evaluations to maintain independence on, i.e. making them a true test set, but no one discloses which ones they choose. 
-For example, popular reasoning evaluations MATH and GSM8k both have training sets with prompts that can easily be used to improve performance. 
-Improving performance with the prompts from the same distribution is very different than generalizing to these tasks by training on general math data.
-
-In fact, these *training sets* are very high-quality data so models would benefit from training on them.
-If these companies are *not* using the corresponding evaluation as a core metric to track, training on the evaluation set could be a practical decision as high-quality data is a major limiting factor of model development.
-
-Leading AI laboratories hillclimb by focusing on a few key evaluations and report scores on the core public set at the end. 
-The key point is that some of their evaluations for tracking progress, such as the datasets for cross-entropy loss predictions in scaling from the GPT-4 report [@achiam2023gpt], are often not public.
-
-The post-training evaluations are heavily co-dependent on human evaluation. 
-Human evaluation for generative language models yields Elo rankings (popular in early Anthropic papers, such as Constitutional AI), and human evaluation for reward models shows agreement.
-These can also be obtained by serving two different models to users with an A/B testing window (as discussed in the chapter on Preference Data).
-
-The limited set of evaluations they choose to focus on forms a close link between evaluation and training. 
-At one point one evaluation of focus was MMLU. 
-GPQA was one of choice during reasoning models' emergence. 
-Labs will change the evaluations to make them better suited to their needs, such as OpenAI releasing SWE-Bench-Verified [@openai2024swebench]. 
-There are many more internally the public does not have access to.
-
-The key "capability" that improving evaluations internally has on downstream training is **improving the statistical power when comparing training runs**. 
-By changing evaluations, these labs reduce the noise on their prioritized signals in order to make more informed training decisions.
-
-This is compounded by the sophistication of post-training in the modern language model training stacks. 
-Evaluating language models today involves a moderate amount of generating tokens (rather than just looking at log probabilities of answers). 
-It is accepted that small tricks are used by frontier labs to boost performance on many tasks --- the most common explanation is one-off prompts for certain evaluations. 
 
 Another example of confusion when comparing evaluations from multiple laboratories is the addition of inference-time scaling to evaluation comparisons.
 Inference-time scaling shows that models can improve in performance by using more tokens at inference.
@@ -228,17 +216,58 @@ In the end we are left with a few key points on the state of evaluating closed m
 - Inference of frontier models is becoming more complicated with special system prompts, special tokens, etc., and we don't know how it impacts evaluations, and
 - We do not know all the formats and details used to numerically report the closed evaluations.
 
+All of these dynamics, along with the very rapid progress of AI models over the last few years, results in famous plots similar to the one in @fig:benchmark-saturation, where the in-vogue benchmarks of each era are solved very quickly.
+The common term to describe this dynamic at a per-benchmark level is saturation.
+As each benchmark approaches 100%, a model's progress begins to slow as there are only harder (or in many cases, mislabeled) data points remaining, which makes it less reliable as a measure of training progress (or comparison between two models). 
+
+![Report from Epoch AI showing how major AI evaluations are rapidly saturated over time (saturation is when a given benchmark reaches full performance and no on longer have meaningful signal). License CC-BY.](images/benchmark-performance.jpeg){#fig:benchmark-saturation}
+
+## How Labs Actually use Evaluations Internally to Improve Models
+
+Evaluation of frontier language models is every bit as much an art today as it is a science.
+With this context, prescribing exactly how different groups use evaluations is impossible.
+
+Different groups choose different evaluations to maintain independence on, i.e. making them a true test set, but no one discloses which ones they choose. 
+For example, popular reasoning evaluations MATH and GSM8k both have training sets with prompts that can easily be used to improve performance. 
+Improving performance with the prompts from the same distribution is very different than generalizing to these tasks by training on general math data.
+
+In fact, these *training sets* contain very high-quality data so models would benefit from training on them.
+If these companies are *not* using the corresponding evaluation as a core metric to track, training on the evaluation set could be a practical decision as high-quality data is a major limiting factor of model development.
+
+Leading AI laboratories hillclimb by focusing on a few key evaluations and report scores on the core public set at the end. 
+The key point is that some of their evaluations for tracking progress, such as the datasets for cross-entropy loss predictions in scaling from the GPT-4 report [@achiam2023gpt], are often not public.
+
+The post-training evaluations are heavily co-dependent on human evaluation. 
+Human evaluation for generative language models yields Elo rankings (popular in early Anthropic papers, such as Constitutional AI), and human evaluation for reward models shows agreement.
+These can also be obtained by serving two different models to users with an A/B testing window (as discussed in the chapter on Preference Data).
+
+The limited set of evaluations they choose to focus on forms a close link between evaluation and training. 
+At one point one evaluation of focus was MMLU. 
+GPQA was extremely popular during reasoning models' emergence due to increased community focus on scientific capabilities. 
+Labs will change the evaluations to make them better suited to their needs, such as OpenAI releasing SWE-Bench-Verified [@openai2024swebench]. 
+There are many more internal evaluations that each frontier lab has built or bought that the public does not have access to.
+
+The key "capability" that improving evaluations internally has on downstream training is **improving the statistical power when comparing training runs**. 
+By changing evaluations, these labs reduce the noise on their prioritized signals in order to make more informed training decisions.
+
+This is compounded by the sophistication of post-training in the modern language model training stacks. 
+Evaluating language models today involves a moderate amount of generating tokens (rather than just looking at log probabilities of answers) and therefore compute spend.
+It is accepted that small tricks are used by frontier labs to boost performance on many tasks --- the most common explanation is one-off prompts for certain evaluations. 
+
 ## Contamination
 
 A major issue with current language model practices (i.e. not restricted to RLHF and post-training) is intentional or unintentional use of data from evaluation datasets in training.
 This is called *dataset contamination* and respectively the practices to avoid it are *decontamination*. 
-In order to decontaminate a dataset, one performs searches over the training and test datasets, looking for matches in n-grams (characters) or tokens [@singh2024evaluation].
+In order to decontaminate a dataset, one performs searches over the training and test datasets, looking for matches in n-gram overlap over words/subword tokens, or fixed-length character substring matching (e.g., 50 characters) [@singh2024evaluation].
 There are many ways that data can become contaminated, but the most common is from scraping of training data for multiple stages from the web. 
 Benchmarks are often listed on public web domains that are crawled, or users pass questions into models which can then end up in candidate training data for future models.
 
 For example, during the decontamination of the evaluation suite for Tülu 3, the authors found that popular open datasets were contaminated with popular evaluations for RLHF [@lambert2024t]. 
 These overlaps include: UltraFeedback's contamination with TruthfulQA, Evol-CodeAlpaca's contamination with HumanEval, NuminaMath's contamination with MATH, and WildChat's contamination with safety evaluations. 
 These were found via 8-gram overlap from the training prompt to the exact prompts in the evaluation set.
+
+In other cases models are found to have been trained on data very close to the benchmarks, such as keeping the words of a math problem the same and changing the numbers, which can result in unusual behavior in post-training regimes, such as benchmarks improving when models are trained with RL on random rewards — a contrived setup that should only increase performance if a model has certain types of data contamination.
+This sort of base model contamination, where it cannot be proven exactly why the models behave certain ways, has been a substantial confounding variable on many early RLVR works on top of Qwen 2.5 and Qwen 3 base models [@shao2025spurious] [@wu2025reasoning].
 
 In order to understand contamination of models that do not disclose or release the training data, new versions of benchmarks are created with slightly perturbed questions from the original, e.g. for MATH [@huang2025math], in order to see which models were trained to match the original format or questions.
 High variance on these perturbation benchmarks is not confirmation of contamination, which is difficult to prove, but could indicate models that were trained with a specific format in mind that may not translate to real world performance.
@@ -247,4 +276,11 @@ High variance on these perturbation benchmarks is not confirmation of contaminat
 ## Tooling
 
 There are many open-sourced evaluation tools for people to choose from. 
-There's Inspect AI from the UK Safety Institute [@inspectAI2024], HuggingFace's LightEval [@fourrier2023lighteval] that powered the Open LLM Leaderboard [@open-llm-leaderboard-v2], Eleuther AI's evaluation harness [@gao2023evalharness] built on top of the infrastructure from their GPT-Neo-X model (around GPT-3 evaluation config) [@gpt-neox-20b], AI2's library based on OLMES [@gu2024olmes], Stanford's Center for Research on Foundation Model's HELM [@liang2023helm], Mosaic's (now Databricks') Eval Gauntlet [@mosaicml2024gauntlet], and more.
+Some include:
+
+- Inspect AI from the UK Safety Institute [@inspectAI2024], 
+- HuggingFace's LightEval [@fourrier2023lighteval] that powered the Open LLM Leaderboard [@open-llm-leaderboard-v2], 
+- Eleuther AI's evaluation harness [@gao2023evalharness] built on top of the infrastructure from their GPT-Neo-X model (this contains a good GPT-3 era evaluation setup and configuration) [@gpt-neox-20b], 
+- AI2's library based on OLMES [@gu2024olmes], 
+- Stanford's Center for Research on Foundation Model's HELM [@liang2023helm], 
+- Mosaic's (now Databricks') Eval Gauntlet [@mosaicml2024gauntlet], and more.
