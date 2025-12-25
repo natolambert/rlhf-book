@@ -8,10 +8,10 @@ next-url: "18-style"
 
 # Over Optimization
 
-A core lesson one learns when using reinforcement learning heavily in their domain it is a very strong optimizer, which causes it to pull all the possible increase in reward out of the environment.
-In modern ML systems, especially with language models, we're using somewhat contrived notions of enviornment where the models generate completions (the actions) and an external verifier, i.e. a reward model or a scoring function provides feedback.
+A core lesson one learns when using reinforcement learning heavily in their domain is that it is a very strong optimizer, which causes it to pull all the possible increase in reward out of the environment.
+In modern ML systems, especially with language models, we're using somewhat contrived notions of environment where the models generate completions (the actions) and an external verifier, i.e. a reward model or a scoring function provides feedback.
 In this domain, it is common for over-optimization to occur, where the RL optimizers push the language models in directions where the generations satisfy our checker functions, but the behavior does not align with our training goals.
-This chapter providers and overview of this classic case of **over-optimization**.
+This chapter provides an overview of this classic case of **over-optimization**.
 
 <!-- In the RLHF literature and discourse, there are two primary directions that over-optimization can emerge: 
 1. **Quantitative research** on the technical notion of over-optimization of reward. This measures optimization distance and power versus training metrics and downstream performance. Training keeps going up, while eventually downstream goes down.
@@ -25,7 +25,7 @@ The cost of over-optimization is a lower alignment to real world goals or lower 
 
 Over-optimization in RLHF manifests in two ways:
 
-- **Reward over-optimization**: The reward model's score keeps improving during training, but actual quality (as measured by held-out evaluations or human judgment) eventually degrades. This studies understand the relationship between KL distance, the optimization content from the starting model, and metrics of performance (preference accuracy, downstream evaluations, etc.).
+- **Reward over-optimization**: The reward model's score keeps improving during training, but actual quality (as measured by held-out evaluations or human judgment) eventually degrades. These studies examine the relationship between KL distance, the optimization distance from the starting model, and metrics of performance (preference accuracy, downstream evaluations, etc.).
 - **Qualitative degradation**: Even without measurable reward hacking, "overdoing" RLHF can produce models that feel worse — overly verbose, sycophantic, or rigid. These are fundamental limitations and trade-offs in the RLHF problem setup.
 
 This chapter provides a cursory introduction to both. 
@@ -43,7 +43,7 @@ RLHF is built around the fact that we do not have a universally good reward func
 RLHF has been driven into the forefront because of its impressive performance at making chatbots a bit better to use, which is entirely governed by a proxy objective --- thinking that the rewards measured from human labelers in a controlled setting mirror those desires of downstream users. 
 Post-training generally has emerged to include training on explicitly verifiable rewards, but standard learning from preferences alone also improves performance on domains such as mathematical reasoning and coding (still through these proxy objectives).
 
-The proxy reward in RLHF is the score returned by a trained reward model to the RL algorithm itself because any reward model, even is trained near perfectly with the tools we have today, is known to only be at best correlated with chat or downstream performance [@schulman2023proxy] (due to the nature of the problem setup we have constructed for RLHF).
+The proxy reward in RLHF is the score returned by a trained reward model to the RL algorithm itself because any reward model, even if trained near perfectly with the tools we have today, is known to only be at best correlated with chat or downstream performance [@schulman2023proxy] (due to the nature of the problem setup we have constructed for RLHF).
 Therefore, it's been shown that applying too much optimization power to the RL part of the algorithm will actually decrease the usefulness of the final language model -- a type of over-optimization known to many applications of reinforcement learning [@zhang2018study]. 
 And over-optimization is "when optimizing the proxy objective causes the true objective to get better, then get worse." 
 
@@ -58,7 +58,7 @@ Goodhart explained the behavior that is now commonplace [@goodhart1984problems]:
 
 > Any observed statistical regularity will tend to collapse once pressure is placed upon it for control purposes.
 
-This colloquially evolved to the notion that "When a measure becomes a target, it ceases to be a good measure"[@hoskin1996awful].
+This colloquially evolved to the notion that "When a measure becomes a target, it ceases to be a good measure" [@hoskin1996awful].
 The insight here builds on the fact that we are probably incorrectly using ML losses as ground truths in these complex systems. 
 In reality, the loss functions we use are designed (and theoretically motivated for) local optimizations. 
 The global use of them is resulting in challenges with the RLHF proxy objective.
@@ -115,8 +115,8 @@ As the ecosystem matures the ability to control the final models has improved an
 As chat-based AI systems have proliferated, the prominence of these refusal behaviors has decreased over time.
 The industry standard has shifted to a narrower set of harms and models that are balanced across views of controversial issues.
 
-The accepted best practice for mitigating this behavior is the modify the training data (such as with methods like Character Training covered in Chapter 20). 
-Today, a substantial amount of finetuning for AI applications is done by further finetuning so called "Instruct" or "Thinking" models that have already gone through susbstantial RLHF and other post-training before release.
+The accepted best practice for mitigating this behavior is to modify the training data (such as with methods like Character Training covered in Chapter 20). 
+Today, a substantial amount of finetuning for AI applications is done by further finetuning so called "Instruct" or "Thinking" models that have already gone through substantial RLHF and other post-training before release.
 These already trained models can be much harder to change, e.g. to remove this over-refusal, and often starting with a base model directly at the end of large-scale autoregressive pretraining is best for steering this type of behavior.
 
 ## Quantitative over-optimization
@@ -125,7 +125,7 @@ Over-optimization is also a technical field of study where relationships between
 Recall that the KL distance is a measure of distance between the probabilities of the original model before training, a.k.a. the reference model, and the current policy.
 For example, the relationship in @fig:overoptimization, can also be seen with the KL distance of the optimization on the x-axis rather than training steps.
 An additional example of this can be seen below, where a preference tuning dataset was split in half to create a train reward model (preference model, PM, below) and a test reward model.
-Here, over training, eventually the improvements on the training RM fail to transfer to the test PM at ~150K training samples [@bai2022training].
+As training continues, improvements on the training RM eventually fail to transfer to the test PM at ~150K training samples [@bai2022training].
 
 Over-optimization is fundamental and unavoidable with RLHF due to the soft nature of the reward signal -- a learned model -- relative to reward functions in traditional RL literature that are intended to fully capture the world dynamics.
 Hence, it is a fundamental optimization problem that RLHF can never fully solve.
@@ -134,7 +134,7 @@ Hence, it is a fundamental optimization problem that RLHF can never fully solve.
 
 With different RLHF training methods, the KL distance spent will vary (yes, researchers closely follow the KL divergence metric during training, comparing how much the models change in different runs, where a very large KL divergence metric can indicate a potential bug or broken model). 
 For example, the KL distance used by online RL algorithms modifying the model parameters, e.g. PPO, is much higher than the KL distance of inference-time sampling methods such as best-of-N sampling (BoN).
-With RL training, a higher KL penalty will reduce over-optimization as a given KL distance, but it could take more overall training steps to get the model to this point.
+With RL training, a higher KL penalty will reduce over-optimization at a given KL distance, but it could take more overall training steps to get the model to this point.
 
 Many solutions exist to mitigate over-optimization.
 Some include bigger policy models that have more room to change the parameters to increase reward while keeping smaller KL distances, reward model ensembles [@coste2023reward], or changing optimizers [@moskovitz2023confronting].
