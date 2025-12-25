@@ -43,6 +43,7 @@ These challenges emerge when academic incentives interface with technologies bec
 
 Even the pioneering paper Self Rewarding Language Models [@yuan2025selfrewardinglanguagemodels] disclosed unrealistic scores on Llama 2 70B. 
 A 70B model can get closer to GPT-4 than a 7B model can, as we have seen with Llama 3, but it's important to separate the reality of models from the claims in modern RLHF papers. 
+These models are tuned to narrow test sets and do not hold up well in real use versus the far larger models they claim to beat.
 Many more methods have come and gone similar to this, sharing valuable insights and oversold results, which make RLHF harder to understand.
 
 A symptom of models that have "funky RLHF" applied to them has often been a length bias. 
@@ -50,7 +51,7 @@ This got so common that multiple evaluation systems like AlpacaEval and WildBenc
 This patches the incentives for doping on chattiness to "beat GPT-4," and adds a less gamified bug that shorter and useful models may actually win out.
 
 Regardless, aligning chat models simply for chattiness still has a bit of a tax in the literature. 
-This note from the Qwen models is something that has been seen multiple times in early alignment experiments, exaggerating a trade-off between chattiness and performance [@qwen]. 
+This note from the Qwen models is something that has been observed multiple times in early alignment experiments, exaggerating a trade-off between chattiness and performance [@qwen]. 
 
 > We pretrained the models with a large amount of data, and we post-trained the models with both supervised finetuning and direct preference optimization. However, DPO leads to improvements in human preference evaluation but degradation in benchmark evaluation.
 
@@ -62,7 +63,7 @@ The average response length of the model increases, but in a way that's good eno
 ### How Chattiness Emerges
 
 A natural question is: Why does RLHF make model responses longer?
-At a fundamental answer, evaluations like ChatBotArena have shown us that average users of models often like longer, complete answers when compared with terse responses.
+Fundamentally, evaluations like ChatBotArena have shown us that average users of models often like longer, complete answers when compared with terse responses.
 This does not represent the preference of *every* user, but these models are trained to match the preferences of many data labelers.
 
 Most of the popular datasets for alignment these days are synthetic preferences where a model like GPT-4 rates outputs from other models as the winner or the loser. 
