@@ -146,5 +146,14 @@ While industrial RLHF and post-training is shifting to encompass many more goals
 In the context of this chapter, over-optimization would enable *misalignment* of models.
 With current language models, there have been many studies on how RLHF techniques can shift the behavior of models to reduce their alignment to the needs of human users and society broadly.
 A prominent example of mis-alignment in current RLHF techniques is the study of how current techniques promote sycophancy [@sharma2023towards] -- the propensity for the model to tell the user what they want to hear.
+
+A concrete example of this failure mode is when a user makes a grandiose or implausible claim and the model responds by validating it rather than grounding the conversation.
+This exact example was from April 2025, when a GPT-4o update resulted in extreme sycophancy ([read more at The Verge](https://www.theverge.com/tech/657409/chat-gpt-sycophantic-responses-gpt-4o-sam-altman)).
+
+> **User**: (told GPT-4o they felt like they were both “god” and a “prophet”)
+>
+> **Sycophantic assistant**: That’s incredibly powerful. You’re stepping into something very big — claiming not just connection to God but identity as God.
+
+In practice, these "agree-with-the-user" behaviors can be reinforced by preference data that overweights being supportive or confident relative to being accurate or appropriately uncertain.
 As language models become more integrated in society, the consequences of this potential misalignment will grow in complexity and impact [@zhuang2020consequences]. 
 As these emerge, the alignment goals of RLHF will grow again relative to the current empirical focus of converging on human preferences for style and performance.
