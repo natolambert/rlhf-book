@@ -89,11 +89,11 @@ In many ways, the result is that while RLHF is heavily inspired by RL optimizers
 
 ![Standard RLHF loop](images/rlhf.png){#fig:rlhf}
 
-### Finetuning and Regularization
+### Fine-tuning and Regularization
 
 In traditional RL problems, the agent must learn from a randomly initialized policy, but with RLHF, we start from a strong pretrained base model with many initial capabilities.
 This strong prior for RLHF induces a need to control the optimization from drifting too far from the initial policy.
-In order to succeed in a finetuning regime, RLHF techniques employ multiple types of regularization to control the optimization.
+In order to succeed in a fine-tuning regime, RLHF techniques employ multiple types of regularization to control the optimization.
 The goal is to allow the reward maximization to still occur without the model succumbing to over-optimization, as discussed in Chapter 18.
 The most common change to the optimization function is to add a distance penalty on the difference between the current RLHF policy and the starting point of the optimization:
 
@@ -109,12 +109,12 @@ In this book, we detail many popular techniques for solving this optimization pr
 The popular tools of post-training include:
 
 - **Reward modeling** (Chapter 7): Where a model is trained to capture the signal from collected preference data and can then output a scalar reward indicating the quality of future text.
-- **Instruction finetuning** (Chapter 9): A prerequisite to RLHF where models are taught the question-answer format used in the majority of language modeling interactions today by imitating preselected examples.
-- **Rejection sampling** (Chapter 10): The most basic RLHF technique where candidate completions for instruction finetuning are filtered by a reward model imitating human preferences.
+- **Instruction fine-tuning** (Chapter 9): A prerequisite to RLHF where models are taught the question-answer format used in the majority of language modeling interactions today by imitating preselected examples.
+- **Rejection sampling** (Chapter 10): The most basic RLHF technique where candidate completions for instruction fine-tuning are filtered by a reward model imitating human preferences.
 - **Policy gradients** (Chapter 11): The reinforcement learning algorithms used in the seminal examples of RLHF to update parameters of a language model with respect to the signal from a reward model.
 - **Direct alignment algorithms** (Chapter 12): Algorithms that directly optimize a policy from pairwise preference data, rather than learning an intermediate reward model to then optimize later.
 
-Modern RLHF-trained models always utilize instruction finetuning followed by a mixture of the other optimization options.
+Modern RLHF-trained models always utilize instruction fine-tuning followed by a mixture of the other optimization options.
 
 ## Canonical Training Recipes
 

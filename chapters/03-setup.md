@@ -30,7 +30,7 @@ Modern LMs, including ChatGPT, Claude, Gemini, etc., most often use **decoder-on
 The core innovation of the Transformer was heavily utilizing the **self-attention** [@Bahdanau2014NeuralMT] mechanism to allow the model to directly attend to concepts in context and learn complex mappings.
 Throughout this book, particularly when covering reward models in Chapter 7, we will discuss adding new heads or modifying a language modeling (LM) head of the transformer.
 The LM head is a final linear projection layer that maps from the model's internal embedding space to the tokenizer space (a.k.a. vocabulary).
-We'll see in this book that different "heads" of a language model can be applied to finetune the model to different purposes -- in RLHF this is most often done when training a reward model, which is highlighted in Chapter 7.
+We'll see in this book that different "heads" of a language model can be applied to fine-tune the model to different purposes -- in RLHF this is most often done when training a reward model, which is highlighted in Chapter 7.
 
 ## ML Definitions
 

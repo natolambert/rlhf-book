@@ -221,7 +221,7 @@ Multiple algorithms have been proposed to re-balance the optimization away from 
 
 Some variants to DPO attempt to either improve the learning signal by making small changes to the loss or make the application more efficient by reducing memory usage.
 
-- **Odds Ratio Policy Optimization (ORPO)** directly updates the policy model with a pull towards the chosen response, similar to the instruction finetuning loss, with a small penalty on the chosen response [@hong2024reference]. This change of loss function removes the need for a reference model, simplifying the setup. The best way to view ORPO is DPO inspired, rather than a DPO derivative.
+- **Odds Ratio Policy Optimization (ORPO)** directly updates the policy model with a pull towards the chosen response, similar to the instruction fine-tuning loss, with a small penalty on the chosen response [@hong2024reference]. This change of loss function removes the need for a reference model, simplifying the setup. The best way to view ORPO is DPO inspired, rather than a DPO derivative.
 - **Simple Preference Optimization SimPO** makes a minor change to the DPO optimization, by averaging the log-probabilities rather than summing them (SimPO) or adding length normalization, to improve performance [@meng2025simpo].
 
 ![Sketch of preference displacement in DPO.](images/dpo_displacement.png){#fig:dpo_issue .center}
@@ -260,6 +260,24 @@ In most ways, this is simpler and a quality of life improvement, but also they o
 
 1. **KL distance is static**: In DPO and other algorithms, the KL distance is set explicitly by the $\beta$ parameter that balances the distance penalty to the optimization. This is due to the fact that DPO takes gradient steps towards the *optimal* solution to the RLHF objective given the data -- it steps exactly to the solution set by the $\beta$ term. On the other hand, RL based optimizers take steps based on the batch and recent data.
 2. **Caching log-probabilities**: Simple implementations of DPO do the forward passes for the policy model and reference models at the same time for conveniences with respect to the loss function. Though, this doubles the memory used and results in increased GPU usage. To avoid this, one can compute the log-probabilities of the reference model over the training dataset first, then reference it when computing the loss and updating the parameters per batch, reducing the peak memory usage by 50%.
+
+<!-- ## DAAs with Synthetic Preference Data
+
+Most of the popular datasets for alignment these days are synthetic preferences where a model like GPT-4 rates outputs from other models as the winner or the loser. 
+Examples include UltraFeedback [@cui2023ultrafeedback], Tülu 3 [@lambert2024t], SmolLM 3's data [@bakouch2025smollm3], or the Dolci Pref dataset released with Olmo 3 [@teamolmo2025olmo3].
+Given that frontier models such as GPT-4 are known to have length and style biases for outputs that match themselves, it is slightly more likely for a piece of text in the "chosen" section of the dataset to be either from an OpenAI model or another strong model that is stylistically similar to it. 
+Not all samples share these characteristics —- some in the they're often generated from weaker open models with notably different characteristics like weaker open-weight models
+
+Next, now that we've established that we have a preference dataset where most of the chosen samples are more likely to be similar to ChatGPT (or some other model that is accepted to be "strong"), these alignment methods simply increase the probability of these sequences. 
+The math is somewhat complicated, where the batches of data operate on many chosen-rejected pairs at once, but in practice, the model is doing credit assignment over sequences of tokens (subword pieces). 
+Preference alignment for chattiness is making the sequences found in outputs of models like GPT-4 more likely and the sequences from other, weaker models less likely. 
+Repeatedly, this results in models with longer generations and characteristics that people like more.
+
+Those among you who are familiar with RLHF methods may ask if the KL constraint in the optimization should stop this from happening. 
+The KL constraint is a distance term between the distribution of the original model and the resulting model. 
+It helps make the optimization more robust to overoptimization, but that makes the border between good and bad models a bit more nuanced. 
+Hence, the prevalence of vibes-based evaluations as the only tool that can attempt to read into this boundary. 
+Though, models tend to have enough parameters where they can change substantially and still satisfy the KL constraint on the data being measured --- it can't be the entire pretraining dataset, for example. -->
 
 
 ## DAAs vs. RL: Online vs. Offline Data
