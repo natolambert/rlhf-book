@@ -1000,7 +1000,9 @@ An example implementation is shown below:
 #   rewards: (B, L) post-KL per-token rewards
 #   values:  (B, L) current V_theta(s_t)
 #   done_mask: (B, L) 1.0 at terminal token (EOS or penalized trunc), else 0.0
-#   gamma: float (often 1.0), lam: float in [0,1]
+#   gamma: float (often 1.0), 
+#   lam (short for lambda): float in [0,1]
+#   (Padding beyond terminal should have rewards=0, values=0)
 B, L = rewards.shape
 advantages = torch.zeros_like(rewards)
 next_v = torch.zeros(B, device=rewards.device, dtype=rewards.dtype)
@@ -1016,6 +1018,11 @@ for t in reversed(range(L)):
 targets = advantages + values      # y_t for value regression
 advantages = advantages.detach()   # for policy loss
 ```
+
+The backward loop accumulates temporal-difference (TD) errors ($\delta_t = r_t + \gamma V(s_{t+1}) - V(s_t)$), which measure how much better or worse the actual outcome was compared to the value function's prediction, with exponential decay $(\gamma\lambda)^l$.
+At terminal tokens, `not_done=0` prevents bootstrapping from future states and resets the GAE accumulator, so each episode's advantages are computed independently (since the loop runs backward, hitting a terminal token on the first iteration cleanly resets any state from the previous batch—a simple way to implement a running average across sequences).
+The final `targets` serve as regression targets for the separate value function learned outside this GAE loop, while the detached `advantages` weight the policy gradient—detached so that policy updates don't backpropagate through the value network.
+In RLHF for language models, $\gamma=1.0$ is common because episodes are short token sequences where undiscounted credit assignment is preferred (and often all of the tokens in one).
 
 *For further reading, see [@seita2017gae].*
 
