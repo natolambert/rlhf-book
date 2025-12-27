@@ -109,13 +109,15 @@ An example rubric is shown below with its associated prompt [@liu2025openrubrics
 10. The response maintains consistency in style and format to enhance readability and comprehension. [Principle]
 ```
 
+The `[Hard Rule]` and `[Principle]` are specific tags to denote the priority of a certain piece of feedback. Other methods of indicating importance can be used, such as simple priority numbers.
+
 Rubric generation is generally done per-prompt in the training data, which accumulates meaningful synthetic data costs in preparation.
 To alleviate this, a general rubric is often applied as a starting point per-domain, and then the fine-grained rubric scores per-prompt are assigned by a supervising language model to guide the feedback for training.
 An example prompt to generate a rubric for a science task is shown below [@gunjal2025rubrics]:
 
 ```
 You are an expert rubric writer for science questions in the domains of Biology, Physics, and Chemistry. 
-Your job is to generate a self-contained set of evaluation criteria (“rubrics”) for judging how good a response is to a given question in one of these domains. 
+Your job is to generate a self-contained set of evaluation criteria ("rubrics") for judging how good a response is to a given question in one of these domains. 
 Rubrics can cover aspects such as factual correctness, depth of reasoning, clarity, completeness, style, helpfulness, and common pitfalls. 
 Each rubric item must be fully self-contained so that non-expert readers need not consult
 any external information.
@@ -125,10 +127,10 @@ Inputs:
 - reference_answer: The ideal answer, including any key facts or explanations.
 
 Total items:
-- Choose 7–20 rubric items based on question complexity.
+- Choose 7-20 rubric items based on question complexity.
 
 Each rubric item must include exactly three keys:
-1. title (2–4 words)
+1. title (2-4 words)
 2. description: One sentence beginning with its category prefix, explicitly stating what to look for. 
 
 For example:
@@ -141,7 +143,7 @@ energy, to illustrate how energy shifts within the system.
 - Pitfall Criteria: Does not mention that frictional or air-resistance losses are assumed negligible when applying
 conservation of mechanical energy.
 
-3. weight: For Essential/Important/Optional, use 1–5 (5 = most important); for Pitfall, use –1 or –2.
+3. weight: For Essential/Important/Optional, use 1-5 (5 = most important); for Pitfall, use -1 or -2.
 
 Category guidance:
 - Essential: Critical facts or safety checks; omission invalidates the response.
@@ -150,8 +152,8 @@ Category guidance:
 - Pitfall: Common mistakes or omissions; highlight things often missed.
 
 Format notes:
-- When referring to answer choices, explicitly say “Identifies (A)”, “Identifies (B)”, etc.
-- If a clear conclusion is required (e.g. “The final answer is (B)”), include an Essential Criteria for it.
+- When referring to answer choices, explicitly say "Identifies (A)", "Identifies (B)", etc.
+- If a clear conclusion is required (e.g. "The final answer is (B)"), include an Essential Criteria for it.
 - If reasoning should precede the final answer, include an Important Criteria to that effect.
 - If brevity is valued, include an Optional Criteria about conciseness.
 
@@ -181,7 +183,7 @@ Output format (JSON only):
     {
       "reasoning": "<why this criterion matters>",
       "criterion": "<clear, testable criterion>",
-      "weight": <integer 1–10>
+      "weight": <integer 1-10>
     },
     ...
   ]

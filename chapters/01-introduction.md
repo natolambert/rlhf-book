@@ -107,7 +107,7 @@ Or a complex, richer answer:
 > 
 > **Daily basics (most impact)**:
 > 	•	Same wake time (even weekends) → anchors your body clock.
-> 	•	Morning light for 5–10 minutes → helps set circadian rhythm.
+> 	•	Morning light for 5-10 minutes → helps set circadian rhythm.
 > 	•	Cool, dark room (fan/eye mask) → easier to stay asleep.
 > 
 > **If you want a simple rule**:
