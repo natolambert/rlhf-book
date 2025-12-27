@@ -39,11 +39,11 @@ Most of the canonical references for getting started with industry-grade post-tr
 A large change is also related to dataset size, where fine-tuning datasets have grown in the number of prompts, where Alpaca is 52K, OpenThoughts and Tülu 3 are 1M+ samples, and in the length of responses.
 Longer responses and more prompts results in the Alpaca dataset being on the order of 10M training tokens, where Tülu is 50X larger at about 500M, and OpenThoughts 3 is bigger still at the order of 10B tokens.
 
-Throughout this transition in capabilities, the role of synthetic data has only grown in language model training. 
-Otherwise, there are two clear areas where human data continues to be important. 
-
-1. The role of human data continues to be at the fringe of capabilities in models -- humans must generate data where AIs do not yet have any ability. Once the first strong model exists, synthetic data proliferates.
-2. Human preference data is still used in the leading models, even though academic work shows synthetic versions to perform just as well. The role of human preferences is still being established in the literature.
+Throughout this transition, synthetic data has not replaced human data uniformly across the pipeline. 
+For **instruction data (SFT)**, synthetic generation has largely won —- distillation from stronger models now produces higher quality completions than most human writers can provide at scale (with some exception in the hardest, frontier reasoning problems). 
+For **preference data in RLHF**, the picture is more mixed: academic work shows synthetic preference data performs comparably, yet frontier labs still treat human preference data as a competitive moat. 
+For **evaluation**, the split takes a different flavor: LLM-as-a-judge scales the *scoring* of model outputs cost-effectively, but the underlying benchmarks and ground-truth labels still require human creation. 
+The pattern is that synthetic data dominates where models exceed human reliability, while humans remain essential at capability frontiers, for establishing ground truth, and for guiding training.
 
 The term distillation has been the most powerful form of discussion around the role of synthetic data in language models. 
 Distillation as a term comes from a technical definition of teacher-student knowledge distillation from the deep learning literature [@hinton2015distilling].

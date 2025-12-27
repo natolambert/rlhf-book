@@ -14,6 +14,9 @@ There are many motivations to using RLAIF to either entirely replace human feedb
 Within the RLHF process, AI feedback is known most for its role within the preference data collection and the related reward model training phase (of which constitutional AI is a certain type of implementation).
 In this chapter, we focus on the general AI feedback and this specific way of using it in the RLHF training pipeline, and we cover more ways of understanding or using synthetic data later in this book.
 
+As AI feedback matured, its applications expanded beyond simply replacing human preference labels. 
+The same LLM-as-a-judge infrastructure that enabled cheaper preference data collection also enabled scalable evaluation (see Chapter 16), and more recently, rubric-based rewards that extend RL training to domains without verifiable answers —- a frontier explored later in this chapter.
+
 # Balancing AI and Human Feedback Data
 
 AI models are far cheaper than humans at generating a specific quantity of feedback, with a single piece of human preference data costing as of writing this on the order of $1 or higher (or even above $10 per prompt), AI feedback with a frontier AI model, such as GPT-4o costs less than $0.01. 
@@ -89,9 +92,21 @@ This would allow a model to try to generate multiple answers to a problem and up
 This idea is closely related to other methods discussed in this chapter, and likely began functioning as the LLM judges and synthetic data practices improved across the industry.
 Now, RL with rubrics as rewards is established in providing meaningful improvements across skills such as scientific reasoning or factuality [@gunjal2025rubrics; @viswanathan2025checklists; @rezaei2025onlinerubrics; @liu2025openrubrics].
 
-An example rubric is shown below:
+An example rubric is shown below with its associated prompt [@liu2025openrubrics]:
 ```
+**Prompt**: As a museum curator, can you suggest five obscure artifacts that would be perfect for a "Mysteries of the Ancient World" exhibit? Each artifact should come from a different culture and time period, with a brief description of their historical significance and mysterious origins. These artifacts should leave visitors wondering about the secrets and lost knowledge of our past. Thank you for your expertise in bringing this exhibit to life.
 
+** Rubric**: 
+1. The response includes exactly five distinct artifacts as requested. [Hard Rule] 
+2. The response ensures each artifact originates from a different culture and time period. [Hard Rule] 
+3. The response provides a brief description of each artifact’s historical significance. [Hard Rule] 
+4. The response provides a brief description of each artifact’s mysterious origins or unexplained aspects. [Hard Rule] 
+5. The response conveys a sense of intrigue and mystery that aligns with the theme of the exhibit. [Hard Rule] 
+6. The response clearly and accurately communicates information in a well-organized and coherent manner. [Principle] 
+7. The response demonstrates precision and clarity by avoiding unnecessary or irrelevant details. [Principle] 
+8. The response uses informative and engaging language that stimulates curiosity and critical thinking. [Principle] 
+9. The response shows thoughtful selection by ensuring each example contributes uniquely to the overall theme without redundancy. [Principle] 
+10. The response maintains consistency in style and format to enhance readability and comprehension. [Principle]
 ```
 
 Rubric generation is generally done per-prompt in the training data, which accumulates meaningful synthetic data costs in preparation.
@@ -146,7 +161,40 @@ prefix, and no extra keys are allowed.
 Now, given the question and reference_answer, generate the rubric as described. 
 The reference answer is an ideal responsebut not necessarily exhaustive; use it only as guidance.
 ```
-As you can see, the prompts are very detailed and tuned to the training setup.
+
+Another, simpler example follows as [@rezaei2025onlinerubrics]:
+
+```
+SYSTEM:
+You generate evaluation rubrics for grading an assistant’s response to a user prompt.
+
+Rubric design rules:
+- Each criterion must be atomic (one thing), objective as possible, and written so a grader can apply it consistently.
+- Avoid redundant/overlapping criteria; prefer criteria that partition different failure modes.
+- Make criteria self-contained (don’t rely on unstated context).
+- Include an importance weight for each criterion.
+
+Output format (JSON only):
+{
+  "initial_reasoning": "<brief rationale for what matters for this prompt>",
+  "rubrics": [
+    {
+      "reasoning": "<why this criterion matters>",
+      "criterion": "<clear, testable criterion>",
+      "weight": <integer 1–10>
+    },
+    ...
+  ]
+}
+
+USER:
+User prompt:
+{prompt}
+
+Generate the rubric JSON now.
+```
+
+As you can see, the prompts can be very detailed and are tuned to the training setup.
 
 Rubrics with RL training is going to continue to evolve beyond it's early applications to instruction following [@he2025advancedif], deep research [@shao2025drtulu], evaluating deep research agents [@sharma2025researchrubrics], or long-form generation [@ruan2025expertlongbench].
 
