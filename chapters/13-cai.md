@@ -17,7 +17,7 @@ In this chapter, we focus on the general AI feedback and this specific way of us
 As AI feedback matured, its applications expanded beyond simply replacing human preference labels. 
 The same LLM-as-a-judge infrastructure that enabled cheaper preference data collection also enabled scalable evaluation (see Chapter 16), and more recently, rubric-based rewards that extend RL training to domains without verifiable answers -- a frontier explored later in this chapter.
 
-# Balancing AI and Human Feedback Data
+## Balancing AI and Human Feedback Data
 
 AI models are far cheaper than humans at generating a specific quantity of feedback, with a single piece of human preference data costing as of writing this on the order of $1 or higher (or even above $10 per prompt), AI feedback with a frontier AI model, such as GPT-4o costs less than $0.01. 
 Beyond this, the cost of human labor is remaining roughly constant, while the performance of leading models at these tasks continues to increase while price-per-performance decreases.
