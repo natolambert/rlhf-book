@@ -99,8 +99,8 @@ An example rubric is shown below with its associated prompt [@liu2025openrubrics
 ** Rubric**: 
 1. The response includes exactly five distinct artifacts as requested. [Hard Rule] 
 2. The response ensures each artifact originates from a different culture and time period. [Hard Rule] 
-3. The response provides a brief description of each artifact’s historical significance. [Hard Rule] 
-4. The response provides a brief description of each artifact’s mysterious origins or unexplained aspects. [Hard Rule] 
+3. The response provides a brief description of each artifact's historical significance. [Hard Rule] 
+4. The response provides a brief description of each artifact's mysterious origins or unexplained aspects. [Hard Rule] 
 5. The response conveys a sense of intrigue and mystery that aligns with the theme of the exhibit. [Hard Rule] 
 6. The response clearly and accurately communicates information in a well-organized and coherent manner. [Principle] 
 7. The response demonstrates precision and clarity by avoiding unnecessary or irrelevant details. [Principle] 
@@ -157,7 +157,7 @@ Format notes:
 - If reasoning should precede the final answer, include an Important Criteria to that effect.
 - If brevity is valued, include an Optional Criteria about conciseness.
 
-Output: Provide a JSON array of rubric objects. Each object must contain exactly three keys—title, description, and weight.
+Output: Provide a JSON array of rubric objects. Each object must contain exactly three keys-title, description, and weight.
 Do not copy large blocks of the question or reference_answer into the text. Each description must begin with its category
 prefix, and no extra keys are allowed.
 Now, given the question and reference_answer, generate the rubric as described. 
@@ -168,12 +168,12 @@ Another, simpler example follows as [@rezaei2025onlinerubrics]:
 
 ```
 SYSTEM:
-You generate evaluation rubrics for grading an assistant’s response to a user prompt.
+You generate evaluation rubrics for grading an assistant's response to a user prompt.
 
 Rubric design rules:
 - Each criterion must be atomic (one thing), objective as possible, and written so a grader can apply it consistently.
 - Avoid redundant/overlapping criteria; prefer criteria that partition different failure modes.
-- Make criteria self-contained (don’t rely on unstated context).
+- Make criteria self-contained (don't rely on unstated context).
 - Include an importance weight for each criterion.
 
 Output format (JSON only):
