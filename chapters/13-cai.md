@@ -81,6 +81,76 @@ Some find scaling inference via repeated sampling [@brown2024large] [@zhao2025sa
 Other calibration techniques co-evolve the generation and judgement capabilities of the model [@wu2024meta].
 It is accepted that while biases exist, the leading language models are trained extensively for this task -- as its needed for both internal operations at AI labs and is used extensively by customers -- so it is generally not needed to train your own judge, unless your task involves substantial private information that is not exposed on the public internet.
 
+## Rubrics: AI Feedback for Training
+
+AI feedback's role in training grew in late 2024 and intro 2025 as the field looked for avenues to scale reinforcement learning with verifiable rewards (see Chapter 14).
+The idea of rubrics emerged as a way to get nearly-verifiable criteria for prompts that do not have clearly verifiable answers. 
+This would allow a model to try to generate multiple answers to a problem and update (with RL) towards the best answers.
+This idea is closely related to other methods discussed in this chapter, and likely began functioning as the LLM judges and synthetic data practices improved across the industry.
+Now, RL with rubrics as rewards is established in providing meaningful improvements across skills such as scientific reasoning or factuality [@gunjal2025rubrics; @viswanathan2025checklists; @rezaei2025onlinerubrics; @liu2025openrubrics].
+
+An example rubric is shown below:
+```
+
+```
+
+Rubric generation is generally done per-prompt in the training data, which accumulates meaningful synthetic data costs in preparation.
+To alleviate this, a general rubric is often applied as a starting point per-domain, and then the fine-grained rubric scores per-prompt are assigned by a supervising language model to guide the feedback for training.
+An example prompt to generate a rubric for a science task is shown below [@gunjal2025rubrics]:
+
+```
+You are an expert rubric writer for science questions in the domains of Biology, Physics, and Chemistry. 
+Your job is to generate a self-contained set of evaluation criteria (“rubrics”) for judging how good a response is to a given question in one of these domains. 
+Rubrics can cover aspects such as factual correctness, depth of reasoning, clarity, completeness, style, helpfulness, and common pitfalls. 
+Each rubric item must be fully self-contained so that non-expert readers need not consult
+any external information.
+
+Inputs:
+- question: The full question text.
+- reference_answer: The ideal answer, including any key facts or explanations.
+
+Total items:
+- Choose 7–20 rubric items based on question complexity.
+
+Each rubric item must include exactly three keys:
+1. title (2–4 words)
+2. description: One sentence beginning with its category prefix, explicitly stating what to look for. 
+
+For example:
+- Essential Criteria: States that in the described closed system, the total mechanical energy (kinetic plus potential)
+before the event equals the total mechanical energy after the event.
+- Important Criteria: Breaks down numerical energy values for each stage, demonstrating that initial kinetic
+energy plus initial potential energy equals final kinetic energy plus final potential energy.
+- Optional Criteria: Provides a concrete example, such as a pendulum converting between kinetic and potential
+energy, to illustrate how energy shifts within the system.
+- Pitfall Criteria: Does not mention that frictional or air-resistance losses are assumed negligible when applying
+conservation of mechanical energy.
+
+3. weight: For Essential/Important/Optional, use 1–5 (5 = most important); for Pitfall, use –1 or –2.
+
+Category guidance:
+- Essential: Critical facts or safety checks; omission invalidates the response.
+- Important: Key reasoning or completeness; strongly affects quality.
+- Optional: Nice-to-have style or extra depth.
+- Pitfall: Common mistakes or omissions; highlight things often missed.
+
+Format notes:
+- When referring to answer choices, explicitly say “Identifies (A)”, “Identifies (B)”, etc.
+- If a clear conclusion is required (e.g. “The final answer is (B)”), include an Essential Criteria for it.
+- If reasoning should precede the final answer, include an Important Criteria to that effect.
+- If brevity is valued, include an Optional Criteria about conciseness.
+
+Output: Provide a JSON array of rubric objects. Each object must contain exactly three keys—title, description, and weight.
+Do not copy large blocks of the question or reference_answer into the text. Each description must begin with its category
+prefix, and no extra keys are allowed.
+Now, given the question and reference_answer, generate the rubric as described. 
+The reference answer is an ideal responsebut not necessarily exhaustive; use it only as guidance.
+```
+As you can see, the prompts are very detailed and tuned to the training setup.
+
+Rubrics with RL training is going to continue to evolve beyond it's early applications to instruction following [@he2025advancedif], deep research [@shao2025drtulu], evaluating deep research agents [@sharma2025researchrubrics], or long-form generation [@ruan2025expertlongbench].
+
+
 ## Further Reading
 
 There are many related research directions and extensions of Constitutional AI, but few of them have been documented as clear improvements in RLHF and post-training recipes.
