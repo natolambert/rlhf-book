@@ -38,8 +38,21 @@ Run `make files` to move files into place for figures, pdf linked, etc.
 
 ### Known Conversion Issues
 
-With the nested structure used for the website the section links between chapters in the PDF are broken. 
+With the nested structure used for the website the section links between chapters in the PDF are broken.
 We are opting for this in favor of a better web experience, but best practice is to not put any links to `rlhfbook.com` within the markdown files. Non-html versions will not be well suited to them.
+
+### Common Failures When Editing with Coding Agents
+
+Coding agents (Claude, Cursor, etc.) often introduce Unicode characters that break the Pandoc PDF build with errors like `Cannot decode byte '\xe2': Data.Text.Encoding: Invalid UTF-8 stream`. Watch for:
+
+- **Curly apostrophes** (`'` U+2019) instead of straight apostrophes (`'`) - common in "don't", "it's", possessives
+- **Em-dashes** (`—` U+2014) and **en-dashes** (`–` U+2013) instead of double-hyphens (`--`)
+- **Non-breaking spaces** (`\xa0` U+00A0) instead of regular spaces
+- **Curly quotes** (`"` `"` U+201C/U+201D) instead of straight quotes (`"`)
+
+To find these: `xxd chapters/filename.md | grep -i 'e2 80\|c2 a0'`
+
+To fix: `python3 -c "content = open('file.md').read(); content = content.replace('\u2019', \"'\").replace('\u2014', '--'); open('file.md', 'w').write(content)"`
 
 ### Installing
 

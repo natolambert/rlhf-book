@@ -10,12 +10,12 @@ next-url: "10-rejection-sampling"
 
 Early large pretrained language models were trained with a next-token prediction objective and, by default, did not come with an explicit interface for following instructions.
 Around the release of GPT-3 [@brown2020language], prompting and in-context learning became a widely used way to adapt a single model to many tasks (though task-specific fine-tuning remained common), by showing examples in-context and asking the model to complete a similar task.
-A practical next step was instruction fine-tuning, which teaches the model to respond in an instruction–response format rather than just continuing text.
+A practical next step was instruction fine-tuning, which teaches the model to respond in an instruction-response format rather than just continuing text.
 
 Instruction fine-tuning took off when two lines of work converged.
 First, NLP shifted from bespoke-fine-tuning task setups to a unified "text-to-text" or instruction framing, which made it straightforward to standardize diverse datasets and train a single model across many tasks.
 Prominent examples of unifying the framework for tasks include *Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer* (T5 models) [@raffel2020exploring], *Finetuned Language Models Are Zero-Shot Learners* (FLAN dataset) [@wei2021finetuned], *Multitask Prompted Training Enables Zero-Shot Task Generalization* (T0 models) [@sanh2021multitask], and *Cross-Task Generalization via Natural Language Crowdsourcing Instructions* (Natural Instructions dataset) [@mishra2021cross].
-Second, scaling pretrained LMs and the rise of prompting/in-context learning showed that a single model could generalize across tasks, but that generalization becomes far more reliable when the model is explicitly trained on instruction–response examples.
+Second, scaling pretrained LMs and the rise of prompting/in-context learning showed that a single model could generalize across tasks, but that generalization becomes far more reliable when the model is explicitly trained on instruction-response examples.
 Together, these trends led to an era of fine-tuning pretrained language models on large collections of instructions—what is now commonly called instruction fine-tuning (IFT), or supervised fine-tuning (SFT), in which training general models became accessible to wider audiences.
 <!-- Historically, until RLHF and related methods, all fine-tuning was **instruction fine-tuning** (IFT), also known as **supervised fine-tuning** (SFT). -->
 

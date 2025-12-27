@@ -89,7 +89,7 @@ Midjourney's interface is shown below:
 The largest decision on how to collect preference data is if the data should be rankings -- i.e. relative ordering of model completions -- or ratings -- i.e. scores assigned to each piece of text.
 Common practice is to train on rankings, but ratings are often used as metadata and / or have been explored in related literature.
 
-One simple way to collect ratings is to score a *single* completion on a 1–5 scale:
+One simple way to collect ratings is to score a *single* completion on a 1-5 scale:
 
 - **5** — excellent: correct, clear, and notably helpful
 - **4** — good: correct, clear, and useful

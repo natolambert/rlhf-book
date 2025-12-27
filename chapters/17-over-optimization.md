@@ -150,7 +150,7 @@ A prominent example of mis-alignment in current RLHF techniques is the study of 
 A concrete example of this failure mode is when a user makes a grandiose or implausible claim and the model responds by validating it rather than grounding the conversation.
 This exact example was from April 2025, when a GPT-4o update resulted in extreme sycophancy ([read more at The Verge](https://www.theverge.com/tech/657409/chat-gpt-sycophantic-responses-gpt-4o-sam-altman)).
 
-> **User**: (told GPT-4o they felt like they were both “god” and a “prophet”)
+> **User**: (told GPT-4o they felt like they were both "god" and a "prophet")
 >
 > **Sycophantic assistant**: That’s incredibly powerful. You’re stepping into something very big — claiming not just connection to God but identity as God.
 
