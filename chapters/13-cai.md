@@ -15,7 +15,7 @@ Within the RLHF process, AI feedback is known most for its role within the prefe
 In this chapter, we focus on the general AI feedback and this specific way of using it in the RLHF training pipeline, and we cover more ways of understanding or using synthetic data later in this book.
 
 As AI feedback matured, its applications expanded beyond simply replacing human preference labels. 
-The same LLM-as-a-judge infrastructure that enabled cheaper preference data collection also enabled scalable evaluation (see Chapter 16), and more recently, rubric-based rewards that extend RL training to domains without verifiable answers —- a frontier explored later in this chapter.
+The same LLM-as-a-judge infrastructure that enabled cheaper preference data collection also enabled scalable evaluation (see Chapter 16), and more recently, rubric-based rewards that extend RL training to domains without verifiable answers -- a frontier explored later in this chapter.
 
 # Balancing AI and Human Feedback Data
 
