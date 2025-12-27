@@ -729,6 +729,26 @@ Direct alignment methods like DPO and A-LoL also define sequence-level objective
 
 Note that many GRPO implementations use a bandit-style advantage *and* add a separate per-token KL term in the loss, while many PPO/RLOO implementations fold KL into the reward before computing advantages; both conventions exist in practice.
 
+An example comparison highlighting the two approaches is below:
+
+```python
+# === Bandit-style (sequence-level) ===
+# One scalar reward per sequence; advantage broadcast to all tokens
+reward = torch.tensor([3.0, 1.0])       # (B,) e.g., reward model scores
+baseline = reward.mean()                 # simple baseline (RLOO uses leave-one-out)
+advantage_seq = reward - baseline        # (B,)
+advantages = advantage_seq[:, None].expand(-1, seq_len)  # (B, L)
+# tensor([[ 1.,  1.,  1.,  1.],    <- same advantage for all tokens
+#         [-1., -1., -1., -1.]])
+
+# === MDP-style (token-level) ===
+# Per-token rewards + learned V(s_t); each token gets its own advantage
+# (could also use per-token KL shaping, format rewards, or other token-level signals)
+advantages = gae(per_token_rewards, values, done_mask, gamma=1.0, lam=0.95)
+# tensor([[ 0.2,  0.5,  0.8,  1.5],    <- varies by position
+#         [-0.3, -0.5, -0.8, -1.4]])
+```
+
 ### Asynchronicity
 
 The default implementation for policy-gradient algorithms is what is called **on-policy** execution, where the actions (generations) taken by the agent (language model) are scored before updating the model.
@@ -1020,7 +1040,7 @@ advantages = advantages.detach()   # for policy loss
 ```
 
 The backward loop accumulates temporal-difference (TD) errors ($\delta_t = r_t + \gamma V(s_{t+1}) - V(s_t)$), which measure how much better or worse the actual outcome was compared to the value function's prediction, with exponential decay $(\gamma\lambda)^l$.
-At terminal tokens, `not_done=0` prevents bootstrapping from future states and resets the GAE accumulator, so each episode's advantages are computed independently (since the loop runs backward, hitting a terminal token on the first iteration cleanly resets any state from the previous batch—a simple way to implement a running average across sequences).
+At terminal tokens, `not_done=0` prevents bootstrapping from future states and resets the GAE accumulator, so each episode's advantages are computed independently (since the loop runs backward, the terminal token cleanly stops the exponentially-weighted accumulation at episode boundaries—this makes the implementation packing-friendly, correctly handling multiple sequences concatenated into one).
 The final `targets` serve as regression targets for the separate value function learned outside this GAE loop, while the detached `advantages` weight the policy gradient—detached so that policy updates don't backpropagate through the value network.
 In RLHF for language models, $\gamma=1.0$ is common because episodes are short token sequences where undiscounted credit assignment is preferred (and often all of the tokens in one).
 
