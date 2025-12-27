@@ -6,7 +6,19 @@ Uses DBLP API (free, no auth required) to find published versions.
 Generates a report of papers that may need updating.
 
 Usage:
-    python check_arxiv_publications.py [--bib-file path/to/bib.bib] [--batch-size 20] [--delay 0.5]
+    python check_arxiv_publications.py [--bib-file path/to/bib.bib] [--delay 0.5]
+    python check_arxiv_publications.py --resume  # Resume interrupted run
+
+Output:
+    Saves results to arxiv_check_results.json (or --output path) with structure:
+    {
+        "published": [{"key": "...", "venue": "ICLR", "year": "2024", "dblp_key": "..."}],
+        "arxiv_only": [{"key": "...", "title": "..."}],
+        "not_found": [{"key": "...", "title": "..."}]
+    }
+
+Next step:
+    Run update_bib_from_arxiv_check.py to apply the updates to your bib file.
 """
 
 import argparse
