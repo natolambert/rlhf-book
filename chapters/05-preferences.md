@@ -156,7 +156,7 @@ In the context of the mathematical tools used for reinforcement learning, utilit
 These methods are designed around systems with clear definitions of optimality, or numerical representations of goals of an agent.
 Reinforcement learning systems are well known for their development with a discount factor, a compounding multiplicative factor, $\gamma \in [0,1]$, for re-weighting future rewards.
 Both the original optimal control systems stand and early algorithms for reward stand in heavy contrast to reward models that aggregate multimodal preferences.
-Specifically, RL systems expect rewards to behave in a specific manner, quoting @singh2009rewards:
+Specifically, RL systems expect rewards to behave in a specific manner, quoting [@singh2009rewards]:
 
 > Rewards in an RL system correspond to primary rewards, i.e., rewards that in animals have been hard-wired by the evolutionary process due to their relevance to reproductive success.
 > ... Further, RL systems that form value functions, ... effectively create conditioned or secondary reward processes whereby predictors of primary rewards act as rewards themselves...
