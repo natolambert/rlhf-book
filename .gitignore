@@ -15,3 +15,4 @@ build/arxiv.zip
 
 # Specific to this project
 arxiv_check_results.json
+.claude
