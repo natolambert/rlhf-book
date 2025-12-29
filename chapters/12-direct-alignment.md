@@ -266,14 +266,14 @@ In most ways, this is simpler and a quality of life improvement, but also they o
 Most of the popular datasets for performing preference fine-tuning with DAAs these days are synthetic preferences where a frontier model rates outputs from other models as the winner or the loser. 
 Prominent examples include UltraFeedback (the first of this category) [@cui2023ultrafeedback], Tülu 3 (built with an expanded UltraFeedback methodology) [@lambert2024t], SmolLM 3's data [@bakouch2025smollm3], or the Dolci Pref dataset released with Olmo 3 [@teamolmo2025olmo3].
 
-The best-practices for constructing these datests is still evolving.
+The best-practices for constructing these datasets is still evolving.
 Tülu 3 and datasets around its release in November of 2024 demonstrated that synthetic, pairwise preference data needs to be "on-policy" in a sense that some completions are generated from the model you're fine-tuning (while being mixed in a bigger model pool).
 This on-policy nature of the data ensured that the DAA would optimize the correct token space the model generates in -- as the loss functions are contrastive and less direct than instruction fine-tuning.
 Later, with the release of Olmo 3 and SmolLM 3 in 2025, other works supported a different theory called Delta Learning, which argues that the difference between the chosen and rejected completions is more important to learning than exactly which models are used for the completions [@geng2025the].
 For example, in both of these two referenced models, the chosen responses are from Qwen 3 32B and the rejected responses are from Qwen 3 0.6B -- both authors developed this pairing concurrently and independently.
 
-Overall, training models on synthetic preference data with DAAs is the place most practioners should start with given the simplicity of implementation and strong performance relative to preference fine-tuning with reinforcement learning based methods.
-Other minor issues exist when using extensive, synthetic preference data, such as biases of the model juding between completions.
+Overall, training models on synthetic preference data with DAAs is the place most practitioners should start with given the simplicity of implementation and strong performance relative to preference fine-tuning with reinforcement learning based methods.
+Other minor issues exist when using extensive, synthetic preference data, such as biases of the model judging between completions.
 Given that frontier models such as GPT-4 are known to have length bias [@dubois2024length] and a preference for outputs that match themselves [@panickssery2024llm] (see Chapter 13 for more information), it is slightly more likely for a piece of text in the "chosen" section of the dataset to be either from an OpenAI model or another strong model that is stylistically similar to it. 
 
 To conclude this section, we'll cover an intuition for how these methods change the generations of the model being trained.

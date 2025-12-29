@@ -292,8 +292,13 @@ It will not have exhaustive documentation for all the techniques, but just those
 ### How to Use This Book
 
 This book was largely created because there were no canonical references for important topics in the RLHF workflow.
+Given the pace of progress on LLMs overall, combined with the complex nature of collecting and using human data, RLHF is an unusually academic field where published results are often noisy and hard to reproduce across multiple settings.
+To develop strong intuitions, readers are encouraged to read multiple papers on each topic rather than taking any single result as definitive.
+To facilitate this, the book includes numerous, academic-style citations to the canonical reference for a claim.
+
 The contributions of this book are supposed to give you the minimum knowledge needed to try a toy implementation or dive into the literature. 
 This is *not* a comprehensive textbook, but rather a quick book for reminders and getting started.
+
 Additionally, given the web-first nature of this book, it is expected that there are minor typos and somewhat random progressions -- please contribute by fixing bugs or suggesting important content on [GitHub](https://github.com/natolambert/rlhf-book).
 
 ### About the Author
