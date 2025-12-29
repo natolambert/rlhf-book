@@ -14,8 +14,7 @@ TOC = --toc --toc-depth 3
 METADATA_ARGS = --metadata-file $(METADATA)
 IMAGES = $(shell find images -type f)
 TEMPLATES = $(shell find templates/ -type f)
-COVER_IMAGE = images/cover.png
-EPUB_COVER_IMAGE = images/rlhf-book-cover.png # EPUB-specific cover image
+EPUB_COVER_IMAGE = assets/rlhf-book-cover.png # EPUB-specific cover image
 MATH_FORMULAS = --mathjax # --webtex, is default for PDF/ebook. Consider resetting if issues.
 EPUB_MATH_FORMULAS = --mathml # Use MathML for EPUB format for better e-reader compatibility
 BIBLIOGRAPHY = --bibliography=chapters/bib.bib --citeproc --csl=templates/ieee.csl
@@ -201,9 +200,6 @@ $(BUILD)/latex/$(OUTPUT_FILENAME).tex: $(PDF_DEPENDENCIES)
 
 	$(ECHO_BUILT)
 
-
-
-
 $(BUILD)/pdf/$(OUTPUT_FILENAME).pdf:	$(PDF_DEPENDENCIES)
 	$(ECHO_BUILDING)
 	$(MKDIR_CMD) $(BUILD)/pdf
@@ -221,7 +217,9 @@ files:
 	cp -R preorder $(BUILD)/html/ || echo "Failed to copy preorder static pages"
 	cp $(BUILD)/pdf/book.pdf $(BUILD)/html/ || echo "Failed to copy to $(BUILD)/html/"
 	cp $(BUILD)/epub/book.epub $(BUILD)/html/ || echo "Failed to copy EPUB to $(BUILD)/html/"
-	cp -r images $(BUILD)/html/c/ || echo "Failed to copy to $(BUILD)/html/chapters/"
+	cp -r images $(BUILD)/html/c/ || echo "Failed to copy images to $(BUILD)/html/c/"
+	cp -r assets $(BUILD)/html/ || echo "Failed to copy assets to $(BUILD)/html/"
+	cp -r assets $(BUILD)/html/c/ || echo "Failed to copy assets to $(BUILD)/html/c/"
 	cp ./templates/nav.js $(BUILD)/html/ || echo "Failed to copy nav.js to $(BUILD)/html/"
 	cp ./templates/nav.js $(BUILD)/html/c/ || echo "Failed to copy nav.js to $(BUILD)/html/c/"
 	cp ./templates/header-anchors.js $(BUILD)/html/ || echo "Failed to copy header-anchors.js to $(BUILD)/html/"

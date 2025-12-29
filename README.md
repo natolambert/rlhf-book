@@ -111,8 +111,9 @@ Here's a folder structure for a Pandoc book:
 my-book/         # Root directory.
 |- build/        # Folder used to store builded (output) files.
 |- chapters/     # Markdowns files; one for each chapter.
-|- images/       # Images folder.
-|  |- cover.png  # Cover page for epub.
+|- images/       # Images folder (chapter figures).
+|- assets/       # Assets folder (logos, covers, share images).
+|  |- rlhf-book-cover.png  # Cover image for EPUB.
 |- metadata.yml  # Metadata content (title, author...).
 |- Makefile      # Makefile used for building our books.
 ```
