@@ -261,24 +261,25 @@ In most ways, this is simpler and a quality of life improvement, but also they o
 1. **KL distance is static**: In DPO and other algorithms, the KL distance is set explicitly by the $\beta$ parameter that balances the distance penalty to the optimization. This is due to the fact that DPO takes gradient steps towards the *optimal* solution to the RLHF objective given the data -- it steps exactly to the solution set by the $\beta$ term. On the other hand, RL based optimizers take steps based on the batch and recent data.
 2. **Caching log-probabilities**: Simple implementations of DPO do the forward passes for the policy model and reference models at the same time for conveniences with respect to the loss function. Though, this doubles the memory used and results in increased GPU usage. To avoid this, one can compute the log-probabilities of the reference model over the training dataset first, then reference it when computing the loss and updating the parameters per batch, reducing the peak memory usage by 50%.
 
-<!-- ## DAAs with Synthetic Preference Data
+## DAAs with Synthetic Preference Data
 
-Most of the popular datasets for alignment these days are synthetic preferences where a model like GPT-4 rates outputs from other models as the winner or the loser. 
-Examples include UltraFeedback [@cui2023ultrafeedback], Tülu 3 [@lambert2024t], SmolLM 3's data [@bakouch2025smollm3], or the Dolci Pref dataset released with Olmo 3 [@teamolmo2025olmo3].
-Given that frontier models such as GPT-4 are known to have length and style biases for outputs that match themselves, it is slightly more likely for a piece of text in the "chosen" section of the dataset to be either from an OpenAI model or another strong model that is stylistically similar to it. 
-Not all samples share these characteristics —- some in the they're often generated from weaker open models with notably different characteristics like weaker open-weight models
+Most of the popular datasets for performing preference fine-tuning with DAAs these days are synthetic preferences where a frontier model rates outputs from other models as the winner or the loser. 
+Prominent examples include UltraFeedback (the first of this category) [@cui2023ultrafeedback], Tülu 3 (built with an expanded UltraFeedback methodology) [@lambert2024t], SmolLM 3's data [@bakouch2025smollm3], or the Dolci Pref dataset released with Olmo 3 [@teamolmo2025olmo3].
 
-Next, now that we've established that we have a preference dataset where most of the chosen samples are more likely to be similar to ChatGPT (or some other model that is accepted to be "strong"), these alignment methods simply increase the probability of these sequences. 
-The math is somewhat complicated, where the batches of data operate on many chosen-rejected pairs at once, but in practice, the model is doing credit assignment over sequences of tokens (subword pieces). 
-Preference alignment for chattiness is making the sequences found in outputs of models like GPT-4 more likely and the sequences from other, weaker models less likely. 
-Repeatedly, this results in models with longer generations and characteristics that people like more.
+The best-practices for constructing these datests is still evolving.
+Tülu 3 and datasets around its release in November of 2024 demonstrated that synthetic, pairwise preference data needs to be "on-policy" in a sense that some completions are generated from the model you're fine-tuning (while being mixed in a bigger model pool).
+This on-policy nature of the data ensured that the DAA would optimize the correct token space the model generates in -- as the loss functions are contrastive and less direct than instruction fine-tuning.
+Later, with the release of Olmo 3 and SmolLM 3 in 2025, other works supported a different theory called Delta Learning, which argues that the difference between the chosen and rejected completions is more important to learning than exactly which models are used for the completions [@geng2025the].
+For example, in both of these two referenced models, the chosen responses are from Qwen 3 32B and the rejected responses are from Qwen 3 0.6B -- both authors developed this pairing concurrently and independently.
 
-Those among you who are familiar with RLHF methods may ask if the KL constraint in the optimization should stop this from happening. 
-The KL constraint is a distance term between the distribution of the original model and the resulting model. 
-It helps make the optimization more robust to overoptimization, but that makes the border between good and bad models a bit more nuanced. 
-Hence, the prevalence of vibes-based evaluations as the only tool that can attempt to read into this boundary. 
-Though, models tend to have enough parameters where they can change substantially and still satisfy the KL constraint on the data being measured --- it can't be the entire pretraining dataset, for example. -->
+Overall, training models on synthetic preference data with DAAs is the place most practioners should start with given the simplicity of implementation and strong performance relative to preference fine-tuning with reinforcement learning based methods.
+Other minor issues exist when using extensive, synthetic preference data, such as biases of the model juding between completions.
+Given that frontier models such as GPT-4 are known to have length bias [@dubois2024length] and a preference for outputs that match themselves [@panickssery2024llm] (see Chapter 13 for more information), it is slightly more likely for a piece of text in the "chosen" section of the dataset to be either from an OpenAI model or another strong model that is stylistically similar to it. 
 
+To conclude this section, we'll cover an intuition for how these methods change the generations of the model being trained.
+At a high level, most DAAs optimize to increase the margin between the probability of "chosen" and "rejected" completions (some less popular algorithms are designed to slightly change these dynamics, but the core remains).
+As discussed earlier in this chapter (see @fig:dpo_issue), this often means both probabilities decrease, but the rejected response decreases by a greater extent.
+Each token in a sequence receives a different gradient (magnitude and direction) based on how much it contributed to the overall preference margin, allowing the optimizer to identify which tokens matter most to the outcome.
 
 ## DAAs vs. RL: Online vs. Offline Data
 
