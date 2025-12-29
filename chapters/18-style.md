@@ -76,7 +76,7 @@ Researchers are actively working on techniques to mitigate these challenges and 
 ```
 
 The response from the DPO model has similar information, as both models are trained on the same pretrained base model, but the preference fine-tuning adds more structure, formatting, and of course length, which has been shown repeatedly to be associated with general notions of human preference for language models.
-For more examples like this, see the completions library associated with this book at [https://www.rlhfbook.com/library](https://rlhfbook.com/library)
+For more examples like this, see the completions library associated with this book at [https://www.rlhfbook.com/library](https://rlhfbook.com/library).
 
 ## The Chattiness Balance
 
