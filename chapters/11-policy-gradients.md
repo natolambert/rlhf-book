@@ -224,7 +224,7 @@ $$ {#eq:REINFORCE_with_advantage}
 
 REINFORCE is a specific implementation of vanilla policy gradient that uses a Monte Carlo estimator of the gradient.
 
-#### REINFORCE Leave One Out (RLOO)
+### REINFORCE Leave One Out (RLOO)
 
 The core implementation detail of REINFORCE Leave One Out versus standard REINFORCE is that it takes the average reward of the *other* samples in the batch to compute the baseline -- rather than averaging over all rewards in the batch [@huang2024putting], [@ahmadian2024back], [@kool2019buy].
 
@@ -539,6 +539,77 @@ $$
 &= A_i^{\text{RLOO}}
 \end{aligned}
 $$ {#eq:RLOO_GRPO_EQUIV}
+
+### Group Sequence Policy Optimization (GSPO)
+
+When taking multiple gradient steps on a batch of data collected from a previous policy, importance sampling is required to correct for the distribution mismatch between the data-collection policy and the current policy being optimized.
+The standard importance sampling identity allows us to estimate expectations under one distribution using samples from another:
+
+$$
+\mathbb{E}_{p}[f(x)] = \mathbb{E}_{q}\left[f(x) \frac{p(x)}{q(x)}\right],
+$$ {#eq:IS_identity}
+
+where $p$ is the target distribution, $q$ is the sampling distribution, and $\frac{p(x)}{q(x)}$ is the importance weight.
+In policy gradient methods, $p = \pi_\theta$ is the current policy we want to optimize and $q = \pi_{\theta_{\text{old}}}$ is the policy that generated the training data.
+This allows us to reweight samples collected under $\pi_{\theta_{\text{old}}}$ to estimate gradients for $\pi_\theta$, enabling multiple gradient steps per batch of rollouts.
+
+This distribution mismatch arises in two common scenarios: (1) taking multiple gradient steps on a single batch, where $\pi_\theta$ drifts from $\pi_{\theta_{\text{old}}}$ after each update, and (2) in asynchronous training systems where the inference backend (e.g., vLLM) and training backend (e.g., FSDP) may have different model weights due to synchronization delays (see the Asynchronicity section later in this chapter, which emerged particularly with the focus on RL for verifiable rewards, but is also used in RLHF setups).
+
+PPO and GRPO apply importance sampling at the token level and stabilize learning by clipping the *surrogate objective*.
+However, this approach has a subtle failure mode: when a token's importance ratio moves outside the clipping range $[1-\varepsilon, 1+\varepsilon]$, that token receives zero gradient.
+For rare but important tokens—such as key reasoning steps that the model initially assigns low probability—this "token dropping" can prevent the model from learning to produce them more reliably.
+
+Group Sequence Policy Optimization (GSPO) [@zheng2025gspo] extends GRPO by computing importance ratios at the sequence level rather than the token level.
+The practical motivation for this algorithm, and it's peer modifying how importance sampling is computed for policy graident algorithsm, CISPO, that we will discuss later, is that the per-token importance sampling ratio is often numerically unstable.
+The conceptual motivation is that when rewards are assigned at the sequence level (as in most RLHF and RLVR setups), the importance sampling correction should match that granularity.
+
+Token-level ratios can behave erratically for long sequences and/or large, sparse models (e.g. modern mixture of experts, MoE, models): a single token with a large ratio can dominate the plicy update, or many tokens may get clipped independently within a response, fragmenting the learning signal across a single response.
+GSPO addresses this by computing a single importance weight per response.
+
+Recall that the probability of a full response factorizes autoregressively:
+
+$$
+\pi_\theta(a \mid s) = \prod_{t=1}^{|a|} \pi_\theta(a_t \mid s, a_{<t}).
+$$ {#eq:response_factorization}
+
+Note that for simplicity, we often shorten the conditional policy, $\pi_\theta(a_t \mid s, a_{<t}), as $\pi_\theta(a_t \mid s)$, which implicitly contains the previous actions (tokens) in a completion.
+GSPO defines a length-normalized sequence-level importance ratio using the geometric mean (to avoid numerical issues with long sequences):
+
+$$
+\rho_i(\theta) = \left( \frac{\pi_\theta(a_i \mid s)}{\pi_{\theta_{\text{old}}}(a_i \mid s)} \right)^{\frac{1}{|a_i|}} = \exp\left( \frac{1}{|a_i|} \sum_{t=1}^{|a_i|} \log \frac{\pi_\theta(a_{i,t} \mid s, a_{i,<t})}{\pi_{\theta_{\text{old}}}(a_{i,t} \mid s, a_{i,<t})} \right).
+$$ {#eq:GSPO_ratio}
+
+The GSPO objective mirrors GRPO but uses this sequence-level ratio:
+
+$$
+J_{\text{GSPO}}(\theta) = \mathbb{E}_{s \sim \mathcal{D},\, \{a_i\}_{i=1}^G \sim \pi_{\theta_{\text{old}}}(\cdot \mid s)} \left[ \frac{1}{G} \sum_{i=1}^G \min\left( \rho_i(\theta) A_i,\, \text{clip}(\rho_i(\theta), 1-\varepsilon, 1+\varepsilon) A_i \right) \right].
+$$ {#eq:GSPO_objective}
+
+Because the ratio is length-normalized, the clipping range $\varepsilon$ operates on a per-token average scale, making the effective constraint comparable across responses of different lengths.
+In implementation, the sequence-level weight $\rho_i$ is applied uniformly to all tokens in response $a_i$, which simplifies gradient computation while maintaining the sequence-level IS correction.
+
+The advantage computation remains the same as GRPO (@eq:GRPO_ADV), using the group-relative mean and standard deviation normalization, which can be modified as done in other derivative studies of GRPO.
+GSPO can be summarized as "GRPO with sequence-level importance ratios"—the IS correction granularity is matched to the reward granularity.
+
+### Clipped Importance Sampling Policy Optimization (CISPO)
+
+Clipped Importance Sampling Policy Optimization (CISPO) [@minimax2025m1] takes a different approach: rather than clipping the surrogate objective, CISPO clips the importance weights themselves while preserving gradients for all tokens.
+The objective uses a stop-gradient on the clipped importance weight, returning to a REINFORCE-style formulation instead of the PPO-style, two-sided clipping:
+
+$$
+J_{\text{CISPO}}(\theta) = \mathbb{E}_{s \sim \mathcal{D},\, \{a_i\}_{i=1}^K \sim \pi_{\theta_{\text{old}}}(\cdot \mid s)} \left[ \frac{1}{\sum_{i=1}^K |a_i|} \sum_{i=1}^K \sum_{t=1}^{|a_i|} \text{sg}\left( \hat{w}_{i,t}(\theta) \right) A_{i,t} \log \pi_\theta(a_{i,t} \mid s, a_{i,<t}) \right],
+$$ {#eq:CISPO_objective}
+
+where $\text{sg}(\cdot)$ denotes stop-gradient (the weight is used but not differentiated through), and the clipped importance weight is:
+
+$$
+\hat{w}_{i,t}(\theta) = \text{clip}\left( w_{i,t}(\theta),\, 1 - \varepsilon_{\text{low}},\, 1 + \varepsilon_{\text{high}} \right), \quad w_{i,t}(\theta) = \frac{\pi_\theta(a_{i,t} \mid s, a_{i,<t})}{\pi_{\theta_{\text{old}}}(a_{i,t} \mid s, a_{i,<t})}.
+$$ {#eq:CISPO_weight}
+
+The key difference from PPO/GRPO is subtle but important: clipping the weight (not the objective) means every token still receives a gradient signal proportional to its advantage—the weight just bounds how much that signal is amplified or suppressed by the importance ratio.
+This is a bias-variance tradeoff: clipping weights introduces bias but controls variance and, critically, avoids dropping token gradients entirely.
+
+CISPO also allows asymmetric clipping bounds ($\varepsilon_{\text{low}} \neq \varepsilon_{\text{high}}$), similar to DAPO's "clip-higher" modification discussed later in this chapter, which can encourage exploration by allowing larger updates for tokens the model wants to upweight.
 
 
 
@@ -967,8 +1038,10 @@ A reference policy here indicates if it is required for the optimization itself,
 | :----- | :---------: | :----------: | :------------: | :--------------: | :------------------------------ |
 | **REINFORCE** | On-policy | Yes | No | No | $-\frac{1}{T}\sum_{t=1}^{T}\log \pi_\theta(a_t\mid s_t)\,\big(G_t - b(s_t)\big)$ |
 | **RLOO** | On-policy | Yes | No | No | $-\frac{1}{K}\sum_{i=1}^{K}\sum_t \log \pi_\theta(a_{i,t}\mid s_{i,t})\left(R_i-\frac{1}{K-1}\sum_{j\neq i}R_j\right)$ |
+| **CISPO** | On-policy | Yes | No | Yes | $-\sum_{i,t} \mathrm{sg}(\hat{w}_{i,t}) A_{i,t} \log \pi_\theta(a_{i,t}\mid s_{i,t});\ \hat{w}_{i,t} = \mathrm{clip}(\rho_{i,t}, 1-\varepsilon, 1+\varepsilon)$ |
 | **PPO** | On-policy | Yes | Yes | Yes | $-\frac{1}{T}\sum_{t=1}^{T}\min\!\big(\rho_t A_t,\ \mathrm{clip}(\rho_t,1-\varepsilon,1+\varepsilon) A_t\big);\ \rho_t = \frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)}$ |
 | **GRPO** | On-policy | Yes | No | Yes | $-\frac{1}{G}\sum_{i=1}^{G}\min\!\big(\rho_i A_i,\ \mathrm{clip}(\rho_i,1-\varepsilon,1+\varepsilon) A_i\big);\ \rho_i = \frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)},\ A_i = \frac{r_i-\mathrm{mean}(r_{1:G})}{\mathrm{std}(r_{1:G})}$ |
+| **GSPO** | On-policy | Yes | No | Yes | $-\frac{1}{G}\sum_{i=1}^{G}\min\!\big(\rho_i A_i,\ \mathrm{clip}(\rho_i,1-\varepsilon,1+\varepsilon) A_i\big);\ \rho_i = \left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)}\right)^{1/|a_i|}$ |
 | **DPO** | Off-policy | No | No | Yes | $-\mathbb{E}_{(x,y^{w},y^{l})}\!\left[\log \sigma\!\big(\beta[\Delta\log \pi_\theta(x)-\Delta\log \pi_{\mathrm{ref}}(x)]\big)\right]$ |
 Table: Comparing policy gradient algorithms (and friends). {#tbl:pg_compare}
 
