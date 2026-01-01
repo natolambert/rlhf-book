@@ -9,7 +9,7 @@ next-url: "12-direct-alignment"
 # Reinforcement Learning (i.e. Policy Gradient Algorithms)
 
 In the RLHF process, the reinforcement learning algorithm slowly updates the model's weights with respect to feedback from a reward model.
-The policy -- the model being trained -- generates completions to prompts in the training set, then the reward model scores them, and then the reinforcement learning optimizer takes gradient steps based on this information.
+The policy -- the model being trained -- generates completions to prompts in the training set, then the reward model scores them, and then the reinforcement learning optimizer takes gradient steps based on this information (see @fig:rlhf-overview for an overview).
 This chapter explains the mathematics and trade-offs across various algorithms used to learn from the signal the reward model gives to on-policy data.
 These algorithms are run for a period of many epochs, often thousands or millions of batches across a larger set of prompts, with gradient updates in between each of them.
 
@@ -19,6 +19,8 @@ In this section we will cover the fundamentals of the policy gradient algorithms
 
 At a machine learning level, this section is the subject with the highest complexity in the RLHF process.
 Though, as with most modern AI models, the largest determining factor on its success is the data provided as inputs to the process.
+
+![Overview of the RLHF training loop. A prompt from the dataset is passed to the tuned policy, which generates a completion. The reward model scores this completion, while the frozen initial model computes log probabilities on the same text to calculate a KL penalty that prevents excessive drift. The combined reward signal then drives a reinforcement learning update to the policy parameters.](images/rlhf-overview.png){#fig:rlhf-overview}
 
 <!-- The most popular algorithms used for RLHF have evolved over time. -->
 When RLHF came onto the scene with ChatGPT, it was largely known that they used a variant of PPO, and many initial efforts were built upon that.
