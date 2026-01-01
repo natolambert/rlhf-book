@@ -263,7 +263,7 @@ These details and trade-offs are discussed later in the chapter.
 
 <!-- A nice formulation of LM RL loss functions is found here https://arxiv.org/pdf/2502.01600 -->
 
-### Proximal Policy Optimization
+### Proximal Policy Optimization (PPO)
 
 Proximal Policy Optimization (PPO) [@schulman2017proximal] is one of the foundational algorithms behind Deep RL's successes (such as OpenAI's Five, which mastered DOTA 2 [@berner2019dota] and large amounts of research).
 The objective that PPO maximizes, with respect to the advantages and the policy probabilities, is as follows:
@@ -470,7 +470,7 @@ advantages = (targets - v_pred).detach()
 # total_loss = policy_loss + vf_coef * value_loss
 ```
 
-### Group Relative Policy Optimization
+### Group Relative Policy Optimization (GRPO)
 
 Group Relative Policy Optimization (GRPO) is introduced in DeepSeekMath [@shao2024deepseekmath], and used in other DeepSeek works, e.g. DeepSeek-V3 [@liu2024deepseek] and DeepSeek-R1 [@guo2025deepseek].
 GRPO can be viewed as a PPO-inspired algorithm with a very similar surrogate loss, but it avoids learning a value function with another copy of the original policy language model (or another checkpoint for initialization). 
@@ -572,7 +572,7 @@ $$
 \pi_\theta(a \mid s) = \prod_{t=1}^{|a|} \pi_\theta(a_t \mid s, a_{<t}).
 $$ {#eq:response_factorization}
 
-Note that for simplicity, we often shorten the conditional policy, $\pi_\theta(a_t \mid s, a_{<t}), as $\pi_\theta(a_t \mid s)$, which implicitly contains the previous actions (tokens) in a completion.
+Note that for simplicity, we often shorten the conditional policy, $\pi_\theta(a_t \mid s, a_{<t})$, as $\pi_\theta(a_t \mid s)$, which implicitly contains the previous actions (tokens) in a completion.
 GSPO defines a length-normalized sequence-level importance ratio using the geometric mean (to avoid numerical issues with long sequences):
 
 $$
@@ -597,20 +597,24 @@ Clipped Importance Sampling Policy Optimization (CISPO) [@minimax2025m1] takes a
 The objective uses a stop-gradient on the clipped importance weight, returning to a REINFORCE-style formulation instead of the PPO-style, two-sided clipping:
 
 $$
-J_{\text{CISPO}}(\theta) = \mathbb{E}_{s \sim \mathcal{D},\, \{a_i\}_{i=1}^K \sim \pi_{\theta_{\text{old}}}(\cdot \mid s)} \left[ \frac{1}{\sum_{i=1}^K |a_i|} \sum_{i=1}^K \sum_{t=1}^{|a_i|} \text{sg}\left( \hat{w}_{i,t}(\theta) \right) A_{i,t} \log \pi_\theta(a_{i,t} \mid s, a_{i,<t}) \right],
+J_{\text{CISPO}}(\theta) = \mathbb{E}_{s \sim \mathcal{D},\, \{a_i\}_{i=1}^K \sim \pi_{\theta_{\text{old}}}(\cdot \mid s)} \left[ \frac{1}{\sum_{i=1}^K |a_i|} \sum_{i=1}^K \sum_{t=1}^{|a_i|} \text{sg}\left( \hat{\rho}_{i,t}(\theta) \right) A_{i,t} \log \pi_\theta(a_{i,t} \mid s, a_{i,<t}) \right],
 $$ {#eq:CISPO_objective}
 
-where $\text{sg}(\cdot)$ denotes stop-gradient (the weight is used but not differentiated through), and the clipped importance weight is:
+where $\text{sg}(\cdot)$ denotes stop-gradient (the weight is used but not differentiated through), and the clipped importance ratio is:
 
 $$
-\hat{w}_{i,t}(\theta) = \text{clip}\left( w_{i,t}(\theta),\, 1 - \varepsilon_{\text{low}},\, 1 + \varepsilon_{\text{high}} \right), \quad w_{i,t}(\theta) = \frac{\pi_\theta(a_{i,t} \mid s, a_{i,<t})}{\pi_{\theta_{\text{old}}}(a_{i,t} \mid s, a_{i,<t})}.
-$$ {#eq:CISPO_weight}
+\hat{\rho}_{i,t}(\theta) = \text{clip}\left( \rho_{i,t}(\theta),\, 1 - \varepsilon_{\text{low}},\, 1 + \varepsilon_{\text{high}} \right), \quad \rho_{i,t}(\theta) = \frac{\pi_\theta(a_{i,t} \mid s, a_{i,<t})}{\pi_{\theta_{\text{old}}}(a_{i,t} \mid s, a_{i,<t})}.
+$$ {#eq:CISPO_ratio}
 
 The key difference from PPO/GRPO is subtle but important: clipping the weight (not the objective) means every token still receives a gradient signal proportional to its advantage—the weight just bounds how much that signal is amplified or suppressed by the importance ratio.
 This is a bias-variance tradeoff: clipping weights introduces bias but controls variance and, critically, avoids dropping token gradients entirely.
 
-CISPO also allows asymmetric clipping bounds ($\varepsilon_{\text{low}} \neq \varepsilon_{\text{high}}$), similar to DAPO's "clip-higher" modification discussed later in this chapter, which can encourage exploration by allowing larger updates for tokens the model wants to upweight.
+Both CISPO and GSPO were developed by organizations pushing the limits of applying RL on large-scale MoE models, which are known for their numerical issues.
+The papers highlight how the per-token importance sampling ratios are instable and can add substantial variance to the gradients, mitigating learning.
+This can make these algorithms particularly impactful on large-scale models, but less studied and beneficial within smaller, academic experiments.
 
+CISPO also allows asymmetric clipping bounds ($\varepsilon_{\text{low}} \neq \varepsilon_{\text{high}}$), similar to DAPO's "clip-higher" modification discussed later in this chapter, which can encourage exploration by allowing larger updates for tokens the model wants to upweight.
+Related work includes Tapered Off-Policy REINFORCE (TOPR) [@leroux2025topr], which also clips IS weights directly (like CISPO) rather than clipping within the objective (like PPO/GRPO), but operates at the sequence level (like GSPO) and uses asymmetric clipping based on reward sign—applying no IS correction for positive rewards while clipping ratios to $[0, 1]$ for negative rewards—enabling stable off-policy learning.
 
 
 ## Implementation
@@ -852,7 +856,7 @@ Fully asynchronous training would also enable scaling RL training runs across mu
 Related methods are exploring fully off-policy policy gradient algorithms [@roux2025tapered].
 
 
-### Proximal Policy Optimization
+### Proximal Policy Optimization 
 
 There are many, many implementations of PPO available. 
 The core *loss* computation is shown below. 
@@ -1038,7 +1042,7 @@ A reference policy here indicates if it is required for the optimization itself,
 | :----- | :---------: | :----------: | :------------: | :--------------: | :------------------------------ |
 | **REINFORCE** | On-policy | Yes | No | No | $-\frac{1}{T}\sum_{t=1}^{T}\log \pi_\theta(a_t\mid s_t)\,\big(G_t - b(s_t)\big)$ |
 | **RLOO** | On-policy | Yes | No | No | $-\frac{1}{K}\sum_{i=1}^{K}\sum_t \log \pi_\theta(a_{i,t}\mid s_{i,t})\left(R_i-\frac{1}{K-1}\sum_{j\neq i}R_j\right)$ |
-| **CISPO** | On-policy | Yes | No | Yes | $-\sum_{i,t} \mathrm{sg}(\hat{w}_{i,t}) A_{i,t} \log \pi_\theta(a_{i,t}\mid s_{i,t});\ \hat{w}_{i,t} = \mathrm{clip}(\rho_{i,t}, 1-\varepsilon, 1+\varepsilon)$ |
+| **CISPO** | On-policy | Yes | No | Yes | $-\sum_{i,t} \mathrm{sg}(\hat{\rho}_{i,t}) A_{i,t} \log \pi_\theta(a_{i,t}\mid s_{i,t});\ \hat{\rho}_{i,t} = \mathrm{clip}(\rho_{i,t}, 1-\varepsilon, 1+\varepsilon)$ |
 | **PPO** | On-policy | Yes | Yes | Yes | $-\frac{1}{T}\sum_{t=1}^{T}\min\!\big(\rho_t A_t,\ \mathrm{clip}(\rho_t,1-\varepsilon,1+\varepsilon) A_t\big);\ \rho_t = \frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)}$ |
 | **GRPO** | On-policy | Yes | No | Yes | $-\frac{1}{G}\sum_{i=1}^{G}\min\!\big(\rho_i A_i,\ \mathrm{clip}(\rho_i,1-\varepsilon,1+\varepsilon) A_i\big);\ \rho_i = \frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)},\ A_i = \frac{r_i-\mathrm{mean}(r_{1:G})}{\mathrm{std}(r_{1:G})}$ |
 | **GSPO** | On-policy | Yes | No | Yes | $-\frac{1}{G}\sum_{i=1}^{G}\min\!\big(\rho_i A_i,\ \mathrm{clip}(\rho_i,1-\varepsilon,1+\varepsilon) A_i\big);\ \rho_i = \left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)}\right)^{1/|a_i|}$ |
