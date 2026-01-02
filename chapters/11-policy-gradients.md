@@ -593,7 +593,7 @@ GSPO can be summarized as "GRPO with sequence-level importance ratios"—the IS 
 
 ### Clipped Importance Sampling Policy Optimization (CISPO)
 
-Clipped Importance Sampling Policy Optimization (CISPO) [@minimax2025m1] takes a different approach: rather than clipping the surrogate objective, CISPO clips the importance weights themselves while preserving gradients for all tokens.
+Clipped Importance Sampling Policy Optimization (CISPO) [@minimax2025minimaxm1scalingtesttimecompute] takes a different approach: rather than clipping the surrogate objective, CISPO clips the importance weights themselves while preserving gradients for all tokens.
 The objective uses a stop-gradient on the clipped importance weight, returning to a REINFORCE-style formulation instead of the PPO-style, two-sided clipping:
 
 $$
