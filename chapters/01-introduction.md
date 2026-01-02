@@ -106,9 +106,9 @@ Or a complex, richer answer:
 > 	3.	If you’re stuck awake, get up and do something quiet until sleepy again.
 > 
 > **Daily basics (most impact)**:
-> 	•	Same wake time (even weekends) → anchors your body clock.
-> 	•	Morning light for 5-10 minutes → helps set circadian rhythm.
-> 	•	Cool, dark room (fan/eye mask) → easier to stay asleep.
+> 	-	Same wake time (even weekends) --> anchors your body clock.
+> 	-	Morning light for 5-10 minutes --> helps set circadian rhythm.
+> 	-	Cool, dark room (fan/eye mask) --> easier to stay asleep.
 > 
 > **If you want a simple rule**:
 > `wake time fixed + caffeine cutoff + wind-down routine`

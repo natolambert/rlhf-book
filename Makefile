@@ -129,7 +129,8 @@ $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html:	$(HTML_DEPENDENCIES)
 	$(MKDIR_CMD) $(BUILD)/html
 	$(MKDIR_CMD) $(BUILD)/html/c
 	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(ARGS) $(HTML_ARGS) -o $@
-	$(COPY_CMD) $(IMAGES) $(BUILD)/html/
+	# Redundant: index.html doesn't use local images; chapter HTMLs get images via `make files` -> build/html/c/images/
+	# $(COPY_CMD) $(IMAGES) $(BUILD)/html/
 	$(COPY_CMD) templates/nav.js $(BUILD)/html/
 	$(COPY_CMD) templates/header-anchors.js $(BUILD)/html/
 	$(COPY_CMD) templates/table-scroll.js $(BUILD)/html/
@@ -173,7 +174,7 @@ $(BUILD)/latex/$(OUTPUT_FILENAME).tex: $(PDF_DEPENDENCIES)
 	$(foreach img,$(IMAGES), cp $(img) $(BUILD)/latex/$(notdir $(img));)
 
 	# 3a. Force pdfLaTeX mode for arXiv
-	python3 scripts/ensure_pdfoutput.py $@
+	uv run python scripts/ensure_pdfoutput.py $@
 
 	# 3b. Strip directory prefixes in \includegraphics paths (portable)
 	perl -0pi -e 's|(\\includegraphics(?:\[[^]]*\])?\{)[^/}]+/|\1|g' $@
@@ -182,17 +183,17 @@ $(BUILD)/latex/$(OUTPUT_FILENAME).tex: $(PDF_DEPENDENCIES)
 	perl -CSD -pi -e 's/\\pandocbounded\{([^{}]+)\}\}/\\pandocbounded{\\includegraphics{$$1}}/g' $@
 
 	# 3d. Unicode → ASCII/TeX normalisation (map accents and punctuation)
-	python3 scripts/normalize_tex_unicode.py $@
+	uv run python scripts/normalize_tex_unicode.py $@
 
 	# 3e. Drop XeTeX/LuaTeX-only branch so arXiv's pdfLaTeX build doesn't demand Unicode engines
-	python3 scripts/strip_xetex_branch.py $@
+	uv run python scripts/strip_xetex_branch.py $@
 
 	# 4. Copy bibliography and CSL files required by arXiv
 	cp chapters/bib.bib    $(BUILD)/latex/
 	cp templates/ieee.csl  $(BUILD)/latex/
 
 	# 5. Warn (but don\'t fail) if any non-ASCII bytes remain
-	python3 scripts/report_non_ascii.py $@
+	uv run python scripts/report_non_ascii.py $@
 
 	# 6. Package arXiv-ready source bundle
 	rm -f $(ARXIV_ZIP)
