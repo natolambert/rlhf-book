@@ -1,0 +1,5 @@
+[project]
+name = "rlhf-book"
+version = "0.1.0"
+description = "RLHF Book build scripts"
+requires-python = ">=3.11,<3.14"
