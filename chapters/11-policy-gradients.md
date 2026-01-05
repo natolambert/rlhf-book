@@ -287,7 +287,7 @@ $$
 J(\theta)
 =
 \mathbb{E}_{t}\left[
-\min\left(r_t(\theta)A_t,\ \text{clip}(r_t(\theta),1-\varepsilon,1+\varepsilon)A_t\right)
+\min\left(R_t(\theta)A_t,\ \text{clip}(R_t(\theta),1-\varepsilon,1+\varepsilon)A_t\right)
 \right],
 \qquad
 R_t(\theta)=\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)}.
