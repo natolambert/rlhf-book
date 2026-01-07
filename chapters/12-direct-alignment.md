@@ -112,7 +112,8 @@ Next, we must introduce a partition function, $Z(x)$:
 
 $$ Z(x) = \sum_y \pi_{\text{ref}}(y|x)\exp\left(\frac{1}{\beta}r(x,y)\right) $$ {#eq:dpo_partition}
 
-The partition function acts as a normalization factor over the reference policy, summing over all possible responses $y$ to a prompt $x$.
+The partition function acts as a normalization factor for the unnormalized density $\pi_{\text{ref}}(y|x)\exp\left(\frac{1}{\beta}r(x,y)\right)$, thereby making it a valid probability function over $y$ for each fixed $x$. The exact need for this will become clear shortly as we proceed with the derivation.
+
 With this substituted in, we obtain our intermediate transformation:
 
 $$ \min_{\pi}\mathbb{E}_{x\sim\mathcal{D}}\mathbb{E}_{y\sim\pi(y|x)}\left[\log\frac{\pi(y|x)}{\frac{1}{Z(x)}\pi_{\text{ref}}(y|x)\exp\left(\frac{1}{\beta}r(x,y)\right)} - \log Z(x)\right] $$ {#eq:dpo_deriv_5}
@@ -133,13 +134,16 @@ With $\log(x) + \log(y) = \log(x\cdot y)$ (and moving $Z$ to the denominator), w
 
 $$ = \log \frac{\pi(y|x)}{\frac{1}{Z(x)}\pi_{\text{ref}}(y|x)}- \log Z(x) - \frac{1}{\beta}r(x,y) $$ {#eq:dpo_deriv_9}
 
-Next, we expand $\frac{1}{\beta}r(x,y)$ to $\log \exp \frac{1}{\beta}r(x,y)$ and do the same operation to get @eq:dpo_deriv_5.
+Next, we expand $\frac{1}{\beta}r(x,y)$ to $\log \exp \frac{1}{\beta}r(x,y)$ and do the same operation to get @eq:dpo_deriv_5, which we slightly rewrite here:
+
+$$ \min_{\pi}\mathbb{E}_{x\sim\mathcal{D}} \left[ \mathbb{E}_{y\sim\pi(y|x)}\left[\log\frac{\pi(y|x)}{\frac{1}{Z(x)}\pi_{\text{ref}}(y|x)\exp\left(\frac{1}{\beta}r(x,y)\right)} \right] - \log Z(x)\right] $$ {#eq:dpo_deriv_10}
+
 With this optimization form, we need to actually solve for the optimal policy $\pi^*$.
-To do so, let us consider the above optimization as a KL distance:
+Since we introduced the partition function $Z(x)$, thereby making the term $\frac{1}{Z(x)}\pi_{\text{ref}}(y|x)\exp\left(\frac{1}{\beta}r(x,y)\right)$ a valid probability distribution over $y$, we can recognize that the inner expectation is in fact a proper KL-divergence!
 
-$$ \min_{\pi}\mathbb{E}_{x\sim\mathcal{D}}\left[\mathcal{D}_{\text{KL}} \left(\pi(y|x)||\frac{1}{Z(x)}\pi_{\text{ref}}(y|x)\exp\left(\frac{1}{\beta}r(x,y)\right) \right) - \log Z(x)\right] $$ {#eq:dpo_deriv_10}
+$$ \min_{\pi}\mathbb{E}_{x\sim\mathcal{D}}\left[\mathcal{D}_{\text{KL}} \left(\pi(y|x) \middle\| \frac{1}{Z(x)}\pi_{\text{ref}}(y|x)\exp\left(\frac{1}{\beta}r(x,y)\right) \right) - \log Z(x)\right] $$ {#eq:dpo_deriv_11}
 
-Since the partition function $Z(x)$ does not depend on the final answer, we can ignore it. This leaves us with just the KL distance between our policy we are learning and a form relating the partition, $\beta$, reward, and reference policy.
+Since the term $\log Z(x)$ does not depend on the final answer, we can ignore it. This leaves us with just the KL distance between our policy we are learning and a form relating the partition, $\beta$, reward, and reference policy.
 The Gibb's inequality tells this is minimized at a distance of 0, only when the two quantities are equal!
 Hence, we get an optimal policy:
 
