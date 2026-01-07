@@ -186,13 +186,21 @@ Finally, with the definition of a sigmoid function as $\sigma(x) = \frac{1}{1+e^
 
 $$p^*(y_1 \succ y_2 \mid x) = \sigma\left(\beta \log \frac{\pi^*(y_1 \mid x)}{\pi_{\text{ref}}(y_1 \mid x)} - \beta \log \frac{\pi^*(y_2 \mid x)}{\pi_{\text{ref}}(y_2 \mid x)}\right) $$ {#eq:dpo_loss_deriv3}
 
-This is the loss function for DPO, as shown in @eq:dpo_core. 
+This is the likelihood of preference data under the Bradley-Terry model, given the optimal policy $\pi^*$. Recall from Chapter 7 on Reward Modeling, we have derived the Bradley-Terry objective as maximizing the aforementioned likelihood, or equivalently minimizing the negative log-likelihood, which gives us the loss:
+$$
+\begin{aligned}
+\mathcal{L}_{\text{DPO}}(\pi_{\theta}; \pi_{\text{ref}}) &= -\mathbb{E}_{(x,y_c,y_r)\sim\mathcal{D}}\left[ \log p^*(y_c \succ y_r \mid x)  \right] \\
+&= -\mathbb{E}_{(x,y_c,y_r)\sim\mathcal{D}}\left[ \log \sigma\left(\beta \log \frac{\pi_{\theta}(y_c|x)}{\pi_{\text{ref}}(y_c|x)} - \beta \log \frac{\pi_{\theta}(y_r|x)}{\pi_{\text{ref}}(y_r|x)}\right)\right]
+\end{aligned}
+$${#eq:dpo_loss_deriv4}
+
+This is the loss function for DPO, in a form as shown in @eq:dpo_core. 
 The DPO paper has an additional derivation for the objective under a Plackett-Luce Model, which is far less used in practice [@rafailov2024direct].
 
 #### 3. Deriving the Bradley Terry DPO Gradient
 
 We used the DPO gradient shown in @eq:dpo_gradient to explain intuitions for how the model learns.
-To derive this, we must take the gradient of @eq:dpo_loss_deriv3 with respect to the model parameters.
+To derive this, we must take the gradient of @eq:dpo_loss_deriv4 with respect to the model parameters.
 
 $$\nabla_{\theta}\mathcal{L}_{\text{DPO}}(\pi_{\theta}; \pi_{\text{ref}}) = -\nabla_{\theta}\mathbb{E}_{(x,y_c,y_r)\sim\mathcal{D}}\left[ \log \sigma\left(\beta \log \frac{\pi_{\theta}(y_c|x)}{\pi_{\text{ref}}(y_c|x)} - \beta \log \frac{\pi_{\theta}(y_r|x)}{\pi_{\text{ref}}(y_r|x)}\right)\right] $$ {#eq:dpo_grad_0}
 
