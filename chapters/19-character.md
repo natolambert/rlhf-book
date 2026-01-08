@@ -38,11 +38,6 @@ One of the few public discussions of character training came from Amanda Askell 
 
 In summary, Anthropic uses the same techniques they use for Constitutional AI and general post-training for capabilities to train these models' characters.
 
-More recently, Anthropic released what they call a "soul document" alongside Claude Opus 4.5 [@anthropic2025souldoc], which describes the model's desired character traits, values, and behavioral guidelines in detail.
-Askell noted that both supervised fine-tuning and reinforcement learning are used with the soul document as a guide for training [@askell2025soul].
-This approach represents a convergence of character training and model specifications (discussed in the next section): the soul document serves as both a public description of intended model behavior *and* an active input to the training process.
-Rather than treating character as an emergent property to be shaped post-hoc, the soul document makes explicit the traits being optimized for during fine-tuning.
-
 Character training being a focus of developments is the strongest endorsement that RLHF and related approaches have shifted from their philosophical motivations of alignment to being primarily an empirical tool -- as is the focus of this book. 
 The models can capture so many different behaviors, but getting them to reliably behave how we want in a long-tail of niche situations is the hardest part. 
 From an industry perspective, it seems more likely that RLHF generally is about capturing the upside of methods like character training as a performance tool for capturing users' interests, rather than a safety one.
@@ -74,6 +69,10 @@ A Model Spec provides value to every stakeholder involved in a model release pro
 - **Model Designers**: The model designers get the benefit of needing to clarify what behaviors they do and do not want. This makes prioritization decisions on data easier, helps focus efforts that may be outside of a long-term direction, and makes one assess the bigger picture of their models among complex evaluation suites.
 - **Developers**: Users of models have a better picture for which behaviors they encounter may be intentional -- i.e. some types of refusals -- or side-effects of training. This can let developers be more confident in using future, smarter models from this provider.
 - **Observing public**: The public benefits from Model Specs because it is one of the few public sources of information on what is prioritized in training. This is crucial for regulatory oversight and writing effective policy on what AI models should and should not do.
+
+More recently, Anthropic released what they call a "soul document" alongside Claude Opus 4.5 [@anthropic2025souldoc] (after the public user base extracted it from the model, Anthropic confirmed its existence), which describes the model's desired character traits, values, and behavioral guidelines in detail.
+A lead researcher on Claude's character, Amanda Askell noted that both supervised fine-tuning and reinforcement learning methods are used with the soul document as a guide for training [@askell2025soul].
+This approach represents a convergence of Anthropic's earlier methods on character training towards documentation that resembles a model specification.
 
 ## Product Cycles, UX, and RLHF
 
