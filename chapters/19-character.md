@@ -14,9 +14,9 @@ In this chapter, we discuss a series of use-cases for RLHF and post-training tha
 
 ## Character Training
 
-Character training is the subset of post-training designed around crafting traits within a model to tweak the personality or manner of its response, rather than the content [@maiya2025open]. 
+Character training is the subset of post-training designed around crafting traits within a model to tweak the personality or manner of its response over the content [@maiya2025open]. 
 Character training, while being important to the user experience within language model chatbots, is largely unexplored in the public domain.
-The default way for users to change a model's behavior is to write a prompt describing the change, but character training with fine-tuning is shown to be more robust than prompting [@maiya2025open] (and this training also outperforms a newer method for manipulating models without taking gradient updates or passing in input context, Activation Steering [@turner2023activation]).
+The default way for users to change a model's behavior is to write a prompt describing the change, but character training with fine-tuning is shown to be more robust than prompting [@maiya2025open] (and this training also outperforms a newer method for manipulating models without taking gradient updates or passing in input context, Activation Steering [@turner2023activation], which has been applied to character traits specifically via persona vectors [@chen2025persona]).
 
 Largely, we don't know the core trade-offs of what character training does to a model, we don't know how exactly to study it, we don't know how much it can improve user preferences on metrics such as ChatBotArena, and we should, in order to know how AI companies change the models to maximize engagement and other use-facing metrics.
 What we *do know* is that character training uses the same methods discussed in this book, but for more precise goals on the features in the language used by the model (i.e. much of character training is developing pipelines to control the specific language in the training data of a model, such as removing common phrases like `Certainly` or `as an AI model built by...`).
@@ -37,6 +37,11 @@ One of the few public discussions of character training came from Amanda Askell 
 > Amanda Askell (03:42:02) It's more like constitutional AI, so it's a variant of that pipeline. I worked through constructing character traits that the model should have. They can be shorter traits or they can be richer descriptions. And then you get the model to generate queries that humans might give it that are relevant to that trait. Then it generates the responses and then it ranks the responses based on the character traits. In that way, after the generation of the queries, it's very much similar to constitutional AI, it has some differences. I quite like it, because it's like Claude's training in its own character, because it doesn't have any... It's like constitutional AI, but it's without any human data.
 
 In summary, Anthropic uses the same techniques they use for Constitutional AI and general post-training for capabilities to train these models' characters.
+
+More recently, Anthropic released what they call a "soul document" alongside Claude Opus 4.5 [@anthropic2025souldoc], which describes the model's desired character traits, values, and behavioral guidelines in detail.
+Askell noted that both supervised fine-tuning and reinforcement learning are used with the soul document as a guide for training [@askell2025soul].
+This approach represents a convergence of character training and model specifications (discussed in the next section): the soul document serves as both a public description of intended model behavior *and* an active input to the training process.
+Rather than treating character as an emergent property to be shaped post-hoc, the soul document makes explicit the traits being optimized for during fine-tuning.
 
 Character training being a focus of developments is the strongest endorsement that RLHF and related approaches have shifted from their philosophical motivations of alignment to being primarily an empirical tool -- as is the focus of this book. 
 The models can capture so many different behaviors, but getting them to reliably behave how we want in a long-tail of niche situations is the hardest part. 
