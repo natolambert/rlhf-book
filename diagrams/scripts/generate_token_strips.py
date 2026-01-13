@@ -292,22 +292,6 @@ STRIPS = [
             masked=set(),
         ),
     ),
-    # ORM: Show per-token probabilities on completion
-    TokenStrip(
-        name="orm_tokens",
-        title="Outcome RM: Per-Token Correctness",
-        tokens=["<s>", "What", "is", "2+2", "?", "The", "answer", "is", "4", "</s>"],
-        highlight={5, 6, 7, 8, 9},  # completion tokens
-        masked={0, 1, 2, 3, 4},  # prompt tokens
-        annotation="Loss: BCE per token  |  Prompt masked (label=-100), completion supervised",
-        token_labels={
-            5: "p=.92",
-            6: "p=.88",
-            7: "p=.95",
-            8: "p=.99",
-            9: "p=.97",
-        },
-    ),
     # PRM: Show step boundaries with 3-class labels
     TokenStrip(
         name="prm_tokens",
@@ -334,6 +318,22 @@ STRIPS = [
             8: "+1",
         },
     ),
+    # ORM: Show per-token probabilities on completion
+    TokenStrip(
+        name="orm_tokens",
+        title="Outcome RM: Per-Token Correctness",
+        tokens=["<s>", "What", "is", "2+2", "?", "The", "answer", "is", "4", "</s>"],
+        highlight={5, 6, 7, 8, 9},  # completion tokens
+        masked={0, 1, 2, 3, 4},  # prompt tokens
+        annotation="Loss: BCE per token  |  Prompt masked (label=-100), completion supervised",
+        token_labels={
+            5: "p=.92",
+            6: "p=.88",
+            7: "p=.95",
+            8: "p=.99",
+            9: "p=.97",
+        },
+    ),
     # Value function: Show V(s) on completion tokens (prompt masked like ORM)
     TokenStrip(
         name="value_fn_tokens",
@@ -350,6 +350,8 @@ STRIPS = [
             9: "V=1.0",
         },
     ),
+    # NOTE: orm_multilane and value_fn_multilane show richer detail
+    # (where targets come from, how outputs are used)
 ]
 
 

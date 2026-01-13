@@ -21,15 +21,9 @@ TOKEN_STRIPS := $(GENERATED_DIR)/pref_rm_tokens.png \
                 $(GENERATED_DIR)/prm_tokens.png \
                 $(GENERATED_DIR)/value_fn_tokens.png
 
-# I/O diagram outputs
-IO_DIAGRAMS := $(GENERATED_DIR)/pref_rm_io.png \
-               $(GENERATED_DIR)/orm_io.png \
-               $(GENERATED_DIR)/prm_io.png \
-               $(GENERATED_DIR)/gen_rm_io.png
+.PHONY: all d2 tokens clean install help
 
-.PHONY: all d2 tokens io clean install help
-
-all: d2 tokens io
+all: d2 tokens
 	@echo "All diagrams generated in $(GENERATED_DIR)/"
 
 # D2 diagrams - requires d2 CLI to be installed
@@ -45,18 +39,13 @@ $(GENERATED_DIR)/%.svg: d2/%.d2 | $(GENERATED_DIR)
 	d2 --theme 0 $< $@
 
 # Token strip diagrams - requires matplotlib
-tokens: $(TOKEN_STRIPS)
-	@echo "Token strip diagrams generated"
-
-$(TOKEN_STRIPS): scripts/generate_token_strips.py | $(GENERATED_DIR)
+# Uses two generators:
+#   - generate_token_strips.py for Pref RM and PRM (simple strips)
+#   - generate_multilane_strips.py for ORM and Value (multi-lane with targets/usage)
+tokens: | $(GENERATED_DIR)
 	uv run python scripts/generate_token_strips.py --output-dir $(GENERATED_DIR) --format png
-
-# I/O diagrams - requires matplotlib
-io: $(IO_DIAGRAMS)
-	@echo "I/O diagrams generated"
-
-$(IO_DIAGRAMS): scripts/generate_io_diagrams.py | $(GENERATED_DIR)
-	uv run python scripts/generate_io_diagrams.py --output-dir $(GENERATED_DIR) --format png
+	uv run python scripts/generate_multilane_strips.py --output-dir $(GENERATED_DIR) --format png
+	@echo "Token strip diagrams generated"
 
 # Create output directory
 $(GENERATED_DIR):
@@ -78,10 +67,9 @@ help:
 	@echo "RLHF Book Diagram Generator"
 	@echo ""
 	@echo "Targets:"
-	@echo "  all      - Generate all diagrams (D2 + token strips + I/O)"
+	@echo "  all      - Generate all diagrams (D2 + token strips)"
 	@echo "  d2       - Generate D2 pipeline diagrams only"
 	@echo "  tokens   - Generate token strip diagrams only"
-	@echo "  io       - Generate I/O flow diagrams only"
 	@echo "  install  - Copy generated diagrams to images/"
 	@echo "  clean    - Remove generated files"
 	@echo ""
