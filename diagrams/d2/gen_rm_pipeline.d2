@@ -1,0 +1,64 @@
+# Generative RM (LLM-as-Judge) Pipeline
+# Data → Model → Output → Parse
+
+direction: right
+
+title: "Generative RM (LLM-as-Judge)" {
+  shape: text
+  style.font-size: 24
+  style.bold: true
+}
+
+# Data inputs
+data: "Data" {
+  shape: rectangle
+  style.fill: "#e8f4f8"
+
+  prompt: "prompt x"
+  completions: "y_A, y_B\n(or single y)"
+  rubric: "rubric/criteria"
+}
+
+# Model
+model: "Model" {
+  shape: rectangle
+  style.fill: "#f0f0f0"
+
+  llm: "Full LLM\n(GPT-4, Claude, etc.)" {
+    shape: rectangle
+  }
+  gen: "Generate\nVerdict" {
+    shape: rectangle
+    style.fill: "#fff3cd"
+  }
+
+  llm -> gen
+}
+
+# Outputs
+outputs: "Output" {
+  shape: rectangle
+  style.fill: "#e8f4f8"
+
+  verdict: "\"Response A is better\nbecause...\""
+}
+
+# Parse
+parse: "Parse" {
+  shape: rectangle
+  style.fill: "#d4edda"
+
+  score: "→ score/preference"
+}
+
+# Connections
+data -> model: "prompt\ntemplate"
+model -> outputs: "generate"
+outputs -> parse: "extract"
+
+# Annotation
+note: "Natural language judgment\nNo reward head needed\nZero/few-shot or fine-tuned" {
+  shape: text
+  style.font-size: 12
+  style.italic: true
+}

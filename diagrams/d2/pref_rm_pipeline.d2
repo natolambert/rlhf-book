@@ -1,0 +1,69 @@
+# Preference RM (Bradley-Terry) Pipeline
+# Data → Model → Output → Loss
+
+direction: right
+
+title: "Preference RM (Bradley-Terry)" {
+  shape: text
+  style.font-size: 24
+  style.bold: true
+}
+
+# Data inputs
+data: "Data" {
+  shape: rectangle
+  style.fill: "#e8f4f8"
+
+  prompt: "prompt x"
+  chosen: "chosen y_c"
+  rejected: "rejected y_r"
+  label: "label: y_c ≻ y_r"
+}
+
+# Model
+model: "Model" {
+  shape: rectangle
+  style.fill: "#f0f0f0"
+
+  trunk: "LM Trunk" {
+    shape: rectangle
+  }
+  head: "Scalar Head\n@ EOS" {
+    shape: rectangle
+    style.fill: "#fff3cd"
+  }
+
+  trunk -> head
+}
+
+# Outputs
+outputs: "Scores" {
+  shape: rectangle
+  style.fill: "#e8f4f8"
+
+  r_c: "r_θ(x, y_c)"
+  r_r: "r_θ(x, y_r)"
+}
+
+# Loss
+loss: "Loss" {
+  shape: rectangle
+  style.fill: "#f8d7da"
+
+  formula: "L = -log σ(r_c - r_r)" {
+    shape: text
+    style.font-size: 14
+  }
+}
+
+# Connections
+data -> model: "tokenize"
+model -> outputs
+outputs -> loss: "contrast"
+
+# Annotation
+note: "Sequence-level scalar\nPairwise comparison\nContrastive BT loss" {
+  shape: text
+  style.font-size: 12
+  style.italic: true
+}
