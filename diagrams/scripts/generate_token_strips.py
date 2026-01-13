@@ -334,20 +334,15 @@ STRIPS = [
             8: "+1",
         },
     ),
-    # Value function: Show V(s) at each token
+    # Value function: Show V(s) on completion tokens (prompt masked like ORM)
     TokenStrip(
         name="value_fn_tokens",
         title="Value Function: Per-Token State Values",
         tokens=["<s>", "What", "is", "2+2", "?", "The", "answer", "is", "4", "</s>"],
-        highlight={0, 1, 2, 3, 4, 5, 6, 7, 8, 9},  # all tokens
-        masked=set(),
-        annotation="V(s_t) = expected future return from state t  |  Regression loss",
+        highlight={5, 6, 7, 8, 9},  # completion tokens only
+        masked={0, 1, 2, 3, 4},  # prompt masked
+        annotation="V(s_t) = expected future return from state t  |  Regression loss on completion",
         token_labels={
-            0: "V=.12",
-            1: "V=.15",
-            2: "V=.18",
-            3: "V=.22",
-            4: "V=.31",
             5: "V=.45",
             6: "V=.62",
             7: "V=.78",
