@@ -403,6 +403,45 @@ ORMs and value functions can appear similar since both produce per-token outputs
 If you define a dense token reward $r_t = \mathbb{1}[\text{token is correct}]$ and use $\gamma = 1$, then an ORM is learning $r_t$ (or $p(r_t = 1)$) while the value head is learning the remaining-sum $\sum_{k \geq t} r_k$.
 They can share the same trunk and head shape, but the *semantics and supervision pipeline* differ: ORMs are trained offline from fixed labels, while value functions are trained on-policy and used to compute advantages $A_t = \hat{R}_t - V_t$ for policy gradients.
 
+### Inference: What Do You Actually Run?
+
+Beyond training differences, the models differ in how they're used at inference time:
+
+**Preference RM (Bradley-Terry):**
+
+- *Input:* prompt $x$ + candidate completion $y$
+- *Output:* single scalar $r_\theta(x, y)$ from EOS hidden state
+- *Usage:* rerank $k$ completions, pick top-1 (best-of-N sampling); or provide terminal reward for RL
+- *Aggregation:* none needed (already a single number), though length normalization is sometimes applied
+
+**Outcome RM:**
+
+- *Input:* prompt $x$ + completion $y$
+- *Output:* per-token probabilities $p_t \approx P(\text{correct at token } t)$ over completion tokens
+- *Usage:* score finished candidates; aggregate via mean, min (tail risk), or product $\sum_t \log p_t$
+- *Aggregation choices:* mean correctness, minimum $p_t$, average over last $m$ tokens, or threshold flagging if any $p_t < \tau$
+
+**Process RM:**
+
+- *Input:* prompt $x$ + reasoning trace with step boundaries
+- *Output:* scores at step boundaries (e.g., class logits for correct/neutral/incorrect)
+- *Usage:* score completed chain-of-thought; or guide search/decoding by pruning low-scoring branches
+- *Aggregation:* over steps (not tokens) — mean step score, minimum (fail-fast), or weighted sum favoring later steps
+
+**Value Function:**
+
+- *Input:* prompt $x$ + current prefix $y_{\leq t}$ (a state)
+- *Output:* $V_t$ at the last token position (expected remaining return)
+- *Usage:* compute advantages $A_t$ as baseline during RL training; occasionally used as a scorer, but this is policy- and reward-specific
+- *Aggregation:* typically take $V$ at the last generated token; interpretation differs from "probability of correctness"
+
+The one-liner mental model:
+
+- **RM:** "How good is this whole answer?" → scalar at end → rerank
+- **ORM:** "Which parts look correct?" → per-token correctness → aggregate or diagnose
+- **PRM:** "Are the reasoning steps sound?" → per-step scores → prune/search/guide
+- **Value:** "How much reward remains from here?" → baseline for RL advantages
+
 ## Generative Reward Modeling
 
 With the cost of preference data, a large research area emerged to use existing language models as a judge of human preferences or in other evaluation settings [@zheng2023judging].
