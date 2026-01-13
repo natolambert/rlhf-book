@@ -4,5 +4,6 @@ version = "0.1.0"
 description = "RLHF Book build scripts"
 requires-python = ">=3.11,<3.14"
 dependencies = [
+    "google-generativeai>=0.8.6",
     "matplotlib>=3.10.8",
 ]
