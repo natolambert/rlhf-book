@@ -42,10 +42,13 @@ $(GENERATED_DIR)/%.svg: d2/%.d2 | $(GENERATED_DIR)
 # Uses two generators:
 #   - generate_token_strips.py for Pref RM and PRM (simple strips)
 #   - generate_multilane_strips.py for ORM and Value (multi-lane with targets/usage)
+# Generates both PNG (digital) and SVG (print)
 tokens: | $(GENERATED_DIR)
 	uv run python scripts/generate_token_strips.py --output-dir $(GENERATED_DIR) --format png
+	uv run python scripts/generate_token_strips.py --output-dir $(GENERATED_DIR) --format svg
 	uv run python scripts/generate_multilane_strips.py --output-dir $(GENERATED_DIR) --format png
-	@echo "Token strip diagrams generated"
+	uv run python scripts/generate_multilane_strips.py --output-dir $(GENERATED_DIR) --format svg
+	@echo "Token strip diagrams generated (PNG + SVG)"
 
 # Create output directory
 $(GENERATED_DIR):
