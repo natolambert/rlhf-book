@@ -34,7 +34,7 @@ images/       # Image assets referenced in chapters
 assets/       # Brand assets (covers, logos)
 templates/    # Pandoc templates for each output format
 scripts/      # Build utilities
-diagrams/     # Diagram sources (D2, Python scripts, specs)
+diagrams/     # Diagram sources (Python scripts, specs)
 build/        # Generated output (not tracked in git)
 ```
 
@@ -50,9 +50,8 @@ build/        # Generated output (not tracked in git)
 The `diagrams/` directory contains source files for generating figures:
 
 1. **specs/** - YAML specifications defining diagram content
-2. **d2/** - D2 language sources for pipeline diagrams
-3. **scripts/** - Python scripts for token strip visualizations
-4. **generated/** - Intermediate outputs
+2. **scripts/** - Python/matplotlib scripts for generating diagrams
+3. **generated/** - Intermediate outputs (PNG and SVG)
 
 Generate diagrams with:
 ```bash
