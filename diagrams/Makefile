@@ -42,13 +42,14 @@ $(GENERATED_DIR)/%.svg: d2/%.d2 | $(GENERATED_DIR)
 # Uses two generators:
 #   - generate_token_strips.py for Pref RM and PRM (simple strips)
 #   - generate_multilane_strips.py for ORM and Value (multi-lane with targets/usage)
-# Generates both PNG (digital) and SVG (print)
+# Generates both PNG (digital) and SVG (print) in separate folders
 tokens: | $(GENERATED_DIR)
-	uv run python scripts/generate_token_strips.py --output-dir $(GENERATED_DIR) --format png
-	uv run python scripts/generate_token_strips.py --output-dir $(GENERATED_DIR) --format svg
-	uv run python scripts/generate_multilane_strips.py --output-dir $(GENERATED_DIR) --format png
-	uv run python scripts/generate_multilane_strips.py --output-dir $(GENERATED_DIR) --format svg
-	@echo "Token strip diagrams generated (PNG + SVG)"
+	@mkdir -p $(GENERATED_DIR)/png $(GENERATED_DIR)/svg
+	uv run python scripts/generate_token_strips.py --output-dir $(GENERATED_DIR)/png --format png
+	uv run python scripts/generate_token_strips.py --output-dir $(GENERATED_DIR)/svg --format svg
+	uv run python scripts/generate_multilane_strips.py --output-dir $(GENERATED_DIR)/png --format png
+	uv run python scripts/generate_multilane_strips.py --output-dir $(GENERATED_DIR)/svg --format svg
+	@echo "Token strip diagrams generated (PNG in png/, SVG in svg/)"
 
 # Create output directory
 $(GENERATED_DIR):
@@ -57,7 +58,8 @@ $(GENERATED_DIR):
 # Copy diagrams to images/ for use in book
 install: all
 	@echo "Copying diagrams to $(IMAGES_DIR)/"
-	cp $(GENERATED_DIR)/*.png $(IMAGES_DIR)/
+	cp $(GENERATED_DIR)/png/*.png $(IMAGES_DIR)/ 2>/dev/null || true
+	cp $(GENERATED_DIR)/*.png $(IMAGES_DIR)/ 2>/dev/null || true
 	@echo "Done. Diagrams installed to $(IMAGES_DIR)/"
 
 # Clean generated files
