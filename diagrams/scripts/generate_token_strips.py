@@ -281,7 +281,7 @@ STRIPS = [
         tokens=["<s>", "What", "is", "2+2", "?", "The", "answer", "is", "4", "</s>"],
         highlight={9},  # EOS only
         masked=set(),
-        annotation="Loss: L = -log σ(r_c - r_r)  |  Only score difference matters",
+        annotation=r"Loss: $\mathcal{L} = -\log \sigma(r_c - r_r)$  |  Only score difference matters",
         primary_label="Chosen:",
         secondary_label="Rejected:",
         secondary_strip=TokenStrip(
@@ -341,7 +341,7 @@ STRIPS = [
         tokens=["<s>", "What", "is", "2+2", "?", "The", "answer", "is", "4", "</s>"],
         highlight={5, 6, 7, 8, 9},  # completion tokens only
         masked={0, 1, 2, 3, 4},  # prompt masked
-        annotation="V(s_t) = expected future return from state t  |  Regression loss on completion",
+        annotation=r"$V(s_t)$ = expected future return from state $t$  |  Regression loss on completion",
         token_labels={
             5: "V=.45",
             6: "V=.62",
