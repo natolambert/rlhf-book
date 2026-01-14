@@ -4,12 +4,10 @@
 #   make all        - Generate all diagrams
 #   make tokens     - Generate token strip diagrams
 #   make clean      - Remove generated files
-#   make install    - Copy final diagrams to images/ directory
 
 GENERATED_DIR := generated
-IMAGES_DIR := ../images
 
-.PHONY: all tokens clean install help
+.PHONY: all tokens clean help
 
 all: tokens
 	@echo "All diagrams generated in $(GENERATED_DIR)/"
@@ -31,12 +29,6 @@ tokens: | $(GENERATED_DIR)
 $(GENERATED_DIR):
 	mkdir -p $(GENERATED_DIR)
 
-# Copy diagrams to images/ for use in book
-install: all
-	@echo "Copying diagrams to $(IMAGES_DIR)/"
-	cp $(GENERATED_DIR)/png/*.png $(IMAGES_DIR)/
-	@echo "Done. Diagrams installed to $(IMAGES_DIR)/"
-
 # Clean generated files
 clean:
 	rm -rf $(GENERATED_DIR)/*
@@ -49,7 +41,6 @@ help:
 	@echo "Targets:"
 	@echo "  all      - Generate all diagrams"
 	@echo "  tokens   - Generate token strip diagrams"
-	@echo "  install  - Copy generated diagrams to images/"
 	@echo "  clean    - Remove generated files"
 	@echo ""
 	@echo "Requirements:"
