@@ -7,9 +7,9 @@
 
 GENERATED_DIR := generated
 
-.PHONY: all tokens clean help
+.PHONY: all tokens grpo clean help
 
-all: tokens
+all: tokens grpo
 	@echo "All diagrams generated in $(GENERATED_DIR)/"
 
 # Token strip diagrams - requires matplotlib
@@ -24,6 +24,14 @@ tokens: | $(GENERATED_DIR)
 	uv run python scripts/generate_multilane_strips.py --output-dir $(GENERATED_DIR)/png --format png
 	uv run python scripts/generate_multilane_strips.py --output-dir $(GENERATED_DIR)/svg --format svg
 	@echo "Token strip diagrams generated (PNG in png/, SVG in svg/)"
+
+# PPO vs GRPO architecture comparison diagram
+# Based on DeepSeek-Math/GRPO paper Figure 1
+grpo: | $(GENERATED_DIR)
+	@mkdir -p $(GENERATED_DIR)/png $(GENERATED_DIR)/svg
+	uv run python scripts/generate_ppo_grpo.py --output-dir $(GENERATED_DIR)/png --format png
+	uv run python scripts/generate_ppo_grpo.py --output-dir $(GENERATED_DIR)/svg --format svg
+	@echo "PPO vs GRPO diagram generated"
 
 # Create output directory
 $(GENERATED_DIR):
@@ -41,6 +49,7 @@ help:
 	@echo "Targets:"
 	@echo "  all      - Generate all diagrams"
 	@echo "  tokens   - Generate token strip diagrams"
+	@echo "  grpo     - Generate PPO vs GRPO architecture diagram"
 	@echo "  clean    - Remove generated files"
 	@echo ""
 	@echo "Requirements:"
