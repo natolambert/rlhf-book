@@ -63,10 +63,11 @@ def draw_label_circle(ax, x, y, label, color="#4CAF50"):
 def render_orm_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
     """
     Render ORM diagram with 3 lanes - cleaner layout.
+    Uses realistic tokenization based on GSM8K example.
     """
-    tokens = ["<s>", "What", "is", "2+2", "?", "The", "answer", "is", "4", "</s>"]
+    tokens = ["<|eos|>", "Joy", "can", "...", "?", "The", "answer", "is", "5", ".", "<|eos|>"]
     n_tokens = len(tokens)
-    prompt_end = 5
+    prompt_end = 5  # first 5 tokens are prompt
 
     fig, ax = plt.subplots(figsize=(12, 5))
 
@@ -130,7 +131,7 @@ def render_orm_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
     ax.text(x_offset - 0.2, y_outputs - 0.05, r"predicts $p_t$", ha="right", va="center",
             fontsize=9, fontweight="bold", color="#1565C0")
 
-    probs = [".92", ".88", ".95", ".99", ".97"]
+    probs = [".92", ".88", ".95", ".99", ".97", ".94"]  # 6 completion tokens
     for i, p in enumerate(probs):
         x = x_offset + (prompt_end + i) * box_w + box_w/2 - 0.05
         ax.text(x, y_outputs + 0.1, f"$p$={p}", ha="center", va="center",
@@ -182,10 +183,11 @@ def render_orm_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
 def render_value_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
     """
     Render Value Function diagram with 4 lanes - cleaner layout.
+    Uses realistic tokenization based on GSM8K example.
     """
-    tokens = ["<s>", "What", "is", "2+2", "?", "The", "answer", "is", "4", "</s>"]
+    tokens = ["<|eos|>", "Joy", "can", "...", "?", "The", "answer", "is", "5", ".", "<|eos|>"]
     n_tokens = len(tokens)
-    prompt_end = 5
+    prompt_end = 5  # first 5 tokens are prompt
 
     fig, ax = plt.subplots(figsize=(12, 6))
 
@@ -250,7 +252,7 @@ def render_value_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
             fontsize=10, fontweight="bold")
 
     # Return values (with γ=1, equal to final R)
-    returns = [".73", ".73", ".73", ".73", ".73"]
+    returns = [".73", ".73", ".73", ".73", ".73", ".73"]  # 6 completion tokens
     for i, ret in enumerate(returns):
         x = x_offset + (prompt_end + i) * box_w + box_w/2 - 0.05
         ax.text(x, y_targets + 0.1, r"$\hat{V}$=" + ret, ha="center", va="center",
@@ -271,7 +273,7 @@ def render_value_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
     ax.text(x_offset - 0.2, y_outputs - 0.05, r"predicts $V_t$", ha="right", va="center",
             fontsize=9, fontweight="bold", color="#1565C0")
 
-    values = [".45", ".55", ".62", ".68", ".71"]
+    values = [".45", ".55", ".62", ".68", ".71", ".73"]  # 6 completion tokens
     for i, v in enumerate(values):
         x = x_offset + (prompt_end + i) * box_w + box_w/2 - 0.05
         ax.text(x, y_outputs + 0.1, f"$V$={v}", ha="center", va="center",

@@ -272,14 +272,18 @@ def render_token_strip(
     print(f"Generated: {output_path}")
 
 
-# Define improved token strips for each reward model type
+# Define token strips using realistic tokenization (dolma2-tokenizer style)
+# Based on GSM8K: "Joy can read 8 pages... How many hours to read 120 pages?"
+# Correct answer: 5, Wrong answer: 3
+# Using ... to indicate truncated tokens (not a real token, visual indicator)
 STRIPS = [
     # Preference RM: Show chosen vs rejected with EOS only highlighted
+    # Tokens from: <|eos|> Joy can ... ? The answer is 5 . <|eos|>
     TokenStrip(
         name="pref_rm_tokens",
         title="Preference RM: Pairwise Comparison at EOS",
-        tokens=["<s>", "What", "is", "2+2", "?", "The", "answer", "is", "4", "</s>"],
-        highlight={9},  # EOS only
+        tokens=["<|eos|>", "Joy", "can", "...", "?", "The", "answer", "is", "5", ".", "<|eos|>"],
+        highlight={10},  # EOS only
         masked=set(),
         annotation=r"Loss: $\mathcal{L} = -\log \sigma(r_c - r_r)$  |  Only score difference matters",
         primary_label="Chosen:",
@@ -287,43 +291,51 @@ STRIPS = [
         secondary_strip=TokenStrip(
             name="",
             title="",
-            tokens=["<s>", "What", "is", "2+2", "?", "It", "equals", "5", "!", "</s>"],
-            highlight={9},  # EOS only
+            tokens=["<|eos|>", "Joy", "can", "...", "?", "The", "answer", "is", "3", ".", "<|eos|>"],
+            highlight={10},  # EOS only
             masked=set(),
         ),
     ),
     # PRM: Show step boundaries with 3-class labels
+    # CoT reasoning with newlines as step boundaries
     TokenStrip(
         name="prm_tokens",
         title="Process RM: Step Boundary Supervision",
         tokens=[
-            "<s>",
-            "Q:",
-            "2+2",
-            "Step1:",
-            "2+2=4",
+            "<|eos|>",
+            "Joy",
+            "can",
+            "...",
+            "?",
+            "8",
+            "/",
+            "20",
+            "=",
+            "...",
             "\\n",
-            "Step2:",
-            "verify",
+            "120",
+            "/",
+            "...",
             "\\n",
-            "Ans:",
-            "4",
-            "</s>",
+            "5",
+            ".",
+            "<|eos|>",
         ],
-        highlight={5, 8},  # newlines as step boundaries
-        masked={0, 1, 2, 3, 4, 6, 7, 9, 10, 11},  # everything else
+        highlight={10, 14},  # newlines as step boundaries
+        masked={0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 15, 16, 17},  # everything else
         annotation="3-class labels at boundaries: {+1: correct, 0: neutral, -1: incorrect}",
         token_labels={
-            5: "+1",
-            8: "+1",
+            10: "+1",
+            14: "+1",
         },
     ),
     # ORM: Show per-token probabilities on completion
+    # Prompt masked, completion supervised
     TokenStrip(
         name="orm_tokens",
         title="Outcome RM: Per-Token Correctness",
-        tokens=["<s>", "What", "is", "2+2", "?", "The", "answer", "is", "4", "</s>"],
-        highlight={5, 6, 7, 8, 9},  # completion tokens
+        tokens=["<|eos|>", "Joy", "can", "...", "?", "The", "answer", "is", "5", ".", "<|eos|>"],
+        highlight={5, 6, 7, 8, 9, 10},  # completion tokens
         masked={0, 1, 2, 3, 4},  # prompt tokens
         annotation="Loss: BCE per token  |  Prompt masked (label=-100), completion supervised",
         token_labels={
@@ -332,22 +344,24 @@ STRIPS = [
             7: "p=.95",
             8: "p=.99",
             9: "p=.97",
+            10: "p=.94",
         },
     ),
     # Value function: Show V(s) on completion tokens (prompt masked like ORM)
     TokenStrip(
         name="value_fn_tokens",
         title="Value Function: Per-Token State Values",
-        tokens=["<s>", "What", "is", "2+2", "?", "The", "answer", "is", "4", "</s>"],
-        highlight={5, 6, 7, 8, 9},  # completion tokens only
+        tokens=["<|eos|>", "Joy", "can", "...", "?", "The", "answer", "is", "5", ".", "<|eos|>"],
+        highlight={5, 6, 7, 8, 9, 10},  # completion tokens only
         masked={0, 1, 2, 3, 4},  # prompt masked
         annotation=r"$V(s_t)$ = expected future return from state $t$  |  Regression loss on completion",
         token_labels={
             5: "V=.45",
-            6: "V=.62",
-            7: "V=.78",
-            8: "V=.91",
-            9: "V=1.0",
+            6: "V=.55",
+            7: "V=.70",
+            8: "V=.85",
+            9: "V=.95",
+            10: "V=1.0",
         },
     ),
     # NOTE: orm_multilane and value_fn_multilane show richer detail
