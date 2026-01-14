@@ -94,3 +94,9 @@ response = model.generate_content([
 - Use consistent visual grammar across related figures
 - Prefer SVG for scalability, PNG for final book assets
 - Mockups are iterative - not pixel-perfect
+
+## Next Steps (Diagrams PR)
+
+1. **Finalize diagrams** - Review and polish the multilane diagrams (ORM, Value Function)
+2. **Add diagrams to chapter text** - Insert figure references in `chapters/07-reward-models.md`
+3. **Review PR** - Check over the full PR before merge
