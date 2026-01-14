@@ -115,15 +115,26 @@ def render_orm_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
         x = x_offset + i * box_w + box_w/2 - 0.05
         draw_label_circle(ax, x, y_labels + 0.1, "1")
 
-    # === Lane 3: Model outputs ===
-    ax.text(x_offset - 0.2, y_outputs + 0.1, "Output p_t", ha="right", va="center",
-            fontsize=10, fontweight="bold")
+    # === Lane 3: Model outputs (what the model learns) ===
+    # Add background highlight to show this is the learned output
+    model_bg = FancyBboxPatch(
+        (x_offset + prompt_end * box_w - 0.15, y_outputs - 0.2),
+        (n_tokens - prompt_end) * box_w + 0.2, 0.6,
+        boxstyle="round,pad=0.02,rounding_size=0.1",
+        facecolor="#E3F2FD", edgecolor="#1976D2", linewidth=1.5, linestyle="--"
+    )
+    ax.add_patch(model_bg)
+
+    ax.text(x_offset - 0.2, y_outputs + 0.2, "Model", ha="right", va="center",
+            fontsize=9, fontweight="bold", color="#1565C0")
+    ax.text(x_offset - 0.2, y_outputs - 0.05, "predicts p_t", ha="right", va="center",
+            fontsize=9, fontweight="bold", color="#1565C0")
 
     probs = [".92", ".88", ".95", ".99", ".97"]
     for i, p in enumerate(probs):
         x = x_offset + (prompt_end + i) * box_w + box_w/2 - 0.05
         ax.text(x, y_outputs + 0.1, f"p={p}", ha="center", va="center",
-                fontsize=8, color="#0066CC", fontweight="bold")
+                fontsize=9, color="#0066CC", fontweight="bold")
 
     # === Right side: Loss and Usage ===
     right_x = x_offset + n_tokens * box_w + 0.3
@@ -245,15 +256,26 @@ def render_value_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
         ax.text(x, y_targets + 0.1, f"V̂={ret}", ha="center", va="center",
                 fontsize=8, color="#7B1FA2", fontweight="bold")
 
-    # === Lane 4: Model outputs ===
-    ax.text(x_offset - 0.2, y_outputs + 0.1, "Output V_t", ha="right", va="center",
-            fontsize=10, fontweight="bold")
+    # === Lane 4: Model outputs (what the model learns) ===
+    # Add background highlight to show this is the learned output
+    model_bg = FancyBboxPatch(
+        (x_offset + prompt_end * box_w - 0.15, y_outputs - 0.2),
+        (n_tokens - prompt_end) * box_w + 0.2, 0.6,
+        boxstyle="round,pad=0.02,rounding_size=0.1",
+        facecolor="#E3F2FD", edgecolor="#1976D2", linewidth=1.5, linestyle="--"
+    )
+    ax.add_patch(model_bg)
+
+    ax.text(x_offset - 0.2, y_outputs + 0.2, "Model", ha="right", va="center",
+            fontsize=9, fontweight="bold", color="#1565C0")
+    ax.text(x_offset - 0.2, y_outputs - 0.05, "predicts V_t", ha="right", va="center",
+            fontsize=9, fontweight="bold", color="#1565C0")
 
     values = [".45", ".55", ".62", ".68", ".71"]
     for i, v in enumerate(values):
         x = x_offset + (prompt_end + i) * box_w + box_w/2 - 0.05
         ax.text(x, y_outputs + 0.1, f"V={v}", ha="center", va="center",
-                fontsize=8, color="#0066CC", fontweight="bold")
+                fontsize=9, color="#0066CC", fontweight="bold")
 
     # === Right side: Loss and Advantage ===
     right_x = x_offset + n_tokens * box_w + 0.3
