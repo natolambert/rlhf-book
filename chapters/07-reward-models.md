@@ -26,6 +26,8 @@ Later in this section we also compare these to Outcome Reward Models (ORMs), Pro
 
 *Throughout this chapter, we use $x$ to denote prompts and $y$ to denote completions. This notation is common in the language model literature, where methods operate on full prompt-completion pairs rather than individual tokens.*
 
+![The reward model in RLHF plays the role of the environment component that returns rewards in standard RL. The key difference is that in RLHF, we get to control and learn this reward function from human preferences, rather than having it fixed by the environment.](images/rlhf-overview.png){#fig:rm-role-in-rlhf}
+
 ## Training Reward Models
 
 The canonical implementation of a reward model is derived from the Bradley-Terry model of preference [@BradleyTerry].
@@ -73,6 +75,8 @@ $$\mathcal{L}(\theta) = \log \left( 1 + e^{r_{\theta}(y_r \mid x) - r_{\theta}(y
 
 These are equivalent by letting $\Delta = r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x)$ and using $\sigma(\Delta) = \frac{1}{1 + e^{-\Delta}}$, which implies $-\log\sigma(\Delta) = \log(1 + e^{-\Delta}) = \log\left(1 + e^{r_{\theta}(y_r \mid x) - r_{\theta}(y_c \mid x)}\right)$.
 They both appear in the RLHF literature.
+
+![Training a preference reward model requires pairs of chosen and rejected completions. The model computes a scalar score at the end-of-sequence (EOS) token for each, and the contrastive loss depends only on the score difference between the two.](images/pref_rm_training.png){#fig:pref_rm_training}
 
 ## Architecture
 
@@ -287,6 +291,10 @@ The important intuition here is that an ORM will output a probability of correct
 This can be a noisy process, as the updates and loss propagates per token depending on outcomes and attention mappings.
 <!-- On the other hand, this process is more computationally intensive. [@cobbe2021gsm8k] posits a few potential benefits to these models, such as (1) implementation of ORMs often being done with both the standard next-token language modelling loss and the reward modelling loss above in @eq:orm_loss and (2) the ORM design as a token-level loss outperforms completion-level loss calculation used in standard RMs. -->
 
+![At inference time, an outcome reward model outputs per-token correctness probabilities. Prompt tokens are masked (e.g., label=-100), while completion tokens each receive a probability indicating whether the model believes the response leads to a correct answer.](images/orm_inference.png){#fig:orm_inference}
+
+![Training an outcome reward model uses offline labels from a verifier or dataset (e.g., all 1s for correct completions). Each completion token is trained with binary cross-entropy against the outcome label, and per-token probabilities are aggregated into a final score for verification, filtering, or reranking.](images/orm_training.png){#fig:orm_training}
+
 These models have continued in use, but are less supported in open-source RLHF tools. 
 For example, the same type of ORM was used in the seminal work *Let's Verify Step by Step* [@lightman2023let], but without the language modeling prediction piece of the loss.
 Then, the final loss is a cross-entropy loss on every token predicting if the final answer is correct.
@@ -322,6 +330,8 @@ labels = [[-100] * (len(completion) - 1) + [label] for completion, label in zip(
 Traditionally PRMs are trained with a language modeling head that outputs a token only at the end of a reasoning step, e.g. at the token corresponding to a double new line or other special token.
 These predictions tend to be -1 for incorrect, 0 for neutral, and 1 for correct.
 These labels do not necessarily tie with whether or not the model is on the right path, but if the step is correct.
+
+![Process reward models provide supervision only at step boundaries (e.g., newline tokens). Each step receives a 3-class label: correct (+1), neutral (0), or incorrect (-1). All other tokens are masked during training.](images/prm_training_inference.png){#fig:prm_training_inference}
 
 An example construction of a PRM is shown below.
 
@@ -393,6 +403,54 @@ Some notes, given the above table has a lot of edge cases.
 
 - Both in preference tuning and reasoning training, the value functions often have a discount factor of 1, which makes a value function even closer to an outcome reward model, but with a different training loss.
 - A process reward model can be supervised by doing rollouts from an intermediate state and collecting outcome data. This blends multiple ideas, but if the *loss* is per reasoning step labels, it is best referred to as a PRM.
+
+**ORM vs. Value Function: The key distinction.**
+ORMs and value functions can appear similar since both produce per-token outputs with the same head architecture, but they differ in *what they predict* and *where targets come from*:
+
+- **ORMs** predict an immediate, token-local quantity: $p(\text{correct}_t)$ or $r_t$. Targets come from *offline labels* (a verifier or dataset marking tokens/sequences as correct or incorrect).
+- **Value functions** predict the expected *remaining* return: $V(s_t) = \mathbb{E}[\sum_{k \geq t} \gamma^{k-t} r_k \mid s_t]$. Targets are typically *computed from on-policy rollouts* under the current policy $\pi_\theta$, and change as the policy changes (technically, value functions can also be off-policy, but this is not established for work in language modeling).
+
+If you define a dense token reward $r_t = \mathbb{1}[\text{token is correct}]$ and use $\gamma = 1$, then an ORM is learning $r_t$ (or $p(r_t = 1)$) while the value head is learning the remaining-sum $\sum_{k \geq t} r_k$.
+They can share the same base model and head dimensions, but the *semantics and supervision pipeline* differ: ORMs are trained offline from fixed labels, while value functions are trained on-policy and used to compute advantages $A_t = \hat{R}_t - V_t$ for policy gradients.
+
+### Inference Differences
+
+The models handled data differently at inference-time, i.e. once they've been trained, in order to handle a suite of tasks that RMs are used for.
+
+**Bradley-Terry RM (Preference Model):**
+
+- *Input:* prompt $x$ + candidate completion $y$
+- *Output:* single scalar $r_\theta(x, y)$ from EOS hidden state
+- *Usage:* rerank $k$ completions, pick top-1 (best-of-N sampling); or provide terminal reward for RLHF
+- *Aggregation:* Not needed with scalar outputs
+
+**Outcome RM:**
+
+- *Input:* prompt $x$ + completion $y$
+- *Output:* per-token probabilities $p_t \approx P(\text{correct at token } t)$ over completion tokens
+- *Usage:* score finished candidates; aggregate via mean, min (tail risk), or product $\sum_t \log p_t$
+- *Aggregation choices:* mean correctness, minimum $p_t$, average over last $m$ tokens, or threshold flagging if any $p_t < \tau$
+
+**Process RM:**
+
+- *Input:* prompt $x$ + reasoning trace with step boundaries
+- *Output:* scores at step boundaries (e.g., class logits for correct/neutral/incorrect)
+- *Usage:* score completed chain-of-thought; or guide search/decoding by pruning low-scoring branches
+- *Aggregation:* over steps (not tokens) — mean step score, minimum (fail-fast), or weighted sum favoring later steps
+
+**Value Function:**
+
+- *Input:* prompt $x$ + current prefix $y_{\leq t}$ (a state)
+- Output: $V_t$ at each token position in the completion (expected remaining return from state $t$)
+- Usage: compute per-token advantages $A_t = \hat{R}_t - V_t$ during RL training; the values at each step serve as baselines
+- *Aggregation:* typically take $V$ at the last generated token; interpretation differs from "probability of correctness"
+
+In summary, the way to understand the different models is:
+
+- **RM:** "How good is this whole answer?" → scalar value
+- **ORM:** "Which parts look correct?" → per-token correctness
+- **PRM:** "Are the reasoning steps sound?" → per-step scores
+- **Value:** "How much reward remains from here?" → baseline for RL advantages
 
 ## Generative Reward Modeling
 

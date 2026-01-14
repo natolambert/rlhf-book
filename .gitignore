@@ -19,3 +19,8 @@ arxiv_check_results.json
 
 # Python/uv
 uv.lock
+
+# Generated diagrams (regenerate with: cd diagrams && make all)
+diagrams/generated/
+diagrams/feedback*/
+images/*_tokens.png

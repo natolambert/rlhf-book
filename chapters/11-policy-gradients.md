@@ -418,6 +418,8 @@ Generalized Advantage Estimation (GAE) is considered the state-of-the-art and ca
 A value function can also be learned with Monte Carlo estimates from the rollouts used to update the policy. 
 PPO has two losses -- one to learn the value function and another to use that value function to update the policy.
 
+![Value function training uses on-policy rollouts to compute targets. The model predicts $V_t$ at each token, which is trained via MSE against the target return $\hat{V}_t$. The advantage $A_t = \hat{V}_t - V_t$ then weights the policy gradient update.](images/value_fn_training.png){#fig:value_fn_training}
+
 A simple example implementation of a value network loss is shown below.
 
 ```python

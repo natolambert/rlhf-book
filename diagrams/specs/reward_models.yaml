@@ -1,0 +1,206 @@
+# Reward Model Specifications
+# These specs define the conceptual content for each diagram type.
+# Used as input for D2 generators and as documentation for artist handoff.
+
+reward_models:
+  - id: pref_rm
+    title: "Preference RM (Bradley-Terry)"
+    short_title: "Preference RM"
+    description: |
+      Scores entire sequences using pairwise comparisons.
+      The canonical RLHF reward model architecture.
+
+    inputs:
+      data:
+        - "prompt x"
+        - "chosen completion y_c"
+        - "rejected completion y_r"
+      labels:
+        - "preference: y_c > y_r"
+
+    architecture:
+      base: "LM trunk (e.g., Llama, GPT)"
+      head: "Linear scalar head"
+      pooling: "EOS token / last non-pad token"
+
+    scores:
+      granularity: "sequence-level"
+      output: "scalar r_θ(x, y)"
+      what: "Single scalar per (prompt, completion) pair"
+
+    loss:
+      name: "Bradley-Terry contrastive loss"
+      formula: "L = -log σ(r_c - r_r)"
+      notes:
+        - "Pairwise or K-wise comparisons"
+        - "No absolute scale, only relative ordering"
+
+    supervision:
+      mask_prompt: false  # N/A - sequence level
+      mask_completion: false
+      supervised_positions: "EOS only"
+      label_type: "pairwise preference"
+
+    inference:
+      input: "(x, y)"
+      output: "scalar score"
+      usage: "Rank completions, provide reward signal for RL"
+
+  - id: orm
+    title: "Outcome Reward Model (ORM)"
+    short_title: "Outcome RM"
+    description: |
+      Per-token correctness classification.
+      Predicts probability of correct outcome at each token.
+
+    inputs:
+      data:
+        - "prompt x"
+        - "completion y"
+      labels:
+        - "correct/incorrect (binary)"
+
+    architecture:
+      base: "LM trunk"
+      head: "Per-token classification head"
+      pooling: "None (per-token outputs)"
+
+    scores:
+      granularity: "per-token"
+      output: "p(correct | x, y_≤t) for each token t"
+      what: "Correctness probability at each position"
+
+    loss:
+      name: "Binary cross-entropy"
+      formula: "L = Σ_t BCE(p_t, label) where t ∈ completion"
+      notes:
+        - "Prompt tokens masked (label = -100)"
+        - "All completion tokens supervised"
+
+    supervision:
+      mask_prompt: true
+      mask_completion: false
+      supervised_positions: "All completion tokens"
+      label_type: "binary correctness"
+
+    inference:
+      input: "(x, y)"
+      output: "per-token probabilities → aggregate (mean, last, etc.)"
+      usage: "Verify solution correctness, weighted decoding"
+
+  - id: prm
+    title: "Process Reward Model (PRM)"
+    short_title: "Process RM"
+    description: |
+      Step-level supervision for chain-of-thought reasoning.
+      Labels only at step boundary tokens.
+
+    inputs:
+      data:
+        - "prompt x"
+        - "chain-of-thought steps s_1, s_2, ..., s_K"
+      labels:
+        - "step correctness at boundaries: {-1, 0, 1} or {correct, neutral, incorrect}"
+
+    architecture:
+      base: "LM trunk"
+      head: "Per-token 3-class classification head"
+      pooling: "None (per-token outputs)"
+
+    scores:
+      granularity: "step-boundary tokens"
+      output: "step score at each boundary position"
+      what: "Classification (correct/neutral/incorrect) per step"
+
+    loss:
+      name: "Cross-entropy at boundaries"
+      formula: "L = Σ_t CE(logits_t, label_t) where label_t ≠ -100"
+      notes:
+        - "Only boundary tokens have labels"
+        - "All other positions masked (label = -100)"
+        - "Boundary typically = last token of step or newline"
+
+    supervision:
+      mask_prompt: true
+      mask_completion: true  # except boundaries
+      supervised_positions: "Step boundary tokens only"
+      label_type: "3-class step correctness"
+
+    inference:
+      input: "(x, CoT steps)"
+      output: "step scores → aggregate (min, product, weighted)"
+      usage: "Guide search, prune bad reasoning paths, MCTS"
+
+  - id: gen_rm
+    title: "Generative RM (LLM-as-Judge)"
+    short_title: "Generative RM"
+    description: |
+      Uses an LLM to generate natural language judgments.
+      No separate reward head - uses generation probabilities.
+
+    inputs:
+      data:
+        - "prompt x"
+        - "completion(s) y (or y_A, y_B for comparison)"
+        - "rubric/criteria (optional)"
+      labels:
+        - "None at training time (uses pretrained LLM)"
+        - "Or fine-tuned on judge examples"
+
+    architecture:
+      base: "Full LLM (e.g., GPT-4, Claude, Llama)"
+      head: "None - uses generation"
+      pooling: "Parse verdict from generated text"
+
+    scores:
+      granularity: "sequence-level (via generation)"
+      output: "natural language verdict → parsed score"
+      what: "Text explanation + numeric/categorical rating"
+
+    loss:
+      name: "Standard LM loss (if fine-tuned)"
+      formula: "L = -Σ_t log p(verdict_t | context)"
+      notes:
+        - "Often used zero-shot or few-shot"
+        - "Can fine-tune on judge preference data"
+
+    supervision:
+      mask_prompt: false  # N/A - generative
+      mask_completion: false
+      supervised_positions: "Full sequence (if fine-tuned)"
+      label_type: "Generated verdict"
+
+    inference:
+      input: "(x, y) or (x, y_A, y_B)"
+      output: "text verdict → parse to score/preference"
+      usage: "Evaluation, reward signal, preference data generation"
+
+# Token strip visualization specs
+token_strips:
+  pref_rm:
+    description: "Show two sequences (chosen/rejected), highlight EOS only"
+    tokens_example: ["<s>", "What", "is", "2+2", "?", "The", "answer", "is", "4", "</s>"]
+    highlight_positions: [9]  # EOS
+    masked_positions: []
+    annotation: "Scalar score from EOS representation"
+
+  orm:
+    description: "Show single sequence, prompt masked, completion highlighted"
+    tokens_example: ["<s>", "What", "is", "2+2", "?", "The", "answer", "is", "4", "</s>"]
+    highlight_positions: [5, 6, 7, 8, 9]  # completion tokens
+    masked_positions: [0, 1, 2, 3, 4]  # prompt tokens
+    annotation: "Per-token correctness on completion"
+
+  prm:
+    description: "Show CoT with step boundaries highlighted"
+    tokens_example: ["<s>", "Q:", "2+2", "Step1:", "2+2=4", "\\n", "Step2:", "verify", "\\n", "Ans:", "4", "</s>"]
+    highlight_positions: [5, 8]  # newlines as step boundaries
+    masked_positions: [0, 1, 2, 3, 4, 6, 7, 9, 10, 11]  # everything else
+    annotation: "Labels only at step boundaries"
+
+  value_fn:
+    description: "Show all tokens with state values (conceptual)"
+    tokens_example: ["<s>", "What", "is", "2+2", "?", "The", "answer", "is", "4", "</s>"]
+    highlight_positions: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]  # all tokens
+    masked_positions: []
+    annotation: "V(s) at each state/token"
