@@ -82,7 +82,7 @@ def render_orm_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
     # === Title with source indicator ===
     ax.text(
         x_offset + n_tokens * box_w / 2, 4.2,
-        "Outcome RM: Offline Labels → Per-Token BCE",
+        "Training Outcome RM: Offline Labels → Per-Token BCE",
         ha="center", va="bottom", fontsize=14, fontweight="bold"
     )
     # Source indicator as subtitle
@@ -108,7 +108,7 @@ def render_orm_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
 
     # Masked indicator for prompt
     prompt_center = x_offset + prompt_end * box_w / 2 - 0.05
-    ax.text(prompt_center, y_labels + 0.1, "−100 (masked)",
+    ax.text(prompt_center, y_labels + 0.1, "masked",
             ha="center", va="center", fontsize=8, color="#808080", style="italic")
 
     # Label circles for completion tokens
@@ -341,8 +341,8 @@ def main():
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
-    render_orm_diagram(args.output_dir / f"orm_multilane.{args.format}", fmt=args.format)
-    render_value_diagram(args.output_dir / f"value_fn_multilane.{args.format}", fmt=args.format)
+    render_orm_diagram(args.output_dir / f"orm_training.{args.format}", fmt=args.format)
+    render_value_diagram(args.output_dir / f"value_fn_training.{args.format}", fmt=args.format)
 
     print(f"\nGenerated multi-lane diagrams in {args.output_dir}")
 

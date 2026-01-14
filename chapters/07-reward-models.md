@@ -26,6 +26,8 @@ Later in this section we also compare these to Outcome Reward Models (ORMs), Pro
 
 *Throughout this chapter, we use $x$ to denote prompts and $y$ to denote completions. This notation is common in the language model literature, where methods operate on full prompt-completion pairs rather than individual tokens.*
 
+![The reward model in RLHF plays the role of the environment component that returns rewards in standard RL. The key difference is that in RLHF, we get to control and learn this reward function from human preferences, rather than having it fixed by the environment.](images/rlhf-overview.png){#fig:rm-role-in-rlhf}
+
 ## Training Reward Models
 
 The canonical implementation of a reward model is derived from the Bradley-Terry model of preference [@BradleyTerry].
@@ -73,6 +75,8 @@ $$\mathcal{L}(\theta) = \log \left( 1 + e^{r_{\theta}(y_r \mid x) - r_{\theta}(y
 
 These are equivalent by letting $\Delta = r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x)$ and using $\sigma(\Delta) = \frac{1}{1 + e^{-\Delta}}$, which implies $-\log\sigma(\Delta) = \log(1 + e^{-\Delta}) = \log\left(1 + e^{r_{\theta}(y_r \mid x) - r_{\theta}(y_c \mid x)}\right)$.
 They both appear in the RLHF literature.
+
+![Training a preference reward model requires pairs of chosen and rejected completions. The model computes a scalar score at the end-of-sequence (EOS) token for each, and the contrastive loss depends only on the score difference between the two.](images/pref_rm_training.png){#fig:pref_rm_training}
 
 ## Architecture
 
@@ -287,6 +291,10 @@ The important intuition here is that an ORM will output a probability of correct
 This can be a noisy process, as the updates and loss propagates per token depending on outcomes and attention mappings.
 <!-- On the other hand, this process is more computationally intensive. [@cobbe2021gsm8k] posits a few potential benefits to these models, such as (1) implementation of ORMs often being done with both the standard next-token language modelling loss and the reward modelling loss above in @eq:orm_loss and (2) the ORM design as a token-level loss outperforms completion-level loss calculation used in standard RMs. -->
 
+![At inference time, an outcome reward model outputs per-token correctness probabilities. Prompt tokens are masked (e.g., label=-100), while completion tokens each receive a probability indicating whether the model believes the response leads to a correct answer.](images/orm_inference.png){#fig:orm_inference}
+
+![Training an outcome reward model uses offline labels from a verifier or dataset (e.g., all 1s for correct completions). Each completion token is trained with binary cross-entropy against the outcome label, and per-token probabilities are aggregated into a final score for verification, filtering, or reranking.](images/orm_training.png){#fig:orm_training}
+
 These models have continued in use, but are less supported in open-source RLHF tools. 
 For example, the same type of ORM was used in the seminal work *Let's Verify Step by Step* [@lightman2023let], but without the language modeling prediction piece of the loss.
 Then, the final loss is a cross-entropy loss on every token predicting if the final answer is correct.
@@ -322,6 +330,8 @@ labels = [[-100] * (len(completion) - 1) + [label] for completion, label in zip(
 Traditionally PRMs are trained with a language modeling head that outputs a token only at the end of a reasoning step, e.g. at the token corresponding to a double new line or other special token.
 These predictions tend to be -1 for incorrect, 0 for neutral, and 1 for correct.
 These labels do not necessarily tie with whether or not the model is on the right path, but if the step is correct.
+
+![Process reward models provide supervision only at step boundaries (e.g., newline tokens). Each step receives a 3-class label: correct (+1), neutral (0), or incorrect (-1). All other tokens are masked during training.](images/prm_training_inference.png){#fig:prm_training_inference}
 
 An example construction of a PRM is shown below.
 

@@ -34,20 +34,23 @@ class TokenStrip:
     annotation: str = ""
     # Optional: per-token labels to show above tokens
     token_labels: Optional[dict[int, str]] = None
-    # For multi-strip diagrams (e.g., chosen vs rejected)
+    # For multi-strip diagrams (e.g., chosen vs rejected, or training vs inference)
     secondary_strip: Optional["TokenStrip"] = None
     secondary_label: str = ""
     primary_label: str = ""
+    secondary_color_mode: str = "rejected"  # "rejected" or "inference"
 
 
 # Colors
-COLOR_HIGHLIGHT = "#90EE90"  # light green for supervised
+COLOR_HIGHLIGHT = "#90EE90"  # light green for supervised/training
 COLOR_MASKED = "#D3D3D3"  # light gray for masked
 COLOR_NORMAL = "#FFFFFF"  # white for normal
 COLOR_BORDER_HIGHLIGHT = "#228B22"  # dark green border
 COLOR_BORDER_NORMAL = "#000000"  # black border
 COLOR_REJECTED = "#FFB6C1"  # light red for rejected
 COLOR_BORDER_REJECTED = "#DC143C"  # crimson border
+COLOR_INFERENCE = "#ADD8E6"  # light blue for inference
+COLOR_BORDER_INFERENCE = "#1E90FF"  # dodger blue border
 
 
 def render_single_strip(
@@ -57,7 +60,7 @@ def render_single_strip(
     box_w: float = 1.0,
     box_h: float = 0.6,
     show_legend: bool = True,
-    use_rejected_color: bool = False,
+    color_mode: str = "normal",  # "normal", "rejected", or "inference"
     label_prefix: str = "",
 ):
     """Render a single token strip on the given axes."""
@@ -81,9 +84,12 @@ def render_single_strip(
 
         # Determine styling
         if i in strip.highlight:
-            if use_rejected_color:
+            if color_mode == "rejected":
                 facecolor = COLOR_REJECTED
                 edgecolor = COLOR_BORDER_REJECTED
+            elif color_mode == "inference":
+                facecolor = COLOR_INFERENCE
+                edgecolor = COLOR_BORDER_INFERENCE
             else:
                 facecolor = COLOR_HIGHLIGHT
                 edgecolor = COLOR_BORDER_HIGHLIGHT
@@ -195,7 +201,7 @@ def render_token_strip(
             y_offset=y_secondary,
             box_w=box_w,
             box_h=box_h,
-            use_rejected_color=True,
+            color_mode=strip.secondary_color_mode,
             label_prefix=strip.secondary_label,
         )
 
@@ -232,6 +238,8 @@ def render_token_strip(
     # Legend - only show items that are used
     legend_x = n_tokens * box_w + 0.4
     legend_y = y_primary + box_h / 2
+    if has_secondary:
+        legend_y += 0.3  # Move legend up when there are two rows
     legend_items = []
 
     if strip.highlight:
@@ -239,7 +247,10 @@ def render_token_strip(
     if strip.masked:
         legend_items.append((COLOR_MASKED, "#808080", "Masked"))
     if has_secondary:
-        legend_items.append((COLOR_REJECTED, COLOR_BORDER_REJECTED, "Rejected"))
+        if strip.secondary_color_mode == "inference":
+            legend_items.append((COLOR_INFERENCE, COLOR_BORDER_INFERENCE, "Inference"))
+        else:
+            legend_items.append((COLOR_REJECTED, COLOR_BORDER_REJECTED, "Rejected"))
 
     for idx, (fc, ec, label) in enumerate(legend_items):
         y = legend_y - idx * 0.35
@@ -280,8 +291,8 @@ STRIPS = [
     # Preference RM: Show chosen vs rejected with EOS only highlighted
     # Tokens from: <|eos|> Joy can ... ? The answer is 5 . <|eos|>
     TokenStrip(
-        name="pref_rm_tokens",
-        title="Preference RM: Pairwise Comparison at EOS",
+        name="pref_rm_training",
+        title="Training a Preference RM: Pairwise Comparison at EOS",
         tokens=["<|eos|>", "Joy", "can", "...", "?", "The", "answer", "is", "5", ".", "<|eos|>"],
         highlight={10},  # EOS only
         masked=set(),
@@ -296,48 +307,54 @@ STRIPS = [
             masked=set(),
         ),
     ),
-    # PRM: Show step boundaries with 3-class labels
-    # CoT reasoning with newlines as step boundaries
+    # PRM: Show step boundaries - training labels vs inference scores
+    # Training: Joy example (8/20 pages per min, 120 pages -> 5 hours)
+    # Inference: James example (3*2*2*52 = 624 pages) - different problem!
     TokenStrip(
-        name="prm_tokens",
-        title="Process RM: Step Boundary Supervision",
+        name="prm_training_inference",
+        title="Process RM: Training Labels vs Inference Scores",
         tokens=[
-            "<|eos|>",
-            "Joy",
-            "can",
-            "...",
-            "?",
-            "8",
-            "/",
-            "20",
-            "=",
-            "...",
-            "\\n",
-            "120",
-            "/",
-            "...",
-            "\\n",
-            "5",
-            ".",
-            "<|eos|>",
+            "<|eos|>", "Joy", "...", "?",
+            "8", "/", "20", "=", "...", "\\n",
+            "120", "/", "...", "\\n",
+            "=", "5", ".", "<|eos|>",
         ],
-        highlight={10, 14},  # newlines as step boundaries
-        masked={0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 15, 16, 17},  # everything else
-        annotation="3-class labels at boundaries: {+1: correct, 0: neutral, -1: incorrect}",
+        highlight={9, 13},  # newlines as step boundaries
+        masked={0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 14, 15, 16, 17},  # everything else
+        annotation="Training: 3-class labels at step boundaries  |  Inference: predicted step scores",
         token_labels={
-            10: "+1",
-            14: "+1",
+            9: "0",
+            13: "+1",
         },
+        primary_label="Training:",
+        secondary_label="Inference:",
+        secondary_color_mode="inference",
+        secondary_strip=TokenStrip(
+            name="",
+            title="",
+            tokens=[
+                "<|eos|>", "James", "...", "?",
+                "3", "*", "2", "=", "\\n", "6",  # \n moved left one
+                "...", "=", "12", "...", "\\n",  # \n moved right one
+                "=", "624", ".", "<|eos|>",
+            ],
+            highlight={8, 14},  # newlines at different positions than training
+            masked={0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 15, 16, 17, 18},
+            token_labels={
+                8: "p=.95",
+                14: "p=.92",
+            },
+        ),
     ),
-    # ORM: Show per-token probabilities on completion
+    # ORM: Show per-token probabilities on completion (inference time)
     # Prompt masked, completion supervised
     TokenStrip(
-        name="orm_tokens",
-        title="Outcome RM: Per-Token Correctness",
+        name="orm_inference",
+        title="Using an Outcome RM: Per-Token Correctness",
         tokens=["<|eos|>", "Joy", "can", "...", "?", "The", "answer", "is", "5", ".", "<|eos|>"],
         highlight={5, 6, 7, 8, 9, 10},  # completion tokens
         masked={0, 1, 2, 3, 4},  # prompt tokens
-        annotation="Loss: BCE per token  |  Prompt masked (label=-100), completion supervised",
+        annotation="Loss: BCE per token  |  Prompt masked (e.g. label=-100), completion supervised",
         token_labels={
             5: "p=.92",
             6: "p=.88",
@@ -349,7 +366,7 @@ STRIPS = [
     ),
     # Value function: Show V(s) on completion tokens (prompt masked like ORM)
     TokenStrip(
-        name="value_fn_tokens",
+        name="value_fn_inference",
         title="Value Function: Per-Token State Values",
         tokens=["<|eos|>", "Joy", "can", "...", "?", "The", "answer", "is", "5", ".", "<|eos|>"],
         highlight={5, 6, 7, 8, 9, 10},  # completion tokens only
