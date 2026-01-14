@@ -398,21 +398,21 @@ Some notes, given the above table has a lot of edge cases.
 ORMs and value functions can appear similar since both produce per-token outputs with the same head architecture, but they differ in *what they predict* and *where targets come from*:
 
 - **ORMs** predict an immediate, token-local quantity: $p(\text{correct}_t)$ or $r_t$. Targets come from *offline labels* (a verifier or dataset marking tokens/sequences as correct or incorrect).
-- **Value functions** predict the expected *remaining* return: $V(s_t) = \mathbb{E}[\sum_{k \geq t} \gamma^{k-t} r_k \mid s_t]$. Targets are *computed from on-policy rollouts* under the current policy $\pi_\theta$, and change as the policy changes.
+- **Value functions** predict the expected *remaining* return: $V(s_t) = \mathbb{E}[\sum_{k \geq t} \gamma^{k-t} r_k \mid s_t]$. Targets are typically *computed from on-policy rollouts* under the current policy $\pi_\theta$, and change as the policy changes (technically, value functions can also be off-policy, but this is not established for work in language modeling).
 
 If you define a dense token reward $r_t = \mathbb{1}[\text{token is correct}]$ and use $\gamma = 1$, then an ORM is learning $r_t$ (or $p(r_t = 1)$) while the value head is learning the remaining-sum $\sum_{k \geq t} r_k$.
-They can share the same trunk and head shape, but the *semantics and supervision pipeline* differ: ORMs are trained offline from fixed labels, while value functions are trained on-policy and used to compute advantages $A_t = \hat{R}_t - V_t$ for policy gradients.
+They can share the same base model and head dimensions, but the *semantics and supervision pipeline* differ: ORMs are trained offline from fixed labels, while value functions are trained on-policy and used to compute advantages $A_t = \hat{R}_t - V_t$ for policy gradients.
 
-### Inference: What Do You Actually Run?
+### Inference Differences
 
-Beyond training differences, the models differ in how they're used at inference time:
+The models handled data differently at inference-time, i.e. once they've been trained, in order to handle a suite of tasks that RMs are used for.
 
-**Preference RM (Bradley-Terry):**
+**Bradley-Terry RM (Preference Model):**
 
 - *Input:* prompt $x$ + candidate completion $y$
 - *Output:* single scalar $r_\theta(x, y)$ from EOS hidden state
-- *Usage:* rerank $k$ completions, pick top-1 (best-of-N sampling); or provide terminal reward for RL
-- *Aggregation:* none needed (already a single number), though length normalization is sometimes applied
+- *Usage:* rerank $k$ completions, pick top-1 (best-of-N sampling); or provide terminal reward for RLHF
+- *Aggregation:* Not needed with scalar outputs
 
 **Outcome RM:**
 
@@ -431,15 +431,15 @@ Beyond training differences, the models differ in how they're used at inference 
 **Value Function:**
 
 - *Input:* prompt $x$ + current prefix $y_{\leq t}$ (a state)
-- *Output:* $V_t$ at the last token position (expected remaining return)
-- *Usage:* compute advantages $A_t$ as baseline during RL training; occasionally used as a scorer, but this is policy- and reward-specific
+- Output: $V_t$ at each token position in the completion (expected remaining return from state $t$)
+- Usage: compute per-token advantages $A_t = \hat{R}_t - V_t$ during RL training; the values at each step serve as baselines
 - *Aggregation:* typically take $V$ at the last generated token; interpretation differs from "probability of correctness"
 
-The one-liner mental model:
+In summary, the way to understand the different models is:
 
-- **RM:** "How good is this whole answer?" → scalar at end → rerank
-- **ORM:** "Which parts look correct?" → per-token correctness → aggregate or diagnose
-- **PRM:** "Are the reasoning steps sound?" → per-step scores → prune/search/guide
+- **RM:** "How good is this whole answer?" → scalar value
+- **ORM:** "Which parts look correct?" → per-token correctness
+- **PRM:** "Are the reasoning steps sound?" → per-step scores
 - **Value:** "How much reward remains from here?" → baseline for RL advantages
 
 ## Generative Reward Modeling
