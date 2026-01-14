@@ -99,4 +99,5 @@ response = model.generate_content([
 
 1. **Finalize diagrams** - Review and polish the multilane diagrams (ORM, Value Function)
 2. **Add diagrams to chapter text** - Insert figure references in `chapters/07-reward-models.md`
-3. **Review PR** - Check over the full PR before merge
+3. **Add RLHF overview diagram** - Add the same RLHF diagram to the start of the RM chapter to highlight where RMs fit in the pipeline
+4. **Review PR** - Check over the full PR before merge

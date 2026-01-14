@@ -102,7 +102,7 @@ def render_orm_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
                       highlighted=highlighted, masked=masked)
 
     # === Lane 2: Labels ===
-    ax.text(x_offset - 0.2, y_labels + 0.1, "Labels z_t", ha="right", va="center",
+    ax.text(x_offset - 0.2, y_labels + 0.1, r"Labels $z_t$", ha="right", va="center",
             fontsize=10, fontweight="bold")
 
     # Masked indicator for prompt
@@ -127,13 +127,13 @@ def render_orm_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
 
     ax.text(x_offset - 0.2, y_outputs + 0.2, "Model", ha="right", va="center",
             fontsize=9, fontweight="bold", color="#1565C0")
-    ax.text(x_offset - 0.2, y_outputs - 0.05, "predicts p_t", ha="right", va="center",
+    ax.text(x_offset - 0.2, y_outputs - 0.05, r"predicts $p_t$", ha="right", va="center",
             fontsize=9, fontweight="bold", color="#1565C0")
 
     probs = [".92", ".88", ".95", ".99", ".97"]
     for i, p in enumerate(probs):
         x = x_offset + (prompt_end + i) * box_w + box_w/2 - 0.05
-        ax.text(x, y_outputs + 0.1, f"p={p}", ha="center", va="center",
+        ax.text(x, y_outputs + 0.1, f"$p$={p}", ha="center", va="center",
                 fontsize=9, color="#0066CC", fontweight="bold")
 
     # === Right side: Loss and Usage ===
@@ -146,7 +146,7 @@ def render_orm_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
         facecolor="#FFEBEE", edgecolor="#F44336", linewidth=2
     )
     ax.add_patch(loss_box)
-    ax.text(right_x + 0.75, y_labels + 0.1, "BCE(p_t, z_t)",
+    ax.text(right_x + 0.75, y_labels + 0.1, r"$\mathrm{BCE}(p_t, z_t)$",
             ha="center", va="center", fontsize=9, fontweight="bold", color="#C62828")
 
     # Aggregate box
@@ -207,7 +207,7 @@ def render_value_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
     # Source indicator as subtitle
     ax.text(
         x_offset + n_tokens * box_w / 2, 4.95,
-        "Targets from: πθ rollouts + GAE (on-policy, changes during training)",
+        r"Targets from: $\pi_\theta$ rollouts + GAE (on-policy, changes during training)",
         ha="center", va="top", fontsize=9, color="#1565C0", style="italic"
     )
 
@@ -229,7 +229,7 @@ def render_value_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
             ha="left", va="bottom", fontsize=7, color="#1976D2", style="italic")
 
     # === Lane 2: Rewards (sparse) ===
-    ax.text(x_offset - 0.2, y_rewards + 0.1, "Rewards r_t", ha="right", va="center",
+    ax.text(x_offset - 0.2, y_rewards + 0.1, r"Rewards $r_t$", ha="right", va="center",
             fontsize=10, fontweight="bold")
 
     # Sparse rewards
@@ -240,20 +240,20 @@ def render_value_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
 
     # Final reward
     x_final = x_offset + (n_tokens - 1) * box_w + box_w/2 - 0.05
-    ax.text(x_final, y_rewards + 0.15, "R=0.73", ha="center", va="center",
+    ax.text(x_final, y_rewards + 0.15, "$R$=0.73", ha="center", va="center",
             fontsize=9, color="#E65100", fontweight="bold")
-    ax.text(x_final, y_rewards - 0.12, "−β·KL", ha="center", va="center",
+    ax.text(x_final, y_rewards - 0.12, r"$-\beta \cdot \mathrm{KL}$", ha="center", va="center",
             fontsize=7, color="#7B1FA2", style="italic")
 
     # === Lane 3: Return targets (GAE computed) ===
-    ax.text(x_offset - 0.2, y_targets + 0.1, "Target V̂_t", ha="right", va="center",
+    ax.text(x_offset - 0.2, y_targets + 0.1, r"Target $\hat{V}_t$", ha="right", va="center",
             fontsize=10, fontweight="bold")
 
     # Return values (with γ=1, equal to final R)
     returns = [".73", ".73", ".73", ".73", ".73"]
     for i, ret in enumerate(returns):
         x = x_offset + (prompt_end + i) * box_w + box_w/2 - 0.05
-        ax.text(x, y_targets + 0.1, f"V̂={ret}", ha="center", va="center",
+        ax.text(x, y_targets + 0.1, r"$\hat{V}$=" + ret, ha="center", va="center",
                 fontsize=8, color="#7B1FA2", fontweight="bold")
 
     # === Lane 4: Model outputs (what the model learns) ===
@@ -268,13 +268,13 @@ def render_value_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
 
     ax.text(x_offset - 0.2, y_outputs + 0.2, "Model", ha="right", va="center",
             fontsize=9, fontweight="bold", color="#1565C0")
-    ax.text(x_offset - 0.2, y_outputs - 0.05, "predicts V_t", ha="right", va="center",
+    ax.text(x_offset - 0.2, y_outputs - 0.05, r"predicts $V_t$", ha="right", va="center",
             fontsize=9, fontweight="bold", color="#1565C0")
 
     values = [".45", ".55", ".62", ".68", ".71"]
     for i, v in enumerate(values):
         x = x_offset + (prompt_end + i) * box_w + box_w/2 - 0.05
-        ax.text(x, y_outputs + 0.1, f"V={v}", ha="center", va="center",
+        ax.text(x, y_outputs + 0.1, f"$V$={v}", ha="center", va="center",
                 fontsize=9, color="#0066CC", fontweight="bold")
 
     # === Right side: Loss and Advantage ===
@@ -287,7 +287,7 @@ def render_value_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
         facecolor="#FFEBEE", edgecolor="#F44336", linewidth=2
     )
     ax.add_patch(loss_box)
-    ax.text(right_x + 0.8, y_targets + 0.1, "MSE(V_t, V̂_t)",
+    ax.text(right_x + 0.8, y_targets + 0.1, r"$\mathrm{MSE}(V_t, \hat{V}_t)$",
             ha="center", va="center", fontsize=9, fontweight="bold", color="#C62828")
 
     # Advantage box
@@ -299,7 +299,7 @@ def render_value_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
     ax.add_patch(adv_box)
     ax.text(right_x + 0.8, y_outputs + 0.15, "Advantage",
             ha="center", va="center", fontsize=9, fontweight="bold", color="#2E7D32")
-    ax.text(right_x + 0.8, y_outputs - 0.08, "A_t = V̂_t − V_t",
+    ax.text(right_x + 0.8, y_outputs - 0.08, r"$A_t = \hat{V}_t - V_t$",
             ha="center", va="center", fontsize=8, color="#2E7D32")
 
     # Policy gradient usage
@@ -307,8 +307,8 @@ def render_value_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
             ha="left", va="center", fontsize=9, fontweight="bold", color="#2E7D32")
 
     # === Notes at bottom ===
-    notes = "On-policy rollouts  •  Targets change with πθ  •  Use: baseline for advantage estimation"
-    ax.text(x_offset + n_tokens * box_w / 2, 0.2, notes,
+    ax.text(x_offset + n_tokens * box_w / 2, 0.2,
+            r"On-policy rollouts  •  Targets change with $\pi_\theta$  •  Use: baseline for advantage estimation",
             ha="center", va="center", fontsize=9, color="#606060",
             bbox=dict(boxstyle="round,pad=0.3", facecolor="#F5F5F5", edgecolor="#E0E0E0"))
 
