@@ -36,31 +36,35 @@ grpo: | $(GENERATED_DIR)
 	uv run python scripts/generate_ppo_grpo.py --output-dir $(GENERATED_DIR)/svg --format svg
 	@echo "PPO vs GRPO diagram generated (matplotlib)"
 
-# TikZ diagrams - requires pdflatex and sips (macOS) or convert (ImageMagick)
-# Compiles .tex files in tikz/ to PDF, then converts to PNG
+# TikZ diagrams - requires pdflatex and convert (ImageMagick) or sips (macOS)
+# Compiles .tex files in tikz/ to PDF, then converts to 300dpi PNG
 # SVG conversion requires pdf2svg (brew install pdf2svg)
 tikz: | $(GENERATED_DIR)
-	@mkdir -p $(GENERATED_DIR)/png $(GENERATED_DIR)/svg
-	@for texfile in tikz/*_test.tex; do \
+	@mkdir -p $(GENERATED_DIR)/png $(GENERATED_DIR)/svg $(GENERATED_DIR)/pdf
+	@for texfile in tikz/*_tikz_test.tex; do \
 		if [ -f "$$texfile" ]; then \
-			base=$$(basename "$$texfile" _test.tex); \
-			echo "Compiling $$base..."; \
+			base=$$(basename "$$texfile" _tikz_test.tex); \
+			echo "Compiling $${base}_tikz..."; \
 			cd tikz && $(PDFLATEX) -interaction=nonstopmode $$(basename $$texfile) > /dev/null 2>&1; cd ..; \
-			cp tikz/$${base}_test.pdf $(GENERATED_DIR)/png/$${base}.pdf; \
-			if command -v sips > /dev/null; then \
-				sips -s format png tikz/$${base}_test.pdf --out $(GENERATED_DIR)/png/$${base}.png > /dev/null 2>&1; \
+			cp tikz/$${base}_tikz_test.pdf $(GENERATED_DIR)/pdf/$${base}_tikz.pdf; \
+			if command -v magick > /dev/null; then \
+				magick -density 300 tikz/$${base}_tikz_test.pdf -quality 100 $(GENERATED_DIR)/png/$${base}_tikz.png; \
+				echo "  -> $(GENERATED_DIR)/png/$${base}_tikz.png (300dpi)"; \
 			elif command -v convert > /dev/null; then \
-				convert -density 300 tikz/$${base}_test.pdf $(GENERATED_DIR)/png/$${base}.png; \
+				convert -density 300 tikz/$${base}_tikz_test.pdf -quality 100 $(GENERATED_DIR)/png/$${base}_tikz.png; \
+				echo "  -> $(GENERATED_DIR)/png/$${base}_tikz.png (300dpi)"; \
+			elif command -v sips > /dev/null; then \
+				sips -s format png tikz/$${base}_tikz_test.pdf --out $(GENERATED_DIR)/png/$${base}_tikz.png > /dev/null 2>&1; \
 			fi; \
 			if command -v pdf2svg > /dev/null; then \
-				pdf2svg tikz/$${base}_test.pdf $(GENERATED_DIR)/svg/$${base}.svg; \
+				pdf2svg tikz/$${base}_tikz_test.pdf $(GENERATED_DIR)/svg/$${base}_tikz.svg; \
 			else \
 				echo "  (skipping SVG - install pdf2svg: brew install pdf2svg)"; \
 			fi; \
 			rm -f tikz/*.aux tikz/*.log; \
 		fi \
 	done
-	@echo "TikZ diagrams generated"
+	@echo "TikZ diagrams generated in $(GENERATED_DIR)/{pdf,png,svg}/"
 
 # Create output directory
 $(GENERATED_DIR):

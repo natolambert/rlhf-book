@@ -84,11 +84,11 @@
 % FEEDBACK: GAE -> Value (value network training)
 \draw[feedbackarrow] (gae.south) to[out=-120, in=30] (value.north east);
 
-% Note: shaped reward equation (moved to not overlap)
+% Note: shaped reward equation
 \node[note] at (10.6, 1.5) {$\tilde{r} = r - \beta \cdot KL$};
 
-% Legend (moved to bottom right, away from main diagram)
-\node[legendbox, fill=yellow!30] at (12.8, -2.5) {Trained};
-\node[legendbox, fill=blue!12, draw=blue!50] at (14.5, -2.5) {Frozen};
+% Legend (far right, vertically stacked)
+\node[legendbox, fill=yellow!30] at (16.0, 0.5) {Trained};
+\node[legendbox, fill=blue!12, draw=blue!50] at (16.0, -0.5) {Frozen};
 
 \end{tikzpicture}

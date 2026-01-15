@@ -57,30 +57,22 @@
 % Policy -> outputs group
 \draw[arrow] (policy.east) -- (obox.west);
 
-% Three-line routing: outputs to Reference Model
-\draw[arrow] (o1.east) -- (ref.west);
-\draw[arrow] (o2.east) to[out=0, in=180] (ref.west);
-\draw[arrow] (oG.east) to[out=30, in=180] (ref.west);
+% Outputs -> Reference Model (single arrow from group)
+\draw[arrow] (obox.east) to[out=0, in=180] (ref.west);
 
-% Three-line routing: outputs to Reward Model
-\draw[arrow] (o1.east) to[out=-30, in=180] (reward.west);
-\draw[arrow] (o2.east) to[out=0, in=180] (reward.west);
-\draw[arrow] (oG.east) -- (reward.west);
+% Outputs -> Reward Model (single arrow from group)
+\draw[arrow] (obox.east) to[out=0, in=180] (reward.west);
 
 % KL FEEDBACK: Reference -> Policy (as loss term, dashed)
 \draw[feedbackarrow] (ref.north) to[out=90, in=45]
     node[pos=0.3, above, note] {$KL$}
     (policy.north east);
 
-% Reference -> rewards (for KL computation per sample)
-\draw[arrow] (ref.east) -- (r1.west);
-\draw[arrow] (ref.east) to[out=0, in=180] (r2.west);
-\draw[arrow] (ref.east) to[out=-30, in=180] (rG.west);
+% Reference -> rewards (single arrow)
+\draw[arrow] (ref.east) -- (rbox.west);
 
-% Reward Model -> rewards
-\draw[arrow] (reward.east) to[out=30, in=180] (r1.west);
-\draw[arrow] (reward.east) to[out=0, in=180] (r2.west);
-\draw[arrow] (reward.east) -- (rG.west);
+% Reward Model -> rewards (single arrow)
+\draw[arrow] (reward.east) -- (rbox.west);
 
 % Rewards -> Group normalization
 \draw[arrow] (rbox.east) -- (group.west);
@@ -94,10 +86,10 @@
     (policy.north);
 
 % Note: Group statistics
-\node[note] at (13.0, -2.0) {$\mu, \sigma$ from group};
+\node[note] at (13.0, -1.8) {$\mu, \sigma$ from group};
 
-% Legend (moved to bottom right)
-\node[legendbox, fill=yellow!30] at (13.0, -2.8) {Trained};
-\node[legendbox, fill=blue!12, draw=blue!50] at (15.0, -2.8) {Frozen};
+% Legend (far right, vertically stacked)
+\node[legendbox, fill=yellow!30] at (17.0, 0.5) {Trained};
+\node[legendbox, fill=blue!12, draw=blue!50] at (17.0, -0.5) {Frozen};
 
 \end{tikzpicture}

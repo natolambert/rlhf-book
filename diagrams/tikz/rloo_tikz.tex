@@ -27,12 +27,6 @@
 % Reference Model (frozen, bottom)
 \node[frozen] (ref) at (8.2, -1.2) {Reference\\Model};
 
-% Oplus operators for combining reward with KL
-\node[operator] (oplus1) at (10.0, 0.95) {$\oplus$};
-\node[operator] (oplus2) at (10.0, 0) {$\oplus$};
-\node[font=\footnotesize] at (10.0, -0.6) {...};
-\node[operator] (oplusK) at (10.0, -1.2) {$\oplus$};
-
 % Shaped rewards (r̃ = r - β·KL)
 \node[plain] (r1) at (11.2, 0.95) {$\tilde{r}_1$};
 \node[plain] (r2) at (11.2, 0) {$\tilde{r}_2$};
@@ -63,30 +57,22 @@
 % Policy -> outputs group
 \draw[arrow] (policy.east) -- (obox.west);
 
-% Three-line routing: outputs to Reward Model
-\draw[arrow] (o1.east) -- (reward.west);
-\draw[arrow] (o2.east) to[out=0, in=180] (reward.west);
-\draw[arrow] (oK.east) to[out=30, in=180] (reward.west);
+% Outputs -> Reward Model (single arrow)
+\draw[arrow] (obox.east) to[out=0, in=180] (reward.west);
 
-% Three-line routing: outputs to Reference Model
-\draw[arrow] (o1.east) to[out=-30, in=180] (ref.west);
-\draw[arrow] (o2.east) to[out=0, in=180] (ref.west);
-\draw[arrow] (oK.east) -- (ref.west);
+% Outputs -> Reference Model (single arrow)
+\draw[arrow] (obox.east) to[out=0, in=180] (ref.west);
 
-% Reward Model -> oplus operators
-\draw[arrow] (reward.east) -- (oplus1.west);
-\draw[arrow] (reward.east) to[out=0, in=150] (oplus2.north west);
-\draw[arrow] (reward.east) to[out=-30, in=150] (oplusK.north west);
+% Reward Model -> shaped rewards via oplus (show conceptually)
+\draw[arrow] (reward.east) to[out=0, in=90] (10.0, 0);
+\draw[arrow] (10.0, 0) -- (rbox.west);
 
-% Reference Model -> oplus operators (KL penalty)
-\draw[arrow] (ref.east) to[out=30, in=-150] (oplus1.south west);
-\draw[arrow] (ref.east) to[out=0, in=-150] (oplus2.south west);
-\draw[arrow] (ref.east) -- (oplusK.west);
+% Reference Model -> oplus (KL contribution)
+\draw[arrow] (ref.east) to[out=0, in=-90] (10.0, 0)
+    node[pos=0.3, below, note] {$KL$};
 
-% oplus -> shaped rewards
-\draw[arrow] (oplus1) -- (r1);
-\draw[arrow] (oplus2) -- (r2);
-\draw[arrow] (oplusK) -- (rK);
+% Oplus operator in the middle (single, conceptual)
+\node[operator] (oplus) at (10.0, 0) {$\oplus$};
 
 % Shaped rewards -> LOO
 \draw[arrow] (rbox.east) -- (loo.west);
@@ -99,11 +85,11 @@
     ($(policy.north) + (0, 2.0)$) to[out=180, in=90]
     (policy.north);
 
-% Note: shaped reward equation (moved to clear position)
-\node[note] at (10.6, -2.2) {$\tilde{r} = r - \beta \cdot KL$};
+% Note: shaped reward equation
+\node[note] at (10.0, -1.8) {$\tilde{r} = r - \beta \cdot KL$};
 
-% Legend (moved to bottom right)
-\node[legendbox, fill=yellow!30] at (14.0, -2.8) {Trained};
-\node[legendbox, fill=blue!12, draw=blue!50] at (16.2, -2.8) {Frozen};
+% Legend (far right, vertically stacked)
+\node[legendbox, fill=yellow!30] at (18.0, 0.5) {Trained};
+\node[legendbox, fill=blue!12, draw=blue!50] at (18.0, -0.5) {Frozen};
 
 \end{tikzpicture}
