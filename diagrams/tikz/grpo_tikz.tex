@@ -24,8 +24,8 @@
 % Reference Model (frozen, top)
 \node[frozen] (ref) at (8.2, 0.95) {Reference\\Model};
 
-% Reward Model (frozen, bottom)
-\node[frozen] (reward) at (8.2, -1.2) {Reward\\Model};
+% Reward Model (frozen, bottom) - can also be verification function
+\node[frozen, text width=2.2cm] (reward) at (8.2, -1.2) {Reward Model\\{\scriptsize(or verifier)}};
 
 % Multiple rewards
 \node[plain] (r1) at (10.6, 0.95) {$r_1$};
