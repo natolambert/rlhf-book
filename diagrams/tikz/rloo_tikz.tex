@@ -1,0 +1,109 @@
+% RLOO (REINFORCE Leave-One-Out) Architecture Diagram
+% Shows: Policy, Reference, Reward models with leave-one-out baseline
+% KL penalty folded into shaped reward (like PPO)
+% No value network, no clipping
+% Requires styles_rlhf.tex to be loaded first
+
+\begin{tikzpicture}
+
+% Section label
+\node[seclabel] at (0, 0) {RLOO};
+
+% Input q (query/prompt)
+\node[plain] (q) at (1.5, 0) {$q$};
+
+% Policy Model (trained)
+\node[trained] (policy) at (3.5, 0) {Policy\\Model};
+
+% Multiple outputs in group (K samples per prompt)
+\node[plain] (o1) at (5.8, 0.95) {$o_1$};
+\node[plain] (o2) at (5.8, 0) {$o_2$};
+\node[font=\footnotesize] at (5.8, -0.6) {...};
+\node[plain] (oK) at (5.8, -1.2) {$o_K$};
+
+% Reward Model (frozen, top)
+\node[frozen] (reward) at (8.2, 0.95) {Reward\\Model};
+
+% Reference Model (frozen, bottom)
+\node[frozen] (ref) at (8.2, -1.2) {Reference\\Model};
+
+% Oplus operators for combining reward with KL
+\node[operator] (oplus1) at (10.0, 0.95) {$\oplus$};
+\node[operator] (oplus2) at (10.0, 0) {$\oplus$};
+\node[font=\footnotesize] at (10.0, -0.6) {...};
+\node[operator] (oplusK) at (10.0, -1.2) {$\oplus$};
+
+% Shaped rewards (r̃ = r - β·KL)
+\node[plain] (r1) at (11.2, 0.95) {$\tilde{r}_1$};
+\node[plain] (r2) at (11.2, 0) {$\tilde{r}_2$};
+\node[font=\footnotesize] at (11.2, -0.6) {...};
+\node[plain] (rK) at (11.2, -1.2) {$\tilde{r}_K$};
+
+% Leave-One-Out box with equation
+\node[plainwide, minimum width=2.8cm, minimum height=1.0cm] (loo) at (13.8, -0.1) {$A_i = \tilde{r}_i - \frac{1}{K-1}\sum_{j \neq i} \tilde{r}_j$};
+
+% Multiple advantages
+\node[plain] (A1) at (16.4, 0.95) {$A_1$};
+\node[plain] (A2) at (16.4, 0) {$A_2$};
+\node[font=\footnotesize] at (16.4, -0.6) {...};
+\node[plain] (AK) at (16.4, -1.2) {$A_K$};
+
+% Gray background boxes for groups
+\begin{scope}[on background layer]
+\node[groupbox, fit=(o1)(oK)] (obox) {};
+\node[groupbox, fit=(r1)(rK)] (rbox) {};
+\node[groupbox, fit=(A1)(AK)] (Abox) {};
+\end{scope}
+
+% ============ ARROWS ============
+
+% q -> Policy
+\draw[arrow] (q) -- (policy);
+
+% Policy -> outputs group
+\draw[arrow] (policy.east) -- (obox.west);
+
+% Three-line routing: outputs to Reward Model
+\draw[arrow] (o1.east) -- (reward.west);
+\draw[arrow] (o2.east) to[out=0, in=180] (reward.west);
+\draw[arrow] (oK.east) to[out=30, in=180] (reward.west);
+
+% Three-line routing: outputs to Reference Model
+\draw[arrow] (o1.east) to[out=-30, in=180] (ref.west);
+\draw[arrow] (o2.east) to[out=0, in=180] (ref.west);
+\draw[arrow] (oK.east) -- (ref.west);
+
+% Reward Model -> oplus operators
+\draw[arrow] (reward.east) -- (oplus1.west);
+\draw[arrow] (reward.east) to[out=0, in=150] (oplus2.north west);
+\draw[arrow] (reward.east) to[out=-30, in=150] (oplusK.north west);
+
+% Reference Model -> oplus operators (KL penalty)
+\draw[arrow] (ref.east) to[out=30, in=-150] (oplus1.south west);
+\draw[arrow] (ref.east) to[out=0, in=-150] (oplus2.south west);
+\draw[arrow] (ref.east) -- (oplusK.west);
+
+% oplus -> shaped rewards
+\draw[arrow] (oplus1) -- (r1);
+\draw[arrow] (oplus2) -- (r2);
+\draw[arrow] (oplusK) -- (rK);
+
+% Shaped rewards -> LOO
+\draw[arrow] (rbox.east) -- (loo.west);
+
+% LOO -> Advantages
+\draw[arrow] (loo.east) -- (Abox.west);
+
+% FEEDBACK: A -> Policy (REINFORCE, no clipping) - made more prominent
+\draw[feedbackarrow, line width=1.2pt] (Abox.north) to[out=90, in=0]
+    ($(policy.north) + (0, 2.0)$) to[out=180, in=90]
+    (policy.north);
+
+% Note: shaped reward equation (moved to clear position)
+\node[note] at (10.6, -2.2) {$\tilde{r} = r - \beta \cdot KL$};
+
+% Legend (moved to bottom right)
+\node[legendbox, fill=yellow!30] at (14.0, -2.8) {Trained};
+\node[legendbox, fill=blue!12, draw=blue!50] at (16.2, -2.8) {Frozen};
+
+\end{tikzpicture}
