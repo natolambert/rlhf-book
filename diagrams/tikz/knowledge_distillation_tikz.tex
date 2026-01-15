@@ -1,0 +1,102 @@
+% Knowledge Distillation (Teacher-Student) Diagram
+% Shows: Traditional Hinton (2015) knowledge distillation with soft label matching
+% Teacher (frozen) and Student (trained) process same input, compare via KL loss
+
+\documentclass{article}
+\usepackage[margin=0.3cm, paperwidth=20cm, paperheight=9cm]{geometry}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, calc, backgrounds}
+\pagestyle{empty}
+
+\begin{document}
+\input{styles_rlhf.tex}
+
+\begin{tikzpicture}
+
+% Title removed - will be in book caption
+
+% Input x
+\node[plain, minimum width=1cm, minimum height=0.8cm] (x) at (1, 0.8) {$x$};
+
+% Teacher Model (frozen, top) - use gray to emphasize frozen
+\node[frozen, minimum width=2cm, minimum height=0.9cm] (teacher) at (3.2, 1.8) {Teacher\\(Frozen)};
+
+% Student Model (trained, bottom)
+\node[trained, minimum width=2cm, minimum height=0.9cm] (student) at (3.2, -0.2) {Student\\(Trained)};
+
+% Teacher logits
+\node[plain, minimum width=0.9cm] (zt) at (5.3, 1.8) {$z_T$};
+\node[font=\tiny, text=black!60] at (5.3, 1.35) {logits};
+
+% Student logits
+\node[plain, minimum width=0.9cm] (zs) at (5.3, -0.2) {$z_S$};
+\node[font=\tiny, text=black!60] at (5.3, -0.65) {logits};
+
+% Softmax with temperature (smaller boxes)
+\node[plain, minimum width=1.6cm, minimum height=0.7cm, font=\small] (softmax_t) at (7.3, 1.8) {$\text{softmax}(\frac{z}{\tau})$};
+\node[plain, minimum width=1.6cm, minimum height=0.7cm, font=\small] (softmax_s) at (7.3, -0.2) {$\text{softmax}(\frac{z}{\tau})$};
+
+% Probability outputs
+\node[plain, minimum width=0.9cm] (pt) at (9.5, 1.8) {$p_T$};
+\node[font=\tiny, text=black!60] at (9.5, 1.35) {soft probs};
+
+\node[plain, minimum width=0.9cm] (ps) at (9.5, -0.2) {$p_S$};
+\node[font=\tiny, text=black!60] at (9.5, -0.65) {soft probs};
+
+% KL Loss
+\node[plain, minimum width=1.2cm, minimum height=0.8cm] (loss) at (11.8, 0.8) {$\mathcal{L}_{KL}$};
+
+% Temperature note - moved near softmax boxes
+\node[font=\scriptsize\itshape, text=black!60] at (7.3, 0.8) {$\tau > 1$ softens};
+
+% ============ ARROWS ============
+
+% x -> Teacher
+\draw[arrow] (x.north) to[out=70, in=180] (teacher.west);
+
+% x -> Student
+\draw[arrow] (x.south) to[out=-70, in=180] (student.west);
+
+% Teacher -> z_T
+\draw[arrow] (teacher) -- (zt);
+
+% Student -> z_S
+\draw[arrow] (student) -- (zs);
+
+% z_T -> softmax
+\draw[arrow] (zt) -- (softmax_t);
+
+% z_S -> softmax
+\draw[arrow] (zs) -- (softmax_s);
+
+% softmax -> p_T
+\draw[arrow] (softmax_t) -- (pt);
+
+% softmax -> p_S
+\draw[arrow] (softmax_s) -- (ps);
+
+% p_T -> Loss
+\draw[arrow] (pt.east) to[out=0, in=100] (loss.north);
+
+% p_S -> Loss
+\draw[arrow] (ps.east) to[out=0, in=-100] (loss.south);
+
+% Loss -> back to Student (gradient update) - from south east, route below
+\draw[->, >=Stealth, thick, dashed, draw=blue!70] (loss.south east) to[out=-45, in=-45, looseness=0.6] (student.south);
+
+% Label for gradient
+\node[font=\scriptsize\itshape, text=blue!70] at (8, -1.2) {$\nabla_{\theta_S} \mathcal{L}_{KL}$};
+
+% Legend - bottom left like RL diagrams (moved down slightly)
+\node[font=\scriptsize\itshape] (leg-key) at (1.2, -1.6) {Key};
+\node[legendbox, fill=blue!15, draw=blue!70] (leg-trained) at (2.2, -1.6) {Trained};
+\node[legendbox, fill=red!12, draw=red!50] (leg-frozen) at (3.5, -1.6) {Frozen};
+\node[draw=black!50, dotted, rounded corners=3pt, inner sep=6pt, fit=(leg-key)(leg-frozen)] {};
+
+% Equation - right side, same y as key
+\node[font=\small] at (10, -1.6) {$\mathcal{L}_{KL} = \sum_i p_T^{(i)} \log \frac{p_T^{(i)}}{p_S^{(i)}}$};
+
+\end{tikzpicture}
+
+\end{document}
