@@ -48,11 +48,11 @@ tikz: | $(GENERATED_DIR)
 			cd tikz && $(PDFLATEX) -interaction=nonstopmode $$(basename $$texfile) > /dev/null 2>&1; cd ..; \
 			cp tikz/$${base}_tikz_test.pdf $(GENERATED_DIR)/pdf/$${base}_tikz.pdf; \
 			if command -v magick > /dev/null; then \
-				magick -density 300 tikz/$${base}_tikz_test.pdf -quality 100 $(GENERATED_DIR)/png/$${base}_tikz.png; \
-				echo "  -> $(GENERATED_DIR)/png/$${base}_tikz.png (300dpi)"; \
+				magick -density 300 tikz/$${base}_tikz_test.pdf -trim -quality 100 $(GENERATED_DIR)/png/$${base}_tikz.png; \
+				echo "  -> $(GENERATED_DIR)/png/$${base}_tikz.png (300dpi, trimmed)"; \
 			elif command -v convert > /dev/null; then \
-				convert -density 300 tikz/$${base}_tikz_test.pdf -quality 100 $(GENERATED_DIR)/png/$${base}_tikz.png; \
-				echo "  -> $(GENERATED_DIR)/png/$${base}_tikz.png (300dpi)"; \
+				convert -density 300 tikz/$${base}_tikz_test.pdf -trim -quality 100 $(GENERATED_DIR)/png/$${base}_tikz.png; \
+				echo "  -> $(GENERATED_DIR)/png/$${base}_tikz.png (300dpi, trimmed)"; \
 			elif command -v sips > /dev/null; then \
 				sips -s format png tikz/$${base}_tikz_test.pdf --out $(GENERATED_DIR)/png/$${base}_tikz.png > /dev/null 2>&1; \
 			fi; \
