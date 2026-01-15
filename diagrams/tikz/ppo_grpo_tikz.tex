@@ -1,0 +1,356 @@
+% PPO vs GRPO vs RLOO Comparison Figure
+% Based on DeepSeek-Math GRPO paper Figure 1
+% Include in document with: \input{diagrams/tikz/ppo_grpo_tikz.tex}
+% Requires: \usepackage{tikz}
+%           \usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, calc, backgrounds}
+
+\begin{tikzpicture}[
+    % Node styles
+    trained/.style={
+        rectangle,
+        draw=black,
+        fill=yellow!30,
+        minimum width=1.8cm,
+        minimum height=0.8cm,
+        font=\footnotesize,
+        rounded corners=3pt,
+        align=center
+    },
+    frozen/.style={
+        rectangle,
+        draw=blue!50,
+        fill=blue!12,
+        minimum width=1.8cm,
+        minimum height=0.8cm,
+        font=\footnotesize,
+        rounded corners=3pt,
+        align=center
+    },
+    plain/.style={
+        rectangle,
+        draw=black!70,
+        fill=white,
+        minimum width=0.8cm,
+        minimum height=0.6cm,
+        font=\footnotesize,
+        rounded corners=3pt
+    },
+    plainwide/.style={
+        rectangle,
+        draw=black!70,
+        fill=white,
+        minimum width=1.6cm,
+        minimum height=0.8cm,
+        font=\footnotesize,
+        rounded corners=3pt,
+        align=center
+    },
+    groupbox/.style={
+        rectangle,
+        draw=black!30,
+        fill=black!5,
+        rounded corners=4pt,
+        inner sep=8pt
+    },
+    operator/.style={
+        circle,
+        draw=black!70,
+        fill=white,
+        minimum size=0.6cm,
+        font=\footnotesize
+    },
+    seclabel/.style={
+        font=\bfseries\Large
+    },
+    arrow/.style={
+        ->,
+        >=Stealth,
+        thick
+    },
+    feedbackarrow/.style={
+        ->,
+        >=Stealth,
+        thick,
+        draw=black,
+        dashed
+    },
+    legendbox/.style={
+        rectangle,
+        draw=black,
+        minimum width=1.8cm,
+        minimum height=0.8cm,
+        font=\footnotesize,
+        rounded corners=3pt,
+        align=center
+    },
+    note/.style={
+        font=\scriptsize\itshape,
+        text=black!70
+    }
+]
+
+% ============ PPO SECTION ============
+\node[seclabel] at (0, 0) {PPO};
+
+% Input q
+\node[plain] (ppo-q) at (1.5, 0) {$q$};
+
+% Policy Model
+\node[trained] (ppo-policy) at (3.5, 0) {Policy\\Model};
+
+% Output o
+\node[plain] (ppo-o) at (5.5, 0) {$o$};
+
+% Reference Model (top)
+\node[frozen] (ppo-ref) at (7.8, 1.2) {Reference\\Model};
+
+% Reward Model (middle)
+\node[frozen] (ppo-reward) at (7.8, 0) {Reward\\Model};
+
+% Value Model (bottom) - trained
+\node[trained] (ppo-value) at (7.8, -1.2) {Value\\Model};
+
+% Oplus operator
+\node[operator] (ppo-oplus) at (10.0, 0.6) {$\oplus$};
+
+% r output (shaped reward)
+\node[plain] (ppo-r) at (11.3, 0.6) {$r$};
+
+% v output
+\node[plain] (ppo-v) at (10.0, -1.2) {$v$};
+
+% GAE box
+\node[plainwide] (ppo-gae) at (12.8, -0.3) {GAE};
+
+% A output
+\node[plain] (ppo-A) at (14.3, -0.3) {$A$};
+
+% PPO Arrows
+\draw[arrow] (ppo-q) -- (ppo-policy);
+\draw[arrow] (ppo-policy) -- (ppo-o);
+
+% o to all three models
+\draw[arrow] (ppo-o.north) to[out=60, in=180] (ppo-ref.west);
+\draw[arrow] (ppo-o.east) -- (ppo-reward.west);
+\draw[arrow] (ppo-o.south) to[out=-60, in=180] (ppo-value.west);
+
+% Reference to oplus (KL contribution) with label
+\draw[arrow] (ppo-ref.east) to[out=0, in=120] (ppo-oplus.north west)
+    node[pos=0.4, above, note] {$KL$};
+
+% Reward to oplus
+\draw[arrow] (ppo-reward.east) to[out=0, in=-120] (ppo-oplus.south west);
+
+% Oplus to r
+\draw[arrow] (ppo-oplus) -- (ppo-r);
+
+% Value to v
+\draw[arrow] (ppo-value.east) -- (ppo-v.west);
+
+% r to GAE
+\draw[arrow] (ppo-r.east) to[out=0, in=90] (ppo-gae.north);
+
+% v to GAE
+\draw[arrow] (ppo-v.east) to[out=0, in=-90] (ppo-gae.south);
+
+% GAE to A
+\draw[arrow] (ppo-gae) -- (ppo-A);
+
+% FEEDBACK ARROW: A back to Policy Model (smoother curve)
+\draw[feedbackarrow] (ppo-A.north) to[out=100, in=0]
+    ($(ppo-policy.north) + (0, 1.6)$) to[out=180, in=90]
+    (ppo-policy.north);
+
+% FEEDBACK ARROW: GAE to Value Model (value network training signal)
+\draw[feedbackarrow] (ppo-gae.south) to[out=-120, in=30] (ppo-value.north east);
+
+% ============ DIVIDING LINE 1 ============
+\draw[dashed, gray!50, line width=1.5pt] (-0.5, -2.5) -- (18.5, -2.5);
+
+% ============ GRPO SECTION ============
+\node[seclabel] at (0, -5.2) {GRPO};
+
+% Input q
+\node[plain] (grpo-q) at (1.5, -5.2) {$q$};
+
+% Policy Model
+\node[trained] (grpo-policy) at (3.5, -5.2) {Policy\\Model};
+
+% Multiple outputs in group box (tighter spacing)
+\node[plain] (grpo-o1) at (5.8, -4.4) {$o_1$};
+\node[plain] (grpo-o2) at (5.8, -5.2) {$o_2$};
+\node[font=\footnotesize] at (5.8, -5.75) {...};
+\node[plain] (grpo-oG) at (5.8, -6.3) {$o_G$};
+
+% Reference Model (top)
+\node[frozen] (grpo-ref) at (8.2, -4.4) {Reference\\Model};
+
+% Reward Model (bottom)
+\node[frozen] (grpo-reward) at (8.2, -6.3) {Reward\\Model};
+
+% Multiple rewards in group box (tighter spacing)
+\node[plain] (grpo-r1) at (10.6, -4.4) {$r_1$};
+\node[plain] (grpo-r2) at (10.6, -5.2) {$r_2$};
+\node[font=\footnotesize] at (10.6, -5.75) {...};
+\node[plain] (grpo-rG) at (10.6, -6.3) {$r_G$};
+
+% Group Computation box with equation
+\node[plainwide, minimum width=2.2cm, minimum height=1.0cm] (grpo-group) at (12.8, -5.35) {$A_i = \frac{r_i - \mu}{\sigma}$};
+
+% Multiple advantages in group box (tighter spacing)
+\node[plain] (grpo-A1) at (15.0, -4.4) {$A_1$};
+\node[plain] (grpo-A2) at (15.0, -5.2) {$A_2$};
+\node[font=\footnotesize] at (15.0, -5.75) {...};
+\node[plain] (grpo-AG) at (15.0, -6.3) {$A_G$};
+
+% Gray background boxes
+\begin{scope}[on background layer]
+\node[groupbox, fit=(grpo-o1)(grpo-oG)] (grpo-obox) {};
+\node[groupbox, fit=(grpo-r1)(grpo-rG)] (grpo-rbox) {};
+\node[groupbox, fit=(grpo-A1)(grpo-AG)] (grpo-Abox) {};
+\end{scope}
+
+% GRPO Arrows
+\draw[arrow] (grpo-q) -- (grpo-policy);
+
+% Policy to outputs group
+\draw[arrow] (grpo-policy.east) -- (grpo-obox.west);
+
+% Three-line routing: outputs to Reference Model
+\draw[arrow] (grpo-o1.east) -- (grpo-ref.west);
+\draw[arrow] (grpo-o2.east) to[out=0, in=180] (grpo-ref.west);
+\draw[arrow] (grpo-oG.east) to[out=30, in=180] (grpo-ref.west);
+
+% Three-line routing: outputs to Reward Model
+\draw[arrow] (grpo-o1.east) to[out=-30, in=180] (grpo-reward.west);
+\draw[arrow] (grpo-o2.east) to[out=0, in=180] (grpo-reward.west);
+\draw[arrow] (grpo-oG.east) -- (grpo-reward.west);
+
+% KL feedback from Reference back to Policy (dashed, as loss term)
+\draw[feedbackarrow] (grpo-ref.north) to[out=90, in=45]
+    node[pos=0.3, above, note] {$KL$}
+    (grpo-policy.north east);
+
+% Reference to rewards (three lines)
+\draw[arrow] (grpo-ref.east) -- (grpo-r1.west);
+\draw[arrow] (grpo-ref.east) to[out=0, in=180] (grpo-r2.west);
+\draw[arrow] (grpo-ref.east) to[out=-30, in=180] (grpo-rG.west);
+
+% Reward Model to rewards (three lines)
+\draw[arrow] (grpo-reward.east) to[out=30, in=180] (grpo-r1.west);
+\draw[arrow] (grpo-reward.east) to[out=0, in=180] (grpo-r2.west);
+\draw[arrow] (grpo-reward.east) -- (grpo-rG.west);
+
+% Rewards to Group Computation
+\draw[arrow] (grpo-rbox.east) -- (grpo-group.west);
+
+% Group Computation to advantages
+\draw[arrow] (grpo-group.east) -- (grpo-Abox.west);
+
+% FEEDBACK ARROW: A back to Policy Model (smoother curve)
+\draw[feedbackarrow] (grpo-Abox.north) to[out=100, in=0]
+    ($(grpo-policy.north) + (0, 1.2)$) to[out=180, in=90]
+    (grpo-policy.north);
+
+% ============ DIVIDING LINE 2 ============
+\draw[dashed, gray!50, line width=1.5pt] (-0.5, -7.5) -- (18.5, -7.5);
+
+% ============ RLOO SECTION ============
+\node[seclabel] at (0, -9.85) {RLOO};
+
+% Input q
+\node[plain] (rloo-q) at (1.5, -9.85) {$q$};
+
+% Policy Model
+\node[trained] (rloo-policy) at (3.5, -9.85) {Policy\\Model};
+
+% Multiple outputs in group box (tighter spacing, matching GRPO)
+\node[plain] (rloo-o1) at (5.8, -9.05) {$o_1$};
+\node[plain] (rloo-o2) at (5.8, -9.85) {$o_2$};
+\node[font=\footnotesize] at (5.8, -10.4) {...};
+\node[plain] (rloo-oK) at (5.8, -10.95) {$o_K$};
+
+% Reward Model (top)
+\node[frozen] (rloo-reward) at (8.2, -9.05) {Reward\\Model};
+
+% Reference Model (bottom, for KL in reward)
+\node[frozen] (rloo-ref) at (8.2, -10.95) {Reference\\Model};
+
+% Oplus operators for combining reward with KL (like PPO)
+\node[operator] (rloo-oplus1) at (10.0, -9.05) {$\oplus$};
+\node[operator] (rloo-oplus2) at (10.0, -9.85) {$\oplus$};
+\node[font=\footnotesize] at (10.0, -10.4) {...};
+\node[operator] (rloo-oplusK) at (10.0, -10.95) {$\oplus$};
+
+% Multiple shaped rewards (r̃ = r - β·KL)
+\node[plain] (rloo-r1) at (11.2, -9.05) {$\tilde{r}_1$};
+\node[plain] (rloo-r2) at (11.2, -9.85) {$\tilde{r}_2$};
+\node[font=\footnotesize] at (11.2, -10.4) {...};
+\node[plain] (rloo-rK) at (11.2, -10.95) {$\tilde{r}_K$};
+
+% Leave-One-Out box with equation
+\node[plainwide, minimum width=2.6cm, minimum height=1.0cm] (rloo-loo) at (13.5, -10.0) {$A_i = \tilde{r}_i - \frac{1}{K-1}\sum_{j \neq i} \tilde{r}_j$};
+
+% Multiple advantages in group box (tighter spacing)
+\node[plain] (rloo-A1) at (15.8, -9.05) {$A_1$};
+\node[plain] (rloo-A2) at (15.8, -9.85) {$A_2$};
+\node[font=\footnotesize] at (15.8, -10.4) {...};
+\node[plain] (rloo-AK) at (15.8, -10.95) {$A_K$};
+
+% Gray background boxes
+\begin{scope}[on background layer]
+\node[groupbox, fit=(rloo-o1)(rloo-oK)] (rloo-obox) {};
+\node[groupbox, fit=(rloo-r1)(rloo-rK)] (rloo-rbox) {};
+\node[groupbox, fit=(rloo-A1)(rloo-AK)] (rloo-Abox) {};
+\end{scope}
+
+% RLOO Arrows
+\draw[arrow] (rloo-q) -- (rloo-policy);
+
+% Policy to outputs group
+\draw[arrow] (rloo-policy.east) -- (rloo-obox.west);
+
+% Three-line routing: outputs to Reward Model
+\draw[arrow] (rloo-o1.east) -- (rloo-reward.west);
+\draw[arrow] (rloo-o2.east) to[out=0, in=180] (rloo-reward.west);
+\draw[arrow] (rloo-oK.east) to[out=30, in=180] (rloo-reward.west);
+
+% Three-line routing: outputs to Reference Model
+\draw[arrow] (rloo-o1.east) to[out=-30, in=180] (rloo-ref.west);
+\draw[arrow] (rloo-o2.east) to[out=0, in=180] (rloo-ref.west);
+\draw[arrow] (rloo-oK.east) -- (rloo-ref.west);
+
+% Reward Model to oplus operators (rewards)
+\draw[arrow] (rloo-reward.east) -- (rloo-oplus1.west);
+\draw[arrow] (rloo-reward.east) to[out=0, in=150] (rloo-oplus2.north west);
+\draw[arrow] (rloo-reward.east) to[out=-30, in=150] (rloo-oplusK.north west);
+
+% Reference Model to oplus operators (KL penalty)
+\draw[arrow] (rloo-ref.east) to[out=30, in=-150] (rloo-oplus1.south west);
+\draw[arrow] (rloo-ref.east) to[out=0, in=-150] (rloo-oplus2.south west);
+\draw[arrow] (rloo-ref.east) -- (rloo-oplusK.west);
+
+% Oplus to shaped rewards
+\draw[arrow] (rloo-oplus1) -- (rloo-r1);
+\draw[arrow] (rloo-oplus2) -- (rloo-r2);
+\draw[arrow] (rloo-oplusK) -- (rloo-rK);
+
+% Note explaining shaped reward
+\node[note] at (10.6, -11.6) {$\tilde{r} = r - \beta \cdot KL$};
+
+% Shaped rewards to LOO computation
+\draw[arrow] (rloo-rbox.east) -- (rloo-loo.west);
+
+% LOO to advantages
+\draw[arrow] (rloo-loo.east) -- (rloo-Abox.west);
+
+% FEEDBACK ARROW: A back to Policy Model (smoother curve, no clipping)
+\draw[feedbackarrow] (rloo-Abox.north) to[out=100, in=0]
+    ($(rloo-policy.north) + (0, 1.2)$) to[out=180, in=90]
+    (rloo-policy.north);
+
+% ============ LEGEND ============
+\node[legendbox, fill=yellow!30] at (17.5, 0) {Trained\\Models};
+\node[legendbox, fill=blue!12, draw=blue!50] at (17.5, -1.2) {Frozen\\Models};
+
+\end{tikzpicture}

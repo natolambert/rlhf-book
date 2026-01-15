@@ -1,0 +1,110 @@
+% RLOO (REINFORCE Leave-One-Out) Architecture Diagram
+% Shows: Policy, Reference, Reward models with leave-one-out baseline
+% KL penalty folded into shaped reward (like PPO)
+% No value network, no clipping
+
+\documentclass{article}
+\usepackage[margin=0.3cm, paperwidth=27cm, paperheight=12cm]{geometry}
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, calc, backgrounds}
+\pagestyle{empty}
+
+\begin{document}
+\input{styles_rlhf.tex}
+
+\begin{tikzpicture}
+
+% Input s_t (state/prompt)
+\node[plain] (st) at (1.5, 0) {$s_t$};
+
+% Legend (below input/policy area)
+\node[font=\scriptsize\itshape] (leg-key) at (1.6, -1.4) {Key};
+\node[legendbox, fill=blue!15, draw=blue!70] (leg-trained) at (2.6, -1.4) {Trained};
+\node[legendbox, fill=red!12, draw=red!50] (leg-frozen) at (3.9, -1.4) {Frozen};
+\node[draw=black!50, dotted, rounded corners=3pt, inner sep=6pt, fit=(leg-key)(leg-frozen)] {};
+
+% Policy Model (trained)
+\node[trained] (policy) at (3.5, 0) {Policy\\Model};
+
+% Multiple outputs in group (K samples per prompt)
+\node[plain] (a1) at (5.8, 0.95) {$a_1$};
+\node[plain] (a2) at (5.8, 0) {$a_2$};
+\node[font=\footnotesize] at (5.8, -0.6) {...};
+\node[plain] (aK) at (5.8, -1.2) {$a_K$};
+
+% Reward Model (frozen, top)
+\node[frozen] (reward) at (8.2, 0.95) {Reward\\Model};
+
+% Reference Model (frozen, bottom)
+\node[frozen] (ref) at (8.2, -1.2) {Reference\\Model};
+
+% Note: shaped reward equation (between Reward and Reference models)
+\node[note] at (8.2, -0.1) {$\tilde{r} = r - \beta \cdot KL$};
+
+% Oplus operator (moved left)
+\node[operator] (oplus) at (9.5, -0.1) {$\oplus$};
+
+% Shaped rewards (r̃ = r - β·KL)
+\node[plain] (r1) at (11.2, 0.95) {$\tilde{r}_1$};
+\node[plain] (r2) at (11.2, 0) {$\tilde{r}_2$};
+\node[font=\footnotesize] at (11.2, -0.6) {...};
+\node[plain] (rK) at (11.2, -1.2) {$\tilde{r}_K$};
+
+% Leave-One-Out box with equation
+\node[plainwide, minimum width=2.4cm, minimum height=1.0cm] (loo) at (14.0, -0.1) {$A_i = \tilde{r}_i - \frac{1}{K-1}\sum\limits_{j \neq i} \tilde{r}_j$};
+
+% Multiple advantages
+\node[plain] (A1) at (16.7, 0.95) {$A_1$};
+\node[plain] (A2) at (16.7, 0) {$A_2$};
+\node[font=\footnotesize] at (16.7, -0.6) {...};
+\node[plain] (AK) at (16.7, -1.2) {$A_K$};
+
+% Gray background boxes for groups
+\begin{scope}[on background layer]
+\node[groupbox, fit=(a1)(aK)] (abox) {};
+\node[groupbox, fit=(r1)(rK)] (rbox) {};
+\node[groupbox, fit=(A1)(AK)] (Abox) {};
+\end{scope}
+
+% ============ ARROWS ============
+
+% s_t -> Policy
+\draw[arrow] (st) -- (policy);
+
+% Policy -> outputs group
+\draw[arrow] (policy.east) -- (abox.west);
+
+% Outputs -> Reward Model (single arrow)
+\draw[arrow] (abox.east) to[out=0, in=180] (reward.west);
+
+% Outputs -> Reference Model (single arrow)
+\draw[arrow] (abox.east) to[out=0, in=180] (ref.west);
+
+% Reward Model -> oplus
+\draw[arrow] (reward.east) to[out=0, in=90] (oplus.north);
+
+% Reference Model -> oplus (KL contribution)
+\draw[arrow] (ref.east) to[out=0, in=-90] (oplus.south);
+
+% Oplus -> shaped rewards
+\draw[arrow] (oplus.east) -- (rbox.west);
+
+% Shaped rewards -> LOO
+\draw[arrow] (rbox.east) -- (loo.west);
+
+% LOO -> Advantages
+\draw[arrow] (loo.east) -- (Abox.west);
+
+% Hidden waypoint for feedback arrow (above oplus area)
+\coordinate (feedback-mid) at ($(oplus) + (0, 2.5)$);
+
+% FEEDBACK: A -> Policy (REINFORCE, no clipping) - made more prominent
+\draw[feedbackarrow, line width=1.2pt] (Abox.north west) to[out=120, in=0]
+    (feedback-mid) to[out=180, in=0]
+    ($(policy.north) + (0, 1.6)$) to[out=180, in=90]
+    (policy.north);
+
+
+\end{tikzpicture}
+
+\end{document}

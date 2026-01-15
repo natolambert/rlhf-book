@@ -1,0 +1,89 @@
+% Shared TikZ styles for RLHF algorithm diagrams
+% Include with: \input{styles_rlhf.tex} BEFORE tikzpicture
+% Requires: \usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, calc, backgrounds}
+
+\tikzset{
+    % Node styles
+    trained/.style={
+        rectangle,
+        draw=blue!70,
+        fill=blue!15,
+        minimum width=1.8cm,
+        minimum height=0.8cm,
+        font=\footnotesize,
+        rounded corners=3pt,
+        align=center
+    },
+    frozen/.style={
+        rectangle,
+        draw=red!50,
+        fill=red!12,
+        minimum width=1.8cm,
+        minimum height=0.8cm,
+        font=\footnotesize,
+        rounded corners=3pt,
+        align=center
+    },
+    plain/.style={
+        rectangle,
+        draw=black!70,
+        fill=white,
+        minimum width=0.8cm,
+        minimum height=0.6cm,
+        font=\footnotesize,
+        rounded corners=3pt
+    },
+    plainwide/.style={
+        rectangle,
+        draw=black!70,
+        fill=white,
+        minimum width=1.6cm,
+        minimum height=0.8cm,
+        font=\footnotesize,
+        rounded corners=3pt,
+        align=center
+    },
+    groupbox/.style={
+        rectangle,
+        draw=black!30,
+        fill=black!5,
+        rounded corners=4pt,
+        inner sep=8pt
+    },
+    operator/.style={
+        circle,
+        draw=black!70,
+        fill=white,
+        minimum size=0.6cm,
+        font=\footnotesize
+    },
+    seclabel/.style={
+        font=\bfseries\Large
+    },
+    arrow/.style={
+        ->,
+        >=Stealth,
+        thick
+    },
+    feedbackarrow/.style={
+        ->,
+        >=Stealth,
+        thick,
+        draw=black,
+        dashed
+    },
+    legendbox/.style={
+        rectangle,
+        draw=black,
+        minimum width=1.2cm,
+        minimum height=0.5cm,
+        font=\scriptsize,
+        rounded corners=2pt,
+        align=center,
+        inner sep=2pt
+    },
+    note/.style={
+        font=\scriptsize\itshape,
+        text=black!70
+    }
+}
