@@ -1,0 +1,260 @@
+% PPO vs GRPO Comparison Figure
+% Include in document with: \input{figures/ppo_grpo_tikz.tex}
+% Requires: \usepackage{tikz}
+%           \usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, calc, backgrounds}
+
+\begin{tikzpicture}[
+    % Node styles
+    trained/.style={
+        rectangle,
+        draw=black,
+        fill=yellow!30,
+        minimum width=1.6cm,
+        minimum height=0.8cm,
+        font=\footnotesize,
+        rounded corners=3pt,
+        align=center
+    },
+    frozen/.style={
+        rectangle,
+        draw=blue!50,
+        fill=blue!12,
+        minimum width=1.6cm,
+        minimum height=0.8cm,
+        font=\footnotesize,
+        rounded corners=3pt,
+        align=center
+    },
+    plain/.style={
+        rectangle,
+        draw=black!70,
+        fill=white,
+        minimum width=0.8cm,
+        minimum height=0.65cm,
+        font=\footnotesize,
+        rounded corners=3pt
+    },
+    plainwide/.style={
+        rectangle,
+        draw=black!70,
+        fill=white,
+        minimum width=1.4cm,
+        minimum height=0.65cm,
+        font=\footnotesize,
+        rounded corners=3pt,
+        align=center
+    },
+    groupbox/.style={
+        rectangle,
+        draw=none,
+        fill=black!5,
+        rounded corners=4pt,
+        inner sep=6pt
+    },
+    operator/.style={
+        circle,
+        draw=black!70,
+        fill=white,
+        minimum size=0.55cm,
+        font=\footnotesize
+    },
+    seclabel/.style={
+        font=\bfseries\large
+    },
+    arrow/.style={
+        ->,
+        >=Stealth,
+        thick
+    },
+    feedbackarrow/.style={
+        ->,
+        >=Stealth,
+        thick,
+        draw=black
+    },
+    legendbox/.style={
+        rectangle,
+        draw=black,
+        minimum width=1.8cm,
+        minimum height=0.75cm,
+        font=\footnotesize,
+        rounded corners=3pt,
+        align=center
+    }
+]
+
+% Scale factor for fitting on page
+\def\xscale{1.0}
+\def\yscale{1.0}
+
+% ============ PPO SECTION ============
+\node[seclabel] at (-0.3*\xscale, 0*\yscale) {PPO};
+
+% Input q (plain - it's input data, not a trained model)
+\node[plain] (ppo-q) at (1.5*\xscale, 0*\yscale) {$q$};
+
+% Policy Model
+\node[trained, minimum width=1.8cm] (ppo-policy) at (3.8*\xscale, 0*\yscale) {Policy\\Model};
+
+% Output o
+\node[plain] (ppo-o) at (6.0*\xscale, 0*\yscale) {$o$};
+
+% Reference Model (top)
+\node[frozen, minimum width=1.8cm] (ppo-ref) at (8.8*\xscale, 1.4*\yscale) {Reference\\Model};
+
+% Reward Model (middle)
+\node[frozen, minimum width=1.8cm] (ppo-reward) at (8.8*\xscale, 0*\yscale) {Reward\\Model};
+
+% Value Model (bottom) - trained (yellow)
+\node[trained, minimum width=1.8cm] (ppo-value) at (8.8*\xscale, -1.4*\yscale) {Value\\Model};
+
+% Oplus operator
+\node[operator] (ppo-oplus) at (11.3*\xscale, 0.7*\yscale) {$\oplus$};
+
+% r output
+\node[plain] (ppo-r) at (12.6*\xscale, 0.7*\yscale) {$r$};
+
+% v output
+\node[plain] (ppo-v) at (11.3*\xscale, -1.4*\yscale) {$v$};
+
+% GAE box
+\node[plainwide] (ppo-gae) at (14.0*\xscale, -0.35*\yscale) {GAE};
+
+% A output (trained - yellow)
+\node[trained, minimum width=0.9cm] (ppo-A) at (15.8*\xscale, -0.35*\yscale) {$A$};
+
+% PPO Arrows
+\draw[arrow] (ppo-q) -- (ppo-policy);
+\draw[arrow] (ppo-policy) -- (ppo-o);
+
+% Curved arrow from o to reference model
+\draw[arrow] (ppo-o.north) to[out=60, in=180] (ppo-ref.west);
+% Straight arrow from o to reward model
+\draw[arrow] (ppo-o.east) -- (ppo-reward.west);
+% Curved arrow from o to value model
+\draw[arrow] (ppo-o.south) to[out=-60, in=180] (ppo-value.west);
+
+% KL label
+\node[font=\footnotesize\itshape] at (10.0*\xscale, 1.9*\yscale) {$KL$};
+
+% Reference to oplus
+\draw[arrow] (ppo-ref.east) to[out=0, in=110] (ppo-oplus.north);
+
+% Reward to oplus
+\draw[arrow] (ppo-reward.east) to[out=0, in=-110] (ppo-oplus.south);
+
+% Oplus to r
+\draw[arrow] (ppo-oplus) -- (ppo-r);
+
+% Value to v
+\draw[arrow] (ppo-value.east) -- (ppo-v.west);
+
+% r to GAE (curved)
+\draw[arrow] (ppo-r.east) to[out=0, in=90] (ppo-gae.north);
+
+% v to GAE (curved)
+\draw[arrow] (ppo-v.east) to[out=0, in=-90] (ppo-gae.south);
+
+% GAE to A
+\draw[arrow] (ppo-gae) -- (ppo-A);
+
+% FEEDBACK ARROW: A back to Policy Model (the training update)
+% Arc up and LEFT over the diagram back to Policy
+\draw[feedbackarrow] (ppo-A.north) to[out=90, in=0]
+    ($(ppo-gae.north) + (0, 1.8)$) to[out=180, in=0]
+    ($(ppo-o.north) + (0, 2.5)$) to[out=180, in=90]
+    (ppo-policy.north);
+
+% ============ DIVIDING LINE ============
+\draw[dashed, gray!50, line width=1.5pt] (-0.8*\xscale, -3.0*\yscale) -- (20.0*\xscale, -3.0*\yscale);
+
+% ============ GRPO SECTION ============
+\node[seclabel] at (-0.3*\xscale, -5.0*\yscale) {GRPO};
+
+% Input q (plain - input data)
+\node[plain] (grpo-q) at (1.5*\xscale, -5.0*\yscale) {$q$};
+
+% Policy Model
+\node[trained, minimum width=1.8cm] (grpo-policy) at (3.8*\xscale, -5.0*\yscale) {Policy\\Model};
+
+% Multiple outputs o1, o2, ..., oG
+\node[plain] (grpo-o1) at (6.2*\xscale, -3.9*\yscale) {$o_1$};
+\node[plain] (grpo-o2) at (6.2*\xscale, -4.8*\yscale) {$o_2$};
+\node[font=\footnotesize] (grpo-odots) at (6.2*\xscale, -5.5*\yscale) {...};
+\node[plain] (grpo-oG) at (6.2*\xscale, -6.2*\yscale) {$o_G$};
+
+% Reference Model
+\node[frozen, minimum width=1.8cm] (grpo-ref) at (8.8*\xscale, -3.9*\yscale) {Reference\\Model};
+
+% Reward Model
+\node[frozen, minimum width=1.8cm] (grpo-reward) at (8.8*\xscale, -5.5*\yscale) {Reward\\Model};
+
+% KL label for GRPO
+\node[font=\footnotesize\itshape] at (7.5*\xscale, -3.2*\yscale) {$KL$};
+
+% Multiple rewards r1, r2, ..., rG
+\node[plain] (grpo-r1) at (11.3*\xscale, -3.9*\yscale) {$r_1$};
+\node[plain] (grpo-r2) at (11.3*\xscale, -4.8*\yscale) {$r_2$};
+\node[font=\footnotesize] (grpo-rdots) at (11.3*\xscale, -5.5*\yscale) {...};
+\node[plain] (grpo-rG) at (11.3*\xscale, -6.2*\yscale) {$r_G$};
+
+% Group Computation box
+\node[plainwide, minimum width=1.9cm, minimum height=0.85cm] (grpo-group) at (13.5*\xscale, -5.0*\yscale) {Group\\Computation};
+
+% Multiple advantages A1, A2, ..., AG (plain - these are values, not models)
+\node[plain] (grpo-A1) at (15.8*\xscale, -3.9*\yscale) {$A_1$};
+\node[plain] (grpo-A2) at (15.8*\xscale, -4.8*\yscale) {$A_2$};
+\node[font=\footnotesize] (grpo-Adots) at (15.8*\xscale, -5.5*\yscale) {...};
+\node[plain] (grpo-AG) at (15.8*\xscale, -6.2*\yscale) {$A_G$};
+
+% Gray background boxes (must come after nodes are defined)
+\begin{scope}[on background layer]
+\node[groupbox, fit=(grpo-o1)(grpo-oG), inner sep=8pt] {};
+\node[groupbox, fit=(grpo-r1)(grpo-rG), inner sep=8pt] {};
+\node[groupbox, fit=(grpo-A1)(grpo-AG), inner sep=8pt] {};
+\end{scope}
+
+% GRPO Arrows
+\draw[arrow] (grpo-q) -- (grpo-policy);
+
+% Policy to outputs (curved)
+\draw[arrow] (grpo-policy.east) to[out=25, in=180] (grpo-o1.west);
+\draw[arrow] (grpo-policy.east) to[out=5, in=180] (grpo-o2.west);
+\draw[arrow] (grpo-policy.east) to[out=-25, in=180] (grpo-oG.west);
+
+% Outputs to Reference Model
+\draw[arrow] (grpo-o1.east) -- (grpo-ref.west);
+
+% Outputs to Reward Model
+\draw[arrow] (grpo-o2.east) to[out=0, in=160] (grpo-reward.north west);
+\draw[arrow] (grpo-oG.east) to[out=0, in=190] (grpo-reward.south west);
+
+% Reference to r1
+\draw[arrow] (grpo-ref.east) -- (grpo-r1.west);
+
+% Reward to rewards
+\draw[arrow] (grpo-reward.east) to[out=20, in=180] (grpo-r2.west);
+\draw[arrow] (grpo-reward.east) to[out=-15, in=180] (grpo-rG.west);
+
+% Rewards to group computation
+\draw[arrow] (grpo-r1.east) to[out=0, in=130] (grpo-group.north west);
+\draw[arrow] (grpo-r2.east) to[out=0, in=180] (grpo-group.west);
+\draw[arrow] (grpo-rG.east) to[out=0, in=-130] (grpo-group.south west);
+
+% Group computation to advantages
+\draw[arrow] (grpo-group.east) to[out=35, in=180] (grpo-A1.west);
+\draw[arrow] (grpo-group.east) to[out=10, in=180] (grpo-A2.west);
+\draw[arrow] (grpo-group.east) to[out=-35, in=180] (grpo-AG.west);
+
+% FEEDBACK ARROW: A back to Policy Model (GRPO training update)
+% Arc up and LEFT over the diagram back to Policy
+\draw[feedbackarrow] (grpo-A1.north) to[out=90, in=0]
+    ($(grpo-group.north) + (0, 1.5)$) to[out=180, in=0]
+    ($(grpo-o1.north) + (0, 2.0)$) to[out=180, in=90]
+    (grpo-policy.north);
+
+% ============ LEGEND ============
+\node[legendbox, fill=yellow!30] (legend-trained) at (18.2*\xscale, -0.35*\yscale) {Trained\\Models};
+\node[legendbox, fill=blue!12, draw=blue!50] (legend-frozen) at (18.2*\xscale, -1.6*\yscale) {Frozen\\Models};
+
+\end{tikzpicture}
