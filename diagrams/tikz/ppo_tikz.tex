@@ -56,7 +56,7 @@
 
 % Reference -> oplus (KL contribution)
 \draw[arrow] (ref.east) to[out=0, in=120] (oplus.north west)
-    node[pos=0.4, above, note] {$KL$};
+    node[pos=0.7, right, note] {$KL$};
 
 % Reward -> oplus
 \draw[arrow] (reward.east) to[out=0, in=-120] (oplus.south west);
@@ -84,8 +84,8 @@
 % FEEDBACK: GAE -> Value (value network training)
 \draw[feedbackarrow] (gae.south) to[out=-120, in=30] (value.north east);
 
-% Note: shaped reward equation
-\node[note] at (10.6, 1.5) {$\tilde{r} = r - \beta \cdot KL$};
+% Note: shaped reward equation (below r̃ block)
+\node[note] at (11.3, 0.1) {$\tilde{r} = r - \beta \cdot KL$};
 
 % Legend (far right, vertically stacked)
 \node[legendbox, fill=yellow!30] at (16.0, 0.5) {Trained};

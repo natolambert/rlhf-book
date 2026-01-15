@@ -37,7 +37,7 @@ grpo: | $(GENERATED_DIR)
 	@echo "PPO vs GRPO diagram generated (matplotlib)"
 
 # TikZ diagrams - requires pdflatex and convert (ImageMagick) or sips (macOS)
-# Compiles .tex files in tikz/ to PDF, then converts to 300dpi PNG
+# Compiles .tex files in tikz/ to PDF, then converts to 400dpi PNG
 # SVG conversion requires pdf2svg (brew install pdf2svg)
 tikz: | $(GENERATED_DIR)
 	@mkdir -p $(GENERATED_DIR)/png $(GENERATED_DIR)/svg $(GENERATED_DIR)/pdf
@@ -48,11 +48,11 @@ tikz: | $(GENERATED_DIR)
 			cd tikz && $(PDFLATEX) -interaction=nonstopmode $$(basename $$texfile) > /dev/null 2>&1; cd ..; \
 			cp tikz/$${base}_tikz_test.pdf $(GENERATED_DIR)/pdf/$${base}_tikz.pdf; \
 			if command -v magick > /dev/null; then \
-				magick -density 300 tikz/$${base}_tikz_test.pdf -trim -quality 100 $(GENERATED_DIR)/png/$${base}_tikz.png; \
-				echo "  -> $(GENERATED_DIR)/png/$${base}_tikz.png (300dpi, trimmed)"; \
+				magick -density 400 tikz/$${base}_tikz_test.pdf -trim -quality 100 $(GENERATED_DIR)/png/$${base}_tikz.png; \
+				echo "  -> $(GENERATED_DIR)/png/$${base}_tikz.png (400dpi, trimmed)"; \
 			elif command -v convert > /dev/null; then \
-				convert -density 300 tikz/$${base}_tikz_test.pdf -trim -quality 100 $(GENERATED_DIR)/png/$${base}_tikz.png; \
-				echo "  -> $(GENERATED_DIR)/png/$${base}_tikz.png (300dpi, trimmed)"; \
+				convert -density 400 tikz/$${base}_tikz_test.pdf -trim -quality 100 $(GENERATED_DIR)/png/$${base}_tikz.png; \
+				echo "  -> $(GENERATED_DIR)/png/$${base}_tikz.png (400dpi, trimmed)"; \
 			elif command -v sips > /dev/null; then \
 				sips -s format png tikz/$${base}_tikz_test.pdf --out $(GENERATED_DIR)/png/$${base}_tikz.png > /dev/null 2>&1; \
 			fi; \
