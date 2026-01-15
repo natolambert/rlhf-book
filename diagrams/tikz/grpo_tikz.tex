@@ -2,30 +2,41 @@
 % Shows: Policy, Reference, Reward models with group-based advantage normalization
 % KL penalty applied as separate loss term (dashed feedback to policy)
 % No value network needed
-% Requires styles_rlhf.tex to be loaded first
+
+\documentclass{article}
+\usepackage[margin=0.3cm, paperwidth=25cm, paperheight=12cm]{geometry}
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, calc, backgrounds}
+\pagestyle{empty}
+
+\begin{document}
+\input{styles_rlhf.tex}
 
 \begin{tikzpicture}
 
-% Section label
-\node[seclabel] at (0, 0) {GRPO};
+% Input s_t (state/prompt)
+\node[plain] (st) at (1.5, 0) {$s_t$};
 
-% Input q (query/prompt)
-\node[plain] (q) at (1.5, 0) {$q$};
+% Legend (below input/policy area)
+\node[font=\scriptsize\itshape] (leg-key) at (1.6, -1.4) {Key};
+\node[legendbox, fill=blue!15, draw=blue!70] (leg-trained) at (2.6, -1.4) {Trained};
+\node[legendbox, fill=red!12, draw=red!50] (leg-frozen) at (3.9, -1.4) {Frozen};
+\node[draw=black!50, dotted, rounded corners=3pt, inner sep=6pt, fit=(leg-key)(leg-frozen)] {};
 
 % Policy Model (trained)
 \node[trained] (policy) at (3.5, 0) {Policy\\Model};
 
 % Multiple outputs in group (G samples per prompt)
-\node[plain] (o1) at (5.8, 0.95) {$o_1$};
-\node[plain] (o2) at (5.8, 0) {$o_2$};
+\node[plain] (a1) at (5.8, 0.95) {$a_1$};
+\node[plain] (a2) at (5.8, 0) {$a_2$};
 \node[font=\footnotesize] at (5.8, -0.6) {...};
-\node[plain] (oG) at (5.8, -1.2) {$o_G$};
+\node[plain] (aG) at (5.8, -1.2) {$a_G$};
 
 % Reference Model (frozen, top)
 \node[frozen] (ref) at (8.2, 0.95) {Reference\\Model};
 
-% Reward Model (frozen, bottom) - can also be verification function
-\node[frozen, text width=2.2cm] (reward) at (8.2, -1.2) {Reward Model\\{\scriptsize(or verifier)}};
+% Reward Model (frozen, middle) - can also be verification function
+\node[frozen, text width=2.2cm] (reward) at (8.2, -0.35) {Reward Model\\{\scriptsize(or verifier)}};
 
 % Multiple rewards
 \node[plain] (r1) at (10.6, 0.95) {$r_1$};
@@ -44,32 +55,32 @@
 
 % Gray background boxes for groups
 \begin{scope}[on background layer]
-\node[groupbox, fit=(o1)(oG)] (obox) {};
+\node[groupbox, fit=(a1)(aG)] (abox) {};
 \node[groupbox, fit=(r1)(rG)] (rbox) {};
 \node[groupbox, fit=(A1)(AG)] (Abox) {};
 \end{scope}
 
 % ============ ARROWS ============
 
-% q -> Policy
-\draw[arrow] (q) -- (policy);
+% s_t -> Policy
+\draw[arrow] (st) -- (policy);
 
 % Policy -> outputs group
-\draw[arrow] (policy.east) -- (obox.west);
+\draw[arrow] (policy.east) -- (abox.west);
 
 % Outputs -> Reference Model (single arrow from group)
-\draw[arrow] (obox.east) to[out=0, in=180] (ref.west);
+\draw[arrow] (abox.east) to[out=0, in=180] (ref.west);
 
 % Outputs -> Reward Model (single arrow from group)
-\draw[arrow] (obox.east) to[out=0, in=180] (reward.west);
+\draw[arrow] (abox.east) to[out=0, in=180] (reward.west);
 
 % KL FEEDBACK: Reference -> Policy (as loss term, dashed)
-\draw[feedbackarrow] (ref.north) to[out=90, in=45]
-    node[pos=0.3, above, note] {$KL$}
+% Routed from top, below the main feedback arrow
+\coordinate (kl-mid) at ($(ref.north) + (-3, 0.5)$);
+\draw[feedbackarrow] (ref.north) to[out=120, in=0]
+    (kl-mid) to[out=180, in=45]
     (policy.north east);
-
-% Reference -> rewards (single arrow)
-\draw[arrow] (ref.east) -- (rbox.west);
+\node[note] at (8.0, 2.2) {KL in loss};
 
 % Reward Model -> rewards (single arrow)
 \draw[arrow] (reward.east) -- (rbox.west);
@@ -80,16 +91,19 @@
 % Group normalization -> Advantages
 \draw[arrow] (group.east) -- (Abox.west);
 
+% Hidden waypoint for feedback arrow (above reward area) - raised to make room for KL arrow
+\coordinate (feedback-mid) at ($(reward) + (0, 3.5)$);
+
 % FEEDBACK: A -> Policy (policy gradient with clipping) - made more prominent
-\draw[feedbackarrow, line width=1.2pt] (Abox.north) to[out=90, in=0]
-    ($(policy.north) + (0, 2.0)$) to[out=180, in=90]
+\draw[feedbackarrow, line width=1.2pt] (Abox.north west) to[out=120, in=0]
+    (feedback-mid) to[out=180, in=0]
+    ($(policy.north) + (0, 1.6)$) to[out=180, in=90]
     (policy.north);
 
 % Note: Group statistics
 \node[note] at (13.0, -1.8) {$\mu, \sigma$ from group};
 
-% Legend (far right, vertically stacked)
-\node[legendbox, fill=yellow!30] at (17.0, 0.5) {Trained};
-\node[legendbox, fill=blue!12, draw=blue!50] at (17.0, -0.5) {Frozen};
 
 \end{tikzpicture}
+
+\end{document}

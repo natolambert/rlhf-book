@@ -1,0 +1,84 @@
+% REINFORCE Architecture Diagram
+% Shows: Policy, Reference, Reward models - simplest RL setup
+% KL penalty folded into shaped reward
+% No value network, no clipping, no grouping
+
+\documentclass{article}
+\usepackage[margin=0.3cm, paperwidth=18cm, paperheight=10cm]{geometry}
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, calc, backgrounds}
+\pagestyle{empty}
+
+\begin{document}
+\input{styles_rlhf.tex}
+
+\begin{tikzpicture}
+
+% Input s_t (state/prompt)
+\node[plain] (st) at (1.5, 0) {$s_t$};
+
+% Legend (below input/policy area)
+\node[font=\scriptsize\itshape] (leg-key) at (1.6, -1.4) {Key};
+\node[legendbox, fill=blue!15, draw=blue!70] (leg-trained) at (2.6, -1.4) {Trained};
+\node[legendbox, fill=red!12, draw=red!50] (leg-frozen) at (3.9, -1.4) {Frozen};
+\node[draw=black!50, dotted, rounded corners=3pt, inner sep=6pt, fit=(leg-key)(leg-frozen)] {};
+
+% Policy Model (trained)
+\node[trained] (policy) at (3.5, 0) {Policy\\Model};
+
+% Single output action
+\node[plain] (at) at (5.5, 0) {$a_t$};
+
+% Reward Model (frozen, top)
+\node[frozen] (reward) at (7.8, 0.8) {Reward\\Model};
+
+% Reference Model (frozen, bottom)
+\node[frozen] (ref) at (7.8, -0.8) {Reference\\Model};
+
+% Note: shaped reward equation (between Reward and Reference models)
+\node[note] at (7.8, 0) {$\tilde{r} = r - \beta \cdot KL$};
+
+% Oplus operator
+\node[operator] (oplus) at (9.8, 0) {$\oplus$};
+
+% Shaped reward output
+\node[plain] (rtilde) at (11.3, 0) {$\tilde{r}$};
+
+% Advantage
+\node[plain] (A) at (13.0, 0) {$A$};
+
+% ============ ARROWS ============
+
+% s_t -> Policy
+\draw[arrow] (st) -- (policy);
+
+% Policy -> a_t
+\draw[arrow] (policy) -- (at);
+
+% a_t -> Reward Model
+\draw[arrow] (at.east) to[out=0, in=180] (reward.west);
+
+% a_t -> Reference Model
+\draw[arrow] (at.east) to[out=0, in=180] (ref.west);
+
+% Reward Model -> oplus
+\draw[arrow] (reward.east) to[out=0, in=90] (oplus.north);
+
+% Reference Model -> oplus (KL contribution)
+\draw[arrow] (ref.east) to[out=0, in=-90] (oplus.south);
+
+% Oplus -> shaped reward
+\draw[arrow] (oplus.east) -- (rtilde.west);
+
+% Shaped reward -> Advantage
+\draw[arrow] (rtilde.east) -- (A.west);
+
+% FEEDBACK: A -> Policy (REINFORCE update)
+\draw[feedbackarrow, line width=1.2pt] (A.north) to[out=90, in=0]
+    ($(policy.north) + (0, 1.5)$) to[out=180, in=90]
+    (policy.north);
+
+
+\end{tikzpicture}
+
+\end{document}

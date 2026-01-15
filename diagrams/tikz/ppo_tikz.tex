@@ -1,21 +1,32 @@
 % PPO (Proximal Policy Optimization) Architecture Diagram
 % Shows: Policy, Reference, Reward, Value models with GAE advantage estimation
 % KL penalty combined with reward via oplus operator
-% Requires styles_rlhf.tex to be loaded first
+
+\documentclass{article}
+\usepackage[margin=0.3cm, paperwidth=25cm, paperheight=12cm]{geometry}
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, calc, backgrounds}
+\pagestyle{empty}
+
+\begin{document}
+\input{styles_rlhf.tex}
 
 \begin{tikzpicture}
 
-% Section label
-\node[seclabel] at (0, 0) {PPO};
+% Input s_t (state/prompt)
+\node[plain] (st) at (1.5, 0) {$s_t$};
 
-% Input q (query/prompt)
-\node[plain] (q) at (1.5, 0) {$q$};
+% Legend (below input/policy area)
+\node[font=\scriptsize\itshape] (leg-key) at (1.6, -1.4) {Key};
+\node[legendbox, fill=blue!15, draw=blue!70] (leg-trained) at (2.6, -1.4) {Trained};
+\node[legendbox, fill=red!12, draw=red!50] (leg-frozen) at (3.9, -1.4) {Frozen};
+\node[draw=black!50, dotted, rounded corners=3pt, inner sep=6pt, fit=(leg-key)(leg-frozen)] {};
 
 % Policy Model (trained)
 \node[trained] (policy) at (3.5, 0) {Policy\\Model};
 
-% Output o (single output)
-\node[plain] (o) at (5.5, 0) {$o$};
+% Output a_t (action/completion)
+\node[plain] (at) at (5.5, 0) {$a_t$};
 
 % Reference Model (frozen, top)
 \node[frozen] (ref) at (7.8, 1.2) {Reference\\Model};
@@ -43,20 +54,19 @@
 
 % ============ ARROWS ============
 
-% q -> Policy
-\draw[arrow] (q) -- (policy);
+% s_t -> Policy
+\draw[arrow] (st) -- (policy);
 
-% Policy -> o
-\draw[arrow] (policy) -- (o);
+% Policy -> a_t
+\draw[arrow] (policy) -- (at);
 
-% o to all three models (three-line fan-out)
-\draw[arrow] (o.north) to[out=60, in=180] (ref.west);
-\draw[arrow] (o.east) -- (reward.west);
-\draw[arrow] (o.south) to[out=-60, in=180] (value.west);
+% a_t to all three models (three-line fan-out)
+\draw[arrow] (at.north) to[out=60, in=180] (ref.west);
+\draw[arrow] (at.east) -- (reward.west);
+\draw[arrow] (at.south) to[out=-60, in=180] (value.west);
 
 % Reference -> oplus (KL contribution)
-\draw[arrow] (ref.east) to[out=0, in=120] (oplus.north west)
-    node[pos=0.7, right, note] {$KL$};
+\draw[arrow] (ref.east) to[out=0, in=120] (oplus.north west);
 
 % Reward -> oplus
 \draw[arrow] (reward.east) to[out=0, in=-120] (oplus.south west);
@@ -87,8 +97,7 @@
 % Note: shaped reward equation (above r̃ block)
 \node[note] at (11.3, 1.1) {$\tilde{r} = r - \beta \cdot KL$};
 
-% Legend (far right, vertically stacked)
-\node[legendbox, fill=yellow!30] at (16.0, 0.5) {Trained};
-\node[legendbox, fill=blue!12, draw=blue!50] at (16.0, -0.5) {Frozen};
 
 \end{tikzpicture}
+
+\end{document}
