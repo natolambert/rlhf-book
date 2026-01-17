@@ -220,7 +220,7 @@ STaR effectively approximates the policy gradient algorithm, but in practice fil
 TRICE [@hoffman2023training] also improves upon reasoning by generating traces and then optimizing with a custom Markov chain Monte Carlo inspired expectation maximization algorithm. 
 VinePPO [@VinePPO] followed these and used a setup that shifted closer to modern reasoning models. 
 VinePPO uses a PPO-based algorithm with binary rewards for math question correctness, training on GSM8K and MATH.
-Other work before OpenAI's o1 and DeepSeek R1 used code execution as a feedback signal for training [@gehring2024rlefgroundingcodellms], [@xudpoppo] or verification for theorem proving (called Reinforcement Learning from Verifier Feedback, RLVF, here) [@amit2024models]. 
+Other work before OpenAI's o1 and DeepSeek R1 used code execution as a feedback signal for training [@gehring2024rlefgroundingcodellms], [@xu2024dpo] or verification for theorem proving (called Reinforcement Learning from Verifier Feedback, RLVF, here) [@amit2024models]. 
 Tülu 3 expanded upon these methods by using a simple PPO trainer to reward completions with correct answers -- most importantly while maintaining the model's overall performance on a broad suite of evaluations.
 The binary rewards of Tülu 3 and modern reasoning training techniques can be contrasted to the iterative approach of STaR or the log-likelihood rewards of Quiet-STaR.
 
