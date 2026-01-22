@@ -40,6 +40,8 @@ A standard illustration of the RL loop is shown in @fig:rl and (compare this to 
 
 To make the transition function concrete, consider the classic *CartPole* (inverted pendulum) control task.
 
+![CartPole environment showing state variables ($x$, $\dot{x}$, $\theta$, $\dot{\theta}$) and actions ($\pm F$).](images/cartpole.png){#fig:cartpole width=400px .center}
+
 - **State ($s_t$)**: the cart position/velocity and pole angle/angular velocity,
 
   $$s_t = (x_t,\,\dot{x}_t,\,\theta_t,\,\dot{\theta}_t).$$
