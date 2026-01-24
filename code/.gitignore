@@ -55,3 +55,6 @@ wandb/
 # OS
 .DS_Store
 Thumbs.db
+
+# Python version
+.python-version

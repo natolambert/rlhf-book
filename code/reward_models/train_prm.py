@@ -23,18 +23,23 @@ Usage:
 """
 
 import argparse
-import os
 import random
 from typing import Any, Dict, List
 
 import torch
-import wandb
-import torch.nn as nn
 import torch.nn.functional as F
 from datasets import Dataset, load_dataset
-from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 from torch.utils.data import DataLoader
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from transformers import AutoTokenizer
+
+from reward_models.base import (
+    BaseRewardModel,
+    create_optimizer,
+    finish_wandb,
+    init_wandb,
+    load_tokenizer,
+    log_metrics,
+)
 
 
 # =============================================================================
@@ -49,7 +54,7 @@ DEFAULT_GRAD_ACCUM = 2
 DEFAULT_MAX_STEPS = 20  # Max reasoning steps per sample
 DEFAULT_MAX_TOKENS = 5500  # Max tokens per sample
 DEFAULT_EPOCHS = 1
-DEFAULT_LR = 3e-5
+DEFAULT_LR = 3e-6  # Lower LR for full fine-tuning (vs 3e-5 for LoRA)
 DEFAULT_SEED = 13
 
 STEP_SEPARATOR = "\n<step>\n"
@@ -238,53 +243,20 @@ def collate_fn(batch: List[Dict], tokenizer: AutoTokenizer) -> Dict[str, torch.T
 # =============================================================================
 
 
-class ProcessRewardModel(nn.Module):
-    """Process Reward Model with LoRA fine-tuning.
+class ProcessRewardModel(BaseRewardModel):
+    """Process Reward Model with full fine-tuning.
 
     Architecture:
-    - Base LLM (e.g., Qwen3) with 4-bit quantization
-    - LoRA adapters on attention projections
+    - Base LLM (e.g., Qwen3) in BF16
     - Linear head mapping hidden states to 3-class logits
 
     The model outputs per-token logits which are trained with cross-entropy
     loss on step terminator tokens only (all other tokens masked).
     """
 
-    def __init__(
-        self,
-        model_id: str = DEFAULT_MODEL_ID,
-        lora_r: int = 16,
-        lora_alpha: int = 32,
-        lora_dropout: float = 0.05,
-    ):
-        super().__init__()
-
-        bnb_config = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_compute_dtype=torch.bfloat16,
-        )
-
-        lora_config = LoraConfig(
-            r=lora_r,
-            lora_alpha=lora_alpha,
-            lora_dropout=lora_dropout,
-            bias="none",
-            task_type="CAUSAL_LM",
-            target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
-        )
-
-        device_map = {"": 0} if torch.cuda.is_available() else None
-        base = AutoModelForCausalLM.from_pretrained(
-            model_id,
-            quantization_config=bnb_config,
-            device_map=device_map,
-            trust_remote_code=True,
-        )
-        base = prepare_model_for_kbit_training(base)
-        base.config.use_cache = False
-
-        self.model = get_peft_model(base, lora_config)
-        self.head = nn.Linear(self.model.config.hidden_size, len(PRM_CLASS_VALUES))
+    def __init__(self, model_id: str = DEFAULT_MODEL_ID, **kwargs):
+        # 3-class head for PRM: bad (-1), neutral (0), good (1)
+        super().__init__(model_id, head_dim=len(PRM_CLASS_VALUES), **kwargs)
 
     def forward(
         self,
@@ -303,14 +275,7 @@ class ProcessRewardModel(nn.Module):
             loss: Cross-entropy loss on step tokens (None if labels not provided)
             logits: Per-token class logits [batch, seq_len, 3]
         """
-        outputs = self.model(
-            input_ids=input_ids,
-            attention_mask=attention_mask,
-            output_hidden_states=True,
-            use_cache=False,
-            return_dict=True,
-        )
-        hidden = outputs.hidden_states[-1]
+        hidden = self.get_hidden_states(input_ids, attention_mask)
         logits = self.head(hidden)
 
         loss = None
@@ -359,27 +324,21 @@ def train_prm(
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Initialize wandb
-    wandb_project = os.environ.get("WANDB_PROJECT")
-    if use_wandb and wandb_project:
-        wandb.init(
-            project=wandb_project,
-            name=os.environ.get("WANDB_RUN_NAME", "prm_prm800k"),
-            config={
-                "model_id": model_id,
-                "samples": samples,
-                "batch_size": batch_size,
-                "grad_accum_steps": grad_accum_steps,
-                "epochs": epochs,
-                "lr": lr,
-            },
-        )
-    else:
-        wandb.init(mode="disabled")
+    init_wandb(
+        default_run_name="prm_prm800k",
+        config={
+            "model_id": model_id,
+            "samples": samples,
+            "batch_size": batch_size,
+            "grad_accum_steps": grad_accum_steps,
+            "epochs": epochs,
+            "lr": lr,
+        },
+        use_wandb=use_wandb,
+    )
 
     # Load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(model_id, use_fast=True)
-    if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
+    tokenizer = load_tokenizer(model_id)
 
     # Build dataset
     print(f"Building PRM dataset with {samples} samples...")
@@ -396,14 +355,10 @@ def train_prm(
     # Initialize model
     print(f"Loading model: {model_id}")
     model = ProcessRewardModel(model_id=model_id).to(device)
-    trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print(f"Trainable parameters: {trainable_params / 1e6:.2f}M")
+    print(f"Trainable parameters: {model.count_trainable_params() / 1e6:.2f}M")
 
     # Optimizer
-    optimizer = torch.optim.AdamW(
-        filter(lambda p: p.requires_grad, model.parameters()),
-        lr=lr,
-    )
+    optimizer = create_optimizer(model, lr)
 
     # Mixed precision for memory efficiency
     autocast_enabled = torch.cuda.is_available()
@@ -439,14 +394,14 @@ def train_prm(
             if step_idx % 100 == 0:
                 acc = total_correct / max(1, total_steps)
                 print(f"Epoch {epoch} step {step_idx} loss {loss.item():.4f}")
-                wandb.log({"loss": loss.item(), "step_accuracy": acc})
+                log_metrics({"loss": loss.item(), "step_accuracy": acc})
 
         avg_loss = total_loss / len(loader)
         accuracy = total_correct / max(1, total_steps)
         print(f"Epoch {epoch} | Loss: {avg_loss:.4f} | Step Accuracy: {accuracy:.3f}")
-        wandb.log({"epoch_loss": avg_loss, "epoch_accuracy": accuracy, "epoch": epoch})
+        log_metrics({"epoch_loss": avg_loss, "epoch_accuracy": accuracy, "epoch": epoch})
 
-    wandb.finish()
+    finish_wandb()
     return model
 
 
@@ -571,9 +526,7 @@ def main():
     )
 
     if not args.skip_demo:
-        tokenizer = AutoTokenizer.from_pretrained(args.model_id, use_fast=True)
-        if tokenizer.pad_token is None:
-            tokenizer.pad_token = tokenizer.eos_token
+        tokenizer = load_tokenizer(args.model_id)
         demo_scoring(model, tokenizer, seed=args.seed)
 
 

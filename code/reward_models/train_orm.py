@@ -21,18 +21,24 @@ Usage:
 """
 
 import argparse
-import os
 import random
 from typing import Dict, List
 
 import torch
-import wandb
 import torch.nn as nn
 import torch.nn.functional as F
 from datasets import Dataset, load_dataset
-from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 from torch.utils.data import DataLoader
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from transformers import AutoTokenizer
+
+from reward_models.base import (
+    BaseRewardModel,
+    create_optimizer,
+    finish_wandb,
+    init_wandb,
+    load_tokenizer,
+    log_metrics,
+)
 
 
 # =============================================================================
@@ -44,7 +50,7 @@ DEFAULT_DATASET = "gsm8k"
 DEFAULT_SAMPLES = 200
 DEFAULT_BATCH_SIZE = 4
 DEFAULT_EPOCHS = 1
-DEFAULT_LR = 5e-5
+DEFAULT_LR = 5e-6  # Lower LR for full fine-tuning (vs 5e-5 for LoRA)
 DEFAULT_SEED = 7
 
 
@@ -148,7 +154,7 @@ def collate_fn(batch: List[Dict], tokenizer: AutoTokenizer) -> Dict[str, torch.T
 # =============================================================================
 
 
-class OutcomeRewardModel(nn.Module):
+class OutcomeRewardModel(BaseRewardModel):
     """Outcome Reward Model with LoRA fine-tuning.
 
     Architecture:
@@ -160,44 +166,8 @@ class OutcomeRewardModel(nn.Module):
     on completion tokens only (prompt tokens are masked).
     """
 
-    def __init__(
-        self,
-        model_id: str = DEFAULT_MODEL_ID,
-        lora_r: int = 16,
-        lora_alpha: int = 32,
-        lora_dropout: float = 0.05,
-    ):
-        super().__init__()
-
-        # Quantization config for memory efficiency
-        bnb_config = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_compute_dtype=torch.bfloat16,
-        )
-
-        # LoRA config targeting attention projections
-        lora_config = LoraConfig(
-            r=lora_r,
-            lora_alpha=lora_alpha,
-            lora_dropout=lora_dropout,
-            bias="none",
-            task_type="CAUSAL_LM",
-            target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
-        )
-
-        # Load and prepare base model
-        device_map = {"": 0} if torch.cuda.is_available() else None
-        base = AutoModelForCausalLM.from_pretrained(
-            model_id,
-            quantization_config=bnb_config,
-            device_map=device_map,
-            trust_remote_code=True,
-        )
-        base = prepare_model_for_kbit_training(base)
-        base.config.use_cache = False
-
-        self.model = get_peft_model(base, lora_config)
-        self.head = nn.Linear(self.model.config.hidden_size, 1, bias=True)
+    def __init__(self, model_id: str = DEFAULT_MODEL_ID, **kwargs):
+        super().__init__(model_id, head_dim=1, **kwargs)
 
     def forward(
         self,
@@ -216,14 +186,7 @@ class OutcomeRewardModel(nn.Module):
             loss: BCE loss on completion tokens (None if labels not provided)
             logits: Per-token reward logits [batch, seq_len]
         """
-        outputs = self.model(
-            input_ids=input_ids,
-            attention_mask=attention_mask,
-            output_hidden_states=True,
-            use_cache=False,
-            return_dict=True,
-        )
-        hidden = outputs.hidden_states[-1]
+        hidden = self.get_hidden_states(input_ids, attention_mask)
         logits = self.head(hidden).squeeze(-1)
 
         loss = None
@@ -270,26 +233,20 @@ def train_orm(
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Initialize wandb
-    wandb_project = os.environ.get("WANDB_PROJECT")
-    if use_wandb and wandb_project:
-        wandb.init(
-            project=wandb_project,
-            name=os.environ.get("WANDB_RUN_NAME", "orm_gsm8k"),
-            config={
-                "model_id": model_id,
-                "samples": samples,
-                "batch_size": batch_size,
-                "epochs": epochs,
-                "lr": lr,
-            },
-        )
-    else:
-        wandb.init(mode="disabled")
+    init_wandb(
+        default_run_name="orm_gsm8k",
+        config={
+            "model_id": model_id,
+            "samples": samples,
+            "batch_size": batch_size,
+            "epochs": epochs,
+            "lr": lr,
+        },
+        use_wandb=use_wandb,
+    )
 
     # Load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(model_id, use_fast=True)
-    if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
+    tokenizer = load_tokenizer(model_id)
 
     # Build dataset
     print(f"Building ORM dataset with {samples} samples...")
@@ -306,14 +263,10 @@ def train_orm(
     # Initialize model
     print(f"Loading model: {model_id}")
     model = OutcomeRewardModel(model_id=model_id).to(device)
-    trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print(f"Trainable parameters: {trainable_params / 1e6:.2f}M")
+    print(f"Trainable parameters: {model.count_trainable_params() / 1e6:.2f}M")
 
     # Optimizer
-    optimizer = torch.optim.AdamW(
-        filter(lambda p: p.requires_grad, model.parameters()),
-        lr=lr,
-    )
+    optimizer = create_optimizer(model, lr)
 
     # Training loop
     for epoch in range(epochs):
@@ -341,14 +294,14 @@ def train_orm(
             if step % 10 == 0:
                 acc = total_correct / total_tokens if total_tokens > 0 else 0
                 print(f"Epoch {epoch} step {step} loss {loss.item():.4f}")
-                wandb.log({"loss": loss.item(), "accuracy": acc})
+                log_metrics({"loss": loss.item(), "accuracy": acc})
 
         avg_loss = total_loss / len(loader)
         accuracy = total_correct / total_tokens if total_tokens > 0 else 0
         print(f"Epoch {epoch} | Loss: {avg_loss:.4f} | Accuracy: {accuracy:.3f}")
-        wandb.log({"epoch_loss": avg_loss, "epoch_accuracy": accuracy, "epoch": epoch})
+        log_metrics({"epoch_loss": avg_loss, "epoch_accuracy": accuracy, "epoch": epoch})
 
-    wandb.finish()
+    finish_wandb()
     return model
 
 
@@ -452,9 +405,7 @@ def main():
     )
 
     if not args.skip_demo:
-        tokenizer = AutoTokenizer.from_pretrained(args.model_id, use_fast=True)
-        if tokenizer.pad_token is None:
-            tokenizer.pad_token = tokenizer.eos_token
+        tokenizer = load_tokenizer(args.model_id)
         demo_scoring(model, tokenizer, seed=args.seed)
 
 

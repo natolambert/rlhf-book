@@ -81,6 +81,8 @@ uv run python -m policy_gradients.train --config policy_gradients/configs/rloo.y
 
 ## Reward Model Training
 
+> **Note: Experimental** - Reward model training needs tuning of hyperparameters, datasets, and models for cleaner training curves. Contributions welcome!
+
 Train reward models on various datasets:
 
 ```bash
@@ -102,12 +104,12 @@ Llama 2, and most production RLHF systems. Trains on UltraFeedback preference da
 
 ### ORM (Outcome Reward Model)
 
-Binary classification on solution correctness. Fine-tunes Qwen3-1.7B with LoRA on GSM8K,
+Binary classification on solution correctness. Fine-tunes Qwen3-0.6B on GSM8K,
 learning to distinguish correct from incorrect math solutions.
 
 ### PRM (Process Reward Model)
 
-Step-level classification on reasoning quality. Fine-tunes Qwen3-0.6B with LoRA on PRM800K,
+Step-level classification on reasoning quality. Fine-tunes Qwen3-0.6B on PRM800K,
 learning to rate individual reasoning steps as {-1, 0, 1} (bad, neutral, good).
 
 ## Direct Alignment (Coming Soon)
@@ -154,8 +156,8 @@ export HF_TOKEN="your-token"
 | Training | Model | GPU Memory |
 |----------|-------|------------|
 | Policy gradients | Qwen3-1.7B | ~16GB (single GPU) |
-| ORM | Qwen3-1.7B (4-bit) | ~8GB |
-| PRM | Qwen3-0.6B (4-bit) | ~6GB |
+| Reward models | Qwen3-0.6B | ~8-16GB |
+| Reward models | Qwen3-1.7B | ~16-20GB |
 
 ## Book Chapters
 

@@ -18,18 +18,24 @@ Usage:
 """
 
 import argparse
-import os
 import random
 from typing import Dict, List
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
-import wandb
 from datasets import Dataset, load_dataset
-from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 from torch.utils.data import DataLoader
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from transformers import AutoTokenizer
+
+from reward_models.base import (
+    BaseRewardModel,
+    create_optimizer,
+    finish_wandb,
+    init_wandb,
+    load_tokenizer,
+    log_metrics,
+    pad_sequences,
+)
 
 
 # =============================================================================
@@ -43,7 +49,7 @@ DEFAULT_BATCH_SIZE = 2
 DEFAULT_GRAD_ACCUM = 4
 DEFAULT_MAX_LENGTH = 512
 DEFAULT_EPOCHS = 1
-DEFAULT_LR = 1e-5
+DEFAULT_LR = 1e-6  # Lower LR for full fine-tuning (vs 1e-5 for LoRA)
 DEFAULT_SEED = 42
 
 
@@ -127,24 +133,11 @@ def build_preference_dataset(
 
 def collate_fn(batch: List[Dict], tokenizer: AutoTokenizer) -> Dict[str, torch.Tensor]:
     """Collate function that pads chosen and rejected sequences."""
-
-    def pad_sequence(sequences, pad_value):
-        max_len = max(len(seq) for seq in sequences)
-        padded = torch.full((len(sequences), max_len), pad_value, dtype=torch.long)
-        for i, seq in enumerate(sequences):
-            padded[i, : len(seq)] = torch.tensor(seq, dtype=torch.long)
-        return padded
-
-    chosen_ids = pad_sequence([x["chosen_ids"] for x in batch], tokenizer.pad_token_id)
-    chosen_mask = pad_sequence([x["chosen_mask"] for x in batch], 0)
-    rejected_ids = pad_sequence([x["rejected_ids"] for x in batch], tokenizer.pad_token_id)
-    rejected_mask = pad_sequence([x["rejected_mask"] for x in batch], 0)
-
     return {
-        "chosen_ids": chosen_ids,
-        "chosen_mask": chosen_mask,
-        "rejected_ids": rejected_ids,
-        "rejected_mask": rejected_mask,
+        "chosen_ids": pad_sequences([x["chosen_ids"] for x in batch], tokenizer.pad_token_id),
+        "chosen_mask": pad_sequences([x["chosen_mask"] for x in batch], 0),
+        "rejected_ids": pad_sequences([x["rejected_ids"] for x in batch], tokenizer.pad_token_id),
+        "rejected_mask": pad_sequences([x["rejected_mask"] for x in batch], 0),
     }
 
 
@@ -153,7 +146,7 @@ def collate_fn(batch: List[Dict], tokenizer: AutoTokenizer) -> Dict[str, torch.T
 # =============================================================================
 
 
-class PreferenceRewardModel(nn.Module):
+class PreferenceRewardModel(BaseRewardModel):
     """Preference-based Reward Model with LoRA fine-tuning.
 
     Architecture:
@@ -164,62 +157,22 @@ class PreferenceRewardModel(nn.Module):
     The model outputs a single scalar reward for each sequence.
     """
 
-    def __init__(
-        self,
-        model_id: str = DEFAULT_MODEL_ID,
-        lora_r: int = 16,
-        lora_alpha: int = 32,
-        lora_dropout: float = 0.05,
-    ):
-        super().__init__()
-
-        bnb_config = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_compute_dtype=torch.bfloat16,
-        )
-
-        lora_config = LoraConfig(
-            r=lora_r,
-            lora_alpha=lora_alpha,
-            lora_dropout=lora_dropout,
-            bias="none",
-            task_type="CAUSAL_LM",
-            target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"],
-        )
-
-        device_map = {"": 0} if torch.cuda.is_available() else None
-        base = AutoModelForCausalLM.from_pretrained(
-            model_id,
-            quantization_config=bnb_config,
-            device_map=device_map,
-            trust_remote_code=True,
-        )
-        base = prepare_model_for_kbit_training(base)
-        base.config.use_cache = False
-
-        self.model = get_peft_model(base, lora_config)
-        self.reward_head = nn.Linear(self.model.config.hidden_size, 1, bias=False)
+    def __init__(self, model_id: str = DEFAULT_MODEL_ID, **kwargs):
+        super().__init__(model_id, head_dim=1, **kwargs)
 
     def get_reward(self, input_ids: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
         """Compute scalar reward for a sequence.
 
         Returns the reward from the last non-padding token position.
         """
-        outputs = self.model(
-            input_ids=input_ids,
-            attention_mask=attention_mask,
-            output_hidden_states=True,
-            use_cache=False,
-            return_dict=True,
-        )
-        hidden = outputs.hidden_states[-1]
+        hidden = self.get_hidden_states(input_ids, attention_mask)
 
         # Get last non-padding position for each sequence
         seq_lengths = attention_mask.sum(dim=1) - 1
         batch_indices = torch.arange(hidden.size(0), device=hidden.device)
         last_hidden = hidden[batch_indices, seq_lengths]
 
-        reward = self.reward_head(last_hidden).squeeze(-1)
+        reward = self.head(last_hidden).squeeze(-1)
         return reward
 
     def forward(
@@ -282,28 +235,22 @@ def train_preference_rm(
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Initialize wandb
-    wandb_project = os.environ.get("WANDB_PROJECT")
-    if use_wandb and wandb_project:
-        wandb.init(
-            project=wandb_project,
-            name=os.environ.get("WANDB_RUN_NAME", "preference_rm"),
-            config={
-                "model_id": model_id,
-                "samples": samples,
-                "batch_size": batch_size,
-                "grad_accum_steps": grad_accum_steps,
-                "max_length": max_length,
-                "epochs": epochs,
-                "lr": lr,
-            },
-        )
-    else:
-        wandb.init(mode="disabled")
+    init_wandb(
+        default_run_name="preference_rm",
+        config={
+            "model_id": model_id,
+            "samples": samples,
+            "batch_size": batch_size,
+            "grad_accum_steps": grad_accum_steps,
+            "max_length": max_length,
+            "epochs": epochs,
+            "lr": lr,
+        },
+        use_wandb=use_wandb,
+    )
 
     # Load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(model_id, use_fast=True)
-    if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
+    tokenizer = load_tokenizer(model_id)
 
     # Build dataset
     print(f"Building preference dataset with {samples} pairs...")
@@ -320,14 +267,10 @@ def train_preference_rm(
     # Initialize model
     print(f"Loading model: {model_id}")
     model = PreferenceRewardModel(model_id=model_id).to(device)
-    trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print(f"Trainable parameters: {trainable_params / 1e6:.2f}M")
+    print(f"Trainable parameters: {model.count_trainable_params() / 1e6:.2f}M")
 
     # Optimizer
-    optimizer = torch.optim.AdamW(
-        filter(lambda p: p.requires_grad, model.parameters()),
-        lr=lr,
-    )
+    optimizer = create_optimizer(model, lr)
 
     # Mixed precision
     autocast_enabled = torch.cuda.is_available()
@@ -364,7 +307,7 @@ def train_preference_rm(
             if step_idx % 50 == 0:
                 acc = total_correct / max(1, total_pairs)
                 print(f"Epoch {epoch} step {step_idx} | loss {loss.item():.4f} | acc {acc:.3f}")
-                wandb.log({
+                log_metrics({
                     "loss": loss.item(),
                     "accuracy": acc,
                     "r_chosen_mean": r_chosen.mean().item(),
@@ -376,7 +319,7 @@ def train_preference_rm(
         accuracy = total_correct / max(1, total_pairs)
         print(f"Epoch {epoch} | Loss: {avg_loss:.4f} | Accuracy: {accuracy:.3f}")
 
-    wandb.finish()
+    finish_wandb()
     return model
 
 
@@ -461,9 +404,7 @@ def main():
     )
 
     if not args.skip_demo:
-        tokenizer = AutoTokenizer.from_pretrained(args.model_id, use_fast=True)
-        if tokenizer.pad_token is None:
-            tokenizer.pad_token = tokenizer.eos_token
+        tokenizer = load_tokenizer(args.model_id)
         demo_scoring(model, tokenizer)
 
 
