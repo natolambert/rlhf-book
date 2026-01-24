@@ -81,15 +81,24 @@ uv run python -m policy_gradients.train --config policy_gradients/configs/rloo.y
 
 ## Reward Model Training
 
-Train reward models on math reasoning datasets:
+Train reward models on various datasets:
 
 ```bash
+# Standard Preference RM (Chapter 7) - Bradley-Terry on UltraFeedback
+uv run python -m reward_models.train_preference_rm
+
 # Outcome Reward Model (Chapter 7) - trains on GSM8K
 uv run python -m reward_models.train_orm
 
 # Process Reward Model (Chapter 7) - trains on PRM800K
 uv run python -m reward_models.train_prm
 ```
+
+### Preference RM (Bradley-Terry)
+
+Standard preference-based reward model using the Bradley-Terry loss:
+`-log(sigmoid(r_chosen - r_rejected))`. This is the approach used in InstructGPT,
+Llama 2, and most production RLHF systems. Trains on UltraFeedback preference data.
 
 ### ORM (Outcome Reward Model)
 
@@ -101,14 +110,41 @@ learning to distinguish correct from incorrect math solutions.
 Step-level classification on reasoning quality. Fine-tunes Qwen3-0.6B with LoRA on PRM800K,
 learning to rate individual reasoning steps as {-1, 0, 1} (bad, neutral, good).
 
+## Direct Alignment (Coming Soon)
+
+The `direct_alignment/` directory will contain implementations of:
+- DPO (Direct Preference Optimization)
+- IPO, KTO, SimPO variants
+
+See Chapter 12 of RLHF Book for theoretical background.
+
 ## Configuration
 
-### Environment variables
+### Weights & Biases Logging
+
+Training runs are logged to Weights & Biases. Configure via environment variables:
 
 ```bash
-# Weights & Biases logging (optional)
+# Required: Your wandb API key
 export WANDB_API_KEY="your-key"
 
+# Optional: Override project name (default: from config file)
+export WANDB_PROJECT="rlhf-book"
+
+# Optional: Override run name
+export WANDB_RUN_NAME="grpo_experiment_1"
+```
+
+The official runs for this repo are logged to: **[wandb.ai/natolambert/rlhf-book](https://wandb.ai/natolambert/rlhf-book)**
+
+To disable wandb logging entirely, set `wandb_project: null` in your config or:
+```bash
+export WANDB_MODE="disabled"
+```
+
+### Other environment variables
+
+```bash
 # HuggingFace access (for gated models)
 export HF_TOKEN="your-token"
 ```

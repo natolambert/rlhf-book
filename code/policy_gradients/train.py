@@ -372,10 +372,14 @@ def main(cfg: Config):
     optimizer = optim.Adam(params, lr=cfg.lr)
     replay_buffer = ReplayBuffer()
 
-    if cfg.wandb_project is None:
+    # wandb project can be set via env var WANDB_PROJECT or config file
+    wandb_project = os.environ.get("WANDB_PROJECT", cfg.wandb_project)
+    wandb_run_name = os.environ.get("WANDB_RUN_NAME", cfg.wandb_run_name)
+
+    if wandb_project is None:
         wandb.init(mode="disabled")
     else:
-        wandb.init(project=cfg.wandb_project, name=cfg.wandb_run_name, config=vars(cfg))
+        wandb.init(project=wandb_project, name=wandb_run_name, config=vars(cfg))
     print_model_info(console, model)
 
     for step, batch in enumerate(dataloader):

@@ -27,5 +27,5 @@ max_norm: 1.0
 seed: 42
 model_device_id: 0
 ref_model_device_id: 1
-wandb_project: policy-gradients
+wandb_project: rlhf-book
 wandb_run_name: gspo_spell_backwards

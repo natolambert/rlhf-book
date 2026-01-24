@@ -1,13 +1,16 @@
 # Reward Models for RLHF
 #
-# Original implementation by @myhott163com
+# ORM/PRM: Original implementation by @myhott163com
 # Source: https://github.com/myhott163com/RLHF_ORM_PRM
 # License: MIT
 #
-# Adapted for RLHF Book (https://rlhfbook.com) by Nathan Lambert
+# Preference RM: Adapted for RLHF Book by Nathan Lambert
+#
+# See Chapter 7 of RLHF Book (https://rlhfbook.com) for theoretical background.
 
 from .train_orm import OutcomeRewardModel
+from .train_preference_rm import PreferenceRewardModel
 from .train_prm import ProcessRewardModel
 
 
-__all__ = ["OutcomeRewardModel", "ProcessRewardModel"]
+__all__ = ["OutcomeRewardModel", "ProcessRewardModel", "PreferenceRewardModel"]
