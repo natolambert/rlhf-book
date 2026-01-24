@@ -1,5 +1,5 @@
 data:
-  size: 3000
+  size: 1000
   specs:
     - name: spell_backward
       weight: 1
