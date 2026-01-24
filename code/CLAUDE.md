@@ -36,7 +36,7 @@ uv run python -m policy_gradients.train --config configs/reinforce.yaml
   - [x] ORM (full fine-tune): https://wandb.ai/natolambert/rlhf-book/runs/xm8mlcpl
   - [x] Preference RM (Bradley-Terry): https://wandb.ai/natolambert/rlhf-book/runs/6sninll5
   - [x] PRM (Process RM): https://wandb.ai/natolambert/rlhf-book/runs/abhkbn4q
-  - [ ] REINFORCE
+  - [x] REINFORCE: https://wandb.ai/natolambert/rlhf-book/runs/0uqbq4oz (in progress)
   - [ ] GRPO
   - [ ] PPO
 
