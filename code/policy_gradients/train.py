@@ -12,8 +12,22 @@ import os
 import platform
 import random
 import re
-from itertools import batched
+import sys
 from typing import Any
+
+# Python 3.12+ has itertools.batched, provide fallback for earlier versions
+if sys.version_info >= (3, 12):
+    from itertools import batched
+else:
+    from itertools import islice
+
+    def batched(iterable, n):
+        """Batch data into tuples of length n. The last batch may be shorter."""
+        if n < 1:
+            raise ValueError("n must be at least one")
+        it = iter(iterable)
+        while batch := tuple(islice(it, n)):
+            yield batch
 
 import numpy as np
 import reasoning_gym as rg
