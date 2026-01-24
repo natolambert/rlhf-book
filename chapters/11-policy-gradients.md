@@ -883,9 +883,18 @@ rewards = rewards - self.beta * per_token_kl  # Shape: (B*G, L)
 # Get value predictions
 values = value_net(completions)  # Shape: (B*G, L)
 
-# Compute simple advantages
-advantages = rewards - values.detach()  # Shape: (B*G, L)
-# Note: We detach the value network here to not update the parameters of 
+# Compute returns via backward pass (gamma typically 1.0 for LM RLHF)
+# Mask rewards to avoid padding tokens (which may have KL penalties) leaking into returns
+returns = torch.zeros_like(rewards)
+running = torch.zeros(rewards.shape[0], device=rewards.device, dtype=rewards.dtype)
+for t in reversed(range(rewards.shape[1])):
+    # Zero out padding: only accumulate rewards/returns for valid completion tokens
+    running = (rewards[:, t] + self.gamma * running) * completion_mask[:, t]
+    returns[:, t] = running
+
+# Compute advantages: A_t = G_t - V(s_t)
+advantages = returns - values.detach()  # Shape: (B*G, L)
+# Note: We detach the value network here to not update the parameters of
 # the value function when computing the policy-gradient loss
 
 # Normalize advantages (optional but stable)
@@ -900,8 +909,8 @@ pg_losses1 = -advantages * ratio  # Shape: (B*G, L)
 pg_losses2 = -advantages * torch.clamp(ratio, 1.0 - eps, 1.0 + eps)  # Shape: (B*G, L)
 pg_loss_max = torch.max(pg_losses1, pg_losses2)  # Shape: (B*G, L)
 
-# Simple value function loss
-vf_loss = 0.5 * ((rewards - values) ** 2)  # Shape: (B*G, L)
+# Value function loss: predict returns
+vf_loss = 0.5 * ((returns - values) ** 2)  # Shape: (B*G, L)
 
 # Combine policy and value losses
 per_token_loss = pg_loss_max + self.vf_coef * vf_loss  # Shape: (B*G, L)
@@ -916,7 +925,7 @@ with torch.no_grad():
     clip_frac = ((pg_losses2 > pg_losses1).float() * completion_mask).sum() / completion_mask.sum()
     
     # Compute approximate KL
-    approx_kl = 0.5 * ((new_per_token_logps - per_token_logps)**2).mean()
+    approx_kl = (0.5 * ((new_per_token_logps - per_token_logps)**2) * completion_mask).sum() / completion_mask.sum()
     
     # Compute value loss for logging
     value_loss = vf_loss.mean()
@@ -1004,7 +1013,7 @@ with torch.no_grad():
     clip_frac = ((pg_losses2 > pg_losses1).float() * completion_mask).sum() / completion_mask.sum()
     
     # Compute approximate KL
-    approx_kl = 0.5 * ((new_per_token_logps - per_token_logps)**2).mean()
+    approx_kl = (0.5 * ((new_per_token_logps - per_token_logps)**2) * completion_mask).sum() / completion_mask.sum()
 ```
 
 For more details on how to interpret this code, see the PPO section above. The core differences from the PPO example are:
