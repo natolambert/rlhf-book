@@ -29,6 +29,8 @@ demonstrating the concepts from Chapter 7 (Reward Models).
 
 ## Installation
 
+**Requires Python 3.12+**
+
 ```bash
 cd code/
 uv sync
