@@ -1,5 +1,5 @@
 data:
-  size: 24000 # steps = size / prompts_per_step = 24000 / 8 = 3000 steps
+  size: 15000
   specs:
     - name: spell_backward
       weight: 1
