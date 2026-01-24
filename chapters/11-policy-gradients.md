@@ -61,13 +61,13 @@ In RLHF this typically means sampling prompts $x_i$ from a dataset and generatin
 
 $$
 \hat{J}(\theta) = \frac{1}{B}\sum_{i=1}^{B} R(x_i, y_i),
-$$
+$$ {#eq:empirical_batch_estimate}
 
 or, in an MDP view with per-step rewards,
 
 $$
 \hat{J}(\theta) = \frac{1}{B}\sum_{i=1}^{B} \sum_{t=0}^{T_i} \gamma^t r_{i,t}.
-$$
+$$ {#eq:empirical_mdp_estimate}
 
 The core of policy gradient algorithms is computing the gradient with respect to the finite-time expected return over the current policy. 
 With this expected return, $J$, the parameter update can be computed as follows, where $\alpha$ is the learning rate: 
@@ -120,7 +120,7 @@ Back to the derivation, expanding the log probability of the trajectory:
 
 $$
 \log p_\theta (\tau) = \log p(s_0) + \sum_{t=0}^\infty \log \pi_\theta(a_t|s_t) + \sum_{t=0}^\infty \log p(s_{t+1}|s_t, a_t)
-$$
+$$ {#eq:trajectory_log_prob}
 
 Now, if we take the gradient of the above, we get:  
 
@@ -131,12 +131,12 @@ Now, if we take the gradient of the above, we get:
 Therefore, the gradient of the log probability of the trajectory simplifies to:
 $$
 \nabla_\theta \log p_\theta (\tau) = \sum_{t=0}^\infty \nabla_\theta \log \pi_\theta(a_t|s_t)
-$$
+$$ {#eq:trajectory_log_grad}
 
 Substituting this back in @eq:policy_gradient_expectation, we get:
 $$
 \nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum_{t=0}^\infty \nabla_\theta \log \pi_\theta(a_t|s_t) R(\tau) \right]
-$$
+$$ {#eq:policy_gradient_returns}
 
 Quite often, people use a more general formulation of the policy gradient: 
 $$
@@ -278,7 +278,7 @@ Here, $\pi_\theta(a|s)$ is the current policy being optimized and $\pi_{\theta_{
 The ratio between these two policies emerges from *importance sampling*, which allows us to reuse data collected under an old policy to estimate gradients for a new policy.
 
 Recall from the advantage formulation of the policy gradient (@eq:advantage_policy_gradient) that we have:
-$$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t|s_t) A^{\pi_\theta}(s_t, a_t) \right].$$
+$$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t|s_t) A^{\pi_\theta}(s_t, a_t) \right].$$ {#eq:advantage_policy_gradient_recall}
 
 This expectation is taken over trajectories sampled from $\pi_\theta$, but in practice we want to take multiple gradient steps on a batch of data that was collected from a fixed policy $\pi_{\theta_{\text{old}}}$.
 To correct for this distribution mismatch, we multiply by the importance weight $\frac{\pi_\theta(a|s)}{\pi_{\theta_{\text{old}}}(a|s)}$, which reweights samples to account for how much more or less likely they are under the current policy versus the data-collection policy.
@@ -673,7 +673,7 @@ Given per-token losses $\ell_{i,t}$ for sample $i$ at token $t$, with completion
 
 **Strategy 1: Per-sequence normalization** (standard GRPO; also used in some PPO implementations)
 
-$$L = \frac{1}{B} \sum_{i=1}^{B} \frac{1}{|a_i|} \sum_{t=1}^{|a_i|} \ell_{i,t}$$
+$$L = \frac{1}{B} \sum_{i=1}^{B} \frac{1}{|a_i|} \sum_{t=1}^{|a_i|} \ell_{i,t}$$ {#eq:loss_per_sequence}
 
 Each sequence contributes equally to the batch loss, regardless of length. In code:
 
@@ -685,7 +685,7 @@ sequence_loss = ((per_token_loss * completion_mask).sum(dim=1) / \
 
 **Strategy 2: Per-token normalization** (DAPO [@yu2025dapo])
 
-$$L = \frac{\sum_{i=1}^{B} \sum_{t=1}^{|a_i|} \ell_{i,t}}{\sum_{i=1}^{B} |a_i|}$$
+$$L = \frac{\sum_{i=1}^{B} \sum_{t=1}^{|a_i|} \ell_{i,t}}{\sum_{i=1}^{B} |a_i|}$$ {#eq:loss_per_token}
 
 Each token contributes equally; longer sequences have proportionally more influence on the gradient. In code:
 
@@ -697,7 +697,7 @@ token_loss = ((per_token_loss * completion_mask).sum() / \
 
 **Strategy 3: Fixed-length normalization** (Dr. GRPO [@liu2025understanding])
 
-$$L = \frac{1}{B} \sum_{i=1}^{B} \frac{1}{L_{\max}} \sum_{t=1}^{|a_i|} \ell_{i,t}$$
+$$L = \frac{1}{B} \sum_{i=1}^{B} \frac{1}{L_{\max}} \sum_{t=1}^{|a_i|} \ell_{i,t}$$ {#eq:loss_fixed_length}
 
 Normalizes by max sequence length $L_{\max}$, equalizing the per-token scale across sequences while still letting longer sequences contribute more total gradient because they contain more active tokens.
 
@@ -964,7 +964,7 @@ The DeepSeekMath paper describes some implementation details of GRPO that differ
 For example, the KL penalty within the RLHF optimization (recall the KL penalty is also used when training reasoning models on verifiable rewards without a reward model) is applied directly in the loss update rather than to the reward function.
 Where the standard KL penalty application for RLHF is applied as $r=r_\theta - \beta \mathcal{D}_{\text{KL}}$, the GRPO implementation is along the lines of:
 
-$$ L = L_{\text{policy gradient}} + \beta * \mathcal{D}_{\text{KL}} $$
+$$ L = L_{\text{policy gradient}} + \beta * \mathcal{D}_{\text{KL}} $$ {#eq:grpo_loss_kl}
 
 Though, there are multiple ways to implement this.
 Traditionally, the KL distance is computed with respect to each token in the completion to a prompt $s$.
