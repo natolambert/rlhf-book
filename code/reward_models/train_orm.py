@@ -21,10 +21,12 @@ Usage:
 """
 
 import argparse
+import os
 import random
 from typing import Dict, List
 
 import torch
+import wandb
 import torch.nn as nn
 import torch.nn.functional as F
 from datasets import Dataset, load_dataset
@@ -247,6 +249,7 @@ def train_orm(
     epochs: int = DEFAULT_EPOCHS,
     lr: float = DEFAULT_LR,
     seed: int = DEFAULT_SEED,
+    use_wandb: bool = True,
 ) -> OutcomeRewardModel:
     """Train an Outcome Reward Model on GSM8K.
 
@@ -257,6 +260,7 @@ def train_orm(
         epochs: Number of training epochs
         lr: Learning rate
         seed: Random seed
+        use_wandb: Whether to log to wandb
 
     Returns:
         Trained OutcomeRewardModel
@@ -264,6 +268,23 @@ def train_orm(
     random.seed(seed)
     torch.manual_seed(seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    # Initialize wandb
+    wandb_project = os.environ.get("WANDB_PROJECT")
+    if use_wandb and wandb_project:
+        wandb.init(
+            project=wandb_project,
+            name=os.environ.get("WANDB_RUN_NAME", "orm_gsm8k"),
+            config={
+                "model_id": model_id,
+                "samples": samples,
+                "batch_size": batch_size,
+                "epochs": epochs,
+                "lr": lr,
+            },
+        )
+    else:
+        wandb.init(mode="disabled")
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_id, use_fast=True)
@@ -318,12 +339,16 @@ def train_orm(
             total_tokens += mask.sum().item()
 
             if step % 10 == 0:
+                acc = total_correct / total_tokens if total_tokens > 0 else 0
                 print(f"Epoch {epoch} step {step} loss {loss.item():.4f}")
+                wandb.log({"loss": loss.item(), "accuracy": acc})
 
         avg_loss = total_loss / len(loader)
         accuracy = total_correct / total_tokens if total_tokens > 0 else 0
         print(f"Epoch {epoch} | Loss: {avg_loss:.4f} | Accuracy: {accuracy:.3f}")
+        wandb.log({"epoch_loss": avg_loss, "epoch_accuracy": accuracy, "epoch": epoch})
 
+    wandb.finish()
     return model
 
 
@@ -413,6 +438,7 @@ def main():
     parser.add_argument("--lr", type=float, default=DEFAULT_LR, help="Learning rate")
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED, help="Random seed")
     parser.add_argument("--skip-demo", action="store_true", help="Skip scoring demo after training")
+    parser.add_argument("--no-wandb", action="store_true", help="Disable wandb logging")
     args = parser.parse_args()
 
     model = train_orm(
@@ -422,6 +448,7 @@ def main():
         epochs=args.epochs,
         lr=args.lr,
         seed=args.seed,
+        use_wandb=not args.no_wandb,
     )
 
     if not args.skip_demo:
