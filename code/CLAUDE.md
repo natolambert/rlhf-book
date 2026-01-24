@@ -35,11 +35,20 @@ uv run python -m policy_gradients.train --config configs/reinforce.yaml
   - [x] ORM (LoRA): https://wandb.ai/natolambert/rlhf-book/runs/6mm7s5td
   - [x] ORM (full fine-tune): https://wandb.ai/natolambert/rlhf-book/runs/xm8mlcpl
   - [x] Preference RM (Bradley-Terry): https://wandb.ai/natolambert/rlhf-book/runs/6sninll5
-  - [ ] PRM (Process RM)
-  - [ ] REINFORCE
-  - [ ] GRPO
-  - [ ] PPO
+  - [x] PRM (Process RM): https://wandb.ai/natolambert/rlhf-book/runs/abhkbn4q
+  - [ ] REINFORCE - **BLOCKED: Python 3.12 required** (uses `itertools.batched`)
+  - [ ] GRPO - **BLOCKED: Python 3.12 required**
+  - [ ] PPO - **BLOCKED: Python 3.12 required**
+
 - [ ] Add README table with algorithm → wandb run links
+
+### Policy Gradients Python Version Issue
+
+The policy_gradients code uses `itertools.batched` which requires Python 3.12+.
+Current env is Python 3.11. Options:
+1. Upgrade to Python 3.12
+2. Add compatibility shim for `batched`
+3. Use `more_itertools.batched` as fallback
 
 ### Reward Model Training
 
