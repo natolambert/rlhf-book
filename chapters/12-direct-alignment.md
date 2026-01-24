@@ -44,7 +44,7 @@ $$r(x, y) = \beta  \log \frac{\pi_r(y \mid x)}{\pi_{\text{ref}}(y \mid x)}$$ {#e
 
 where $\pi_r(y \mid x)$ is the exact, optimal reward policy that we are solving for.
 This comes from deriving the Bradley-Terry reward with respect to an optimal policy (shown in @eq:dpo_opt_policy), as shown in the Bradley-Terry model section of Chapter 7. 
-Essentially, the implicit reward model shows "the probability of human preference data in terms of the optimal policy rather than the reward model."
+Essentially, as stated in the DPO paper, this reparameterization gives us "the probability of human preference data in terms of the optimal policy rather than the reward model" -- meaning we can bypass learning an explicit reward model entirely.
 
 Let us consider the loss shown in @eq:dpo_core that the optimizer must decrease. 
 Here, the loss will be lower when the log-ratio of the chosen response is bigger than the log-ratio of the rejected response (normalized by the reference model).
