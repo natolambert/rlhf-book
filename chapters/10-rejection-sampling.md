@@ -42,7 +42,7 @@ This chapter provides an overview of the methods and leaves further experimentat
 
 To generate a set of multiple candidate completions per prompt, let's define a set of $M$ prompts as a vector:
 
-$$X = [x_1, x_2, ..., x_M]$$
+$$X = [x_1, x_2, ..., x_M]$$ {#eq:rs_prompt_vector}
 
 These prompts can come from many sources, but most commonly they come from the instruction training set.
 
@@ -53,7 +53,7 @@ y_{1,1} & y_{1,2} & \cdots & y_{1,N} \\
 y_{2,1} & y_{2,2} & \cdots & y_{2,N} \\
 \vdots & \vdots & \ddots & \vdots \\
 y_{M,1} & y_{M,2} & \cdots & y_{M,N}
-\end{bmatrix}$$
+\end{bmatrix}$$ {#eq:rs_completion_matrix}
 
 where $y_{i,j}$ represents the $j$-th completion for the $i$-th prompt.
 Each row $i$ corresponds to a single prompt $x_i$ and contains its $N$ candidate completions; each column $j$ corresponds to the $j$-th sampled completion across all prompts.
@@ -68,11 +68,11 @@ r_{1,1} & r_{1,2} & \cdots & r_{1,N} \\
 r_{2,1} & r_{2,2} & \cdots & r_{2,N} \\
 \vdots & \vdots & \ddots & \vdots \\
 r_{M,1} & r_{M,2} & \cdots & r_{M,N}
-\end{bmatrix}$$
+\end{bmatrix}$$ {#eq:rs_reward_matrix}
 
 Each reward $r_{i,j}$ is computed by passing the completion $y_{i,j}$ and its corresponding prompt $x_i$ through a reward model $\mathcal{R}$:
 
-$$r_{i,j} = \mathcal{R}(y_{i,j} \mid x_i)$$
+$$r_{i,j} = \mathcal{R}(y_{i,j} \mid x_i)$$ {#eq:rs_reward_computation}
 
 There are multiple methods to select the top completions to train on.
 
@@ -82,25 +82,25 @@ To formalize the process of selecting the best completions based on our reward m
 
 The first potential selection function takes the max reward per prompt.
 
-$$S(R) = [\arg\max_{j} r_{1,j}, \arg\max_{j} r_{2,j}, ..., \arg\max_{j} r_{M,j}]$$
+$$S(R) = [\arg\max_{j} r_{1,j}, \arg\max_{j} r_{2,j}, ..., \arg\max_{j} r_{M,j}]$$ {#eq:rs_selection_per_prompt}
 
 This function $S$ returns a vector of indices, where each index corresponds to the column with the maximum reward for each row in $R$.
 We can then use these indices to select our chosen completions:
 
-$$Y_{chosen} = [y_{1,S(R)_1}, y_{2,S(R)_2}, ..., y_{M,S(R)_M}]$$
+$$Y_{chosen} = [y_{1,S(R)_1}, y_{2,S(R)_2}, ..., y_{M,S(R)_M}]$$ {#eq:rs_chosen_completions}
 
 
 #### Top Overall Pairs
 Alternatively, we can select the top K prompt-completion pairs from the entire set.
 First, let's flatten our reward matrix R into a single vector:
 
-$$R_{flat} = [r_{1,1}, r_{1,2}, ..., r_{1,N}, r_{2,1}, r_{2,2}, ..., r_{2,N}, ..., r_{M,1}, r_{M,2}, ..., r_{M,N}]$$
+$$R_{flat} = [r_{1,1}, r_{1,2}, ..., r_{1,N}, r_{2,1}, r_{2,2}, ..., r_{2,N}, ..., r_{M,1}, r_{M,2}, ..., r_{M,N}]$$ {#eq:rs_flattened_rewards}
 
 This $R_{flat}$ vector has length $M \times N$, where $M$ is the number of prompts and $N$ is the number of completions per prompt.
 
 Now, we can define a selection function $S_K$ that selects the indices of the K highest values in $R_{flat}$:
 
-$$S_K(R_{flat}) = \text{argsort}(R_{flat})[-K:]$$
+$$S_K(R_{flat}) = \text{argsort}(R_{flat})[-K:]$$ {#eq:rs_topk_selection}
 
 where $\text{argsort}$ returns the indices that would sort the array in ascending order, and we take the last K indices to get the K highest values.
 
@@ -117,7 +117,7 @@ $$R = \begin{bmatrix}
 0.9 & 0.3 & 0.4 & 0.7 \\
 0.2 & 0.5 & 0.8 & 0.6 \\
 0.5 & 0.4 & 0.3 & 0.6
-\end{bmatrix}$$
+\end{bmatrix}$$ {#eq:rs_example_matrix}
 
 First, **per prompt**. Intuitively, we can highlight the reward matrix as follows:
 
@@ -127,13 +127,13 @@ $$R = \begin{bmatrix}
 \textbf{0.9} & 0.3 & 0.4 & 0.7 \\
 0.2 & 0.5 & \textbf{0.8} & 0.6 \\
 0.5 & 0.4 & 0.3 & \textbf{0.6}
-\end{bmatrix}$$
+\end{bmatrix}$$ {#eq:rs_example_per_prompt}
 
 Using the argmax method, we select the best completion for each prompt:
 
-$$S(R) = [\arg\max_{j} r_{i,j} \text{ for } i \in [1,5]]$$
+$$S(R) = [\arg\max_{j} r_{i,j} \text{ for } i \in [1,5]]$$ {#eq:rs_example_selection_formula}
 
-$$S(R) = [1, 2, 1, 3, 4]$$
+$$S(R) = [1, 2, 1, 3, 4]$$ {#eq:rs_example_selection_result}
 
 This means we would select:
 
@@ -152,15 +152,15 @@ $$R = \begin{bmatrix}
 \textbf{0.9} & 0.3 & 0.4 & \textbf{0.7} \\
 0.2 & 0.5 & \textbf{0.8} & 0.6 \\
 0.5 & 0.4 & 0.3 & 0.6
-\end{bmatrix}$$
+\end{bmatrix}$$ {#eq:rs_example_top_overall}
 
 
 First, we flatten the reward matrix:
 
-$$R_{flat} = [0.7, 0.3, 0.5, 0.2, 0.4, 0.8, 0.6, 0.5, 0.9, 0.3, 0.4, 0.7, 0.2, 0.5, 0.8, 0.6, 0.5, 0.4, 0.3, 0.6]$$
+$$R_{flat} = [0.7, 0.3, 0.5, 0.2, 0.4, 0.8, 0.6, 0.5, 0.9, 0.3, 0.4, 0.7, 0.2, 0.5, 0.8, 0.6, 0.5, 0.4, 0.3, 0.6]$$ {#eq:rs_example_flattened}
 
 Now, we select the indices of the 5 highest values:
-$$S_5(R_{flat}) = [8, 5, 14, 0, 11]$$
+$$S_5(R_{flat}) = [8, 5, 14, 0, 11]$$ {#eq:rs_example_topk_result}
 
 Mapping these back to our original matrix:
 

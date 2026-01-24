@@ -44,7 +44,7 @@ To make the transition function concrete, consider the classic *CartPole* (inver
 
 - **State ($s_t$)**: the cart position/velocity and pole angle/angular velocity,
 
-  $$s_t = (x_t,\,\dot{x}_t,\,\theta_t,\,\dot{\theta}_t).$$
+  $$s_t = (x_t,\,\dot{x}_t,\,\theta_t,\,\dot{\theta}_t).$$ {#eq:cartpole_state}
 
 - **Action ($a_t$)**: apply a left/right horizontal force to the cart, e.g. $a_t \in \{-F, +F\}$.
 
@@ -52,14 +52,14 @@ To make the transition function concrete, consider the classic *CartPole* (inver
 
 - **Dynamics / transition ($p(s_{t+1}\mid s_t,a_t)$)**: in many environments the dynamics are deterministic (so $p$ is a point mass) and can be written as $s_{t+1} = f(s_t,a_t)$ via Euler integration with step size $\Delta t$. A standard simplified CartPole update uses constants cart mass $m_c$, pole mass $m_p$, pole half-length $l$, and gravity $g$:
 
-  $$\text{temp} = \frac{a_t + m_p l\,\dot{\theta}_t^2\sin\theta_t}{m_c + m_p}$$
+  $$\text{temp} = \frac{a_t + m_p l\,\dot{\theta}_t^2\sin\theta_t}{m_c + m_p}$$ {#eq:cartpole_temp}
 
-  $$\ddot{\theta}_t = \frac{g\sin\theta_t - \cos\theta_t\,\text{temp}}{l\left(\tfrac{4}{3} - \frac{m_p\cos^2\theta_t}{m_c + m_p}\right)}$$
+  $$\ddot{\theta}_t = \frac{g\sin\theta_t - \cos\theta_t\,\text{temp}}{l\left(\tfrac{4}{3} - \frac{m_p\cos^2\theta_t}{m_c + m_p}\right)}$$ {#eq:cartpole_angular_accel}
 
-  $$\ddot{x}_t = \text{temp} - \frac{m_p l\,\ddot{\theta}_t\cos\theta_t}{m_c + m_p}$$
+  $$\ddot{x}_t = \text{temp} - \frac{m_p l\,\ddot{\theta}_t\cos\theta_t}{m_c + m_p}$$ {#eq:cartpole_linear_accel}
 
-  $$x_{t+1}=x_t+\Delta t\,\dot{x}_t,\quad \dot{x}_{t+1}=\dot{x}_t+\Delta t\,\ddot{x}_t,$$
-  $$\theta_{t+1}=\theta_t+\Delta t\,\dot{\theta}_t,\quad \dot{\theta}_{t+1}=\dot{\theta}_t+\Delta t\,\ddot{\theta}_t.$$
+  $$x_{t+1}=x_t+\Delta t\,\dot{x}_t,\quad \dot{x}_{t+1}=\dot{x}_t+\Delta t\,\ddot{x}_t,$$ {#eq:cartpole_pos_update}
+  $$\theta_{t+1}=\theta_t+\Delta t\,\dot{\theta}_t,\quad \dot{\theta}_{t+1}=\dot{\theta}_t+\Delta t\,\ddot{\theta}_t.$$ {#eq:cartpole_angle_update}
 
 This is a concrete instance of the general setup above: the policy chooses $a_t$, the transition function advances the state, and the reward is accumulated over the episode.
 
