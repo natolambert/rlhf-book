@@ -65,7 +65,7 @@ def main():
         print("MODIFYING FILES - Unicode characters will be replaced\n")
 
     files_modified = 0
-    for filepath in sorted(glob.glob('chapters/*.md')):
+    for filepath in sorted(glob.glob('book/chapters/*.md')):
         if fix_unicode_in_file(filepath, dry_run):
             files_modified += 1
 

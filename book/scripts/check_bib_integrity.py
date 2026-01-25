@@ -27,8 +27,8 @@ def extract_bib_entry(content: str, key: str, start_line: int) -> str:
     return '\n'.join(entry_lines)
 
 def main():
-    bib_path = Path("chapters/bib.bib")
-    chapters_dir = Path("chapters")
+    bib_path = Path("book/chapters/bib.bib")
+    chapters_dir = Path("book/chapters")
 
     # Extract all bib keys with line numbers
     bib_content = bib_path.read_text()

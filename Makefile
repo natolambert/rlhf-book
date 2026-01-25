@@ -9,15 +9,15 @@ MAKEFILE = Makefile
 OUTPUT_FILENAME = book
 OUTPUT_FILENAME_HTML = index
 METADATA = metadata.yml
-CHAPTERS = $(wildcard chapters/*.md) # was CHAPTERS = chapters/*.md
+CHAPTERS = $(filter-out book/chapters/README.md,$(wildcard book/chapters/*.md))
 TOC = --toc --toc-depth 3
 METADATA_ARGS = --metadata-file $(METADATA)
-IMAGES = $(shell find images -type f)
-TEMPLATES = $(shell find templates/ -type f)
-EPUB_COVER_IMAGE = assets/rlhf-book-cover.png # EPUB-specific cover image
+IMAGES = $(shell find book/images -type f)
+TEMPLATES = $(shell find book/templates/ -type f)
+EPUB_COVER_IMAGE = book/assets/rlhf-book-cover.png # EPUB-specific cover image
 MATH_FORMULAS = --mathjax # --webtex, is default for PDF/ebook. Consider resetting if issues.
 EPUB_MATH_FORMULAS = --mathml # Use MathML for EPUB format for better e-reader compatibility
-BIBLIOGRAPHY = --bibliography=chapters/bib.bib --citeproc --csl=templates/ieee.csl
+BIBLIOGRAPHY = --bibliography=book/chapters/bib.bib --citeproc --csl=book/templates/ieee.csl
 DATE_ARG = --metadata date="$(shell date +'%d %B %Y')"
 
 # Chapters content
@@ -42,16 +42,16 @@ PANDOC_COMMAND = pandoc
 
 # Per-format options
 
-DOCX_ARGS = --standalone --reference-doc templates/docx.docx
-EPUB_ARGS = --template templates/epub.html --epub-cover-image $(EPUB_COVER_IMAGE)
-HTML_ARGS = --template templates/html.html --standalone --to html5 --listings
-PDF_ARGS = --template templates/pdf.tex --pdf-engine pdflatex --listings
-LATEX_ARGS = --template templates/pdf.tex --pdf-engine pdflatex --listings
-NESTED_HTML_TEMPLATE = templates/chapter.html
+DOCX_ARGS = --standalone --reference-doc book/templates/docx.docx
+EPUB_ARGS = --template book/templates/epub.html --epub-cover-image $(EPUB_COVER_IMAGE)
+HTML_ARGS = --template book/templates/html.html --standalone --to html5 --listings
+PDF_ARGS = --template book/templates/pdf.tex --pdf-engine pdflatex --listings
+LATEX_ARGS = --template book/templates/pdf.tex --pdf-engine pdflatex --listings
+NESTED_HTML_TEMPLATE = book/templates/chapter.html
 ARXIV_ZIP = $(BUILD)/arxiv.zip
 
 # Add this with your other file variables at the top
-JS_FILES = $(shell find templates -name '*.js')  # Restrict JS discovery to source templates
+JS_FILES = $(shell find book/templates -name '*.js')  # Restrict JS discovery to source templates
 
 # Per-format file dependencies
 
@@ -114,46 +114,46 @@ latex:	$(BUILD)/latex/$(OUTPUT_FILENAME).tex
 $(BUILD)/epub/$(OUTPUT_FILENAME).epub:	$(EPUB_DEPENDENCIES)
 	$(ECHO_BUILDING)
 	$(MKDIR_CMD) $(BUILD)/epub
-	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(EPUB_ARGS_BASE) $(EPUB_ARGS) -o $@
+	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(EPUB_ARGS_BASE) $(EPUB_ARGS) --resource-path=book -o $@
 	$(ECHO_BUILT)
 
 
 $(BUILD)/docx/$(OUTPUT_FILENAME).docx:	$(DOCX_DEPENDENCIES)
 	$(ECHO_BUILDING)
 	$(MKDIR_CMD) $(BUILD)/docx
-	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(ARGS) $(DOCX_ARGS) -o $@
+	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(ARGS) $(DOCX_ARGS) --resource-path=book -o $@
 	$(ECHO_BUILT)
 	
 $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html:	$(HTML_DEPENDENCIES)
 	$(ECHO_BUILDING)
 	$(MKDIR_CMD) $(BUILD)/html
 	$(MKDIR_CMD) $(BUILD)/html/c
-	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(ARGS) $(HTML_ARGS) -o $@
+	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(ARGS) $(HTML_ARGS) --resource-path=book -o $@
 	# Redundant: index.html doesn't use local images; chapter HTMLs get images via `make files` -> build/html/c/images/
 	# $(COPY_CMD) $(IMAGES) $(BUILD)/html/
-	$(COPY_CMD) templates/nav.js $(BUILD)/html/
-	$(COPY_CMD) templates/header-anchors.js $(BUILD)/html/
-	$(COPY_CMD) templates/table-scroll.js $(BUILD)/html/
-	$(COPY_CMD) templates/nav.js $(BUILD)/html/c/
-	$(COPY_CMD) templates/header-anchors.js $(BUILD)/html/c/
-	$(COPY_CMD) templates/table-scroll.js $(BUILD)/html/c/
-	cp templates/style.css $(BUILD)/html/style.css || echo "Failed to copy style.css"
+	$(COPY_CMD) book/templates/nav.js $(BUILD)/html/
+	$(COPY_CMD) book/templates/header-anchors.js $(BUILD)/html/
+	$(COPY_CMD) book/templates/table-scroll.js $(BUILD)/html/
+	$(COPY_CMD) book/templates/nav.js $(BUILD)/html/c/
+	$(COPY_CMD) book/templates/header-anchors.js $(BUILD)/html/c/
+	$(COPY_CMD) book/templates/table-scroll.js $(BUILD)/html/c/
+	cp book/templates/style.css $(BUILD)/html/style.css || echo "Failed to copy style.css"
 	@mkdir -p $(BUILD)/html/data
-	@test -f data/library.json && cp data/library.json $(BUILD)/html/data/library.json || echo "No library data to copy"
+	@test -f book/data/library.json && cp book/data/library.json $(BUILD)/html/data/library.json || echo "No library data to copy"
 	$(ECHO_BUILT)
 
-$(BUILD)/html/library.html: templates/library.html
+$(BUILD)/html/library.html: book/templates/library.html
 	$(MKDIR_CMD) $(BUILD)/html
-	cp templates/library.html $@
+	cp book/templates/library.html $@
 
 # Nested HTML build targets
 NESTED_HTML_DIR = $(BUILD)/html/c/
-CHAPTER_HTMLS = $(patsubst chapters/%.md,$(NESTED_HTML_DIR)/%.html,$(CHAPTERS))
+CHAPTER_HTMLS = $(patsubst book/chapters/%.md,$(NESTED_HTML_DIR)/%.html,$(CHAPTERS))
 
 # Rule to build each HTML file from each Markdown file
-$(NESTED_HTML_DIR)/%.html: chapters/%.md $(HTML_DEPENDENCIES)
+$(NESTED_HTML_DIR)/%.html: book/chapters/%.md $(HTML_DEPENDENCIES)
 	$(MKDIR_CMD) $(NESTED_HTML_DIR)
-	$(PANDOC_COMMAND) $(ARGS) --template $(NESTED_HTML_TEMPLATE) --standalone --to html5 -o $@ $< --mathjax
+	$(PANDOC_COMMAND) $(ARGS) --template $(NESTED_HTML_TEMPLATE) --standalone --to html5 --resource-path=book -o $@ $< --mathjax
 	@echo "Built HTML for $<"
 
 # Aggregate target for nested chapter HTML files
@@ -168,13 +168,13 @@ $(BUILD)/latex/$(OUTPUT_FILENAME).tex: $(PDF_DEPENDENCIES)
 	# 1. Generate the LaTeX file with Pandoc (tell Pandoc where to find images)
 	$(CONTENT) \
 	  | $(CONTENT_FILTERS) \
-	  | $(PANDOC_COMMAND) $(ARGS) $(LATEX_ARGS) --resource-path=. -o $@
+	  | $(PANDOC_COMMAND) $(ARGS) $(LATEX_ARGS) --resource-path=book -o $@
 
 	# 2. Flatten image paths — copy every referenced image into the build dir root
 	$(foreach img,$(IMAGES), cp $(img) $(BUILD)/latex/$(notdir $(img));)
 
 	# 3a. Force pdfLaTeX mode for arXiv
-	uv run python scripts/ensure_pdfoutput.py $@
+	uv run python book/scripts/ensure_pdfoutput.py $@
 
 	# 3b. Strip directory prefixes in \includegraphics paths (portable)
 	perl -0pi -e 's|(\\includegraphics(?:\[[^]]*\])?\{)[^/}]+/|\1|g' $@
@@ -183,17 +183,17 @@ $(BUILD)/latex/$(OUTPUT_FILENAME).tex: $(PDF_DEPENDENCIES)
 	perl -CSD -pi -e 's/\\pandocbounded\{([^{}]+)\}\}/\\pandocbounded{\\includegraphics{$$1}}/g' $@
 
 	# 3d. Unicode → ASCII/TeX normalisation (map accents and punctuation)
-	uv run python scripts/normalize_tex_unicode.py $@
+	uv run python book/scripts/normalize_tex_unicode.py $@
 
 	# 3e. Drop XeTeX/LuaTeX-only branch so arXiv's pdfLaTeX build doesn't demand Unicode engines
-	uv run python scripts/strip_xetex_branch.py $@
+	uv run python book/scripts/strip_xetex_branch.py $@
 
 	# 4. Copy bibliography and CSL files required by arXiv
-	cp chapters/bib.bib    $(BUILD)/latex/
-	cp templates/ieee.csl  $(BUILD)/latex/
+	cp book/chapters/bib.bib    $(BUILD)/latex/
+	cp book/templates/ieee.csl  $(BUILD)/latex/
 
 	# 5. Warn (but don\'t fail) if any non-ASCII bytes remain
-	uv run python scripts/report_non_ascii.py $@
+	uv run python book/scripts/report_non_ascii.py $@
 
 	# 6. Package arXiv-ready source bundle
 	rm -f $(ARXIV_ZIP)
@@ -204,7 +204,7 @@ $(BUILD)/latex/$(OUTPUT_FILENAME).tex: $(PDF_DEPENDENCIES)
 $(BUILD)/pdf/$(OUTPUT_FILENAME).pdf:	$(PDF_DEPENDENCIES)
 	$(ECHO_BUILDING)
 	$(MKDIR_CMD) $(BUILD)/pdf
-	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(ARGS) $(PDF_ARGS) -o $@
+	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(ARGS) $(PDF_ARGS) --resource-path=book -o $@
 	$(ECHO_BUILT)
 
 # copy faveicon.ico to build/ and into  build/c/ with bash commands
@@ -215,15 +215,15 @@ files:
 	mkdir -p $(BUILD)/html/c/
 	cp favicon.ico $(BUILD)/html/ || echo "Failed to copy to $(BUILD)/html/"
 	cp favicon.ico $(BUILD)/html/c/ || echo "Failed to copy to $(BUILD)/html/c/"
-	cp -R preorder $(BUILD)/html/ || echo "Failed to copy preorder static pages"
+	cp -R book/preorder $(BUILD)/html/ || echo "Failed to copy preorder static pages"
 	cp $(BUILD)/pdf/book.pdf $(BUILD)/html/ || echo "Failed to copy to $(BUILD)/html/"
 	cp $(BUILD)/epub/book.epub $(BUILD)/html/ || echo "Failed to copy EPUB to $(BUILD)/html/"
-	cp -r images $(BUILD)/html/c/ || echo "Failed to copy images to $(BUILD)/html/c/"
-	cp -r assets $(BUILD)/html/ || echo "Failed to copy assets to $(BUILD)/html/"
-	cp -r assets $(BUILD)/html/c/ || echo "Failed to copy assets to $(BUILD)/html/c/"
-	cp ./templates/nav.js $(BUILD)/html/ || echo "Failed to copy nav.js to $(BUILD)/html/"
-	cp ./templates/nav.js $(BUILD)/html/c/ || echo "Failed to copy nav.js to $(BUILD)/html/c/"
-	cp ./templates/header-anchors.js $(BUILD)/html/ || echo "Failed to copy header-anchors.js to $(BUILD)/html/"
-	cp ./templates/header-anchors.js $(BUILD)/html/c/ || echo "Failed to copy header-anchors.js to $(BUILD)/html/c/"
-	cp ./templates/table-scroll.js $(BUILD)/html/ || echo "Failed to copy table-scroll.js to $(BUILD)/html/"
-	cp ./templates/table-scroll.js $(BUILD)/html/c/ || echo "Failed to copy table-scroll.js to $(BUILD)/html/c/"
+	cp -r book/images $(BUILD)/html/c/ || echo "Failed to copy images to $(BUILD)/html/c/"
+	cp -r book/assets $(BUILD)/html/ || echo "Failed to copy assets to $(BUILD)/html/"
+	cp -r book/assets $(BUILD)/html/c/ || echo "Failed to copy assets to $(BUILD)/html/c/"
+	cp ./book/templates/nav.js $(BUILD)/html/ || echo "Failed to copy nav.js to $(BUILD)/html/"
+	cp ./book/templates/nav.js $(BUILD)/html/c/ || echo "Failed to copy nav.js to $(BUILD)/html/c/"
+	cp ./book/templates/header-anchors.js $(BUILD)/html/ || echo "Failed to copy header-anchors.js to $(BUILD)/html/"
+	cp ./book/templates/header-anchors.js $(BUILD)/html/c/ || echo "Failed to copy header-anchors.js to $(BUILD)/html/c/"
+	cp ./book/templates/table-scroll.js $(BUILD)/html/ || echo "Failed to copy table-scroll.js to $(BUILD)/html/"
+	cp ./book/templates/table-scroll.js $(BUILD)/html/c/ || echo "Failed to copy table-scroll.js to $(BUILD)/html/c/"
