@@ -18,6 +18,7 @@ arxiv_check_results.json
 .claude
 
 # Python/uv
+.python-version
 uv.lock
 code/uv.lock
 __pycache__/

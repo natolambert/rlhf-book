@@ -207,14 +207,14 @@ $(BUILD)/pdf/$(OUTPUT_FILENAME).pdf:	$(PDF_DEPENDENCIES)
 	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(ARGS) $(PDF_ARGS) --resource-path=book -o $@
 	$(ECHO_BUILT)
 
-# copy faveicon.ico to build/ and into  build/c/ with bash commands
+# copy favicon.ico to build/ and into build/c/ with bash commands
 # also copy from build/pdf/book.pdf into build/html/
 # then copy images dir to build/html/chapters/
 files:
-	test -f favicon.ico || (echo "favicon.ico not found" && exit 1)
+	test -f book/favicon.ico || (echo "book/favicon.ico not found" && exit 1)
 	mkdir -p $(BUILD)/html/c/
-	cp favicon.ico $(BUILD)/html/ || echo "Failed to copy to $(BUILD)/html/"
-	cp favicon.ico $(BUILD)/html/c/ || echo "Failed to copy to $(BUILD)/html/c/"
+	cp book/favicon.ico $(BUILD)/html/ || echo "Failed to copy to $(BUILD)/html/"
+	cp book/favicon.ico $(BUILD)/html/c/ || echo "Failed to copy to $(BUILD)/html/c/"
 	cp -R book/preorder $(BUILD)/html/ || echo "Failed to copy preorder static pages"
 	cp $(BUILD)/pdf/book.pdf $(BUILD)/html/ || echo "Failed to copy to $(BUILD)/html/"
 	cp $(BUILD)/epub/book.epub $(BUILD)/html/ || echo "Failed to copy EPUB to $(BUILD)/html/"
