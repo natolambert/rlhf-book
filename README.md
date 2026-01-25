@@ -34,13 +34,13 @@ rlhf-book/
 │   ├── scripts/            # Build utilities
 │   └── data/               # Library data
 ├── code/                   # Reference implementations
-│   ├── reward_modeling/    # RM training (preference, ORM, PRM)
-│   ├── alignment/          # PPO, REINFORCE, GRPO, RLOO, DPO
-│   └── ...
+│   ├── policy_gradients/   # PPO, REINFORCE, GRPO, RLOO
+│   ├── reward_models/      # Preference RM, ORM, PRM training
+│   └── direct_alignment/   # DPO and variants
 ├── diagrams/               # Diagram source files
-│   ├── specs/              # YAML specifications
-│   ├── scripts/            # Generation scripts
-│   └── generated/          # Output (PNG, SVG)
+│   ├── scripts/            # Python generation scripts
+│   ├── tikz/               # LaTeX/TikZ sources
+│   └── specs/              # YAML specifications
 ├── build/                  # Generated output (git-ignored)
 ├── Makefile                # Build system
 └── metadata.yml            # Book metadata
