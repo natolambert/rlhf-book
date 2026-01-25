@@ -1,6 +1,6 @@
 # Policy Gradient Methods for Language Model Training
 #
-# Original implementation by Zarif Stojano (@zafstojano)
+# Original implementation by Zafir Stojanovski (@zafstojano)
 # Source: https://github.com/zafstojano/policy-gradients
 # License: Apache 2.0
 #

@@ -1,6 +1,6 @@
 # Policy Gradient Training Loop
 #
-# Original implementation by Zarif Stojano (@zafstojano)
+# Original implementation by Zafir Stojanovski (@zafstojano)
 # Source: https://github.com/zafstojano/policy-gradients
 # License: Apache 2.0
 #
@@ -266,7 +266,7 @@ def rollout(
     entries: list[dict],
     dataset: ProceduralDataset,
     tokenizer: AutoTokenizer,
-    max_length: int,
+    max_new_tokens: int,
     temperature: float,
     top_p: float,
     top_k: int,
@@ -302,7 +302,7 @@ def rollout(
         top_k=top_k,
         min_p=min_p,
         do_sample=True,
-        max_length=max_length,
+        max_new_tokens=max_new_tokens,
         pad_token_id=pad_token_id,
     )
     sequence_ids = model.generate(**model_inputs, generation_config=generation_config)
@@ -401,7 +401,7 @@ def main(cfg: Config):
                         entries=batch,
                         dataset=dataset,
                         tokenizer=tokenizer,
-                        max_length=cfg.max_new_tokens,
+                        max_new_tokens=cfg.max_new_tokens,
                         temperature=cfg.temperature,
                         top_p=cfg.top_p,
                         top_k=cfg.top_k,

@@ -11,7 +11,7 @@ loss: drgrpo
 model_name: Qwen/Qwen3-1.7B
 clip_eps_lo: 0.2
 clip_eps_hi: 0.2
-beta: 0.0  # when beta is set to 0, we don't load the reference model and skip KL penalty
+beta: 0.0  # KL penalty coefficient (0 = disabled, set >0 to enable)
 lr: 5e-6
 temperature: 0.6
 top_p: 0.95
@@ -26,6 +26,5 @@ batch_acc: 4
 max_norm: 1.0
 seed: 42
 model_device_id: 0
-ref_model_device_id: 0
 wandb_project: rlhf-book
 wandb_run_name: drgrpo_spell_backwards
