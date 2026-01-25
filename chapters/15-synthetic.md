@@ -66,3 +66,42 @@ Within this, curating high-quality prompts and filtering responses from the teac
 
 Transferring specific skills into smaller language models uses the same principles of distillation -- get the best data possible for training.
 Here, many papers have studied using limited datasets from stronger models to improve alignment [@zhou2023lima], mathematical reasoning [@shridhar2023distilling] [@hsieh2023distilling], and test-time scaling [@muennighoff2025s1].
+
+## On-Policy Distillation
+
+The synthetic data distillation described above is an **offline** method: the teacher generates data once, and the student trains on that fixed dataset.
+This approach is simple and doesn't require a live teacher during training, but it suffers from a fundamental problem -- **train-test mismatch**.
+The student only sees examples of perfect teacher behavior during training.
+At test time, when the student makes a mistake, it enters a distribution of states it never encountered during training and may not know how to recover.
+
+**On-policy distillation** addresses this mismatch by sampling outputs from the student model itself, then getting feedback from the teacher on those samples [@agarwal2024policy].
+Rather than learning only from perfect teacher demonstrations, the student learns how to recover from its own mistakes.
+This approach is inspired by the DAgger (Dataset Aggregation) algorithm from imitation learning in robotics [@pmlr-v15-ross11a], which showed that training on the learner's own trajectory distribution leads to better generalization than training on expert demonstrations alone.
+
+![On-policy distillation (GKD): prompts are fed to the student model which samples its own outputs. Both student and teacher compute logits on these student-generated sequences. The reverse KL divergence $D_{KL}(\pi_\theta \| \pi_T)$ is minimized, providing mode-seeking behavior where the student learns to match the teacher's preferred outputs. Unlike offline distillation where students only see perfect teacher demonstrations, on-policy distillation exposes the student to its own imperfect generations, addressing train-test mismatch and enabling recovery from mistakes.](images/on_policy_distillation_tikz.png){#fig:on-policy-distillation}
+
+The key insight connecting on-policy distillation to RL is through the lens of KL divergence direction.
+Standard synthetic data distillation minimizes the **forward KL divergence** $D_{\text{KL}}(\pi_{\text{teacher}} \| \pi_{\text{student}})$, which is mode-covering -- the student tries to place probability mass everywhere the teacher does.
+On-policy distillation instead minimizes the **reverse KL divergence** $D_{\text{KL}}(\pi_{\text{student}} \| \pi_{\text{teacher}})$, which is mode-seeking -- the student focuses on producing high-quality outputs that match the teacher's preferred modes.
+
+$$\mathcal{L}_{\text{on-policy}}(\theta) = \mathbb{E}_{x \sim \mathcal{D}, y \sim \pi_\theta(\cdot|x)} \left[ D_{\text{KL}}\left(\pi_\theta(\cdot|x, y_{<t}) \| \pi_{\text{teacher}}(\cdot|x, y_{<t})\right) \right]$$ {#eq:on-policy-distillation}
+
+The practical implementation is remarkably elegant: take any RLHF training framework, remove the reward term, and swap the KL anchor from the reference policy to the teacher model.
+In standard RLHF, the objective is $\max_\theta \mathbb{E}[r(x,y)] - \beta D_{\text{KL}}(\pi_\theta \| \pi_{\text{ref}})$.
+In on-policy distillation, we set $r(x,y) = 0$ and replace $\pi_{\text{ref}}$ with $\pi_{\text{teacher}}$, yielding a pure KL minimization toward the teacher.
+This means on-policy distillation can leverage all the infrastructure built for RLHF -- the same sampling procedures, the same optimization algorithms, and the same distributed training setups.
+
+The two KL directions lead to different output characteristics.
+Forward KL (offline distillation) tends to produce more diverse but potentially lower-quality outputs, as the student must cover all modes of the teacher distribution.
+Reverse KL (on-policy distillation) produces higher-quality but less diverse outputs, as the student can focus on the teacher's strongest modes.
+In practice, a mixture of both objectives often works well.
+
+On-policy distillation can also be combined with reward maximization for simultaneous distillation and reinforcement learning:
+
+$$\mathcal{L}_{\text{combined}}(\theta) = \mathbb{E}_{x, y \sim \pi_\theta} \left[ r(x, y) \right] - \beta D_{\text{KL}}(\pi_\theta \| \pi_{\text{teacher}})$$ {#eq:combined-distillation-rl}
+
+This formulation uses the teacher as both a source of knowledge to distill and a regularizer that prevents the student from deviating too far during RL.
+The approach was used in Gemini's post-training, demonstrating its effectiveness at scale.
+
+For reasoning model distillation (e.g., distilling chain-of-thought capabilities), synthetic data distillation gets approximately 80-90% of the way to teacher performance, but on-policy methods with logit-level feedback can close the remaining gap.
+The additional compute investment is worthwhile because distillation is done once but the resulting model is served billions of times -- meaningful capability improvements compound over the model's deployment lifetime.
