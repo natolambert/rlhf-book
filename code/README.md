@@ -69,6 +69,10 @@ uv run python -m policy_gradients.train --config policy_gradients/configs/reinfo
 uv run python -m policy_gradients.train --config policy_gradients/configs/rloo.yaml
 ```
 
+### Training Results
+
+![Policy Gradient Training Results](images/wandb_policy_gradients.png)
+
 ### Available algorithms
 
 | Algorithm | Config | Description | Example Run |
