@@ -172,7 +172,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate RLHF library payload")
     parser.add_argument(
         "--output",
-        default="data/library.json",
+        default="book/data/library.json",
         help="Primary output path for the processed dataset",
     )
     parser.add_argument(

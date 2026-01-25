@@ -18,7 +18,11 @@ arxiv_check_results.json
 .claude
 
 # Python/uv
+.python-version
 uv.lock
+code/uv.lock
+__pycache__/
+*.pyc
 
 # Generated diagrams (regenerate with: cd diagrams && make all)
 diagrams/generated/
