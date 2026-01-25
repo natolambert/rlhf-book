@@ -19,28 +19,32 @@ This is the source repository for "RLHF Book" by Nathan Lambert - a comprehensiv
 
 ```bash
 # Correct
-uv run python scripts/some_script.py
+uv run python book/scripts/some_script.py
 uv run python -c "import matplotlib"
 
 # Incorrect
-python scripts/some_script.py
+python book/scripts/some_script.py
 ```
 
 ## Directory Structure
 
 ```
-chapters/     # Markdown source files (01-introduction.md, etc.)
-images/       # Image assets referenced in chapters
-assets/       # Brand assets (covers, logos)
-templates/    # Pandoc templates for each output format
-scripts/      # Build utilities
+book/         # Book source and build files
+  chapters/   # Markdown source files (01-introduction.md, etc.)
+  images/     # Image assets referenced in chapters
+  assets/     # Brand assets (covers, logos)
+  templates/  # Pandoc templates for each output format
+  scripts/    # Build utilities
+  data/       # Library data
+  preorder/   # Pre-order redirect page
+code/         # Code examples and tutorials
 diagrams/     # Diagram sources (Python scripts, specs)
 build/        # Generated output (not tracked in git)
 ```
 
 ## Image Conventions
 
-- Place images in `images/` directory
+- Place images in `book/images/` directory
 - Reference: `![Description](images/filename.png){#fig:label}`
 - Optional sizing: `{width=450px}`
 - Cross-reference with `@fig:label`
@@ -58,7 +62,7 @@ Generate diagrams with:
 cd diagrams && make all
 ```
 
-Then copy final versions to `images/` for use in chapters.
+Then copy final versions to `book/images/` for use in chapters.
 
 ## Future: Multimodal Feedback Loop
 
@@ -97,6 +101,6 @@ response = model.generate_content([
 ## Next Steps (Diagrams PR)
 
 1. **Finalize diagrams** - Review and polish the multilane diagrams (ORM, Value Function)
-2. **Add diagrams to chapter text** - Insert figure references in `chapters/07-reward-models.md`
+2. **Add diagrams to chapter text** - Insert figure references in `book/chapters/07-reward-models.md`
 3. **Add RLHF overview diagram** - Add the same RLHF diagram to the start of the RM chapter to highlight where RMs fit in the pipeline
 4. **Review PR** - Check over the full PR before merge

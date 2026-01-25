@@ -202,7 +202,7 @@ def main():
     parser.add_argument(
         "--bib-file",
         type=Path,
-        default=Path("chapters/bib.bib"),
+        default=Path("book/chapters/bib.bib"),
         help="Path to bib file",
     )
     parser.add_argument(
