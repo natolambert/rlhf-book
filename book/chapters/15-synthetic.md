@@ -80,9 +80,13 @@ This approach is inspired by the DAgger (Dataset Aggregation) algorithm from imi
 
 ![On-policy distillation (GKD): prompts are fed to the student model which samples its own outputs. Both student and teacher compute logits on these student-generated sequences. The reverse KL divergence $D_{KL}(\pi_\theta \| \pi_T)$ is minimized, providing mode-seeking behavior where the student learns to match the teacher's preferred outputs. Unlike offline distillation where students only see perfect teacher demonstrations, on-policy distillation exposes the student to its own imperfect generations, addressing train-test mismatch and enabling recovery from mistakes.](images/on_policy_distillation_tikz.png){#fig:on-policy-distillation}
 
+Beyond train-test mismatch, offline distillation also suffers from **model underspecification**: the student is often not expressive enough to fit the teacher's full distribution.
+Forward KL (MLE) training can lead to unnatural student-generated samples because the student tries to cover all teacher modes, even those it cannot represent well.
+
 The key insight connecting on-policy distillation to RL is through the lens of KL divergence direction.
 Standard synthetic data distillation minimizes the **forward KL divergence** $D_{\text{KL}}(\pi_{\text{teacher}} \| \pi_{\text{student}})$, which is mode-covering -- the student tries to place probability mass everywhere the teacher does.
 On-policy distillation instead minimizes the **reverse KL divergence** $D_{\text{KL}}(\pi_{\text{student}} \| \pi_{\text{teacher}})$, which is mode-seeking -- the student focuses on producing high-quality outputs that match the teacher's preferred modes.
+An alternative is **Jensen-Shannon Divergence (JSD)**, which provides a symmetric middle ground between forward and reverse KL.
 
 $$\mathcal{L}_{\text{on-policy}}(\theta) = \mathbb{E}_{x \sim \mathcal{D}, y \sim \pi_\theta(\cdot|x)} \left[ D_{\text{KL}}\left(\pi_\theta(\cdot|x, y_{<t}) \| \pi_{\text{teacher}}(\cdot|x, y_{<t})\right) \right]$$ {#eq:on-policy-distillation}
 
