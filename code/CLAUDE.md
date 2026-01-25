@@ -31,16 +31,19 @@ uv run python -m policy_gradients.train --config configs/reinforce.yaml
   - Small models (0.6B-1.7B) don't need LoRA for memory savings
   - Simplifies code and removes bitsandbytes/PEFT dependencies
   - May need to adjust learning rate (try 1e-5 or 5e-6)
-- [ ] Generate wandb runs for all algorithms:
-  - [x] ORM (LoRA): https://wandb.ai/natolambert/rlhf-book/runs/6mm7s5td
+- [x] Generate wandb runs for all algorithms:
   - [x] ORM (full fine-tune): https://wandb.ai/natolambert/rlhf-book/runs/xm8mlcpl
   - [x] Preference RM (Bradley-Terry): https://wandb.ai/natolambert/rlhf-book/runs/6sninll5
   - [x] PRM (Process RM): https://wandb.ai/natolambert/rlhf-book/runs/abhkbn4q
-  - [x] REINFORCE: https://wandb.ai/natolambert/rlhf-book/runs/0uqbq4oz (in progress)
-  - [ ] GRPO
-  - [ ] PPO
+  - [x] REINFORCE: https://wandb.ai/natolambert/rlhf-book/runs/0uqbq4oz
+  - [x] GRPO: https://wandb.ai/natolambert/rlhf-book/runs/vjp7lgdi
+  - [x] RLOO: https://wandb.ai/natolambert/rlhf-book/runs/07xeasn8
+  - [x] PPO: https://wandb.ai/natolambert/rlhf-book/runs/yv21y1qm
+  - [x] Dr. GRPO: https://wandb.ai/natolambert/rlhf-book/runs/a1swuynq
+  - [x] GSPO: https://wandb.ai/natolambert/rlhf-book/runs/10sxytli
+  - [x] CISPO: https://wandb.ai/natolambert/rlhf-book/runs/6dg0m06n
 
-- [ ] Add README table with algorithm → wandb run links
+- [x] Add README table with algorithm → wandb run links
 
 ### Reward Model Training
 

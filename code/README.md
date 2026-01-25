@@ -9,7 +9,7 @@ This code is built on the excellent work of community contributors:
 ### Policy Gradients
 
 **Original Repository**: [zafstojano/policy-gradients](https://github.com/zafstojano/policy-gradients)
-**Author**: Zarif Stojano ([@zafstojano](https://github.com/zafstojano))
+**Author**: Zafir Stojanovski ([@zafstojano](https://github.com/zafstojano))
 **License**: Apache 2.0
 
 A clean, educational implementation of policy gradient methods for reinforcement learning.
@@ -71,15 +71,15 @@ uv run python -m policy_gradients.train --config policy_gradients/configs/rloo.y
 
 ### Available algorithms
 
-| Algorithm | Config | Description |
-|-----------|--------|-------------|
-| REINFORCE | `reinforce.yaml` | Williams (1992) - vanilla policy gradient |
-| RLOO | `rloo.yaml` | REINFORCE Leave-One-Out (Ahmadian et al., 2024) |
-| PPO | `ppo.yaml` | Proximal Policy Optimization (Schulman et al., 2017) |
-| GRPO | `grpo.yaml` | Group Relative Policy Optimization (Shao et al., 2024) |
-| Dr. GRPO | `drgrpo.yaml` | Dr. GRPO (Liu et al., 2025) |
-| GSPO | `gspo.yaml` | Group-Sequence Policy Optimization (Zheng et al., 2025) |
-| CISPO | `cispo.yaml` | Clipped Importance Sampling PO (MiniMax, 2025) |
+| Algorithm | Config | Description | Example Run |
+|-----------|--------|-------------|-------------|
+| REINFORCE | `reinforce.yaml` | Williams (1992) - vanilla policy gradient | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/0uqbq4oz) |
+| RLOO | `rloo.yaml` | REINFORCE Leave-One-Out (Ahmadian et al., 2024) | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/07xeasn8) |
+| PPO | `ppo.yaml` | Proximal Policy Optimization (Schulman et al., 2017) | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/yv21y1qm) |
+| GRPO | `grpo.yaml` | Group Relative Policy Optimization (Shao et al., 2024) | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/vjp7lgdi) |
+| Dr. GRPO | `drgrpo.yaml` | Dr. GRPO (Liu et al., 2025) | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/a1swuynq) |
+| GSPO | `gspo.yaml` | Group-Sequence Policy Optimization (Zheng et al., 2025) | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/10sxytli) |
+| CISPO | `cispo.yaml` | Clipped Importance Sampling PO (MiniMax, 2025) | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/6dg0m06n) |
 
 ## Reward Model Training
 
@@ -113,6 +113,14 @@ learning to distinguish correct from incorrect math solutions.
 
 Step-level classification on reasoning quality. Fine-tunes Qwen3-0.6B on PRM800K,
 learning to rate individual reasoning steps as {-1, 0, 1} (bad, neutral, good).
+
+### Example Runs
+
+| Model | Description | Example Run |
+|-------|-------------|-------------|
+| Preference RM | Bradley-Terry on UltraFeedback | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/6sninll5) |
+| ORM | Outcome RM on GSM8K | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/xm8mlcpl) |
+| PRM | Process RM on PRM800K | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/abhkbn4q) |
 
 ## Direct Alignment (Coming Soon)
 
