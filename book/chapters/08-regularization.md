@@ -41,7 +41,7 @@ $$ \mathcal{D}_{\text{KL}}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\f
 In RLHF, the two distributions of interest are often the distribution of the new model version, say $P(x)$, and a distribution of the reference policy, say $Q(x)$.
 Different optimizers use different KL directions. Throughout this book, the most common "KL Penalty" that is used is called the reverse KL to the reference policy. In practice, this reduces to a Monte Carlo estimate that samples tokens from the RL model and computes probabilities from the reference model. Intuitively, this reverse KL has a numerical property that applies a large penalty when the new model, $P$ or $\pi_{\text{RL}}$, puts substantial probability mass where the original reference model assigns low probability.
 
-The other KL direction is still often used in ML, e.g. in the internal trust region calculation of some RL algorithms. This penalty intuitively penalizes the new model when its update does *not* apply probability to a high-likelihood region in $Q$ or $\pi_{\text{ref}}$. This is closer to an objective used for distillation or behavioral cloning.
+The other KL direction is still often used in ML, e.g. in the internal trust region calculation of some RL algorithms. This penalty intuitively penalizes the new model when its update does *not* apply probability to a high-likelihood region in $Q$ or $\pi_{\text{ref}}$. This is closer to an objective used for offline distillation or behavioral cloning, where the student learns from fixed teacher demonstrations. Interestingly, on-policy distillation methods use the same reverse KL direction as RLHF, sampling from the student and matching to the teacher's distribution (see Chapter 16).
 
 ### Reference Model to Generations
 
