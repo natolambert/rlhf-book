@@ -69,6 +69,10 @@ def load_model(model_name: str, device_map: Any, gradient_checkpointing: bool = 
     """Load model and tokenizer with automatic attention implementation selection."""
     attn_impl = get_attn_implementation()
     tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=False)
+    # Many decoder-only models (LLaMA, GPT-2) don't define pad_token
+    # Set it to eos_token to enable batch padding
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
         device_map=device_map,
