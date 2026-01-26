@@ -3,16 +3,18 @@
 # Usage:
 #   make all        - Generate all diagrams
 #   make tokens     - Generate token strip diagrams
+#   make tikz       - Generate TikZ diagrams
+#   make figures    - Generate standalone figure scripts
 #   make clean      - Remove generated files
 
 GENERATED_DIR := generated
 
-.PHONY: all tokens grpo tikz clean help
+.PHONY: all tokens tikz figures clean help
 
 # LaTeX engine path (adjust if different on your system)
 PDFLATEX := $(shell which pdflatex || echo "/usr/local/texlive/2023basic/bin/universal-darwin/pdflatex")
 
-all: tokens grpo tikz
+all: tokens tikz figures
 	@echo "All diagrams generated in $(GENERATED_DIR)/"
 
 # Token strip diagrams - requires matplotlib
@@ -28,38 +30,44 @@ tokens: | $(GENERATED_DIR)
 	uv run python scripts/generate_multilane_strips.py --output-dir $(GENERATED_DIR)/svg --format svg
 	@echo "Token strip diagrams generated (PNG in png/, SVG in svg/)"
 
-# PPO vs GRPO architecture comparison diagram (matplotlib version)
-# Based on DeepSeek-Math/GRPO paper Figure 1
-grpo: | $(GENERATED_DIR)
+# Standalone figure scripts (cartpole, tool_use)
+figures: | $(GENERATED_DIR)
 	@mkdir -p $(GENERATED_DIR)/png $(GENERATED_DIR)/svg
-	uv run python scripts/generate_ppo_grpo.py --output-dir $(GENERATED_DIR)/png --format png
-	uv run python scripts/generate_ppo_grpo.py --output-dir $(GENERATED_DIR)/svg --format svg
-	@echo "PPO vs GRPO diagram generated (matplotlib)"
+	uv run python scripts/generate_cartpole.py --output-dir $(GENERATED_DIR)/png --format png
+	uv run python scripts/generate_cartpole.py --output-dir $(GENERATED_DIR)/svg --format svg
+	uv run python scripts/generate_tool_use.py --output-dir $(GENERATED_DIR)/png --format png
+	uv run python scripts/generate_tool_use.py --output-dir $(GENERATED_DIR)/svg --format svg
+	@echo "Standalone figures generated (PNG in png/, SVG in svg/)"
 
 # TikZ diagrams - requires pdflatex and convert (ImageMagick) or sips (macOS)
 # Compiles .tex files in tikz/ to PDF, then converts to 400dpi PNG
 # SVG conversion requires pdf2svg (brew install pdf2svg)
 tikz: | $(GENERATED_DIR)
 	@mkdir -p $(GENERATED_DIR)/png $(GENERATED_DIR)/svg $(GENERATED_DIR)/pdf
-	@for texfile in tikz/*_tikz_test.tex; do \
+	@for texfile in tikz/*_tikz.tex; do \
 		if [ -f "$$texfile" ]; then \
-			base=$$(basename "$$texfile" _tikz_test.tex); \
-			echo "Compiling $${base}_tikz..."; \
+			base=$$(basename "$$texfile" .tex); \
+			echo "Compiling $${base}..."; \
 			cd tikz && $(PDFLATEX) -interaction=nonstopmode $$(basename $$texfile) > /dev/null 2>&1; cd ..; \
-			cp tikz/$${base}_tikz_test.pdf $(GENERATED_DIR)/pdf/$${base}_tikz.pdf; \
-			if command -v magick > /dev/null; then \
-				magick -density 400 tikz/$${base}_tikz_test.pdf -trim -quality 100 $(GENERATED_DIR)/png/$${base}_tikz.png; \
-				echo "  -> $(GENERATED_DIR)/png/$${base}_tikz.png (400dpi, trimmed)"; \
-			elif command -v convert > /dev/null; then \
-				convert -density 400 tikz/$${base}_tikz_test.pdf -trim -quality 100 $(GENERATED_DIR)/png/$${base}_tikz.png; \
-				echo "  -> $(GENERATED_DIR)/png/$${base}_tikz.png (400dpi, trimmed)"; \
-			elif command -v sips > /dev/null; then \
-				sips -s format png tikz/$${base}_tikz_test.pdf --out $(GENERATED_DIR)/png/$${base}_tikz.png > /dev/null 2>&1; \
-			fi; \
-			if command -v pdf2svg > /dev/null; then \
-				pdf2svg tikz/$${base}_tikz_test.pdf $(GENERATED_DIR)/svg/$${base}_tikz.svg; \
+			if [ -f "tikz/$${base}.pdf" ]; then \
+				cp tikz/$${base}.pdf $(GENERATED_DIR)/pdf/$${base}.pdf; \
+				if command -v magick > /dev/null; then \
+					magick -density 400 tikz/$${base}.pdf -trim -quality 100 $(GENERATED_DIR)/png/$${base}.png; \
+					echo "  -> $(GENERATED_DIR)/png/$${base}.png (400dpi, trimmed)"; \
+				elif command -v convert > /dev/null; then \
+					convert -density 400 tikz/$${base}.pdf -trim -quality 100 $(GENERATED_DIR)/png/$${base}.png; \
+					echo "  -> $(GENERATED_DIR)/png/$${base}.png (400dpi, trimmed)"; \
+				elif command -v sips > /dev/null; then \
+					sips -s format png tikz/$${base}.pdf --out $(GENERATED_DIR)/png/$${base}.png > /dev/null 2>&1; \
+				fi; \
+				if command -v pdf2svg > /dev/null; then \
+					pdf2svg tikz/$${base}.pdf $(GENERATED_DIR)/svg/$${base}.svg; \
+					echo "  -> $(GENERATED_DIR)/svg/$${base}.svg"; \
+				else \
+					echo "  (skipping SVG - install pdf2svg: brew install pdf2svg)"; \
+				fi; \
 			else \
-				echo "  (skipping SVG - install pdf2svg: brew install pdf2svg)"; \
+				echo "  ERROR: PDF not generated for $${base}"; \
 			fi; \
 			rm -f tikz/*.aux tikz/*.log; \
 		fi \
@@ -73,7 +81,8 @@ $(GENERATED_DIR):
 # Clean generated files
 clean:
 	rm -rf $(GENERATED_DIR)/*
-	@echo "Cleaned $(GENERATED_DIR)/"
+	rm -f tikz/*.pdf tikz/*.aux tikz/*.log
+	@echo "Cleaned $(GENERATED_DIR)/ and tikz/*.pdf"
 
 # Help
 help:
@@ -81,9 +90,9 @@ help:
 	@echo ""
 	@echo "Targets:"
 	@echo "  all      - Generate all diagrams"
-	@echo "  tokens   - Generate token strip diagrams"
-	@echo "  grpo     - Generate PPO vs GRPO diagram (matplotlib)"
-	@echo "  tikz     - Generate TikZ diagrams (ppo_grpo_tikz, etc.)"
+	@echo "  tokens   - Generate token strip diagrams (reward models)"
+	@echo "  tikz     - Generate TikZ diagrams (policy gradients, distillation)"
+	@echo "  figures  - Generate standalone figures (cartpole, tool_use)"
 	@echo "  clean    - Remove generated files"
 	@echo ""
 	@echo "Requirements:"
