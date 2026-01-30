@@ -150,7 +150,7 @@ Where $\Psi_t$ can be the following (where the rewards can also often be discoun
 3. $\sum_{t'=t}^{\infty} r_{t'} - b(s_t)$: baselined version of previous formula.
 4. $Q^{\pi}(s_t, a_t)$: state-action value function.
 5. $A^{\pi}(s_t, a_t)$: advantage function, which yields the lowest possible theoretical variance if it can be computed accurately.
-6. $r_t + V^{\pi}(s_{t+1}) - V^{\pi}(s_t)$: Temporal Difference (TD) residual.
+6. $r_t + \gamma V^{\pi}(s_{t+1}) - V^{\pi}(s_t)$: Temporal Difference (TD) residual.
 
 The *baseline* is a value used to reduce variance of policy updates (more on this below).
 
