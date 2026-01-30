@@ -19,7 +19,7 @@ max_samples: 1000
 max_length: 512
 
 # Training
-learning_rate: 5e-7  # DPO requires very low learning rate
+learning_rate: 5.0e-7  # DPO requires very low learning rate
 num_epochs: 1
 batch_size: 4
 gradient_accumulation_steps: 4
