@@ -28,7 +28,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from .config import Config, load_config
 from .data import PreferenceBatch, create_dataloader
-from .loss import compute_logprobs, get_loss_function
+from .loss import compute_logprobs, get_loss_function, ORPOLoss
 
 
 def get_attn_implementation() -> str:
@@ -223,7 +223,7 @@ def train_step(
 
     # Compute loss
     # Handle ORPO which needs NLL loss
-    if hasattr(loss_fn, "__class__") and loss_fn.__class__.__name__ == "ORPOLoss":
+    if isinstance(loss_fn, ORPOLoss):
         # Need to compute NLL loss for ORPO (only on response tokens)
         policy_outputs = policy_model(
             input_ids=batch.chosen_input_ids,

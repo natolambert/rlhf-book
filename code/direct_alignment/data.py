@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Any
 
 import torch
+import torch.nn.functional as F
 from datasets import Dataset, load_dataset
 from torch.utils.data import DataLoader
 from transformers import PreTrainedTokenizer
@@ -223,6 +224,66 @@ class PreferenceDataset(torch.utils.data.Dataset):
     def __len__(self) -> int:
         return len(self.dataset)
 
+    def _tokenize_with_response_priority(
+        self,
+        prompt_text: str,
+        full_text: str,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Tokenize with truncation that preserves the response.
+
+        If the full sequence exceeds max_length, we truncate from the LEFT
+        (removing prompt tokens) to preserve as much of the response as possible.
+        This is important because the response is what we're training on.
+
+        Returns:
+            input_ids: (max_length,)
+            attention_mask: (max_length,)
+            response_mask: (max_length,) - 1 for response tokens, 0 for prompt/padding
+        """
+        # Tokenize prompt to get its length
+        prompt_tokens = self.tokenizer(
+            prompt_text,
+            add_special_tokens=False,
+            return_tensors="pt",
+        )
+        prompt_len = prompt_tokens["input_ids"].shape[1]
+
+        # Tokenize full sequence without truncation first
+        full_tokens = self.tokenizer(
+            full_text,
+            add_special_tokens=False,
+            return_tensors="pt",
+        )
+        full_len = full_tokens["input_ids"].shape[1]
+
+        if full_len <= self.max_length:
+            # No truncation needed - just pad
+            input_ids = F.pad(
+                full_tokens["input_ids"].squeeze(0),
+                (0, self.max_length - full_len),
+                value=self.tokenizer.pad_token_id or 0,
+            )
+            attention_mask = F.pad(
+                full_tokens["attention_mask"].squeeze(0),
+                (0, self.max_length - full_len),
+                value=0,
+            )
+            actual_prompt_len = prompt_len
+        else:
+            # Need to truncate - remove tokens from the LEFT (prompt side)
+            # to preserve as much response as possible
+            tokens_to_remove = full_len - self.max_length
+            input_ids = full_tokens["input_ids"].squeeze(0)[tokens_to_remove:]
+            attention_mask = full_tokens["attention_mask"].squeeze(0)[tokens_to_remove:]
+            # Adjust prompt_len for truncation
+            actual_prompt_len = max(0, prompt_len - tokens_to_remove)
+
+        # Create response mask (1 for response tokens, 0 for prompt/padding)
+        response_mask = torch.zeros(self.max_length, dtype=torch.long)
+        response_mask[actual_prompt_len:] = attention_mask[actual_prompt_len:]
+
+        return input_ids, attention_mask, response_mask
+
     def __getitem__(self, idx: int) -> dict[str, Any]:
         example = self.dataset[idx]
 
@@ -238,49 +299,21 @@ class PreferenceDataset(torch.utils.data.Dataset):
             self.tokenizer,
         )
 
-        # Get prompt-only text to compute prompt length
+        # Get prompt-only text for computing prompt length
         prompt_only_text = format_prompt_only(example["prompt"], self.tokenizer)
 
-        # Tokenize prompt-only to get prompt length (without padding)
-        prompt_tokens = self.tokenizer(
-            prompt_only_text,
-            add_special_tokens=False,  # Chat template already adds them
-            return_tensors="pt",
-        )
-        prompt_len = prompt_tokens["input_ids"].shape[1]
-
-        # Tokenize full sequences
-        chosen_tokens = self.tokenizer(
-            chosen_text,
-            max_length=self.max_length,
-            padding="max_length",
-            truncation=True,
-            return_tensors="pt",
-        )
-        rejected_tokens = self.tokenizer(
-            rejected_text,
-            max_length=self.max_length,
-            padding="max_length",
-            truncation=True,
-            return_tensors="pt",
-        )
-
-        # Create response masks (1 for response tokens, 0 for prompt/padding)
-        # Response starts after prompt_len tokens
-        seq_len = self.max_length
-        chosen_response_mask = torch.zeros(seq_len, dtype=torch.long)
-        rejected_response_mask = torch.zeros(seq_len, dtype=torch.long)
-
-        # Mask is 1 where we have response tokens (after prompt, before padding)
-        chosen_response_mask[prompt_len:] = chosen_tokens["attention_mask"].squeeze(0)[prompt_len:]
-        rejected_response_mask[prompt_len:] = rejected_tokens["attention_mask"].squeeze(0)[prompt_len:]
+        # Tokenize with response-preserving truncation
+        chosen_input_ids, chosen_attention_mask, chosen_response_mask = \
+            self._tokenize_with_response_priority(prompt_only_text, chosen_text)
+        rejected_input_ids, rejected_attention_mask, rejected_response_mask = \
+            self._tokenize_with_response_priority(prompt_only_text, rejected_text)
 
         return {
-            "chosen_input_ids": chosen_tokens["input_ids"].squeeze(0),
-            "chosen_attention_mask": chosen_tokens["attention_mask"].squeeze(0),
+            "chosen_input_ids": chosen_input_ids,
+            "chosen_attention_mask": chosen_attention_mask,
             "chosen_response_mask": chosen_response_mask,
-            "rejected_input_ids": rejected_tokens["input_ids"].squeeze(0),
-            "rejected_attention_mask": rejected_tokens["attention_mask"].squeeze(0),
+            "rejected_input_ids": rejected_input_ids,
+            "rejected_attention_mask": rejected_attention_mask,
             "rejected_response_mask": rejected_response_mask,
         }
 

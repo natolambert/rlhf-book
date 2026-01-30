@@ -236,25 +236,45 @@ class SimPOLoss(nn.Module):
         return losses.mean(), metrics
 
 
+def log1mexp(x: torch.Tensor) -> torch.Tensor:
+    """Compute log(1 - exp(x)) numerically stably.
+
+    For x close to 0, use log1p(-exp(x)).
+    For x far from 0, use log(-expm1(x)) which is more stable.
+
+    See: https://cran.r-project.org/web/packages/Rmpfr/vignettes/log1mexp-note.pdf
+    """
+    # Use -0.693 (log(0.5)) as the threshold
+    mask = x > -0.693
+    result = torch.empty_like(x)
+    result[mask] = torch.log(-torch.expm1(x[mask]))
+    result[~mask] = torch.log1p(-torch.exp(x[~mask]))
+    return result
+
+
 class ORPOLoss(nn.Module):
     """Odds Ratio Preference Optimization loss (Hong et al., 2024).
 
     ORPO combines supervised fine-tuning with preference optimization,
     eliminating the need for a reference model.
 
-    Loss = -log(pi(y_chosen|x)) + lambda * L_OR
+    Loss = NLL(y_chosen|x) - beta * log(sigmoid(log_odds_ratio))
 
-    where L_OR = -log(sigmoid(log(odds_chosen / odds_rejected)))
-    and odds(y) = pi(y) / (1 - pi(y))
+    where log_odds_ratio = log(odds_chosen / odds_rejected)
+    and odds(y) = P(y|x) / (1 - P(y|x))
+
+    Derived from Eqs. (4) and (7) of https://arxiv.org/abs/2403.07691:
+        log_odds = log_p - log(1-p) = log_p - log1mexp(log_p)
+        log_odds_ratio = log_odds_chosen - log_odds_rejected
 
     The SFT term encourages the model to generate the chosen response,
-    while the odds ratio term creates preference.
+    while the odds ratio term creates preference separation.
     """
 
     def __init__(self, beta: float = 0.1):
         """
         Args:
-            beta: Weight of the odds ratio loss relative to SFT loss.
+            beta: Weight of the odds ratio loss (lambda in the paper).
         """
         super().__init__()
         self.beta = beta
@@ -273,26 +293,29 @@ class ORPOLoss(nn.Module):
             policy_rejected_logps: Sum of log probs for rejected (batch,)
             chosen_nll_loss: Negative log likelihood loss on chosen response
         """
-        # Compute log odds: log(p / (1-p)) = log(p) - log(1-p)
-        # For numerical stability, we use log_softmax properties
-        # log(odds) = log_prob - log(1 - exp(log_prob))
-        # ≈ log_prob for small probabilities (which is typical)
+        # Cast to float for numerical stability (following TRL)
+        policy_chosen_logps = policy_chosen_logps.float()
+        policy_rejected_logps = policy_rejected_logps.float()
 
-        # Simple approximation used in practice:
-        # log(odds_ratio) ≈ log_prob_chosen - log_prob_rejected
-        log_odds_ratio = policy_chosen_logps - policy_rejected_logps
+        # Compute log odds ratio using the proper formula from the paper
+        # log_odds = log(p) - log(1-p) = log_p - log1mexp(log_p)
+        # log_odds_ratio = log_odds_chosen - log_odds_rejected
+        log_odds = (policy_chosen_logps - policy_rejected_logps) - (
+            log1mexp(policy_chosen_logps) - log1mexp(policy_rejected_logps)
+        )
 
-        # Odds ratio loss
-        or_loss = -F.logsigmoid(log_odds_ratio)
+        # ORPO uses logsigmoid of the log odds ratio
+        ratio = F.logsigmoid(log_odds)
 
-        # Combined loss: SFT + beta * OR
-        loss = chosen_nll_loss + self.beta * or_loss
+        # Combined loss: SFT - beta * log(sigmoid(log_odds))
+        # Note: ratio is already negative (logsigmoid output), so we subtract
+        loss = chosen_nll_loss - self.beta * ratio
 
         metrics = {
             "sft_loss": chosen_nll_loss.mean().item(),
-            "or_loss": or_loss.mean().item(),
-            "log_odds_ratio": log_odds_ratio.mean().item(),
-            "accuracy": (log_odds_ratio > 0).float().mean().item(),
+            "or_loss": (-ratio).mean().item(),
+            "log_odds_ratio": log_odds.mean().item(),
+            "accuracy": (log_odds > 0).float().mean().item(),
         }
 
         return loss.mean(), metrics

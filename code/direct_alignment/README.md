@@ -12,7 +12,7 @@ See **Chapter 12: Direct Alignment** for mathematical derivations and intuitions
 | **IPO** | [Azar et al., 2023](https://arxiv.org/abs/2310.12036) | Regression objective instead of classification - more robust |
 | **SimPO** | [Meng et al., 2024](https://arxiv.org/abs/2405.14734) | Length-normalized, no reference model needed |
 | **ORPO** | [Hong et al., 2024](https://arxiv.org/abs/2403.07691) | Combines SFT + preference, no reference model |
-| **KTO** | [Ethayarajh et al., 2024](https://arxiv.org/abs/2402.01306) | Unpaired preferences, prospect theory inspired |
+| **KTO** | [Ethayarajh et al., 2024](https://arxiv.org/abs/2402.01306) | Prospect theory inspired, works with binary good/bad labels |
 
 ## Quick Start
 
@@ -189,7 +189,6 @@ direct_alignment/
 ├── data.py            # Preference data loading with response masking
 ├── loss.py            # Loss function implementations
 ├── train.py           # Training loop with sample generation
-├── REVIEW_REPORT.md   # Code review findings and fixes
 └── configs/           # YAML config files
     ├── dpo.yaml
     ├── ipo.yaml
@@ -197,3 +196,35 @@ direct_alignment/
     ├── orpo.yaml
     └── kto.yaml
 ```
+
+## Implementation Notes
+
+### KTO Data Format
+
+The KTO loss function supports the paper's formulation (separate KL samples from unrelated outputs),
+but **the data loader currently only supports paired preference data** (prompt/chosen/rejected format).
+KTO is trained by treating `chosen` as desirable and `rejected` as undesirable responses.
+
+For truly unpaired KTO data (prompt/response/label format), see the TODOs below.
+
+### Truncation Strategy
+
+Long sequences are truncated from the **left side** (prompt tokens) to preserve as much of the
+response as possible. This is important because we only compute loss on response tokens.
+
+### Chat Template Requirement
+
+Models must have a chat template configured. Base models without chat templates are not currently
+supported (see TODOs).
+
+## TODOs for Community Contributions
+
+These would be great contributions to make the implementations more complete:
+
+- [ ] **Unpaired KTO data loader**: Add support for datasets with `prompt/response/label` format
+  (single response with binary good/bad label) instead of requiring paired data
+- [ ] **Reference logprob caching**: Cache reference model log-probs to avoid recomputing each batch
+  (see Open-Instruct's `dpo_tune_cache.py` for reference)
+- [ ] **Base model support**: Add fallback formatting for models without chat templates
+- [ ] **Evaluation integration**: Wire up `log_every` and `eval_every` config options
+- [ ] **Length-normalized DPO**: Add `dpo_norm` variant (average log-probs like SimPO but with ref model)
