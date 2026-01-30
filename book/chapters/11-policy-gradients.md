@@ -150,17 +150,18 @@ Where $\Psi_t$ can be the following (where the rewards can also often be discoun
 3. $\sum_{t'=t}^{\infty} r_{t'} - b(s_t)$: baselined version of previous formula.
 4. $Q^{\pi}(s_t, a_t)$: state-action value function.
 5. $A^{\pi}(s_t, a_t)$: advantage function, which yields the lowest possible theoretical variance if it can be computed accurately.
-6. $r_t + V^{\pi}(s_{t+1}) - V^{\pi}(s_t)$: Temporal Difference (TD) residual.
+6. $r_t + \gamma V^{\pi}(s_{t+1}) - V^{\pi}(s_t)$: Temporal Difference (TD) residual.
 
 The *baseline* is a value used to reduce variance of policy updates (more on this below).
 
 For language models, some of these concepts do not make as much sense.
-For example, for a deterministic policy $\pi$ the state value is $V^{\pi}(s) = Q^{\pi}(s, \pi(s))$ (and for the optimal value function one has $V^*(s)=\max_a Q^*(s,a)$). For a stochastic policy, the analogous identity is $V^{\pi}(s) = \mathbb{E}_{a \sim \pi(\cdot\mid s)}[Q^{\pi}(s,a)]$.
-If we define $s+a$ as the continuation $a$ to the prompt $s$, then $Q(s, a) = V(s+a)$, which gives a different advantage trick:
+For example, for a deterministic policy $\pi$ the state value is $V^{\pi}(s_t) = Q^{\pi}(s_t, \pi(s_t))$ (and for the optimal value function one has $V^*(s_t)=\max_{a_t} Q^*(s_t,a_t)$). For a stochastic policy, the analogous identity is $V^{\pi}(s_t) = \mathbb{E}_{a_t \sim \pi(\cdot\mid s_t)}[Q^{\pi}(s_t,a_t)]$.
+The Bellman equation relates Q to V: in general $Q^\pi(s_t,a_t) = \mathbb{E}[r_t + \gamma V^\pi(s_{t+1}) \mid s_t, a_t]$, but for language models where state transitions are deterministic, this simplifies to $Q(s_t,a_t) = r_t + \gamma V(s_{t+1})$.
+The advantage function measures how much better action $a_t$ is compared to the average:
 
-$$A(s,a) = Q(s,a) - V(s) = V(s + a) - V(s) = r + \gamma V(s + a) - V(s)$$ {#eq:advantage_trick}
+$$A(s_t,a_t) = Q(s_t,a_t) - V(s_t) = r_t + \gamma V(s_{t+1}) - V(s_t)$$ {#eq:advantage_trick}
 
-Which is a combination of the reward, the value of the prompt, and the discounted value of the entire utterance.
+This final form is exactly the TD residual (item 6 above). In practice, a learned value function $\hat{V}$ is used to estimate the advantage via this TD error.
 
 ### Vanilla Policy Gradient
 
