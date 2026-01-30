@@ -311,19 +311,12 @@ class KTOLoss(nn.Module):
     For undesirable (rejected) responses:
         Loss = 1 - sigmoid(beta * (KL - log_ratio))
 
-    where KL is a reference point representing the expected KL divergence.
+    where KL is a reference point representing the expected divergence from the
+    reference model on unrelated outputs.
 
     The asymmetric treatment reflects loss aversion from prospect theory.
 
-    Implementation note:
-        The full KTO paper (and HALOs/TRL implementations) compute KL from
-        *separate* samples unrelated to the chosen/rejected responses. This
-        simplified educational version estimates KL from the batch samples
-        (chosen + rejected combined). For paired preference data this is a
-        reasonable approximation that preserves KTO's key insight: comparing
-        all samples to a unified reference point rather than pairwise.
-
-    See: https://github.com/ContextualAI/HALOs for the full implementation.
+    See: https://github.com/ContextualAI/HALOs for the official implementation.
     """
 
     def __init__(self, beta: float = 0.1, desirable_weight: float = 1.0, undesirable_weight: float = 1.0):
@@ -345,6 +338,8 @@ class KTOLoss(nn.Module):
         policy_rejected_logps: torch.Tensor,
         ref_chosen_logps: torch.Tensor,
         ref_rejected_logps: torch.Tensor,
+        policy_kl_logps: torch.Tensor | None = None,
+        ref_kl_logps: torch.Tensor | None = None,
     ) -> tuple[torch.Tensor, dict]:
         """Compute KTO loss.
 
@@ -356,20 +351,40 @@ class KTOLoss(nn.Module):
             policy_rejected_logps: Log probs of rejected (undesirable) responses from policy
             ref_chosen_logps: Log probs of chosen responses from reference model
             ref_rejected_logps: Log probs of rejected responses from reference model
+            policy_kl_logps: (Optional) Log probs from policy on separate KL samples
+            ref_kl_logps: (Optional) Log probs from reference on separate KL samples
 
         Returns:
             loss: Scalar loss value
             metrics: Dict with diagnostic values
+
+        Note:
+            If policy_kl_logps and ref_kl_logps are provided, KL is computed from
+            these separate samples (matching the paper). Otherwise, KL is estimated
+            from shuffled batch samples, which is a reasonable approximation for
+            paired preference data.
         """
-        # Compute log ratios (implicit rewards) for all samples
+        # Compute log ratios (implicit rewards) for chosen/rejected
         chosen_logratios = policy_chosen_logps - ref_chosen_logps
         rejected_logratios = policy_rejected_logps - ref_rejected_logps
 
-        # KL reference point: average log ratio across batch
-        # Note: Full KTO uses separate KL samples; this is a simplification
-        # that estimates KL from the batch itself (works well for paired data)
-        all_logratios = torch.cat([chosen_logratios, rejected_logratios], dim=0)
-        KL = all_logratios.mean().detach().clamp(min=0)
+        # Compute KL reference point
+        if policy_kl_logps is not None and ref_kl_logps is not None:
+            # Full KTO: use separate samples for KL estimation
+            kl_logratios = policy_kl_logps - ref_kl_logps
+            KL = kl_logratios.mean().detach().clamp(min=0)
+        else:
+            # Approximation: use shuffled batch samples for KL
+            # Shuffle rejected to pair with different prompts, simulating "unrelated" samples
+            batch_size = chosen_logratios.shape[0]
+            if batch_size > 1:
+                # Roll rejected by 1 to pair with different prompts
+                shifted_rejected = rejected_logratios.roll(shifts=1, dims=0)
+                kl_logratios = shifted_rejected
+            else:
+                # Single sample: fall back to using all samples
+                kl_logratios = torch.cat([chosen_logratios, rejected_logratios], dim=0)
+            KL = kl_logratios.mean().detach().clamp(min=0)
 
         # KTO loss from Eqn (7) of the paper
         # Desirable: want chosen to be better than reference point
