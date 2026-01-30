@@ -4,7 +4,8 @@
 
 - **Always run training commands in background** using `run_in_background: true` to avoid blocking
 - Check task progress with `tail -f /tmp/claude/.../tasks/<id>.output`
-- Multiple training jobs can run in parallel if memory allows (~16GB per 0.6B model)
+- **Be careful with parallel jobs**: Only run one training job at a time unless you verify memory is available (`free -h`). Running too many can OOM the system.
+- DGX Spark memory: ~120GB total (unified CPU/GPU), aim for <80GB usage to be safe
 
 ## Quick Start
 
