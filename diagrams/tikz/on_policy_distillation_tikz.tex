@@ -1,0 +1,85 @@
+% On-Policy Distillation (GKD) Diagram
+% Shows: Student samples -> Teacher feedback -> KL loss
+% Inspired by Agarwal et al. (2024) On-Policy Distillation
+% Style matched to knowledge_distillation_tikz.tex
+
+\documentclass{article}
+\usepackage[margin=0.3cm, paperwidth=15.5cm, paperheight=4.8cm]{geometry}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, calc, backgrounds}
+\pagestyle{empty}
+
+\begin{document}
+\input{styles_rlhf.tex}
+
+\begin{tikzpicture}
+
+% Layout: Two rows like knowledge_distillation
+% Top row: Teacher path (frozen)
+% Bottom row: Student path (trained)
+
+% Prompts (left)
+\node[plain, minimum width=1.2cm, minimum height=0.8cm] (prompts) at (1, 0.8) {$\{x_i\}$};
+\node[font=\tiny, text=black!60] at (1, 0.3) {prompts};
+
+% Student Model (trained, samples)
+\node[trained, minimum width=2.2cm, minimum height=0.9cm] (student) at (3.8, 0.8) {Student $\pi_\theta$\\(samples)};
+
+% Generations - center point where paths split
+\node[plain, minimum width=1.6cm, minimum height=0.8cm] (generations) at (6.8, 0.8) {$y \sim \pi_\theta$};
+\node[font=\tiny, text=black!60] at (6.8, 0.25) {generations};
+
+% Teacher Model (frozen) - top row
+\node[frozen, minimum width=2cm, minimum height=0.9cm] (teacher) at (9.5, 2.0) {Teacher $\pi_T$\\(frozen)};
+
+% Teacher logits - top row
+\node[plain, minimum width=0.9cm] (zt) at (11.8, 2.0) {$z_T$};
+\node[font=\tiny, text=black!60] at (11.8, 1.55) {logits};
+
+% Student logits - bottom row (aligned with Teacher horizontally)
+\node[plain, minimum width=0.9cm] (zs) at (9.5, -0.4) {$z_S$};
+\node[font=\tiny, text=black!60] at (9.5, -0.85) {logits};
+
+% KL Loss - right side center
+\node[plain, minimum width=1.2cm, minimum height=0.8cm] (loss) at (14, 0.8) {$\mathcal{L}_{KL}$};
+
+% ============ ARROWS ============
+
+% Prompts -> Student (straight)
+\draw[arrow] (prompts) -- (student);
+
+% Student -> Generations (straight)
+\draw[arrow] (student) -- node[above, font=\tiny] {sample} (generations);
+
+% Generations splits to Teacher (curve then straight) and Student logits (mirror style)
+\draw[arrow] (generations.north) to[out=70, in=180] (teacher.west);
+\draw[arrow] (generations.south) to[out=-70, in=180] (zs.west);
+
+% Teacher -> Teacher Logits (straight)
+\draw[arrow] (teacher) -- (zt);
+
+% Teacher Logits -> Loss (small curve down)
+\draw[arrow] (zt.east) to[out=0, in=100] (loss.north);
+
+% Student Logits -> Loss (smooth curve like knowledge_distillation)
+\draw[arrow] (zs.east) to[out=0, in=-100] (loss.south);
+
+% Loss -> back to Student (gradient update) - smooth curve below
+\draw[->, >=Stealth, thick, dashed, draw=blue!70] (loss.south east) to[out=-45, in=-45, looseness=0.6] (student.south);
+
+% Label for gradient
+\node[font=\scriptsize\itshape, text=blue!70] at (9, -1.2) {$\nabla_\theta \mathcal{L}_{KL}(\pi_\theta \| \pi_T)$};
+
+% Legend - bottom left with dotted box
+\node[font=\scriptsize\itshape] (leg-key) at (1.2, -1.2) {Key};
+\node[legendbox, fill=blue!15, draw=blue!70] (leg-trained) at (2.2, -1.2) {Trained};
+\node[legendbox, fill=red!12, draw=red!50] (leg-frozen) at (3.5, -1.2) {Frozen};
+\node[draw=black!50, dotted, rounded corners=3pt, inner sep=6pt, fit=(leg-key)(leg-frozen)] {};
+
+% Equation - right side
+\node[font=\small] at (12.5, -1.2) {$D_{KL}(\pi_\theta \| \pi_T)$};
+
+\end{tikzpicture}
+
+\end{document}
