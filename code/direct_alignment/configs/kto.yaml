@@ -1,0 +1,44 @@
+# KTO Configuration
+# Kahneman-Tversky Optimization (Ethayarajh et al., 2024)
+# Paper: https://arxiv.org/abs/2402.01306
+#
+# KTO works with unpaired preference data based on prospect theory.
+# Only needs to know if a response is "good" or "bad", not direct comparisons.
+#
+# Run with:
+#   uv run python -m direct_alignment.train --config configs/kto.yaml
+
+# Model
+model_name: allenai/OLMo-2-0425-1B-SFT
+
+# Algorithm
+loss: kto
+beta: 0.1
+
+# Dataset - uses paired data but treats chosen as "desirable" and rejected as "undesirable"
+dataset_name: argilla/ultrafeedback-binarized-preferences-cleaned
+dataset_split: train
+max_samples: 1000
+max_length: 512
+
+# Training
+learning_rate: 5e-7
+num_epochs: 1
+batch_size: 4
+gradient_accumulation_steps: 4
+warmup_ratio: 0.1
+max_grad_norm: 1.0
+
+# Hardware
+gradient_checkpointing: true
+bf16: true
+
+# Logging
+wandb_project: null
+log_every: 10
+
+# Output
+output_dir: ./outputs
+save_model: false
+
+seed: 42

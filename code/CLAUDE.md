@@ -20,6 +20,7 @@ uv run python -m reward_models.train_orm --samples 400 --epochs 2
 uv run python -m reward_models.train_preference_rm --samples 2000 --epochs 1
 uv run python -m reward_models.train_prm --samples 500 --epochs 2
 uv run python -m policy_gradients.train --config configs/reinforce.yaml
+uv run python -m direct_alignment.train --config direct_alignment/configs/dpo.yaml
 ```
 
 ## TODOs
@@ -44,6 +45,23 @@ uv run python -m policy_gradients.train --config configs/reinforce.yaml
   - [x] CISPO: https://wandb.ai/natolambert/rlhf-book/runs/6dg0m06n
 
 - [x] Add README table with algorithm → wandb run links
+
+### Direct Alignment (DPO and variants)
+
+**Status: Implemented, needs testing**
+
+- [ ] Test DPO training end-to-end on UltraFeedback
+- [ ] Test IPO, SimPO, ORPO, KTO training
+- [ ] Generate wandb runs for all algorithms:
+  - [ ] DPO
+  - [ ] IPO
+  - [ ] SimPO
+  - [ ] ORPO
+  - [ ] KTO
+- [ ] Add wandb run links to README table
+- [ ] Verify OLMo-2-0425-1B-SFT works as default model
+- [ ] Consider adding evaluation (e.g., AlpacaEval, MT-Bench style)
+- [ ] Test data loading with Anthropic HH dataset
 
 ### Reward Model Training
 
