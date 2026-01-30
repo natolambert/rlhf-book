@@ -306,17 +306,24 @@ class KTOLoss(nn.Module):
     prospect theory from behavioral economics.
 
     For desirable (chosen) responses:
-        Loss = 1 - sigmoid(beta * (log_ratio - z_ref))
+        Loss = 1 - sigmoid(beta * (log_ratio - KL))
 
     For undesirable (rejected) responses:
-        Loss = 1 - sigmoid(beta * (z_ref - log_ratio))
+        Loss = 1 - sigmoid(beta * (KL - log_ratio))
 
-    where z_ref is a unified reference point computed across ALL samples in the
-    batch (both desirable and undesirable). This is the key insight from the paper:
-    the reference point represents the "status quo" that all samples are compared
-    against, enabling truly unpaired preference learning.
+    where KL is a reference point representing the expected KL divergence.
 
     The asymmetric treatment reflects loss aversion from prospect theory.
+
+    Implementation note:
+        The full KTO paper (and HALOs/TRL implementations) compute KL from
+        *separate* samples unrelated to the chosen/rejected responses. This
+        simplified educational version estimates KL from the batch samples
+        (chosen + rejected combined). For paired preference data this is a
+        reasonable approximation that preserves KTO's key insight: comparing
+        all samples to a unified reference point rather than pairwise.
+
+    See: https://github.com/ContextualAI/HALOs for the full implementation.
     """
 
     def __init__(self, beta: float = 0.1, desirable_weight: float = 1.0, undesirable_weight: float = 1.0):
@@ -342,9 +349,7 @@ class KTOLoss(nn.Module):
         """Compute KTO loss.
 
         This implementation converts paired preference data to unpaired format by
-        treating chosen responses as desirable and rejected as undesirable. The key
-        difference from DPO is that we compute a single reference point (z_ref)
-        across ALL samples, not separate comparisons per pair.
+        treating chosen responses as desirable and rejected as undesirable.
 
         Args:
             policy_chosen_logps: Log probs of chosen (desirable) responses from policy
@@ -360,21 +365,17 @@ class KTOLoss(nn.Module):
         chosen_logratios = policy_chosen_logps - ref_chosen_logps
         rejected_logratios = policy_rejected_logps - ref_rejected_logps
 
-        # Unified reference point: average KL across ALL samples (chosen + rejected)
-        # This is the "status quo" from prospect theory - the neutral point
-        # that determines whether an outcome is perceived as a gain or loss
+        # KL reference point: average log ratio across batch
+        # Note: Full KTO uses separate KL samples; this is a simplification
+        # that estimates KL from the batch itself (works well for paired data)
         all_logratios = torch.cat([chosen_logratios, rejected_logratios], dim=0)
-        z_ref = all_logratios.mean().detach()
+        KL = all_logratios.mean().detach().clamp(min=0)
 
-        # KTO losses with unified reference point (prospect theory formulation)
-        # Desirable responses: we want log_ratio > z_ref (perceived as gain)
-        # Loss decreases as the response becomes better than the reference point
-        chosen_losses = 1 - F.sigmoid(self.beta * (chosen_logratios - z_ref))
-
-        # Undesirable responses: we want log_ratio < z_ref (perceived as loss)
-        # Loss decreases as the response becomes worse than the reference point
-        # Note the flipped sign: (z_ref - log_ratio) instead of (log_ratio - z_ref)
-        rejected_losses = 1 - F.sigmoid(self.beta * (z_ref - rejected_logratios))
+        # KTO loss from Eqn (7) of the paper
+        # Desirable: want chosen to be better than reference point
+        chosen_losses = 1 - F.sigmoid(self.beta * (chosen_logratios - KL))
+        # Undesirable: want rejected to be worse than reference point
+        rejected_losses = 1 - F.sigmoid(self.beta * (KL - rejected_logratios))
 
         # Weighted combination (asymmetric weights reflect loss aversion)
         loss = (
@@ -383,7 +384,7 @@ class KTOLoss(nn.Module):
         )
 
         metrics = {
-            "z_ref": z_ref.item(),
+            "KL": KL.item(),
             "chosen_logratios": chosen_logratios.mean().item(),
             "rejected_logratios": rejected_logratios.mean().item(),
             "chosen_loss": chosen_losses.mean().item(),
