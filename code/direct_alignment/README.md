@@ -96,9 +96,34 @@ Other compatible datasets:
 
 **Important**: DPO requires very low learning rates (1e-7 to 5e-6). Higher rates cause divergence.
 
+### Sequence Length Controls
+
+TRL-style options for controlling prompt/completion lengths:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `max_length` | 512 | Max total sequence length (prompt + completion) |
+| `max_prompt_length` | None | Max prompt tokens (truncated from left if exceeded) |
+| `max_completion_length` | None | Max completion tokens (truncated from right) |
+| `truncation_mode` | `keep_end` | `keep_end` preserves response, `keep_start` preserves prompt |
+
+When total length exceeds `max_length`, we truncate from the **left** (prompt side) by default to preserve as much of the response as possible, since the response is what we compute loss on.
+
 ## Memory Requirements
 
-With gradient checkpointing on a single GPU:
+Memory profiling results for OLMo-2-0425-1B-SFT on DGX Spark (119.7 GB unified memory):
+
+| Batch Size | max_length=512 | max_length=1024 | max_length=2048 | max_length=4096 |
+|------------|----------------|-----------------|-----------------|-----------------|
+| 1 | 20% | 21% | 21% | 24% |
+| 2 | 21% | 21% | 24% | 28% |
+| 4 | 21% | 24% | 28% | 35% |
+| 8 | 24% | 28% | 35% | 53% |
+| 16 | 28% | 35% | 53% | ~85%+ |
+
+**Recommended**: batch_size=8 with max_length=2048 (35% memory) combined with gradient_accumulation_steps=8 for effective batch size of 64.
+
+For smaller GPUs with gradient checkpointing:
 - 1B model: ~8-10GB
 - 3B model: ~15-20GB
 

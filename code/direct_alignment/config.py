@@ -27,7 +27,12 @@ class Config:
     dataset_name: str = "argilla/ultrafeedback-binarized-preferences-cleaned"
     dataset_split: str = "train"
     max_samples: int | None = 1000  # Limit samples for quick experiments
-    max_length: int = 512  # Max sequence length
+
+    # Sequence length settings (TRL-style controls)
+    max_length: int = 512  # Max total sequence length (prompt + completion)
+    max_prompt_length: int | None = None  # Max prompt length (truncated from left if exceeded)
+    max_completion_length: int | None = None  # Max completion length (truncated from right if exceeded)
+    truncation_mode: Literal["keep_end", "keep_start"] = "keep_end"  # How to truncate: keep_end preserves response
 
     # Training hyperparameters
     learning_rate: float = 5e-7  # DPO typically uses very low LR
