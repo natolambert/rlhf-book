@@ -156,7 +156,7 @@ The *baseline* is a value used to reduce variance of policy updates (more on thi
 
 For language models, some of these concepts do not make as much sense.
 For example, for a deterministic policy $\pi$ the state value is $V^{\pi}(s_t) = Q^{\pi}(s_t, \pi(s_t))$ (and for the optimal value function one has $V^*(s_t)=\max_{a_t} Q^*(s_t,a_t)$). For a stochastic policy, the analogous identity is $V^{\pi}(s_t) = \mathbb{E}_{a_t \sim \pi(\cdot\mid s_t)}[Q^{\pi}(s_t,a_t)]$.
-The Bellman equation relates Q to V: $Q(s_t,a_t) = r_t + \gamma V(s_{t+1})$, where $r_t$ is the immediate reward and $s_{t+1}$ is the next state.
+The Bellman equation relates Q to V: in general $Q^\pi(s_t,a_t) = \mathbb{E}[r_t + \gamma V^\pi(s_{t+1}) \mid s_t, a_t]$, but for language models where state transitions are deterministic, this simplifies to $Q(s_t,a_t) = r_t + \gamma V(s_{t+1})$.
 The advantage function measures how much better action $a_t$ is compared to the average:
 
 $$A(s_t,a_t) = Q(s_t,a_t) - V(s_t) = r_t + \gamma V(s_{t+1}) - V(s_t)$$ {#eq:advantage_trick}
