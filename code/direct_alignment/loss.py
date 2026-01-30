@@ -311,7 +311,10 @@ class KTOLoss(nn.Module):
     For undesirable (rejected) responses:
         Loss = 1 - sigmoid(beta * (z_ref - log_ratio))
 
-    where z_ref is a reference point (typically the average log ratio).
+    where z_ref is a unified reference point computed across ALL samples in the
+    batch (both desirable and undesirable). This is the key insight from the paper:
+    the reference point represents the "status quo" that all samples are compared
+    against, enabling truly unpaired preference learning.
 
     The asymmetric treatment reflects loss aversion from prospect theory.
     """
@@ -322,6 +325,7 @@ class KTOLoss(nn.Module):
             beta: Temperature parameter.
             desirable_weight: Weight for positive examples (default 1.0).
             undesirable_weight: Weight for negative examples (typically higher, e.g., 1.33).
+                              The paper suggests ~1.33 based on prospect theory.
         """
         super().__init__()
         self.beta = beta
@@ -334,41 +338,57 @@ class KTOLoss(nn.Module):
         policy_rejected_logps: torch.Tensor,
         ref_chosen_logps: torch.Tensor,
         ref_rejected_logps: torch.Tensor,
-        chosen_mask: torch.Tensor | None = None,  # Which samples are chosen vs rejected
     ) -> tuple[torch.Tensor, dict]:
         """Compute KTO loss.
 
-        For paired data (like standard preference datasets), we treat chosen
-        as desirable and rejected as undesirable.
+        This implementation converts paired preference data to unpaired format by
+        treating chosen responses as desirable and rejected as undesirable. The key
+        difference from DPO is that we compute a single reference point (z_ref)
+        across ALL samples, not separate comparisons per pair.
 
-        For unpaired data, use chosen_mask to indicate which are desirable.
+        Args:
+            policy_chosen_logps: Log probs of chosen (desirable) responses from policy
+            policy_rejected_logps: Log probs of rejected (undesirable) responses from policy
+            ref_chosen_logps: Log probs of chosen responses from reference model
+            ref_rejected_logps: Log probs of rejected responses from reference model
+
+        Returns:
+            loss: Scalar loss value
+            metrics: Dict with diagnostic values
         """
-        # Compute log ratios (implicit rewards)
+        # Compute log ratios (implicit rewards) for all samples
         chosen_logratios = policy_chosen_logps - ref_chosen_logps
         rejected_logratios = policy_rejected_logps - ref_rejected_logps
 
-        # Reference point: KL from reference (averaged over batch)
-        # This is the "status quo" that we compare against
-        kl_chosen = chosen_logratios.mean().detach()
-        kl_rejected = rejected_logratios.mean().detach()
+        # Unified reference point: average KL across ALL samples (chosen + rejected)
+        # This is the "status quo" from prospect theory - the neutral point
+        # that determines whether an outcome is perceived as a gain or loss
+        all_logratios = torch.cat([chosen_logratios, rejected_logratios], dim=0)
+        z_ref = all_logratios.mean().detach()
 
-        # KTO losses (prospect theory: different treatment for gains vs losses)
-        # Desirable: want log_ratio > reference point
-        chosen_losses = 1 - F.sigmoid(self.beta * (chosen_logratios - kl_chosen))
-        # Undesirable: want log_ratio < reference point
-        rejected_losses = 1 - F.sigmoid(self.beta * (kl_rejected - rejected_logratios))
+        # KTO losses with unified reference point (prospect theory formulation)
+        # Desirable responses: we want log_ratio > z_ref (perceived as gain)
+        # Loss decreases as the response becomes better than the reference point
+        chosen_losses = 1 - F.sigmoid(self.beta * (chosen_logratios - z_ref))
 
-        # Weighted combination
+        # Undesirable responses: we want log_ratio < z_ref (perceived as loss)
+        # Loss decreases as the response becomes worse than the reference point
+        # Note the flipped sign: (z_ref - log_ratio) instead of (log_ratio - z_ref)
+        rejected_losses = 1 - F.sigmoid(self.beta * (z_ref - rejected_logratios))
+
+        # Weighted combination (asymmetric weights reflect loss aversion)
         loss = (
             self.desirable_weight * chosen_losses.mean() +
             self.undesirable_weight * rejected_losses.mean()
         )
 
         metrics = {
+            "z_ref": z_ref.item(),
             "chosen_logratios": chosen_logratios.mean().item(),
             "rejected_logratios": rejected_logratios.mean().item(),
             "chosen_loss": chosen_losses.mean().item(),
             "rejected_loss": rejected_losses.mean().item(),
+            "accuracy": (chosen_logratios > rejected_logratios).float().mean().item(),
         }
 
         return loss, metrics
