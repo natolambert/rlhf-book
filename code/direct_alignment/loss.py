@@ -409,8 +409,9 @@ def get_loss_function(loss_type: str, **kwargs) -> nn.Module:
     elif loss_type == "ipo":
         return IPOLoss(beta=beta)
     elif loss_type == "simpo":
-        gamma = kwargs.get("gamma", 0.5)
-        return SimPOLoss(beta=beta, gamma=gamma or 0.5)
+        gamma = kwargs.get("gamma")
+        # Use 0.5 as default only if gamma is None (not if it's 0.0)
+        return SimPOLoss(beta=beta, gamma=gamma if gamma is not None else 0.5)
     elif loss_type == "orpo":
         return ORPOLoss(beta=beta)
     elif loss_type == "kto":

@@ -19,9 +19,11 @@ class PreferenceBatch:
     chosen_input_ids: torch.Tensor  # (batch, seq_len)
     chosen_attention_mask: torch.Tensor  # (batch, seq_len)
     chosen_labels: torch.Tensor  # (batch, seq_len) - for computing loss
+    chosen_response_mask: torch.Tensor  # (batch, seq_len) - 1 for response tokens, 0 for prompt/padding
     rejected_input_ids: torch.Tensor  # (batch, seq_len)
     rejected_attention_mask: torch.Tensor  # (batch, seq_len)
     rejected_labels: torch.Tensor  # (batch, seq_len)
+    rejected_response_mask: torch.Tensor  # (batch, seq_len) - 1 for response tokens, 0 for prompt/padding
 
     def to(self, device: str | torch.device) -> "PreferenceBatch":
         """Move batch to device."""
@@ -29,9 +31,11 @@ class PreferenceBatch:
             chosen_input_ids=self.chosen_input_ids.to(device),
             chosen_attention_mask=self.chosen_attention_mask.to(device),
             chosen_labels=self.chosen_labels.to(device),
+            chosen_response_mask=self.chosen_response_mask.to(device),
             rejected_input_ids=self.rejected_input_ids.to(device),
             rejected_attention_mask=self.rejected_attention_mask.to(device),
             rejected_labels=self.rejected_labels.to(device),
+            rejected_response_mask=self.rejected_response_mask.to(device),
         )
 
 
@@ -58,7 +62,38 @@ def format_chat_prompt(
     messages.append({"role": "user", "content": prompt})
     messages.append({"role": "assistant", "content": response})
 
-    return tokenizer.apply_chat_template(messages, tokenize=False)
+    return tokenizer.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=False,
+    )
+
+
+def format_prompt_only(
+    prompt: str,
+    tokenizer: PreTrainedTokenizer,
+    system_prompt: str | None = None,
+) -> str:
+    """Format just the prompt (without response) for computing prompt length.
+
+    Args:
+        prompt: User message / question
+        tokenizer: Tokenizer with chat template
+        system_prompt: Optional system message
+
+    Returns:
+        Formatted prompt string with generation prompt added
+    """
+    messages = []
+    if system_prompt:
+        messages.append({"role": "system", "content": system_prompt})
+    messages.append({"role": "user", "content": prompt})
+
+    return tokenizer.apply_chat_template(
+        messages,
+        tokenize=False,
+        add_generation_prompt=True,  # Add the assistant turn start
+    )
 
 
 def extract_ultrafeedback_pairs(example: dict) -> dict:
@@ -203,7 +238,18 @@ class PreferenceDataset(torch.utils.data.Dataset):
             self.tokenizer,
         )
 
-        # Tokenize
+        # Get prompt-only text to compute prompt length
+        prompt_only_text = format_prompt_only(example["prompt"], self.tokenizer)
+
+        # Tokenize prompt-only to get prompt length (without padding)
+        prompt_tokens = self.tokenizer(
+            prompt_only_text,
+            add_special_tokens=False,  # Chat template already adds them
+            return_tensors="pt",
+        )
+        prompt_len = prompt_tokens["input_ids"].shape[1]
+
+        # Tokenize full sequences
         chosen_tokens = self.tokenizer(
             chosen_text,
             max_length=self.max_length,
@@ -219,11 +265,23 @@ class PreferenceDataset(torch.utils.data.Dataset):
             return_tensors="pt",
         )
 
+        # Create response masks (1 for response tokens, 0 for prompt/padding)
+        # Response starts after prompt_len tokens
+        seq_len = self.max_length
+        chosen_response_mask = torch.zeros(seq_len, dtype=torch.long)
+        rejected_response_mask = torch.zeros(seq_len, dtype=torch.long)
+
+        # Mask is 1 where we have response tokens (after prompt, before padding)
+        chosen_response_mask[prompt_len:] = chosen_tokens["attention_mask"].squeeze(0)[prompt_len:]
+        rejected_response_mask[prompt_len:] = rejected_tokens["attention_mask"].squeeze(0)[prompt_len:]
+
         return {
             "chosen_input_ids": chosen_tokens["input_ids"].squeeze(0),
             "chosen_attention_mask": chosen_tokens["attention_mask"].squeeze(0),
+            "chosen_response_mask": chosen_response_mask,
             "rejected_input_ids": rejected_tokens["input_ids"].squeeze(0),
             "rejected_attention_mask": rejected_tokens["attention_mask"].squeeze(0),
+            "rejected_response_mask": rejected_response_mask,
         }
 
 
@@ -231,18 +289,21 @@ def collate_preference_batch(examples: list[dict]) -> PreferenceBatch:
     """Collate function for DataLoader."""
     chosen_input_ids = torch.stack([ex["chosen_input_ids"] for ex in examples])
     chosen_attention_mask = torch.stack([ex["chosen_attention_mask"] for ex in examples])
+    chosen_response_mask = torch.stack([ex["chosen_response_mask"] for ex in examples])
     rejected_input_ids = torch.stack([ex["rejected_input_ids"] for ex in examples])
     rejected_attention_mask = torch.stack([ex["rejected_attention_mask"] for ex in examples])
+    rejected_response_mask = torch.stack([ex["rejected_response_mask"] for ex in examples])
 
     # Labels are same as input_ids for autoregressive LM
-    # We'll mask the loss on prompt tokens later
     return PreferenceBatch(
         chosen_input_ids=chosen_input_ids,
         chosen_attention_mask=chosen_attention_mask,
         chosen_labels=chosen_input_ids.clone(),
+        chosen_response_mask=chosen_response_mask,
         rejected_input_ids=rejected_input_ids,
         rejected_attention_mask=rejected_attention_mask,
         rejected_labels=rejected_input_ids.clone(),
+        rejected_response_mask=rejected_response_mask,
     )
 
 

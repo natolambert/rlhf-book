@@ -70,11 +70,11 @@ def load_model(
 
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
-        device_map=device,
         trust_remote_code=True,
         attn_implementation=attn_impl,
         torch_dtype=dtype,
     )
+    model = model.to(device)
 
     if gradient_checkpointing:
         model.gradient_checkpointing_enable(
@@ -91,11 +91,11 @@ def load_ref_model(model_name: str, device: str, bf16: bool = True):
 
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
-        device_map=device,
         trust_remote_code=True,
         attn_implementation=attn_impl,
         torch_dtype=dtype,
     )
+    model = model.to(device)
     model.eval()
     for param in model.parameters():
         param.requires_grad = False
@@ -107,6 +107,7 @@ def forward_pass(
     model,
     input_ids: torch.Tensor,
     attention_mask: torch.Tensor,
+    response_mask: torch.Tensor,
     average_log_prob: bool = False,
 ) -> torch.Tensor:
     """Compute log probabilities for a sequence.
@@ -114,7 +115,8 @@ def forward_pass(
     Args:
         model: Language model
         input_ids: Token ids (batch, seq_len)
-        attention_mask: Attention mask (batch, seq_len)
+        attention_mask: Attention mask (batch, seq_len) - for model forward
+        response_mask: Response mask (batch, seq_len) - 1 for response tokens only
         average_log_prob: If True, return average log prob (for SimPO)
 
     Returns:
@@ -127,10 +129,11 @@ def forward_pass(
     )
     logits = outputs.logits
 
+    # Use response_mask for computing log probs (only response tokens contribute)
     return compute_logprobs(
         logits=logits,
         labels=input_ids,
-        mask=attention_mask,
+        mask=response_mask,
         average_log_prob=average_log_prob,
     )
 
@@ -138,13 +141,16 @@ def forward_pass(
 def compute_nll_loss(
     logits: torch.Tensor,
     labels: torch.Tensor,
-    attention_mask: torch.Tensor,
+    response_mask: torch.Tensor,
 ) -> torch.Tensor:
-    """Compute negative log likelihood loss (for ORPO SFT component)."""
+    """Compute negative log likelihood loss (for ORPO SFT component).
+
+    Only computes loss on response tokens (not prompt).
+    """
     # Shift for autoregressive
     shift_logits = logits[:, :-1, :].contiguous()
     shift_labels = labels[:, 1:].contiguous()
-    shift_mask = attention_mask[:, 1:].contiguous()
+    shift_mask = response_mask[:, 1:].contiguous()
 
     # Compute per-token loss
     loss_fct = torch.nn.CrossEntropyLoss(reduction="none")
@@ -154,7 +160,7 @@ def compute_nll_loss(
     )
     loss = loss.view(shift_labels.size())
 
-    # Mask and average
+    # Mask and average over response tokens only
     loss = (loss * shift_mask).sum(dim=-1) / shift_mask.sum(dim=-1).clamp(min=1)
     return loss
 
@@ -178,17 +184,19 @@ def train_step(
     device = next(policy_model.parameters()).device
     batch = batch.to(device)
 
-    # Forward pass through policy model
+    # Forward pass through policy model (use response_mask for loss computation)
     policy_chosen_logps = forward_pass(
         policy_model,
         batch.chosen_input_ids,
         batch.chosen_attention_mask,
+        batch.chosen_response_mask,
         average_log_prob=use_average_logprob,
     )
     policy_rejected_logps = forward_pass(
         policy_model,
         batch.rejected_input_ids,
         batch.rejected_attention_mask,
+        batch.rejected_response_mask,
         average_log_prob=use_average_logprob,
     )
 
@@ -199,12 +207,14 @@ def train_step(
                 ref_model,
                 batch.chosen_input_ids,
                 batch.chosen_attention_mask,
+                batch.chosen_response_mask,
                 average_log_prob=use_average_logprob,
             )
             ref_rejected_logps = forward_pass(
                 ref_model,
                 batch.rejected_input_ids,
                 batch.rejected_attention_mask,
+                batch.rejected_response_mask,
                 average_log_prob=use_average_logprob,
             )
     else:
@@ -214,7 +224,7 @@ def train_step(
     # Compute loss
     # Handle ORPO which needs NLL loss
     if hasattr(loss_fn, "__class__") and loss_fn.__class__.__name__ == "ORPOLoss":
-        # Need to compute NLL loss for ORPO
+        # Need to compute NLL loss for ORPO (only on response tokens)
         policy_outputs = policy_model(
             input_ids=batch.chosen_input_ids,
             attention_mask=batch.chosen_attention_mask,
@@ -223,7 +233,7 @@ def train_step(
         chosen_nll = compute_nll_loss(
             policy_outputs.logits,
             batch.chosen_labels,
-            batch.chosen_attention_mask,
+            batch.chosen_response_mask,
         )
         loss, metrics = loss_fn(
             policy_chosen_logps=policy_chosen_logps,
@@ -464,6 +474,9 @@ def main(cfg: Config):
                     use_average_logprob=use_average_logprob,
                 )
 
+                # Update progress bar (advance by 1 for each micro-batch)
+                progress.update(task, advance=1)
+
                 # Update scheduler after optimizer step
                 if (batch_idx + 1) % cfg.gradient_accumulation_steps == 0:
                     scheduler.step()
@@ -473,6 +486,12 @@ def main(cfg: Config):
                     metrics["learning_rate"] = scheduler.get_last_lr()[0]
                     metrics["epoch"] = epoch + (batch_idx + 1) / len(dataloader)
                     wandb.log(metrics, step=global_step)
+
+                    # Update progress description with loss
+                    progress.update(
+                        task,
+                        description=f"[dim]Loss: {metrics['loss']:.4f}[/dim]",
+                    )
 
                     # Generate and log samples periodically
                     if cfg.sample_every > 0 and global_step % cfg.sample_every == 0:
@@ -486,14 +505,20 @@ def main(cfg: Config):
                         )
                         log_samples_to_wandb(samples, global_step)
 
-                    # Update progress
-                    progress.update(
-                        task,
-                        advance=cfg.gradient_accumulation_steps,
-                        description=f"[dim]Loss: {metrics['loss']:.4f}[/dim]",
-                    )
-                else:
-                    progress.update(task, advance=1)
+            # Flush remaining gradients at end of epoch if partial batch exists
+            remaining = len(dataloader) % cfg.gradient_accumulation_steps
+            if remaining != 0:
+                grad_norm = clip_grad_norm_(policy_model.parameters(), cfg.max_grad_norm)
+                optimizer.step()
+                optimizer.zero_grad()
+                scheduler.step()
+                global_step += 1
+
+                # Log final partial batch
+                metrics["learning_rate"] = scheduler.get_last_lr()[0]
+                metrics["epoch"] = epoch + 1.0
+                metrics["grad_norm"] = grad_norm.item()
+                wandb.log(metrics, step=global_step)
 
     # Final summary
     console.print("\n[bold green]Training complete![/bold green]")
