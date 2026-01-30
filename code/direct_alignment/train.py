@@ -270,6 +270,90 @@ def print_training_info(console: Console, cfg: Config, num_samples: int):
     console.print()
 
 
+# Default prompts for sampling during training
+SAMPLE_PROMPTS = [
+    "What is the capital of France?",
+    "Explain quantum computing in simple terms.",
+    "Write a haiku about programming.",
+]
+
+
+def generate_samples(
+    model,
+    tokenizer,
+    prompts: list[str],
+    max_new_tokens: int = 128,
+    console: Console | None = None,
+) -> list[dict]:
+    """Generate sample outputs from the model for inspection.
+
+    Args:
+        model: The policy model
+        tokenizer: Tokenizer
+        prompts: List of prompts to generate from
+        max_new_tokens: Maximum tokens to generate
+        console: Rich console for printing (optional)
+
+    Returns:
+        List of dicts with 'prompt' and 'response' keys
+    """
+    model.eval()
+    samples = []
+
+    for prompt in prompts:
+        # Format as chat
+        messages = [{"role": "user", "content": prompt}]
+        formatted = tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True,
+        )
+
+        # Tokenize
+        inputs = tokenizer(
+            formatted,
+            return_tensors="pt",
+            padding=True,
+            truncation=True,
+            max_length=512,
+        ).to(model.device)
+
+        # Generate
+        with torch.no_grad():
+            outputs = model.generate(
+                **inputs,
+                max_new_tokens=max_new_tokens,
+                do_sample=True,
+                temperature=0.7,
+                top_p=0.9,
+                pad_token_id=tokenizer.pad_token_id or tokenizer.eos_token_id,
+            )
+
+        # Decode response only (not the prompt)
+        response = tokenizer.decode(
+            outputs[0][inputs["input_ids"].shape[1]:],
+            skip_special_tokens=True,
+        )
+
+        samples.append({"prompt": prompt, "response": response})
+
+        # Print to console if provided
+        if console:
+            console.print(f"\n[bold cyan]Prompt:[/bold cyan] {prompt}")
+            console.print(f"[bold green]Response:[/bold green] {response[:500]}{'...' if len(response) > 500 else ''}")
+
+    model.train()
+    return samples
+
+
+def log_samples_to_wandb(samples: list[dict], step: int):
+    """Log generated samples to wandb as a table."""
+    table = wandb.Table(columns=["prompt", "response"])
+    for sample in samples:
+        table.add_data(sample["prompt"], sample["response"][:1000])  # Truncate long responses
+    wandb.log({"samples": table}, step=step)
+
+
 def main(cfg: Config):
     """Main training loop."""
     seed_everything(cfg.seed)
@@ -390,6 +474,18 @@ def main(cfg: Config):
                     metrics["epoch"] = epoch + (batch_idx + 1) / len(dataloader)
                     wandb.log(metrics, step=global_step)
 
+                    # Generate and log samples periodically
+                    if cfg.sample_every > 0 and global_step % cfg.sample_every == 0:
+                        console.print(f"\n[bold yellow]Generating samples at step {global_step}...[/bold yellow]")
+                        samples = generate_samples(
+                            model=policy_model,
+                            tokenizer=tokenizer,
+                            prompts=SAMPLE_PROMPTS,
+                            max_new_tokens=cfg.sample_max_tokens,
+                            console=console,
+                        )
+                        log_samples_to_wandb(samples, global_step)
+
                     # Update progress
                     progress.update(
                         task,
@@ -404,6 +500,18 @@ def main(cfg: Config):
     console.print(f"  Final loss: {metrics.get('loss', 'N/A'):.4f}")
     if "accuracy" in metrics:
         console.print(f"  Final accuracy: {metrics['accuracy']:.2%}")
+
+    # Generate final samples
+    if cfg.sample_every > 0:
+        console.print("\n[bold yellow]Final model samples:[/bold yellow]")
+        samples = generate_samples(
+            model=policy_model,
+            tokenizer=tokenizer,
+            prompts=SAMPLE_PROMPTS,
+            max_new_tokens=cfg.sample_max_tokens,
+            console=console,
+        )
+        log_samples_to_wandb(samples, global_step)
 
     # Save model if requested
     if cfg.save_model:
@@ -435,6 +543,7 @@ def main_cli():
     parser.add_argument("--batch_size", type=int, help="Batch size")
     parser.add_argument("--gradient_accumulation_steps", type=int)
     parser.add_argument("--wandb_project", type=str, help="Wandb project name")
+    parser.add_argument("--sample_every", type=int, help="Generate samples every N steps (0 to disable)")
     parser.add_argument("--seed", type=int, help="Random seed")
 
     args = parser.parse_args()

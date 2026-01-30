@@ -48,6 +48,8 @@ class Config:
     wandb_run_name: str | None = None
     log_every: int = 10
     eval_every: int = 100
+    sample_every: int = 25  # Generate sample outputs every N steps (0 to disable)
+    sample_max_tokens: int = 128  # Max tokens for sample generation
 
     # Output
     output_dir: str = "./outputs"
