@@ -1,9 +1,9 @@
 ---
-prev-chapter: "Constitutional AI & AI Feedback"
-prev-url: "13-cai"
-page-title: Reasoning Training & Inference-Time Scaling
-next-chapter: "Tool Use & Function Calling"
-next-url: "14.5-tools"
+prev-chapter: "Reinforcement Learning"
+prev-url: "06-policy-gradients"
+page-title: Reasoning
+next-chapter: "Direct Alignment"
+next-url: "08-direct-alignment"
 ---
 
 # Reasoning Training & Inference-Time Scaling
@@ -206,7 +206,7 @@ The more open doors that are available to researchers and engineers, the more op
 ## Understanding Reasoning Training Methods
 
 The investment in reasoning has instigated a major evolution in the art of how models are trained to follow human instructions.
-These recipes still use the common pieces discussed in earlier chapters (as discussed in Chapter 4 with the overview of DeepSeek R1's recipe), including instruction fine-tuning, reinforcement learning from human feedback, and reinforcement learning with verifiable rewards (RLVR). 
+These recipes still use the common pieces discussed in earlier chapters (as discussed in Chapter 3 with the overview of DeepSeek R1's recipe), including instruction fine-tuning, reinforcement learning from human feedback, and reinforcement learning with verifiable rewards (RLVR). 
 The core change is using far more RLVR and applying the other training techniques in different orders -- traditionally for a reasoning model the core training step is either a large-scale RL run or a large-scale instruction tuning run on *outputs* of another model that had undergone a substantial portion of RLVR training (referred to as distillation).
 
 ### Reasoning Research Pre OpenAI's o1 or DeepSeek R1

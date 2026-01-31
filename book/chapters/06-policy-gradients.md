@@ -1,9 +1,9 @@
 ---
-prev-chapter: "Rejection Sampling"
-prev-url: "10-rejection-sampling"
-page-title: Reinforcement Learning (i.e. Policy Gradient Algorithms)
-next-chapter: "Direct Alignment Algorithms"
-next-url: "12-direct-alignment"
+prev-chapter: "Reward Models"
+prev-url: "05-reward-models"
+page-title: Reinforcement Learning
+next-chapter: "Reasoning"
+next-url: "07-reasoning"
 ---
 
 # Reinforcement Learning (i.e. Policy Gradient Algorithms)
@@ -34,7 +34,7 @@ For definitions of symbols, see the problem setup chapter.
 
 ## Policy Gradient Algorithms
 
-Reinforcement learning algorithms are designed to maximize the future, discounted reward across a trajectory of states, $s \in \mathcal{S}$, and actions, $a \in \mathcal{A}$ (for more notation, see Chapter 3, Definitions).
+Reinforcement learning algorithms are designed to maximize the future, discounted reward across a trajectory of states, $s \in \mathcal{S}$, and actions, $a \in \mathcal{A}$ (for more notation, see Appendix A, Definitions).
 The objective of the agent, often called the *return*, is the sum of discounted future rewards (where $\gamma\in [0,1]$ is a factor that prioritizes near-term rewards) at a given time $t$:
 
 $$G_t = R_{t+1} + \gamma R_{t+2} + \cdots = \sum_{k=0}^\infty \gamma^k R_{t+k+1}.$$ {#eq:return_definition}
@@ -1150,7 +1150,7 @@ In RLHF for language models, $\gamma=1.0$ is common because episodes are short t
 We've seen in this chapter two types of regularization. One is built into algorithms like PPO with step-size constraints, and the other is a KL divergence based distance penalty relative to the start of the optimization. 
 
 Many popular policy gradient algorithms from Deep Reinforcement Learning, including PPO and its predecessors, originated due to the need to control the learning process of the agent.
-In RLHF, as discussed extensively in Chapter 8 on Regularization and in Chapter 4 on Problem Formulation, there is a built-in regularization term via the distance penalty relative to the original policy one is fine-tuning.
+In RLHF, as discussed extensively in Chapter 15 on Regularization and in Chapter 3 on Training Overview, there is a built-in regularization term via the distance penalty relative to the original policy one is fine-tuning.
 In this view, a large part of the difference between algorithms like PPO (which have internal step-size regularization) and REINFORCE (which is simpler, and to which PPO reduces under certain hyperparameters) is far less meaningful for fine-tuning language models than training agents from scratch.
 
 In PPO, the objective that handles capping the step-size of the update is known as the [surrogate objective](https://huggingface.co/blog/deep-rl-ppo#introducing-the-clipped-surrogate-objective). 

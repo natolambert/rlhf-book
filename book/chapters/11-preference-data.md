@@ -1,9 +1,9 @@
 ---
-prev-chapter: "The Nature of Preferences"
-prev-url: "05-preferences"
+prev-chapter: "What are Preferences"
+prev-url: "10-preferences"
 page-title: Preference Data
-next-chapter: "Reward Modeling"
-next-url: "07-reward-models"
+next-chapter: "Synthetic Data & CAI"
+next-url: "12-synthetic-data"
 ---
 
 # Preference Data
@@ -19,7 +19,7 @@ In this chapter, we detail technical decisions on how the data is formatted and 
 
 ## Why We Need Preference Data
 
-The preference data is needed for RLHF because directly capturing complex human values in a single reward function is effectively impossible, as discussed in the previous Chapter 5, where substantial context of psychology, economics, and philosophy shows that accurately modeling human preferences is an impossible problem to ever completely solve.
+The preference data is needed for RLHF because directly capturing complex human values in a single reward function is effectively impossible, as discussed in the previous Chapter 10, where substantial context of psychology, economics, and philosophy shows that accurately modeling human preferences is an impossible problem to ever completely solve.
 Collecting this data to train reward models is one of the original ideas behind RLHF [@leike2018scalable] and has continued to be used extensively throughout the emergence of modern language models.
 One of the core intuitions for *why this data works so well* is that it is far easier, both for humans and AI models supervising data collection, to differentiate between a good and a bad answer for a prompt than it is to generate a good answer on its own. 
 This chapter focuses on the *mechanics* of getting preference data and the best practices depend on the specific problem being solved.
@@ -236,7 +236,7 @@ Note that this section *does not* mirror the experience for buying human-written
 Early post-training processes were built around the first stage of training being heavily driven by carefully crafted, human answers to a set of prompts.
 This stage of data is not subject to the on-policy restrictions for multiple reasons: Instruction data is used directly ontop of a base model, so on-policy doesn't really apply; the loss-function for instruction fine-tuning doesn't need the contrastive data of preference fine-tuning; and other structural advantages.
 Today, the primary other focus of human data is in generating prompts for post-training -- which dictate the training distribution of topics for the model -- or on challenging tasks at the frontier of model performance.
-More of these data trade-offs are discussed in Chapter 16 on Synthetic Data.
+More of these data trade-offs are discussed in Chapter 12 on Synthetic Data.
 
 ## Bias: Things to Watch Out For in Data Collection
 

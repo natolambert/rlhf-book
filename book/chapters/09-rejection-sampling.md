@@ -1,9 +1,9 @@
 ---
-prev-chapter: "Instruction Tuning"
-prev-url: "09-instruction-tuning"
+prev-chapter: "Direct Alignment"
+prev-url: "08-direct-alignment"
 page-title: Rejection Sampling
-next-chapter: "Policy Gradients"
-next-url: "11-policy-gradients"
+next-chapter: "What are Preferences"
+next-url: "10-preferences"
 ---
 
 # Rejection Sampling
@@ -26,7 +26,7 @@ WebGPT [@nakano2021webgpt], Anthropic's Helpful and Harmless agent [@bai2022trai
 
 Rejection sampling overall follows a few stages.
 
-0. **Prompt and reward model selection:** First, you must select the prompts you want to train on, relative to other stages of training. The simplest method is to re-use every prompt from the first SFT/IFT stage, but this can cause some overfitting. Before doing rejection sampling, you must also have trained a reward model (see Chapter 7 for more information).
+0. **Prompt and reward model selection:** First, you must select the prompts you want to train on, relative to other stages of training. The simplest method is to re-use every prompt from the first SFT/IFT stage, but this can cause some overfitting. Before doing rejection sampling, you must also have trained a reward model (see Chapter 5 for more information).
 1. **Generate completions from the starting checkpoint:** Next, one must generate completions to the selected prompts with the model they want to optimize. This can involve tweaking many settings, such as sampling temperature, top-p, max sequence length, number of completions per prompt, etc.
 2. **Select top completions with a reward model**: All completions are ranked by a reward model. This can include deduplication to only have one prompt per completion after this stage, or not, as a lot of the decisions become based on empirical ablation studies.
 3. **SFT on top completions:** To finish rejection sampling, one instruction fine-tunes the starting checkpoint on the selected completions.

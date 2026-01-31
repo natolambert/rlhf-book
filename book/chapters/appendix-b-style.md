@@ -1,9 +1,9 @@
 ---
-prev-chapter: "Over Optimization"
-prev-url: "17-over-optimization"
-page-title: Style and Information
-next-chapter: "Character Training & Model Character"
-next-url: "19-character"
+prev-chapter: "Definitions"
+prev-url: "appendix-a-definitions"
+page-title: "Appendix B: Style & Information"
+next-chapter: "Home"
+next-url: "https://rlhfbook.com/"
 ---
 
 # Style and Information
@@ -87,7 +87,7 @@ Through the establishment of the RLHF literature, a large swath of models have b
 These RLHF methods motivated by alignment, when done right, make the models easier to work with and more enjoyable. 
 This often comes with clear improvements on evaluation tools like MT Bench or AlpacaEval. 
 
-In the fall of 2023, there was a peak in the debate over direct preference optimization (DPO) and its role relative to proximal policy optimization (PPO) and other RL-based methods for preference fine-tuning -- the balance of chat evaluations to real world performance was at the center of this (For more technical discussion on the trade-offs, see Chapter 12, Ivison et. al 2024 [@ivison2024unpacking], or this talk, [https://youtu.be/YJMCSVLRUNs](https://youtu.be/YJMCSVLRUNs)).
+In the fall of 2023, there was a peak in the debate over direct preference optimization (DPO) and its role relative to proximal policy optimization (PPO) and other RL-based methods for preference fine-tuning -- the balance of chat evaluations to real world performance was at the center of this (For more technical discussion on the trade-offs, see Chapter 8, Ivison et. al 2024 [@ivison2024unpacking], or this talk, [https://youtu.be/YJMCSVLRUNs](https://youtu.be/YJMCSVLRUNs)).
 The problem is that you can also use techniques like DPO and PPO in feedback loops or in an abundance of data to actually severely harm the model on other tasks like mathematics or coding in a trade for this chat performance.
 
 During the proliferation of the DPO versus PPO debate there were many papers that came out with incredible benchmarks but no model weights that gathered sustained, public usage because these models were not robust in general usage. 

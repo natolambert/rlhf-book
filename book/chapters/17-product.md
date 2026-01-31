@@ -1,9 +1,9 @@
 ---
-prev-chapter: "Style & Information"
-prev-url: "18-style"
-page-title: Product, UX, Character, and Post-Training
-next-chapter: ""
-next-url: ""
+prev-chapter: "Evaluation"
+prev-url: "16-evaluation"
+page-title: Product & Character
+next-chapter: "Definitions"
+next-url: "appendix-a-definitions"
 ---
 
 # Product, UX, and Model Character
