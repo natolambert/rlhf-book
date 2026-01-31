@@ -6,102 +6,13 @@
 #
 # GitHub Actions builds the site and deploys via Netlify CLI.
 # See .github/workflows/static.yml for the build process.
+#
+# REDIRECTS: Handled by book/_redirects file (copied to build/html/ by Makefile)
+# The _redirects file is used because netlify.toml redirects aren't processed
+# when deploying via Netlify CLI.
 
 [build]
   publish = "build/html"
   # This command only runs if someone triggers a build from Netlify UI
   # Normal deploys come from GitHub Actions
   command = "echo 'Site is deployed via GitHub Actions, not Netlify build'"
-
-# =============================================================================
-# REDIRECTS - Chapter Reorganization (January 2026)
-# =============================================================================
-# Old URLs redirect to new chapter locations for SEO preservation
-
-# Renamed/moved chapters
-[[redirects]]
-  from = "/c/03-setup"
-  to = "/c/appendix-a-definitions"
-  status = 301
-
-[[redirects]]
-  from = "/c/04-optimization"
-  to = "/c/03-training-overview"
-  status = 301
-
-[[redirects]]
-  from = "/c/05-preferences"
-  to = "/c/10-preferences"
-  status = 301
-
-[[redirects]]
-  from = "/c/06-preference-data"
-  to = "/c/11-preference-data"
-  status = 301
-
-[[redirects]]
-  from = "/c/07-reward-models"
-  to = "/c/05-reward-models"
-  status = 301
-
-[[redirects]]
-  from = "/c/08-regularization"
-  to = "/c/15-regularization"
-  status = 301
-
-[[redirects]]
-  from = "/c/09-instruction-tuning"
-  to = "/c/04-instruction-tuning"
-  status = 301
-
-[[redirects]]
-  from = "/c/10-rejection-sampling"
-  to = "/c/09-rejection-sampling"
-  status = 301
-
-[[redirects]]
-  from = "/c/11-policy-gradients"
-  to = "/c/06-policy-gradients"
-  status = 301
-
-[[redirects]]
-  from = "/c/12-direct-alignment"
-  to = "/c/08-direct-alignment"
-  status = 301
-
-# CAI merged into Synthetic Data
-[[redirects]]
-  from = "/c/13-cai"
-  to = "/c/12-synthetic-data"
-  status = 301
-
-[[redirects]]
-  from = "/c/14-reasoning"
-  to = "/c/07-reasoning"
-  status = 301
-
-[[redirects]]
-  from = "/c/14.5-tools"
-  to = "/c/13-tools"
-  status = 301
-
-[[redirects]]
-  from = "/c/15-synthetic"
-  to = "/c/12-synthetic-data"
-  status = 301
-
-[[redirects]]
-  from = "/c/17-over-optimization"
-  to = "/c/14-over-optimization"
-  status = 301
-
-# Style moved to Appendix B
-[[redirects]]
-  from = "/c/18-style"
-  to = "/c/appendix-b-style"
-  status = 301
-
-[[redirects]]
-  from = "/c/19-character"
-  to = "/c/17-product"
-  status = 301

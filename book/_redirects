@@ -1,0 +1,18 @@
+# Chapter Reorganization Redirects (January 2026)
+/c/03-setup /c/appendix-a-definitions 301
+/c/04-optimization /c/03-training-overview 301
+/c/05-preferences /c/10-preferences 301
+/c/06-preference-data /c/11-preference-data 301
+/c/07-reward-models /c/05-reward-models 301
+/c/08-regularization /c/15-regularization 301
+/c/09-instruction-tuning /c/04-instruction-tuning 301
+/c/10-rejection-sampling /c/09-rejection-sampling 301
+/c/11-policy-gradients /c/06-policy-gradients 301
+/c/12-direct-alignment /c/08-direct-alignment 301
+/c/13-cai /c/12-synthetic-data 301
+/c/14-reasoning /c/07-reasoning 301
+/c/14.5-tools /c/13-tools 301
+/c/15-synthetic /c/12-synthetic-data 301
+/c/17-over-optimization /c/14-over-optimization 301
+/c/18-style /c/appendix-b-style 301
+/c/19-character /c/17-product 301
