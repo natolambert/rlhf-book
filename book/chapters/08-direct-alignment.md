@@ -1,9 +1,9 @@
 ---
-prev-chapter: "Policy Gradients"
-prev-url: "11-policy-gradients"
-page-title: Direct Alignment Algorithms
-next-chapter: "Constitutional AI"
-next-url: "13-cai"
+prev-chapter: "Reasoning"
+prev-url: "07-reasoning"
+page-title: Direct Alignment
+next-chapter: "Rejection Sampling"
+next-url: "09-rejection-sampling"
 ---
 
 # Direct Alignment Algorithms
@@ -14,7 +14,7 @@ The lack of a reward model and online optimization makes DAAs far simpler to imp
 This chapter details the complex mathematics that were done to derive these algorithms, and then shows that the sometimes tedious derivations result in simple implementations.
  
 The most prominent DAA and one that catalyzed an entire academic movement of aligning language models is Direct Preference Optimization (DPO) [@rafailov2024direct].
-At its core, DPO is using gradient ascent to solve the same constrained RLHF objective (see Chapter 4):
+At its core, DPO is using gradient ascent to solve the same constrained RLHF objective (see Chapter 3):
 
 $$ \max_{\pi} \mathbb{E}_{x \sim \mathcal{D}}\mathbb{E}_{y \sim \pi(y|x)} \left[r_\theta(x, y)\right] - \beta \mathcal{D}_{\text{KL}}\left(\pi(y|x) \| \pi_{\text{ref}}(y|x)\right)$$ {#eq:review_rlhf}
 
@@ -43,7 +43,7 @@ This relies on the implicit reward for DPO training that replaces using an exter
 $$r(x, y) = \beta  \log \frac{\pi_r(y \mid x)}{\pi_{\text{ref}}(y \mid x)}$$ {#eq:dpo_reward}
 
 where $\pi_r(y \mid x)$ is the exact, optimal reward policy that we are solving for.
-This comes from deriving the Bradley-Terry reward with respect to an optimal policy (shown in @eq:dpo_opt_policy), as shown in the Bradley-Terry model section of Chapter 7. 
+This comes from deriving the Bradley-Terry reward with respect to an optimal policy (shown in @eq:dpo_opt_policy), as shown in the Bradley-Terry model section of Chapter 5. 
 Essentially, as stated in the DPO paper, this reparameterization gives us "the probability of human preference data in terms of the optimal policy rather than the reward model" -- meaning we can bypass learning an explicit reward model entirely.
 
 Let us consider the loss shown in @eq:dpo_core that the optimizer must decrease. 
@@ -152,7 +152,7 @@ $$ \pi^*(y|x) = \pi(y|x) = \frac{1}{Z(x)}\pi_{\text{ref}}(y|x)\exp\left(\frac{1}
 
 #### 2. Deriving DPO Objective for Bradley Terry Models
 
-To start, recall from Chapter 7 on Reward Modeling and Chapter 6 on Preference Data that a Bradley-Terry model of human preferences is formed as:
+To start, recall from Chapter 5 on Reward Modeling and Chapter 11 on Preference Data that a Bradley-Terry model of human preferences is formed as:
 
 $$p^*(y_1 \succ y_2 \mid x) = \frac{\exp\left(r^*(x,y_1)\right)}{\exp\left(r^*(x,y_1)\right) + \exp\left(r^*(x, y_2)\right)} $$ {#eq:bradley_terry_dpo}
 
@@ -190,7 +190,7 @@ Finally, with the definition of a sigmoid function as $\sigma(x) = \frac{1}{1+e^
 
 $$p^*(y_1 \succ y_2 \mid x) = \sigma\left(\beta \log \frac{\pi^*(y_1 \mid x)}{\pi_{\text{ref}}(y_1 \mid x)} - \beta \log \frac{\pi^*(y_2 \mid x)}{\pi_{\text{ref}}(y_2 \mid x)}\right) $$ {#eq:dpo_loss_deriv3}
 
-This is the likelihood of preference data under the Bradley-Terry model, given the optimal policy $\pi^*$. Recall from Chapter 7 on Reward Modeling, we have derived the Bradley-Terry objective as maximizing the likelihood, or equivalently minimizing the negative log-likelihood, which gives us the loss:
+This is the likelihood of preference data under the Bradley-Terry model, given the optimal policy $\pi^*$. Recall from Chapter 5 on Reward Modeling, we have derived the Bradley-Terry objective as maximizing the likelihood, or equivalently minimizing the negative log-likelihood, which gives us the loss:
 $$
 \begin{aligned}
 \mathcal{L}_{\text{DPO}}(\pi_{\theta}; \pi_{\text{ref}}) &= -\mathbb{E}_{(x,y_c,y_r)\sim\mathcal{D}}\left[ \log p(y_c \succ y_r \mid x)  \right] \\
@@ -224,7 +224,7 @@ $$ -\mathbb{E}_{(x,y_c,y_r)\sim\mathcal{D}}\left[\beta\sigma\left(\beta\log\frac
 
 Many variants of the DPO algorithm have been proposed to address weaknesses of DPO.
 For example, without rollouts where a reward model can rate generations, DPO treats every pair of preference data with equal weight. 
-In reality, as seen in Chapter 6 on Preference Data, there are many ways of capturing preference data with a richer label than binary.
+In reality, as seen in Chapter 11 on Preference Data, there are many ways of capturing preference data with a richer label than binary.
 Multiple algorithms have been proposed to re-balance the optimization away from treating each pair equally.
 
 - **REgression to RElative REward Based RL (REBEL)** adds signal from a reward model, as a margin between chosen and rejected responses, rather than solely the pairwise preference data to more accurately solve the RLHF problem [@gao2024rebel].
@@ -286,7 +286,7 @@ For example, in both of these two referenced models, the chosen responses are fr
 
 Overall, training models on synthetic preference data with DAAs is the place most practitioners should start with given the simplicity of implementation and strong performance relative to preference fine-tuning with reinforcement learning based methods.
 Other minor issues exist when using extensive, synthetic preference data, such as biases of the model judging between completions.
-Given that frontier models such as GPT-4 are known to have length bias [@dubois2024length] and a preference for outputs that match themselves [@panickssery2024llm] (see Chapter 13 for more information), it is slightly more likely for a piece of text in the "chosen" section of the dataset to be either from an OpenAI model or another strong model that is stylistically similar to it. 
+Given that frontier models such as GPT-4 are known to have length bias [@dubois2024length] and a preference for outputs that match themselves [@panickssery2024llm] (see Chapter 12 for more information), it is slightly more likely for a piece of text in the "chosen" section of the dataset to be either from an OpenAI model or another strong model that is stylistically similar to it. 
 
 To conclude this section, we'll cover an intuition for how these methods change the generations of the model being trained.
 At a high level, most DAAs optimize to increase the margin between the probability of "chosen" and "rejected" completions (some less popular algorithms are designed to slightly change these dynamics, but the core remains).

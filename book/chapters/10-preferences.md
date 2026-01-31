@@ -1,9 +1,9 @@
 ---
-prev-chapter: "Problem Formulation"
-prev-url: "04-optimization"
-page-title: The Nature of Preferences
+prev-chapter: "Rejection Sampling"
+prev-url: "09-rejection-sampling"
+page-title: What are Preferences
 next-chapter: "Preference Data"
-next-url: "06-preference-data"
+next-url: "11-preference-data"
 ---
 
 # The Nature of Preferences
@@ -70,7 +70,7 @@ In practice, RLHF methods are motivated and studied from the perspective of empi
 Still, the origins of value alignment for RLHF methods continue to be studied through research on methods to solve for "pluralistic alignment" across populations, such as position papers [@conitzer2024social], [@mishra2023ai], new datasets [@kirk2024prism], and personalization methods [@poddar2024personalizing].
 
 The goal of this chapter is to illustrate how complex motivations result in presumptions about the nature of tools used in RLHF that often do not apply in practice.
-The specifics of obtaining data for RLHF are discussed further in Chapter 6 and using it for reward modeling in Chapter 7.
+The specifics of obtaining data for RLHF are discussed further in Chapter 11 and using it for reward modeling in Chapter 5.
 <!-- For an extended version of this chapter, see [@lambert2023entangled]. -->
 
 <!-- ## The path to optimizing preferences

@@ -1,9 +1,9 @@
 ---
-prev-chapter: "Key Related Works"
-prev-url: "02-related-works"
-page-title: Definitions & Background
-next-chapter: "Training Overview"
-next-url: "04-optimization"
+prev-chapter: "Product & Character"
+prev-url: "17-product"
+page-title: "Appendix A: Definitions"
+next-chapter: "Style & Information"
+next-url: "appendix-b-style"
 ---
 
 # Definitions & Background
@@ -28,9 +28,9 @@ In practice, one uses a cross-entropy loss with respect to each next-token predi
 Language models come in many architectures with different trade-offs in terms of knowledge, speed, and other performance characteristics.
 Modern LMs, including ChatGPT, Claude, Gemini, etc., most often use **decoder-only Transformers** [@Vaswani2017AttentionIA].
 The core innovation of the Transformer was heavily utilizing the **self-attention** [@Bahdanau2014NeuralMT] mechanism to allow the model to directly attend to concepts in context and learn complex mappings.
-Throughout this book, particularly when covering reward models in Chapter 7, we will discuss adding new heads or modifying a language modeling (LM) head of the transformer.
+Throughout this book, particularly when covering reward models in Chapter 5, we will discuss adding new heads or modifying a language modeling (LM) head of the transformer.
 The LM head is a final linear projection layer that maps from the model's internal embedding space to the tokenizer space (a.k.a. vocabulary).
-We'll see in this book that different "heads" of a language model can be applied to fine-tune the model to different purposes -- in RLHF this is most often done when training a reward model, which is highlighted in Chapter 7.
+We'll see in this book that different "heads" of a language model can be applied to fine-tune the model to different purposes -- in RLHF this is most often done when training a reward model, which is highlighted in Chapter 5.
 
 ## ML Definitions
 

@@ -1,9 +1,9 @@
 ---
-prev-chapter: "Reward Modeling"
-prev-url: "07-reward-models"
+prev-chapter: "Over-optimization"
+prev-url: "14-over-optimization"
 page-title: Regularization
-next-chapter: "Instruction Tuning"
-next-url: "09-instruction-tuning"
+next-chapter: "Evaluation"
+next-url: "16-evaluation"
 ---
 
 # Regularization
@@ -33,7 +33,7 @@ $$ {#eq:kl_standard}
 
 ## KL Divergences in RL Optimization
 
-For mathematical definitions, see Chapter 3 on Problem Setup.
+For mathematical definitions, see Appendix A on Definitions.
 Recall that a KL divergence measure of probability difference is defined as follows:
 
 $$ \mathcal{D}_{\text{KL}}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\frac{P(x)}{Q(x)}\right) $$ {#eq:kl_distance_regularization}

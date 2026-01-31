@@ -1,9 +1,9 @@
 ---
-prev-chapter: "Evaluation & Prompting"
-prev-url: "16-evaluation"
-page-title: Over Optimization
-next-chapter: "Style and Information"
-next-url: "18-style"
+prev-chapter: "Tool Use"
+prev-url: "13-tools"
+page-title: Over-optimization
+next-chapter: "Regularization"
+next-url: "15-regularization"
 ---
 
 # Over Optimization
@@ -115,7 +115,7 @@ As the ecosystem matures the ability to control the final models has improved an
 As chat-based AI systems have proliferated, the prominence of these refusal behaviors has decreased over time.
 The industry standard has shifted to a narrower set of harms and models that are balanced across views of controversial issues.
 
-The accepted best practice for mitigating this behavior is to modify the training data (such as with methods like Character Training covered in Chapter 20). 
+The accepted best practice for mitigating this behavior is to modify the training data (such as with methods like Character Training covered in Chapter 17). 
 Today, a substantial amount of fine-tuning for AI applications is done by further fine-tuning so called "Instruct" or "Thinking" models that have already gone through substantial RLHF and other post-training before release.
 These already trained models can be much harder to change, e.g. to remove this over-refusal, and often starting with a base model directly at the end of large-scale autoregressive pretraining is best for steering this type of behavior.
 

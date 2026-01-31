@@ -1,9 +1,9 @@
 ---
-prev-chapter: "Regularization"
-prev-url: "08-regularization"
-page-title: Instruction Fine-tuning
-next-chapter: "Rejection Sampling"
-next-url: "10-rejection-sampling"
+prev-chapter: "Training Overview"
+prev-url: "03-training-overview"
+page-title: Instruction Tuning
+next-chapter: "Reward Models"
+next-url: "05-reward-models"
 ---
 
 # Instruction Fine-tuning

@@ -1,9 +1,9 @@
 ---
-prev-chapter: "Definitions & Background"
-prev-url: "03-setup"
+prev-chapter: "Key Related Works"
+prev-url: "02-related-works"
 page-title: Training Overview
-next-chapter: "The Nature of Preferences"
-next-url: "05-preferences"
+next-chapter: "Instruction Tuning"
+next-url: "04-instruction-tuning"
 ---
 
 # Training Overview
@@ -30,7 +30,7 @@ $$J(\pi) = \mathbb{E}_{\tau \sim p_{\pi}} \left[ \sum_{t=0}^{T-1} \gamma^t r(s_t
 
 For continuing tasks, one often takes $T\to\infty$ and relies on discounting ($\gamma<1$) to keep the objective well-defined.
 $\gamma$ is a discount factor from 0 to 1 that balances the desirability of near- versus future-rewards.
-Multiple methods for optimizing this expression are discussed in Chapter 11.
+Multiple methods for optimizing this expression are discussed in Chapter 6.
 
 ![Standard RL loop](images/rl.png){#fig:rl width=320px .center}
 
@@ -96,13 +96,13 @@ In many ways, the result is that while RLHF is heavily inspired by RL optimizers
 In traditional RL problems, the agent must learn from a randomly initialized policy, but with RLHF, we start from a strong pretrained base model with many initial capabilities.
 This strong prior for RLHF induces a need to control the optimization from drifting too far from the initial policy.
 In order to succeed in a fine-tuning regime, RLHF techniques employ multiple types of regularization to control the optimization.
-The goal is to allow the reward maximization to still occur without the model succumbing to over-optimization, as discussed in Chapter 18.
+The goal is to allow the reward maximization to still occur without the model succumbing to over-optimization, as discussed in Chapter 14.
 The most common change to the optimization function is to add a distance penalty on the difference between the current RLHF policy and the starting point of the optimization:
 
 $$J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t)\right] - \beta  \mathcal{D}_{\text{KL}}(\pi_{\text{RL}}(\cdot|s_t) \| \pi_{\text{ref}}(\cdot|s_t)).$$ {#eq:rlhf_opt_eq}
 
 Within this formulation, a lot of study into RLHF training goes into understanding how to spend a certain "KL budget" as measured by a distance from the initial model.
-For more details, see Chapter 8 on Regularization.
+For more details, see Chapter 15 on Regularization.
 
 
 ### Optimization Tools
@@ -110,11 +110,11 @@ For more details, see Chapter 8 on Regularization.
 In this book, we detail many popular techniques for solving this optimization problem.
 The popular tools of post-training include:
 
-- **Reward modeling** (Chapter 7): Where a model is trained to capture the signal from collected preference data and can then output a scalar reward indicating the quality of future text.
-- **Instruction fine-tuning** (Chapter 9): A prerequisite to RLHF where models are taught the question-answer format used in the majority of language modeling interactions today by imitating preselected examples.
-- **Rejection sampling** (Chapter 10): The most basic RLHF technique where candidate completions for instruction fine-tuning are filtered by a reward model imitating human preferences.
-- **Policy gradients** (Chapter 11): The reinforcement learning algorithms used in the seminal examples of RLHF to update parameters of a language model with respect to the signal from a reward model.
-- **Direct alignment algorithms** (Chapter 12): Algorithms that directly optimize a policy from pairwise preference data, rather than learning an intermediate reward model to then optimize later.
+- **Reward modeling** (Chapter 5): Where a model is trained to capture the signal from collected preference data and can then output a scalar reward indicating the quality of future text.
+- **Instruction fine-tuning** (Chapter 4): A prerequisite to RLHF where models are taught the question-answer format used in the majority of language modeling interactions today by imitating preselected examples.
+- **Rejection sampling** (Chapter 9): The most basic RLHF technique where candidate completions for instruction fine-tuning are filtered by a reward model imitating human preferences.
+- **Policy gradients** (Chapter 6): The reinforcement learning algorithms used in the seminal examples of RLHF to update parameters of a language model with respect to the signal from a reward model.
+- **Direct alignment algorithms** (Chapter 8): Algorithms that directly optimize a policy from pairwise preference data, rather than learning an intermediate reward model to then optimize later.
 
 Modern RLHF-trained models always utilize instruction fine-tuning followed by a mixture of the other optimization options.
 

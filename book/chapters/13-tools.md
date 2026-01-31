@@ -1,9 +1,9 @@
 ---
-prev-chapter: "Reasoning & Inference-Time Scaling"
-prev-url: "14-reasoning"
-page-title: Tool Use & Function Calling
-next-chapter: "Synthetic Data & Distillation"
-next-url: "15-synthetic"
+prev-chapter: "Synthetic Data & CAI"
+prev-url: "12-synthetic-data"
+page-title: Tool Use
+next-chapter: "Over-optimization"
+next-url: "14-over-optimization"
 ---
 
 # Tool Use & Function Calling

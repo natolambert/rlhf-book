@@ -16,9 +16,9 @@ The core idea to start the field of RLHF was "can we solve hard problems only wi
 RLHF became most known through the release of ChatGPT and the subsequent rapid development of large language models (LLMs) and other foundation models.
 
 The basic pipeline for RLHF involves three steps.
-First, a language model that can follow user questions must be trained (see Chapter 9).
-Second, human preference data must be collected for the training of a reward model of human preferences (see Chapter 7).
-Finally, the language model can be optimized with an RL optimizer of choice, by sampling generations and rating them with respect to the reward model (see Chapter 3 and 11).
+First, a language model that can follow user questions must be trained (see Chapter 4).
+Second, human preference data must be collected for the training of a reward model of human preferences (see Chapter 5).
+Finally, the language model can be optimized with an RL optimizer of choice, by sampling generations and rating them with respect to the reward model (see Chapter 3 and 6).
 This book details key decisions and basic implementation examples for each step in this process.
 
 RLHF has been applied to many domains successfully, with complexity increasing as the techniques have matured.
@@ -239,49 +239,47 @@ This book has the following chapters:
 
 #### Introductions
 
-Reference material useful throughout the book.
+Reference material and context useful throughout the book.
 
 1. Introduction: Overview of RLHF and what this book provides.
 2. Seminal (Recent) Works: Key models and papers in the history of RLHF techniques.
-3. Definitions: Mathematical definitions for RL, language modeling, and other ML techniques leveraged in this book.
+3. Training Overview: How the training objective for RLHF is designed and basics of understanding it.
 
-#### Problem Setup & Context
-
-Context for the big picture problem RLHF is trying to solve.
-
-4. RLHF Training Overview: How the training objective for RLHF is designed and basics of understanding it.
-5. What are preferences?: Why human preference data is needed to fuel and understand RLHF.
-6. Preference Data: How preference data is collected for RLHF.
-
-#### Optimization Tools
+#### Core Training Pipeline
 
 The suite of techniques used to optimize language models to align them to human preferences.
-This is a serial presentation of the techniques one can use to solve the problems proposed in the previous chapters.
 
-7. Reward Modeling: Training reward models from preference data that act as an optimization target for RL training (or for use in data filtering).
-8. Regularization: Tools to constrain these optimization tools to effective regions of the parameter space.
-9. Instruction Tuning: Adapting language models to the question-answer format.
-10. Rejection Sampling: A basic technique for using a reward model with instruction tuning to align models.
-11. Reinforcement Learning (i.e. Policy Gradients): The core RL techniques used to optimize reward models (and other signals) throughout RLHF.
-12. Direct Alignment Algorithms: Algorithms that optimize the RLHF objective direction from pairwise preference data rather than learning a reward model first.
+4. Instruction Tuning: Adapting language models to the question-answer format.
+5. Reward Modeling: Training reward models from preference data that act as an optimization target for RL training (or for use in data filtering).
+6. Reinforcement Learning (i.e. Policy Gradients): The core RL techniques used to optimize reward models (and other signals) throughout RLHF.
+7. Reasoning and Inference-time Scaling: The role of new RL training methods for inference-time scaling with respect to post-training and RLHF.
+8. Direct Alignment Algorithms: Algorithms that optimize the RLHF objective directly from pairwise preference data rather than learning a reward model first.
+9. Rejection Sampling: A basic technique for using a reward model with instruction tuning to align models.
 
-#### Advanced
+#### Data & Preferences
 
-Newer RLHF techniques and discussions that are not clearly established, but are important to current generations of models.
+Context for the data that fuels RLHF and the big picture problem it is trying to solve.
 
-13. Constitutional AI and AI Feedback: How AI feedback data and specific models designed to simulate human preference ratings work.
-14. Reasoning and Reinforcement Fine-tuning: The role of new RL training methods for inference-time scaling with respect to post-training and RLHF.
-15. Tool Use and Function Calling: The basics of training models to call functions or tools in their outputs.
-16. Synthetic Data: The shift away from human to synthetic data and how distilling from other models is used.
-17. Evaluation: The ever evolving role of evaluation (and prompting) in language models.
+10. What are preferences?: Why human preference data is needed to fuel and understand RLHF.
+11. Preference Data: How preference data is collected for RLHF.
+12. Synthetic Data & AI Feedback: The shift away from human to synthetic data, how AI feedback works, and how distilling from other models is used.
+13. Tool Use and Function Calling: The basics of training models to call functions or tools in their outputs.
 
-#### Open Questions 
+#### Practical Considerations
 
-Fundamental problems and discussions for the long-term evolution of how RLHF is used.
+Fundamental problems and discussions for implementing and evaluating RLHF.
 
-18. Over-optimization: Qualitative observations of why RLHF goes wrong and why over-optimization is inevitable with a soft optimization target in reward models.
-19. Style and Information: How RLHF is often underestimated in its role in improving the user experience of models due to the crucial role that style plays in information sharing.
-20. Product, UX, Character: How RLHF is shifting in its applicability as major AI laboratories use it to subtly match their models to their products.
+14. Over-optimization: Qualitative observations of why RLHF goes wrong and why over-optimization is inevitable with a soft optimization target in reward models.
+15. Regularization: Tools to constrain these optimization tools to effective regions of the parameter space.
+16. Evaluation: The ever evolving role of evaluation (and prompting) in language models.
+17. Product, UX, Character: How RLHF is shifting in its applicability as major AI laboratories use it to subtly match their models to their products.
+
+#### Appendices
+
+Reference material for definitions and extended discussions.
+
+- Appendix A - Definitions: Mathematical definitions for RL, language modeling, and other ML techniques leveraged in this book.
+- Appendix B - Style and Information: How RLHF is often underestimated in its role in improving the user experience of models due to the crucial role that style plays in information sharing.
 
 
 ### Target Audience
@@ -312,7 +310,7 @@ He has written extensively on RLHF, including [many blog posts](https://www.inte
 
 With the investment in language modeling, many variations on the traditional RLHF methods emerged.
 RLHF colloquially has become synonymous with multiple overlapping approaches. 
-RLHF is a subset of preference fine-tuning (PreFT) techniques, including Direct Alignment Algorithms (See Chapter 12), which are the class of methods downstream of DPO that solve the preference learning problem by taking gradient steps directly on preference data, rather than learning an intermediate reward model.
+RLHF is a subset of preference fine-tuning (PreFT) techniques, including Direct Alignment Algorithms (See Chapter 8), which are the class of methods downstream of DPO that solve the preference learning problem by taking gradient steps directly on preference data, rather than learning an intermediate reward model.
 RLHF is the tool most associated with rapid progress in "post-training" of language models, which encompasses all training after the large-scale autoregressive training on primarily web data. 
 This textbook is a broad overview of RLHF and its directly neighboring methods, such as instruction tuning and other implementation details needed to set up a model for RLHF training.
 

@@ -1,9 +1,9 @@
 ---
-prev-chapter: "Preference Data"
-prev-url: "06-preference-data"
-page-title: Reward Modeling
-next-chapter: "Regularization"
-next-url: "08-regularization"
+prev-chapter: "Instruction Tuning"
+prev-url: "04-instruction-tuning"
+page-title: Reward Models
+next-chapter: "Reinforcement Learning"
+next-url: "06-policy-gradients"
 ---
 
 # Reward Modeling
