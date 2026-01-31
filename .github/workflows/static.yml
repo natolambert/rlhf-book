@@ -1,24 +1,12 @@
-name: Deploy static content to Pages
+name: Build and Deploy to Netlify
 
 on:
   push:
     branches: ["main"]
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
 jobs:
   build-and-deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: macos-latest
     steps:
       - name: Checkout
@@ -32,7 +20,6 @@ jobs:
       - name: Install brew dependencies
         run: |
           # brew update # (slow) uncomment this for minor version updates if needed to debug other issues
-          # brew install pandoc
           brew install make
           brew install pandoc-crossref
           brew install --cask basictex
@@ -46,39 +33,80 @@ jobs:
           echo "/Library/TeX/texbin" >> $GITHUB_PATH
           echo "PATH=$PATH:/Library/TeX/texbin" >> $GITHUB_ENV
 
-
-
-      # - name: Setup Pandoc
-      #   uses: pandoc/actions/setup@main
-        # with:
-        #   version: 2.19  # Uncomment and modify if you need a specific version
-
       - name: Clean build directory
         run: |
           rm -rf build
           mkdir -p build/html
 
-      - name: Build book
+      - name: Build book (HTML, PDF, EPUB)
         run: |
           make
           make files
 
-      # Need this if main domain is www.rlhfbook.com
-      # For now, it is rlhfbook.com, and seems to be working.
-      # - name: Create CNAME file
-      #   run: |
-      #     echo "www.rlhfbook.com" > build/html/CNAME
-
-      # pages deploy steps
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v3
         with:
-          path: 'build/html/'
+          publish-dir: './build/html'
+          production-branch: main
+          production-deploy: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Deploy from GitHub Actions - ${{ github.sha }}"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
 
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+# =============================================================================
+# SETUP INSTRUCTIONS
+# =============================================================================
+# To enable Netlify deployment:
+#
+# 1. Create a Netlify site:
+#    - Go to netlify.com > Add new site > Import from GitHub
+#    - Select natolambert/rlhf-book
+#    - IMPORTANT: Cancel the initial build (we deploy via this workflow)
+#
+# 2. Get your Netlify credentials:
+#    - Site ID: Site settings > General > Site ID
+#    - Auth Token: User settings > Applications > New access token
+#
+# 3. Add secrets to GitHub:
+#    - Go to repo Settings > Secrets and variables > Actions
+#    - Add NETLIFY_SITE_ID (the site ID from step 2)
+#    - Add NETLIFY_AUTH_TOKEN (the access token from step 2)
+#
+# 4. Update DNS:
+#    - In Netlify: Domain settings > Add custom domain > rlhfbook.com
+#    - Update your DNS records to point to Netlify
+#
+# =============================================================================
 
+# =============================================================================
+# LEGACY: GITHUB PAGES DEPLOYMENT
+# =============================================================================
+# To switch back to GitHub Pages, replace the "Deploy to Netlify" step with:
+#
+#     - name: Setup Pages
+#       uses: actions/configure-pages@v5
+#
+#     - name: Upload artifact
+#       uses: actions/upload-pages-artifact@v3
+#       with:
+#         path: 'build/html/'
+#
+#     - name: Deploy to GitHub Pages
+#       id: deployment
+#       uses: actions/deploy-pages@v4
+#
+# And add to the job:
+#     environment:
+#       name: github-pages
+#       url: ${{ steps.deployment.outputs.page_url }}
+#
+# And add at workflow level:
+#   permissions:
+#     contents: read
+#     pages: write
+#     id-token: write
+#
+# Then: repo Settings > Pages > Source: GitHub Actions
+# =============================================================================

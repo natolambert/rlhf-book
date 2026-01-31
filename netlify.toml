@@ -1,0 +1,20 @@
+# Netlify configuration
+#
+# IMPORTANT: Builds are handled by GitHub Actions (not Netlify)
+# This is because PDF/EPUB generation requires LaTeX, which is easier
+# to set up on GitHub's macOS runners than on Netlify's Linux builders.
+#
+# GitHub Actions builds the site and deploys via Netlify CLI.
+# See .github/workflows/static.yml for the build process.
+
+[build]
+  publish = "build/html"
+  # This command only runs if someone triggers a build from Netlify UI
+  # Normal deploys come from GitHub Actions
+  command = "echo 'Site is deployed via GitHub Actions, not Netlify build'"
+
+# Redirects for chapter reordering (uncomment and modify when ready)
+# [[redirects]]
+#   from = "/c/05-preferences"
+#   to = "/c/10-preferences"
+#   status = 301
