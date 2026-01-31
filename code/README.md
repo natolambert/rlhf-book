@@ -126,13 +126,36 @@ learning to rate individual reasoning steps as {-1, 0, 1} (bad, neutral, good).
 | ORM | Outcome RM on GSM8K | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/xm8mlcpl) |
 | PRM | Process RM on PRM800K | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/abhkbn4q) |
 
-## Direct Alignment (Coming Soon)
+## Direct Alignment Training
 
-The `direct_alignment/` directory will contain implementations of:
-- DPO (Direct Preference Optimization)
-- IPO, KTO, SimPO variants
+Train direct alignment algorithms (DPO and variants) on preference data:
 
-See Chapter 12 of RLHF Book for theoretical background.
+```bash
+# DPO (Chapter 12)
+uv run python -m direct_alignment.train --config direct_alignment/configs/dpo.yaml
+
+# IPO - more robust to noisy labels
+uv run python -m direct_alignment.train --config direct_alignment/configs/ipo.yaml
+
+# SimPO - no reference model needed
+uv run python -m direct_alignment.train --config direct_alignment/configs/simpo.yaml
+
+# Quick test run (1k samples)
+uv run python -m direct_alignment.train --loss dpo --max_samples 1000
+```
+
+### Available algorithms
+
+| Algorithm | Config | Description |
+|-----------|--------|-------------|
+| DPO | `dpo.yaml` | Direct Preference Optimization (Rafailov et al., 2023) |
+| cDPO | N/A (use `--loss cdpo`) | Conservative DPO with label smoothing |
+| IPO | `ipo.yaml` | Identity Preference Optimization (Azar et al., 2023) |
+| SimPO | `simpo.yaml` | Simple PO - length-normalized, no ref model (Meng et al., 2024) |
+| ORPO | `orpo.yaml` | Odds Ratio PO - combines SFT + preference (Hong et al., 2024) |
+| KTO | `kto.yaml` | Kahneman-Tversky Optimization (Ethayarajh et al., 2024) |
+
+See Chapter 12 of RLHF Book for mathematical derivations.
 
 ## Configuration
 
@@ -177,8 +200,9 @@ export HF_TOKEN="your-token"
 
 These examples correspond to:
 
-- **Chapter 7**: Reward Models (ORM, PRM)
+- **Chapter 7**: Reward Models (ORM, PRM, Preference RM)
 - **Chapter 11**: Policy Gradient Methods (REINFORCE, PPO, GRPO, etc.)
+- **Chapter 12**: Direct Alignment (DPO, IPO, SimPO, KTO, etc.)
 
 See [rlhfbook.com](https://rlhfbook.com) for the full text.
 

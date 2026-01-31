@@ -39,6 +39,7 @@ dev = [
 
 [project.scripts]
 train-policy = "policy_gradients.train:main_cli"
+train-dpo = "direct_alignment.train:main_cli"
 train-orm = "reward_models.train_orm:main"
 train-prm = "reward_models.train_prm:main"
 
@@ -47,7 +48,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["policy_gradients*", "reward_models*"]
+include = ["policy_gradients*", "reward_models*", "direct_alignment*"]
 
 [tool.uv]
 package = true
