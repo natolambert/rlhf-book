@@ -1,18 +1,70 @@
 # Chapter Reorganization Redirects (January 2026)
+# Note: #anchor fragments are preserved automatically (client-side)
+
+# 03-setup -> appendix-a-definitions
 /c/03-setup /c/appendix-a-definitions 301
+/c/03-setup.html /c/appendix-a-definitions 301
+
+# 04-optimization -> 03-training-overview
 /c/04-optimization /c/03-training-overview 301
+/c/04-optimization.html /c/03-training-overview 301
+
+# 05-preferences -> 10-preferences
 /c/05-preferences /c/10-preferences 301
+/c/05-preferences.html /c/10-preferences 301
+
+# 06-preference-data -> 11-preference-data
 /c/06-preference-data /c/11-preference-data 301
+/c/06-preference-data.html /c/11-preference-data 301
+
+# 07-reward-models -> 05-reward-models
 /c/07-reward-models /c/05-reward-models 301
+/c/07-reward-models.html /c/05-reward-models 301
+
+# 08-regularization -> 15-regularization
 /c/08-regularization /c/15-regularization 301
+/c/08-regularization.html /c/15-regularization 301
+
+# 09-instruction-tuning -> 04-instruction-tuning
 /c/09-instruction-tuning /c/04-instruction-tuning 301
+/c/09-instruction-tuning.html /c/04-instruction-tuning 301
+
+# 10-rejection-sampling -> 09-rejection-sampling
 /c/10-rejection-sampling /c/09-rejection-sampling 301
+/c/10-rejection-sampling.html /c/09-rejection-sampling 301
+
+# 11-policy-gradients -> 06-policy-gradients
 /c/11-policy-gradients /c/06-policy-gradients 301
+/c/11-policy-gradients.html /c/06-policy-gradients 301
+
+# 12-direct-alignment -> 08-direct-alignment
 /c/12-direct-alignment /c/08-direct-alignment 301
+/c/12-direct-alignment.html /c/08-direct-alignment 301
+
+# 13-cai -> 12-synthetic-data (CAI merged into Synthetic Data)
 /c/13-cai /c/12-synthetic-data 301
+/c/13-cai.html /c/12-synthetic-data 301
+
+# 14-reasoning -> 07-reasoning
 /c/14-reasoning /c/07-reasoning 301
+/c/14-reasoning.html /c/07-reasoning 301
+
+# 14.5-tools -> 13-tools
 /c/14.5-tools /c/13-tools 301
+/c/14.5-tools.html /c/13-tools 301
+
+# 15-synthetic -> 12-synthetic-data
 /c/15-synthetic /c/12-synthetic-data 301
+/c/15-synthetic.html /c/12-synthetic-data 301
+
+# 17-over-optimization -> 14-over-optimization
 /c/17-over-optimization /c/14-over-optimization 301
+/c/17-over-optimization.html /c/14-over-optimization 301
+
+# 18-style -> appendix-b-style
 /c/18-style /c/appendix-b-style 301
+/c/18-style.html /c/appendix-b-style 301
+
+# 19-character -> 17-product
 /c/19-character /c/17-product 301
+/c/19-character.html /c/17-product 301
