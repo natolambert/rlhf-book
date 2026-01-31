@@ -1,32 +1,20 @@
+# Netlify configuration
+#
+# IMPORTANT: Builds are handled by GitHub Actions (not Netlify)
+# This is because PDF/EPUB generation requires LaTeX, which is easier
+# to set up on GitHub's macOS runners than on Netlify's Linux builders.
+#
+# GitHub Actions builds the site and deploys via Netlify CLI.
+# See .github/workflows/static.yml for the build process.
+
 [build]
   publish = "build/html"
-  command = """
-    # Install pandoc
-    wget -q https://github.com/jgm/pandoc/releases/download/3.7.0.2/pandoc-3.7.0.2-linux-amd64.tar.gz && \
-    tar xzf pandoc-3.7.0.2-linux-amd64.tar.gz && \
-    export PATH="$PWD/pandoc-3.7.0.2/bin:$PATH" && \
-    # Install pandoc-crossref
-    wget -q https://github.com/lierdakil/pandoc-crossref/releases/download/v0.3.19.0/pandoc-crossref-Linux.tar.xz && \
-    tar xf pandoc-crossref-Linux.tar.xz && \
-    chmod +x pandoc-crossref && \
-    export PATH="$PWD:$PATH" && \
-    # Build HTML only (PDF/EPUB require LaTeX, built separately)
-    make html && \
-    make files
-  """
+  # This command only runs if someone triggers a build from Netlify UI
+  # Normal deploys come from GitHub Actions
+  command = "echo 'Site is deployed via GitHub Actions, not Netlify build'"
 
-[build.environment]
-  # Ensure we have a recent Node version if needed
-  NODE_VERSION = "18"
-
-# Redirects for chapter reordering (add these when ready)
+# Redirects for chapter reordering (uncomment and modify when ready)
 # [[redirects]]
-#   from = "/c/old-chapter"
-#   to = "/c/new-chapter"
+#   from = "/c/05-preferences"
+#   to = "/c/10-preferences"
 #   status = 301
-
-# Handle SPA-style routing (not needed for static book, but useful reference)
-# [[redirects]]
-#   from = "/*"
-#   to = "/index.html"
-#   status = 200

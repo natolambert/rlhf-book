@@ -1,91 +1,112 @@
+name: Build and Deploy to Netlify
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pandoc
+        uses: pandoc/actions/setup@main
+        with:
+          version: 3.7.0.2
+
+      - name: Install brew dependencies
+        run: |
+          # brew update # (slow) uncomment this for minor version updates if needed to debug other issues
+          brew install make
+          brew install pandoc-crossref
+          brew install --cask basictex
+          eval "$(/usr/libexec/path_helper)"
+          sudo tlmgr update --self
+          # Install pdflatex packages (comes with basictex, but ensure dependencies)
+          sudo tlmgr install collection-fontsrecommended collection-latexextra
+
+      - name: Set up LaTeX PATH
+        run: |
+          echo "/Library/TeX/texbin" >> $GITHUB_PATH
+          echo "PATH=$PATH:/Library/TeX/texbin" >> $GITHUB_ENV
+
+      - name: Clean build directory
+        run: |
+          rm -rf build
+          mkdir -p build/html
+
+      - name: Build book (HTML, PDF, EPUB)
+        run: |
+          make
+          make files
+
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v3
+        with:
+          publish-dir: './build/html'
+          production-branch: main
+          production-deploy: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Deploy from GitHub Actions - ${{ github.sha }}"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
 # =============================================================================
-# GITHUB PAGES DEPLOYMENT (DISABLED)
+# SETUP INSTRUCTIONS
 # =============================================================================
-# This workflow is disabled in favor of Netlify deployment.
-# Netlify provides native 301 redirects which are better for SEO.
+# To enable Netlify deployment:
 #
-# To re-enable GitHub Pages deployment:
-# 1. Uncomment this entire workflow
-# 2. Go to repo Settings > Pages > Source: GitHub Actions
-# 3. Delete or rename netlify.toml to disable Netlify
-# 4. Push to main to trigger deployment
+# 1. Create a Netlify site:
+#    - Go to netlify.com > Add new site > Import from GitHub
+#    - Select natolambert/rlhf-book
+#    - IMPORTANT: Cancel the initial build (we deploy via this workflow)
 #
-# See book/HOSTING.md for more details on hosting options.
+# 2. Get your Netlify credentials:
+#    - Site ID: Site settings > General > Site ID
+#    - Auth Token: User settings > Applications > New access token
+#
+# 3. Add secrets to GitHub:
+#    - Go to repo Settings > Secrets and variables > Actions
+#    - Add NETLIFY_SITE_ID (the site ID from step 2)
+#    - Add NETLIFY_AUTH_TOKEN (the access token from step 2)
+#
+# 4. Update DNS:
+#    - In Netlify: Domain settings > Add custom domain > rlhfbook.com
+#    - Update your DNS records to point to Netlify
+#
 # =============================================================================
 
-# name: Deploy static content to Pages
+# =============================================================================
+# LEGACY: GITHUB PAGES DEPLOYMENT
+# =============================================================================
+# To switch back to GitHub Pages, replace the "Deploy to Netlify" step with:
 #
-# on:
-#   push:
-#     branches: ["main"]
-#   workflow_dispatch:
+#     - name: Setup Pages
+#       uses: actions/configure-pages@v5
 #
-# permissions:
-#   contents: read
-#   pages: write
-#   id-token: write
+#     - name: Upload artifact
+#       uses: actions/upload-pages-artifact@v3
+#       with:
+#         path: 'build/html/'
 #
-# concurrency:
-#   group: "pages"
-#   cancel-in-progress: false
+#     - name: Deploy to GitHub Pages
+#       id: deployment
+#       uses: actions/deploy-pages@v4
 #
-# jobs:
-#   build-and-deploy:
+# And add to the job:
 #     environment:
 #       name: github-pages
 #       url: ${{ steps.deployment.outputs.page_url }}
-#     runs-on: macos-latest
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v4
 #
-#       - name: Setup Pandoc
-#         uses: pandoc/actions/setup@main
-#         with:
-#           version: 3.7.0.2
+# And add at workflow level:
+#   permissions:
+#     contents: read
+#     pages: write
+#     id-token: write
 #
-#       - name: Install brew dependencies
-#         run: |
-#           # brew update # (slow) uncomment this for minor version updates if needed to debug other issues
-#           # brew install pandoc
-#           brew install make
-#           brew install pandoc-crossref
-#           brew install --cask basictex
-#           eval "$(/usr/libexec/path_helper)"
-#           sudo tlmgr update --self
-#           # Install pdflatex packages (comes with basictex, but ensure dependencies)
-#           sudo tlmgr install collection-fontsrecommended collection-latexextra
-#
-#       - name: Set up LaTeX PATH
-#         run: |
-#           echo "/Library/TeX/texbin" >> $GITHUB_PATH
-#           echo "PATH=$PATH:/Library/TeX/texbin" >> $GITHUB_ENV
-#
-#       - name: Clean build directory
-#         run: |
-#           rm -rf build
-#           mkdir -p build/html
-#
-#       - name: Build book
-#         run: |
-#           make
-#           make files
-#
-#       # Need this if main domain is www.rlhfbook.com
-#       # For now, it is rlhfbook.com, and seems to be working.
-#       # - name: Create CNAME file
-#       #   run: |
-#       #     echo "www.rlhfbook.com" > build/html/CNAME
-#
-#       # pages deploy steps
-#       - name: Setup Pages
-#         uses: actions/configure-pages@v5
-#
-#       - name: Upload artifact
-#         uses: actions/upload-pages-artifact@v3
-#         with:
-#           path: 'build/html/'
-#
-#       - name: Deploy to GitHub Pages
-#         id: deployment
-#         uses: actions/deploy-pages@v4
+# Then: repo Settings > Pages > Source: GitHub Actions
+# =============================================================================

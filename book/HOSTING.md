@@ -2,21 +2,23 @@
 
 This book can be hosted on either **Netlify** (current) or **GitHub Pages** (legacy).
 
-## Current: Netlify
+## Current: Netlify (via GitHub Actions)
 
-The site is deployed via Netlify, configured in `netlify.toml`.
+The site is built by GitHub Actions and deployed to Netlify. This hybrid approach gives us:
+- **GitHub Actions**: macOS runner with LaTeX for PDF/EPUB generation
+- **Netlify**: Native 301 redirects for SEO
 
-**Advantages:**
-- Native 301 redirects via `_redirects` file (better for SEO)
-- Faster builds (caching)
-- Deploy previews for PRs
+### How it works
 
-**Build process:**
-- Installs pandoc and pandoc-crossref
-- Runs `make html && make files`
-- Publishes `build/html/`
+1. Push to `main` triggers `.github/workflows/static.yml`
+2. GitHub Actions builds HTML, PDF, and EPUB on macOS (with LaTeX)
+3. The `nwtgck/actions-netlify` action deploys `build/html/` to Netlify
 
-**Note:** PDF/EPUB are not built on Netlify (requires LaTeX). Build locally with `make` and commit the files, or download from GitHub releases.
+### Setup Requirements
+
+Add these secrets to GitHub (Settings > Secrets > Actions):
+- `NETLIFY_SITE_ID`: From Netlify site settings
+- `NETLIFY_AUTH_TOKEN`: From Netlify user settings > Applications
 
 ### Adding Redirects
 
@@ -29,37 +31,25 @@ When reordering chapters, add redirects to `netlify.toml`:
   status = 301
 ```
 
-Or create a `_redirects` file in `build/html/`:
-
-```
-/c/old-chapter  /c/new-chapter  301
-```
-
 ## Alternative: GitHub Pages
 
-The GitHub Actions workflow in `.github/workflows/static.yml` is commented out but preserved.
+To switch back to GitHub Pages (simpler but no 301 redirects):
 
-**Advantages:**
-- Simpler setup (no external service)
-- Builds PDF/EPUB (has LaTeX installed)
-- Everything in one place
-
-**Disadvantages:**
-- No native 301 redirects (only HTML meta refresh)
-- Slower builds
-
-### Re-enabling GitHub Pages
-
-1. Uncomment the workflow in `.github/workflows/static.yml`
-2. Go to repo Settings → Pages → Source: **GitHub Actions**
+1. Edit `.github/workflows/static.yml`:
+   - Replace the "Deploy to Netlify" step with the GitHub Pages steps (see comments in file)
+   - Add the required permissions block
+2. Go to repo Settings > Pages > Source: **GitHub Actions**
 3. Delete or rename `netlify.toml`
-4. Push to `main` to trigger deployment
-5. Update DNS if needed (point to GitHub's servers)
+4. Update DNS to point to GitHub's servers
+
+**Disadvantages of GitHub Pages:**
+- No native 301 redirects (only HTML meta refresh, worse for SEO)
 
 ## DNS Configuration
 
 ### For Netlify
 Netlify provides the DNS records when you add a custom domain in their dashboard.
+Typically an `A` record or `ALIAS` to Netlify's load balancer.
 
 ### For GitHub Pages
 Add these DNS records:
