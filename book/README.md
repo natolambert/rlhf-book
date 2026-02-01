@@ -97,7 +97,7 @@ book/
 
 ## Setup
 
-Edit the *metadata.yml* file in the repository root to set configuration data:
+Edit the *book/metadata.yml* file to set configuration data:
 
 ```yml
 ---
