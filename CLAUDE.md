@@ -37,6 +37,7 @@ book/         # Book source and build files
   scripts/    # Build utilities
   data/       # Library data
   preorder/   # Pre-order redirect page
+  metadata.yml # Book metadata for Pandoc
 code/         # Code examples and tutorials
 diagrams/     # Diagram sources (Python scripts, specs)
 build/        # Generated output (not tracked in git)

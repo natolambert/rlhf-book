@@ -42,8 +42,7 @@ rlhf-book/
 │   ├── tikz/               # LaTeX/TikZ sources
 │   └── specs/              # YAML specifications
 ├── build/                  # Generated output (git-ignored)
-├── Makefile                # Build system
-└── metadata.yml            # Book metadata
+└── Makefile                # Build system
 ```
 
 ## Code Library
@@ -90,8 +89,8 @@ To cite this book, please use the following format:
 
 ## License
 
-- Code: [MIT](LICENSE-Code.md)
-- Chapters: [CC-BY-NC-SA-4.0](LICENSE-Chapters.md)
+- Code: [MIT](LICENSE-CODE)
+- Chapters: [CC-BY-NC-SA-4.0](LICENSE-CHAPTERS)
 
 ## Contributors
 
