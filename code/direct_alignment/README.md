@@ -265,3 +265,9 @@ These would be great contributions to make the implementations more complete:
 - [ ] **Base model support**: Add fallback formatting for models without chat templates
 - [ ] **Evaluation integration**: Wire up `log_every` and `eval_every` config options
 - [ ] **Length-normalized DPO**: Add `dpo_norm` variant (average log-probs like SimPO but with ref model)
+
+## How This Was Made
+
+I used GPT 5.2 Pro to write a plan based on canonical implementations, and had Claude Code with Opus 4.5 write it, periodically getting feedback from Codex 5.2 xhigh, with manual tuning of the configs to make the configs have representative learning curves.
+
+Due to this, **community contributions are strongly encouraged**. I'm happy to test high-quality contributions on my Spark to continue making this a home for tinkerers interested in RLHF and post-training.
