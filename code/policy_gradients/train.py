@@ -489,6 +489,7 @@ def main(cfg: Config):
 
                     num_accumulated = min(cfg.batch_acc, (batch_idx % cfg.batch_acc) + 1)
                     avg_loss = accumulated_loss / num_accumulated
+                    hours_elapsed = (time.time() - start_time) / 3600
                     wandb.log({"loss": avg_loss, "grad_norm": grad_norm, "hours_elapsed": hours_elapsed})
                     progress.update(task, advance=1, description=f"[dim]Loss: {avg_loss:.4f}[/dim]")
                     accumulated_loss = 0.0
