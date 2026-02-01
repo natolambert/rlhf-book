@@ -18,12 +18,12 @@ beta: 0.1  # Weight of odds ratio loss relative to SFT loss
 # Dataset
 dataset_name: argilla/ultrafeedback-binarized-preferences-cleaned
 dataset_split: train
-max_samples: 60000  # Full dataset (~60k samples)
+max_samples: 15000
 max_length: 2048
 
 # Training
-learning_rate: 5.0e-7
-num_epochs: 1  # 1 epoch with full dataset = ~937 steps
+learning_rate: 5.0e-6
+num_epochs: 3  # ~700 steps total
 batch_size: 8
 gradient_accumulation_steps: 8  # Effective batch size = 64
 warmup_ratio: 0.1
