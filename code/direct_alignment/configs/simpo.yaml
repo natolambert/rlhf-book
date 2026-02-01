@@ -19,7 +19,7 @@ gamma: 0.5  # Target margin
 # Dataset
 dataset_name: argilla/ultrafeedback-binarized-preferences-cleaned
 dataset_split: train
-max_samples: 15000
+max_samples: 12800  # 12800 / 64 batch * 3 epochs = 600 steps
 max_length: 2048
 
 # Training

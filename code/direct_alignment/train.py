@@ -422,8 +422,11 @@ def main(cfg: Config):
     )
 
     # Learning rate scheduler
-    num_training_steps = len(dataloader) * cfg.num_epochs
+    # Note: num_training_steps is optimizer steps, not micro-batches
+    steps_per_epoch = len(dataloader) // cfg.gradient_accumulation_steps
+    num_training_steps = steps_per_epoch * cfg.num_epochs
     num_warmup_steps = int(num_training_steps * cfg.warmup_ratio)
+    console.print(f"[dim]LR schedule: {num_training_steps} steps, {num_warmup_steps} warmup[/dim]")
 
     def lr_lambda(step):
         if step < num_warmup_steps:
