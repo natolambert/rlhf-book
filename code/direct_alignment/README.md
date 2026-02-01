@@ -3,6 +3,18 @@
 Educational implementations of direct alignment methods for [RLHF Book](https://rlhfbook.com).
 See **Chapter 12: Direct Alignment** for mathematical derivations and intuitions.
 
+> **Status**: DPO implementation validated. Other algorithms (IPO, SimPO, ORPO, KTO) implemented but configs not yet tuned.
+
+## Reference Runs
+
+| Algorithm | wandb | Status |
+|-----------|-------|--------|
+| **DPO** | [dpo-olmo-1b-60k](https://wandb.ai/natolambert/rlhf-book/runs/60rpb2ig) | ✅ Validated |
+| **IPO** | TODO | Config not tuned |
+| **SimPO** | TODO | Config not tuned |
+| **ORPO** | TODO | Config not tuned |
+| **KTO** | TODO | Config not tuned |
+
 ## Algorithms
 
 | Algorithm | Paper | Key Idea |

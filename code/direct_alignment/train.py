@@ -15,6 +15,7 @@ import argparse
 import os
 import platform
 import random
+import time
 from pathlib import Path
 
 import numpy as np
@@ -446,6 +447,7 @@ def main(cfg: Config):
 
     # Training loop
     global_step = 0
+    start_time = time.time()
     policy_model.train()
 
     for epoch in range(cfg.num_epochs):
@@ -485,6 +487,7 @@ def main(cfg: Config):
                     # Log to wandb
                     metrics["learning_rate"] = scheduler.get_last_lr()[0]
                     metrics["epoch"] = epoch + (batch_idx + 1) / len(dataloader)
+                    metrics["hours_elapsed"] = (time.time() - start_time) / 3600
                     wandb.log(metrics, step=global_step)
 
                     # Update progress description with loss

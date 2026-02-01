@@ -12,6 +12,7 @@ import os
 import platform
 import random
 import re
+import time
 from itertools import batched  # Requires Python 3.12+
 from typing import Any
 
@@ -386,6 +387,7 @@ def main(cfg: Config):
         wandb.init(project=wandb_project, name=wandb_run_name, config=vars(cfg))
     print_model_info(console, model)
 
+    start_time = time.time()
     for step, batch in enumerate(dataloader):
         print_step_header(console, step=step, total=len(dataloader))
         model.eval()
@@ -440,7 +442,8 @@ def main(cfg: Config):
 
         # Summarize rollouts
         avg_reward = torch.cat(rollout_rewards, dim=0).mean().item()
-        wandb.log({"avg_reward": avg_reward})
+        hours_elapsed = (time.time() - start_time) / 3600
+        wandb.log({"avg_reward": avg_reward, "hours_elapsed": hours_elapsed})
         print_rollout_sample(console, reward=avg_reward, rollout_completions=rollout_completions)
 
         torch.cuda.empty_cache()
@@ -486,7 +489,7 @@ def main(cfg: Config):
 
                     num_accumulated = min(cfg.batch_acc, (batch_idx % cfg.batch_acc) + 1)
                     avg_loss = accumulated_loss / num_accumulated
-                    wandb.log({"loss": avg_loss, "grad_norm": grad_norm})
+                    wandb.log({"loss": avg_loss, "grad_norm": grad_norm, "hours_elapsed": hours_elapsed})
                     progress.update(task, advance=1, description=f"[dim]Loss: {avg_loss:.4f}[/dim]")
                     accumulated_loss = 0.0
                 else:
