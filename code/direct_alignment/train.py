@@ -1,7 +1,7 @@
 # Direct Alignment Training Loop
 #
 # Educational implementations of DPO and related algorithms for RLHF Book.
-# See Chapter 12 for mathematical derivations.
+# See Chapter 8 for mathematical derivations.
 #
 # Usage:
 #   uv run python -m direct_alignment.train --config configs/dpo.yaml

@@ -1,7 +1,7 @@
 # Direct Alignment Algorithms
 
 Educational implementations of direct alignment methods for [RLHF Book](https://rlhfbook.com).
-See **Chapter 12: Direct Alignment** for mathematical derivations and intuitions.
+See **Chapter 8: Direct Alignment** for mathematical derivations and intuitions.
 
 > **Status**: DPO implementation validated. Other algorithms (IPO, SimPO, ORPO, KTO) implemented but configs not yet tuned.
 
@@ -49,7 +49,7 @@ WANDB_PROJECT=rlhf-book uv run python -m direct_alignment.train --loss dpo
 The core DPO loss maximizes the margin between chosen and rejected:
 
 ```python
-# From Chapter 12, Equation 12.1
+# From Chapter 8
 pi_logratios = policy_chosen_logps - policy_rejected_logps
 ref_logratios = reference_chosen_logps - reference_rejected_logps
 logits = pi_logratios - ref_logratios

@@ -1,7 +1,7 @@
 # Direct Alignment Algorithms
 #
 # Educational implementations of DPO and related direct alignment methods
-# for RLHF Book (https://rlhfbook.com). See Chapter 12 for theory.
+# for RLHF Book (https://rlhfbook.com). See Chapter 8 for theory.
 #
 # Algorithms implemented:
 # - DPO: Direct Preference Optimization (Rafailov et al., 2023)

@@ -10,7 +10,7 @@ learns to assign higher rewards to chosen responses.
 The loss function is: -log(sigmoid(r_chosen - r_rejected))
 
 This is the standard approach used in InstructGPT, Llama 2, and most RLHF
-pipelines. See Chapter 7 (Reward Models) of RLHF Book for theoretical background.
+pipelines. See Chapter 5 (Reward Models) of RLHF Book for theoretical background.
 
 Usage:
     uv run python -m reward_models.train_preference_rm

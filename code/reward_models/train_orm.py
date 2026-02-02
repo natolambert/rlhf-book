@@ -13,7 +13,7 @@ we parse the gold numeric answer and synthesize wrong completions by adding
 random offsets. The model learns to classify solution correctness via per-token
 BCE loss on completion tokens.
 
-See Chapter 7 (Reward Models) of RLHF Book for theoretical background.
+See Chapter 5 (Reward Models) of RLHF Book for theoretical background.
 
 Usage:
     uv run python -m reward_models.train_orm

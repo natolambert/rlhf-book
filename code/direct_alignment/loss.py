@@ -1,7 +1,7 @@
 # Direct Alignment Algorithm Loss Functions
 #
 # Educational implementations for RLHF Book (https://rlhfbook.com)
-# See Chapter 12 for mathematical derivations.
+# See Chapter 8 for mathematical derivations.
 #
 # References:
 # - DPO: Rafailov et al., 2023 (https://arxiv.org/abs/2305.18290)
@@ -63,7 +63,7 @@ class DPOLoss(nn.Module):
 
     where log_ratio = log(pi(y|x) / pi_ref(y|x))
 
-    See Chapter 12, Equation 12.1 for derivation.
+    See Chapter 8 for derivation.
     """
 
     def __init__(self, beta: float = 0.1, label_smoothing: float = 0.0):

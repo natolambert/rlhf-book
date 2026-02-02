@@ -1,7 +1,7 @@
 # Reward Model Training
 
 Educational implementations of reward model training for [RLHF Book](https://rlhfbook.com).
-See **Chapter 7: Reward Models** for mathematical derivations and intuitions.
+See **Chapter 5: Reward Models** for mathematical derivations and intuitions.
 
 > **⚠️ IN DEVELOPMENT**: These implementations are experimental. Hyperparameters, datasets, and model configurations have not been fully tuned for clean training curves. Contributions welcome!
 

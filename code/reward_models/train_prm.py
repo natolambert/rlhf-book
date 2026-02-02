@@ -15,7 +15,7 @@ via cross-entropy loss on step terminator tokens.
 Unlike ORM which only judges final answers, PRM provides step-level feedback,
 enabling more granular credit assignment during RL training.
 
-See Chapter 7 (Reward Models) of RLHF Book for theoretical background.
+See Chapter 5 (Reward Models) of RLHF Book for theoretical background.
 
 Usage:
     uv run python -m reward_models.train_prm
