@@ -178,6 +178,8 @@ export WANDB_RUN_NAME="grpo_experiment_1"
 
 The official runs for this repo are logged to: **[wandb.ai/natolambert/rlhf-book](https://wandb.ai/natolambert/rlhf-book)**
 
+All runs are **public** - no login required to view training curves, configs, and metrics.
+
 To disable wandb logging entirely, set `wandb_project: null` in your config or:
 ```bash
 export WANDB_MODE="disabled"
