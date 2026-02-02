@@ -19,6 +19,9 @@ jobs:
         with:
           version: 3.7.0.2
 
+      - name: Prepare TeX Live cache directory
+        run: sudo mkdir -p /usr/local/texlive && sudo chown -R $(whoami) /usr/local/texlive
+
       - name: Cache TeX Live
         uses: actions/cache@v4
         id: cache-texlive
