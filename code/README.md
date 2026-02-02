@@ -224,6 +224,6 @@ To cite this book, please use the following format:
 
 ## License
 
-- Policy gradients code: Apache 2.0 (from zafstojano/policy-gradients)
-- Reward models code: MIT (from myhott163com/RLHF_ORM_PRM)
-- Adaptations and documentation: Apache 2.0
+- Policy gradients code (`policy_gradients/`): Apache 2.0 (from zafstojano/policy-gradients)
+- Reward models code (`reward_models/`): MIT (from myhott163com/RLHF_ORM_PRM)
+- Direct alignment code and other adaptations: MIT
