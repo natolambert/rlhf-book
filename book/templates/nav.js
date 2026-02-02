@@ -70,10 +70,11 @@ class NavigationDropdown extends HTMLElement {
 
       <div class="section">
         <h3>Appendices</h3>
-        <ul>
-          <li><a href="https://rlhfbook.com/c/appendix-a-definitions">A. Definitions</a></li>
-          <li><a href="https://rlhfbook.com/c/appendix-b-style">B. Style & Information</a></li>
-        </ul>
+        <ol type="A" style="padding-left: 0; list-style-position: inside;">
+          <li><a href="https://rlhfbook.com/c/appendix-a-definitions">Definitions</a></li>
+          <li><a href="https://rlhfbook.com/c/appendix-b-style">Style & Information</a></li>
+          <li><a href="https://rlhfbook.com/c/appendix-c-practical">Practical Issues</a></li>
+        </ol>
       </div>
     </nav>
   </div>

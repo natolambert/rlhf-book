@@ -2,8 +2,8 @@
 prev-chapter: "Definitions"
 prev-url: "appendix-a-definitions"
 page-title: "Appendix B: Style & Information"
-next-chapter: "Home"
-next-url: "https://rlhfbook.com/"
+next-chapter: "Practical Issues"
+next-url: "appendix-c-practical"
 ---
 
 # Style and Information
