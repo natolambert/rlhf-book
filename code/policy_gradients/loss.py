@@ -45,7 +45,7 @@ class GRPOLoss(nn.Module):
     """Group Relative Policy Optimization loss (Shao et al., 2024).
 
     GRPO uses group-level advantage normalization and clipped ratio updates.
-    See Chapter 11 of RLHF Book for mathematical derivation.
+    See Chapter 6 of RLHF Book for mathematical derivation.
     """
 
     def __init__(self, clip_eps_lo: float, clip_eps_hi: float, beta: float, **kwargs) -> None:
@@ -108,7 +108,7 @@ class ReinforceLoss(nn.Module):
     """REINFORCE loss (Williams, 1992).
 
     The classic policy gradient: -log(pi) * advantage
-    See Chapter 11 of RLHF Book for derivation from the policy gradient theorem.
+    See Chapter 6 of RLHF Book for derivation from the policy gradient theorem.
     """
 
     def __init__(self, **kwargs) -> None:
@@ -155,7 +155,7 @@ class PPOLoss(nn.Module):
     """Proximal Policy Optimization loss (Schulman et al., 2017).
 
     PPO combines clipped policy updates with a value function baseline.
-    See Chapter 11 of RLHF Book for the full derivation.
+    See Chapter 6 of RLHF Book for the full derivation.
     """
 
     def __init__(

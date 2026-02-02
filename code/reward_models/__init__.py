@@ -6,7 +6,7 @@
 #
 # Preference RM: Adapted for RLHF Book by Nathan Lambert
 #
-# See Chapter 7 of RLHF Book (https://rlhfbook.com) for theoretical background.
+# See Chapter 5 of RLHF Book (https://rlhfbook.com) for theoretical background.
 
 from .train_orm import OutcomeRewardModel
 from .train_preference_rm import PreferenceRewardModel

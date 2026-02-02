@@ -2,6 +2,8 @@
 
 Educational code examples accompanying [RLHF Book](https://rlhfbook.com) by Nathan Lambert.
 
+I primarily run experiments on a [DGX Spark](https://www.nvidia.com/en-us/products/workstations/dgx-spark/). For setup advice, see my [dgx-spark-setup](https://github.com/natolambert/dgx-spark-setup) guide.
+
 ## Attribution
 
 This code is built on the excellent work of community contributors:
@@ -14,7 +16,7 @@ This code is built on the excellent work of community contributors:
 
 A clean, educational implementation of policy gradient methods for reinforcement learning.
 Implements REINFORCE, RLOO, PPO, GRPO, Dr. GRPO, GSPO, and CISPO with mathematical formulations
-matching the book's Chapter 11 (Policy Gradient Methods).
+matching the book's Chapter 6 (Policy Gradient Methods).
 
 ### Reward Models (ORM/PRM)
 
@@ -23,7 +25,7 @@ matching the book's Chapter 11 (Policy Gradient Methods).
 **License**: MIT
 
 Minimal implementations of Outcome Reward Models (ORM) and Process Reward Models (PRM),
-demonstrating the concepts from Chapter 7 (Reward Models).
+demonstrating the concepts from Chapter 5 (Reward Models).
 
 ---
 
@@ -56,7 +58,7 @@ uv sync
 Train various policy gradient algorithms on procedural reasoning tasks:
 
 ```bash
-# GRPO (Chapter 11)
+# GRPO (Chapter 6)
 uv run python -m policy_gradients.train --config policy_gradients/configs/grpo.yaml
 
 # PPO with value function
@@ -92,13 +94,13 @@ uv run python -m policy_gradients.train --config policy_gradients/configs/rloo.y
 Train reward models on various datasets:
 
 ```bash
-# Standard Preference RM (Chapter 7) - Bradley-Terry on UltraFeedback
+# Standard Preference RM (Chapter 5) - Bradley-Terry on UltraFeedback
 uv run python -m reward_models.train_preference_rm
 
-# Outcome Reward Model (Chapter 7) - trains on GSM8K
+# Outcome Reward Model (Chapter 5) - trains on GSM8K
 uv run python -m reward_models.train_orm
 
-# Process Reward Model (Chapter 7) - trains on PRM800K
+# Process Reward Model (Chapter 5) - trains on PRM800K
 uv run python -m reward_models.train_prm
 ```
 
@@ -126,13 +128,36 @@ learning to rate individual reasoning steps as {-1, 0, 1} (bad, neutral, good).
 | ORM | Outcome RM on GSM8K | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/xm8mlcpl) |
 | PRM | Process RM on PRM800K | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/abhkbn4q) |
 
-## Direct Alignment (Coming Soon)
+## Direct Alignment Training
 
-The `direct_alignment/` directory will contain implementations of:
-- DPO (Direct Preference Optimization)
-- IPO, KTO, SimPO variants
+Train direct alignment algorithms (DPO and variants) on preference data:
 
-See Chapter 12 of RLHF Book for theoretical background.
+```bash
+# DPO (Chapter 8)
+uv run python -m direct_alignment.train --config direct_alignment/configs/dpo.yaml
+
+# IPO - more robust to noisy labels
+uv run python -m direct_alignment.train --config direct_alignment/configs/ipo.yaml
+
+# SimPO - no reference model needed
+uv run python -m direct_alignment.train --config direct_alignment/configs/simpo.yaml
+
+# Quick test run (1k samples)
+uv run python -m direct_alignment.train --loss dpo --max_samples 1000
+```
+
+### Available algorithms
+
+| Algorithm | Config | Description |
+|-----------|--------|-------------|
+| DPO | `dpo.yaml` | Direct Preference Optimization (Rafailov et al., 2023) |
+| cDPO | N/A (use `--loss cdpo`) | Conservative DPO with label smoothing |
+| IPO | `ipo.yaml` | Identity Preference Optimization (Azar et al., 2023) |
+| SimPO | `simpo.yaml` | Simple PO - length-normalized, no ref model (Meng et al., 2024) |
+| ORPO | `orpo.yaml` | Odds Ratio PO - combines SFT + preference (Hong et al., 2024) |
+| KTO | `kto.yaml` | Kahneman-Tversky Optimization (Ethayarajh et al., 2024) |
+
+See Chapter 8 of RLHF Book for mathematical derivations.
 
 ## Configuration
 
@@ -177,10 +202,25 @@ export HF_TOKEN="your-token"
 
 These examples correspond to:
 
-- **Chapter 7**: Reward Models (ORM, PRM)
-- **Chapter 11**: Policy Gradient Methods (REINFORCE, PPO, GRPO, etc.)
+- **Chapter 5**: Reward Models (ORM, PRM, Preference RM)
+- **Chapter 6**: Policy Gradient Methods (REINFORCE, PPO, GRPO, etc.)
+- **Chapter 8**: Direct Alignment (DPO, IPO, SimPO, KTO, etc.)
 
 See [rlhfbook.com](https://rlhfbook.com) for the full text.
+
+## Citation
+
+To cite this book, please use the following format:
+
+```bibtex
+@book{rlhf2025,
+  author       = {Nathan Lambert},
+  title        = {Reinforcement Learning from Human Feedback},
+  year         = {2025},
+  publisher    = {Online},
+  url          = {https://rlhfbook.com},
+}
+```
 
 ## License
 
