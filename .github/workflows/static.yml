@@ -19,21 +19,41 @@ jobs:
         with:
           version: 3.7.0.2
 
+      - name: Prepare TeX Live cache directory
+        run: sudo mkdir -p /usr/local/texlive && sudo chown -R $(whoami) /usr/local/texlive
+
+      - name: Cache TeX Live
+        uses: actions/cache@v4
+        id: cache-texlive
+        with:
+          path: /usr/local/texlive
+          key: texlive-macos-${{ hashFiles('.github/workflows/static.yml') }}
+
       - name: Install brew dependencies
         run: |
           # brew update # (slow) uncomment this for minor version updates if needed to debug other issues
           brew install make
           brew install pandoc-crossref
-          brew install --cask basictex
-          eval "$(/usr/libexec/path_helper)"
-          sudo tlmgr update --self
-          # Install pdflatex packages (comes with basictex, but ensure dependencies)
-          sudo tlmgr install collection-fontsrecommended collection-latexextra
+          # Only install TeX if not cached
+          if [ "${{ steps.cache-texlive.outputs.cache-hit }}" != "true" ]; then
+            echo "Cache miss - installing TeX Live..."
+            brew install --cask basictex
+            eval "$(/usr/libexec/path_helper)"
+            sudo tlmgr update --self
+            # Install pdflatex packages (comes with basictex, but ensure dependencies)
+            sudo tlmgr install collection-fontsrecommended collection-latexextra
+          else
+            echo "Cache hit - skipping TeX Live installation"
+          fi
 
       - name: Set up LaTeX PATH
         run: |
+          # Find the actual texlive bin directory (varies by year/arch)
+          TEXLIVE_BIN=$(find /usr/local/texlive -type d -name "bin" -exec find {} -type d -name "*-darwin" \; 2>/dev/null | head -1)
+          echo "Found TeX Live bin: $TEXLIVE_BIN"
+          echo "$TEXLIVE_BIN" >> $GITHUB_PATH
+          # Also add the standard symlink path in case it exists
           echo "/Library/TeX/texbin" >> $GITHUB_PATH
-          echo "PATH=$PATH:/Library/TeX/texbin" >> $GITHUB_ENV
 
       - name: Clean build directory
         run: |

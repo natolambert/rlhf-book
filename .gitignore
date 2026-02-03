@@ -15,7 +15,10 @@ build/arxiv.zip
 
 # Specific to this project
 arxiv_check_results.json
-.claude
+
+# Claude Code - track skills, ignore local settings
+.claude/settings.local.json
+.claude/commands/
 
 # Python/uv
 .python-version
