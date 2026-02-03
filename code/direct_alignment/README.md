@@ -108,6 +108,8 @@ Other compatible datasets:
 
 **Important**: DPO requires very low learning rates (1e-7 to 5e-6). Higher rates cause divergence.
 
+**Note on IPO loss scale**: IPO uses squared error to a target margin of `1/(2*beta)`. With beta=0.1, this target is 5.0, so early loss values (~10-25) are much higher than DPO (~0.5-0.7). This is expected — IPO loss and gradient norms are not directly comparable to DPO.
+
 ### Sequence Length Controls
 
 TRL-style options for controlling prompt/completion lengths:
