@@ -6,6 +6,8 @@ page-title: "References"
      The refs div tells citeproc to place the bibliography here, before the appendices.
      The \appendix command switches LaTeX chapter numbering from numbers to letters. -->
 
+# Bibliography {-}
+
 ::: {#refs}
 :::
 

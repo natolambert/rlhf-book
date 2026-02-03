@@ -58,7 +58,7 @@ Table: Standard deviation of evaluation benchmarks across multiple inference run
 
 Some evaluations, such as LiveCodeBench, were both noisy and cheap (via few prompts in the set), so by re-running the evaluation 10 times per model, the evaluation could move from the high-variance set to a stable setting. This could be done for every evaluation, but it can easily balloon costs.
 
-We also see sources of variance in items like batch size, tensor parallel settings (e.g., TP=2 for baselines), and other sensitive numerics for sampling long generations across infrastructure. Variance is everywhere with reasoners.
+We also see sources of variance in evaluation settings like batch size, tensor parallel settings within VLLM (e.g., TP=2 for baselines), and other sensitive numerics for sampling long generations across infrastructure. Variance is everywhere with reasoners.
 
 ## Running Multiple Seeds
 
