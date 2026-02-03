@@ -11,7 +11,7 @@ See **Chapter 8: Direct Alignment** for mathematical derivations and intuitions.
 |-----------|-------|--------|
 | **DPO** | [dpo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/fzy8k8go) | ✅ Validated |
 | **IPO** | [ipo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/5s29syo6) | ✅ Validated |
-| **SimPO** | [simpo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/zz6ny74l) | 🔄 In progress |
+| **SimPO** | [simpo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/b0kop43g) | 🔄 In progress |
 | **ORPO** | TODO | Config not tuned |
 | **KTO** | TODO | Config not tuned |
 
