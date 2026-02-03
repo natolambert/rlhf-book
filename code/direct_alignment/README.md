@@ -10,8 +10,8 @@ See **Chapter 8: Direct Alignment** for mathematical derivations and intuitions.
 | Algorithm | wandb | Status |
 |-----------|-------|--------|
 | **DPO** | [dpo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/fzy8k8go) | ✅ Validated |
-| **IPO** | [ipo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/5s29syo6) | 🔄 In progress |
-| **SimPO** | TODO | Config not tuned |
+| **IPO** | [ipo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/5s29syo6) | ✅ Validated |
+| **SimPO** | [simpo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/qmydseo4) | 🔄 In progress |
 | **ORPO** | TODO | Config not tuned |
 | **KTO** | TODO | Config not tuned |
 
