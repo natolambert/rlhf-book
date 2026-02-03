@@ -11,7 +11,7 @@ See **Chapter 8: Direct Alignment** for mathematical derivations and intuitions.
 |-----------|-------|--------|
 | **DPO** | [dpo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/fzy8k8go) | ✅ Validated |
 | **IPO** | [ipo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/5s29syo6) | ✅ Validated |
-| **SimPO** | [simpo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/qmydseo4) | 🔄 In progress |
+| **SimPO** | [simpo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/zz6ny74l) | 🔄 In progress |
 | **ORPO** | TODO | Config not tuned |
 | **KTO** | TODO | Config not tuned |
 
@@ -103,12 +103,14 @@ Other compatible datasets:
 | Parameter | DPO | IPO | SimPO |
 |-----------|-----|-----|-------|
 | `beta` | 0.1-0.5 | 0.1 | 2.0-2.5 |
-| `learning_rate` | 5e-7 | 5e-7 | 5e-7 |
+| `learning_rate` | 5e-6 | 5e-6 | 1e-6 |
 | Reference model | Yes | Yes | No |
 
 **Important**: DPO requires very low learning rates (1e-7 to 5e-6). Higher rates cause divergence.
 
 **Note on IPO loss scale**: IPO uses squared error to a target margin of `1/(2*beta)`. With beta=0.1, this target is 5.0, so early loss values (~10-25) are much higher than DPO (~0.5-0.7). This is expected — IPO loss and gradient norms are not directly comparable to DPO.
+
+**Note on SimPO learning rate**: SimPO requires lower learning rates than DPO (3e-7 to 1e-6). Per the [official SimPO repo](https://github.com/princeton-nlp/SimPO): "A large learning rate (e.g., 1e-5) can significantly degrade performance, causing the model to produce incoherent sentences or completely repetitive responses."
 
 ### Sequence Length Controls
 

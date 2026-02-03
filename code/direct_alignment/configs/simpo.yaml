@@ -23,7 +23,7 @@ max_samples: 6400  # 6400 / 64 batch * 3 epochs = 300 steps
 max_length: 2048
 
 # Training
-learning_rate: 5.0e-6
+learning_rate: 1.0e-6  # SimPO needs lower LR than DPO (paper recommends 3e-7 to 1e-6)
 num_epochs: 3  # ~700 steps total
 batch_size: 8
 gradient_accumulation_steps: 8  # Effective batch size = 64
