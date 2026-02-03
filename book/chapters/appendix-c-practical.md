@@ -60,3 +60,11 @@ Model merging has emerged as a practical technique for improving model performan
 **Key references on empirical model merging:**
 
 <!-- TODO: Add references from ChatGPT Pro suggestions -->
+
+## Training vs Deployment System Prompts
+
+<!-- TODO: Expand on deployment vs training system prompts - when to bake behavior into weights vs handle at inference time -->
+
+A practical lesson from training models at different scales: identity and persona are easier to adjust via system prompts at deployment time than to retrain into the model weights. For example, with OLMo 3, the 32B model's identity was not baked into the training data, making it easy to adjust via system prompt at demo time. However, the 7B model had identity more embedded in training, and retraining wasn't feasible at that point.
+
+The takeaway: if using synthetic data to shift model identity or persona, you need a meaningful amount of data to make that shift stick. For smaller models or tighter timelines, keeping identity flexible via deployment-time system prompts can be more practical than trying to train it in.
