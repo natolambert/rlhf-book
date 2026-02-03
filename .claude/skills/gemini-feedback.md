@@ -24,9 +24,10 @@ When this command is invoked:
 
 ```python
 import base64
+import os
 import google.generativeai as genai
 
-genai.configure(api_key='AIzaSyALuG7kzHMhxOGoqGIR7krNMkLkIWzGQcw')
+genai.configure(api_key=os.environ['GEMINI_API_KEY'])
 model = genai.GenerativeModel('gemini-2.0-flash')
 
 with open('<IMAGE_PATH>', 'rb') as f:
@@ -48,8 +49,9 @@ print(response.text)
 
 4. Replace `<IMAGE_PATH>` with the actual path provided
 5. Replace `<CONTEXT>` with any context provided, or use "Technical diagram for ML/AI textbook"
-6. Run using: `uv run python -c "..."`
-7. Present the feedback to the user
+6. Ensure GEMINI_API_KEY is set in environment
+7. Run using: `uv run python -c "..."`
+8. Present the feedback to the user
 
 ## Example
 
