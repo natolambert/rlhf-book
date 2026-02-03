@@ -8,20 +8,33 @@ next-url: "https://rlhfbook.com/"
 
 # Practical Issues
 
-This appendix covers practical considerations for running post-training experiments at scale.
+This appendix covers practical considerations for running post-training experiments at scale. 
+This takes the form of a list of lessons, rather than a coherent narrative.
 
-## Compute Costs of Post-Training
+## 1. Compute Costs of Post-Training
 
-Post-training follows a different operational pattern than pretraining. From the OLMo 3 report [@teamolmo2025olmo3]:
+There are two different ways of scoping costs for post-training runs.
+The largest cost is in developing the recipe, which can easily be 10 to 100X the compute of the final few training runs.
+The secondary costs, which are easier to measure are the costs to thoroughly apply a recipe, which entails multiple seeds, careful evaluation, potential engineering headaches, etc.
+
+For the first cost, to develop a post-training recipe like Tülu 3 [@lambert2024t], the team ran on the order of thousands of experiments/evaluations at the 7B scale before having the final model.
+
+For final runs, the Olmo 3 report has a detailed accounting of what is involved in training the final 32B Think model [@teamolmo2025olmo3]:
 
 > Post-training follows a different operational pattern in which we run each stage multiple times, sweeping over learning rates and other hyperparameters. The theory for post-training, particularly, RL, is less developed, so we have to run multiple experiments to identify the optimal hyperparameters for a given base model. We hope to address this in future work.
 >
 > During post-training, checkpoint evaluation consumes a larger proportion of compute resources, in part due to long generations from reasoning models on core benchmarks. For SFT, we swept over four candidate learning rates, on 256 GPUs each, in parallel for 36 hours. Then approximately 12 hours was spent on evaluation, merging, and checkpoint confirmation, totaling approximately two days. DPO training takes less time per run (about 18 hours for a full learning-rate sweep on 64 GPUs per job) but in practice extended over multiple days due to cluster instability. The final RL runs for the initial Olmo 3 Think 32B spanned approximately 5 days with at least a day of training time lost due to stability issues. After the initial release of Olmo 3, we continued our best RL run for another 21 days on 224 GPUs to produce Olmo 3.1 Think 32B.
 
+As scaling reinforcement learning becomes more standard practice, this will shift yet again [@khatri2025art].
+Continuing the above example, where the original Olmo 3 32B Think post-training took only a couple of weeks, to release the improved Olmo 3.1 32B Think model the team needed to train it for an additional 3.5 weeks with RLVR. This is a substantial cost in *time* more than in total compute.
+
 ## Evaluation Variance
 
-One underappreciated challenge in post-training is evaluation variance. Different benchmarks have vastly different stability characteristics, which can lead practitioners to draw incorrect conclusions from noisy signals [@teamolmo2025olmo3].
+One underappreciated challenge in post-training is evaluation variance, especially with the rise of reasoning models that need to use sampling with temperatures above 0 to get the best evaluation scores. 
+With any sampling from models, the outputs become more variable.
+Different benchmarks have vastly different stability characteristics, due to the variance in difficulty of the prompts, the number of prompts in the evaluation set, the brittleness of the models being trained, etc.
 
+During Olmo 3, the team tracked the variance of different evaluations used to evaluate reasoning models.
 The table below shows the standard deviation of each evaluation, computed as the mean of the standard deviation from 3 runs of 14 models (take variance of each model, then average per evaluation):
 
 | Category | Benchmark | Std. Dev. |
@@ -40,6 +53,10 @@ The table below shows the standard deviation of each evaluation, computed as the
 | | MATH | 0.25 |
 | | MMLU | 0.22 |
 | | PopQA | 0.16 |
+
+Table: Standard deviation of evaluation benchmarks across multiple training runs, categorized by stability. {#tbl:eval_variance}
+
+Some evaluations, such as LiveCodeBench, were both noisey and cheap (via few prompts in the set), so by re-running the evaluation 10 times per model, the evaluation could move from the high-variance set to a stable setting. This could be done for every evaluation, but it can easily balloon costs.
 
 We also see sources of variance in items like batch size, tensor parallel settings (e.g., TP=2 for baselines), and other sensitive numerics for sampling long generations across infrastructure. Variance is everywhere with reasoners.
 
