@@ -1,4 +1,4 @@
-### First appearing in chapter 1 ###
+### First appearing in chapter 1 (Introduction) ###
 
 @misc{alpaca,
   author = {Rohan Taori and Ishaan Gulrajani and Tianyi Zhang and Yann Dubois and Xuechen Li and Carlos Guestrin and Percy Liang and Tatsunori B. Hashimoto },
@@ -202,7 +202,7 @@
 
 ### End chapter 1 ###
 
-### First appearing in chapter 2 ###
+### First appearing in chapter 2 (Key Related Works) ###
 
 @article{wirth2017survey,
   title={A survey of preference-based reinforcement learning methods},
@@ -397,57 +397,7 @@
 
 ### End chapter 2 ###
 
-### First appearing in chapter 3 ###
-
-@inproceedings{Vaswani2017AttentionIA,
-  title={Attention is All you Need},
-  author={Ashish Vaswani and Noam M. Shazeer and Niki Parmar and Jakob Uszkoreit and Llion Jones and Aidan N. Gomez and Lukasz Kaiser and Illia Polosukhin},
-  booktitle={Neural Information Processing Systems},
-  year={2017},
-  url={https://api.semanticscholar.org/CorpusID:13756489}
-}
-
-@inproceedings{Bahdanau2014NeuralMT,
-  title={Neural Machine Translation by Jointly Learning to Align and Translate},
-  author={Dzmitry Bahdanau and Kyunghyun Cho and Yoshua Bengio},
-  booktitle={International Conference on Learning Representations (ICLR)},
-  year={2015},
-  url={https://arxiv.org/abs/1409.0473}
-}
-
-@article{team2024gemma,
-  title={Gemma 2: Improving open language models at a practical size},
-  author={Team, Gemma and Riviere, Morgane and Pathak, Shreya and Sessa, Pier Giuseppe and Hardin, Cassidy and Bhupatiraju, Surya and Hussenot, L{\'e}onard and Mesnard, Thomas and Shahriari, Bobak and Ram{\'e}, Alexandre and others},
-  journal={arXiv preprint arXiv:2408.00118},
-  year={2024}
-}
-
-@inproceedings{agarwal2024policy,
-  title={On-policy distillation of language models: Learning from self-generated mistakes},
-  author={Agarwal, Rishabh and Vieillard, Nino and Zhou, Yongchao and Stanczyk, Piotr and Garea, Sabela Ramos and Geist, Matthieu and Bachem, Olivier},
-  booktitle={The Twelfth International Conference on Learning Representations},
-  year={2024}
-}
-
-@article{hinton2015distilling,
-  title={Distilling the knowledge in a neural network},
-  author={Hinton, Geoffrey and Vinyals, Oriol and Dean, Jeff},
-  journal={arXiv preprint arXiv:1503.02531},
-  year={2015}
-}
-
-@article{wei2022chain,
-  title={Chain-of-thought prompting elicits reasoning in large language models},
-  author={Wei, Jason and Wang, Xuezhi and Schuurmans, Dale and Bosma, Maarten and Xia, Fei and Chi, Ed and Le, Quoc V and Zhou, Denny and others},
-  journal={Advances in neural information processing systems},
-  volume={35},
-  pages={24824--24837},
-  year={2022}
-}
-
-### End chapter 3 ###
-
-### First appearing in chapter 4 ###
+### First appearing in chapter 3 (Training Overview) ###
 
 @article{sutton2018reinforcement,
   title={Reinforcement learning: An introduction},
@@ -516,9 +466,1153 @@
   year={2025}
 }
 
+### End chapter 3 ###
+
+### First appearing in chapter 4 (Instruction Tuning) ###
+
+@article{brown2020language,
+  title={Language models are few-shot learners},
+  author={Brown, Tom and Mann, Benjamin and Ryder, Nick and Subbiah, Melanie and Kaplan, Jared D and Dhariwal, Prafulla and Neelakantan, Arvind and Shyam, Pranav and Sastry, Girish and Askell, Amanda and others},
+  journal={Advances in neural information processing systems},
+  volume={33},
+  pages={1877--1901},
+  year={2020}
+}
+
+@article{raffel2020exploring,
+  title={Exploring the limits of transfer learning with a unified text-to-text transformer},
+  author={Raffel, Colin and Shazeer, Noam and Roberts, Adam and Lee, Katherine and Narang, Sharan and Matena, Michael and Zhou, Yanqi and Li, Wei and Liu, Peter J},
+  journal={Journal of machine learning research},
+  volume={21},
+  number={140},
+  pages={1--67},
+  year={2020}
+}
+
+@inproceedings{wei2021finetuned,
+  title={Finetuned Language Models are Zero-Shot Learners},
+  author={Jason Wei and Maarten Bosma and Vincent Zhao and Kelvin Guu and Adams Wei Yu and Brian Lester and Nan Du and Andrew M. Dai and Quoc V Le},
+  booktitle={International Conference on Learning Representations},
+  year={2022},
+  url={https://openreview.net/forum?id=gEZrGCozdqR}
+}
+
+@inproceedings{sanh2021multitask,
+  title={Multitask Prompted Training Enables Zero-Shot Task Generalization},
+  author={Victor Sanh and Albert Webson and Colin Raffel and Stephen Bach and Lintang Sutawika and Zaid Alyafeai and Antoine Chaffin and Arnaud Stiegler and Arun Raja and Manan Dey and M Saiful Bari and Canwen Xu and Urmish Thakker and Shanya Sharma Sharma and Eliza Szczechla and Taewoon Kim and Gunjan Chhablani and Nihal Nayak and Debajyoti Datta and Jonathan Chang and Mike Tian-Jian Jiang and Han Wang and Matteo Manica and Sheng Shen and Zheng Xin Yong and Harshit Pandey and Rachel Bawden and Thomas Wang and Trishala Neeraj and Jos Rozen and Abheesht Sharma and Andrea Santilli and Thibault Fevry and Jason Alan Fries and Ryan Teehan and Teven Le Scao and Stella Biderman and Leo Gao and Thomas Wolf and Alexander M Rush},
+  booktitle={International Conference on Learning Representations},
+  year={2022},
+  url={https://openreview.net/forum?id=9Vrb9D0WI4}
+}
+
+@inproceedings{mishra2021cross,
+    title = "Cross-Task Generalization via Natural Language Crowdsourcing Instructions",
+    author = "Mishra, Swaroop  and
+      Khashabi, Daniel  and
+      Baral, Chitta  and
+      Hajishirzi, Hannaneh",
+    booktitle = "Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)",
+    month = may,
+    year = "2022",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2022.acl-long.244/",
+    doi = "10.18653/v1/2022.acl-long.244",
+    pages = "3470--3487",
+}
+
+@article{dettmers2023qlora,
+  title={Qlora: Efficient finetuning of quantized llms},
+  author={Dettmers, Tim and Pagnoni, Artidoro and Holtzman, Ari and Zettlemoyer, Luke},
+  journal={Advances in neural information processing systems},
+  volume={36},
+  pages={10088--10115},
+  year={2023}
+}
+
+@misc{no_robots,
+  author = {Nazneen Rajani and Lewis Tunstall and Edward Beeching and Nathan Lambert and Alexander M. Rush and Thomas Wolf},
+  title = {No Robots},
+  year = {2023},
+  publisher = {Hugging Face},
+  journal = {Hugging Face repository},
+  howpublished = {\url{https://huggingface.co/datasets/HuggingFaceH4/no_robots}}
+}
+
+@article{wallace2024instruction,
+  title={The instruction hierarchy: Training llms to prioritize privileged instructions},
+  author={Wallace, Eric and Xiao, Kai and Leike, Reimar and Weng, Lilian and Heidecke, Johannes and Beutel, Alex},
+  journal={arXiv preprint arXiv:2404.13208},
+  year={2024}
+}
+
 ### End chapter 4 ###
 
-### First appearing in chapter 5 ###
+### First appearing in chapter 5 (Reward Models) ###
+
+@article{BradleyTerry,
+ ISSN = {00063444},
+ URL = {http://www.jstor.org/stable/2334029},
+ author = {Ralph Allan Bradley and Milton E. Terry},
+ journal = {Biometrika},
+ number = {3/4},
+ pages = {324--345},
+ publisher = {[Oxford University Press, Biometrika Trust]},
+ title = {Rank Analysis of Incomplete Block Designs: I. The Method of Paired Comparisons},
+ urldate = {2023-02-13},
+ volume = {39},
+ year = {1952}
+}
+
+@inproceedings{lambert2024rewardbench,
+  title={Rewardbench: Evaluating reward models for language modeling},
+  booktitle = {Conference of the North American Chapter of the Association for Computational Linguistics (NAACL)},
+  author={Lambert, Nathan and Pyatkin, Valentina and Morrison, Jacob and Miranda, LJ and Lin, Bill Yuchen and Chandu, Khyathi and Dziri, Nouha and Kumar, Sachin and Zick, Tom and Choi, Yejin and others},
+  year = {2025}
+}
+
+@inproceedings{zhou2024rmb,
+  title={RMB: Comprehensively Benchmarking Reward Models in LLM Alignment},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  author={Zhou, Enyu and Zheng, Guodong and Wang, Binghai and Xi, Zhiheng and Dou, Shihan and Bao, Rong and Shen, Wei and Xiong, Limao and Fan, Jessica and Mou, Yurong and others},
+  year = {2025}
+}
+
+@inproceedings{liu2024rm,
+  title={RM-bench: Benchmarking reward models of language models with subtlety and style},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  author={Liu, Yantao and Yao, Zijun and Min, Rui and Cao, Yixin and Hou, Lei and Li, Juanzi},
+  year = {2025}
+}
+
+@inproceedings{gureja2024m,
+  title={M-RewardBench: Evaluating Reward Models in Multilingual Settings},
+  booktitle = {Annual Meeting of the Association for Computational Linguistics (ACL)},
+  author={Gureja, Srishti and Miranda, Lester James V and Islam, Shayekh Bin and Maheshwary, Rishabh and Sharma, Drishti and Winata, Gusti and Lambert, Nathan and Ruder, Sebastian and Hooker, Sara and Fadaee, Marzieh},
+  year = {2025}
+}
+
+@article{chen2024mj,
+  title={MJ-Bench: Is Your Multimodal Reward Model Really a Good Judge for Text-to-Image Generation?},
+  author={Chen, Zhaorun and Du, Yichao and Wen, Zichen and Zhou, Yiyang and Cui, Chenhang and Weng, Zhenzhen and Tu, Haoqin and Wang, Chaoqi and Tong, Zhengwei and Huang, Qinglan and others},
+  journal={arXiv preprint arXiv:2407.04842},
+  year={2024}
+}
+
+@article{wu2025rewordbench,
+  title={reWordBench: Benchmarking and Improving the Robustness of Reward Models with Transformed Inputs},
+  author={Wu, Zhaofeng and Yasunaga, Michihiro and Cohen, Andrew and Kim, Yoon and Celikyilmaz, Asli and Ghazvininejad, Marjan},
+  journal={arXiv preprint arXiv:2503.11751},
+  year={2025}
+}
+
+@article{yasunaga2025multimodal,
+  title={Multimodal rewardbench: Holistic evaluation of reward models for vision language models},
+  author={Yasunaga, Michihiro and Zettlemoyer, Luke and Ghazvininejad, Marjan},
+  journal={arXiv preprint arXiv:2502.14191},
+  year={2025}
+}
+
+@article{li2024vlrewardbench,
+  title={VLRewardBench: A Challenging Benchmark for Vision-Language Generative Reward Models},
+  author={Li, Lei and Wei, Yuancheng and Xie, Zhihui and Yang, Xuqing and Song, Yifan and Wang, Peiyi and An, Chenxin and Liu, Tianyu and Li, Sujian and Lin, Bill Yuchen and others},
+  journal={arXiv preprint arXiv:2411.17451},
+  year={2024}
+}
+
+@article{ruan2025vlrmbench,
+  title={Vlrmbench: A comprehensive and challenging benchmark for vision-language reward models},
+  author={Ruan, Jiacheng and Yuan, Wenzhen and Gao, Xian and Guo, Ye and Zhang, Daoxin and Xu, Zhe and Hu, Yao and Liu, Ting and Fu, Yuzhuo},
+  journal={arXiv preprint arXiv:2503.07478},
+  year={2025}
+}
+
+@inproceedings{song2025prmbench,
+  title={PRMBench: A Fine-grained and Challenging Benchmark for Process-Level Reward Models},
+  booktitle = {Annual Meeting of the Association for Computational Linguistics (ACL)},
+  author={Song, Mingyang and Su, Zhaochen and Qu, Xiaoye and Zhou, Jiawei and Cheng, Yu},
+  year = {2025}
+}
+
+@article{wang2025visualprm,
+  title={VisualPRM: An Effective Process Reward Model for Multimodal Reasoning},
+  author={Wang, Weiyun and Gao, Zhangwei and Chen, Lianjie and Chen, Zhe and Zhu, Jinguo and Zhao, Xiangyu and Liu, Yangzhou and Cao, Yue and Ye, Shenglong and Zhu, Xizhou and others},
+  journal={arXiv preprint arXiv:2503.10291},
+  year={2025}
+}
+
+@misc{tu2025vilbench,
+  title = {ViLBench: A Suite for Vision-Language Process Reward Modeling},
+  author = {Tu, Haoqin and Feng, Weitao and Chen, Hardy and Liu, Hui and Tang, Xianfeng and Xie, Cihang},
+  year = {2025},
+  month = {Mar},
+  eprint = {2503.20271},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.CV},
+  url = {https://arxiv.org/abs/2503.20271}
+}
+
+@inproceedings{wen2024rethinking,
+  title={Rethinking Reward Model Evaluation: Are We Barking up the Wrong Tree?},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  author={Wen, Xueru and Lou, Jie and Lu, Yaojie and Lin, Hongyu and Yu, Xing and Lu, Xinyu and He, Ben and Han, Xianpei and Zhang, Debing and Sun, Le},
+  year = {2025}
+}
+
+@inproceedings{jin2024rag,
+  title={RAG-RewardBench: Benchmarking Reward Models in Retrieval Augmented Generation for Preference Alignment},
+  booktitle = {Annual Meeting of the Association for Computational Linguistics (ACL)},
+  author={Jin, Zhuoran and Yuan, Hongbang and Men, Tianyi and Cao, Pengfei and Chen, Yubo and Liu, Kang and Zhao, Jun},
+  year = {2025}
+}
+
+@inproceedings{frick2024evaluate,
+  title={How to Evaluate Reward Models for RLHF},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  author={Frick, Evan and Li, Tianle and Chen, Connor and Chiang, Wei-Lin and Angelopoulos, Anastasios N and Jiao, Jiantao and Zhu, Banghua and Gonzalez, Joseph E and Stoica, Ion},
+  year = {2025}
+}
+
+@article{kim2024evaluating,
+  title={Evaluating robustness of reward models for mathematical reasoning},
+  author={Kim, Sunghwan and Kang, Dongjin and Kwon, Taeyoon and Chae, Hyungjoo and Won, Jungsoo and Lee, Dongha and Yeo, Jinyoung},
+  journal={arXiv preprint arXiv:2410.01729},
+  year={2024}
+}
+
+@inproceedings{zhu2023principled,
+  title={Principled reinforcement learning with human feedback from pairwise or k-wise comparisons},
+  author={Zhu, Banghua and Jordan, Michael and Jiao, Jiantao},
+  booktitle={International Conference on Machine Learning},
+  pages={43037--43067},
+  year={2023},
+  organization={PMLR}
+}
+
+@inproceedings{wang2024interpretable,
+  title={Interpretable Preferences via Multi-Objective Reward Modeling and Mixture-of-Experts},
+  booktitle = {Conference on Empirical Methods in Natural Language Processing (EMNLP)},
+  author={Wang, Haoxiang and Xiong, Wei and Xie, Tengyang and Zhao, Han and Zhang, Tong},
+  year = {2024}
+}
+
+@inproceedings{zhang2024generative,
+  title={Generative verifiers: Reward modeling as next-token prediction},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  author={Zhang, Lunjun and Hosseini, Arian and Bansal, Hritik and Kazemi, Mehran and Kumar, Aviral and Agarwal, Rishabh},
+  year = {2025}
+}
+
+@article{mahan2024generative,
+  title={Generative Reward Models},
+  author={Mahan, Dakota and Phung, Duy Van and Rafailov, Rafael and Blagden, Chase and Lile, Nathan and Castricato, Louis and Franken, Jan-Philipp and Finn, Chelsea and Albalak, Alon},
+  year={2024},
+  url={https://www.synthlabs.ai/pdf/Generative_Reward_Models.pdf}
+}
+
+@article{wang2024helpsteer2,
+  title={HelpSteer2: Open-source dataset for training top-performing reward models},
+  author={Wang, Zhilin and Dong, Yi and Delalleau, Olivier and Zeng, Jiaqi and Shen, Gerald and Egert, Daniel and Zhang, Jimmy J and Sreedhar, Makesh Narsimhan and Kuchaiev, Oleksii},
+  journal={arXiv preprint arXiv:2406.08673},
+  year={2024}
+}
+
+@article{ankner2024critique,
+  title={Critique-out-loud reward models},
+  author={Ankner, Zachary and Paul, Mansheej and Cui, Brandon and Chang, Jonathan D and Ammanabrolu, Prithviraj},
+  journal={arXiv preprint arXiv:2408.11791},
+  year={2024}
+}
+
+@inproceedings{park2024offsetbias,
+  title={Offsetbias: Leveraging debiased data for tuning evaluators},
+  booktitle = {Conference on Empirical Methods in Natural Language Processing (EMNLP)},
+  author={Park, Junsoo and Jwa, Seungyeon and Ren, Meiying and Kim, Daeyoung and Choi, Sanghyuk},
+  year = {2024}
+}
+
+@inproceedings{liu2024acemath,
+  title        = {AceMath: Advancing Frontier Math Reasoning with Post-Training and Reward Modeling},
+  booktitle = {Annual Meeting of the Association for Computational Linguistics (ACL)},
+  author       = {Zihan Liu and Yang Chen and Mohammad Shoeybi and Bryan Catanzaro and Wei Ping},
+  year = {2025},
+  archivePrefix= {arXiv},
+  primaryClass = {cs.CL},
+  url          = {https://arxiv.org/abs/2412.15084}
+}
+
+@inproceedings{zheng2024processbench,
+  title        = {ProcessBench: Identifying Process Errors in Mathematical Reasoning},
+  booktitle = {Annual Meeting of the Association for Computational Linguistics (ACL)},
+  author       = {Chujie Zheng and Zhenru Zhang and Beichen Zhang and Runji Lin and Keming Lu and Bowen Yu and Dayiheng Liu and Jingren Zhou and Junyang Lin},
+  year = {2025},
+  archivePrefix= {arXiv},
+  primaryClass = {cs.AI},
+  url          = {https://arxiv.org/abs/2412.06559}
+}
+
+@inproceedings{men2025agentrewardbench,
+  title     = {Agent-RewardBench: Towards a Unified Benchmark for Reward Modeling across Perception, Planning, and Safety in Real-World Multimodal Agents},
+  author    = {Tianyi Men and Zhuoran Jin and Pengfei Cao and Yubo Chen and Kang Liu and Jun Zhao},
+  booktitle = {Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)},
+  year      = {2025},
+  month     = jul,
+  address   = {Vienna, Austria},
+  publisher = {Association for Computational Linguistics},
+  pages     = {17521--17541},
+  doi       = {10.18653/v1/2025.acl-long.857},
+  url       = {https://aclanthology.org/2025.acl-long.857/}
+}
+
+@misc{lin2025cuarewardbench,
+  title        = {CUARewardBench: A Benchmark for Evaluating Reward Models on Computer-using Agent},
+  author       = {Haojia Lin and Xiaoyu Tan and Yulei Qin and Zihan Xu and Yuchen Shi and Zongyi Li and Gang Li and Shaofei Cai and Siqi Cai and Chaoyou Fu and Ke Li and Xing Sun},
+  year         = {2025},
+  eprint       = {2510.18596},
+  archivePrefix= {arXiv},
+  primaryClass = {cs.SE},
+  url          = {https://arxiv.org/abs/2510.18596}
+}
+
+@inproceedings{liu2019learning,
+  title={Learning plackett-luce mixtures from partial preferences},
+  author={Liu, Ao and Zhao, Zhibing and Liao, Chao and Lu, Pinyan and Xia, Lirong},
+  booktitle={Proceedings of the AAAI Conference on Artificial Intelligence},
+  volume={33},
+  number={01},
+  pages={4328--4335},
+  year={2019}
+}
+
+@inproceedings{zhu2024starling,
+  title={Starling-7b: Improving helpfulness and harmlessness with rlaif},
+  author={Zhu, Banghua and Frick, Evan and Wu, Tianhao and Zhu, Hanlin and Ganesan, Karthik and Chiang, Wei-Lin and Zhang, Jian and Jiao, Jiantao},
+  booktitle={First Conference on Language Modeling},
+  year={2024}
+}
+
+@article{lyu2025exploring,
+  title={Exploring the Limit of Outcome Reward for Learning Mathematical Reasoning},
+  author={Lyu, Chengqi and Gao, Songyang and Gu, Yuzhe and Zhang, Wenwei and Gao, Jianfei and Liu, Kuikun and Wang, Ziyi and Li, Shuaibin and Zhao, Qian and Huang, Haian and others},
+  journal={arXiv preprint arXiv:2502.06781},
+  year={2025}
+}
+
+@article{zheng2023judging,
+  title={Judging llm-as-a-judge with mt-bench and chatbot arena},
+  author={Zheng, Lianmin and Chiang, Wei-Lin and Sheng, Ying and Zhuang, Siyuan and Wu, Zhanghao and Zhuang, Yonghao and Lin, Zi and Li, Zhuohan and Li, Dacheng and Xing, Eric and others},
+  journal={Advances in Neural Information Processing Systems},
+  volume={36},
+  pages={46595--46623},
+  year={2023}
+}
+
+@inproceedings{lin2024wildbench,
+  title={WILDBENCH: Benchmarking LLMs with Challenging Tasks from Real Users in the Wild},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  author={Lin, Bill Yuchen and Deng, Yuntian and Chandu, Khyathi and Brahman, Faeze and Ravichander, Abhilasha and Pyatkin, Valentina and Dziri, Nouha and Bras, Ronan Le and Choi, Yejin},
+  year = {2025}
+}
+
+@inproceedings{li2024crowdsourced,
+  title={From Crowdsourced Data to High-Quality Benchmarks: Arena-Hard and BenchBuilder Pipeline},
+  booktitle = {International Conference on Machine Learning (ICML)},
+  author={Li, Tianle and Chiang, Wei-Lin and Frick, Evan and Dunlap, Lisa and Wu, Tianhao and Zhu, Banghua and Gonzalez, Joseph E and Stoica, Ion},
+  year = {2025}
+}
+
+@article{dubois2024length,
+  title={Length-controlled alpacaeval: A simple way to debias automatic evaluators},
+  author={Dubois, Yann and Galambosi, Bal{\'a}zs and Liang, Percy and Hashimoto, Tatsunori B},
+  journal={arXiv preprint arXiv:2404.04475},
+  year={2024}
+}
+
+@inproceedings{kim2023prometheus,
+  title={Prometheus: Inducing fine-grained evaluation capability in language models},
+  author={Kim, Seungone and Shin, Jamin and Cho, Yejin and Jang, Joel and Longpre, Shayne and Lee, Hwaran and Yun, Sangdoo and Shin, Seongjin and Kim, Sungdong and Thorne, James and others},
+  booktitle={The Twelfth International Conference on Learning Representations},
+  year={2024}
+}
+
+@article{cobbe2021gsm8k,
+  title={Training Verifiers to Solve Math Word Problems},
+  author={Cobbe, Karl and Kosaraju, Vineet and Bavarian, Mohammad and Chen, Mark and Jun, Heewoo and Kaiser, Lukasz and Plappert, Matthias and Tworek, Jerry and Hilton, Jacob and Nakano, Reiichiro and Hesse, Christopher and Schulman, John},
+  journal={arXiv preprint arXiv:2110.14168},
+  year={2021}
+}
+
+### End chapter 5 ###
+
+### First appearing in chapter 6 (Policy Gradients) ###
+
+@article{williams1992simple,
+  title={Simple statistical gradient-following algorithms for connectionist reinforcement learning},
+  author={Williams, Ronald J},
+  journal={Machine learning},
+  volume={8},
+  pages={229--256},
+  year={1992},
+  publisher={Springer}
+}
+
+@article{schulman2017proximal,
+  title={Proximal policy optimization algorithms},
+  author={Schulman, John and Wolski, Filip and Dhariwal, Prafulla and Radford, Alec and Klimov, Oleg},
+  journal={arXiv preprint arXiv:1707.06347},
+  year={2017}
+}
+
+@article{berner2019dota,
+  title={Dota 2 with large scale deep reinforcement learning},
+  author={Berner, Christopher and Brockman, Greg and Chan, Brooke and Cheung, Vicki and D{\k{e}}biak, Przemys{\l}aw and Dennison, Christy and Farhi, David and Fischer, Quirin and Hashme, Shariq and Hesse, Chris and others},
+  journal={arXiv preprint arXiv:1912.06680},
+  year={2019}
+}
+
+@inproceedings{huang2024n,
+  title={The N+ Implementation Details of {RLHF} with {PPO}: A Case Study on {TL};{DR} Summarization},
+  author={Shengyi Huang and Michael Noukhovitch and Arian Hosseini and Kashif Rasul and Weixun Wang and Lewis Tunstall},
+  booktitle={First Conference on Language Modeling},
+  year={2024},
+  url={https://openreview.net/forum?id=kHO2ZTa8e3}
+}
+
+@article{weng2018PG,
+  title   = "Policy Gradient Algorithms",
+  author  = "Weng, Lilian",
+  journal = "lilianweng.github.io",
+  year    = "2018",
+  url     = "https://lilianweng.github.io/posts/2018-04-08-policy-gradient/"
+}
+
+@article{kool2019buy,
+  title={Buy 4 reinforce samples, get a baseline for free!},
+  author={Kool, Wouter and van Hoof, Herke and Welling, Max},
+  year={2019}
+}
+
+@inproceedings{schulman2015high,
+  title={High-dimensional continuous control using generalized advantage estimation},
+  author={Schulman, John and Moritz, Philipp and Levine, Sergey and Jordan, Michael and Abbeel, Pieter},
+  booktitle={Proceedings of the International Conference on Learning Representations (ICLR)},
+  year =2016
+}
+
+@misc{seita2017gae,
+  author = {Daniel Seita},
+  title = {Notes on the Generalized Advantage Estimation Paper},
+  year = {2017},
+  url = {https://danieltakeshi.github.io/2017/04/02/notes-on-the-generalized-advantage-estimation-paper/}
+}
+
+@inproceedings{ivison2024unpacking,
+  title={Unpacking DPO and PPO: Disentangling Best Practices for Learning from Preference Feedback},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  author={Ivison, Hamish and Wang, Yizhong and Liu, Jiacheng and Wu, Zeqiu and Pyatkin, Valentina and Lambert, Nathan and Smith, Noah A and Choi, Yejin and Hajishirzi, Hannaneh},
+  year = {2024}
+}
+
+@misc{yu2025dapo,
+  author = {Yu, Qiying and Zhang, Zheng and Zhu, Ruofei and Yuan, Yufeng and Yue, Yu and Fan, Tiantian and Liu, Gaohong and Liu, Lingjun and Liu, Xin and Lin, Haibin and Lin, Zhiqi and Ma, Bole and Sheng, Guangming and Tong, Yuxuan and Zhang, Chi and Zhang, Mofan and Zhang, Wang and Zhu, Hang and Zhu, Jinhua and Chen, Jiaze and Chen, Jiangjie and Wang, Chengyi and Yu, Hongli and Dai, Weinan and Song, Yuxuan and Wei, Xiangpeng and Zhou, Hao and Liu, Jingjing and Ma, Wei-Ying and Zhang, Ya-Qin and Qiao, Mu and Yan, Lin and Wu, Yonghui and Wang, Mingxuan},
+  title = {DAPO: an Open-Source LLM Reinforcement Learning System at Scale},
+  year = {2025},
+  month = {March},
+  note = {Available at \url{https://dapo-sia.github.io/static/pdf/dapo_paper.pdf}}
+}
+
+@inproceedings{baheti2023leftover,
+  title={Leftover lunch: advantage-based offline reinforcement learning for language models},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  author={Baheti, Ashutosh and Lu, Ximing and Brahman, Faeze and Bras, Ronan Le and Sap, Maarten and Riedl, Mark},
+  year = {2024}
+}
+
+@article{yuan2025vapo,
+  title={VAPO: Efficient and Reliable Reinforcement Learning for Advanced Reasoning Tasks},
+  author={Yuan, Yufeng and Yu, Qiying and Zuo, Xiaochen and Zhu, Ruofei and Xu, Wenyuan and Chen, Jiaze and Wang, Chengyi and Fan, TianTian and Du, Zhengyin and Wei, Xiangpeng and others},
+  journal={arXiv preprint arXiv:2504.05118},
+  year={2025}
+}
+
+@article{yuan2025s,
+  title={What's Behind PPO's Collapse in Long-CoT? Value Optimization Holds the Secret},
+  author={Yuan, Yufeng and Yue, Yu and Zhu, Ruofei and Fan, Tiantian and Yan, Lin},
+  journal={arXiv preprint arXiv:2503.01491},
+  year={2025}
+}
+
+@article{liu2025understanding,
+  title={Understanding R1-Zero-Like Training: A Critical Perspective},
+  author={Liu, Zichen and Chen, Changyu and Li, Wenjun and Qi, Penghui and Pang, Tianyu and Du, Chao and Lee, Wee Sun and Lin, Min},
+  journal={arXiv preprint arXiv:2503.20783},
+  year={2025},
+  month={Mar},
+  url={https://arxiv.org/abs/2503.20783}
+}
+
+@inproceedings{flet2024contrastive,
+  title={Contrastive Policy Gradient: Aligning LLMs on sequence-level scores in a supervised-friendly fashion},
+  booktitle = {Conference on Empirical Methods in Natural Language Processing (EMNLP)},
+  author={Flet-Berliac, Yannis and Grinsztajn, Nathan and Strub, Florian and Wu, Bill and Choi, Eugene and Cremer, Chris and Ahmadian, Arash and Chandak, Yash and Azar, Mohammad Gheshlaghi and Pietquin, Olivier and others},
+  year = {2024}
+}
+
+@inproceedings{li2023remax,
+  title={Remax: A simple, effective, and efficient reinforcement learning method for aligning large language models},
+  author={Li, Ziniu and Xu, Tian and Zhang, Yushun and Lin, Zhihang and Yu, Yang and Sun, Ruoyu and Luo, Zhi-Quan},
+  booktitle={Forty-first International Conference on Machine Learning},
+  year={2024}
+}
+
+@article{team2025kimi,
+  title={Kimi k1. 5: Scaling reinforcement learning with llms},
+  author={Team, Kimi and Du, Angang and Gao, Bofei and Xing, Bowei and Jiang, Changjiu and Chen, Cheng and Li, Cheng and Xiao, Chenjun and Du, Chenzhuang and Liao, Chonghua and others},
+  journal={arXiv preprint arXiv:2501.12599},
+  year={2025}
+}
+
+@article{wu2023pairwise,
+  title={Pairwise proximal policy optimization: Harnessing relative feedback for llm alignment},
+  author={Wu, Tianhao and Zhu, Banghua and Zhang, Ruoyu and Wen, Zhaojin and Ramchandran, Kannan and Jiao, Jiantao},
+  journal={arXiv preprint arXiv:2310.00212},
+  year={2023}
+}
+
+@article{gunter2024apple,
+  title={Apple intelligence foundation language models},
+  author={Gunter, Tom and Wang, Zirui and Wang, Chong and Pang, Ruoming and Narayanan, Andy and Zhang, Aonan and Zhang, Bowen and Chen, Chen and Chiu, Chung-Cheng and Qiu, David and others},
+  journal={arXiv preprint arXiv:2407.21075},
+  year={2024}
+}
+
+@article{zhang2025improving,
+  title={Improving LLM General Preference Alignment via Optimistic Online Mirror Descent},
+  author={Zhang, Yuheng and Yu, Dian and Ge, Tao and Song, Linfeng and Zeng, Zhichen and Mi, Haitao and Jiang, Nan and Yu, Dong},
+  journal={arXiv preprint arXiv:2502.16852},
+  year={2025}
+}
+
+@inproceedings{tomar2020mirror,
+  title={Mirror descent policy optimization},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  author={Tomar, Manan and Shani, Lior and Efroni, Yonathan and Ghavamzadeh, Mohammad},
+  year = {2022}
+}
+
+@inproceedings{noukhovitch2024asynchronous,
+  title={Asynchronous RLHF: Faster and More Efficient Off-Policy RL for Language Models},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  author={Noukhovitch, Michael and Huang, Shengyi and Xhonneux, Sophie and Hosseini, Arian and Agarwal, Rishabh and Courville, Aaron},
+  year = {2025}
+}
+
+@article{wu2025llamarl,
+  title={LlamaRL: A Distributed Asynchronous Reinforcement Learning Framework for Efficient Large-scale LLM Trainin},
+  author={Wu, Bo and Wang, Sid and Tang, Yunhao and Ding, Jia and Helenowski, Eryk and Tan, Liang and Xu, Tengyu and Gowda, Tushar and Chen, Zhengxing and Zhu, Chen and others},
+  journal={arXiv preprint arXiv:2505.24034},
+  year={2025}
+}
+
+@article{fu2025areal,
+  title={AReaL: A Large-Scale Asynchronous Reinforcement Learning System for Language Reasoning},
+  author={Fu, Wei and Gao, Jiaxuan and Shen, Xujie and Zhu, Chen and Mei, Zhiyu and He, Chuyi and Xu, Shusheng and Wei, Guo and Mei, Jun and Wang, Jiashu and others},
+  journal={arXiv preprint arXiv:2505.24298},
+  year={2025}
+}
+
+@article{roux2025tapered,
+  title={Tapered Off-Policy REINFORCE: Stable and efficient reinforcement learning for LLMs},
+  author={Roux, Nicolas Le and Bellemare, Marc G and Lebensold, Jonathan and Bergeron, Arnaud and Greaves, Joshua and Fr{\'e}chette, Alex and Pelletier, Carolyne and Thibodeau-Laufer, Eric and Toth, S{\'a}ndor and Work, Sam},
+  journal={arXiv preprint arXiv:2503.14286},
+  year={2025}
+}
+
+@misc{primeintellectteam2025intellect2reasoningmodeltrained,
+      title={INTELLECT-2: A Reasoning Model Trained Through Globally Decentralized Reinforcement Learning}, 
+      author={Prime Intellect Team and Sami Jaghouar and Justus Mattern and Jack Min Ong and Jannik Straube and Manveer Basra and Aaron Pazdera and Kushal Thaman and Matthew Di Ferrante and Felix Gabriel and Fares Obeid and Kemal Erdem and Michael Keiblinger and Johannes Hagemann},
+      year={2025},
+      eprint={2505.07291},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2505.07291}, 
+}
+
+@article{shao2024deepseekmath,
+  title={Deepseekmath: Pushing the limits of mathematical reasoning in open language models},
+  author={Shao, Zhihong and Wang, Peiyi and Zhu, Qihao and Xu, Runxin and Song, Junxiao and Bi, Xiao and Zhang, Haowei and Zhang, Mingchuan and Li, YK and Wu, Y and others},
+  journal={arXiv preprint arXiv:2402.03300},
+  year={2024}
+}
+
+@article{liu2024deepseek,
+  title={Deepseek-v3 technical report},
+  author={Liu, Aixin and Feng, Bei and Xue, Bing and Wang, Bingxuan and Wu, Bochao and Lu, Chengda and Zhao, Chenggang and Deng, Chengqi and Zhang, Chenyu and Ruan, Chong and others},
+  journal={arXiv preprint arXiv:2412.19437},
+  year={2024}
+}
+
+@book{nocedal2006numerical,
+  title={Numerical optimization},
+  author={Nocedal, Jorge and Wright, Stephen J},
+  year={2006},
+  publisher={Springer}
+}
+
+@inproceedings{schulman2015trust,
+  title={Trust region policy optimization},
+  author={Schulman, John and Levine, Sergey and Abbeel, Pieter and Jordan, Michael and Moritz, Philipp},
+  booktitle={International conference on machine learning},
+  pages={1889--1897},
+  year={2015},
+  organization={PMLR}
+}
+
+@misc{huang2024putting,
+  author       = {Shengyi Costa Huang and Arash Ahmadian and Cohere For AI},
+  title        = {Putting RL back in RLHF},
+  year         = {2024},
+  howpublished = {\url{https://huggingface.co/blog/putting_rl_back_in_rlhf_with_rloo}},
+  note         = {Accessed: 2025-01-15}
+}
+
+@inproceedings{ahmadian2024back,
+  title={Back to basics: Revisiting reinforce style optimization for learning from human feedback in llms},
+  booktitle = {Annual Meeting of the Association for Computational Linguistics (ACL)},
+  author={Ahmadian, Arash and Cremer, Chris and Gall{\'e}, Matthias and Fadaee, Marzieh and Kreutzer, Julia and Pietquin, Olivier and {\"U}st{\"u}n, Ahmet and Hooker, Sara},
+  year = {2024}
+}
+
+@misc{zheng2025gspo,
+  title         = {Group Sequence Policy Optimization},
+  author        = {Zheng, Chujie and Liu, Shixuan and Li, Mingze and Chen, Xiong-Hui and Yu, Bowen and Gao, Chang and Dang, Kai and Liu, Yuqiong and Men, Rui and Yang, An and Zhou, Jingren and Lin, Junyang},
+  year          = {2025},
+  eprint        = {2507.18071},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  doi           = {10.48550/arXiv.2507.18071},
+  url           = {https://arxiv.org/abs/2507.18071}
+}
+
+@misc{leroux2025topr,
+  title         = {Tapered Off-Policy {REINFORCE}: Stable and efficient reinforcement learning for {LLMs}},
+  author        = {Le Roux, Nicolas and Bellemare, Marc G. and Lebensold, Jonathan and Bergeron, Arnaud and Greaves, Joshua and Fr{\'e}chette, Alex and Pelletier, Carolyne and Thibodeau-Laufer, Eric and Toth, S{\'a}ndor and Work, Sam},
+  year          = {2025},
+  eprint        = {2503.14286},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  doi           = {10.48550/arXiv.2503.14286},
+  url           = {https://arxiv.org/abs/2503.14286}
+}
+
+### End chapter 6 ###
+
+### First appearing in chapter 7 (Reasoning) ###
+
+@article{aggarwal2025l1,
+  title={L1: Controlling how long a reasoning model thinks with reinforcement learning},
+  author={Aggarwal, Pranjal and Welleck, Sean},
+  journal={arXiv preprint arXiv:2503.04697},
+  year={2025}
+}
+
+@article{hu2025openreasonerzero,
+  title={Open-Reasoner-Zero: An Open Source Approach to Scaling Up Reinforcement Learning on the Base Model},
+  author={Hu, Jingcheng and Zhang, Yinmin and Han, Qi and Jiang, Daxin and Zhang, Xiangyu and Shum, Heung‑Yeung},
+  journal={arXiv preprint arXiv:2503.24290},
+  year={2025}
+}
+
+@article{abdin2025phi4,
+  title={Phi-4-Reasoning Technical Report},
+  author={Abdin, Marah and Agarwal, Sahaj and Awadallah, Ahmed and others},
+  journal={arXiv preprint arXiv:2504.21318},
+  year={2025}
+}
+
+@article{he2025skyworkor1,
+  title={Skywork Open Reasoner 1 Technical Report},
+  author={He, Jujie and Liu, Jiacai and Liu, Chris Yuhao and others},
+  journal={arXiv preprint arXiv:2505.22312},
+  year={2025}
+}
+
+@techreport{mistral2025magistral,
+  title={Magistral: Scaling Reinforcement Learning for Reasoning in Large Language Models},
+  author={{Mistral AI}},
+  institution={Mistral AI},
+  year={2025},
+  month={June},
+  url={https://mistral.ai/static/research/magistral.pdf},
+  note={Technical report}
+}
+
+@article{guha2025openthoughts,
+  title={OpenThoughts: Data Recipes for Reasoning Models},
+  author={Guha, Etash and Marten, Ryan and Keh, Sedrick and others},
+  journal={arXiv preprint arXiv:2506.04178},
+  year={2025}
+}
+
+@article{liu2025hunyuan,
+  title={Hunyuan‑TurboS: Advancing Large Language Models through Mamba‑Transformer Synergy and Adaptive Chain‑of‑Thought},
+  author={Liu, Ao and Zhou, Botong and Xu, Can and others},
+  journal={arXiv preprint arXiv:2505.15431},
+  year={2025}
+}
+
+@misc{mimo2025flash,
+  title  = {MiMo-V2-Flash Technical Report},
+  author = {LLM-Core Xiaomi},
+  year   = {2025},
+  url    = {https://github.com/XiaomiMiMo/MiMo-V2-Flash/blob/main/paper.pdf}
+}
+
+@misc{minimax2025minimaxm1scalingtesttimecompute,
+      title={MiniMax-M1: Scaling Test-Time Compute Efficiently with Lightning Attention},
+      author={MiniMax},
+      year={2025},
+      eprint={2506.13585},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      doi={10.48550/arXiv.2506.13585},
+      url={https://arxiv.org/abs/2506.13585},
+}
+
+@misc{zeng2025glm45,
+  title        = {GLM-4.5: Agentic, Reasoning, and Coding (ARC) Foundation Models},
+  author       = {Aohan Zeng and Xin Lv and Qinkai Zheng and Zhenyu Hou and
+                  Bin Chen and Chengxing Xie and Cunxiang Wang and Da Yin and Hao Zeng and Jiajie Zhang and Kedong Wang and Lucen Zhong and Mingdao Liu and Rui Lu and Shulin Cao and Xiaohan Zhang and Xuancheng Huang and Yao Wei and Yean Cheng and Yifan An and Yilin Niu and Yuanhao Wen and Yushi Bai and Zhengxiao Du and Zihan Wang and Zilin Zhu and
+                  Bohan Zhang and Bosi Wen and Bowen Wu and Bowen Xu and Can Huang and Casey Zhao and Changpeng Cai and Chao Yu and Chen Li and Chendi Ge and Chenghua Huang and Chenhui Zhang and Chenxi Xu and Chenzheng Zhu and Chuang Li and Congfeng Yin and Daoyan Lin and Dayong Yang and Dazhi Jiang and Ding Ai and Erle Zhu and Fei Wang and Gengzheng Pan and Guo Wang and Hailong Sun and Haitao Li and Haiyang Li and Haiyi Hu and Hanyu Zhang and Hao Peng and Hao Tai and Haoke Zhang and Haoran Wang and Haoyu Yang and He Liu and He Zhao and Hongwei Liu and Hongxi Yan and Huan Liu and Huilong Chen and Ji Li and Jiajing Zhao and Jiamin Ren and Jian Jiao and Jiani Zhao and Jianyang Yan and Jiaqi Wang and Jiayi Gui and Jiayue Zhao and Jie Liu and Jijie Li and Jing Li and Jing Lu and Jingsen Wang and Jingwei Yuan and Jingxuan Li and Jingzhao Du and Jinhua Du and Jinxin Liu and Junkai Zhi and Junli Gao and Ke Wang and Lekang Yang and Liang Xu and Lin Fan and Lindong Wu and Lintao Ding and Lu Wang and Man Zhang and Minghao Li and Minghuan Xu and Mingming Zhao and Mingshu Zhai and Pengfan Du and Qian Dong and Shangde Lei and Shangqing Tu and Shangtong Yang and Shaoyou Lu and Shijie Li and Shuang Li and Shuang Li and Shuxun Yang and Sibo Yi and Tianshu Yu and Wei Tian and Weihan Wang and Wenbo Yu and Weng Lam Tam and Wenjie Liang and Wentao Liu and Xiao Wang and Xiaohan Jia and Xiaotao Gu and Xiaoying Ling and Xin Wang and Xing Fan and Xingru Pan and Xinyuan Zhang and Xinze Zhang and Xiuqing Fu and Xunkai Zhang and Yabo Xu and Yandong Wu and Yida Lu and Yidong Wang and Yilin Zhou and Yiming Pan and Ying Zhang and Yingli Wang and Yingru Li and Yinpei Su and Yipeng Geng and Yitong Zhu and Yongkun Yang and Yuhang Li and Yuhao Wu and Yujiang Li and Yunan Liu and Yunqing Wang and Yuntao Li and Yuxuan Zhang and Zezhen Liu and Zhen Yang and Zhengda Zhou and Zhongpei Qiao and Zhuoer Feng and Zhuorui Liu and Zichen Zhang and Zihan Wang and Zijun Yao and Zikang Wang and Ziqiang Liu and Ziwei Chai and Zixuan Li and Zuodong Zhao and
+                  Jie Tang and Yuxiao Dong and Juanzi Li and Hongning Wang and Minlie Huang and Bin Xu and Jidong Zhai and Wenguang Chen},
+  year         = {2025},
+  eprint       = {2508.06471},
+  archivePrefix= {arXiv},
+  primaryClass = {cs.CL},
+  doi          = {10.48550/arXiv.2508.06471},
+  url          = {https://arxiv.org/abs/2508.06471}
+}
+
+@misc{coreteam2025mimovltechnicalreport,
+      title={MiMo-VL Technical Report}, 
+      author={Core Team and Zihao Yue and Zhenru Lin and Yifan Song and Weikun Wang and Shuhuai Ren and Shuhao Gu and Shicheng Li and Peidian Li and Liang Zhao and Lei Li and Kainan Bao and Hao Tian and Hailin Zhang and Gang Wang and Dawei Zhu and Cici and Chenhong He and Bowen Ye and Bowen Shen and Zihan Zhang and Zihan Jiang and Zhixian Zheng and Zhichao Song and Zhenbo Luo and Yue Yu and Yudong Wang and Yuanyuan Tian and Yu Tu and Yihan Yan and Yi Huang and Xu Wang and Xinzhe Xu and Xingchen Song and Xing Zhang and Xing Yong and Xin Zhang and Xiangwei Deng and Wenyu Yang and Wenhan Ma and Weiwei Lv and Weiji Zhuang and Wei Liu and Sirui Deng and Shuo Liu and Shimao Chen and Shihua Yu and Shaohui Liu and Shande Wang and Rui Ma and Qiantong Wang and Peng Wang and Nuo Chen and Menghang Zhu and Kangyang Zhou and Kang Zhou and Kai Fang and Jun Shi and Jinhao Dong and Jiebao Xiao and Jiaming Xu and Huaqiu Liu and Hongshen Xu and Heng Qu and Haochen Zhao and Hanglong Lv and Guoan Wang and Duo Zhang and Dong Zhang and Di Zhang and Chong Ma and Chang Liu and Can Cai and Bingquan Xia},
+      year={2025},
+      eprint={2506.03569},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2506.03569}, 
+}
+
+@misc{kimiteam2025kimik2,
+  title={ Kimi K2: Open Agentic Intelligence },
+  author={  Kimi Team and Yifan Bai and Yiping Bao and Guanduo Chen and Jiahao Chen and Ningxin Chen and Ruijue Chen and Yanru Chen and Yuankun Chen and Yutian Chen and Zhuofu Chen and Jialei Cui and Hao Ding and Mengnan Dong and Angang Du and Chenzhuang Du and Dikang Du and Yulun Du and Yu Fan and Yichen Feng and Kelin Fu and Bofei Gao and Hongcheng Gao and Peizhong Gao and Tong Gao and Xinran Gu and Longyu Guan and Haiqing Guo and Jianhang Guo and Hao Hu and Xiaoru Hao and Tianhong He and Weiran He and Wenyang He and Chao Hong and Yangyang Hu and Zhenxing Hu and Weixiao Huang and Zhiqi Huang and Zihao Huang and Tao Jiang and Zhejun Jiang and Xinyi Jin and Yongsheng Kang and Guokun Lai and Cheng Li and Fang Li and Haoyang Li and Ming Li and Wentao Li and Yanhao Li and Yiwei Li and Zhaowei Li and Zheming Li and Hongzhan Lin and Xiaohan Lin and Zongyu Lin and Chengyin Liu and Chenyu Liu and Hongzhang Liu and Jingyuan Liu and Junqi Liu and Liang Liu and Shaowei Liu and T. Y. Liu and Tianwei Liu and Weizhou Liu and Yangyang Liu and Yibo Liu and Yiping Liu and Yue Liu and Zhengying Liu and Enzhe Lu and Lijun Lu and Shengling Ma and Xinyu Ma and Yingwei Ma and Shaoguang Mao and Jie Mei and Xin Men and Yibo Miao and Siyuan Pan and Yebo Peng and Ruoyu Qin and Bowen Qu and Zeyu Shang and Lidong Shi and Shengyuan Shi and Xinjie Sun and Flood Sung and Heyi Tang and Jiawen Tao and Qifeng Teng and Chensi Wang and Dinglu Wang and Feng Wang and Haiming Wang and Jianzhou Wang and Jiaxing Wang and Jinhong Wang and Shengjie Wang and Shuyi Wang and Yao Wang and Yejie Wang and Yiqin Wang and Yuxin Wang and Yuzhi Wang and Zhaoji Wang and Zhengtao Wang and Zhexu Wang and Chu Wei and Qianqian Wei and Wenhao Wu and Xingzhe Wu and Yuxin Wu and Chenjun Xiao and Xiaotong Xie and Weimin Xiong and Boyu Xu and Jing Xu and Jinjing Xu and L. H. Xu and Lin Xu and Suting Xu and Weixin Xu and Xinran Xu and Yangchuan Xu and Ziyao Xu and Junjie Yan and Yuzi Yan and Xiaofei Yang and Ying Yang and Zhen Yang and Zhilin Yang and Zonghan Yang and Haotian Yao and Xingcheng Yao and Wenjie Ye and Zhuorui Ye and Bohong Yin and Longhui Yu and Enming Yuan and Hongbang Yuan and Mengjie Yuan and Haobing Zhan and Dehao Zhang and Hao Zhang and Wanlu Zhang and Xiaobin Zhang and Yangkun Zhang and Yizhi Zhang and Yongting Zhang and Yu Zhang and Yutao Zhang and Yutong Zhang and Zheng Zhang and Haotian Zhao and Yikai Zhao and Huabin Zheng and Shaojie Zheng and Jianren Zhou and Xinyu Zhou and Zaida Zhou and Zhen Zhu and Weiyu Zhuang and Xinxing Zu },
+  year={ 2025 },
+  eprint={ 2507.20534 },
+  archivePrefix={arXiv},
+  primaryClass={ cs.LG },
+  url={https://arxiv.org/abs/2507.20534}
+}
+
+@misc{nvidia2025nemotronnano2,
+  title={ NVIDIA Nemotron Nano 2: An Accurate and Efficient Hybrid Mamba-Transformer Reasoning Model },
+  author={ NVIDIA },
+  year={ 2025 },
+  eprint={ 2508.14444 },
+  archivePrefix={arXiv},
+  primaryClass={ cs.CL },
+  url={https://arxiv.org/abs/2508.14444}
+}
+
+@misc{llm3602025k2think,
+  title={ K2-Think: A Parameter-Efficient Reasoning System },
+  author={ Zhoujun Cheng and Richard Fan and Shibo Hao and Taylor W. Killian and Haonan Li and Suqi Sun and Hector Ren and Alexander Moreno and Daqian Zhang and Tianjun Zhong and Yuxin Xiong and Yuanzhe Hu and Yutao Xie and Xudong Han and Yuqi Wang and Varad Pimpalkhute and Yonghao Zhuang and Aaryamonvikram Singh and Xuezhi Liang and Anze Xie and Jianshu She and Desai Fan and Chengqian Gao and Liqun Ma and Mikhail Yurochkin and John Maggs and Xuezhe Ma and Guowei He and Zhiting Hu and Zhengzhong Liu and Eric P. Xing },
+  year={ 2025 },
+  eprint={ 2509.07604 },
+  archivePrefix={arXiv},
+  primaryClass={ cs.LG },
+  url={https://arxiv.org/abs/2509.07604}
+}
+
+@misc{mlcteam2025longcat,
+  title={ Introducing LongCat-Flash-Thinking: A Technical Report },
+  author={ Meituan LongCat Team },
+  year={ 2025 },
+  eprint={ 2509.18883 },
+  archivePrefix={arXiv},
+  primaryClass={ cs.AI },
+  url={https://arxiv.org/abs/2509.18883}
+}
+
+@misc{ringteam2025everystepevolves,
+  title={ Every Step Evolves: Scaling Reinforcement Learning for Trillion-Scale Thinking Model },
+  author={ Ling Team and Anqi Shen and Baihui Li and Bin Hu and Bin Jing and Cai Chen and Chao Huang and Chao Zhang and Chaokun Yang and Cheng Lin and Chengyao Wen and Congqi Li and Deng Zhao and Dingbo Yuan and Donghai You and Fagui Mao and Fanzhuang Meng and Feng Xu and Guojie Li and Guowei Wang and Hao Dai and Haonan Zheng and Hong Liu and Jia Guo and Jiaming Liu and Jian Liu and Jianhao Fu and Jiannan Shi and Jianwen Wang and Jianxin Lai and Jin Yang and Jun Mei and Jun Zhou and Junbo Zhao and Junping Zhao and Kuan Xu and Le Su and Lei Chen and Li Tang and Liang Jiang and Liangcheng Fu and Lianhao Xu and Linfeng Shi and Lisha Liao and Longfei Zheng and Meng Li and Mingchun Chen and Qi Zuo and Qiang Cheng and Qianggang Cao and Qitao Shi and Quanrui Guo and Senlin Zhu and Shaofei Wang and Shaomian Zheng and Shuaicheng Li and Shuwei Gu and Siba Chen and Tao Wu and Tao Zhang and Tianyu Zhang and Tianyu Zhou and Tiwei Bie and Tongkai Yang and Wang Hong and Wang Ren and Weihua Chen and Wenbo Yu and Wengang Zheng and Xiangchun Wang and Xiaodong Yan and Xiaopei Wan and Xin Zhao and Xinyu Kong and Xinyu Tang and Xudong Han and Xudong Wang and Xuemin Yang and Xueyu Hu and Yalin Zhang and Yan Sun and Yicheng Shan and Yilong Wang and Yingying Xu and Yongkang Liu and Yongzhen Guo and Yuanyuan Wang and Yuchen Yan and Yuefan Wang and Yuhong Guo and Zehuan Li and Zhankai Xu and Zhe Li and Zhenduo Zhang and Zhengke Gui and Zhenxuan Pan and Zhenyu Huang and Zhenzhong Lan and Zhiqiang Ding and Zhiqiang Zhang and Zhixun Li and Zhizhen Liu and Zihao Wang and Zujie Wen },
+  year={ 2025 },
+  eprint={ 2510.18855 },
+  archivePrefix={arXiv},
+  primaryClass={ cs.CL },
+  url={https://arxiv.org/abs/2510.18855}
+}
+
+@article{liu2025k2,
+  title={K2-V2: A 360-Open, Reasoning-Enhanced LLM},
+  author={Liu, Zhengzhong and Tang, Liping and Jin, Linghao and Li, Haonan and Ranjan, Nikhil and Fan, Desai and Rohatgi, Shaurya and Fan, Richard and Pangarkar, Omkar and Wang, Huijuan and others},
+  journal={arXiv preprint arXiv:2512.06201},
+  year={2025}
+}
+
+@misc{deepseekai2025v32,
+  title={ DeepSeek-V3.2: Pushing the Frontier of Open Large Language Models },
+  author={ DeepSeek-AI },
+  year={ 2025 },
+  eprint={ 2512.02556 },
+  archivePrefix={arXiv},
+  primaryClass={ cs.CL },
+  url={https://arxiv.org/abs/2512.02556}
+}
+
+@misc{shao2025spurious,
+  title={Spurious Rewards: Rethinking Training Signals in RLVR},
+  author={Rulin Shao and Shuyue Stella Li and Rui Xin and Scott Geng and Yiping Wang and Sewoong Oh and Simon Shaolei Du and Nathan Lambert and Sewon Min and Ranjay Krishna and Yulia Tsvetkov and Hannaneh Hajishirzi and Pang Wei Koh and Luke Zettlemoyer},
+  year={2025},
+  howpublished={\url{https://rethink-rlvr.notion.site/Spurious-Rewards-Rethinking-Training-Signals-in-RLVR-1f4df34dac1880948858f95aeb88872f}},
+  note={Notion Blog}
+}
+
+@misc{irpan2018deep,
+  title={Deep Reinforcement Learning Doesn't Work Yet},
+  author={Alex Irpan},
+  year={2018},
+  url={https://www.alexirpan.com/2018/02/14/rl-hard.html}
+}
+
+@inproceedings{henderson2018deep,
+  title={Deep Reinforcement Learning that Matters},
+  author={Henderson, Peter and Islam, Riashat and Bachman, Philip and Pineau, Joelle and Precup, Doina and Meger, David},
+  booktitle={Proceedings of the AAAI Conference on Artificial Intelligence},
+  volume={32},
+  number={1},
+  year={2018},
+  url={https://ojs.aaai.org/index.php/AAAI/article/view/11694}
+}
+
+@article{liu2023don,
+  title={Don't throw away your value model! Generating more preferable text with Value-Guided Monte-Carlo Tree Search decoding},
+  author={Liu, Jiacheng and Cohen, Andrew and Pasunuru, Ramakanth and Choi, Yejin and Hajishirzi, Hannaneh and Celikyilmaz, Asli},
+  journal={arXiv preprint arXiv:2309.15028},
+  year={2023}
+}
+
+@article{chen2024more,
+  title={Are more llm calls all you need? towards scaling laws of compound inference systems},
+  author={Chen, Lingjiao and Davis, Jared Quincy and Hanin, Boris and Bailis, Peter and Stoica, Ion and Zaharia, Matei and Zou, James},
+  journal={arXiv preprint arXiv:2403.02419},
+  year={2024}
+}
+
+@article{muennighoff2025s1,
+  title={s1: Simple test-time scaling},
+  author={Muennighoff, Niklas and Yang, Zitong and Shi, Weijia and Li, Xiang Lisa and Fei-Fei, Li and Hajishirzi, Hannaneh and Zettlemoyer, Luke and Liang, Percy and Cand{\`e}s, Emmanuel and Hashimoto, Tatsunori},
+  journal={arXiv preprint arXiv:2501.19393},
+  year={2025}
+}
+
+@inproceedings{sheng2024hybridflow,
+  title   = {HybridFlow: A Flexible and Efficient RLHF Framework},
+  booktitle = {European Conference on Computer Systems (EuroSys)},
+  author  = {Guangming Sheng and Chi Zhang and Zilingfeng Ye and Xibin Wu and Wang Zhang and Ru Zhang and Yanghua Peng and Haibin Lin and Chuan Wu},
+  year = {2025},
+}
+
+@article{hu2024openrlhf,
+  title={OpenRLHF: An Easy-to-use, Scalable and High-performance RLHF Framework},
+  author={Jian Hu and Xibin Wu and Zilin Zhu and Xianyu and Weixun Wang and Dehao Zhang and Yu Cao},
+  journal={arXiv preprint arXiv:2405.11143},
+  year={2024}
+}
+
+@inproceedings{zelikman2022star,
+title={{ST}aR: Bootstrapping Reasoning With Reasoning},
+author={Eric Zelikman and Yuhuai Wu and Jesse Mu and Noah Goodman},
+booktitle={Advances in Neural Information Processing Systems},
+editor={Alice H. Oh and Alekh Agarwal and Danielle Belgrave and Kyunghyun Cho},
+year={2022},
+url={https://openreview.net/forum?id=_3ELRdg2sgI}
+}
+
+@article{Zelikman2024QuietSTaRLM,
+  title={Quiet-STaR: Language Models Can Teach Themselves to Think Before Speaking},
+  author={E. Zelikman and Georges Harik and Yijia Shao and Varuna Jayasiri and Nick Haber and Noah D. Goodman},
+  journal={COLM},
+  year={2024},
+  volume={abs/2403.09629},
+}
+
+@inproceedings{hoffman2023training,
+title={Training Chain-of-Thought via Latent-Variable Inference},
+author={Matthew Douglas Hoffman and Du Phan and david dohan and Sholto Douglas and Tuan Anh Le and Aaron T Parisi and Pavel Sountsov and Charles Sutton and Sharad Vikram and Rif A. Saurous},
+booktitle={Thirty-seventh Conference on Neural Information Processing Systems},
+year={2023},
+url={https://openreview.net/forum?id=a147pIS2Co}
+}
+
+@inproceedings{gehring2024rlefgroundingcodellms,
+      title={RLEF: Grounding Code LLMs in Execution Feedback with Reinforcement Learning},
+  booktitle = {International Conference on Machine Learning (ICML)}, 
+      author={Jonas Gehring and Kunhao Zheng and Jade Copet and Vegard Mella and Taco Cohen and Gabriel Synnaeve},
+      year = {2025},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2410.02089}, 
+}
+
+@misc{VinePPO,
+      title={VinePPO: Unlocking RL Potential For LLM Reasoning Through Refined Credit Assignment}, 
+      author={Amirhossein Kazemnejad and Milad Aghajohari and Eva Portelance and Alessandro Sordoni and Siva Reddy and Aaron Courville and Nicolas Le Roux},
+      year={2024},
+      eprint={2410.01679},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2410.01679}, 
+}
+
+@article{amit2024models,
+  title={Models that prove their own correctness},
+  journal = {Electron. Colloquium Comput. Complex.},
+  author={Amit, Noga and Goldwasser, Shafi and Paradise, Orr and Rothblum, Guy},
+  year = {2024}
+}
+
+
+@misc{wang2025ragenunderstandingselfevolutionllm,
+  title={RAGEN: Understanding Self-Evolution in LLM Agents via Multi-Turn Reinforcement Learning},
+  author={Zihan Wang and Kangrui Wang and Qineng Wang and Pingyue Zhang and Linjie Li and Zhengyuan Yang and Kefan Yu and Minh Nhat Nguyen and Licheng Liu and Eli Gottlieb and Yiping Lu and Kyunghyun Cho and Jiajun Wu and Li Fei-Fei and Lijuan Wang and Yejin Choi and Manling Li},
+  year={2025},
+  eprint={2504.20073},
+  archivePrefix={arXiv},
+  primaryClass={cs.LG}
+}
+
+@misc{anthropic2025claude4,
+  author       = {{Anthropic}},
+  title        = {Claude 4},
+  year         = {2025},
+  month        = {May},
+  url          = {https://www.anthropic.com/news/claude-4},
+  note         = {Accessed: 2025-06-13}
+}
+
+@article{schrittwieser2020mastering,
+  title={Mastering atari, go, chess and shogi by planning with a learned model},
+  author={Schrittwieser, Julian and Antonoglou, Ioannis and Hubert, Thomas and Simonyan, Karen and Sifre, Laurent and Schmitt, Simon and Guez, Arthur and Lockhart, Edward and Hassabis, Demis and Graepel, Thore and others},
+  journal={Nature},
+  volume={588},
+  number={7839},
+  pages={604--609},
+  year={2020},
+  publisher={Nature Publishing Group UK London}
+}
+
+@inproceedings{mirhoseini2020chip,
+  title={Chip placement with deep reinforcement learning},
+  booktitle = {Design, Automation and Test in Europe (DATE)},
+  author={Mirhoseini, Azalia and Goldie, Anna and Yazgan, Mustafa and Jiang, Joe and Songhori, Ebrahim and Wang, Shen and Lee, Young-Joon and Johnson, Eric and Pathak, Omkar and Bae, Sungmin and others},
+  year = {2023}
+}
+
+@inproceedings{cusumano2025robust,
+  title={Robust autonomy emerges from self-play},
+  booktitle = {International Conference on Machine Learning (ICML)},
+  author={Cusumano-Towner, Marco and Hafner, David and Hertzberg, Alex and Huval, Brody and Petrenko, Aleksei and Vinitsky, Eugene and Wijmans, Erik and Killian, Taylor and Bowers, Stuart and Sener, Ozan and others},
+  year = {2025}
+}
+
+@article{khatri2025art,
+  title={The art of scaling reinforcement learning compute for llms},
+  author={Khatri, Devvrit and Madaan, Lovish and Tiwari, Rishabh and Bansal, Rachit and Duvvuri, Sai Surya and Zaheer, Manzil and Dhillon, Inderjit S and Brandfonbrener, David and Agarwal, Rishabh},
+  journal={arXiv preprint arXiv:2510.13786},
+  year={2025}
+}
+
+### End chapter 7 ###
+
+### First appearing in chapter 8 (Direct Alignment) ###
+
+@inproceedings{xu2024dpo,
+  title={Is dpo superior to ppo for llm alignment? a comprehensive study},
+  booktitle = {International Conference on Machine Learning (ICML)},
+  author={Xu, Shusheng and Fu, Wei and Gao, Jiaxuan and Ye, Wenjie and Liu, Weilin and Mei, Zhiyu and Wang, Guangju and Yu, Chao and Wu, Yi},
+  year = {2024}
+}
+
+@misc{teamolmo2025olmo3,
+  title={ Olmo 3 },
+  author={ Team Olmo and Allyson Ettinger and Amanda Bertsch and Bailey Kuehl and David Graham and David Heineman and Dirk Groeneveld and Faeze Brahman and Finbarr Timbers and Hamish Ivison and Jacob Morrison and Jake Poznanski and Kyle Lo and Luca Soldaini and Matt Jordan and Mayee Chen and Michael Noukhovitch and Nathan Lambert and Pete Walsh and Pradeep Dasigi and Robert Berry and Saumya Malik and Saurabh Shah and Scott Geng and Shane Arora and Shashank Gupta and Taira Anderson and Teng Xiao and Tyler Murray and Tyler Romero and Victoria Graf and Akari Asai and Akshita Bhagia and Alexander Wettig and Alisa Liu and Aman Rangapur and Chloe Anastasiades and Costa Huang and Dustin Schwenk and Harsh Trivedi and Ian Magnusson and Jaron Lochner and Jiacheng Liu and Lester James V. Miranda and Maarten Sap and Malia Morgan and Michael Schmitz and Michal Guerquin and Michael Wilson and Regan Huff and Ronan Le Bras and Rui Xin and Rulin Shao and Sam Skjonsberg and Shannon Zejiang Shen and Shuyue Stella Li and Tucker Wilde and Valentina Pyatkin and Will Merrill and Yapei Chang and Yuling Gu and Zhiyuan Zeng and Ashish Sabharwal and Luke Zettlemoyer and Pang Wei Koh and Ali Farhadi and Noah A. Smith and Hannaneh Hajishirzi },
+  year={ 2025 },
+  eprint={ 2512.13961 },
+  archivePrefix={arXiv},
+  primaryClass={ cs.CL },
+  url={https://arxiv.org/abs/2512.13961}
+}
+
+@misc{bakouch2025smollm3,
+  title={{SmolLM3: smol, multilingual, long-context reasoner}},
+  author={Bakouch, Elie and Ben Allal, Loubna and Lozhkov, Anton and Tazi, Nouamane and Tunstall, Lewis and Patiño, Carlos Miguel and Beeching, Edward and Roucher, Aymeric and Reedi, Aksel Joonas and Gallouédec, Quentin and Rasul, Kashif and Habib, Nathan and Fourrier, Clémentine and Kydlicek, Hynek and Penedo, Guilherme and Larcher, Hugo and Morlon, Mathieu and Srivastav, Vaibhav and Lochner, Joshua and Nguyen, Xuan-Son and Raffel, Colin and von Werra, Leandro and Wolf, Thomas},
+  year={2025},
+  howpublished={\url{https://huggingface.co/blog/smollm3}}
+}
+
+@inproceedings{azar2024general,
+  title={A general theoretical paradigm to understand learning from human preferences},
+  author={Azar, Mohammad Gheshlaghi and Guo, Zhaohan Daniel and Piot, Bilal and Munos, Remi and Rowland, Mark and Valko, Michal and Calandriello, Daniele},
+  booktitle={International Conference on Artificial Intelligence and Statistics},
+  pages={4447--4455},
+  year={2024},
+  organization={PMLR}
+}
+
+@article{zhao2023slic,
+  title={Slic-hf: Sequence likelihood calibration with human feedback},
+  author={Zhao, Yao and Joshi, Rishabh and Liu, Tianqi and Khalman, Misha and Saleh, Mohammad and Liu, Peter J},
+  journal={arXiv preprint arXiv:2305.10425},
+  year={2023}
+}
+
+@article{singhal2024d2po,
+  title={D2po: Discriminator-guided dpo with response evaluation models},
+  author={Singhal, Prasann and Lambert, Nathan and Niekum, Scott and Goyal, Tanya and Durrett, Greg},
+  journal={arXiv preprint arXiv:2405.01511},
+  year={2024}
+}
+
+@article{guo2024direct,
+  title={Direct language model alignment from online ai feedback},
+  author={Guo, Shangmin and Zhang, Biao and Liu, Tianlin and Liu, Tianqi and Khalman, Misha and Llinares, Felipe and Rame, Alexandre and Mesnard, Thomas and Zhao, Yao and Piot, Bilal and others},
+  journal={arXiv preprint arXiv:2402.04792},
+  year={2024}
+}
+
+@inproceedings{amini2024direct,
+  title={Direct preference optimization with an offset},
+  booktitle = {Annual Meeting of the Association for Computational Linguistics (ACL)},
+  author={Amini, Afra and Vieira, Tim and Cotterell, Ryan},
+  year = {2024}
+}
+
+@article{hong2024reference,
+  title={Reference-free monolithic preference optimization with odds ratio},
+  author={Hong, Jiwoo and Lee, Noah and Thorne, James},
+  journal={arXiv e-prints},
+  pages={arXiv--2403},
+  year={2024}
+}
+
+@article{meng2025simpo,
+  title={Simpo: Simple preference optimization with a reference-free reward},
+  author={Meng, Yu and Xia, Mengzhou and Chen, Danqi},
+  journal={Advances in Neural Information Processing Systems},
+  volume={37},
+  pages={124198--124235},
+  year={2025}
+}
+
+@inproceedings{zhao2024rainbowpo,
+  title={Rainbowpo: A unified framework for combining improvements in preference optimization},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  author={Zhao, Hanyang and Winata, Genta Indra and Das, Anirban and Zhang, Shi-Xiong and Yao, David D and Tang, Wenpin and Sahu, Sambit},
+  year = {2025}
+}
+
+@article{rosset2024direct,
+  title={Direct nash optimization: Teaching language models to self-improve with general preferences},
+  author={Rosset, Corby and Cheng, Ching-An and Mitra, Arindam and Santacroce, Michael and Awadallah, Ahmed and Xie, Tengyang},
+  journal={arXiv preprint arXiv:2404.03715},
+  year={2024}
+}
+
+@inproceedings{jung2024binary,
+  title={Binary classifier optimization for large language model alignment},
+  booktitle = {Annual Meeting of the Association for Computational Linguistics (ACL)},
+  author={Jung, Seungjae and Han, Gunsoo and Nam, Daniel Wontae and On, Kyoung-Woon},
+  year = {2025}
+}
+
+@article{gorbatovski2025differences,
+  title={The Differences Between Direct Alignment Algorithms are a Blur},
+  author={Gorbatovski, Alexey and Shaposhnikov, Boris and Sinii, Viacheslav and Malakhov, Alexey and Gavrilov, Daniil},
+  journal={arXiv preprint arXiv:2502.01237},
+  year={2025}
+}
+
+@inproceedings{razin2024unintentional,
+  title={Unintentional unalignment: Likelihood displacement in direct preference optimization},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  author={Razin, Noam and Malladi, Sadhika and Bhaskar, Adithya and Chen, Danqi and Arora, Sanjeev and Hanin, Boris},
+  year = {2025}
+}
+
+@inproceedings{ren2024learning,
+  title={Learning dynamics of llm finetuning},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  author={Ren, Yi and Sutherland, Danica J},
+  year = {2025}
+}
+
+@inproceedings{xiao2024cal,
+  title={Cal-dpo: Calibrated direct preference optimization for language model alignment},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  author={Xiao, Teng and Yuan, Yige and Zhu, Huaisheng and Li, Mingxiao and Honavar, Vasant G},
+  year = {2024}
+}
+
+@inproceedings{gupta2025alphapo,
+  title={AlphaPO--Reward shape matters for LLM alignment},
+  booktitle = {International Conference on Machine Learning (ICML)},
+  author={Gupta, Aman and Tang, Shao and Song, Qingquan and Zhu, Sirou and Hong, Jiwoo and Saha, Ankan and Gupta, Viral and Lee, Noah and Kim, Eunki and Zhu, Siyu and others},
+  year = {2025}
+}
+
+@inproceedings{tajwar2024preference,
+  title={Preference fine-tuning of llms should leverage suboptimal, on-policy data},
+  booktitle = {International Conference on Machine Learning (ICML)},
+  author={Tajwar, Fahim and Singh, Anikait and Sharma, Archit and Rafailov, Rafael and Schneider, Jeff and Xie, Tengyang and Ermon, Stefano and Finn, Chelsea and Kumar, Aviral},
+  year = {2024}
+}
+
+### End chapter 8 ###
+
+### First appearing in chapter 9 (Rejection Sampling) ###
+
+@article{gilks1992adaptive,
+  title={Adaptive rejection sampling for Gibbs sampling},
+  author={Gilks, Walter R and Wild, Pascal},
+  journal={Journal of the Royal Statistical Society: Series C (Applied Statistics)},
+  volume={41},
+  number={2},
+  pages={337--348},
+  year={1992},
+  publisher={Wiley Online Library}
+}
+
+@article{dong2023raft,
+  title         = {RAFT: Reward rAnked FineTuning for Generative Foundation Model Alignment},
+  journal = {Transactions on Machine Learning Research (TMLR)},
+  author        = {Dong, Hanze and Xiong, Wei and Goyal, Deepanshu and Zhang, Yihan and Chow, Winnie and Pan, Rui and Diao, Shizhe and Zhang, Jipeng and Shum, Kashun and Zhang, Tong},
+  year = {2023},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG}
+}
+
+@inproceedings{liu2023statistical,
+  title         = {Statistical Rejection Sampling Improves Preference Optimization},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  author        = {Liu, Tianqi and Zhao, Yao and Joshi, Rishabh and Khalman, Misha and Saleh, Mohammad and Liu, Peter J. and Liu, Jialu},
+  year = {2024},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.CL}
+}
+
+### End chapter 9 ###
+
+### First appearing in chapter 10 (Preferences) ###
 
 @article{lambert2023entangled,
   title={Entangled preferences: The history and risks of reinforcement learning and human feedback},
@@ -926,9 +2020,9 @@
   year={2020}
 }
 
-### End chapter 5 ###
+### End chapter 10 ###
 
-### First appearing in chapter 6 ###
+### First appearing in chapter 11 (Preference Data) ###
 
 @misc{bharadwaj2025flatteryflufffogdiagnosing,
       title={Flattery, Fluff, and Fog: Diagnosing and Mitigating Idiosyncratic Biases in Preference Models}, 
@@ -1039,866 +2133,9 @@
       url={https://arxiv.org/abs/2311.07911},
 }
 
-### End chapter 6 ###
-
-### First appearing in chapter 7 ###
-
-@article{BradleyTerry,
- ISSN = {00063444},
- URL = {http://www.jstor.org/stable/2334029},
- author = {Ralph Allan Bradley and Milton E. Terry},
- journal = {Biometrika},
- number = {3/4},
- pages = {324--345},
- publisher = {[Oxford University Press, Biometrika Trust]},
- title = {Rank Analysis of Incomplete Block Designs: I. The Method of Paired Comparisons},
- urldate = {2023-02-13},
- volume = {39},
- year = {1952}
-}
-
-@inproceedings{lambert2024rewardbench,
-  title={Rewardbench: Evaluating reward models for language modeling},
-  booktitle = {Conference of the North American Chapter of the Association for Computational Linguistics (NAACL)},
-  author={Lambert, Nathan and Pyatkin, Valentina and Morrison, Jacob and Miranda, LJ and Lin, Bill Yuchen and Chandu, Khyathi and Dziri, Nouha and Kumar, Sachin and Zick, Tom and Choi, Yejin and others},
-  year = {2025}
-}
-
-@inproceedings{zhou2024rmb,
-  title={RMB: Comprehensively Benchmarking Reward Models in LLM Alignment},
-  booktitle = {International Conference on Learning Representations (ICLR)},
-  author={Zhou, Enyu and Zheng, Guodong and Wang, Binghai and Xi, Zhiheng and Dou, Shihan and Bao, Rong and Shen, Wei and Xiong, Limao and Fan, Jessica and Mou, Yurong and others},
-  year = {2025}
-}
-
-@inproceedings{liu2024rm,
-  title={RM-bench: Benchmarking reward models of language models with subtlety and style},
-  booktitle = {International Conference on Learning Representations (ICLR)},
-  author={Liu, Yantao and Yao, Zijun and Min, Rui and Cao, Yixin and Hou, Lei and Li, Juanzi},
-  year = {2025}
-}
-
-@inproceedings{gureja2024m,
-  title={M-RewardBench: Evaluating Reward Models in Multilingual Settings},
-  booktitle = {Annual Meeting of the Association for Computational Linguistics (ACL)},
-  author={Gureja, Srishti and Miranda, Lester James V and Islam, Shayekh Bin and Maheshwary, Rishabh and Sharma, Drishti and Winata, Gusti and Lambert, Nathan and Ruder, Sebastian and Hooker, Sara and Fadaee, Marzieh},
-  year = {2025}
-}
-
-@article{chen2024mj,
-  title={MJ-Bench: Is Your Multimodal Reward Model Really a Good Judge for Text-to-Image Generation?},
-  author={Chen, Zhaorun and Du, Yichao and Wen, Zichen and Zhou, Yiyang and Cui, Chenhang and Weng, Zhenzhen and Tu, Haoqin and Wang, Chaoqi and Tong, Zhengwei and Huang, Qinglan and others},
-  journal={arXiv preprint arXiv:2407.04842},
-  year={2024}
-}
-
-@article{wu2025rewordbench,
-  title={reWordBench: Benchmarking and Improving the Robustness of Reward Models with Transformed Inputs},
-  author={Wu, Zhaofeng and Yasunaga, Michihiro and Cohen, Andrew and Kim, Yoon and Celikyilmaz, Asli and Ghazvininejad, Marjan},
-  journal={arXiv preprint arXiv:2503.11751},
-  year={2025}
-}
-
-@article{yasunaga2025multimodal,
-  title={Multimodal rewardbench: Holistic evaluation of reward models for vision language models},
-  author={Yasunaga, Michihiro and Zettlemoyer, Luke and Ghazvininejad, Marjan},
-  journal={arXiv preprint arXiv:2502.14191},
-  year={2025}
-}
-
-@article{li2024vlrewardbench,
-  title={VLRewardBench: A Challenging Benchmark for Vision-Language Generative Reward Models},
-  author={Li, Lei and Wei, Yuancheng and Xie, Zhihui and Yang, Xuqing and Song, Yifan and Wang, Peiyi and An, Chenxin and Liu, Tianyu and Li, Sujian and Lin, Bill Yuchen and others},
-  journal={arXiv preprint arXiv:2411.17451},
-  year={2024}
-}
-
-@article{ruan2025vlrmbench,
-  title={Vlrmbench: A comprehensive and challenging benchmark for vision-language reward models},
-  author={Ruan, Jiacheng and Yuan, Wenzhen and Gao, Xian and Guo, Ye and Zhang, Daoxin and Xu, Zhe and Hu, Yao and Liu, Ting and Fu, Yuzhuo},
-  journal={arXiv preprint arXiv:2503.07478},
-  year={2025}
-}
-
-@inproceedings{song2025prmbench,
-  title={PRMBench: A Fine-grained and Challenging Benchmark for Process-Level Reward Models},
-  booktitle = {Annual Meeting of the Association for Computational Linguistics (ACL)},
-  author={Song, Mingyang and Su, Zhaochen and Qu, Xiaoye and Zhou, Jiawei and Cheng, Yu},
-  year = {2025}
-}
-
-@article{wang2025visualprm,
-  title={VisualPRM: An Effective Process Reward Model for Multimodal Reasoning},
-  author={Wang, Weiyun and Gao, Zhangwei and Chen, Lianjie and Chen, Zhe and Zhu, Jinguo and Zhao, Xiangyu and Liu, Yangzhou and Cao, Yue and Ye, Shenglong and Zhu, Xizhou and others},
-  journal={arXiv preprint arXiv:2503.10291},
-  year={2025}
-}
-
-@misc{tu2025vilbench,
-  title = {ViLBench: A Suite for Vision-Language Process Reward Modeling},
-  author = {Tu, Haoqin and Feng, Weitao and Chen, Hardy and Liu, Hui and Tang, Xianfeng and Xie, Cihang},
-  year = {2025},
-  month = {Mar},
-  eprint = {2503.20271},
-  archivePrefix = {arXiv},
-  primaryClass = {cs.CV},
-  url = {https://arxiv.org/abs/2503.20271}
-}
-
-@inproceedings{wen2024rethinking,
-  title={Rethinking Reward Model Evaluation: Are We Barking up the Wrong Tree?},
-  booktitle = {International Conference on Learning Representations (ICLR)},
-  author={Wen, Xueru and Lou, Jie and Lu, Yaojie and Lin, Hongyu and Yu, Xing and Lu, Xinyu and He, Ben and Han, Xianpei and Zhang, Debing and Sun, Le},
-  year = {2025}
-}
-
-@inproceedings{jin2024rag,
-  title={RAG-RewardBench: Benchmarking Reward Models in Retrieval Augmented Generation for Preference Alignment},
-  booktitle = {Annual Meeting of the Association for Computational Linguistics (ACL)},
-  author={Jin, Zhuoran and Yuan, Hongbang and Men, Tianyi and Cao, Pengfei and Chen, Yubo and Liu, Kang and Zhao, Jun},
-  year = {2025}
-}
-
-@inproceedings{frick2024evaluate,
-  title={How to Evaluate Reward Models for RLHF},
-  booktitle = {International Conference on Learning Representations (ICLR)},
-  author={Frick, Evan and Li, Tianle and Chen, Connor and Chiang, Wei-Lin and Angelopoulos, Anastasios N and Jiao, Jiantao and Zhu, Banghua and Gonzalez, Joseph E and Stoica, Ion},
-  year = {2025}
-}
-
-@article{kim2024evaluating,
-  title={Evaluating robustness of reward models for mathematical reasoning},
-  author={Kim, Sunghwan and Kang, Dongjin and Kwon, Taeyoon and Chae, Hyungjoo and Won, Jungsoo and Lee, Dongha and Yeo, Jinyoung},
-  journal={arXiv preprint arXiv:2410.01729},
-  year={2024}
-}
-
-@inproceedings{zhu2023principled,
-  title={Principled reinforcement learning with human feedback from pairwise or k-wise comparisons},
-  author={Zhu, Banghua and Jordan, Michael and Jiao, Jiantao},
-  booktitle={International Conference on Machine Learning},
-  pages={43037--43067},
-  year={2023},
-  organization={PMLR}
-}
-
-@inproceedings{wang2024interpretable,
-  title={Interpretable Preferences via Multi-Objective Reward Modeling and Mixture-of-Experts},
-  booktitle = {Conference on Empirical Methods in Natural Language Processing (EMNLP)},
-  author={Wang, Haoxiang and Xiong, Wei and Xie, Tengyang and Zhao, Han and Zhang, Tong},
-  year = {2024}
-}
-
-@inproceedings{zhang2024generative,
-  title={Generative verifiers: Reward modeling as next-token prediction},
-  booktitle = {International Conference on Learning Representations (ICLR)},
-  author={Zhang, Lunjun and Hosseini, Arian and Bansal, Hritik and Kazemi, Mehran and Kumar, Aviral and Agarwal, Rishabh},
-  year = {2025}
-}
-
-@article{mahan2024generative,
-  title={Generative Reward Models},
-  author={Mahan, Dakota and Phung, Duy Van and Rafailov, Rafael and Blagden, Chase and Lile, Nathan and Castricato, Louis and Franken, Jan-Philipp and Finn, Chelsea and Albalak, Alon},
-  year={2024},
-  url={https://www.synthlabs.ai/pdf/Generative_Reward_Models.pdf}
-}
-
-@article{wang2024helpsteer2,
-  title={HelpSteer2: Open-source dataset for training top-performing reward models},
-  author={Wang, Zhilin and Dong, Yi and Delalleau, Olivier and Zeng, Jiaqi and Shen, Gerald and Egert, Daniel and Zhang, Jimmy J and Sreedhar, Makesh Narsimhan and Kuchaiev, Oleksii},
-  journal={arXiv preprint arXiv:2406.08673},
-  year={2024}
-}
-
-@article{ankner2024critique,
-  title={Critique-out-loud reward models},
-  author={Ankner, Zachary and Paul, Mansheej and Cui, Brandon and Chang, Jonathan D and Ammanabrolu, Prithviraj},
-  journal={arXiv preprint arXiv:2408.11791},
-  year={2024}
-}
-
-@inproceedings{park2024offsetbias,
-  title={Offsetbias: Leveraging debiased data for tuning evaluators},
-  booktitle = {Conference on Empirical Methods in Natural Language Processing (EMNLP)},
-  author={Park, Junsoo and Jwa, Seungyeon and Ren, Meiying and Kim, Daeyoung and Choi, Sanghyuk},
-  year = {2024}
-}
-
-@inproceedings{liu2024acemath,
-  title        = {AceMath: Advancing Frontier Math Reasoning with Post-Training and Reward Modeling},
-  booktitle = {Annual Meeting of the Association for Computational Linguistics (ACL)},
-  author       = {Zihan Liu and Yang Chen and Mohammad Shoeybi and Bryan Catanzaro and Wei Ping},
-  year = {2025},
-  archivePrefix= {arXiv},
-  primaryClass = {cs.CL},
-  url          = {https://arxiv.org/abs/2412.15084}
-}
-
-@inproceedings{zheng2024processbench,
-  title        = {ProcessBench: Identifying Process Errors in Mathematical Reasoning},
-  booktitle = {Annual Meeting of the Association for Computational Linguistics (ACL)},
-  author       = {Chujie Zheng and Zhenru Zhang and Beichen Zhang and Runji Lin and Keming Lu and Bowen Yu and Dayiheng Liu and Jingren Zhou and Junyang Lin},
-  year = {2025},
-  archivePrefix= {arXiv},
-  primaryClass = {cs.AI},
-  url          = {https://arxiv.org/abs/2412.06559}
-}
-
-@inproceedings{men2025agentrewardbench,
-  title     = {Agent-RewardBench: Towards a Unified Benchmark for Reward Modeling across Perception, Planning, and Safety in Real-World Multimodal Agents},
-  author    = {Tianyi Men and Zhuoran Jin and Pengfei Cao and Yubo Chen and Kang Liu and Jun Zhao},
-  booktitle = {Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)},
-  year      = {2025},
-  month     = jul,
-  address   = {Vienna, Austria},
-  publisher = {Association for Computational Linguistics},
-  pages     = {17521--17541},
-  doi       = {10.18653/v1/2025.acl-long.857},
-  url       = {https://aclanthology.org/2025.acl-long.857/}
-}
-
-@misc{lin2025cuarewardbench,
-  title        = {CUARewardBench: A Benchmark for Evaluating Reward Models on Computer-using Agent},
-  author       = {Haojia Lin and Xiaoyu Tan and Yulei Qin and Zihan Xu and Yuchen Shi and Zongyi Li and Gang Li and Shaofei Cai and Siqi Cai and Chaoyou Fu and Ke Li and Xing Sun},
-  year         = {2025},
-  eprint       = {2510.18596},
-  archivePrefix= {arXiv},
-  primaryClass = {cs.SE},
-  url          = {https://arxiv.org/abs/2510.18596}
-}
-
-@inproceedings{liu2019learning,
-  title={Learning plackett-luce mixtures from partial preferences},
-  author={Liu, Ao and Zhao, Zhibing and Liao, Chao and Lu, Pinyan and Xia, Lirong},
-  booktitle={Proceedings of the AAAI Conference on Artificial Intelligence},
-  volume={33},
-  number={01},
-  pages={4328--4335},
-  year={2019}
-}
-
-@inproceedings{zhu2024starling,
-  title={Starling-7b: Improving helpfulness and harmlessness with rlaif},
-  author={Zhu, Banghua and Frick, Evan and Wu, Tianhao and Zhu, Hanlin and Ganesan, Karthik and Chiang, Wei-Lin and Zhang, Jian and Jiao, Jiantao},
-  booktitle={First Conference on Language Modeling},
-  year={2024}
-}
-
-@article{lyu2025exploring,
-  title={Exploring the Limit of Outcome Reward for Learning Mathematical Reasoning},
-  author={Lyu, Chengqi and Gao, Songyang and Gu, Yuzhe and Zhang, Wenwei and Gao, Jianfei and Liu, Kuikun and Wang, Ziyi and Li, Shuaibin and Zhao, Qian and Huang, Haian and others},
-  journal={arXiv preprint arXiv:2502.06781},
-  year={2025}
-}
-
-@article{zheng2023judging,
-  title={Judging llm-as-a-judge with mt-bench and chatbot arena},
-  author={Zheng, Lianmin and Chiang, Wei-Lin and Sheng, Ying and Zhuang, Siyuan and Wu, Zhanghao and Zhuang, Yonghao and Lin, Zi and Li, Zhuohan and Li, Dacheng and Xing, Eric and others},
-  journal={Advances in Neural Information Processing Systems},
-  volume={36},
-  pages={46595--46623},
-  year={2023}
-}
-
-@inproceedings{lin2024wildbench,
-  title={WILDBENCH: Benchmarking LLMs with Challenging Tasks from Real Users in the Wild},
-  booktitle = {International Conference on Learning Representations (ICLR)},
-  author={Lin, Bill Yuchen and Deng, Yuntian and Chandu, Khyathi and Brahman, Faeze and Ravichander, Abhilasha and Pyatkin, Valentina and Dziri, Nouha and Bras, Ronan Le and Choi, Yejin},
-  year = {2025}
-}
-
-@inproceedings{li2024crowdsourced,
-  title={From Crowdsourced Data to High-Quality Benchmarks: Arena-Hard and BenchBuilder Pipeline},
-  booktitle = {International Conference on Machine Learning (ICML)},
-  author={Li, Tianle and Chiang, Wei-Lin and Frick, Evan and Dunlap, Lisa and Wu, Tianhao and Zhu, Banghua and Gonzalez, Joseph E and Stoica, Ion},
-  year = {2025}
-}
-
-@article{dubois2024length,
-  title={Length-controlled alpacaeval: A simple way to debias automatic evaluators},
-  author={Dubois, Yann and Galambosi, Bal{\'a}zs and Liang, Percy and Hashimoto, Tatsunori B},
-  journal={arXiv preprint arXiv:2404.04475},
-  year={2024}
-}
-
-@inproceedings{kim2023prometheus,
-  title={Prometheus: Inducing fine-grained evaluation capability in language models},
-  author={Kim, Seungone and Shin, Jamin and Cho, Yejin and Jang, Joel and Longpre, Shayne and Lee, Hwaran and Yun, Sangdoo and Shin, Seongjin and Kim, Sungdong and Thorne, James and others},
-  booktitle={The Twelfth International Conference on Learning Representations},
-  year={2024}
-}
-
-@article{cobbe2021gsm8k,
-  title={Training Verifiers to Solve Math Word Problems},
-  author={Cobbe, Karl and Kosaraju, Vineet and Bavarian, Mohammad and Chen, Mark and Jun, Heewoo and Kaiser, Lukasz and Plappert, Matthias and Tworek, Jerry and Hilton, Jacob and Nakano, Reiichiro and Hesse, Christopher and Schulman, John},
-  journal={arXiv preprint arXiv:2110.14168},
-  year={2021}
-}
-
-### End chapter 7 ###
-
-### First appearing in chapter 8 ###
-
-@inproceedings{jaques2020human,
-  title={Human-centric dialog training via offline reinforcement learning},
-  booktitle = {Conference on Empirical Methods in Natural Language Processing (EMNLP)},
-  author={Jaques, Natasha and Shen, Judy Hanwen and Ghandeharioun, Asma and Ferguson, Craig and Lapedriza, Agata and Jones, Noah and Gu, Shixiang Shane and Picard, Rosalind},
-  year = {2020}
-}
-
-@inproceedings{jaques2017sequence,
-  title={Sequence tutor: Conservative fine-tuning of sequence generation models with kl-control},
-  author={Jaques, Natasha and Gu, Shixiang and Bahdanau, Dzmitry and Hern{\'a}ndez-Lobato, Jos{\'e} Miguel and Turner, Richard E and Eck, Douglas},
-  booktitle={International Conference on Machine Learning},
-  pages={1645--1654},
-  year={2017},
-  organization={PMLR}
-}
-
-@inproceedings{pang2024iterative,
-  title={Iterative reasoning preference optimization},
-  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
-  author={Pang, Richard Yuanzhe and Yuan, Weizhe and Cho, Kyunghyun and He, He and Sukhbaatar, Sainbayar and Weston, Jason},
-  year = {2024}
-}
-
-@inproceedings{gao2024rebel,
-  title={Rebel: Reinforcement learning via regressing relative rewards},
-  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
-  author={Gao, Zhaolin and Chang, Jonathan D and Zhan, Wenhao and Oertell, Owen and Swamy, Gokul and Brantley, Kiant{\'e} and Joachims, Thorsten and Bagnell, J Andrew and Lee, Jason D and Sun, Wen},
-  year = {2024}
-}
-
-@misc{schulman2016klapprox,
-  author = {Schulman, John},
-  title = {Approximating KL-divergence},
-  year = {2016},
-  howpublished = {\url{http://joschu.net/blog/kl-approx.html}},
-  note = {Accessed: 2024-10-01}
-}
-
-### End chapter 8 ###
-
-### First appearing in chapter 9 ###
-
-@article{brown2020language,
-  title={Language models are few-shot learners},
-  author={Brown, Tom and Mann, Benjamin and Ryder, Nick and Subbiah, Melanie and Kaplan, Jared D and Dhariwal, Prafulla and Neelakantan, Arvind and Shyam, Pranav and Sastry, Girish and Askell, Amanda and others},
-  journal={Advances in neural information processing systems},
-  volume={33},
-  pages={1877--1901},
-  year={2020}
-}
-
-@article{raffel2020exploring,
-  title={Exploring the limits of transfer learning with a unified text-to-text transformer},
-  author={Raffel, Colin and Shazeer, Noam and Roberts, Adam and Lee, Katherine and Narang, Sharan and Matena, Michael and Zhou, Yanqi and Li, Wei and Liu, Peter J},
-  journal={Journal of machine learning research},
-  volume={21},
-  number={140},
-  pages={1--67},
-  year={2020}
-}
-
-@inproceedings{wei2021finetuned,
-  title={Finetuned Language Models are Zero-Shot Learners},
-  author={Jason Wei and Maarten Bosma and Vincent Zhao and Kelvin Guu and Adams Wei Yu and Brian Lester and Nan Du and Andrew M. Dai and Quoc V Le},
-  booktitle={International Conference on Learning Representations},
-  year={2022},
-  url={https://openreview.net/forum?id=gEZrGCozdqR}
-}
-
-@inproceedings{sanh2021multitask,
-  title={Multitask Prompted Training Enables Zero-Shot Task Generalization},
-  author={Victor Sanh and Albert Webson and Colin Raffel and Stephen Bach and Lintang Sutawika and Zaid Alyafeai and Antoine Chaffin and Arnaud Stiegler and Arun Raja and Manan Dey and M Saiful Bari and Canwen Xu and Urmish Thakker and Shanya Sharma Sharma and Eliza Szczechla and Taewoon Kim and Gunjan Chhablani and Nihal Nayak and Debajyoti Datta and Jonathan Chang and Mike Tian-Jian Jiang and Han Wang and Matteo Manica and Sheng Shen and Zheng Xin Yong and Harshit Pandey and Rachel Bawden and Thomas Wang and Trishala Neeraj and Jos Rozen and Abheesht Sharma and Andrea Santilli and Thibault Fevry and Jason Alan Fries and Ryan Teehan and Teven Le Scao and Stella Biderman and Leo Gao and Thomas Wolf and Alexander M Rush},
-  booktitle={International Conference on Learning Representations},
-  year={2022},
-  url={https://openreview.net/forum?id=9Vrb9D0WI4}
-}
-
-@inproceedings{mishra2021cross,
-    title = "Cross-Task Generalization via Natural Language Crowdsourcing Instructions",
-    author = "Mishra, Swaroop  and
-      Khashabi, Daniel  and
-      Baral, Chitta  and
-      Hajishirzi, Hannaneh",
-    booktitle = "Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)",
-    month = may,
-    year = "2022",
-    publisher = "Association for Computational Linguistics",
-    url = "https://aclanthology.org/2022.acl-long.244/",
-    doi = "10.18653/v1/2022.acl-long.244",
-    pages = "3470--3487",
-}
-
-@article{dettmers2023qlora,
-  title={Qlora: Efficient finetuning of quantized llms},
-  author={Dettmers, Tim and Pagnoni, Artidoro and Holtzman, Ari and Zettlemoyer, Luke},
-  journal={Advances in neural information processing systems},
-  volume={36},
-  pages={10088--10115},
-  year={2023}
-}
-
-@misc{no_robots,
-  author = {Nazneen Rajani and Lewis Tunstall and Edward Beeching and Nathan Lambert and Alexander M. Rush and Thomas Wolf},
-  title = {No Robots},
-  year = {2023},
-  publisher = {Hugging Face},
-  journal = {Hugging Face repository},
-  howpublished = {\url{https://huggingface.co/datasets/HuggingFaceH4/no_robots}}
-}
-
-@article{wallace2024instruction,
-  title={The instruction hierarchy: Training llms to prioritize privileged instructions},
-  author={Wallace, Eric and Xiao, Kai and Leike, Reimar and Weng, Lilian and Heidecke, Johannes and Beutel, Alex},
-  journal={arXiv preprint arXiv:2404.13208},
-  year={2024}
-}
-
-### End chapter 9 ###
-
-### First appearing in chapter 10 ###
-
-@article{gilks1992adaptive,
-  title={Adaptive rejection sampling for Gibbs sampling},
-  author={Gilks, Walter R and Wild, Pascal},
-  journal={Journal of the Royal Statistical Society: Series C (Applied Statistics)},
-  volume={41},
-  number={2},
-  pages={337--348},
-  year={1992},
-  publisher={Wiley Online Library}
-}
-
-@article{dong2023raft,
-  title         = {RAFT: Reward rAnked FineTuning for Generative Foundation Model Alignment},
-  journal = {Transactions on Machine Learning Research (TMLR)},
-  author        = {Dong, Hanze and Xiong, Wei and Goyal, Deepanshu and Zhang, Yihan and Chow, Winnie and Pan, Rui and Diao, Shizhe and Zhang, Jipeng and Shum, Kashun and Zhang, Tong},
-  year = {2023},
-  archivePrefix = {arXiv},
-  primaryClass  = {cs.LG}
-}
-
-@inproceedings{liu2023statistical,
-  title         = {Statistical Rejection Sampling Improves Preference Optimization},
-  booktitle = {International Conference on Learning Representations (ICLR)},
-  author        = {Liu, Tianqi and Zhao, Yao and Joshi, Rishabh and Khalman, Misha and Saleh, Mohammad and Liu, Peter J. and Liu, Jialu},
-  year = {2024},
-  archivePrefix = {arXiv},
-  primaryClass  = {cs.CL}
-}
-
-### End chapter 10 ###
-
-### First appearing in chapter 11 ###
-
-@article{williams1992simple,
-  title={Simple statistical gradient-following algorithms for connectionist reinforcement learning},
-  author={Williams, Ronald J},
-  journal={Machine learning},
-  volume={8},
-  pages={229--256},
-  year={1992},
-  publisher={Springer}
-}
-
-@article{schulman2017proximal,
-  title={Proximal policy optimization algorithms},
-  author={Schulman, John and Wolski, Filip and Dhariwal, Prafulla and Radford, Alec and Klimov, Oleg},
-  journal={arXiv preprint arXiv:1707.06347},
-  year={2017}
-}
-
-@article{berner2019dota,
-  title={Dota 2 with large scale deep reinforcement learning},
-  author={Berner, Christopher and Brockman, Greg and Chan, Brooke and Cheung, Vicki and D{\k{e}}biak, Przemys{\l}aw and Dennison, Christy and Farhi, David and Fischer, Quirin and Hashme, Shariq and Hesse, Chris and others},
-  journal={arXiv preprint arXiv:1912.06680},
-  year={2019}
-}
-
-@inproceedings{huang2024n,
-  title={The N+ Implementation Details of {RLHF} with {PPO}: A Case Study on {TL};{DR} Summarization},
-  author={Shengyi Huang and Michael Noukhovitch and Arian Hosseini and Kashif Rasul and Weixun Wang and Lewis Tunstall},
-  booktitle={First Conference on Language Modeling},
-  year={2024},
-  url={https://openreview.net/forum?id=kHO2ZTa8e3}
-}
-
-@article{weng2018PG,
-  title   = "Policy Gradient Algorithms",
-  author  = "Weng, Lilian",
-  journal = "lilianweng.github.io",
-  year    = "2018",
-  url     = "https://lilianweng.github.io/posts/2018-04-08-policy-gradient/"
-}
-
-@article{kool2019buy,
-  title={Buy 4 reinforce samples, get a baseline for free!},
-  author={Kool, Wouter and van Hoof, Herke and Welling, Max},
-  year={2019}
-}
-
-@inproceedings{schulman2015high,
-  title={High-dimensional continuous control using generalized advantage estimation},
-  author={Schulman, John and Moritz, Philipp and Levine, Sergey and Jordan, Michael and Abbeel, Pieter},
-  booktitle={Proceedings of the International Conference on Learning Representations (ICLR)},
-  year =2016
-}
-
-@misc{seita2017gae,
-  author = {Daniel Seita},
-  title = {Notes on the Generalized Advantage Estimation Paper},
-  year = {2017},
-  url = {https://danieltakeshi.github.io/2017/04/02/notes-on-the-generalized-advantage-estimation-paper/}
-}
-
-@inproceedings{ivison2024unpacking,
-  title={Unpacking DPO and PPO: Disentangling Best Practices for Learning from Preference Feedback},
-  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
-  author={Ivison, Hamish and Wang, Yizhong and Liu, Jiacheng and Wu, Zeqiu and Pyatkin, Valentina and Lambert, Nathan and Smith, Noah A and Choi, Yejin and Hajishirzi, Hannaneh},
-  year = {2024}
-}
-
-@misc{yu2025dapo,
-  author = {Yu, Qiying and Zhang, Zheng and Zhu, Ruofei and Yuan, Yufeng and Yue, Yu and Fan, Tiantian and Liu, Gaohong and Liu, Lingjun and Liu, Xin and Lin, Haibin and Lin, Zhiqi and Ma, Bole and Sheng, Guangming and Tong, Yuxuan and Zhang, Chi and Zhang, Mofan and Zhang, Wang and Zhu, Hang and Zhu, Jinhua and Chen, Jiaze and Chen, Jiangjie and Wang, Chengyi and Yu, Hongli and Dai, Weinan and Song, Yuxuan and Wei, Xiangpeng and Zhou, Hao and Liu, Jingjing and Ma, Wei-Ying and Zhang, Ya-Qin and Qiao, Mu and Yan, Lin and Wu, Yonghui and Wang, Mingxuan},
-  title = {DAPO: an Open-Source LLM Reinforcement Learning System at Scale},
-  year = {2025},
-  month = {March},
-  note = {Available at \url{https://dapo-sia.github.io/static/pdf/dapo_paper.pdf}}
-}
-
-@inproceedings{baheti2023leftover,
-  title={Leftover lunch: advantage-based offline reinforcement learning for language models},
-  booktitle = {International Conference on Learning Representations (ICLR)},
-  author={Baheti, Ashutosh and Lu, Ximing and Brahman, Faeze and Bras, Ronan Le and Sap, Maarten and Riedl, Mark},
-  year = {2024}
-}
-
-@article{yuan2025vapo,
-  title={VAPO: Efficient and Reliable Reinforcement Learning for Advanced Reasoning Tasks},
-  author={Yuan, Yufeng and Yu, Qiying and Zuo, Xiaochen and Zhu, Ruofei and Xu, Wenyuan and Chen, Jiaze and Wang, Chengyi and Fan, TianTian and Du, Zhengyin and Wei, Xiangpeng and others},
-  journal={arXiv preprint arXiv:2504.05118},
-  year={2025}
-}
-
-@article{yuan2025s,
-  title={What's Behind PPO's Collapse in Long-CoT? Value Optimization Holds the Secret},
-  author={Yuan, Yufeng and Yue, Yu and Zhu, Ruofei and Fan, Tiantian and Yan, Lin},
-  journal={arXiv preprint arXiv:2503.01491},
-  year={2025}
-}
-
-@article{liu2025understanding,
-  title={Understanding R1-Zero-Like Training: A Critical Perspective},
-  author={Liu, Zichen and Chen, Changyu and Li, Wenjun and Qi, Penghui and Pang, Tianyu and Du, Chao and Lee, Wee Sun and Lin, Min},
-  journal={arXiv preprint arXiv:2503.20783},
-  year={2025},
-  month={Mar},
-  url={https://arxiv.org/abs/2503.20783}
-}
-
-@inproceedings{flet2024contrastive,
-  title={Contrastive Policy Gradient: Aligning LLMs on sequence-level scores in a supervised-friendly fashion},
-  booktitle = {Conference on Empirical Methods in Natural Language Processing (EMNLP)},
-  author={Flet-Berliac, Yannis and Grinsztajn, Nathan and Strub, Florian and Wu, Bill and Choi, Eugene and Cremer, Chris and Ahmadian, Arash and Chandak, Yash and Azar, Mohammad Gheshlaghi and Pietquin, Olivier and others},
-  year = {2024}
-}
-
-@inproceedings{li2023remax,
-  title={Remax: A simple, effective, and efficient reinforcement learning method for aligning large language models},
-  author={Li, Ziniu and Xu, Tian and Zhang, Yushun and Lin, Zhihang and Yu, Yang and Sun, Ruoyu and Luo, Zhi-Quan},
-  booktitle={Forty-first International Conference on Machine Learning},
-  year={2024}
-}
-
-@article{team2025kimi,
-  title={Kimi k1. 5: Scaling reinforcement learning with llms},
-  author={Team, Kimi and Du, Angang and Gao, Bofei and Xing, Bowei and Jiang, Changjiu and Chen, Cheng and Li, Cheng and Xiao, Chenjun and Du, Chenzhuang and Liao, Chonghua and others},
-  journal={arXiv preprint arXiv:2501.12599},
-  year={2025}
-}
-
-@article{wu2023pairwise,
-  title={Pairwise proximal policy optimization: Harnessing relative feedback for llm alignment},
-  author={Wu, Tianhao and Zhu, Banghua and Zhang, Ruoyu and Wen, Zhaojin and Ramchandran, Kannan and Jiao, Jiantao},
-  journal={arXiv preprint arXiv:2310.00212},
-  year={2023}
-}
-
-@article{gunter2024apple,
-  title={Apple intelligence foundation language models},
-  author={Gunter, Tom and Wang, Zirui and Wang, Chong and Pang, Ruoming and Narayanan, Andy and Zhang, Aonan and Zhang, Bowen and Chen, Chen and Chiu, Chung-Cheng and Qiu, David and others},
-  journal={arXiv preprint arXiv:2407.21075},
-  year={2024}
-}
-
-@article{zhang2025improving,
-  title={Improving LLM General Preference Alignment via Optimistic Online Mirror Descent},
-  author={Zhang, Yuheng and Yu, Dian and Ge, Tao and Song, Linfeng and Zeng, Zhichen and Mi, Haitao and Jiang, Nan and Yu, Dong},
-  journal={arXiv preprint arXiv:2502.16852},
-  year={2025}
-}
-
-@inproceedings{tomar2020mirror,
-  title={Mirror descent policy optimization},
-  booktitle = {International Conference on Learning Representations (ICLR)},
-  author={Tomar, Manan and Shani, Lior and Efroni, Yonathan and Ghavamzadeh, Mohammad},
-  year = {2022}
-}
-
-@inproceedings{noukhovitch2024asynchronous,
-  title={Asynchronous RLHF: Faster and More Efficient Off-Policy RL for Language Models},
-  booktitle = {International Conference on Learning Representations (ICLR)},
-  author={Noukhovitch, Michael and Huang, Shengyi and Xhonneux, Sophie and Hosseini, Arian and Agarwal, Rishabh and Courville, Aaron},
-  year = {2025}
-}
-
-@article{wu2025llamarl,
-  title={LlamaRL: A Distributed Asynchronous Reinforcement Learning Framework for Efficient Large-scale LLM Trainin},
-  author={Wu, Bo and Wang, Sid and Tang, Yunhao and Ding, Jia and Helenowski, Eryk and Tan, Liang and Xu, Tengyu and Gowda, Tushar and Chen, Zhengxing and Zhu, Chen and others},
-  journal={arXiv preprint arXiv:2505.24034},
-  year={2025}
-}
-
-@article{fu2025areal,
-  title={AReaL: A Large-Scale Asynchronous Reinforcement Learning System for Language Reasoning},
-  author={Fu, Wei and Gao, Jiaxuan and Shen, Xujie and Zhu, Chen and Mei, Zhiyu and He, Chuyi and Xu, Shusheng and Wei, Guo and Mei, Jun and Wang, Jiashu and others},
-  journal={arXiv preprint arXiv:2505.24298},
-  year={2025}
-}
-
-@article{roux2025tapered,
-  title={Tapered Off-Policy REINFORCE: Stable and efficient reinforcement learning for LLMs},
-  author={Roux, Nicolas Le and Bellemare, Marc G and Lebensold, Jonathan and Bergeron, Arnaud and Greaves, Joshua and Fr{\'e}chette, Alex and Pelletier, Carolyne and Thibodeau-Laufer, Eric and Toth, S{\'a}ndor and Work, Sam},
-  journal={arXiv preprint arXiv:2503.14286},
-  year={2025}
-}
-
-@misc{primeintellectteam2025intellect2reasoningmodeltrained,
-      title={INTELLECT-2: A Reasoning Model Trained Through Globally Decentralized Reinforcement Learning}, 
-      author={Prime Intellect Team and Sami Jaghouar and Justus Mattern and Jack Min Ong and Jannik Straube and Manveer Basra and Aaron Pazdera and Kushal Thaman and Matthew Di Ferrante and Felix Gabriel and Fares Obeid and Kemal Erdem and Michael Keiblinger and Johannes Hagemann},
-      year={2025},
-      eprint={2505.07291},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG},
-      url={https://arxiv.org/abs/2505.07291}, 
-}
-
-@article{shao2024deepseekmath,
-  title={Deepseekmath: Pushing the limits of mathematical reasoning in open language models},
-  author={Shao, Zhihong and Wang, Peiyi and Zhu, Qihao and Xu, Runxin and Song, Junxiao and Bi, Xiao and Zhang, Haowei and Zhang, Mingchuan and Li, YK and Wu, Y and others},
-  journal={arXiv preprint arXiv:2402.03300},
-  year={2024}
-}
-
-@article{liu2024deepseek,
-  title={Deepseek-v3 technical report},
-  author={Liu, Aixin and Feng, Bei and Xue, Bing and Wang, Bingxuan and Wu, Bochao and Lu, Chengda and Zhao, Chenggang and Deng, Chengqi and Zhang, Chenyu and Ruan, Chong and others},
-  journal={arXiv preprint arXiv:2412.19437},
-  year={2024}
-}
-
-@book{nocedal2006numerical,
-  title={Numerical optimization},
-  author={Nocedal, Jorge and Wright, Stephen J},
-  year={2006},
-  publisher={Springer}
-}
-
-@inproceedings{schulman2015trust,
-  title={Trust region policy optimization},
-  author={Schulman, John and Levine, Sergey and Abbeel, Pieter and Jordan, Michael and Moritz, Philipp},
-  booktitle={International conference on machine learning},
-  pages={1889--1897},
-  year={2015},
-  organization={PMLR}
-}
-
-@misc{huang2024putting,
-  author       = {Shengyi Costa Huang and Arash Ahmadian and Cohere For AI},
-  title        = {Putting RL back in RLHF},
-  year         = {2024},
-  howpublished = {\url{https://huggingface.co/blog/putting_rl_back_in_rlhf_with_rloo}},
-  note         = {Accessed: 2025-01-15}
-}
-
-@inproceedings{ahmadian2024back,
-  title={Back to basics: Revisiting reinforce style optimization for learning from human feedback in llms},
-  booktitle = {Annual Meeting of the Association for Computational Linguistics (ACL)},
-  author={Ahmadian, Arash and Cremer, Chris and Gall{\'e}, Matthias and Fadaee, Marzieh and Kreutzer, Julia and Pietquin, Olivier and {\"U}st{\"u}n, Ahmet and Hooker, Sara},
-  year = {2024}
-}
-
-@misc{zheng2025gspo,
-  title         = {Group Sequence Policy Optimization},
-  author        = {Zheng, Chujie and Liu, Shixuan and Li, Mingze and Chen, Xiong-Hui and Yu, Bowen and Gao, Chang and Dang, Kai and Liu, Yuqiong and Men, Rui and Yang, An and Zhou, Jingren and Lin, Junyang},
-  year          = {2025},
-  eprint        = {2507.18071},
-  archivePrefix = {arXiv},
-  primaryClass  = {cs.LG},
-  doi           = {10.48550/arXiv.2507.18071},
-  url           = {https://arxiv.org/abs/2507.18071}
-}
-
-@misc{leroux2025topr,
-  title         = {Tapered Off-Policy {REINFORCE}: Stable and efficient reinforcement learning for {LLMs}},
-  author        = {Le Roux, Nicolas and Bellemare, Marc G. and Lebensold, Jonathan and Bergeron, Arnaud and Greaves, Joshua and Fr{\'e}chette, Alex and Pelletier, Carolyne and Thibodeau-Laufer, Eric and Toth, S{\'a}ndor and Work, Sam},
-  year          = {2025},
-  eprint        = {2503.14286},
-  archivePrefix = {arXiv},
-  primaryClass  = {cs.LG},
-  doi           = {10.48550/arXiv.2503.14286},
-  url           = {https://arxiv.org/abs/2503.14286}
-}
 ### End chapter 11 ###
 
-### First appearing in chapter 12 ###
-
-@inproceedings{xu2024dpo,
-  title={Is dpo superior to ppo for llm alignment? a comprehensive study},
-  booktitle = {International Conference on Machine Learning (ICML)},
-  author={Xu, Shusheng and Fu, Wei and Gao, Jiaxuan and Ye, Wenjie and Liu, Weilin and Mei, Zhiyu and Wang, Guangju and Yu, Chao and Wu, Yi},
-  year = {2024}
-}
-
-@misc{teamolmo2025olmo3,
-  title={ Olmo 3 },
-  author={ Team Olmo and Allyson Ettinger and Amanda Bertsch and Bailey Kuehl and David Graham and David Heineman and Dirk Groeneveld and Faeze Brahman and Finbarr Timbers and Hamish Ivison and Jacob Morrison and Jake Poznanski and Kyle Lo and Luca Soldaini and Matt Jordan and Mayee Chen and Michael Noukhovitch and Nathan Lambert and Pete Walsh and Pradeep Dasigi and Robert Berry and Saumya Malik and Saurabh Shah and Scott Geng and Shane Arora and Shashank Gupta and Taira Anderson and Teng Xiao and Tyler Murray and Tyler Romero and Victoria Graf and Akari Asai and Akshita Bhagia and Alexander Wettig and Alisa Liu and Aman Rangapur and Chloe Anastasiades and Costa Huang and Dustin Schwenk and Harsh Trivedi and Ian Magnusson and Jaron Lochner and Jiacheng Liu and Lester James V. Miranda and Maarten Sap and Malia Morgan and Michael Schmitz and Michal Guerquin and Michael Wilson and Regan Huff and Ronan Le Bras and Rui Xin and Rulin Shao and Sam Skjonsberg and Shannon Zejiang Shen and Shuyue Stella Li and Tucker Wilde and Valentina Pyatkin and Will Merrill and Yapei Chang and Yuling Gu and Zhiyuan Zeng and Ashish Sabharwal and Luke Zettlemoyer and Pang Wei Koh and Ali Farhadi and Noah A. Smith and Hannaneh Hajishirzi },
-  year={ 2025 },
-  eprint={ 2512.13961 },
-  archivePrefix={arXiv},
-  primaryClass={ cs.CL },
-  url={https://arxiv.org/abs/2512.13961}
-}
-
-@misc{bakouch2025smollm3,
-  title={{SmolLM3: smol, multilingual, long-context reasoner}},
-  author={Bakouch, Elie and Ben Allal, Loubna and Lozhkov, Anton and Tazi, Nouamane and Tunstall, Lewis and Patiño, Carlos Miguel and Beeching, Edward and Roucher, Aymeric and Reedi, Aksel Joonas and Gallouédec, Quentin and Rasul, Kashif and Habib, Nathan and Fourrier, Clémentine and Kydlicek, Hynek and Penedo, Guilherme and Larcher, Hugo and Morlon, Mathieu and Srivastav, Vaibhav and Lochner, Joshua and Nguyen, Xuan-Son and Raffel, Colin and von Werra, Leandro and Wolf, Thomas},
-  year={2025},
-  howpublished={\url{https://huggingface.co/blog/smollm3}}
-}
-
-@inproceedings{azar2024general,
-  title={A general theoretical paradigm to understand learning from human preferences},
-  author={Azar, Mohammad Gheshlaghi and Guo, Zhaohan Daniel and Piot, Bilal and Munos, Remi and Rowland, Mark and Valko, Michal and Calandriello, Daniele},
-  booktitle={International Conference on Artificial Intelligence and Statistics},
-  pages={4447--4455},
-  year={2024},
-  organization={PMLR}
-}
-
-@article{zhao2023slic,
-  title={Slic-hf: Sequence likelihood calibration with human feedback},
-  author={Zhao, Yao and Joshi, Rishabh and Liu, Tianqi and Khalman, Misha and Saleh, Mohammad and Liu, Peter J},
-  journal={arXiv preprint arXiv:2305.10425},
-  year={2023}
-}
-
-@article{singhal2024d2po,
-  title={D2po: Discriminator-guided dpo with response evaluation models},
-  author={Singhal, Prasann and Lambert, Nathan and Niekum, Scott and Goyal, Tanya and Durrett, Greg},
-  journal={arXiv preprint arXiv:2405.01511},
-  year={2024}
-}
-
-@article{guo2024direct,
-  title={Direct language model alignment from online ai feedback},
-  author={Guo, Shangmin and Zhang, Biao and Liu, Tianlin and Liu, Tianqi and Khalman, Misha and Llinares, Felipe and Rame, Alexandre and Mesnard, Thomas and Zhao, Yao and Piot, Bilal and others},
-  journal={arXiv preprint arXiv:2402.04792},
-  year={2024}
-}
-
-@inproceedings{amini2024direct,
-  title={Direct preference optimization with an offset},
-  booktitle = {Annual Meeting of the Association for Computational Linguistics (ACL)},
-  author={Amini, Afra and Vieira, Tim and Cotterell, Ryan},
-  year = {2024}
-}
-
-@article{hong2024reference,
-  title={Reference-free monolithic preference optimization with odds ratio},
-  author={Hong, Jiwoo and Lee, Noah and Thorne, James},
-  journal={arXiv e-prints},
-  pages={arXiv--2403},
-  year={2024}
-}
-
-@article{meng2025simpo,
-  title={Simpo: Simple preference optimization with a reference-free reward},
-  author={Meng, Yu and Xia, Mengzhou and Chen, Danqi},
-  journal={Advances in Neural Information Processing Systems},
-  volume={37},
-  pages={124198--124235},
-  year={2025}
-}
-
-@inproceedings{zhao2024rainbowpo,
-  title={Rainbowpo: A unified framework for combining improvements in preference optimization},
-  booktitle = {International Conference on Learning Representations (ICLR)},
-  author={Zhao, Hanyang and Winata, Genta Indra and Das, Anirban and Zhang, Shi-Xiong and Yao, David D and Tang, Wenpin and Sahu, Sambit},
-  year = {2025}
-}
-
-@article{rosset2024direct,
-  title={Direct nash optimization: Teaching language models to self-improve with general preferences},
-  author={Rosset, Corby and Cheng, Ching-An and Mitra, Arindam and Santacroce, Michael and Awadallah, Ahmed and Xie, Tengyang},
-  journal={arXiv preprint arXiv:2404.03715},
-  year={2024}
-}
-
-@inproceedings{jung2024binary,
-  title={Binary classifier optimization for large language model alignment},
-  booktitle = {Annual Meeting of the Association for Computational Linguistics (ACL)},
-  author={Jung, Seungjae and Han, Gunsoo and Nam, Daniel Wontae and On, Kyoung-Woon},
-  year = {2025}
-}
-
-@article{gorbatovski2025differences,
-  title={The Differences Between Direct Alignment Algorithms are a Blur},
-  author={Gorbatovski, Alexey and Shaposhnikov, Boris and Sinii, Viacheslav and Malakhov, Alexey and Gavrilov, Daniil},
-  journal={arXiv preprint arXiv:2502.01237},
-  year={2025}
-}
-
-@inproceedings{razin2024unintentional,
-  title={Unintentional unalignment: Likelihood displacement in direct preference optimization},
-  booktitle = {International Conference on Learning Representations (ICLR)},
-  author={Razin, Noam and Malladi, Sadhika and Bhaskar, Adithya and Chen, Danqi and Arora, Sanjeev and Hanin, Boris},
-  year = {2025}
-}
-
-@inproceedings{ren2024learning,
-  title={Learning dynamics of llm finetuning},
-  booktitle = {International Conference on Learning Representations (ICLR)},
-  author={Ren, Yi and Sutherland, Danica J},
-  year = {2025}
-}
-
-@inproceedings{xiao2024cal,
-  title={Cal-dpo: Calibrated direct preference optimization for language model alignment},
-  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
-  author={Xiao, Teng and Yuan, Yige and Zhu, Huaisheng and Li, Mingxiao and Honavar, Vasant G},
-  year = {2024}
-}
-
-@inproceedings{gupta2025alphapo,
-  title={AlphaPO--Reward shape matters for LLM alignment},
-  booktitle = {International Conference on Machine Learning (ICML)},
-  author={Gupta, Aman and Tang, Shao and Song, Qingquan and Zhu, Sirou and Hong, Jiwoo and Saha, Ankan and Gupta, Viral and Lee, Noah and Kim, Eunki and Zhu, Siyu and others},
-  year = {2025}
-}
-
-@inproceedings{tajwar2024preference,
-  title={Preference fine-tuning of llms should leverage suboptimal, on-policy data},
-  booktitle = {International Conference on Machine Learning (ICML)},
-  author={Tajwar, Fahim and Singh, Anikait and Sharma, Archit and Rafailov, Rafael and Schneider, Jeff and Xie, Tengyang and Ermon, Stefano and Finn, Chelsea and Kumar, Aviral},
-  year = {2024}
-}
-
-### End chapter 12 ###
-
-### First appearing in chapter 13 ###
+### First appearing in chapter 12 (Synthetic Data & CAI) ###
 
 @inproceedings{wang2024helpsteer,
   title={Helpsteer: Multi-attribute helpfulness dataset for steerlm},
@@ -2278,337 +2515,6 @@ url={https://openreview.net/forum?id=xJbsmB8UMx}
   url={https://openreview.net/forum?id=9rwtezthwo}
 }
 
-### End chapter 13 ###
-
-### First appearing in chapter 14 ###
-
-@article{aggarwal2025l1,
-  title={L1: Controlling how long a reasoning model thinks with reinforcement learning},
-  author={Aggarwal, Pranjal and Welleck, Sean},
-  journal={arXiv preprint arXiv:2503.04697},
-  year={2025}
-}
-
-@article{hu2025openreasonerzero,
-  title={Open-Reasoner-Zero: An Open Source Approach to Scaling Up Reinforcement Learning on the Base Model},
-  author={Hu, Jingcheng and Zhang, Yinmin and Han, Qi and Jiang, Daxin and Zhang, Xiangyu and Shum, Heung‑Yeung},
-  journal={arXiv preprint arXiv:2503.24290},
-  year={2025}
-}
-
-@article{abdin2025phi4,
-  title={Phi-4-Reasoning Technical Report},
-  author={Abdin, Marah and Agarwal, Sahaj and Awadallah, Ahmed and others},
-  journal={arXiv preprint arXiv:2504.21318},
-  year={2025}
-}
-
-@article{he2025skyworkor1,
-  title={Skywork Open Reasoner 1 Technical Report},
-  author={He, Jujie and Liu, Jiacai and Liu, Chris Yuhao and others},
-  journal={arXiv preprint arXiv:2505.22312},
-  year={2025}
-}
-
-@techreport{mistral2025magistral,
-  title={Magistral: Scaling Reinforcement Learning for Reasoning in Large Language Models},
-  author={{Mistral AI}},
-  institution={Mistral AI},
-  year={2025},
-  month={June},
-  url={https://mistral.ai/static/research/magistral.pdf},
-  note={Technical report}
-}
-
-@article{guha2025openthoughts,
-  title={OpenThoughts: Data Recipes for Reasoning Models},
-  author={Guha, Etash and Marten, Ryan and Keh, Sedrick and others},
-  journal={arXiv preprint arXiv:2506.04178},
-  year={2025}
-}
-
-@article{liu2025hunyuan,
-  title={Hunyuan‑TurboS: Advancing Large Language Models through Mamba‑Transformer Synergy and Adaptive Chain‑of‑Thought},
-  author={Liu, Ao and Zhou, Botong and Xu, Can and others},
-  journal={arXiv preprint arXiv:2505.15431},
-  year={2025}
-}
-
-@misc{mimo2025flash,
-  title  = {MiMo-V2-Flash Technical Report},
-  author = {LLM-Core Xiaomi},
-  year   = {2025},
-  url    = {https://github.com/XiaomiMiMo/MiMo-V2-Flash/blob/main/paper.pdf}
-}
-
-@misc{minimax2025minimaxm1scalingtesttimecompute,
-      title={MiniMax-M1: Scaling Test-Time Compute Efficiently with Lightning Attention},
-      author={MiniMax},
-      year={2025},
-      eprint={2506.13585},
-      archivePrefix={arXiv},
-      primaryClass={cs.CL},
-      doi={10.48550/arXiv.2506.13585},
-      url={https://arxiv.org/abs/2506.13585},
-}
-
-@misc{zeng2025glm45,
-  title        = {GLM-4.5: Agentic, Reasoning, and Coding (ARC) Foundation Models},
-  author       = {Aohan Zeng and Xin Lv and Qinkai Zheng and Zhenyu Hou and
-                  Bin Chen and Chengxing Xie and Cunxiang Wang and Da Yin and Hao Zeng and Jiajie Zhang and Kedong Wang and Lucen Zhong and Mingdao Liu and Rui Lu and Shulin Cao and Xiaohan Zhang and Xuancheng Huang and Yao Wei and Yean Cheng and Yifan An and Yilin Niu and Yuanhao Wen and Yushi Bai and Zhengxiao Du and Zihan Wang and Zilin Zhu and
-                  Bohan Zhang and Bosi Wen and Bowen Wu and Bowen Xu and Can Huang and Casey Zhao and Changpeng Cai and Chao Yu and Chen Li and Chendi Ge and Chenghua Huang and Chenhui Zhang and Chenxi Xu and Chenzheng Zhu and Chuang Li and Congfeng Yin and Daoyan Lin and Dayong Yang and Dazhi Jiang and Ding Ai and Erle Zhu and Fei Wang and Gengzheng Pan and Guo Wang and Hailong Sun and Haitao Li and Haiyang Li and Haiyi Hu and Hanyu Zhang and Hao Peng and Hao Tai and Haoke Zhang and Haoran Wang and Haoyu Yang and He Liu and He Zhao and Hongwei Liu and Hongxi Yan and Huan Liu and Huilong Chen and Ji Li and Jiajing Zhao and Jiamin Ren and Jian Jiao and Jiani Zhao and Jianyang Yan and Jiaqi Wang and Jiayi Gui and Jiayue Zhao and Jie Liu and Jijie Li and Jing Li and Jing Lu and Jingsen Wang and Jingwei Yuan and Jingxuan Li and Jingzhao Du and Jinhua Du and Jinxin Liu and Junkai Zhi and Junli Gao and Ke Wang and Lekang Yang and Liang Xu and Lin Fan and Lindong Wu and Lintao Ding and Lu Wang and Man Zhang and Minghao Li and Minghuan Xu and Mingming Zhao and Mingshu Zhai and Pengfan Du and Qian Dong and Shangde Lei and Shangqing Tu and Shangtong Yang and Shaoyou Lu and Shijie Li and Shuang Li and Shuang Li and Shuxun Yang and Sibo Yi and Tianshu Yu and Wei Tian and Weihan Wang and Wenbo Yu and Weng Lam Tam and Wenjie Liang and Wentao Liu and Xiao Wang and Xiaohan Jia and Xiaotao Gu and Xiaoying Ling and Xin Wang and Xing Fan and Xingru Pan and Xinyuan Zhang and Xinze Zhang and Xiuqing Fu and Xunkai Zhang and Yabo Xu and Yandong Wu and Yida Lu and Yidong Wang and Yilin Zhou and Yiming Pan and Ying Zhang and Yingli Wang and Yingru Li and Yinpei Su and Yipeng Geng and Yitong Zhu and Yongkun Yang and Yuhang Li and Yuhao Wu and Yujiang Li and Yunan Liu and Yunqing Wang and Yuntao Li and Yuxuan Zhang and Zezhen Liu and Zhen Yang and Zhengda Zhou and Zhongpei Qiao and Zhuoer Feng and Zhuorui Liu and Zichen Zhang and Zihan Wang and Zijun Yao and Zikang Wang and Ziqiang Liu and Ziwei Chai and Zixuan Li and Zuodong Zhao and
-                  Jie Tang and Yuxiao Dong and Juanzi Li and Hongning Wang and Minlie Huang and Bin Xu and Jidong Zhai and Wenguang Chen},
-  year         = {2025},
-  eprint       = {2508.06471},
-  archivePrefix= {arXiv},
-  primaryClass = {cs.CL},
-  doi          = {10.48550/arXiv.2508.06471},
-  url          = {https://arxiv.org/abs/2508.06471}
-}
-
-@misc{coreteam2025mimovltechnicalreport,
-      title={MiMo-VL Technical Report}, 
-      author={Core Team and Zihao Yue and Zhenru Lin and Yifan Song and Weikun Wang and Shuhuai Ren and Shuhao Gu and Shicheng Li and Peidian Li and Liang Zhao and Lei Li and Kainan Bao and Hao Tian and Hailin Zhang and Gang Wang and Dawei Zhu and Cici and Chenhong He and Bowen Ye and Bowen Shen and Zihan Zhang and Zihan Jiang and Zhixian Zheng and Zhichao Song and Zhenbo Luo and Yue Yu and Yudong Wang and Yuanyuan Tian and Yu Tu and Yihan Yan and Yi Huang and Xu Wang and Xinzhe Xu and Xingchen Song and Xing Zhang and Xing Yong and Xin Zhang and Xiangwei Deng and Wenyu Yang and Wenhan Ma and Weiwei Lv and Weiji Zhuang and Wei Liu and Sirui Deng and Shuo Liu and Shimao Chen and Shihua Yu and Shaohui Liu and Shande Wang and Rui Ma and Qiantong Wang and Peng Wang and Nuo Chen and Menghang Zhu and Kangyang Zhou and Kang Zhou and Kai Fang and Jun Shi and Jinhao Dong and Jiebao Xiao and Jiaming Xu and Huaqiu Liu and Hongshen Xu and Heng Qu and Haochen Zhao and Hanglong Lv and Guoan Wang and Duo Zhang and Dong Zhang and Di Zhang and Chong Ma and Chang Liu and Can Cai and Bingquan Xia},
-      year={2025},
-      eprint={2506.03569},
-      archivePrefix={arXiv},
-      primaryClass={cs.CL},
-      url={https://arxiv.org/abs/2506.03569}, 
-}
-
-@misc{kimiteam2025kimik2,
-  title={ Kimi K2: Open Agentic Intelligence },
-  author={  Kimi Team and Yifan Bai and Yiping Bao and Guanduo Chen and Jiahao Chen and Ningxin Chen and Ruijue Chen and Yanru Chen and Yuankun Chen and Yutian Chen and Zhuofu Chen and Jialei Cui and Hao Ding and Mengnan Dong and Angang Du and Chenzhuang Du and Dikang Du and Yulun Du and Yu Fan and Yichen Feng and Kelin Fu and Bofei Gao and Hongcheng Gao and Peizhong Gao and Tong Gao and Xinran Gu and Longyu Guan and Haiqing Guo and Jianhang Guo and Hao Hu and Xiaoru Hao and Tianhong He and Weiran He and Wenyang He and Chao Hong and Yangyang Hu and Zhenxing Hu and Weixiao Huang and Zhiqi Huang and Zihao Huang and Tao Jiang and Zhejun Jiang and Xinyi Jin and Yongsheng Kang and Guokun Lai and Cheng Li and Fang Li and Haoyang Li and Ming Li and Wentao Li and Yanhao Li and Yiwei Li and Zhaowei Li and Zheming Li and Hongzhan Lin and Xiaohan Lin and Zongyu Lin and Chengyin Liu and Chenyu Liu and Hongzhang Liu and Jingyuan Liu and Junqi Liu and Liang Liu and Shaowei Liu and T. Y. Liu and Tianwei Liu and Weizhou Liu and Yangyang Liu and Yibo Liu and Yiping Liu and Yue Liu and Zhengying Liu and Enzhe Lu and Lijun Lu and Shengling Ma and Xinyu Ma and Yingwei Ma and Shaoguang Mao and Jie Mei and Xin Men and Yibo Miao and Siyuan Pan and Yebo Peng and Ruoyu Qin and Bowen Qu and Zeyu Shang and Lidong Shi and Shengyuan Shi and Xinjie Sun and Flood Sung and Heyi Tang and Jiawen Tao and Qifeng Teng and Chensi Wang and Dinglu Wang and Feng Wang and Haiming Wang and Jianzhou Wang and Jiaxing Wang and Jinhong Wang and Shengjie Wang and Shuyi Wang and Yao Wang and Yejie Wang and Yiqin Wang and Yuxin Wang and Yuzhi Wang and Zhaoji Wang and Zhengtao Wang and Zhexu Wang and Chu Wei and Qianqian Wei and Wenhao Wu and Xingzhe Wu and Yuxin Wu and Chenjun Xiao and Xiaotong Xie and Weimin Xiong and Boyu Xu and Jing Xu and Jinjing Xu and L. H. Xu and Lin Xu and Suting Xu and Weixin Xu and Xinran Xu and Yangchuan Xu and Ziyao Xu and Junjie Yan and Yuzi Yan and Xiaofei Yang and Ying Yang and Zhen Yang and Zhilin Yang and Zonghan Yang and Haotian Yao and Xingcheng Yao and Wenjie Ye and Zhuorui Ye and Bohong Yin and Longhui Yu and Enming Yuan and Hongbang Yuan and Mengjie Yuan and Haobing Zhan and Dehao Zhang and Hao Zhang and Wanlu Zhang and Xiaobin Zhang and Yangkun Zhang and Yizhi Zhang and Yongting Zhang and Yu Zhang and Yutao Zhang and Yutong Zhang and Zheng Zhang and Haotian Zhao and Yikai Zhao and Huabin Zheng and Shaojie Zheng and Jianren Zhou and Xinyu Zhou and Zaida Zhou and Zhen Zhu and Weiyu Zhuang and Xinxing Zu },
-  year={ 2025 },
-  eprint={ 2507.20534 },
-  archivePrefix={arXiv},
-  primaryClass={ cs.LG },
-  url={https://arxiv.org/abs/2507.20534}
-}
-
-@misc{nvidia2025nemotronnano2,
-  title={ NVIDIA Nemotron Nano 2: An Accurate and Efficient Hybrid Mamba-Transformer Reasoning Model },
-  author={ NVIDIA },
-  year={ 2025 },
-  eprint={ 2508.14444 },
-  archivePrefix={arXiv},
-  primaryClass={ cs.CL },
-  url={https://arxiv.org/abs/2508.14444}
-}
-
-@misc{llm3602025k2think,
-  title={ K2-Think: A Parameter-Efficient Reasoning System },
-  author={ Zhoujun Cheng and Richard Fan and Shibo Hao and Taylor W. Killian and Haonan Li and Suqi Sun and Hector Ren and Alexander Moreno and Daqian Zhang and Tianjun Zhong and Yuxin Xiong and Yuanzhe Hu and Yutao Xie and Xudong Han and Yuqi Wang and Varad Pimpalkhute and Yonghao Zhuang and Aaryamonvikram Singh and Xuezhi Liang and Anze Xie and Jianshu She and Desai Fan and Chengqian Gao and Liqun Ma and Mikhail Yurochkin and John Maggs and Xuezhe Ma and Guowei He and Zhiting Hu and Zhengzhong Liu and Eric P. Xing },
-  year={ 2025 },
-  eprint={ 2509.07604 },
-  archivePrefix={arXiv},
-  primaryClass={ cs.LG },
-  url={https://arxiv.org/abs/2509.07604}
-}
-
-@misc{mlcteam2025longcat,
-  title={ Introducing LongCat-Flash-Thinking: A Technical Report },
-  author={ Meituan LongCat Team },
-  year={ 2025 },
-  eprint={ 2509.18883 },
-  archivePrefix={arXiv},
-  primaryClass={ cs.AI },
-  url={https://arxiv.org/abs/2509.18883}
-}
-
-@misc{ringteam2025everystepevolves,
-  title={ Every Step Evolves: Scaling Reinforcement Learning for Trillion-Scale Thinking Model },
-  author={ Ling Team and Anqi Shen and Baihui Li and Bin Hu and Bin Jing and Cai Chen and Chao Huang and Chao Zhang and Chaokun Yang and Cheng Lin and Chengyao Wen and Congqi Li and Deng Zhao and Dingbo Yuan and Donghai You and Fagui Mao and Fanzhuang Meng and Feng Xu and Guojie Li and Guowei Wang and Hao Dai and Haonan Zheng and Hong Liu and Jia Guo and Jiaming Liu and Jian Liu and Jianhao Fu and Jiannan Shi and Jianwen Wang and Jianxin Lai and Jin Yang and Jun Mei and Jun Zhou and Junbo Zhao and Junping Zhao and Kuan Xu and Le Su and Lei Chen and Li Tang and Liang Jiang and Liangcheng Fu and Lianhao Xu and Linfeng Shi and Lisha Liao and Longfei Zheng and Meng Li and Mingchun Chen and Qi Zuo and Qiang Cheng and Qianggang Cao and Qitao Shi and Quanrui Guo and Senlin Zhu and Shaofei Wang and Shaomian Zheng and Shuaicheng Li and Shuwei Gu and Siba Chen and Tao Wu and Tao Zhang and Tianyu Zhang and Tianyu Zhou and Tiwei Bie and Tongkai Yang and Wang Hong and Wang Ren and Weihua Chen and Wenbo Yu and Wengang Zheng and Xiangchun Wang and Xiaodong Yan and Xiaopei Wan and Xin Zhao and Xinyu Kong and Xinyu Tang and Xudong Han and Xudong Wang and Xuemin Yang and Xueyu Hu and Yalin Zhang and Yan Sun and Yicheng Shan and Yilong Wang and Yingying Xu and Yongkang Liu and Yongzhen Guo and Yuanyuan Wang and Yuchen Yan and Yuefan Wang and Yuhong Guo and Zehuan Li and Zhankai Xu and Zhe Li and Zhenduo Zhang and Zhengke Gui and Zhenxuan Pan and Zhenyu Huang and Zhenzhong Lan and Zhiqiang Ding and Zhiqiang Zhang and Zhixun Li and Zhizhen Liu and Zihao Wang and Zujie Wen },
-  year={ 2025 },
-  eprint={ 2510.18855 },
-  archivePrefix={arXiv},
-  primaryClass={ cs.CL },
-  url={https://arxiv.org/abs/2510.18855}
-}
-
-@article{liu2025k2,
-  title={K2-V2: A 360-Open, Reasoning-Enhanced LLM},
-  author={Liu, Zhengzhong and Tang, Liping and Jin, Linghao and Li, Haonan and Ranjan, Nikhil and Fan, Desai and Rohatgi, Shaurya and Fan, Richard and Pangarkar, Omkar and Wang, Huijuan and others},
-  journal={arXiv preprint arXiv:2512.06201},
-  year={2025}
-}
-
-@misc{deepseekai2025v32,
-  title={ DeepSeek-V3.2: Pushing the Frontier of Open Large Language Models },
-  author={ DeepSeek-AI },
-  year={ 2025 },
-  eprint={ 2512.02556 },
-  archivePrefix={arXiv},
-  primaryClass={ cs.CL },
-  url={https://arxiv.org/abs/2512.02556}
-}
-
-@misc{shao2025spurious,
-  title={Spurious Rewards: Rethinking Training Signals in RLVR},
-  author={Rulin Shao and Shuyue Stella Li and Rui Xin and Scott Geng and Yiping Wang and Sewoong Oh and Simon Shaolei Du and Nathan Lambert and Sewon Min and Ranjay Krishna and Yulia Tsvetkov and Hannaneh Hajishirzi and Pang Wei Koh and Luke Zettlemoyer},
-  year={2025},
-  howpublished={\url{https://rethink-rlvr.notion.site/Spurious-Rewards-Rethinking-Training-Signals-in-RLVR-1f4df34dac1880948858f95aeb88872f}},
-  note={Notion Blog}
-}
-
-@misc{irpan2018deep,
-  title={Deep Reinforcement Learning Doesn't Work Yet},
-  author={Alex Irpan},
-  year={2018},
-  url={https://www.alexirpan.com/2018/02/14/rl-hard.html}
-}
-
-@inproceedings{henderson2018deep,
-  title={Deep Reinforcement Learning that Matters},
-  author={Henderson, Peter and Islam, Riashat and Bachman, Philip and Pineau, Joelle and Precup, Doina and Meger, David},
-  booktitle={Proceedings of the AAAI Conference on Artificial Intelligence},
-  volume={32},
-  number={1},
-  year={2018},
-  url={https://ojs.aaai.org/index.php/AAAI/article/view/11694}
-}
-
-@article{liu2023don,
-  title={Don't throw away your value model! Generating more preferable text with Value-Guided Monte-Carlo Tree Search decoding},
-  author={Liu, Jiacheng and Cohen, Andrew and Pasunuru, Ramakanth and Choi, Yejin and Hajishirzi, Hannaneh and Celikyilmaz, Asli},
-  journal={arXiv preprint arXiv:2309.15028},
-  year={2023}
-}
-
-@article{chen2024more,
-  title={Are more llm calls all you need? towards scaling laws of compound inference systems},
-  author={Chen, Lingjiao and Davis, Jared Quincy and Hanin, Boris and Bailis, Peter and Stoica, Ion and Zaharia, Matei and Zou, James},
-  journal={arXiv preprint arXiv:2403.02419},
-  year={2024}
-}
-
-@article{muennighoff2025s1,
-  title={s1: Simple test-time scaling},
-  author={Muennighoff, Niklas and Yang, Zitong and Shi, Weijia and Li, Xiang Lisa and Fei-Fei, Li and Hajishirzi, Hannaneh and Zettlemoyer, Luke and Liang, Percy and Cand{\`e}s, Emmanuel and Hashimoto, Tatsunori},
-  journal={arXiv preprint arXiv:2501.19393},
-  year={2025}
-}
-
-@inproceedings{sheng2024hybridflow,
-  title   = {HybridFlow: A Flexible and Efficient RLHF Framework},
-  booktitle = {European Conference on Computer Systems (EuroSys)},
-  author  = {Guangming Sheng and Chi Zhang and Zilingfeng Ye and Xibin Wu and Wang Zhang and Ru Zhang and Yanghua Peng and Haibin Lin and Chuan Wu},
-  year = {2025},
-}
-
-@article{hu2024openrlhf,
-  title={OpenRLHF: An Easy-to-use, Scalable and High-performance RLHF Framework},
-  author={Jian Hu and Xibin Wu and Zilin Zhu and Xianyu and Weixun Wang and Dehao Zhang and Yu Cao},
-  journal={arXiv preprint arXiv:2405.11143},
-  year={2024}
-}
-
-@inproceedings{zelikman2022star,
-title={{ST}aR: Bootstrapping Reasoning With Reasoning},
-author={Eric Zelikman and Yuhuai Wu and Jesse Mu and Noah Goodman},
-booktitle={Advances in Neural Information Processing Systems},
-editor={Alice H. Oh and Alekh Agarwal and Danielle Belgrave and Kyunghyun Cho},
-year={2022},
-url={https://openreview.net/forum?id=_3ELRdg2sgI}
-}
-
-@article{Zelikman2024QuietSTaRLM,
-  title={Quiet-STaR: Language Models Can Teach Themselves to Think Before Speaking},
-  author={E. Zelikman and Georges Harik and Yijia Shao and Varuna Jayasiri and Nick Haber and Noah D. Goodman},
-  journal={COLM},
-  year={2024},
-  volume={abs/2403.09629},
-}
-
-@inproceedings{hoffman2023training,
-title={Training Chain-of-Thought via Latent-Variable Inference},
-author={Matthew Douglas Hoffman and Du Phan and david dohan and Sholto Douglas and Tuan Anh Le and Aaron T Parisi and Pavel Sountsov and Charles Sutton and Sharad Vikram and Rif A. Saurous},
-booktitle={Thirty-seventh Conference on Neural Information Processing Systems},
-year={2023},
-url={https://openreview.net/forum?id=a147pIS2Co}
-}
-
-@inproceedings{gehring2024rlefgroundingcodellms,
-      title={RLEF: Grounding Code LLMs in Execution Feedback with Reinforcement Learning},
-  booktitle = {International Conference on Machine Learning (ICML)}, 
-      author={Jonas Gehring and Kunhao Zheng and Jade Copet and Vegard Mella and Taco Cohen and Gabriel Synnaeve},
-      year = {2025},
-      archivePrefix={arXiv},
-      primaryClass={cs.CL},
-      url={https://arxiv.org/abs/2410.02089}, 
-}
-
-@misc{VinePPO,
-      title={VinePPO: Unlocking RL Potential For LLM Reasoning Through Refined Credit Assignment}, 
-      author={Amirhossein Kazemnejad and Milad Aghajohari and Eva Portelance and Alessandro Sordoni and Siva Reddy and Aaron Courville and Nicolas Le Roux},
-      year={2024},
-      eprint={2410.01679},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG},
-      url={https://arxiv.org/abs/2410.01679}, 
-}
-
-@article{amit2024models,
-  title={Models that prove their own correctness},
-  journal = {Electron. Colloquium Comput. Complex.},
-  author={Amit, Noga and Goldwasser, Shafi and Paradise, Orr and Rothblum, Guy},
-  year = {2024}
-}
-
-
-@misc{wang2025ragenunderstandingselfevolutionllm,
-  title={RAGEN: Understanding Self-Evolution in LLM Agents via Multi-Turn Reinforcement Learning},
-  author={Zihan Wang and Kangrui Wang and Qineng Wang and Pingyue Zhang and Linjie Li and Zhengyuan Yang and Kefan Yu and Minh Nhat Nguyen and Licheng Liu and Eli Gottlieb and Yiping Lu and Kyunghyun Cho and Jiajun Wu and Li Fei-Fei and Lijuan Wang and Yejin Choi and Manling Li},
-  year={2025},
-  eprint={2504.20073},
-  archivePrefix={arXiv},
-  primaryClass={cs.LG}
-}
-
-@misc{anthropic2025claude4,
-  author       = {{Anthropic}},
-  title        = {Claude 4},
-  year         = {2025},
-  month        = {May},
-  url          = {https://www.anthropic.com/news/claude-4},
-  note         = {Accessed: 2025-06-13}
-}
-
-@article{schrittwieser2020mastering,
-  title={Mastering atari, go, chess and shogi by planning with a learned model},
-  author={Schrittwieser, Julian and Antonoglou, Ioannis and Hubert, Thomas and Simonyan, Karen and Sifre, Laurent and Schmitt, Simon and Guez, Arthur and Lockhart, Edward and Hassabis, Demis and Graepel, Thore and others},
-  journal={Nature},
-  volume={588},
-  number={7839},
-  pages={604--609},
-  year={2020},
-  publisher={Nature Publishing Group UK London}
-}
-
-@inproceedings{mirhoseini2020chip,
-  title={Chip placement with deep reinforcement learning},
-  booktitle = {Design, Automation and Test in Europe (DATE)},
-  author={Mirhoseini, Azalia and Goldie, Anna and Yazgan, Mustafa and Jiang, Joe and Songhori, Ebrahim and Wang, Shen and Lee, Young-Joon and Johnson, Eric and Pathak, Omkar and Bae, Sungmin and others},
-  year = {2023}
-}
-
-@inproceedings{cusumano2025robust,
-  title={Robust autonomy emerges from self-play},
-  booktitle = {International Conference on Machine Learning (ICML)},
-  author={Cusumano-Towner, Marco and Hafner, David and Hertzberg, Alex and Huval, Brody and Petrenko, Aleksei and Vinitsky, Eugene and Wijmans, Erik and Killian, Taylor and Bowers, Stuart and Sener, Ozan and others},
-  year = {2025}
-}
-
-@article{khatri2025art,
-  title={The art of scaling reinforcement learning compute for llms},
-  author={Khatri, Devvrit and Madaan, Lovish and Tiwari, Rishabh and Bansal, Rachit and Duvvuri, Sai Surya and Zaheer, Manzil and Dhillon, Inderjit S and Brandfonbrener, David and Agarwal, Rishabh},
-  journal={arXiv preprint arXiv:2510.13786},
-  year={2025}
-}
-
-### End chapter 14 ###
-
-### First appearing in chapter 15 ###
 
 @inproceedings{kwon2023efficient,
   title={Efficient Memory Management for Large Language Model Serving with PagedAttention},
@@ -2726,80 +2632,13 @@ url={https://openreview.net/forum?id=a147pIS2Co}
   note         = {Open‑source protocol for connecting LLMs to external tools and data},
 }
 
-### End chapter 15 ###
+### End chapter 12 ###
 
-### First appearing in chapter 16 ###
+### First appearing in chapter 13 (Tools) ###
 
-@inproceedings{wang2022self,
-  title={Self-instruct: Aligning language models with self-generated instructions},
-  booktitle = {Annual Meeting of the Association for Computational Linguistics (ACL)},
-  author={Wang, Yizhong and Kordi, Yeganeh and Mishra, Swaroop and Liu, Alisa and Smith, Noah A and Khashabi, Daniel and Hajishirzi, Hannaneh},
-  year = {2023}
-}
+### End chapter 13 ###
 
-@misc{numina_math_7b,
-  author = {Edward Beeching and Shengyi Costa Huang and Albert Jiang and Jia Li and Benjamin Lipkin and Zihan Qina and Kashif Rasul and Ziju Shen and Roman Soletskyi and Lewis Tunstall},
-  title = {NuminaMath 7B TIR},
-  year = {2024},
-  publisher = {Numina & Hugging Face},
-  journal = {Hugging Face repository},
-  howpublished = {\url{https://huggingface.co/AI-MO/NuminaMath-7B-TIR}}
-}
-
-@article{shridhar2023distilling,
-  title={Distilling reasoning capabilities into smaller language models},
-  author={Shridhar, Kumar and Stolfo, Alessandro and Sachan, Mrinmaya},
-  journal={Findings of the Association for Computational Linguistics: ACL 2023},
-  pages={7059--7073},
-  year={2023},
-  publisher={Association for Computational Linguistics}
-}
-
-@inproceedings{hsieh2023distilling,
-  title={Distilling Step-by-Step! Outperforming Larger Language Models with Less Training Data and Smaller Model Sizes},
-  author={Hsieh, Cheng-Yu and Li, Chun-Liang and Yeh, Chih-kuan and Nakhost, Hootan and Fujii, Yasuhisa and Ratner, Alex and Krishna, Ranjay and Lee, Chen-Yu and Pfister, Tomas},
-  booktitle={Findings of the Association for Computational Linguistics: ACL 2023},
-  year={2023},
-  url={https://aclanthology.org/2023.findings-acl.507/},
-  doi={10.18653/v1/2023.findings-acl.507},
-  pages={8003--8017}
-}
-
-@article{gerstgrasser2024model,
-  title={Is model collapse inevitable? breaking the curse of recursion by accumulating real and synthetic data},
-  author={Gerstgrasser, Matthias and Schaeffer, Rylan and Dey, Apratim and Rafailov, Rafael and Sleight, Henry and Hughes, John and Korbak, Tomasz and Agrawal, Rajashree and Pai, Dhruv and Gromov, Andrey and others},
-  journal={arXiv preprint arXiv:2404.01413},
-  year={2024}
-}
-
-@inproceedings{feng2024beyond,
-  title={Beyond model collapse: Scaling up with synthesized data requires reinforcement},
-  author={Feng, Yunzhen and Dohmatob, Elvis and Yang, Pu and Charton, Francois and Kempe, Julia},
-  booktitle={ICML 2024 Workshop on Theoretical Foundations of Foundation Models},
-  year={2024}
-}
-
-@article{shumailov2024ai,
-  title={AI models collapse when trained on recursively generated data},
-  author={Shumailov, Ilia and Shumaylov, Zakhar and Zhao, Yiren and Papernot, Nicolas and Anderson, Ross and Gal, Yarin},
-  journal={Nature},
-  volume={631},
-  number={8022},
-  pages={755--759},
-  year={2024},
-  publisher={Nature Publishing Group UK London}
-}
-
-@inproceedings{li2024superfiltering,
-  title={Superfiltering: Weak-to-strong data filtering for fast instruction-tuning},
-  booktitle = {Annual Meeting of the Association for Computational Linguistics (ACL)},
-  author={Li, Ming and Zhang, Yong and He, Shwai and Li, Zhitao and Zhao, Hongyu and Wang, Jianzong and Cheng, Ning and Zhou, Tianyi},
-  year = {2024}
-}
-
-### End chapter 16 ###
-
-### First appearing in chapter 17 ###
+### First appearing in chapter 14 (Over-optimization) ###
 
 @article{wu2025reasoning,
   title={Reasoning or memorization? unreliable results of reinforcement learning due to data contamination},
@@ -3050,9 +2889,241 @@ url={https://openreview.net/forum?id=a147pIS2Co}
   year = {2024}
 }
 
+### End chapter 14 ###
+
+### First appearing in chapter 15 (Regularization) ###
+
+@inproceedings{jaques2020human,
+  title={Human-centric dialog training via offline reinforcement learning},
+  booktitle = {Conference on Empirical Methods in Natural Language Processing (EMNLP)},
+  author={Jaques, Natasha and Shen, Judy Hanwen and Ghandeharioun, Asma and Ferguson, Craig and Lapedriza, Agata and Jones, Noah and Gu, Shixiang Shane and Picard, Rosalind},
+  year = {2020}
+}
+
+@inproceedings{jaques2017sequence,
+  title={Sequence tutor: Conservative fine-tuning of sequence generation models with kl-control},
+  author={Jaques, Natasha and Gu, Shixiang and Bahdanau, Dzmitry and Hern{\'a}ndez-Lobato, Jos{\'e} Miguel and Turner, Richard E and Eck, Douglas},
+  booktitle={International Conference on Machine Learning},
+  pages={1645--1654},
+  year={2017},
+  organization={PMLR}
+}
+
+@inproceedings{pang2024iterative,
+  title={Iterative reasoning preference optimization},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  author={Pang, Richard Yuanzhe and Yuan, Weizhe and Cho, Kyunghyun and He, He and Sukhbaatar, Sainbayar and Weston, Jason},
+  year = {2024}
+}
+
+@inproceedings{gao2024rebel,
+  title={Rebel: Reinforcement learning via regressing relative rewards},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  author={Gao, Zhaolin and Chang, Jonathan D and Zhan, Wenhao and Oertell, Owen and Swamy, Gokul and Brantley, Kiant{\'e} and Joachims, Thorsten and Bagnell, J Andrew and Lee, Jason D and Sun, Wen},
+  year = {2024}
+}
+
+@misc{schulman2016klapprox,
+  author = {Schulman, John},
+  title = {Approximating KL-divergence},
+  year = {2016},
+  howpublished = {\url{http://joschu.net/blog/kl-approx.html}},
+  note = {Accessed: 2024-10-01}
+}
+
+### End chapter 15 ###
+
+### First appearing in chapter 16 (Evaluation) ###
+
+@inproceedings{wang2022self,
+  title={Self-instruct: Aligning language models with self-generated instructions},
+  booktitle = {Annual Meeting of the Association for Computational Linguistics (ACL)},
+  author={Wang, Yizhong and Kordi, Yeganeh and Mishra, Swaroop and Liu, Alisa and Smith, Noah A and Khashabi, Daniel and Hajishirzi, Hannaneh},
+  year = {2023}
+}
+
+@misc{numina_math_7b,
+  author = {Edward Beeching and Shengyi Costa Huang and Albert Jiang and Jia Li and Benjamin Lipkin and Zihan Qina and Kashif Rasul and Ziju Shen and Roman Soletskyi and Lewis Tunstall},
+  title = {NuminaMath 7B TIR},
+  year = {2024},
+  publisher = {Numina & Hugging Face},
+  journal = {Hugging Face repository},
+  howpublished = {\url{https://huggingface.co/AI-MO/NuminaMath-7B-TIR}}
+}
+
+@article{shridhar2023distilling,
+  title={Distilling reasoning capabilities into smaller language models},
+  author={Shridhar, Kumar and Stolfo, Alessandro and Sachan, Mrinmaya},
+  journal={Findings of the Association for Computational Linguistics: ACL 2023},
+  pages={7059--7073},
+  year={2023},
+  publisher={Association for Computational Linguistics}
+}
+
+@inproceedings{hsieh2023distilling,
+  title={Distilling Step-by-Step! Outperforming Larger Language Models with Less Training Data and Smaller Model Sizes},
+  author={Hsieh, Cheng-Yu and Li, Chun-Liang and Yeh, Chih-kuan and Nakhost, Hootan and Fujii, Yasuhisa and Ratner, Alex and Krishna, Ranjay and Lee, Chen-Yu and Pfister, Tomas},
+  booktitle={Findings of the Association for Computational Linguistics: ACL 2023},
+  year={2023},
+  url={https://aclanthology.org/2023.findings-acl.507/},
+  doi={10.18653/v1/2023.findings-acl.507},
+  pages={8003--8017}
+}
+
+@article{gerstgrasser2024model,
+  title={Is model collapse inevitable? breaking the curse of recursion by accumulating real and synthetic data},
+  author={Gerstgrasser, Matthias and Schaeffer, Rylan and Dey, Apratim and Rafailov, Rafael and Sleight, Henry and Hughes, John and Korbak, Tomasz and Agrawal, Rajashree and Pai, Dhruv and Gromov, Andrey and others},
+  journal={arXiv preprint arXiv:2404.01413},
+  year={2024}
+}
+
+@inproceedings{feng2024beyond,
+  title={Beyond model collapse: Scaling up with synthesized data requires reinforcement},
+  author={Feng, Yunzhen and Dohmatob, Elvis and Yang, Pu and Charton, Francois and Kempe, Julia},
+  booktitle={ICML 2024 Workshop on Theoretical Foundations of Foundation Models},
+  year={2024}
+}
+
+@article{shumailov2024ai,
+  title={AI models collapse when trained on recursively generated data},
+  author={Shumailov, Ilia and Shumaylov, Zakhar and Zhao, Yiren and Papernot, Nicolas and Anderson, Ross and Gal, Yarin},
+  journal={Nature},
+  volume={631},
+  number={8022},
+  pages={755--759},
+  year={2024},
+  publisher={Nature Publishing Group UK London}
+}
+
+@inproceedings{li2024superfiltering,
+  title={Superfiltering: Weak-to-strong data filtering for fast instruction-tuning},
+  booktitle = {Annual Meeting of the Association for Computational Linguistics (ACL)},
+  author={Li, Ming and Zhang, Yong and He, Shwai and Li, Zhitao and Zhao, Hongyu and Wang, Jianzong and Cheng, Ning and Zhou, Tianyi},
+  year = {2024}
+}
+
+### End chapter 16 ###
+
+### First appearing in chapter 17 (Product & Character) ###
+
+@inproceedings{wang2023openchat,
+  title={Openchat: Advancing open-source language models with mixed-quality data},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  author={Wang, Guan and Cheng, Sijie and Zhan, Xianyuan and Li, Xiangang and Song, Sen and Liu, Yang},
+  year = {2024}
+}
+
+@article{qwen,
+  title={Qwen Technical Report},
+  author={Jinze Bai and Shuai Bai and Yunfei Chu and Zeyu Cui and Kai Dang and Xiaodong Deng and Yang Fan and Wenbin Ge and Yu Han and Fei Huang and Binyuan Hui and Luo Ji and Mei Li and Junyang Lin and Runji Lin and Dayiheng Liu and Gao Liu and Chengqiang Lu and Keming Lu and Jianxin Ma and Rui Men and Xingzhang Ren and Xuancheng Ren and Chuanqi Tan and Sinan Tan and Jianhong Tu and Peng Wang and Shijie Wang and Wei Wang and Shengguang Wu and Benfeng Xu and Jin Xu and An Yang and Hao Yang and Jian Yang and Shusheng Yang and Yang Yao and Bowen Yu and Hongyi Yuan and Zheng Yuan and Jianwei Zhang and Xingxuan Zhang and Yichang Zhang and Zhenru Zhang and Chang Zhou and Jingren Zhou and Xiaohuan Zhou and Tianhang Zhu},
+  journal={arXiv preprint arXiv:2309.16609},
+  year={2023}
+}
+
+
+@article{maiya2025open,
+  title={Open Character Training: Shaping the Persona of AI Assistants through Constitutional AI},
+  author={Maiya, Sharan and Bartsch, Henning and Lambert, Nathan and Hubinger, Evan},
+  journal={arXiv preprint arXiv:2511.01689},
+  year={2025}
+}
+
+@misc{anthropic2024claude,
+  author       = {{Anthropic}},
+  title        = {Claude’s Character},
+  year         = {2024},
+  month        = {June},
+  url          = {https://www.anthropic.com/research/claude-character},
+  note         = {Accessed: 2025-04-16}
+}
+
+@article{turner2023activation,
+  title={Activation addition: Steering language models without optimization},
+  author={Turner, Alexander Matt and Thiergart, Lisa and Leech, Gavin and Udell, David and Vazquez, Juan J and Mini, Ulisse and MacDiarmid, Monte},
+  journal={arXiv e-prints},
+  pages={arXiv--2308},
+  year={2023}
+}
+
+@misc{chen2025persona,
+  title={Persona Vectors: Monitoring and Controlling Character Traits in Language Models},
+  author={Runjin Chen and Andy Arditi and Henry Sleight and Owain Evans and Jack Lindsey},
+  year={2025},
+  eprint={2507.21509},
+  archivePrefix={arXiv},
+  primaryClass={cs.CL},
+  url={https://arxiv.org/abs/2507.21509}
+}
+
+@misc{anthropic2025souldoc,
+  author       = {{Anthropic}},
+  title        = {Claude 4.5 Opus Soul Document},
+  year         = {2025},
+  url          = {https://www.lesswrong.com/posts/vpNG99GhbBoLov9og/claude-4-5-opus-soul-document},
+  note         = {Accessed: 2025-07-01}
+}
+
+@misc{askell2025soul,
+  author       = {Askell, Amanda},
+  title        = {Post on {X} regarding character training with soul documents},
+  year         = {2025},
+  url          = {https://x.com/AmandaAskell/status/1995610567923695633},
+  note         = {Accessed: 2025-07-01}
+}
+
 ### End chapter 17 ###
 
-### First appearing in chapter 18 ###
+### First appearing in appendix A (Definitions) ###
+
+@inproceedings{Vaswani2017AttentionIA,
+  title={Attention is All you Need},
+  author={Ashish Vaswani and Noam M. Shazeer and Niki Parmar and Jakob Uszkoreit and Llion Jones and Aidan N. Gomez and Lukasz Kaiser and Illia Polosukhin},
+  booktitle={Neural Information Processing Systems},
+  year={2017},
+  url={https://api.semanticscholar.org/CorpusID:13756489}
+}
+
+@inproceedings{Bahdanau2014NeuralMT,
+  title={Neural Machine Translation by Jointly Learning to Align and Translate},
+  author={Dzmitry Bahdanau and Kyunghyun Cho and Yoshua Bengio},
+  booktitle={International Conference on Learning Representations (ICLR)},
+  year={2015},
+  url={https://arxiv.org/abs/1409.0473}
+}
+
+@article{team2024gemma,
+  title={Gemma 2: Improving open language models at a practical size},
+  author={Team, Gemma and Riviere, Morgane and Pathak, Shreya and Sessa, Pier Giuseppe and Hardin, Cassidy and Bhupatiraju, Surya and Hussenot, L{\'e}onard and Mesnard, Thomas and Shahriari, Bobak and Ram{\'e}, Alexandre and others},
+  journal={arXiv preprint arXiv:2408.00118},
+  year={2024}
+}
+
+@inproceedings{agarwal2024policy,
+  title={On-policy distillation of language models: Learning from self-generated mistakes},
+  author={Agarwal, Rishabh and Vieillard, Nino and Zhou, Yongchao and Stanczyk, Piotr and Garea, Sabela Ramos and Geist, Matthieu and Bachem, Olivier},
+  booktitle={The Twelfth International Conference on Learning Representations},
+  year={2024}
+}
+
+@article{hinton2015distilling,
+  title={Distilling the knowledge in a neural network},
+  author={Hinton, Geoffrey and Vinyals, Oriol and Dean, Jeff},
+  journal={arXiv preprint arXiv:1503.02531},
+  year={2015}
+}
+
+@article{wei2022chain,
+  title={Chain-of-thought prompting elicits reasoning in large language models},
+  author={Wei, Jason and Wang, Xuezhi and Schuurmans, Dale and Bosma, Maarten and Xia, Fei and Chi, Ed and Le, Quoc V and Zhou, Denny and others},
+  journal={Advances in neural information processing systems},
+  volume={35},
+  pages={24824--24837},
+  year={2022}
+}
+
+### End appendix A ###
+
+### First appearing in appendix B (Style & Information) ###
 
 @article{zhang2018study,
   title={A study on overfitting in deep reinforcement learning},
@@ -3146,76 +3217,13 @@ url={https://openreview.net/forum?id=a147pIS2Co}
   year={2020}
 }
 
-### End chapter 18 ###
+### End appendix B ###
 
-### First appearing in chapter 19 ###
-
-@inproceedings{wang2023openchat,
-  title={Openchat: Advancing open-source language models with mixed-quality data},
-  booktitle = {International Conference on Learning Representations (ICLR)},
-  author={Wang, Guan and Cheng, Sijie and Zhan, Xianyuan and Li, Xiangang and Song, Sen and Liu, Yang},
-  year = {2024}
+### Begin Extra Appendix Citations ###
+@article{yadav2024matters,
+  title={What Matters for Model Merging at Scale?},
+  author={Yadav, Prateek and Vu, Tu and Lai, Jonathan and Chronopoulou, Alexandra and Faruqui, Manaal and Bansal, Mohit and Munkhdalai, Tsendsuren},
+  journal={arXiv preprint arXiv:2410.03617},
+  year={2024}
 }
-
-@article{qwen,
-  title={Qwen Technical Report},
-  author={Jinze Bai and Shuai Bai and Yunfei Chu and Zeyu Cui and Kai Dang and Xiaodong Deng and Yang Fan and Wenbin Ge and Yu Han and Fei Huang and Binyuan Hui and Luo Ji and Mei Li and Junyang Lin and Runji Lin and Dayiheng Liu and Gao Liu and Chengqiang Lu and Keming Lu and Jianxin Ma and Rui Men and Xingzhang Ren and Xuancheng Ren and Chuanqi Tan and Sinan Tan and Jianhong Tu and Peng Wang and Shijie Wang and Wei Wang and Shengguang Wu and Benfeng Xu and Jin Xu and An Yang and Hao Yang and Jian Yang and Shusheng Yang and Yang Yao and Bowen Yu and Hongyi Yuan and Zheng Yuan and Jianwei Zhang and Xingxuan Zhang and Yichang Zhang and Zhenru Zhang and Chang Zhou and Jingren Zhou and Xiaohuan Zhou and Tianhang Zhu},
-  journal={arXiv preprint arXiv:2309.16609},
-  year={2023}
-}
-
-### End chapter 19 ###
-
-### First appearing in chapter 20 ###
-
-@article{maiya2025open,
-  title={Open Character Training: Shaping the Persona of AI Assistants through Constitutional AI},
-  author={Maiya, Sharan and Bartsch, Henning and Lambert, Nathan and Hubinger, Evan},
-  journal={arXiv preprint arXiv:2511.01689},
-  year={2025}
-}
-
-@misc{anthropic2024claude,
-  author       = {{Anthropic}},
-  title        = {Claude’s Character},
-  year         = {2024},
-  month        = {June},
-  url          = {https://www.anthropic.com/research/claude-character},
-  note         = {Accessed: 2025-04-16}
-}
-
-@article{turner2023activation,
-  title={Activation addition: Steering language models without optimization},
-  author={Turner, Alexander Matt and Thiergart, Lisa and Leech, Gavin and Udell, David and Vazquez, Juan J and Mini, Ulisse and MacDiarmid, Monte},
-  journal={arXiv e-prints},
-  pages={arXiv--2308},
-  year={2023}
-}
-
-@misc{chen2025persona,
-  title={Persona Vectors: Monitoring and Controlling Character Traits in Language Models},
-  author={Runjin Chen and Andy Arditi and Henry Sleight and Owain Evans and Jack Lindsey},
-  year={2025},
-  eprint={2507.21509},
-  archivePrefix={arXiv},
-  primaryClass={cs.CL},
-  url={https://arxiv.org/abs/2507.21509}
-}
-
-@misc{anthropic2025souldoc,
-  author       = {{Anthropic}},
-  title        = {Claude 4.5 Opus Soul Document},
-  year         = {2025},
-  url          = {https://www.lesswrong.com/posts/vpNG99GhbBoLov9og/claude-4-5-opus-soul-document},
-  note         = {Accessed: 2025-07-01}
-}
-
-@misc{askell2025soul,
-  author       = {Askell, Amanda},
-  title        = {Post on {X} regarding character training with soul documents},
-  year         = {2025},
-  url          = {https://x.com/AmandaAskell/status/1995610567923695633},
-  note         = {Accessed: 2025-07-01}
-}
-
-### End chapter 20 ###
+### End Extra Appendix Citations ###
