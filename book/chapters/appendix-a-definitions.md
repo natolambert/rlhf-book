@@ -6,6 +6,10 @@ next-chapter: "Style & Information"
 next-url: "appendix-b-style"
 ---
 
+```{=latex}
+\appendix
+```
+
 # Definitions & Background
 
 This chapter includes all the definitions, symbols, and operations frequently used in the RLHF process and with a quick overview of language models, which is the guiding application of this book.
