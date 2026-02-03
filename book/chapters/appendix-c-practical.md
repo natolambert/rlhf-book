@@ -6,7 +6,7 @@ next-chapter: "Home"
 next-url: "https://rlhfbook.com/"
 ---
 
-# Practical Issues
+# Practical Issues and Advice
 
 This appendix covers practical considerations for running post-training experiments at scale. 
 This takes the form of a list of lessons, rather than a coherent narrative.
@@ -28,7 +28,7 @@ For final runs, the Olmo 3 report has a detailed accounting of what is involved 
 As scaling reinforcement learning becomes more standard practice, this will shift yet again [@khatri2025art].
 Continuing the above example, where the original Olmo 3 32B Think post-training took only a couple of weeks, to release the improved Olmo 3.1 32B Think model the team needed to train it for an additional 3.5 weeks with RLVR. This is a substantial cost in *time* more than in total compute.
 
-## Evaluation Variance
+## 2. Evaluation Variance
 
 One underappreciated challenge in post-training is evaluation variance, especially with the rise of reasoning models that need to use sampling with temperatures above 0 to get the best evaluation scores. 
 With any sampling from models, the outputs become more variable.
@@ -60,28 +60,28 @@ Some evaluations, such as LiveCodeBench, were both noisy and cheap (via few prom
 
 We also see sources of variance in evaluation settings like batch size, tensor parallel settings within VLLM (e.g., TP=2 for baselines), and other sensitive numerics for sampling long generations across infrastructure. Variance is everywhere with reasoners.
 
-## Running Multiple Seeds
+## 3. Managing Training Performance Variance
 
-<!-- TODO: Add discussion on the importance of running multiple training seeds -->
+Throughout all the post-training recipes and tools discussed in this book, the final model is subject to meaningful variance in performance.
+Understanding the distribution of this variance, its sources, and its impacts is crucial to creating strong models.
+The goal of training a final model is to sample many points, by varying training parameters and random seeds, in order to get the strongest model possible.
+Note that this is a balance between the model *actually* being better, and not just the benefit of re-rolling from evaluation noise.
 
-## Identifying Bad Training Jobs
+Where the previous section focuses on *evaluation* noise, the trickier source of noise is training uncertainty.
+Where evaluation noise can be managed by running more tests on a given checkpoint (uniformly reducing noise), models are trained once and can *benefit* from a positive outlier.
 
-<!-- TODO: Add discussion on what bad training jobs look like - e.g., sharp drops on stable evals -->
+In practice, training teams take many steps to capture the maximum possible value out of their training recipe:
 
-## Model Merging
+1. Sweep core optimization values like learning rate, batch size, etc. for every final model run. For example, with a new base model, I'd recommend running 10 learning rates over a wide region to be sure you're in the optimal range, then re-run in the tighter, optimal window.
+2. Running multiple seeds on the best few settings. Random seed can have meaningful impacts on the final model, and it's worth spending compute on.
+3. Model merging is established as a key tool used to create strong models. Merging can be done in many ways, from merging different checkpoints on the same data or specialized models on specific domains. Generally, merging is seen to be a strong an simple tool in final recipes, but clear best practices aren't established on how to prepare a model for later merging in a recipe [@yadav2024matters].
 
-Model merging has emerged as a practical technique for improving model performance across different training approaches.
+## 4. Identifying Bad Training Jobs
 
-<!-- TODO: Add discussion on model merging as performance gain across any training optimizer. Basic linear merging often works best on larger models. -->
+A simple intuition that's important to establish when training models is the different types of model issues. 
+You want the most of your time to be spent on issues where the current data, algorithm, or recipe just isn't good enough.
+On the other hand, there are plenty of times when setting up a new recipe that certain methods are just broken.
 
-**Key references on empirical model merging:**
-
-<!-- TODO: Add references from ChatGPT Pro suggestions -->
-
-## Training vs Deployment System Prompts
-
-<!-- TODO: Expand on deployment vs training system prompts - when to bake behavior into weights vs handle at inference time -->
-
-A practical lesson from training models at different scales: identity and persona are easier to adjust via system prompts at deployment time than to retrain into the model weights. For example, with OLMo 3, the 32B model's identity was not baked into the training data, making it easy to adjust via system prompt at demo time. However, the 7B model had identity more embedded in training, and retraining wasn't feasible at that point.
-
-The takeaway: if using synthetic data to shift model identity or persona, you need a meaningful amount of data to make that shift stick. For smaller models or tighter timelines, keeping identity flexible via deployment-time system prompts can be more practical than trying to train it in.
+The best way to understand this is to evaluate many models on a largely static evaluation suite, then you develop an intuition for which tests are hard to move with post-training interventions (often knowledge-heavy evaluations such as MMLU).
+When something is very, *very* broken in a post-training setup these largely stable evaluations can often drop by 10-20 points in a training job. 
+This is one of the most useful signals there are when developing tooling!
