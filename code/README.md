@@ -157,6 +157,10 @@ uv run python -m direct_alignment.train --loss dpo --max_samples 1000
 | ORPO | `orpo.yaml` | Odds Ratio PO - combines SFT + preference (Hong et al., 2024) |
 | KTO | `kto.yaml` | Kahneman-Tversky Optimization (Ethayarajh et al., 2024) |
 
+### Training Results
+
+![Direct Alignment Training Results](images/wandb_direct_alignment.png)
+
 See Chapter 8 of RLHF Book for mathematical derivations.
 
 ## Configuration
