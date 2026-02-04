@@ -157,6 +157,10 @@ uv run python -m direct_alignment.train --loss dpo --max_samples 1000
 | ORPO | `orpo.yaml` | Odds Ratio PO - combines SFT + preference (Hong et al., 2024) |
 | KTO | `kto.yaml` | Kahneman-Tversky Optimization (Ethayarajh et al., 2024) |
 
+### Training Results
+
+![Direct Alignment Training Results](images/wandb_direct_alignment.png)
+
 See Chapter 8 of RLHF Book for mathematical derivations.
 
 ## Configuration
@@ -177,6 +181,8 @@ export WANDB_RUN_NAME="grpo_experiment_1"
 ```
 
 The official runs for this repo are logged to: **[wandb.ai/natolambert/rlhf-book](https://wandb.ai/natolambert/rlhf-book)**
+
+All runs are **public** - no login required to view training curves, configs, and metrics.
 
 To disable wandb logging entirely, set `wandb_project: null` in your config or:
 ```bash

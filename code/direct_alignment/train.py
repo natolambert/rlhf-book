@@ -430,7 +430,8 @@ def main(cfg: Config):
 
     def lr_lambda(step):
         if step < num_warmup_steps:
-            return float(step) / float(max(1, num_warmup_steps))
+            # Start warmup at 1/num_warmup_steps, not 0 (avoids first step doing nothing)
+            return float(step + 1) / float(max(1, num_warmup_steps + 1))
         return max(0.0, float(num_training_steps - step) / float(max(1, num_training_steps - num_warmup_steps)))
 
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
