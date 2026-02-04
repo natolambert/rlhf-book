@@ -15,7 +15,7 @@ See **Chapter 8: Direct Alignment** for mathematical derivations and intuitions.
 | **ORPO** | [orpo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/o38ffli5) | ⚠️ Noisy - needs debugging |
 | **KTO** | [kto-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/hgqrkfi6) | ✅ Validated |
 
-![Direct alignment accuracy curves for DPO, IPO, and KTO](DAAs.png)
+![Direct alignment accuracy curves for DPO, IPO, and KTO](../images/wandb_direct_alignment.png)
 
 ## Algorithms
 
