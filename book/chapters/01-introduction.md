@@ -71,6 +71,13 @@ A strong model, Llama 3.1 405B Base, will continue from "The president of the un
 
 What is clear is that this model is completing the sentence and adding other common internet metadata.
 
+In contrast, a model trained with RLHF (and other post-training tools) would answer the question very differently.
+Asking Tülu 3 405B the same question "The president of the united states in 2006 was," it says concisely:
+
+> George W. Bush was the president of the United States in 2006. He served two terms in office, from January 20, 2001, to January 20, 2009.
+
+This change in style is downstream of the post-training methods described in this book.
+
 The most compelling view of how RLHF works is to consider how *style* applies to interactions you have with language models.
 The style, closely related to tone or format, of information presented is crucial to how it is learned.
 Style is often used to describe the manner of the model. To see the difference, consider two example responses to the following question:
@@ -78,9 +85,11 @@ Style is often used to describe the manner of the model. To see the difference, 
 > Help, I have to give a presentation tomorrow and I’m panicking.
 
 A blunt, low-empathy style:
-> You’ll be fine. Practice your slides a few times, get some sleep, and stop overthinking it. Just present what you know and move on.
+
+> You'll be fine. Practice your slides a few times, get some sleep, and stop overthinking it. Just present what you know and move on.
 
 A warmer, more supportive style:
+
 > That sounds really stressful, and it’s a normal reaction. If you can, do one quick practice run now, pick the one or two points you most want people to remember, and then give yourself permission to rest—being clear and calm tomorrow will matter more than cramming tonight.
 
 
@@ -115,12 +124,6 @@ Or a complex, richer answer:
 > 
 > If sleep problems are persistent or severe, it can be worth talking with a clinician—many issues are very treatable.
 
-Continuing the above example, a model trained with RLHF (and other post-training tools), would answer the question very differently. 
-Asking Tülu 3 405B the same question "The president of the united states in 2006 was," it says concisely:
-
-> George W. Bush was the president of the United States in 2006. He served two terms in office, from January 20, 2001, to January 20, 2009.
-
-This change in style is downstream of the post-training methods described in this book. 
 Instruction fine-tuning would provide the basic ability for models to respond reliably in the question-answering format, and RLHF is what takes these answers and crafts them into the reliable, warm, and engaging answers we now expect from language models.
 
 Modern research has established RLHF as a general method to integrate subtle stylistic and related behavioral features into the models.
