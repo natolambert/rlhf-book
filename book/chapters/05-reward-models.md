@@ -11,14 +11,14 @@ next-url: "06-policy-gradients"
 Reward models are core to the modern approach to RLHF by being where the complex human preferences are learned. 
 They are what enable our models to learn from hard to specify signals. 
 They compress complex features in the data into a representation that can be used in downstream training -- a sort of magic that once again shows the complex capacity of modern deep learning.
-These models act as the proxy objectives by which the core optimization is done, as studied in the following chapters.
+These models act as proxy objectives for the core optimization, as studied in the following chapters.
 
-Reward models broadly have historically been used extensively in reinforcement learning research as a proxy for environment rewards [@sutton2018reinforcement].
-Reward models were proposed, in their modern form, as a tool for studying the value alignment problem [@leike2018scalable].
+Reward models have historically been used extensively in reinforcement learning research as a proxy for environment rewards [@sutton2018reinforcement].
+Reward models were proposed, in their modern form, as a tool for studying the value alignment problem [@leike2018scalable] -- the challenge of building AI systems that behave as humans intend [@christian2020alignment].
 These models tend to take in some sort of input and output a single scalar value of reward. 
 This reward can take multiple forms -- in traditional RL problems it was attempting to approximate the exact environment reward for the problem, but we will see in RLHF that reward models actually output a probability of a certain input being "of high quality" (i.e. the chosen answer among a pairwise preference relation).
 The practice of reward modeling for RLHF is closely related to inverse reinforcement learning, where the problem is to approximate an agent's reward function given trajectories of behavior [@ng2000algorithms], and other areas of deep reinforcement learning. 
-The high level problem statement is the same, but the implementation and focus areas are entirely different, so they're often considered as totally separate areas of study.
+The high-level problem statement is the same, but the implementation and focus areas are entirely different, so they're often considered as totally separate areas of study.
 
 The most common reward model, often called a Bradley-Terry reward model and the primary focus of this chapter, predicts the probability that a piece of text was close to a "preferred" piece of text from the training comparisons.
 Later in this section we also compare these to Outcome Reward Models (ORMs), Process Reward Model (PRM), and other types of reward models.
@@ -37,7 +37,7 @@ To start, a Bradley-Terry model of preferences defines the probability that, in 
 $$P(i > j) = \frac{p_i}{p_i + p_j}.$$ {#eq:bradterry}
 
 The Bradley-Terry model assumes that each item has a latent strength $p_i > 0$, and that observed preferences are a noisy reflection of these underlying strengths.
-It is common to reparametrize the Bradley-Terry model with unbounded scores, where $p_i = e^{r_i}$, which results in the following form:
+It is common to reparametrize the Bradley-Terry model with unbounded scores, where $p_i = e^{r_i}$, which results in the following form (where $\sigma$ denotes the sigmoid function, $\sigma(z) = 1/(1+e^{-z})$):
 
 $$P(i > j) = \frac{e^{r_i}}{e^{r_i} + e^{r_j}} = \sigma(r_i-r_j).$$ {#eq:bradterry_unbounded}
 
@@ -52,7 +52,7 @@ The probability of success for a given reward model in a pairwise comparison bec
 
 $$P(y_1 > y_2 \mid x) = \frac{\exp\left(r_\theta(y_1 \mid x)\right)}{\exp\left(r_\theta(y_1 \mid x)\right) + \exp\left(r_\theta(y_2 \mid x)\right)}.$$ {#eq:bradterryrm}
 
-We denote the preferred completion as $y_c$ (chosen) and the rejected completion as $y_r$.
+We denote the preferred completion as $y_c$ (chosen) and the rejected completion as $y_r$, where the preference relation $y_c \succ y_r$ indicates that $y_c$ is preferred over $y_r$.
 
 Then, by maximizing the log-likelihood of the above function (or alternatively minimizing the negative log-likelihood), we can arrive at the loss function to train a reward model:
 
@@ -159,6 +159,7 @@ class BradleyTerryRewardModel(nn.Module):
 ```
 
 In this section and what follows, most of the implementation complexity for reward models (and much of post-training) is around constructing the data-loaders correctly and distributed learning systems.
+These details are beyond the scope of this book and tend to be highly specific to each training library -- code that works in TRL won't directly port to OpenRLHF or other frameworks. Consult the documentation for your chosen library for implementation specifics.
 Note, when training reward models, the most common practice is to train for only 1 epoch to avoid overfitting.
 
 ## Variants
@@ -185,7 +186,7 @@ Note that in Llama 3 the margin term was removed as the team observed diminishin
 
 InstructGPT studies the impact of using a variable number of completions per prompt, yet balancing them in the reward model training [@ouyang2022training].
 To do this, they weight the loss updates per comparison per prompt.
-At an implementation level, this can be done automatically by including all examples with the same prompt in the same training batch, naturally weighing the different pairs -- not doing this caused overfitting to the prompts.
+At an implementation level, this can be done automatically by including all examples with the same prompt in the same training batch, naturally weighing the different pairs -- otherwise, overfitting to the prompts can occur.
 The loss function becomes:
 
 $$\mathcal{L}(\theta) = - \frac{1}{\binom{K}{2}} \mathbb{E}_{(x, y_c, y_r)\sim D} \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) \right) \right)$$ {#eq:rewardmodelinginstructgpt}
@@ -198,7 +199,7 @@ One such example, used in the popular, early RLHF'd models Starling 7B and 34B [
 
 Zhu et al. 2023 [@zhu2023principled] formalizes the setup as follows.
 With a prompt, or state, $s^i$, $K$ actions $(a_0^i, a_1^i, \cdots, a_{K-1}^i)$ are sampled from $P(a_0,\cdots,a_{K-1}|s^i)$.
-Then, labelers are used to rank preferences with $\sigma^i: [K] \mapsto [K]$ is a function representing action rankings, where $\sigma^i(0)$ is the most preferred action. This yields a preference model capturing the following:
+Then, labelers rank the K actions by preference, producing a permutation $\sigma^i: [K] \mapsto [K]$ where $\sigma^i(0)$ gives the index of the most preferred action, $\sigma^i(1)$ the second most preferred, and so on. This yields a preference model capturing the following:
 
 $$P(\sigma^i|s^i,a_0^i,a_1^i,\ldots,a_{K-1}^i) = \prod_{k=0}^{K-1} \frac{\exp(r_{\theta\star}(s^i,a_{\sigma^i(k)}^i))}{\sum_{j=k}^{K-1}\exp(r_{\theta\star}(s^i,a_{\sigma^i(j)}^i))}$$ {#eq:kwise_rm}
 
@@ -295,9 +296,9 @@ This can be a noisy process, as the updates and loss propagates per token depend
 
 ![Training an outcome reward model uses offline labels from a verifier or dataset (e.g., all 1s for correct completions). Each completion token is trained with binary cross-entropy against the outcome label, and per-token probabilities are aggregated into a final score for verification, filtering, or reranking.](images/orm_training.png){#fig:orm_training}
 
-These models have continued in use, but are less supported in open-source RLHF tools. 
+These models have continued to be used, but are less supported in open-source RLHF tools. 
 For example, the same type of ORM was used in the seminal work *Let's Verify Step by Step* [@lightman2023let], but without the language modeling prediction piece of the loss.
-Then, the final loss is a cross-entropy loss on every token predicting if the final answer is correct.
+Then, the final loss is a cross-entropy loss on every token, predicting whether the final answer is correct.
 
 Given the lack of support, the term outcome reward model (ORM) has been used in multiple ways. 
 Some literature, e.g. [@lyu2025exploring], continues to use the original definition from Cobbe et al. 2021. 
@@ -306,8 +307,8 @@ Others do not.
 
 ## Process Reward Models
 
-Process Reward Models (PRMs), originally called Process-supervised Reward Models, are reward models trained to output scores at every *step* in a chain-of-thought reasoning process. 
-These differ from a standard RM that outputs a score only at an EOS token or a ORM that outputs a score at every token.
+Process Reward Models (PRMs), originally called process-supervised reward models, are reward models trained to output scores at every *step* in a chain-of-thought reasoning process. 
+These differ from a standard RM that outputs a score only at an EOS token or an ORM that outputs a score at every token.
 Process Reward Models require supervision at the end of each reasoning step, and then are trained similarly where the tokens in the step are trained to their relevant target -- the target is the step in PRMs and the entire response for ORMs.
 
 Following [@lightman2023let], a binary-labeled PRM is commonly optimized with a per-step cross-entropy loss:
@@ -415,7 +416,7 @@ They can share the same base model and head dimensions, but the *semantics and s
 
 ### Inference Differences
 
-The models handled data differently at inference-time, i.e. once they've been trained, in order to handle a suite of tasks that RMs are used for.
+The models handle data differently at inference time (once they've been trained), in order to handle a suite of tasks that RMs are used for.
 
 **Bradley-Terry RM (Preference Model):**
 
@@ -441,8 +442,8 @@ The models handled data differently at inference-time, i.e. once they've been tr
 **Value Function:**
 
 - *Input:* prompt $x$ + current prefix $y_{\leq t}$ (a state)
-- Output: $V_t$ at each token position in the completion (expected remaining return from state $t$)
-- Usage: compute per-token advantages $A_t = \hat{R}_t - V_t$ during RL training; the values at each step serve as baselines
+- *Output:* $V_t$ at each token position in the completion (expected remaining return from state $t$)
+- *Usage:* compute per-token advantages $A_t = \hat{R}_t - V_t$ during RL training; the values at each step serve as baselines
 - *Aggregation:* typically take $V$ at the last generated token; interpretation differs from "probability of correctness"
 
 In summary, the way to understand the different models is:
@@ -481,7 +482,7 @@ After providing your explanation, output your final verdict by strictly followin
 
 Given the efficacy of LLM-as-a-judge for evaluation, spawning many other evaluations such as AlpacaEval [@dubois2024length], Arena-Hard [@li2024crowdsourced], and WildBench [@lin2024wildbench], many began using LLM-as-a-judge instead of reward models to create and use preference data.
 
-An entire field of study has emerged to study how to use so called "Generative Reward Models" [@mahan2024generative]
+An entire field of study has emerged around how to use so-called "Generative Reward Models" [@mahan2024generative]
 [@zhang2024generative] [@ankner2024critique] (including models trained *specifically* to be effective judges [@kim2023prometheus]), but on RM evaluations they tend to be behind existing reward models, showing that reward modeling is an important technique for current RLHF.
 
 A common trick to improve the robustness of LLM-as-a-judge workflows is to use a sampling temperature of 0 to reduce variance of ratings.
@@ -489,7 +490,7 @@ A common trick to improve the robustness of LLM-as-a-judge workflows is to use a
 ## Further Reading
 
 The academic literature for reward modeling established itself in 2024. 
-The bulk of progress in reward modeling early on has been in establishing benchmarks and identifying behavior modes.
+The bulk of early progress in reward modeling has focused on establishing benchmarks and identifying behavior modes.
 The first RM benchmark, RewardBench, provided common infrastructure for testing reward models [@lambert2024rewardbench].
 Since then, RM evaluation has expanded to be similar to the types of evaluations available to general post-trained models, where some evaluations test the accuracy of prediction on domains with known true answers [@lambert2024rewardbench] or those more similar to "vibes" performed with LLM-as-a-judge or correlations to other benchmarks [@wen2024rethinking].
 
