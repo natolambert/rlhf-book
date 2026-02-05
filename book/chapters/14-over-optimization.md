@@ -124,7 +124,7 @@ These already trained models can be much harder to change, e.g. to remove this o
 Over-optimization is also a technical field of study where relationships between model performance versus KL optimization distance are studied [@gao2023scaling].
 Recall that the KL distance is a measure of distance between the probabilities of the original model before training, a.k.a. the reference model, and the current policy.
 For example, the relationship in @fig:overoptimization, can also be seen with the KL distance of the optimization on the x-axis rather than training steps.
-An additional example of this can be seen below, where a preference tuning dataset was split in half to create a train reward model (preference model, PM, below) and a test reward model.
+An additional example of this can be seen in @fig:anthropic_overoptimization, where a preference tuning dataset was split in half to create a train reward model (preference model, PM) and a test reward model.
 As training continues, improvements on the training RM eventually fail to transfer to the test PM at ~150K training samples [@bai2022training].
 
 Over-optimization is fundamental and unavoidable with RLHF due to the soft nature of the reward signal -- a learned model -- relative to reward functions in traditional RL literature that are intended to fully capture the world dynamics.
