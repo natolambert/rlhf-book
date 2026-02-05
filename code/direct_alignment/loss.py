@@ -269,6 +269,11 @@ class ORPOLoss(nn.Module):
 
     The SFT term encourages the model to generate the chosen response,
     while the odds ratio term creates preference separation.
+
+    Important implementation note:
+    ORPO is very sensitive to log-prob scale. We feed average per-token log-probs
+    (not sequence sums), which mirrors TRL's ORPOTrainer behavior and is more stable
+    for long responses.
     """
 
     def __init__(self, beta: float = 0.1):

@@ -532,6 +532,7 @@ def main(cfg: Config):
 
     # Get loss function
     # ORPO and SimPO both use average sequence log-probs (TRL-style).
+    # For ORPO this avoids extreme log-odds magnitudes that show up with summed log-probs.
     use_average_logprob = cfg.loss in ["simpo", "orpo"]
     loss_fn = get_loss_function(
         cfg.loss,

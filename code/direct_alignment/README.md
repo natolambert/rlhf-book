@@ -123,6 +123,17 @@ Training can periodically generate sample outputs for qualitative checks. The cu
 - Larger rotating prompt pool by default (16 prompts), with optional custom prompt files via `sample_prompts_file`
 - W&B table logging with per-sample metadata (prompt id, decoding settings, token limits)
 
+### ORPO/SimPO Implementation Notes
+
+These two losses are easy to implement incorrectly because both are sensitive to log-prob scaling.
+
+- **ORPO uses average log-probabilities in this implementation** (matching TRL ORPO behavior), not summed sequence log-probabilities.
+- **Why this matters for ORPO**: summed log-probs on long responses become large-magnitude negatives, which makes the ORPO log-odds term numerically extreme and can dominate the SFT term.
+- **Observed failure mode before this change**: very large `log_odds_ratio`/`or_loss` values and unstable optimization.
+- **Current ORPO guardrail**: clamp policy log-probs to `< 0` before `log1mexp` to avoid edge-case numerical issues.
+- **SimPO remains average-logprob based** (as designed) and is sensitive to learning rate; defaults are tuned lower than DPO.
+- **Config implication**: SimPO/ORPO learning rates are intentionally lower and runs are longer to reduce noise.
+
 ### Sequence Length Controls
 
 TRL-style options for controlling prompt/completion lengths:
