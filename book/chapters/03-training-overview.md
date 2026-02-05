@@ -11,7 +11,7 @@ next-url: "04-instruction-tuning"
 In this chapter we provide a cursory overview of RLHF training, before getting into the specifics later in the book.
 RLHF, while optimizing a simple loss function, involves training multiple, different AI models in sequence and then linking them together in a complex, online optimization.
 
-Here, we introduce the core objective of RLHF, which is optimizing a proxy of reward of human preferences with a distance-based regularizer (along with showing how it relates to classical RL problems).
+Here, we introduce the core objective of RLHF, which is optimizing a proxy reward for human preferences with a distance-based regularizer (along with showing how it relates to classical RL problems).
 Then we showcase canonical recipes which use RLHF to create leading models to show how RLHF fits in with the rest of post-training methods.
 These example recipes will serve as references for later in the book, where we describe different optimization choices you have when doing RLHF, and we will point back to how different key models used different steps in training.
 
@@ -29,7 +29,7 @@ Across a finite episode with horizon $T$, the goal of an RL agent is to solve th
 $$J(\pi) = \mathbb{E}_{\tau \sim p_{\pi}} \left[ \sum_{t=0}^{T-1} \gamma^t r(s_t, a_t) \right],$$ {#eq:rl_opt}
 
 For continuing tasks, one often takes $T\to\infty$ and relies on discounting ($\gamma<1$) to keep the objective well-defined.
-$\gamma$ is a discount factor from 0 to 1 that balances the desirability of near- versus future-rewards.
+$\gamma$ is a discount factor from 0 to 1 that balances the desirability of near-term versus future rewards.
 Multiple methods for optimizing this expression are discussed in Chapter 6.
 
 ![Standard RL loop](images/rl.png){#fig:rl width=320px .center}
@@ -84,7 +84,7 @@ Table @tbl:rl-vs-rlhf summarizes these differences between standard RL and the R
 Table: Key differences between standard RL and RLHF for language models. {#tbl:rl-vs-rlhf}
 :::
 
-Given the single-turn nature of the problem, the optimization can be re-written without the time horizon and discount factor (and the reward models):
+Given the single-turn nature of the problem, the optimization can be re-written without the time horizon and discount factor (and with an explicit reward model):
 $$J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t) \right].$$ {#eq:rl_opt_int}
 
 In many ways, the result is that while RLHF is heavily inspired by RL optimizers and problem formulations, the actual implementation is very distinct from traditional RL.
@@ -94,7 +94,7 @@ In many ways, the result is that while RLHF is heavily inspired by RL optimizers
 ### Fine-tuning and Regularization
 
 In traditional RL problems, the agent must learn from a randomly initialized policy, but with RLHF, we start from a strong pretrained base model with many initial capabilities.
-This strong prior for RLHF induces a need to control the optimization from drifting too far from the initial policy.
+This strong prior for RLHF induces a need to prevent the optimization from drifting too far from the initial policy.
 In order to succeed in a fine-tuning regime, RLHF techniques employ multiple types of regularization to control the optimization.
 The goal is to allow the reward maximization to still occur without the model succumbing to over-optimization, as discussed in Chapter 14.
 The most common change to the optimization function is to add a distance penalty on the difference between the current RLHF policy and the starting point of the optimization:
@@ -122,7 +122,7 @@ Modern RLHF-trained models always utilize instruction fine-tuning followed by a 
 
 Over time various models have been identified as canonical recipes for RLHF specifically or post-training generally.
 These recipes reflect data practices and model abilities at the time.
-As the recipes age, training models with the same characteristics becomes easier and takes fewer data.
+As the recipes age, training models with the same characteristics becomes easier and requires less data.
 There is a general trend of post-training involving more optimization steps with more training algorithms across more diverse training datasets and evaluations.
 
 ### InstructGPT
@@ -132,7 +132,7 @@ The three steps taken on top of a "base" language model (the next-token predicti
 
 1. **Instruction tuning on ~10K examples**: This teaches the model to follow the question-answer format and teaches some basic skills from primarily human-written data.
 2. **Training a reward model on ~100K pairwise prompts**: This model is trained from the instruction-tuned checkpoint and captures the diverse values one wishes to model in their final training. The reward model is the optimization target for RLHF.
-3. **Training the instruction-tuned model with RLHF on another ~100K prompts**: The model is optimized against the reward model with a set of prompts that the model generates over before receiving ratings.
+3. **Training the instruction-tuned model with RLHF on another ~100K prompts**: The model is optimized against the reward model with a set of prompts that the model generates responses to before receiving ratings.
 
 Once RLHF was done, the model was ready to be deployed to users. This recipe is the foundation of modern RLHF, but recipes have evolved substantially to include more stages and more data.
 
@@ -151,7 +151,7 @@ This can even include techniques that train specialized models and then merge th
 
 ![A summary of the Tülu 3 recipe with target skills and multi-step training recipe. Lambert et al. 2024, License CC-BY.](images/tulu3.png){#fig:tulu-3}
 
-A fully open example version of this multi-stage version of post-training where RLHF plays a major role is Tülu 3.
+A fully open example of this multi-stage approach to post-training where RLHF plays a major role is Tülu 3.
 The Tülu 3 recipe consists of three stages:
 
 1. **Instruction tuning on ~1M examples**: This primarily synthetic data from a mix of frontier models such as GPT-4o and Llama 3.1 405B teaches the model general instruction following and serves as the foundation of a variety of capabilities such as mathematics or coding.

@@ -571,7 +571,7 @@ However, this approach has a subtle failure mode: when a token's importance rati
 For rare but important tokens—such as key reasoning steps that the model initially assigns low probability—this "token dropping" can prevent the model from learning to produce them more reliably.
 
 Group Sequence Policy Optimization (GSPO) [@zheng2025gspo] extends GRPO by computing importance ratios at the sequence level rather than the token level.
-The practical motivation for this algorithm, and it's peer modifying how importance sampling is computed for policy graident algorithsm, CISPO, that we will discuss later, is that the per-token importance sampling ratio is often numerically unstable.
+The practical motivation for this algorithm, and its peer modifying how importance sampling is computed for policy gradient algorithms, CISPO, that we will discuss later, is that the per-token importance sampling ratio is often numerically unstable.
 The conceptual motivation is that when rewards are assigned at the sequence level (as in most RLHF and RLVR setups), the importance sampling correction should match that granularity.
 
 Token-level ratios can behave erratically for long sequences and/or large, sparse models (e.g. modern mixture of experts, MoE, models): a single token with a large ratio can dominate the plicy update, or many tokens may get clipped independently within a response, fragmenting the learning signal across a single response.
@@ -621,7 +621,7 @@ The key difference from PPO/GRPO is subtle but important: clipping the weight (n
 This is a bias-variance tradeoff: clipping weights introduces bias but controls variance and, critically, avoids dropping token gradients entirely.
 
 Both CISPO and GSPO were developed by organizations pushing the limits of applying RL on large-scale MoE models, which are known for their numerical issues.
-The papers highlight how the per-token importance sampling ratios are instable and can add substantial variance to the gradients, mitigating learning.
+The papers highlight how the per-token importance sampling ratios are unstable and can add substantial variance to the gradients, mitigating learning.
 This can make these algorithms particularly impactful on large-scale models, but less studied and beneficial within smaller, academic experiments.
 
 CISPO also allows asymmetric clipping bounds ($\varepsilon_{\text{low}} \neq \varepsilon_{\text{high}}$), similar to DAPO's "clip-higher" modification discussed later in this chapter, which can encourage exploration by allowing larger updates for tokens the model wants to upweight.
@@ -852,7 +852,7 @@ Common practice in popular open-source RL tools for language models is to use a 
 In these setups, the GPUs dedicated to taking the RL steps are called the "leaners" and the GPUs dedicated to sampling from the language model are called the "actors"
 The primary challenges faced when making training more asynchronous are keeping training stable and maintaining learning signal.
 
-![An example distributed RL system, where two queues are managed to pass data to the learner and actor GPUs, which can both be synchonized with a distributed computing library such as Ray. Olmo Team 2025, license CC-BY.](images/distributed-rl.png){#fig:async_system}
+![An example distributed RL system, where two queues are managed to pass data to the learner and actor GPUs, which can both be synchronized with a distributed computing library such as Ray. Olmo Team 2025, license CC-BY.](images/distributed-rl.png){#fig:async_system}
 
 These systems are designed and implemented with the presumption that nearly on-policy data is good enough for stable learning. 
 Here, the generation and update phases can easily be synced to avoid idle compute on either piece of the training system, which would be passing model weights from the leaners to the actors in @fig:async_system.

@@ -9,7 +9,7 @@ next-url: "appendix-c-practical"
 # Style and Information
 
 Early developments in RLHF gave it a reputation for being "just style transfer" or other harsh critiques on how RLHF manipulates the way information is presented in outputs.
-This chapter explains why style is core to understanding the value RLHF provides — and why it positively impacts both model capability and user experience.
+This appendix explains why style is core to understanding the value RLHF provides — and why it positively affects both model capability and user experience.
 
 The idea of RLHF being solely about style transfer has held back the RLHF narrative for two reasons. 
 The first is how RLHF became associated with small, unimportant changes to the model.
@@ -93,7 +93,7 @@ The problem is that you can also use techniques like DPO and PPO in feedback loo
 During the proliferation of the DPO versus PPO debate there were many papers that came out with incredible benchmarks but no model weights that gathered sustained, public usage because these models were not robust in general usage. 
 When applying RLHF in the fall of 2023 or soon after, there is no way to make an aligned version of a 7 billion parameter model actually beat GPT-4 across comprehensive benchmarks (this sort of comparison will hold, where small models of the day cannot robustly beat the best, large frontier models). 
 It seems obvious, but there are always papers claiming these sort of results. 
-@fig:DNO is from a paper called Direct Nash Optimization (DNO) that makes the case that their model is state-of-the-art or so on AlpacaEval for 7B models in April 2024 [@rosset2024direct].
+@fig:DNO is from a paper called Direct Nash Optimization (DNO), which makes the case that their model is state-of-the-art or so on AlpacaEval for 7B models in April 2024 [@rosset2024direct].
 For context, DNO is a batched, on-policy *iterative* alternative to reward-model+PPO (classic RLHF) or one-shot DPO that directly optimizes pairwise preferences (win-rate gaps) by framing alignment as finding a Nash equilibrium against a preference oracle.
 These challenges emerge when academic incentives interface with technologies becoming of extreme interest to the broader society.
 
