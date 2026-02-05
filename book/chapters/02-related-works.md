@@ -40,7 +40,7 @@ This era began to transition, as reward models as a general notion were proposed
 Reinforcement learning from human feedback, also referred to regularly as reinforcement learning from human preferences in its early days, was quickly adopted by AI labs increasingly turning to scaling large language models.
 A large portion of this work began between GPT-2, in 2018, and GPT-3, in 2020.
 The earliest work in 2019, *Fine-Tuning Language Models from Human Preferences* has many striking similarities to modern work on RLHF and the content that we will cover in this book [@ziegler2019fine]. 
-Many canonical terms, such as learning reward models, KL distances, feedback diagrams, etc. were formalized in this paper -- just the evaluation tasks for the final models, and capabilities, were different to what people are doing today.
+Many canonical terms, such as learning reward models, Kullback-Leibler divergence (KL divergence) for regularization, feedback diagrams, etc. were formalized in this paper -- just the evaluation tasks for the final models, and capabilities, were different from what people are doing today.
 From here, RLHF was applied to a variety of tasks.
 <!-- The popular applications were the ones that worked at the time. -->
 Important examples include general summarization [@stiennon2020learning], recursive summarization of books [@wu2021recursively], instruction following (InstructGPT) [@ouyang2022training], browser-assisted question-answering (WebGPT) [@nakano2021webgpt], supporting answers with citations (GopherCite) [@menick2022teaching], and general dialogue (Sparrow) [@glaese2022improving].
