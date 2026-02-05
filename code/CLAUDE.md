@@ -2,6 +2,7 @@
 
 ## Claude Code Notes
 
+- **Always run Python commands with `uv run python`** (not bare `python`/`python3`) so the project environment is used consistently
 - **Always run training commands in background** using `run_in_background: true` to avoid blocking
 - Check task progress with `tail -f /tmp/claude/.../tasks/<id>.output`
 - **Be careful with parallel jobs**: Only run one training job at a time unless you verify memory is available (`free -h`). Running too many can OOM the system.

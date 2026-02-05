@@ -3,7 +3,7 @@
 Educational implementations of direct alignment methods for [RLHF Book](https://rlhfbook.com).
 See **Chapter 8: Direct Alignment** for mathematical derivations and intuitions.
 
-> **Status**: DPO implementation validated. Other algorithms (IPO, SimPO, ORPO, KTO) implemented but configs not yet tuned.
+> **Status**: DPO/IPO/KTO validated. SimPO and ORPO are implemented and actively being retuned.
 
 ## Reference Runs
 
@@ -102,17 +102,26 @@ Other compatible datasets:
 
 ## Key Hyperparameters
 
-| Parameter | DPO | IPO | SimPO |
-|-----------|-----|-----|-------|
-| `beta` | 0.1-0.5 | 0.1 | 2.0-2.5 |
-| `learning_rate` | 5e-6 | 5e-6 | 1e-6 |
-| Reference model | Yes | Yes | No |
+| Parameter | DPO | IPO | SimPO | ORPO |
+|-----------|-----|-----|-------|------|
+| `beta` | 0.1-0.5 | 0.1 | 2.0-2.5 | 0.1 |
+| `learning_rate` | 5e-6 | 5e-6 | 8e-7 to 1e-6 | 1e-6 |
+| Reference model | Yes | Yes | No | No |
 
 **Important**: DPO requires very low learning rates (1e-7 to 5e-6). Higher rates cause divergence.
 
 **Note on IPO loss scale**: IPO uses squared error to a target margin of `1/(2*beta)`. With beta=0.1, this target is 5.0, so early loss values (~10-25) are much higher than DPO (~0.5-0.7). This is expected — IPO loss and gradient norms are not directly comparable to DPO.
 
 **Note on SimPO learning rate**: SimPO requires lower learning rates than DPO (3e-7 to 1e-6). Per the [official SimPO repo](https://github.com/princeton-nlp/SimPO): "A large learning rate (e.g., 1e-5) can significantly degrade performance, causing the model to produce incoherent sentences or completely repetitive responses."
+
+### In-Loop Generation Logging
+
+Training can periodically generate sample outputs for qualitative checks. The current implementation supports:
+
+- Configurable generation settings (`sample_do_sample`, `sample_temperature`, `sample_top_p`, `sample_max_tokens`)
+- Prompt-pool sampling strategies (`fixed`, `round_robin`, `random`)
+- Larger rotating prompt pool by default (16 prompts), with optional custom prompt files via `sample_prompts_file`
+- W&B table logging with per-sample metadata (prompt id, decoding settings, token limits)
 
 ### Sequence Length Controls
 

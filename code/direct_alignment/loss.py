@@ -289,13 +289,17 @@ class ORPOLoss(nn.Module):
         """Compute ORPO loss.
 
         Args:
-            policy_chosen_logps: Sum of log probs for chosen (batch,)
-            policy_rejected_logps: Sum of log probs for rejected (batch,)
+            policy_chosen_logps: Average log probs for chosen (batch,)
+            policy_rejected_logps: Average log probs for rejected (batch,)
             chosen_nll_loss: Negative log likelihood loss on chosen response
         """
         # Cast to float for numerical stability (following TRL)
         policy_chosen_logps = policy_chosen_logps.float()
         policy_rejected_logps = policy_rejected_logps.float()
+
+        # ORPO log-odds expects log-probs strictly below zero.
+        policy_chosen_logps = policy_chosen_logps.clamp(max=-1e-6)
+        policy_rejected_logps = policy_rejected_logps.clamp(max=-1e-6)
 
         # Compute log odds ratio using the proper formula from the paper
         # log_odds = log(p) - log(1-p) = log_p - log1mexp(log_p)
@@ -311,11 +315,17 @@ class ORPOLoss(nn.Module):
         # Note: ratio is already negative (logsigmoid output), so we subtract
         loss = chosen_nll_loss - self.beta * ratio
 
+        chosen_rewards = self.beta * policy_chosen_logps.detach()
+        rejected_rewards = self.beta * policy_rejected_logps.detach()
+
         metrics = {
             "sft_loss": chosen_nll_loss.mean().item(),
-            "or_loss": (-ratio).mean().item(),
+            "or_loss": (-self.beta * ratio).mean().item(),
             "log_odds_ratio": log_odds.mean().item(),
-            "accuracy": (log_odds > 0).float().mean().item(),
+            "chosen_logps": policy_chosen_logps.mean().item(),
+            "rejected_logps": policy_rejected_logps.mean().item(),
+            "margins": (chosen_rewards - rejected_rewards).mean().item(),
+            "accuracy": (chosen_rewards > rejected_rewards).float().mean().item(),
         }
 
         return loss.mean(), metrics
