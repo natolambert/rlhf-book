@@ -105,10 +105,10 @@ $$S_K(R_{flat}) = \text{argsort}(R_{flat})[-K:]$$ {#eq:rs_topk_selection}
 where $\text{argsort}$ returns the indices that would sort the array in ascending order, and we take the last K indices to get the K highest values.
 
 To get our selected completions, we need to map these flattened indices back to our original completion matrix $Y$. 
-To recover the corresponding (prompt, completion) pair, you can map a zero-indexed flattened index $k$ to $(i,j)$ via $i = \lfloor k / N \rfloor + 1$ and $j = (k \bmod N) + 1$.
+To recover the corresponding prompt-completion pair, you can map a zero-indexed flattened index $k$ to $(i,j)$ via $i = \lfloor k / N \rfloor + 1$ and $j = (k \bmod N) + 1$.
 
 #### Selection Example
-Consider the case where we have the following situation, with 5 prompts and 4 completions. 
+Consider the case where we have the following situation, with five prompts and four completions. 
 We will show two ways of selecting the completions based on reward.
 
 $$R = \begin{bmatrix}
@@ -144,7 +144,7 @@ This means we would select:
 - For prompt 5: completion 4 (reward 0.6)
 
 Now, **best overall**.
-Let's highlight the top 5 overall completion pairs.
+Let's highlight the top five overall completion pairs.
 
 $$R = \begin{bmatrix}
 \textbf{0.7} & 0.3 & 0.5 & 0.2 \\
@@ -159,7 +159,7 @@ First, we flatten the reward matrix:
 
 $$R_{flat} = [0.7, 0.3, 0.5, 0.2, 0.4, 0.8, 0.6, 0.5, 0.9, 0.3, 0.4, 0.7, 0.2, 0.5, 0.8, 0.6, 0.5, 0.4, 0.3, 0.6]$$ {#eq:rs_example_flattened}
 
-Now, we select the indices of the 5 highest values:
+Now, we select the indices of the five highest values:
 $$S_5(R_{flat}) = [8, 5, 14, 0, 11]$$ {#eq:rs_example_topk_result}
 
 Mapping these back to our original matrix:
@@ -194,7 +194,7 @@ np.allclose(x, x_sorted[np.argsort(sorted_indices)])
 
 ### 3. Fine-tuning
 
-With the selected completions, you then perform standard instruction fine-tuning on the current rendition of the model.
+With the selected completions, you then perform standard instruction fine-tuning on the current version of the model.
 More details can be found in the [chapter on instruction tuning](https://rlhfbook.com/c/instructions).
 
 ## Implementation Details
@@ -213,7 +213,7 @@ This eliminates the need to run inference on as many padding tokens and will imp
 ## Related: Best-of-N Sampling
 
 Best-of-N (BoN) is a close relative of rejection sampling, where the same generate-and-score procedure is followed, but you do **not** fine-tune the model on the selected completions. 
-Instead, BoN is a way of computing a best possible completion to a static prompt (or set of prompts) at inference time, and related techniques are often used in "Pro" tiers of chat models that spend extra compute to get an answer to your query.
+Instead, BoN computes the best possible completion to a static prompt (or set of prompts) at inference time, and related techniques are often used in "Pro" tiers of chat models that spend extra compute to get an answer to your query.
 
 Best-of-N sampling is often included as a baseline relative to RLHF training methods.
 It is important to remember that BoN *does not* modify the underlying model, but is a sampling technique. 
@@ -226,10 +226,10 @@ Let R be a reward vector for our single prompt with N completions:
 
 $$R = [r_1, r_2, ..., r_N]$$ {#eq:rewards_vector}
 
-Where $r_j$ represents the reward for the j-th completion.
+where $r_j$ represents the reward for the j-th completion.
 
 Using the argmax method, we select the best completion for the prompt:
 
 $$S(R) = \arg\max_{j \in [1,N]} r_j$$ {#eq:selection_function}
 
-Using the Top-K method with $K=1$ reduces to the same method, which is common practice.
+Using the top-K method with $K=1$ reduces to the same method, which is common practice.

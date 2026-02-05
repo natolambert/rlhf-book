@@ -76,20 +76,20 @@ A common form of scoring is to perform the simple gating: If all assertions pass
 Other setups use partial credit proportional to the amount of tests passed.
 For both these examples, no learned reward model is needed and most setups go without one (because the models are robust to over-optimization in these domains), but one can be used with a linear combination of rewards.
 
-The ideas behind RLVR are not new to the RL literature, where the core idea of taking gradient updates on if the answer is correct is almost the textbook definition of reinforcement learning. 
+The ideas behind RLVR are not new to the RL literature, where the core idea of taking gradient updates based on whether the answer is correct is almost the textbook definition of reinforcement learning. 
 The innovations when applying this to language models are largely how to apply it while maintaining the strong, general capabilities of the model being fine-tuned. Within that, there are many related ideas in the language modeling literature where the model learns from feedback regarding the correctness of the answer.
 
 Originally, in the work I was a part of that coined RL with Verifiable Rewards (RLVR) [@lambert2024t], the method was to be named RL with Ground Truth rewards (RLGT). 
-However, RLVR is subtly different from learning solely from ground truth answers. 
+Yet RLVR is subtly different from learning solely from ground truth answers. 
 In domains like mathematics, a single ground truth answer is available to verify solutions, as we saw above. 
 In other domains, such as code generation or precise instruction following, answers can be verified with a checking function (e.g., a unit test), even when there are multiple correct solutions rather than just a single ground truth answer.
 The core to progress on RLVR is having a variety and depth of these verifiable problems, even if the exact solution isn't known a priori.
 
-![RLVR in the form of an RL feedback loop. Instead of a reward model, we use a verification function.](images/rlvr-system.png){#fig:rlvr}
+![RLVR in the form of an RL feedback loop. Instead of a reward model, a verification function is used.](images/rlvr-system.png){#fig:rlvr}
 
 The first models to successfully deploy this type of training were OpenAI's o1 [@openai2024o1] and the open-weight model DeepSeek R1 [@guo2025deepseek]. 
 Soon after, the entire AI industry prioritized this training process and model style.
-The core change here is more of a reallocation of the stages of training and the priority of different behaviors rather than this type of RL setup being entirely new.
+The core change here is more a reallocation of the stages of training and the priority of different behaviors rather than this type of RL setup being entirely new.
 Reasoning models brought an era where scaling RL training is expected.
 
 As for the type of behavior these models accrue, consider the following example with DeepSeek V3 0325 versus their reasoning model, DeepSeek R1, on the query `Write me a short poem about a goldfish`. 
@@ -162,18 +162,18 @@ Here we detail the high-level trends that led to the explosion of reasoning mode
 
 Despite many, many takes that "RL doesn't work yet" [@irpan2018deep] or papers detailing deep reproducibility issues with RL [@henderson2018deep], the field overcame it to find high-impact applications.
 Some are covered in this book, such as ChatGPT's RLHF and DeepSeek R1's RLVR, but many others exist, including improving chip design [@mirhoseini2020chip], mastering video gameplay [@schrittwieser2020mastering], self-driving [@cusumano2025robust], and more.
-The takeoff of RL-focused training on language models indicates steps in many fundamental issues for the research area, including:
+The takeoff of RL-focused training on language models indicates progress on many fundamental issues for the research area, including:
 
 - **Stability of RL can be solved**: For its entire existence, the limiting factor on RL's adoption has been stability. This manifests in two ways. First, the learning itself can be fickle and not always work. Second, the training itself is known to be more brittle than standard language model training and more prone to loss spikes, crashes, etc. Countless new model releases are using this style of RL training with verifiable rewards on top of a pretrained base model and substantial academic uptake has occurred. The technical barriers to entry on RL are at an all time low.
 
 - **Open-source versions already "exist"**: Many tools already exist for training language models with RLVR and related techniques. 
 Examples include TRL [@vonwerra2022trl], Open Instruct [@lambert2024t], veRL [@sheng2024hybridflow], and OpenRLHF [@hu2024openrlhf], where many of these are building on optimizations from earlier in the arc of RLHF and post-training. The accessibility of tooling is enabling a large uptake of research that'll likely soon render this chapter out of date.
 
-Multiple resources point to RL training for reasoning only being viable on leading models coming out from about 2024 onwards, indicating that a certain level of underlying capability was needed in the models before reasoning training was possible.
+Multiple resources point to RL training for reasoning only being viable with leading models coming out from about 2024 onwards, indicating that a certain level of underlying capability was needed in the models before reasoning training was possible.
 
 ### RL Training vs. Inference-time Scaling
 
-Training with Reinforcement Learning to elicit reasoning behaviors and performance on verifiable domains is closely linked to the ideas of inference-time scaling.
+Training with reinforcement learning to elicit reasoning behaviors and performance on verifiable domains is closely linked to the ideas of inference-time scaling.
 Inference-time scaling, also called test-time scaling, is the general class of methods that use more computational power at inference in order to perform better at downstream tasks.
 Methods for inference-time scaling were studied before the release of DeepSeek R1 and OpenAI's o1, which both massively popularized investment in RL training specifically.
 Examples include value-guided sampling [@liu2023don] or repeated random sampling with answer extraction [@brown2024large].
@@ -195,7 +195,7 @@ Standard fine-tuning APIs generally use a parameter-efficient fine-tuning method
 Developers pass in prompts and completions and the model is tuned to match that by updating model parameters to match the completions, which increases the prevalence of features from your data in the model's generations.
 
 RLVR is focused on matching answers. 
-Given queries and correct answers, RLVR helps the model learn to get the correct answers. 
+Given queries and correct answers, RLVR helps the model learn to produce the correct answers. 
 While standard instruction tuning is done with 1 or 2 epochs of loss updates over the data, RLVR gets its name by doing hundreds or thousands of epochs over the same few data points to give the model time to learn new behaviors. 
 This can be viewed as reinforcing positive behaviors that would work sparingly in the base model version into robust behaviors after RLVR.
 
@@ -215,14 +215,14 @@ Before the takeoff of reasoning models, a substantial effort was made understand
 The main difference between these works below is that their methodologies did not scale up to the same factor as those used in DeepSeek R1 and subsequent models, or they resulted in models that made sacrifices in overall performance in exchange for higher mathematics or coding abilities.
 The underlying ideas and motivations are included to paint a broader picture for how reasoning models emerged within the landscape.
 
-Some of the earliest efforts training language models on verifiable domains include self-taught reasoner (STaR) line of work[@zelikman2022star] [@Zelikman2024QuietSTaRLM] and TRICE [@hoffman2023training], which both used ground-truth reward signals to encourage chain-of-thought reasoning in models throughout 2022 and 2023. 
+Some of the earliest efforts training language models on verifiable domains include the self-taught reasoner (STaR) line of work[@zelikman2022star] [@Zelikman2024QuietSTaRLM] and TRICE [@hoffman2023training], which both used ground-truth reward signals to encourage chain-of-thought reasoning in models throughout 2022 and 2023. 
 STaR effectively approximates the policy gradient algorithm, but in practice filters samples differently and uses a cross-entropy measure instead of a log-probability, and Quiet-STaR expands on this with very related ideas of recent reasoning models by having the model generate tokens before trying to answer the verifiable question (which helps with training performance).
-TRICE [@hoffman2023training] also improves upon reasoning by generating traces and then optimizing with a custom Markov chain Monte Carlo inspired expectation maximization algorithm. 
+TRICE [@hoffman2023training] also improves reasoning by generating traces and then optimizing with a custom Markov chain Monte Carlo inspired expectation maximization algorithm. 
 VinePPO [@VinePPO] followed these and used a setup that shifted closer to modern reasoning models. 
 VinePPO uses a PPO-based algorithm with binary rewards for math question correctness, training on GSM8K and MATH.
 Other work before OpenAI's o1 and DeepSeek R1 used code execution as a feedback signal for training [@gehring2024rlefgroundingcodellms], [@xu2024dpo] or verification for theorem proving (called Reinforcement Learning from Verifier Feedback, RLVF, here) [@amit2024models]. 
-Tülu 3 expanded upon these methods by using a simple PPO trainer to reward completions with correct answers -- most importantly while maintaining the model's overall performance on a broad suite of evaluations.
-The binary rewards of Tülu 3 and modern reasoning training techniques can be contrasted to the iterative approach of STaR or the log-likelihood rewards of Quiet-STaR.
+Tülu 3 expanded on these methods by using a simple PPO trainer to reward completions with correct answers -- most importantly while maintaining the model's overall performance on a broad suite of evaluations.
+The binary rewards of Tülu 3 and modern reasoning training techniques can be contrasted with the iterative approach of STaR or the log-likelihood rewards of Quiet-STaR.
 
 ### Early Reasoning Models
 
@@ -268,14 +268,14 @@ In this section we detail common methods used to sequence training stages and mo
 Note that these papers could have used a listed technique and not mentioned it while their peers do, so these examples are a subset of known implementations and should be used as reference, but not a final proclamation on what is an optimal recipe.
 
 - **Offline difficulty filtering**: A core intuition of RLVR is that models can only learn from examples where there is a gradient. If the starting model for RLVR can solve a problem either 100% of the time or 0% of the time, there will be no gradient between different completions to the prompt (i.e., all strategies appear the same to the policy gradient algorithm). Many models have used difficulty filtering before starting a large-scale RL to restrict the training problems to those that the starting point model solves only 20-80% of the time. This data is collected by sampling N, e.g. 16, completions to each prompt in the training set and verifying which percentage are correct. Forms of this were used by Seed-Thinking 1.5, Open Reasoner Zero, Phi 4, INTELLECT-2, MiMo RL, Skywork OR-1, and others.
-- **Per-batch online filtering** (or difficulty curriculums throughout training): To complement the offline filtering to find the right problems to train on, another major question is "what order should we present the problems to the model during learning." In order to address this, many models use online filtering of questions in the batch, prebuilt curriculums/data schedulers, saving harder problems for later in training, or other ideas to improve long-term stability. Related ideas are used by Kimi 1.5, Magistral, Llama-Nemotron, INTELLECT-2, MiMo-RL, Hunyuan-TurboS, and others.
+- **Per-batch online filtering** (or difficulty curriculums throughout training): To complement the offline filtering to find the right problems to train on, another major question is: what order should the problems be presented to the model during learning? In order to address this, many models use online filtering of questions in the batch, prebuilt curriculums/data schedulers, saving harder problems for later in training, or other ideas to improve long-term stability. Related ideas are used by Kimi 1.5, Magistral, Llama-Nemotron, INTELLECT-2, MiMo-RL, Hunyuan-TurboS, and others.
 - **Remove KL penalty**: As the length of RL runs (in any metric, total GPU hours, FLOPS, or RL steps) increased for reasoning models relative to RLHF training, and the reward function became less prone to over-optimization, many models removed the KL penalty constraining the RL-learned policy to be similar to the base model of training. This allows the model to further explore during its training. This was used by RAGEN [@wang2025ragenunderstandingselfevolutionllm], Magistral, OpenReasonerZero, Skywork OR-1, and others.
 - **Relaxed policy-gradient clipping**: New variations of the algorithm GRPO, such as DAPO [@yu2025dapo], proposed modifications to the two sided clipping objective used in GRPO (or PPO) in order to enable better exploration. Clipping has also been shown to cause potentially spurious learning signals when rewards are imperfect [@shao2025spurious]. This two-sided clipping with different ranges per gradient direction is used by RAGEN, Magistral, INTELLECT-2, and others.
 - **Off-policy data (or fully asynchronous updates)**: As the length of completions needed to solve tasks with RL increases dramatically with harder problems (particularly in the *variance* of the response length, where there are often outliers with extremely long lengths), compute in RL runs can sit idle. To solve this, training is moving to asynchronous updates or changing how problems are arranged into batches to improve overall throughput. Partial-to-full asynchronous (off-policy) data is used by Seed-Thinking 1.5, INTELLECT-2, and others. 
 - **Additional format rewards**: In order to make the reasoning process predictable, many models add minor rewards to make sure the model follows the correct format of e.g. `<think>...</think>` before an answer. This is used by DeepSeek R1, OpenReasonerZero, Magistral, Skywork OR-1, and others.
 - **Language consistency rewards**: Similar to format rewards, some multilingual reasoning models use language consistency rewards to prioritize models that do not change languages while reasoning (for a better and more predictable user experience). These include DeepSeek R1, Magistral, and others.
 - **Length penalties**: Many models use different forms of length penalties during RL training to either stabilize the learning process over time or to mitigate overthinking on hard problems. Some examples include Kimi 1.5 progressively extending the target length to combat overthinking (while training accuracy is high across difficulty curriculum) or INTELLECT-2 running a small length penalty throughout. Progressively extending the training sequence length mitigates overthinking by forcing the model to first reason effectively in a domain with a more limited thinking budget, and then transitioning to longer training where the model can use those behaviors efficiently on more complex problems. Others use overlong filtering and other related implementations to improve throughput.
-- **Loss normalization**: There has been some discussion (see the chapter on Policy Gradients or [@liu2025understanding]) around potential length or difficulty biases introduced by the per-group normalization terms of the original GRPO algorithm. As such, some models, such as Magistral or MiMo, chose to normalize either losses or advantages at the batch level instead of the group level.
+- **Loss normalization**: There has been some discussion (see the chapter on policy gradients or [@liu2025understanding]) around potential length or difficulty biases introduced by the per-group normalization terms of the original GRPO algorithm. As such, some models, such as Magistral or MiMo, chose to normalize either losses or advantages at the batch level instead of the group level.
 - **Parallel test-time compute scaling**: Combining answers from multiple parallel, independently-sampled rollouts can lead to substantial improvements over using the answer from a single rollout. The most naive form of parallel test-time compute scaling, as done in DeepSeek-R1, Phi-4, and others, involves using the answer returned by a majority of rollouts as the final answer. A more advanced technique is to use a scoring model trained to select the best answer out of the answers from the parallel rollouts. This technique has yet to be adopted by open reasoning model recipes (as of June 2025) but was mentioned in the Claude 4 announcement [@anthropic2025claude4] and used in DeepSeek-GRM [@liu2025inference].
 
 In complement to the common techniques, there are also many common findings on how reasoning training can create useful models without sacrificing ancillary capabilities:
@@ -285,13 +285,13 @@ In complement to the common techniques, there are also many common findings on h
 
 ## Looking Ahead
 
-The landscape of reasoning models is evolving faster than any area of AI research in recent memory.
+The reasoning model landscape is evolving faster than any area of AI research in recent memory.
 By the time this chapter is published, the table of reasoning models above will be incomplete and some of the common practices listed may have been superseded by new techniques.
 
 Several efforts are underway to systematically understand what makes reasoning training work.
 OLMo 3 Think [@teamolmo2025olmo3] represents the most comprehensive open documentation of a reasoning model's full training lifecycle, providing checkpoints and data at each stage for the research community to study, and concluding with a nearly 4 week long training run on 220 GPUs.
 Similarly, work on understanding the scaling properties of RL for reasoning [@khatri2025art] is beginning to formalize relationships between compute, data, and performance that were previously only intuited by practitioners.
 
-What remains clear is that reinforcement learning has graduated from the "cherry on top" of the cake metaphor to a load-bearing component of frontier model training.
+What remains clear is that reinforcement learning has graduated from the "cherry on top" in the cake metaphor to a load-bearing component of frontier model training.
 The minor techniques in this chapter around the idea of RLVR -- difficulty filtering, format rewards, and the rest -- are not the final answers, but they represent the field's current best understanding of how to elicit reasoning from language models.
 The next generation of methods will likely look different, but they will build on the foundations established here.
