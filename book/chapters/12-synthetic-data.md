@@ -33,14 +33,14 @@ Within 1-2 years, language models were far superior to humans for generating ans
 In the transition from GPT-3.5 to GPT-4 class models, the ability for models to perform LLM-as-a-judge tasks also emerged.
 GPT-4 or better models are far more robust and consistent in generating feedback or scores with respect to a piece of content.
 
-Through the years since ChatGPT's release at the end of 2022, we've seen numerous, impactful synthetic datasets -- some include: UltraFeedback [@cui2023ultrafeedback], the first prominent synthetic preference dataset that kickstarted the DPO revolution, or Stanford Alpaca, one of the first chat-style fine-tuning datasets, in 2023, skill-focused (e.g. math, code, instruction-following), synthetic datasets in Tülu 3 [@lambert2024t], or OpenThoughts 3 and many other synthetic reasoning datasets in 2025 for training thinking models [@guha2025openthoughts].
+Through the years since ChatGPT's release at the end of 2022, we've seen numerous, impactful synthetic datasets -- some include: UltraFeedback [@cui2023ultrafeedback], the first prominent synthetic preference dataset that kickstarted the DPO revolution, or Stanford Alpaca, one of the first chat-style fine-tuning datasets, in 2023, skill-focused (e.g. math, code, instruction-following) synthetic datasets in Tülu 3 [@lambert2024t], or OpenThoughts 3 and many other synthetic reasoning datasets in 2025 for training thinking models [@guha2025openthoughts].
 Most of the canonical references for getting started with industry-grade post-training today involve datasets like Tülu 3 or OpenThoughts 3 above, where quickstart guides often start with smaller, simpler datasets like Alpaca due to far faster training.
 
 A large change is also related to dataset size, where fine-tuning datasets have grown in the number of prompts, where Alpaca is 52K, OpenThoughts and Tülu 3 are 1M+ samples, and in the length of responses.
 Longer responses and more prompts results in the Alpaca dataset being on the order of 10M training tokens, where Tülu is 50X larger at about 500M, and OpenThoughts 3 is bigger still at the order of 10B tokens.
 
 Throughout this transition, synthetic data has not replaced human data uniformly across the pipeline. 
-For **instruction data (SFT)**, synthetic generation has largely won —- distillation from stronger models now produces higher quality completions than most human writers can provide at scale (with some exception in the hardest, frontier reasoning problems). 
+For **instruction data (SFT)**, synthetic generation has largely won ---- distillation from stronger models now produces higher quality completions than most human writers can provide at scale (with some exception in the hardest, frontier reasoning problems). 
 For **preference data in RLHF**, the picture is more mixed: academic work shows synthetic preference data performs comparably, yet frontier labs still treat human preference data as a competitive moat. 
 For **evaluation**, the split takes a different flavor: LLM-as-a-judge scales the *scoring* of model outputs cost-effectively, but the underlying benchmarks and ground-truth labels still require human creation. 
 The pattern is that synthetic data dominates where models exceed human reliability, while humans remain essential at capability frontiers, for establishing ground truth, and for guiding training.
@@ -95,7 +95,7 @@ While there are not focused studies on the balance between human and AI feedback
 
 Overall, where AI feedback and related methods are obviously extremely useful to the field, it is clear that human data has not been completely replaced by these cheaper alternatives. 
 Many hypotheses exist, but it is not studied if human data allows finer control of the models in real-world product settings or for newer training methods such as character training (an emerging set of techniques that allow you to precisely control the personality of a model, covered in Chapter 17).
-For those getting started, AI feedback should be the first attempt, but for pipelines that're scaling to larger operations the eventual transition to include human feedback is likely.
+For those getting started, AI feedback should be the first attempt, but for pipelines that are scaling to larger operations the eventual transition to include human feedback is likely.
 
 The term RLAIF was introduced in Anthropic's work *Constitutional AI: Harmlessness from AI Feedback* [@bai2022constitutional], which resulted in initial confusion in the AI community over the relationship between the two methods in the title of the paper (Constitutional AI and AI Feedback).
 Since the release of the Constitutional AI (CAI) paper and the formalization of RLAIF, RLAIF has become a default method within the post-training and RLHF literatures -- there are far more examples than one can easily enumerate.
@@ -104,7 +104,7 @@ The relationship should be understood as CAI was the example that kickstarted th
 A rule of thumb for the difference between human data and AI feedback data is as follows:
 
 1. Human data is high-noise and low-bias. This means that collection and filtering of the data can be harder, but when wrangled it'll provide a very reliable signal.
-2. Synthetic preference data is low-noise and high-bias. This means that AI feedback data will be easier to start with, but can have tricky, unintented second-order effects on the model that are systematically represented in the data.
+2. Synthetic preference data is low-noise and high-bias. This means that AI feedback data will be easier to start with, but can have tricky, unintended second-order effects on the model that are systematically represented in the data.
 
 This book highlights many academic results showing how one can substitute AI preference data in RLHF workflows and achieve strong evaluation scores [@miranda2024hybrid], but broader industry trends show how the literature of RLHF is separated from more opaque, best practices.
 Across industry, human data is often seen as a substantial moat and a major technical advantage.
@@ -114,7 +114,7 @@ Across industry, human data is often seen as a substantial moat and a major tech
 The method of Constitutional AI (CAI), which Anthropic uses in their Claude models, is the earliest documented, large-scale use of synthetic data for RLHF training. 
 Constitutional AI involves generating synthetic data in two ways:
 
-1. Critiques of instruction-tuned data to follow a set of principles like "Is the answer encouraging violence" or "Is the answer truthful." When the model generates answers to questions, it checks the answer against the list of principles in the constitution, refining the answer over time. Then, they fine-tune the model on this resulting dataset.
+1. Critiques of instruction-tuned data to follow a set of principles. For example, if a model's constitution includes principles like "avoid violence" and "be truthful," the model would be prompted with questions like "Is the answer encouraging violence?" or "Is the answer truthful?" When the model generates answers, it checks them against this list of principles, refining the answer over time. Then, the model is fine-tuned on this resulting dataset.
 2. Generates pairwise preference data by using a language model to answer which completion was better, given the context of a random principle from the constitution (similar to research for principle-guided reward models [@sun2024salmon]). Then, RLHF proceeds as normal with synthetic data, hence the RLAIF name.
 
 Largely, CAI is known for the second half above, the preference data, but the methods introduced for instruction data are used in general data filtering and synthetic data generation methods across post-training.
@@ -146,7 +146,7 @@ It is accepted that while biases exist, the leading language models are trained 
 
 ## Rubrics: AI Feedback for Training
 
-AI feedback's role in training grew in late 2024 and intro 2025 as the field looked for avenues to scale reinforcement learning with verifiable rewards (see Chapter 7).
+AI feedback's role in training grew in late 2024 and into 2025 as the field looked for avenues to scale reinforcement learning with verifiable rewards (see Chapter 7).
 The idea of rubrics emerged as a way to get nearly-verifiable criteria for prompts that do not have clearly verifiable answers. 
 This would allow a model to try to generate multiple answers to a problem and update (with RL) towards the best answers.
 This idea is closely related to other methods discussed in this chapter, and likely began functioning as the LLM judges and synthetic data practices improved across the industry.
@@ -221,7 +221,7 @@ Output: Provide a JSON array of rubric objects. Each object must contain exactly
 Do not copy large blocks of the question or reference_answer into the text. Each description must begin with its category
 prefix, and no extra keys are allowed.
 Now, given the question and reference_answer, generate the rubric as described. 
-The reference answer is an ideal responsebut not necessarily exhaustive; use it only as guidance.
+The reference answer is an ideal response but not necessarily exhaustive; use it only as guidance.
 ```
 
 Another, simpler example follows as [@rezaei2025onlinerubrics]:
@@ -258,7 +258,7 @@ Generate the rubric JSON now.
 
 As you can see, the prompts can be very detailed and are tuned to the training setup.
 
-Rubrics with RL training is going to continue to evolve beyond it's early applications to instruction following [@he2025advancedif], deep research [@shao2025drtulu], evaluating deep research agents [@sharma2025researchrubrics], or long-form generation [@ruan2025expertlongbench].
+Rubrics with RL training are going to continue to evolve beyond their early applications to instruction following [@he2025advancedif], deep research [@shao2025drtulu], evaluating deep research agents [@sharma2025researchrubrics], or long-form generation [@ruan2025expertlongbench].
 
 
 ## Further Reading

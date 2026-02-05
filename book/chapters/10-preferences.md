@@ -148,7 +148,7 @@ In this view, which is not reflected in the RLHF process, individual preferences
 Some behavioral economists have even argued that preferences don't exist--they may be less an ontological statement of what people actually value than a methodological tool for indirectly capturing psychological predispositions, perceived behavioral norms and ethical duties, commitments to social order, or legal constraints [@hadfield2014microfoundations].
 We address the links of this work to the Von Neumann-Morgenstern (VNM) utility theorem and countering impossibility theorems around quantifying preference later in this chapter.
 
-On the other hand, the reinforcement learning optimization methods used today are conceptualized around optimizing estimates of reward-to-go in a trial [@sutton2018reinforcement], which combines the notion of reward with multi-step optimization.
+On the other hand, the reinforcement learning optimization methods used today are conceptualized around optimizing estimates of reward-to-go (the cumulative future reward from a given point in time) in a trial [@sutton2018reinforcement], which combines the notion of reward with multi-step optimization.
 The term *reward* emerged from the study of operant conditioning, animal behavior, and the *Law of Effect* [@thorndike1927law; @skinner2019behavior], where a reward is a scale of "how good an action is" (higher means better).
 
 Reward-to-go follows the notion of utility, which is a measure of rationality [@briggs2014normative], modified to measure or predict the reward coming in a future time window.
@@ -167,7 +167,7 @@ To summarize, rewards are used in RL systems as a signal to tune behavior toward
 The core thesis is that a learning algorithm's performance is closely coupled with notions of *expected fitness*, which permeates the popular view that RL methods are *agents* that act in environments.
 This view is linked to the development of reinforcement learning technology, exemplified by claims of the general usefulness of the reward formulation [@silver2021reward], but is in conflict when many individual desires are reduced to a single function.
 
-### Implementing optimal utility
+### Tools for optimizing utility
 
 Modern reinforcement learning methods depend strongly on the Bellman equation [@bellman1957markovian; @howard1960dynamic] to recursively compute estimates of reward-to-go, derived within closed environments that can be modeled as a Markov Decision Process (MDP) [@sutton2018reinforcement].
 These origins of RL are inspired by dynamic programming methods and were developed solely as optimal control techniques (i.e. RL did not yet exist).
@@ -195,7 +195,7 @@ This primarily reflects the engineering path by which a stable approach to perfo
 
 <!-- ![The history that creates the assumptions and presumptions central to the current deployments of RLHF. The assumptions indicate core theoretical foundations which RLHF builds upon, transposes, prioritizes, or defers to another development stage. The presumptions represent ideas and practices required to build the current renditions of the technology.](images/timeline-v2.png){#fig:history} -->
 
-### Steering preferences
+### Complexity of optimizing preferences
 
 The context in which reinforcement learning was designed means that rewards and costs are assumed to be stable and determinative. Both rewards and costs are expected to be functions, such that if the agent is in a specific state-action pair, then it will be returned a certain value.
 As we move into preferences, this is no longer the case, as human preferences constantly drift temporally throughout their experiences.
