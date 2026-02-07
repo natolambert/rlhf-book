@@ -188,9 +188,8 @@ $(BUILD)/latex/$(OUTPUT_FILENAME).tex: $(PDF_DEPENDENCIES)
 	# 3e. Drop XeTeX/LuaTeX-only branch so arXiv's pdfLaTeX build doesn't demand Unicode engines
 	uv run python book/scripts/strip_xetex_branch.py $@
 
-	# 4. Copy bibliography and CSL files required by arXiv
-	cp book/chapters/bib.bib    $(BUILD)/latex/
-	cp book/templates/ieee.csl  $(BUILD)/latex/
+	# 4. (bib.bib and ieee.csl are only used by pandoc-citeproc at build
+	#    time; the .tex already has resolved/inlined citations)
 
 	# 5. Warn (but don\'t fail) if any non-ASCII bytes remain
 	uv run python book/scripts/report_non_ascii.py $@
