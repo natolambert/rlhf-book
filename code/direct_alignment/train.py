@@ -592,6 +592,8 @@ def main(cfg: Config):
         f"max_new_tokens={cfg.sample_max_tokens}[/dim]"
     )
 
+    last_logged_metrics: dict[str, float] = {}
+
     for epoch in range(cfg.num_epochs):
         console.print(f"\n[bold]Epoch {epoch + 1}/{cfg.num_epochs}[/bold]")
 
@@ -604,6 +606,8 @@ def main(cfg: Config):
             console=console,
         ) as progress:
             task = progress.add_task("Training", total=len(dataloader))
+            metrics_sum: dict[str, float] = {}
+            metrics_count = 0
 
             for batch_idx, batch in enumerate(dataloader):
                 metrics = train_step(
@@ -618,24 +622,31 @@ def main(cfg: Config):
                     use_average_logprob=use_average_logprob,
                 )
 
+                metrics_count += 1
+                for key, value in metrics.items():
+                    if isinstance(value, (int, float)):
+                        metrics_sum[key] = metrics_sum.get(key, 0.0) + float(value)
+
                 # Update progress bar (advance by 1 for each micro-batch)
                 progress.update(task, advance=1)
 
                 # Update scheduler after optimizer step
                 if (batch_idx + 1) % cfg.gradient_accumulation_steps == 0:
+                    step_metrics = {key: value / metrics_count for key, value in metrics_sum.items()}
                     scheduler.step()
                     global_step += 1
 
                     # Log to wandb
-                    metrics["learning_rate"] = scheduler.get_last_lr()[0]
-                    metrics["epoch"] = epoch + (batch_idx + 1) / len(dataloader)
-                    metrics["hours_elapsed"] = (time.time() - start_time) / 3600
-                    wandb.log(metrics, step=global_step)
+                    step_metrics["learning_rate"] = scheduler.get_last_lr()[0]
+                    step_metrics["epoch"] = epoch + (batch_idx + 1) / len(dataloader)
+                    step_metrics["hours_elapsed"] = (time.time() - start_time) / 3600
+                    wandb.log(step_metrics, step=global_step)
+                    last_logged_metrics = step_metrics
 
                     # Update progress description with loss
                     progress.update(
                         task,
-                        description=f"[dim]Loss: {metrics['loss']:.4f}[/dim]",
+                        description=f"[dim]Loss: {step_metrics['loss']:.4f}[/dim]",
                     )
 
                     # Generate and log samples periodically
@@ -667,6 +678,9 @@ def main(cfg: Config):
                             prompt_pool_size=len(sample_prompt_pool),
                         )
 
+                    metrics_sum = {}
+                    metrics_count = 0
+
             # Flush remaining gradients at end of epoch if partial batch exists
             remaining = len(dataloader) % cfg.gradient_accumulation_steps
             if remaining != 0:
@@ -676,17 +690,22 @@ def main(cfg: Config):
                 scheduler.step()
                 global_step += 1
 
+                step_metrics = {key: value / metrics_count for key, value in metrics_sum.items()} if metrics_count > 0 else {}
                 # Log final partial batch
-                metrics["learning_rate"] = scheduler.get_last_lr()[0]
-                metrics["epoch"] = epoch + 1.0
-                metrics["grad_norm"] = grad_norm.item()
-                wandb.log(metrics, step=global_step)
+                step_metrics["learning_rate"] = scheduler.get_last_lr()[0]
+                step_metrics["epoch"] = epoch + 1.0
+                step_metrics["grad_norm"] = grad_norm.item()
+                wandb.log(step_metrics, step=global_step)
+                last_logged_metrics = step_metrics
 
     # Final summary
     console.print("\n[bold green]Training complete![/bold green]")
-    console.print(f"  Final loss: {metrics.get('loss', 'N/A'):.4f}")
-    if "accuracy" in metrics:
-        console.print(f"  Final accuracy: {metrics['accuracy']:.2%}")
+    if last_logged_metrics:
+        console.print(f"  Final loss: {last_logged_metrics.get('loss', float('nan')):.4f}")
+        if "accuracy" in last_logged_metrics:
+            console.print(f"  Final accuracy: {last_logged_metrics['accuracy']:.2%}")
+    else:
+        console.print("  Final loss: N/A")
 
     # Generate final samples
     if cfg.sample_every > 0:
@@ -738,6 +757,7 @@ def main_cli():
     parser.add_argument("--model_name", type=str, help="Model name or path")
     parser.add_argument("--loss", type=str, choices=["dpo", "cdpo", "ipo", "simpo", "orpo", "kto"])
     parser.add_argument("--beta", type=float, help="Beta parameter")
+    parser.add_argument("--gamma", type=float, help="SimPO gamma/beta ratio")
     parser.add_argument("--dataset_name", type=str, help="HuggingFace dataset name")
     parser.add_argument("--max_samples", type=int, help="Max training samples")
     parser.add_argument("--max_length", type=int, help="Max sequence length")

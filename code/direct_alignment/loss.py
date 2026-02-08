@@ -195,7 +195,7 @@ class SimPOLoss(nn.Module):
     2. Removes the reference model (implicit in length normalization)
     3. Adds a target margin gamma for stronger preference signal
 
-    Loss = -log(sigmoid(beta * (avg_logp_chosen - avg_logp_rejected) - gamma))
+    Loss = -log(sigmoid(beta * ((avg_logp_chosen - avg_logp_rejected) - gamma)))
 
     The length normalization reduces bias toward shorter responses.
     """
@@ -204,7 +204,8 @@ class SimPOLoss(nn.Module):
         """
         Args:
             beta: Temperature parameter (typically higher than DPO, e.g., 2.0-2.5)
-            gamma: Target margin. Pushes for chosen to be gamma better than rejected.
+            gamma: Gamma/beta margin ratio (official SimPO notation).
+                   The effective margin shift in the sigmoid is beta * gamma.
         """
         super().__init__()
         self.beta = beta
@@ -223,8 +224,9 @@ class SimPOLoss(nn.Module):
         # SimPO: no reference model, uses length-normalized logps
         logits = policy_chosen_logps - policy_rejected_logps
 
-        # Apply margin and compute loss
-        losses = -F.logsigmoid(self.beta * logits - self.gamma)
+        # SimPO reference implementations treat gamma as gamma/beta ratio:
+        # loss = -logsigmoid(beta * (logits - gamma_beta_ratio))
+        losses = -F.logsigmoid(self.beta * (logits - self.gamma))
 
         metrics = {
             "chosen_logps": policy_chosen_logps.mean().item(),
@@ -320,13 +322,20 @@ class ORPOLoss(nn.Module):
         # Note: ratio is already negative (logsigmoid output), so we subtract
         loss = chosen_nll_loss - self.beta * ratio
 
+        # Keep "accuracy"/"margins" on log-prob preferences for cross-algorithm
+        # comparability (same interpretation as DPO/IPO/SimPO dashboards).
         chosen_rewards = self.beta * policy_chosen_logps.detach()
         rejected_rewards = self.beta * policy_rejected_logps.detach()
+
+        # ORPO-native preference signal is the log-odds term, so log this
+        # explicitly as well to reflect what ORPO actually optimizes.
+        log_odds_detached = log_odds.detach()
 
         metrics = {
             "sft_loss": chosen_nll_loss.mean().item(),
             "or_loss": (-self.beta * ratio).mean().item(),
             "log_odds_ratio": log_odds.mean().item(),
+            "log_odds_accuracy": (log_odds_detached > 0).float().mean().item(),
             "chosen_logps": policy_chosen_logps.mean().item(),
             "rejected_logps": policy_rejected_logps.mean().item(),
             "margins": (chosen_rewards - rejected_rewards).mean().item(),

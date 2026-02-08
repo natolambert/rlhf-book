@@ -14,7 +14,7 @@ model_name: allenai/OLMo-2-0425-1B-SFT
 # Algorithm
 loss: simpo
 beta: 2.0   # SimPO typically uses higher beta (2.0-2.5)
-gamma: 0.5  # Target margin
+gamma: 0.5  # Gamma/beta ratio (official SimPO notation)
 
 # Dataset
 dataset_name: argilla/ultrafeedback-binarized-preferences-cleaned

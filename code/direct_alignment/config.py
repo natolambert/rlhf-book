@@ -20,7 +20,7 @@ class Config:
     # Training settings
     loss: Literal["dpo", "cdpo", "ipo", "simpo", "orpo", "kto"] = "dpo"
     beta: float = 0.1  # KL penalty / temperature
-    gamma: float = 0.5  # SimPO target margin
+    gamma: float = 0.5  # SimPO gamma/beta margin ratio (effective shift is beta * gamma)
     label_smoothing: float = 0.0  # For cDPO (overridden if loss=cdpo)
 
     # Dataset settings
