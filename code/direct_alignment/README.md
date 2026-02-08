@@ -251,7 +251,6 @@ Links pinned to specific commits for reproducibility (January 2026).
 direct_alignment/
 ├── README.md          # This file
 ├── experiments/       # Experiment logs and sweep notes
-│   └── ORPO_SIMPO_EXPERIMENT_LOG_2026-02-08.md
 ├── config.py          # Configuration dataclass
 ├── data.py            # Preference data loading with response masking
 ├── loss.py            # Loss function implementations
