@@ -195,7 +195,7 @@ class SimPOLoss(nn.Module):
     2. Removes the reference model (implicit in length normalization)
     3. Adds a target margin gamma for stronger preference signal
 
-    Loss = -log(sigmoid(beta * (avg_logp_chosen - avg_logp_rejected) - gamma))
+    Loss = -log(sigmoid(beta * ((avg_logp_chosen - avg_logp_rejected) - gamma)))
 
     The length normalization reduces bias toward shorter responses.
     """
@@ -204,7 +204,8 @@ class SimPOLoss(nn.Module):
         """
         Args:
             beta: Temperature parameter (typically higher than DPO, e.g., 2.0-2.5)
-            gamma: Target margin. Pushes for chosen to be gamma better than rejected.
+            gamma: Gamma/beta margin ratio (official SimPO notation).
+                   The effective margin shift in the sigmoid is beta * gamma.
         """
         super().__init__()
         self.beta = beta
@@ -223,8 +224,9 @@ class SimPOLoss(nn.Module):
         # SimPO: no reference model, uses length-normalized logps
         logits = policy_chosen_logps - policy_rejected_logps
 
-        # Apply margin and compute loss
-        losses = -F.logsigmoid(self.beta * logits - self.gamma)
+        # SimPO reference implementations treat gamma as gamma/beta ratio:
+        # loss = -logsigmoid(beta * (logits - gamma_beta_ratio))
+        losses = -F.logsigmoid(self.beta * (logits - self.gamma))
 
         metrics = {
             "chosen_logps": policy_chosen_logps.mean().item(),
@@ -269,6 +271,11 @@ class ORPOLoss(nn.Module):
 
     The SFT term encourages the model to generate the chosen response,
     while the odds ratio term creates preference separation.
+
+    Important implementation note:
+    ORPO is very sensitive to log-prob scale. We feed average per-token log-probs
+    (not sequence sums), which mirrors TRL's ORPOTrainer behavior and is more stable
+    for long responses.
     """
 
     def __init__(self, beta: float = 0.1):
@@ -289,13 +296,17 @@ class ORPOLoss(nn.Module):
         """Compute ORPO loss.
 
         Args:
-            policy_chosen_logps: Sum of log probs for chosen (batch,)
-            policy_rejected_logps: Sum of log probs for rejected (batch,)
+            policy_chosen_logps: Average log probs for chosen (batch,)
+            policy_rejected_logps: Average log probs for rejected (batch,)
             chosen_nll_loss: Negative log likelihood loss on chosen response
         """
         # Cast to float for numerical stability (following TRL)
         policy_chosen_logps = policy_chosen_logps.float()
         policy_rejected_logps = policy_rejected_logps.float()
+
+        # ORPO log-odds expects log-probs strictly below zero.
+        policy_chosen_logps = policy_chosen_logps.clamp(max=-1e-6)
+        policy_rejected_logps = policy_rejected_logps.clamp(max=-1e-6)
 
         # Compute log odds ratio using the proper formula from the paper
         # log_odds = log(p) - log(1-p) = log_p - log1mexp(log_p)
@@ -311,11 +322,24 @@ class ORPOLoss(nn.Module):
         # Note: ratio is already negative (logsigmoid output), so we subtract
         loss = chosen_nll_loss - self.beta * ratio
 
+        # Keep "accuracy"/"margins" on log-prob preferences for cross-algorithm
+        # comparability (same interpretation as DPO/IPO/SimPO dashboards).
+        chosen_rewards = self.beta * policy_chosen_logps.detach()
+        rejected_rewards = self.beta * policy_rejected_logps.detach()
+
+        # ORPO-native preference signal is the log-odds term, so log this
+        # explicitly as well to reflect what ORPO actually optimizes.
+        log_odds_detached = log_odds.detach()
+
         metrics = {
             "sft_loss": chosen_nll_loss.mean().item(),
-            "or_loss": (-ratio).mean().item(),
+            "or_loss": (-self.beta * ratio).mean().item(),
             "log_odds_ratio": log_odds.mean().item(),
-            "accuracy": (log_odds > 0).float().mean().item(),
+            "log_odds_accuracy": (log_odds_detached > 0).float().mean().item(),
+            "chosen_logps": policy_chosen_logps.mean().item(),
+            "rejected_logps": policy_rejected_logps.mean().item(),
+            "margins": (chosen_rewards - rejected_rewards).mean().item(),
+            "accuracy": (chosen_rewards > rejected_rewards).float().mean().item(),
         }
 
         return loss.mean(), metrics

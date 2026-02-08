@@ -2,7 +2,7 @@
 #
 # Configuration dataclasses for DPO and related algorithms.
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
@@ -20,7 +20,7 @@ class Config:
     # Training settings
     loss: Literal["dpo", "cdpo", "ipo", "simpo", "orpo", "kto"] = "dpo"
     beta: float = 0.1  # KL penalty / temperature
-    gamma: float = 0.5  # SimPO target margin
+    gamma: float = 0.5  # SimPO gamma/beta margin ratio (effective shift is beta * gamma)
     label_smoothing: float = 0.0  # For cDPO (overridden if loss=cdpo)
 
     # Dataset settings
@@ -55,6 +55,13 @@ class Config:
     eval_every: int = 100
     sample_every: int = 25  # Generate sample outputs every N steps (0 to disable)
     sample_max_tokens: int = 128  # Max tokens for sample generation
+    sample_max_input_tokens: int = 512  # Prompt token limit for sample generation
+    sample_num_prompts: int = 3  # Number of prompts per sample logging event
+    sample_prompt_strategy: Literal["fixed", "round_robin", "random"] = "round_robin"
+    sample_prompts_file: str | None = None  # Optional .txt/.json prompt list
+    sample_do_sample: bool = True
+    sample_temperature: float = 0.7
+    sample_top_p: float = 0.9
 
     # Output
     output_dir: str = "./outputs"
@@ -75,6 +82,13 @@ class Config:
             # SimPO typically uses higher beta
             if self.beta == 0.1:  # Only override if default
                 self.beta = 2.0
+
+        if self.sample_num_prompts < 1:
+            raise ValueError("sample_num_prompts must be >= 1")
+        if not 0.0 < self.sample_top_p <= 1.0:
+            raise ValueError("sample_top_p must be in (0, 1]")
+        if self.sample_temperature <= 0.0:
+            raise ValueError("sample_temperature must be > 0")
 
 
 def load_config(config_path: str | Path) -> Config:

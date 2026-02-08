@@ -12,6 +12,7 @@
 # - TRL DPOTrainer: https://huggingface.co/docs/trl/dpo_trainer
 
 import argparse
+import json
 import os
 import platform
 import random
@@ -278,22 +279,95 @@ def print_training_info(console: Console, cfg: Config, num_samples: int):
     console.print(f"  Batch size: {cfg.batch_size} x {cfg.gradient_accumulation_steps} = {cfg.batch_size * cfg.gradient_accumulation_steps}")
     console.print(f"  Learning rate: {cfg.learning_rate}")
     console.print(f"  Epochs: {cfg.num_epochs}")
+    console.print(
+        "  In-loop samples: "
+        f"every {cfg.sample_every} steps, "
+        f"{cfg.sample_num_prompts} prompts/event, "
+        f"strategy={cfg.sample_prompt_strategy}"
+    )
     console.print()
 
 
-# Default prompts for sampling during training
-SAMPLE_PROMPTS = [
+# Default prompt pool for in-loop generation logging
+DEFAULT_SAMPLE_PROMPT_POOL = [
     "What is the capital of France?",
     "Explain quantum computing in simple terms.",
     "Write a haiku about programming.",
+    "Give me a three-step plan to learn probability basics.",
+    "What are the pros and cons of remote work for small teams?",
+    "Summarize why gradient descent works in plain English.",
+    "Write a short email declining a meeting politely.",
+    "How does photosynthesis work?",
+    "Propose a weekend itinerary for Seattle on a rainy day.",
+    "What is overfitting in machine learning?",
+    "Compare TCP and UDP with one practical example each.",
+    "Draft a bedtime story about a curious robot.",
+    "Explain inflation to a high school student.",
+    "Give debugging steps when a Python script hangs intermittently.",
+    "How would you evaluate a chatbot for safety and helpfulness?",
+    "Write SQL to find the top 5 customers by revenue.",
 ]
+
+
+def load_sample_prompt_pool(cfg: Config, console: Console) -> list[str]:
+    """Load prompt pool for in-loop sampling."""
+    if cfg.sample_prompts_file is None:
+        return DEFAULT_SAMPLE_PROMPT_POOL.copy()
+
+    path = Path(cfg.sample_prompts_file)
+    if not path.exists():
+        raise FileNotFoundError(f"sample_prompts_file not found: {path}")
+
+    if path.suffix.lower() == ".json":
+        raw_data = json.loads(path.read_text())
+        if not isinstance(raw_data, list) or not all(isinstance(x, str) for x in raw_data):
+            raise ValueError("sample_prompts_file JSON must be a list of strings")
+        prompts = [p.strip() for p in raw_data if p.strip()]
+    else:
+        prompts = [line.strip() for line in path.read_text().splitlines() if line.strip()]
+
+    if not prompts:
+        raise ValueError(f"No prompts found in {path}")
+
+    console.print(f"[dim]Loaded {len(prompts)} prompts from {path}[/dim]")
+    return prompts
+
+
+def select_sample_prompts(
+    prompt_pool: list[str],
+    sample_num_prompts: int,
+    strategy: str,
+    sample_event_idx: int,
+    rng: random.Random,
+) -> list[dict]:
+    """Select prompts for this sampling event."""
+    if not prompt_pool:
+        raise ValueError("Prompt pool cannot be empty")
+
+    k = min(sample_num_prompts, len(prompt_pool))
+
+    if strategy == "fixed":
+        indices = list(range(k))
+    elif strategy == "round_robin":
+        start = (sample_event_idx * k) % len(prompt_pool)
+        indices = [(start + i) % len(prompt_pool) for i in range(k)]
+    elif strategy == "random":
+        indices = rng.sample(list(range(len(prompt_pool))), k=k)
+    else:
+        raise ValueError(f"Unknown sample_prompt_strategy: {strategy}")
+
+    return [{"prompt_id": idx, "prompt": prompt_pool[idx]} for idx in indices]
 
 
 def generate_samples(
     model,
     tokenizer,
-    prompts: list[str],
+    prompt_entries: list[dict],
     max_new_tokens: int = 128,
+    max_input_tokens: int = 512,
+    do_sample: bool = True,
+    temperature: float = 0.7,
+    top_p: float = 0.9,
     console: Console | None = None,
 ) -> list[dict]:
     """Generate sample outputs from the model for inspection.
@@ -301,17 +375,24 @@ def generate_samples(
     Args:
         model: The policy model
         tokenizer: Tokenizer
-        prompts: List of prompts to generate from
+        prompt_entries: List of {"prompt_id": int, "prompt": str}
         max_new_tokens: Maximum tokens to generate
+        max_input_tokens: Max prompt tokens fed to generation
+        do_sample: Whether to sample from next-token distribution
+        temperature: Sampling temperature (used when do_sample=True)
+        top_p: Top-p nucleus sampling threshold (used when do_sample=True)
         console: Rich console for printing (optional)
 
     Returns:
-        List of dicts with 'prompt' and 'response' keys
+        List of dicts with prompt/response and generation metadata
     """
     model.eval()
     samples = []
 
-    for prompt in prompts:
+    for entry in prompt_entries:
+        prompt_id = entry["prompt_id"]
+        prompt = entry["prompt"]
+
         # Format as chat
         messages = [{"role": "user", "content": prompt}]
         formatted = tokenizer.apply_chat_template(
@@ -326,19 +407,24 @@ def generate_samples(
             return_tensors="pt",
             padding=True,
             truncation=True,
-            max_length=512,
+            max_length=max_input_tokens,
         ).to(model.device)
 
         # Generate
-        with torch.no_grad():
-            outputs = model.generate(
-                **inputs,
-                max_new_tokens=max_new_tokens,
-                do_sample=True,
-                temperature=0.7,
-                top_p=0.9,
-                pad_token_id=tokenizer.pad_token_id or tokenizer.eos_token_id,
+        generation_kwargs = dict(
+            **inputs,
+            max_new_tokens=max_new_tokens,
+            do_sample=do_sample,
+            pad_token_id=tokenizer.pad_token_id or tokenizer.eos_token_id,
+        )
+        if do_sample:
+            generation_kwargs.update(
+                temperature=temperature,
+                top_p=top_p,
             )
+
+        with torch.no_grad():
+            outputs = model.generate(**generation_kwargs)
 
         # Decode response only (not the prompt)
         response = tokenizer.decode(
@@ -346,23 +432,62 @@ def generate_samples(
             skip_special_tokens=True,
         )
 
-        samples.append({"prompt": prompt, "response": response})
+        samples.append(
+            {
+                "prompt_id": prompt_id,
+                "prompt": prompt,
+                "response": response,
+                "max_new_tokens": max_new_tokens,
+                "max_input_tokens": max_input_tokens,
+                "do_sample": do_sample,
+                "temperature": temperature if do_sample else None,
+                "top_p": top_p if do_sample else None,
+            }
+        )
 
         # Print to console if provided
         if console:
-            console.print(f"\n[bold cyan]Prompt:[/bold cyan] {prompt}")
+            console.print(f"\n[bold cyan]Prompt {prompt_id}:[/bold cyan] {prompt}")
             console.print(f"[bold green]Response:[/bold green] {response[:500]}{'...' if len(response) > 500 else ''}")
 
     model.train()
     return samples
 
 
-def log_samples_to_wandb(samples: list[dict], step: int):
+def log_samples_to_wandb(samples: list[dict], step: int, strategy: str, prompt_pool_size: int):
     """Log generated samples to wandb as a table."""
-    table = wandb.Table(columns=["prompt", "response"])
+    table = wandb.Table(
+        columns=[
+            "prompt_id",
+            "prompt",
+            "response",
+            "do_sample",
+            "temperature",
+            "top_p",
+            "max_new_tokens",
+            "max_input_tokens",
+        ]
+    )
     for sample in samples:
-        table.add_data(sample["prompt"], sample["response"][:1000])  # Truncate long responses
-    wandb.log({"samples": table}, step=step)
+        table.add_data(
+            sample["prompt_id"],
+            sample["prompt"],
+            sample["response"][:1000],  # Truncate long responses
+            sample["do_sample"],
+            sample["temperature"],
+            sample["top_p"],
+            sample["max_new_tokens"],
+            sample["max_input_tokens"],
+        )
+    wandb.log(
+        {
+            "samples": table,
+            "samples_count": len(samples),
+            "samples_prompt_strategy": strategy,
+            "samples_prompt_pool_size": prompt_pool_size,
+        },
+        step=step,
+    )
 
 
 def main(cfg: Config):
@@ -406,7 +531,9 @@ def main(cfg: Config):
     print_training_info(console, cfg, len(dataloader.dataset))
 
     # Get loss function
-    use_average_logprob = cfg.loss == "simpo"
+    # ORPO and SimPO both use average sequence log-probs (TRL-style).
+    # For ORPO this avoids extreme log-odds magnitudes that show up with summed log-probs.
+    use_average_logprob = cfg.loss in ["simpo", "orpo"]
     loss_fn = get_loss_function(
         cfg.loss,
         beta=cfg.beta,
@@ -453,6 +580,19 @@ def main(cfg: Config):
     global_step = 0
     start_time = time.time()
     policy_model.train()
+    sample_prompt_pool = load_sample_prompt_pool(cfg, console)
+    sample_event_idx = 0
+    sample_rng = random.Random(cfg.seed)
+    console.print(
+        "[dim]Sample generation settings: "
+        f"pool={len(sample_prompt_pool)}, "
+        f"do_sample={cfg.sample_do_sample}, "
+        f"temperature={cfg.sample_temperature}, "
+        f"top_p={cfg.sample_top_p}, "
+        f"max_new_tokens={cfg.sample_max_tokens}[/dim]"
+    )
+
+    last_logged_metrics: dict[str, float] = {}
 
     for epoch in range(cfg.num_epochs):
         console.print(f"\n[bold]Epoch {epoch + 1}/{cfg.num_epochs}[/bold]")
@@ -466,6 +606,8 @@ def main(cfg: Config):
             console=console,
         ) as progress:
             task = progress.add_task("Training", total=len(dataloader))
+            metrics_sum: dict[str, float] = {}
+            metrics_count = 0
 
             for batch_idx, batch in enumerate(dataloader):
                 metrics = train_step(
@@ -480,37 +622,64 @@ def main(cfg: Config):
                     use_average_logprob=use_average_logprob,
                 )
 
+                metrics_count += 1
+                for key, value in metrics.items():
+                    if isinstance(value, (int, float)):
+                        metrics_sum[key] = metrics_sum.get(key, 0.0) + float(value)
+
                 # Update progress bar (advance by 1 for each micro-batch)
                 progress.update(task, advance=1)
 
                 # Update scheduler after optimizer step
                 if (batch_idx + 1) % cfg.gradient_accumulation_steps == 0:
+                    step_metrics = {key: value / metrics_count for key, value in metrics_sum.items()}
                     scheduler.step()
                     global_step += 1
 
                     # Log to wandb
-                    metrics["learning_rate"] = scheduler.get_last_lr()[0]
-                    metrics["epoch"] = epoch + (batch_idx + 1) / len(dataloader)
-                    metrics["hours_elapsed"] = (time.time() - start_time) / 3600
-                    wandb.log(metrics, step=global_step)
+                    step_metrics["learning_rate"] = scheduler.get_last_lr()[0]
+                    step_metrics["epoch"] = epoch + (batch_idx + 1) / len(dataloader)
+                    step_metrics["hours_elapsed"] = (time.time() - start_time) / 3600
+                    wandb.log(step_metrics, step=global_step)
+                    last_logged_metrics = step_metrics
 
                     # Update progress description with loss
                     progress.update(
                         task,
-                        description=f"[dim]Loss: {metrics['loss']:.4f}[/dim]",
+                        description=f"[dim]Loss: {step_metrics['loss']:.4f}[/dim]",
                     )
 
                     # Generate and log samples periodically
                     if cfg.sample_every > 0 and global_step % cfg.sample_every == 0:
                         console.print(f"\n[bold yellow]Generating samples at step {global_step}...[/bold yellow]")
+                        prompt_entries = select_sample_prompts(
+                            prompt_pool=sample_prompt_pool,
+                            sample_num_prompts=cfg.sample_num_prompts,
+                            strategy=cfg.sample_prompt_strategy,
+                            sample_event_idx=sample_event_idx,
+                            rng=sample_rng,
+                        )
+                        sample_event_idx += 1
                         samples = generate_samples(
                             model=policy_model,
                             tokenizer=tokenizer,
-                            prompts=SAMPLE_PROMPTS,
+                            prompt_entries=prompt_entries,
                             max_new_tokens=cfg.sample_max_tokens,
+                            max_input_tokens=cfg.sample_max_input_tokens,
+                            do_sample=cfg.sample_do_sample,
+                            temperature=cfg.sample_temperature,
+                            top_p=cfg.sample_top_p,
                             console=console,
                         )
-                        log_samples_to_wandb(samples, global_step)
+                        log_samples_to_wandb(
+                            samples=samples,
+                            step=global_step,
+                            strategy=cfg.sample_prompt_strategy,
+                            prompt_pool_size=len(sample_prompt_pool),
+                        )
+
+                    metrics_sum = {}
+                    metrics_count = 0
 
             # Flush remaining gradients at end of epoch if partial batch exists
             remaining = len(dataloader) % cfg.gradient_accumulation_steps
@@ -521,29 +690,50 @@ def main(cfg: Config):
                 scheduler.step()
                 global_step += 1
 
+                step_metrics = {key: value / metrics_count for key, value in metrics_sum.items()} if metrics_count > 0 else {}
                 # Log final partial batch
-                metrics["learning_rate"] = scheduler.get_last_lr()[0]
-                metrics["epoch"] = epoch + 1.0
-                metrics["grad_norm"] = grad_norm.item()
-                wandb.log(metrics, step=global_step)
+                step_metrics["learning_rate"] = scheduler.get_last_lr()[0]
+                step_metrics["epoch"] = epoch + 1.0
+                step_metrics["grad_norm"] = grad_norm.item()
+                wandb.log(step_metrics, step=global_step)
+                last_logged_metrics = step_metrics
 
     # Final summary
     console.print("\n[bold green]Training complete![/bold green]")
-    console.print(f"  Final loss: {metrics.get('loss', 'N/A'):.4f}")
-    if "accuracy" in metrics:
-        console.print(f"  Final accuracy: {metrics['accuracy']:.2%}")
+    if last_logged_metrics:
+        console.print(f"  Final loss: {last_logged_metrics.get('loss', float('nan')):.4f}")
+        if "accuracy" in last_logged_metrics:
+            console.print(f"  Final accuracy: {last_logged_metrics['accuracy']:.2%}")
+    else:
+        console.print("  Final loss: N/A")
 
     # Generate final samples
     if cfg.sample_every > 0:
         console.print("\n[bold yellow]Final model samples:[/bold yellow]")
+        prompt_entries = select_sample_prompts(
+            prompt_pool=sample_prompt_pool,
+            sample_num_prompts=cfg.sample_num_prompts,
+            strategy=cfg.sample_prompt_strategy,
+            sample_event_idx=sample_event_idx,
+            rng=sample_rng,
+        )
         samples = generate_samples(
             model=policy_model,
             tokenizer=tokenizer,
-            prompts=SAMPLE_PROMPTS,
+            prompt_entries=prompt_entries,
             max_new_tokens=cfg.sample_max_tokens,
+            max_input_tokens=cfg.sample_max_input_tokens,
+            do_sample=cfg.sample_do_sample,
+            temperature=cfg.sample_temperature,
+            top_p=cfg.sample_top_p,
             console=console,
         )
-        log_samples_to_wandb(samples, global_step)
+        log_samples_to_wandb(
+            samples=samples,
+            step=global_step,
+            strategy=cfg.sample_prompt_strategy,
+            prompt_pool_size=len(sample_prompt_pool),
+        )
 
     # Save model if requested
     if cfg.save_model:
@@ -567,6 +757,7 @@ def main_cli():
     parser.add_argument("--model_name", type=str, help="Model name or path")
     parser.add_argument("--loss", type=str, choices=["dpo", "cdpo", "ipo", "simpo", "orpo", "kto"])
     parser.add_argument("--beta", type=float, help="Beta parameter")
+    parser.add_argument("--gamma", type=float, help="SimPO gamma/beta ratio")
     parser.add_argument("--dataset_name", type=str, help="HuggingFace dataset name")
     parser.add_argument("--max_samples", type=int, help="Max training samples")
     parser.add_argument("--max_length", type=int, help="Max sequence length")
@@ -576,6 +767,14 @@ def main_cli():
     parser.add_argument("--gradient_accumulation_steps", type=int)
     parser.add_argument("--wandb_project", type=str, help="Wandb project name")
     parser.add_argument("--sample_every", type=int, help="Generate samples every N steps (0 to disable)")
+    parser.add_argument("--sample_num_prompts", type=int, help="Prompts per sample event")
+    parser.add_argument("--sample_prompt_strategy", type=str, choices=["fixed", "round_robin", "random"])
+    parser.add_argument("--sample_prompts_file", type=str, help="Optional .txt/.json prompt list for in-loop samples")
+    parser.add_argument("--sample_max_tokens", type=int, help="Max new tokens per in-loop sample")
+    parser.add_argument("--sample_max_input_tokens", type=int, help="Max prompt tokens for in-loop sample generation")
+    parser.add_argument("--sample_temperature", type=float, help="Temperature for in-loop sample generation")
+    parser.add_argument("--sample_top_p", type=float, help="Top-p for in-loop sample generation")
+    parser.add_argument("--sample_do_sample", action=argparse.BooleanOptionalAction, help="Enable/disable stochastic in-loop sampling")
     parser.add_argument("--seed", type=int, help="Random seed")
 
     args = parser.parse_args()
