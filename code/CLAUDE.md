@@ -8,6 +8,13 @@
 - **Be careful with parallel jobs**: Only run one training job at a time unless you verify memory is available (`free -h`). Running too many can OOM the system.
 - DGX Spark memory: ~120GB total (unified CPU/GPU), aim for <80GB usage to be safe
 
+## Changelog Process
+
+- Keep `CHANGELOG.md` minimal and release-oriented.
+- Use exactly **one bullet per PR**.
+- Each bullet must include a PR link and can contain multiple sentences summarizing meaningful changes.
+- When changes affect comparability (metrics, logging semantics, evaluation logic), mention that directly in the same bullet.
+
 ## Quick Start
 
 ```bash
@@ -64,6 +71,49 @@ uv run python -m direct_alignment.train --config direct_alignment/configs/dpo.ya
 - [ ] Verify OLMo-2-0425-1B-SFT works as default model
 - [ ] Consider adding evaluation (e.g., AlpacaEval, MT-Bench style)
 - [ ] Test data loading with Anthropic HH dataset
+
+## Current Debug Plan (ORPO/SimPO, Feb 2026)
+
+Context:
+- ORPO/SimPO instability from extreme ORPO scales was addressed by switching to average log-probs.
+- New issue is "stable but flat" learning, especially for ORPO.
+- SimPO formula now uses gamma as a gamma/beta ratio: `-logsigmoid(beta * (logit_margin - gamma))`.
+- Experiment log with full run ledger and W&B links: `direct_alignment/experiments/ORPO_SIMPO_EXPERIMENT_LOG_2026-02-08.md`.
+
+Plan:
+1. Run quick low-sample sanity jobs first (1 epoch, 640 samples) before long sweeps.
+2. Confirm SimPO margins/accuracy move with the gamma-ratio formulation.
+3. Sweep ORPO beta/LR to rebalance SFT vs preference term.
+4. Only then launch 12.8K-sample full runs.
+
+Small-run scripts:
+- `scripts/run_simpo_small.sh`
+- `scripts/run_orpo_small.sh`
+
+Examples:
+```bash
+cd /home/natolambert/dev/rlhf-book/code
+
+# SimPO sanity run (background)
+WANDB_PROJECT=rlhf-book ./scripts/run_simpo_small.sh
+
+# ORPO sanity run (background)
+WANDB_PROJECT=rlhf-book ./scripts/run_orpo_small.sh
+```
+
+Useful overrides:
+```bash
+# SimPO: stronger margin push
+GAMMA=1.0 LEARNING_RATE=1e-6 MAX_SAMPLES=640 NUM_EPOCHS=1 ./scripts/run_simpo_small.sh
+
+# ORPO: stronger preference term
+BETA=1.0 LEARNING_RATE=5e-6 MAX_SAMPLES=640 NUM_EPOCHS=1 ./scripts/run_orpo_small.sh
+```
+
+Acceptance criteria for small runs:
+- SimPO: `accuracy` and `margins` trend upward in first ~10-20 optimizer steps.
+- ORPO: `margins` move off near-zero and `or_loss` contributes non-trivially vs `sft_loss`.
+- Samples remain coherent (no repetitive collapse).
 
 ### Reward Model Training
 

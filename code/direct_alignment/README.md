@@ -5,6 +5,8 @@ See **Chapter 8: Direct Alignment** for mathematical derivations and intuitions.
 
 > **Status**: DPO/IPO/KTO validated. SimPO and ORPO are implemented and actively being retuned.
 
+ORPO/SimPO are still under investigation. This PR includes correctness and observability fixes (optimizer-step metric averaging and SimPO gamma semantics alignment), plus targeted sweeps; fixed-batch overfit sanity checks passed locally (not logged to W&B), but short shuffled runs still show noisy/oscillatory train metrics at small effective batch. See `direct_alignment/experiments/ORPO_SIMPO_EXPERIMENT_LOG_2026-02-08.md` for the run ledger (for example: [qnevkkls](https://wandb.ai/natolambert/rlhf-book/runs/qnevkkls), [7pruw05c](https://wandb.ai/natolambert/rlhf-book/runs/7pruw05c), [58ywuqr4](https://wandb.ai/natolambert/rlhf-book/runs/58ywuqr4), [myvyfkat](https://wandb.ai/natolambert/rlhf-book/runs/myvyfkat)).
+
 ## Reference Runs
 
 | Algorithm | wandb | Status |
@@ -248,6 +250,8 @@ Links pinned to specific commits for reproducibility (January 2026).
 ```
 direct_alignment/
 ├── README.md          # This file
+├── experiments/       # Experiment logs and sweep notes
+│   └── ORPO_SIMPO_EXPERIMENT_LOG_2026-02-08.md
 ├── config.py          # Configuration dataclass
 ├── data.py            # Preference data loading with response masking
 ├── loss.py            # Loss function implementations
