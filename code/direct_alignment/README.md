@@ -5,7 +5,7 @@ See **Chapter 8: Direct Alignment** for mathematical derivations and intuitions.
 
 > **Status**: DPO/IPO/KTO validated. SimPO and ORPO are implemented and actively being retuned.
 
-ORPO/SimPO are still under investigation. This PR includes correctness and observability fixes (optimizer-step metric averaging and SimPO gamma semantics alignment), plus targeted sweeps; fixed-batch overfit sanity checks passed locally (not logged to W&B), but short shuffled runs still show noisy/oscillatory train metrics at small effective batch. See `direct_alignment/experiments/2026-02-08-orpo-simpo.md` for the run ledger (for example: [qnevkkls](https://wandb.ai/natolambert/rlhf-book/runs/qnevkkls), [7pruw05c](https://wandb.ai/natolambert/rlhf-book/runs/7pruw05c), [58ywuqr4](https://wandb.ai/natolambert/rlhf-book/runs/58ywuqr4), [myvyfkat](https://wandb.ai/natolambert/rlhf-book/runs/myvyfkat)).
+As of 2026-02-08, ORPO/SimPO are still under investigation. See `direct_alignment/experiments/2026-02-08-orpo-simpo.md` for the dated run ledger and links.
 
 ## Reference Runs
 
