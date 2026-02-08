@@ -19,8 +19,8 @@ This is an experiment log for the ORPO/SimPO debugging and sweep work done in th
 - `direct_alignment/loss.py` SimPO gamma semantics:
   - Updated to `-logsigmoid(beta * (logit_margin - gamma))` so `gamma` behaves as the gamma/beta ratio used in reference implementations.
 - Added quick sweep scripts:
-  - `scripts/run_simpo_small.sh`
-  - `scripts/run_orpo_small.sh`
+  - `direct_alignment/experiments/2026-02-08-orpo-simpo/run_simpo_small.sh`
+  - `direct_alignment/experiments/2026-02-08-orpo-simpo/run_orpo_small.sh`
   - Both support env overrides for `MAX_SAMPLES`, `NUM_EPOCHS`, `MAX_LENGTH`, `LEARNING_RATE`, `BETA`, `GAMMA`.
 
 ## Logging Bug Notes

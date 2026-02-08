@@ -15,6 +15,15 @@
 - Each bullet must include a PR link and can contain multiple sentences summarizing meaningful changes.
 - When changes affect comparability (metrics, logging semantics, evaluation logic), mention that directly in the same bullet.
 
+## Experiment Organization
+
+- Store direct-alignment experiment artifacts under `direct_alignment/experiments/`.
+- For each experiment campaign, use a matched pair:
+  - Log file: `YYYY-MM-DD-<slug>.md`
+  - Asset folder: `YYYY-MM-DD-<slug>/`
+- Put helper scripts directly inside the campaign folder at `direct_alignment/experiments/YYYY-MM-DD-<slug>/`.
+- Keep root-level generic scripts separate; experiment-specific scripts should live with their experiment logs.
+
 ## Quick Start
 
 ```bash
@@ -78,7 +87,7 @@ Context:
 - ORPO/SimPO instability from extreme ORPO scales was addressed by switching to average log-probs.
 - New issue is "stable but flat" learning, especially for ORPO.
 - SimPO formula now uses gamma as a gamma/beta ratio: `-logsigmoid(beta * (logit_margin - gamma))`.
-- Experiment log with full run ledger and W&B links: `direct_alignment/experiments/ORPO_SIMPO_EXPERIMENT_LOG_2026-02-08.md`.
+- Experiment log with full run ledger and W&B links: `direct_alignment/experiments/2026-02-08-orpo-simpo.md`.
 
 Plan:
 1. Run quick low-sample sanity jobs first (1 epoch, 640 samples) before long sweeps.
@@ -87,27 +96,27 @@ Plan:
 4. Only then launch 12.8K-sample full runs.
 
 Small-run scripts:
-- `scripts/run_simpo_small.sh`
-- `scripts/run_orpo_small.sh`
+- `direct_alignment/experiments/2026-02-08-orpo-simpo/run_simpo_small.sh`
+- `direct_alignment/experiments/2026-02-08-orpo-simpo/run_orpo_small.sh`
 
 Examples:
 ```bash
 cd /home/natolambert/dev/rlhf-book/code
 
 # SimPO sanity run (background)
-WANDB_PROJECT=rlhf-book ./scripts/run_simpo_small.sh
+WANDB_PROJECT=rlhf-book ./direct_alignment/experiments/2026-02-08-orpo-simpo/run_simpo_small.sh
 
 # ORPO sanity run (background)
-WANDB_PROJECT=rlhf-book ./scripts/run_orpo_small.sh
+WANDB_PROJECT=rlhf-book ./direct_alignment/experiments/2026-02-08-orpo-simpo/run_orpo_small.sh
 ```
 
 Useful overrides:
 ```bash
 # SimPO: stronger margin push
-GAMMA=1.0 LEARNING_RATE=1e-6 MAX_SAMPLES=640 NUM_EPOCHS=1 ./scripts/run_simpo_small.sh
+GAMMA=1.0 LEARNING_RATE=1e-6 MAX_SAMPLES=640 NUM_EPOCHS=1 ./direct_alignment/experiments/2026-02-08-orpo-simpo/run_simpo_small.sh
 
 # ORPO: stronger preference term
-BETA=1.0 LEARNING_RATE=5e-6 MAX_SAMPLES=640 NUM_EPOCHS=1 ./scripts/run_orpo_small.sh
+BETA=1.0 LEARNING_RATE=5e-6 MAX_SAMPLES=640 NUM_EPOCHS=1 ./direct_alignment/experiments/2026-02-08-orpo-simpo/run_orpo_small.sh
 ```
 
 Acceptance criteria for small runs:
