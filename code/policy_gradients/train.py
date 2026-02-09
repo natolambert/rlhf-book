@@ -8,6 +8,7 @@
 # - Added SDPA fallback for platforms without flash-attn (e.g., DGX Spark)
 
 import argparse
+import json
 import os
 import platform
 import random
@@ -336,7 +337,7 @@ def create_dataset(cfg: Config) -> ProceduralDataset:
     return rg.create_dataset("composite", size=cfg.data.size, seed=cfg.seed, datasets=specs)
 
 
-def main(cfg: Config):
+def main(cfg: Config, *, speedrun: bool = False, speedrun_target_reward: float | None = None, speedrun_metrics_file: str = "logs/speedrun/speedrun_metrics.json"):
     """Main training loop."""
     seed_everything(cfg.seed)
     console = Console()
@@ -388,6 +389,9 @@ def main(cfg: Config):
     print_model_info(console, model)
 
     start_time = time.time()
+    reward_history: list[float] = []
+    walltime_at_step: list[int] = []
+    speedrun_goal_reported = False
     for step, batch in enumerate(dataloader):
         print_step_header(console, step=step, total=len(dataloader))
         model.eval()
@@ -442,9 +446,23 @@ def main(cfg: Config):
 
         # Summarize rollouts
         avg_reward = torch.cat(rollout_rewards, dim=0).mean().item()
+        reward_history.append(avg_reward)
+
+        # 100-step rolling average (from step 100 onwards)
+        reward_100avg: float | None = None
+        if len(reward_history) >= 100:
+            reward_100avg = sum(reward_history[-100:]) / 100
+
         hours_elapsed = (time.time() - start_time) / 3600
         wandb.log({"avg_reward": avg_reward, "hours_elapsed": hours_elapsed})
-        print_rollout_sample(console, reward=avg_reward, rollout_completions=rollout_completions)
+        if reward_100avg is not None:
+            wandb.log({"avg_reward_100step": reward_100avg})
+        print_rollout_sample(
+            console,
+            reward=avg_reward,
+            rollout_completions=rollout_completions,
+            reward_100avg=reward_100avg,
+        )
 
         torch.cuda.empty_cache()
         model.train()
@@ -496,14 +514,80 @@ def main(cfg: Config):
                 else:
                     progress.update(task, advance=1)
 
+        walltime_at_step.append(int(time.time() - start_time))
+
+        # Speedrun goal: when 100-step avg first crosses target, record and display (once)
+        if not speedrun_goal_reported and speedrun_target_reward is not None:
+            if (
+                reward_100avg is not None
+                and len(reward_history) >= 100
+                and reward_100avg >= speedrun_target_reward
+            ):
+                speedrun_goal_reported = True
+                goal_step = step
+                goal_walltime = walltime_at_step[-1]
+                console.print(
+                    f"[bold green]Speedrun goal reached[/bold green] at step {goal_step + 1} "
+                    f"(walltime: {goal_walltime} sec)"
+                )
+
+    # Speedrun metrics: write final reward and history to a JSON file when requested
+    if speedrun:
+        metrics_path = speedrun_metrics_file
+        walltime_sec = int(time.time() - start_time)
+        final_reward = reward_history[-1] if reward_history else None
+        target_reward = speedrun_target_reward
+
+        goal_reached_at_step: int | None = None
+        goal_walltime_sec: int | None = None
+        # Compute 100-step rolling average history (None for steps 0-98, float from step 99 onwards)
+        reward_100step_history: list[float | None] = [None] * len(reward_history)
+        for i in range(99, len(reward_history)):
+            reward_100step_history[i] = sum(reward_history[i - 99 : i + 1]) / 100
+
+        # Use 100-step rolling average for goal detection (from step 100 onwards)
+        if target_reward is not None and len(reward_history) >= 100:
+            for i in range(99, len(reward_history)):
+                avg_100 = sum(reward_history[i - 99 : i + 1]) / 100
+                if avg_100 >= target_reward:
+                    goal_reached_at_step = i
+                    goal_walltime_sec = walltime_at_step[i] if i < len(walltime_at_step) else None
+                    break
+
+        payload = {
+            "final_reward": final_reward,
+            "reward_history": reward_history,
+            "reward_100step_history": reward_100step_history,
+            "walltime_at_step": walltime_at_step,
+            "walltime_sec": walltime_sec,
+            "config": cfg.loss,
+            "seed": cfg.seed,
+            "target_reward": target_reward,
+            "goal_reached_at_step": goal_reached_at_step,
+            "goal_walltime_sec": goal_walltime_sec,
+        }
+        dirpath = os.path.dirname(metrics_path)
+        if dirpath:
+            os.makedirs(dirpath, exist_ok=True)
+        with open(metrics_path, "w") as f:
+            json.dump(payload, f, indent=2)
+
 
 def main_cli():
     """CLI entry point."""
     parser = argparse.ArgumentParser(description="Train policy gradient models for RLHF")
     parser.add_argument("--config", type=str, required=True, help="Path to YAML config file")
+    parser.add_argument("--speedrun", action="store_true", help="Enable speedrun metrics (JSON output, 100-step avg goal)")
+    parser.add_argument("--speedrun-target-reward", type=float, default=None, help="Target reward for goal detection (100-step avg)")
+    parser.add_argument("--speedrun-metrics-file", type=str, default="logs/speedrun/speedrun_metrics.json", help="Output path for speedrun JSON")
     args = parser.parse_args()
     cfg = load_config(args.config)
-    main(cfg)
+    main(
+        cfg,
+        speedrun=args.speedrun,
+        speedrun_target_reward=args.speedrun_target_reward,
+        speedrun_metrics_file=args.speedrun_metrics_file,
+    )
 
 
 if __name__ == "__main__":
