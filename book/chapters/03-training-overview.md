@@ -99,7 +99,7 @@ In order to succeed in a fine-tuning regime, RLHF techniques employ multiple typ
 The goal is to allow the reward maximization to still occur without the model succumbing to over-optimization, as discussed in Chapter 14.
 The most common change to the optimization function is to add a distance penalty on the difference between the current RLHF policy and the starting point of the optimization:
 
-$$J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t)\right] - \beta  \mathcal{D}_{\text{KL}}(\pi_{\text{RL}}(\cdot|s_t) \| \pi_{\text{ref}}(\cdot|s_t)).$$ {#eq:rlhf_opt_eq}
+$$J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t)\right] - \beta  \mathcal{D}_{\text{KL}}(\pi(\cdot|s_t) \| \pi_{\text{ref}}(\cdot|s_t)).$$ {#eq:rlhf_opt_eq}
 
 Within this formulation, a lot of study into RLHF training goes into understanding how to spend a certain "KL budget" as measured by a distance from the initial model.
 For more details, see Chapter 15 on Regularization.
@@ -173,4 +173,3 @@ The DeepSeek recipe follows:
 
 As above, there are evolutions of the recipe, particularly with steps 3 and 4 to finalize the model before exposing it to users.
 Many models start with tailored instruction datasets with chain-of-thought sequences that are heavily filtered and polished from existing models, providing a fast step to strong behaviors with SFT alone before moving onto RL [@seed2025seed].
-
