@@ -40,16 +40,16 @@ A standard illustration of the RL loop is shown in @fig:rl and (compare this to 
 
 ### A Simple Example: The Thermostat {#example-rl-thermostat}
 
-To build a basic intuition for what RL does, consider a thermostat trying to keep a room at a target temperature of 70°F.
+To build a basic intuition for what RL does, consider a thermostat trying to keep a room at a target temperature of 70$^\circ$F.
 In RL, the agent starts with no knowledge of the task and must discover a good policy through trial and error.
 The thermostat example has the following components (see @fig:thermostat-equation for how each maps to the trajectory distribution in @eq:rl_dynam):
 
-- **State ($s_t$)**: the current room temperature, e.g. 65°F.
+- **State ($s_t$)**: the current room temperature, e.g. 65$^\circ$F.
 - **Action ($a_t$)**: turn the heater on or off.
-- **Reward ($r$)**: +1 when the temperature is within 2° of the target, 0 otherwise.
+- **Reward ($r$)**: +1 when the temperature is within 2$^\circ$ of the target, 0 otherwise.
 - **Policy ($\pi$)**: the rule that decides whether to turn the heater on or off given the current temperature. An example policy, which may not be optimal depending on the exact transition dynamics of the environment:
 
-$$\pi(a_t = \text{on} \mid s_t) = \begin{cases} 1 & \text{if } s_t < 70°\text{F} \\ 0 & \text{otherwise} \end{cases}$$ {#eq:thermostat_policy}
+$$\pi(a_t = \text{on} \mid s_t) = \begin{cases} 1 & \text{if } s_t < 70^\circ\text{F} \\ 0 & \text{otherwise} \end{cases}$$ {#eq:thermostat_policy}
 
 - **Transition**: the room warms when the heater is on and cools when it is off -- this is the environment dynamics that the agent cannot control directly.
 
