@@ -3,7 +3,7 @@
 % Annotations alternate above/below for clarity
 
 \documentclass{article}
-\usepackage[margin=0.2cm, paperwidth=22cm, paperheight=7cm]{geometry}
+\usepackage[margin=0.2cm, paperwidth=19cm, paperheight=7cm]{geometry}
 \usepackage{amsmath,amssymb}
 \usepackage{tikz}
 \usetikzlibrary{positioning, arrows.meta, calc}
@@ -28,26 +28,26 @@
 \node[font=\large, right=0.4cm of policy] (trans) {$p(s_{t+1} \mid s_t, a_t)$};
 
 % Annotations above: trajectory (term 1) and policy (term 3)
-\node[annot, above=1.2cm of lhs] (tau-text) {
+\node[annot, above=0.75cm of lhs] (tau-text) {
     Trajectory probability: sequence of\\
     temperatures, actions, and outcomes
 };
 \draw[arrw] (tau-text.south) -- (lhs.north);
 
-\node[annot, above right=1.2cm and 2.0cm of policy] (pi-text) {
+\node[annot, above=0.75cm of trans] (pi-text) {
     Policy: prob.\ of heater on/off given\\
     current temp, e.g.\ $P(\text{on} \mid 65^\circ\text{F}) = 0.9$
 };
-\draw[arrw] (pi-text.south west) -- (policy.north east);
+\draw[arrw] (pi-text.south) -- (policy.north east);
 
 % Annotations below: initial state (term 2) and transition (term 4)
-\node[annot, below=1.0cm of rho] (rho-text) {
+\node[annot, below=0.75cm of rho] (rho-text) {
     Prob.\ of starting at initial temp,\\
     e.g.\ $P(s_0 = 65^\circ\text{F})$
 };
 \draw[arrw] (rho-text.north) -- (rho.south);
 
-\node[annot, below=1.0cm of trans] (trans-text) {
+\node[annot, below=0.75cm of trans] (trans-text) {
     Transition: prob.\ of next temp given\\
     current temp and action (room physics)
 };
