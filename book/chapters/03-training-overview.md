@@ -49,7 +49,7 @@ The thermostat example has the following components (see @fig:thermostat-equatio
 - **Reward ($r$)**: +1 when the temperature is within 2$^\circ$ of the target, 0 otherwise.
 - **Policy ($\pi$)**: the rule that decides whether to turn the heater on or off given the current temperature. An example policy, which may not be optimal depending on the exact transition dynamics of the environment:
 
-$$\pi(a_t = \text{on} \mid s_t) = \begin{cases} 1 & \text{if } s_t < 70^\circ\text{F} \\ 0 & \text{otherwise} \end{cases}$$ {#eq:thermostat_policy}
+$$\pi(a_t = \text{on} \mid s_t) = \begin{cases} 1 & \text{if } s_t < 70^{\circ}\text{F} \\ 0 & \text{otherwise} \end{cases}$$ {#eq:thermostat_policy}
 
 - **Transition**: the room warms when the heater is on and cools when it is off -- this is the environment dynamics that the agent cannot control directly.
 
