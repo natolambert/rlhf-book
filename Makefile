@@ -17,6 +17,7 @@ TEMPLATES = $(shell find book/templates/ -type f)
 EPUB_COVER_IMAGE = book/assets/rlhf-book-cover.png # EPUB-specific cover image
 MATH_FORMULAS = --mathjax # --webtex, is default for PDF/ebook. Consider resetting if issues.
 EPUB_MATH_FORMULAS = --mathml # Use MathML for EPUB format for better e-reader compatibility
+KINDLE_MATH_FILTER = --lua-filter book/scripts/kindle-math.lua
 BIBLIOGRAPHY = --bibliography=book/chapters/bib.bib --citeproc --csl=book/templates/ieee.csl
 DATE_ARG = --metadata date="$(shell date +'%d %B %Y')"
 
@@ -37,6 +38,7 @@ FILTER_ARGS = --filter pandoc-crossref
 
 ARGS = $(TOC) $(MATH_FORMULAS) $(METADATA_ARGS) $(FILTER_ARGS) $(DEBUG_ARGS) $(BIBLIOGRAPHY) $(DATE_ARG)
 EPUB_ARGS_BASE = $(TOC) $(EPUB_MATH_FORMULAS) $(METADATA_ARGS) $(FILTER_ARGS) $(DEBUG_ARGS) $(BIBLIOGRAPHY) $(DATE_ARG)
+KINDLE_ARGS_BASE = $(TOC) $(METADATA_ARGS) $(FILTER_ARGS) $(DEBUG_ARGS) $(BIBLIOGRAPHY) $(DATE_ARG) $(KINDLE_MATH_FILTER)
 	
 PANDOC_COMMAND = pandoc
 
@@ -83,7 +85,7 @@ ECHO_BUILT = @echo "$@ was built\n"
 # Basic actions
 ####################################################################################################
 
-.PHONY: all book clean epub html pdf docx nested_html latex
+.PHONY: all book clean epub html pdf docx nested_html latex kindle
 
 all:	book
 
@@ -117,6 +119,13 @@ $(BUILD)/epub/$(OUTPUT_FILENAME).epub:	$(EPUB_DEPENDENCIES)
 	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(EPUB_ARGS_BASE) $(EPUB_ARGS) --resource-path=book -o $@
 	$(ECHO_BUILT)
 
+kindle: $(BUILD)/kindle/$(OUTPUT_FILENAME).kindle.epub
+
+$(BUILD)/kindle/$(OUTPUT_FILENAME).kindle.epub: $(EPUB_DEPENDENCIES) book/scripts/kindle-math.lua
+	$(ECHO_BUILDING)
+	$(MKDIR_CMD) $(BUILD)/kindle $(BUILD)/kindle-math-cache
+	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(KINDLE_ARGS_BASE) $(EPUB_ARGS) --css book/templates/kindle-math.css --resource-path=book -o $@
+	$(ECHO_BUILT)
 
 $(BUILD)/docx/$(OUTPUT_FILENAME).docx:	$(DOCX_DEPENDENCIES)
 	$(ECHO_BUILDING)
