@@ -53,7 +53,7 @@ $$\pi(a_t = \text{on} \mid s_t) = \begin{cases} 1 & \text{if } s_t < 70^\circ\te
 
 - **Transition**: the room warms when the heater is on and cools when it is off -- this is the environment dynamics that the agent cannot control directly.
 
-![Each term in the trajectory distribution (@eq:rl_dynam) mapped to its thermostat interpretation.](images/thermostat_equation.png){#fig:thermostat-equation .center}
+![Each term in the trajectory distribution (@eq:rl_dynam) mapped to the thermostat RL example.](images/thermostat_equation.png){#fig:thermostat-equation .center}
 
 Initially, the thermostat's policy is essentially random -- it flips the heater on and off with no regard for the current temperature, and the room swings wildly.
 Over many episodes of trial and error, the agent discovers that turning the heater on when the room is cold and off when it is warm leads to more reward, and gradually converges on a sensible policy.
