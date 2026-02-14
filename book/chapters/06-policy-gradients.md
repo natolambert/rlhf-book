@@ -574,7 +574,7 @@ Group Sequence Policy Optimization (GSPO) [@zheng2025gspo] extends GRPO by compu
 The practical motivation for this algorithm, and its peer modifying how importance sampling is computed for policy gradient algorithms, CISPO, that we will discuss later, is that the per-token importance sampling ratio is often numerically unstable.
 The conceptual motivation is that when rewards are assigned at the sequence level (as in most RLHF and RLVR setups), the importance sampling correction should match that granularity.
 
-Token-level ratios can behave erratically for long sequences and/or large, sparse models (e.g. modern mixture of experts, MoE, models): a single token with a large ratio can dominate the plicy update, or many tokens may get clipped independently within a response, fragmenting the learning signal across a single response.
+Token-level ratios can behave erratically for long sequences and/or large, sparse models (e.g. modern mixture of experts, MoE, models): a single token with a large ratio can dominate the policy update, or many tokens may get clipped independently within a response, fragmenting the learning signal across a single response.
 GSPO addresses this by computing a single importance weight per response.
 
 Recall that the probability of a full response factorizes autoregressively:
@@ -849,13 +849,13 @@ What happens in practice is designing the algorithms and systems for what actual
 
 The common solution used is to constantly run inference and training on separate GPU nodes with software designed to efficiently run both, as shown in the bottom of @fig:async.
 Common practice in popular open-source RL tools for language models is to use a distributed process management library such as Ray to hand information off between the policy-gradient learning loop and the inference loop using an efficient inference engine, e.g., VLLM.
-In these setups, the GPUs dedicated to taking the RL steps are called the "leaners" and the GPUs dedicated to sampling from the language model are called the "actors"
+In these setups, the GPUs dedicated to taking the RL steps are called the "learners" and the GPUs dedicated to sampling from the language model are called the "actors"
 The primary challenges faced when making training more asynchronous are keeping training stable and maintaining learning signal.
 
 ![An example distributed RL system, where two queues are managed to pass data to the learner and actor GPUs, which can both be synchronized with a distributed computing library such as Ray. Olmo Team 2025, license CC-BY.](images/distributed-rl.png){#fig:async_system}
 
 These systems are designed and implemented with the presumption that nearly on-policy data is good enough for stable learning. 
-Here, the generation and update phases can easily be synced to avoid idle compute on either piece of the training system, which would be passing model weights from the leaners to the actors in @fig:async_system.
+Here, the generation and update phases can easily be synced to avoid idle compute on either piece of the training system, which would be passing model weights from the learners to the actors in @fig:async_system.
 With reasoning models, the extremely long inference characteristics of problems requiring 10K to 100K+ tokens per answer makes the generation of roll-outs a far stronger bottleneck.
 A common problem when training reasoning models on more synchronous RL infrastructure is that an answer to one prompt in the batch can take substantially more time to generate (either through more tokens or more tool calls), resulting in the majority of the allocated compute being idle until it completes. 
 A second solution to this length mismatch issue, called sequence-level packing, is to stack shorter samples within a batch with clever masking to enable continued roll-outs from the model and better distribute length normalization across samples within a batch.
@@ -1163,7 +1163,8 @@ In practice with language models, algorithms like PPO and GRPO are run with only
 As RLHF has cemented itself at the center of modern post-training, other policy-gradient RL algorithms and RL algorithms generally have been proposed to improve the training process, but they have not had a central role in governing best practices.
 Examples for further reading include:
 
-- **Pairwise Proximal Policy Optimization (P3O)** [@wu2023pairwise] uses pairwise data directly in a PPO-style policy update without learning an intermediate reward model.
+- **Pairwise Proximal Policy Optimization (P3O; Wu et al., 2023)** [@wu2023pairwise] uses pairwise data directly in a PPO-style policy update without learning an intermediate reward model.
+- **Soft Adaptive Policy Optimization (SAPO)** [@gao2025sapo] replaces hard PPO/GRPO-style clipping with smooth, temperature-controlled gating, aiming for a continuous trust region that preserves near-on-policy learning signal while down-weighting off-policy tokens.
 - Off-policy policy-gradient algorithms could enable further asynchronous training, such as **Contrastive Policy Gradient (CoPG)** [@flet2024contrastive] (a generalization of the direct alignment algorithm IPO and vanilla policy gradient), which was used by Cohere for their Command A model [@cohere2025command].
 - Other implementations of REINFORCE algorithms have been designed for language models, such as **ReMax** [@li2023remax], which implements a baseline normalization designed specifically to accommodate the sources of uncertainty from reward model inference.
 - Some foundation models, such as Apple Intelligence Foundation Models [@gunter2024apple] or Kimi k1.5 reasoning model [@team2025kimi], have used variants of **Mirror Descent Policy Optimization (MDPO)** [@tomar2020mirror]. Research is still developing further on the fundamentals here [@zhang2025improving], but Mirror Descent is an optimization method rather than directly a policy gradient algorithm. What is important here is that it is substituted in very similarly to existing RL infrastructure.

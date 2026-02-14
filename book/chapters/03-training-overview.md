@@ -19,6 +19,8 @@ These example recipes will serve as references for later in the book, where we d
 
 The optimization of reinforcement learning from human feedback (RLHF) builds on top of the standard RL setup.
 In RL, an agent takes actions $a_t$ sampled from a policy $\pi(a_t\mid s_t)$ given the state of the environment $s_t$ to maximize reward $r(s_t,a_t)$ [@sutton2018reinforcement].
+A policy is a function that maps each state to a probability distribution over actions.
+The early policies that evolved into modern literature on RLHF were in what is called deep reinforcement learning -- when a neural network is used to learn said function.
 Traditionally, the environment evolves according to transition (dynamics) $p(s_{t+1}\mid s_t, a_t)$ with an initial state distribution $\rho_0(s_0)$.
 Together, the policy and dynamics induce a trajectory distribution:
 
@@ -36,9 +38,31 @@ Multiple methods for optimizing this expression are discussed in Chapter 6.
 
 A standard illustration of the RL loop is shown in @fig:rl and (compare this to the RLHF loop in @fig:rlhf).
 
+### A Simple Example: The Thermostat {#example-rl-thermostat}
+
+To build a basic intuition for what RL does, consider a thermostat trying to keep a room at a target temperature of 70$^\circ$F.
+In RL, the agent starts with no knowledge of the task and must discover a good policy through trial and error.
+The thermostat example has the following components (see @fig:thermostat-equation for how each maps to the trajectory distribution in @eq:rl_dynam):
+
+- **State ($s_t$)**: the current room temperature, e.g. 65$^\circ$F.
+- **Action ($a_t$)**: turn the heater on or off.
+- **Reward ($r$)**: +1 when the temperature is within 2$^\circ$ of the target, 0 otherwise.
+- **Policy ($\pi$)**: the rule that decides whether to turn the heater on or off given the current temperature. An example policy, which may not be optimal depending on the exact transition dynamics of the environment:
+
+$$\pi(a_t = \text{on} \mid s_t) = \begin{cases} 1 & \text{if } s_t < 70^{\circ}\text{F} \\ 0 & \text{otherwise} \end{cases}$$ {#eq:thermostat_policy}
+
+- **Transition**: the room warms when the heater is on and cools when it is off -- this is the environment dynamics that the agent cannot control directly.
+
+![Each term in the trajectory distribution (@eq:rl_dynam) mapped to the thermostat RL example.](images/thermostat_equation.png){#fig:thermostat-equation .center}
+
+Initially, the thermostat's policy is essentially random -- it flips the heater on and off with no regard for the current temperature, and the room swings wildly.
+Over many episodes of trial and error, the agent discovers that turning the heater on when the room is cold and off when it is warm leads to more reward, and gradually converges on a sensible policy.
+This is the core RL loop: observe a state, choose an action, receive a reward, and update the policy to get more reward over time.
+
 ### Example RL Task: CartPole
 
-To make the transition function concrete, consider the classic *CartPole* (inverted pendulum) control task.
+For a richer example with continuous dynamics, consider the classic *CartPole* (inverted pendulum) control task, which appears in many RL textbooks, courses, and even research papers.
+Where the thermostat had a single state variable and a binary action, CartPole involves four continuous state variables and physics-based transitions -- making it a standard benchmark for RL algorithms.
 
 ![CartPole environment showing state variables ($x$, $\dot{x}$, $\theta$, $\dot{\theta}$) and actions ($\pm F$).](images/cartpole.png){#fig:cartpole width=400px .center}
 
@@ -99,7 +123,7 @@ In order to succeed in a fine-tuning regime, RLHF techniques employ multiple typ
 The goal is to allow the reward maximization to still occur without the model succumbing to over-optimization, as discussed in Chapter 14.
 The most common change to the optimization function is to add a distance penalty on the difference between the current RLHF policy and the starting point of the optimization:
 
-$$J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t)\right] - \beta  \mathcal{D}_{\text{KL}}(\pi_{\text{RL}}(\cdot|s_t) \| \pi_{\text{ref}}(\cdot|s_t)).$$ {#eq:rlhf_opt_eq}
+$$J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t)\right] - \beta  \mathcal{D}_{\text{KL}}(\pi(\cdot|s_t) \| \pi_{\text{ref}}(\cdot|s_t)).$$ {#eq:rlhf_opt_eq}
 
 Within this formulation, a lot of study into RLHF training goes into understanding how to spend a certain "KL budget" as measured by a distance from the initial model.
 For more details, see Chapter 15 on Regularization.
@@ -173,4 +197,3 @@ The DeepSeek recipe follows:
 
 As above, there are evolutions of the recipe, particularly with steps 3 and 4 to finalize the model before exposing it to users.
 Many models start with tailored instruction datasets with chain-of-thought sequences that are heavily filtered and polished from existing models, providing a fast step to strong behaviors with SFT alone before moving onto RL [@seed2025seed].
-
