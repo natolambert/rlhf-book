@@ -386,6 +386,11 @@ def main(cfg: Config, *, speedrun: bool = False, speedrun_target_reward: float |
         wandb.init(mode="disabled")
     else:
         wandb.init(project=wandb_project, name=wandb_run_name, config=vars(cfg))
+
+    wandb_run_id = getattr(wandb.run, "id", None) if wandb.run else None
+    wandb_entity = getattr(wandb.run, "entity", None) if wandb.run else None
+    wandb_project_name = getattr(wandb.run, "project", None) if wandb.run else None
+
     print_model_info(console, model)
 
     start_time = time.time()
@@ -533,7 +538,11 @@ def main(cfg: Config, *, speedrun: bool = False, speedrun_target_reward: float |
 
     # Speedrun metrics: write final reward and history to a JSON file when requested
     if speedrun:
-        metrics_path = speedrun_metrics_file
+        default_metrics_path = "logs/speedrun/speedrun_metrics.json"
+        if wandb_run_id and speedrun_metrics_file == default_metrics_path:
+            metrics_path = os.path.join("logs", "speedrun", f"{wandb_run_id}.json")
+        else:
+            metrics_path = speedrun_metrics_file
         walltime_sec = int(time.time() - start_time)
         final_reward = reward_history[-1] if reward_history else None
         target_reward = speedrun_target_reward
@@ -566,6 +575,12 @@ def main(cfg: Config, *, speedrun: bool = False, speedrun_target_reward: float |
             "goal_reached_at_step": goal_reached_at_step,
             "goal_walltime_sec": goal_walltime_sec,
         }
+        if wandb_run_id:
+            payload["wandb_run_id"] = wandb_run_id
+        if wandb_entity:
+            payload["wandb_entity"] = wandb_entity
+        if wandb_project_name:
+            payload["wandb_project"] = wandb_project_name
         dirpath = os.path.dirname(metrics_path)
         if dirpath:
             os.makedirs(dirpath, exist_ok=True)

@@ -4,7 +4,7 @@ This table records and compares **walltime** (elapsed time) and **final_reward**
 
 ## How to run training
 
-From `code/`, run the following. On exit, metrics are written to `logs/speedrun/speedrun_metrics.json`.
+From `code/`, run the following. On exit, metrics are written to `logs/speedrun/{run_id}.json` (when wandb is enabled) or `logs/speedrun/speedrun_metrics.json`.
 
 ```bash
 cd code
@@ -18,22 +18,23 @@ uv run python -m policy_gradients.train --config policy_gradients/configs/grpo.y
 
 ## How to add a record
 
-After a run, generate a one-line summary from `logs/speedrun/speedrun_metrics.json` and add it to the table below.
+After a run, append a row to the table from `speedrun_metrics.json`:
 
 ```bash
-# From code/ (default: reads logs/speedrun/speedrun_metrics.json)
-uv run python scripts/speedrun/summary_from_json.py
+# From code/ (default: logs/speedrun/speedrun_metrics.json)
+uv run python scripts/speedrun/append_leaderboard.py
 
-# With a custom path
-uv run python scripts/speedrun/summary_from_json.py path/to/speedrun_metrics.json
+# For a wandb run: pass logs/speedrun/{run_id}.json
+# Add --include-wandb to include the run link (opt-in; only when you agree to share).
+uv run python scripts/speedrun/append_leaderboard.py logs/speedrun/{run_id}.json --include-wandb
+
+# With recorder name or notes
+uv run python scripts/speedrun/append_leaderboard.py --recorder "your_name" --notes "1x A100"
 ```
 
-Example output:
-```
-SPEEDRUN_SUMMARY: walltime_sec=29195 final_reward=1.332 config=grpo seed=42 target_reward=0.85 goal_reached_at_step=99 goal_walltime_sec=15948
-```
+The script writes Date, walltime, final_reward, config, seed, and goal info to the table. For multiple runs, list your best or a representative run.
 
-Copy that line or fill the table columns manually. For multiple runs of the same algorithm, list your best or a representative run.
+- **wandb**: Use `--include-wandb` only when you agree to share your run publicly. Without it, the cell is left empty.
 
 - **Date**: Run date (YYYY-MM-DD)
 - **Runner**: Handle or name (optional)
@@ -47,12 +48,13 @@ Copy that line or fill the table columns manually. For multiple runs of the same
 
 ## Records
 
-| Date | Runner | walltime | final_reward | config | seed | Notes |
-|------|--------|----------|--------------|--------|------|-------|
-| (add entries here) | | | | | | |
+| Date | Runner | walltime | final_reward | config | seed | wandb | Notes |
+|------|--------|----------|--------------|--------|------|-------|-------|
+| (add entries here) | | | | | | | |
 
 ---
 
 ## Notes
 
-- Metrics are written to `logs/speedrun/speedrun_metrics.json` (or the path given by `--speedrun-metrics-file`) when you run training with `uv run python -m policy_gradients.train --config ... --speedrun`. `train.py` creates the output directory if needed.
+- Metrics are written when you run training with `uv run python -m policy_gradients.train --config ... --speedrun`. `train.py` creates the output directory if needed.
+- When wandb is enabled, the JSON is saved as `logs/speedrun/{run_id}.json` (wandb run ID). Otherwise `logs/speedrun/speedrun_metrics.json` or the path given by `--speedrun-metrics-file`.
