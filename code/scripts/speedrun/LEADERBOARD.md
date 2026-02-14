@@ -40,7 +40,7 @@ The script writes Date, walltime, final_reward, config, seed, and goal info to t
 - **Runner**: Handle or name (optional)
 - **walltime**: Seconds from start to end (or e.g. "X min Y sec")
 - **final_reward**: Average reward at the last step (accuracy + format, after KL penalty)
-- **config**: Algorithm (rloo / ppo / drgrpo / gspo / cispo / reinforce, etc.)
+- **algorithm**: Algorithm (rloo / ppo / drgrpo / gspo / cispo / reinforce, etc.)
 - **seed**: Random seed
 - **Notes**: GPU, data size, or other details
 
@@ -48,8 +48,8 @@ The script writes Date, walltime, final_reward, config, seed, and goal info to t
 
 ## Records
 
-| Date | Runner | walltime | final_reward | config | seed | wandb | Notes |
-|------|--------|----------|--------------|--------|------|-------|-------|
+| Date | Runner | walltime | final_reward | algorithm | seed | wandb | Notes |
+|------|--------|----------|--------------|-----------|------|-------|-------|
 | (add entries here) | | | | | | | |
 
 ---

@@ -4,21 +4,10 @@
 # Source: https://github.com/zafstojano/policy-gradients
 # License: Apache 2.0
 
+from __future__ import annotations
+
 import random
 from typing import Any
-
-
-def speedrun_opts(
-    enabled: bool = True,
-    target_reward: float | None = None,
-    metrics_file: str = "logs/speedrun/speedrun_metrics.json",
-) -> dict[str, Any]:
-    """Return speedrun options for main(). Use as: main(cfg, **speedrun_opts(target_reward=0.85))"""
-    return {
-        "speedrun": enabled,
-        "speedrun_target_reward": target_reward,
-        "speedrun_metrics_file": metrics_file,
-    }
 
 from rich.console import Console
 from rich.panel import Panel
@@ -31,6 +20,21 @@ from rich.progress import (
     TimeElapsedColumn,
 )
 from rich.table import Table
+
+
+def speedrun_opts(
+    enabled: bool = True,
+    target_reward: float | None = None,
+    metrics_file: str = "logs/speedrun/speedrun_metrics.json",
+    include_wandb: bool = False,
+) -> dict[str, Any]:
+    """Return speedrun options for main(). Use as: main(cfg, **speedrun_opts(target_reward=0.85))"""
+    return {
+        "speedrun": enabled,
+        "speedrun_target_reward": target_reward,
+        "speedrun_metrics_file": metrics_file,
+        "speedrun_include_wandb": include_wandb,
+    }
 
 
 def print_step_header(console: Console, step: int, total: int) -> None:

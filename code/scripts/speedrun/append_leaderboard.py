@@ -7,6 +7,8 @@ Usage (from code/):
   uv run python scripts/speedrun/append_leaderboard.py path/to/speedrun_metrics.json
 """
 
+from __future__ import annotations
+
 import argparse
 import json
 import re
@@ -81,7 +83,7 @@ def main() -> None:
     date_str = datetime.now().strftime("%Y-%m-%d")
     walltime_sec = d.get("walltime_sec") or 0
     final_reward = d.get("final_reward")
-    config = d.get("config", "")
+    config = d.get("algorithm", d.get("config", ""))
     seed = d.get("seed", "")
     notes = args.notes
 
@@ -99,11 +101,16 @@ def main() -> None:
     wandb_cell = ""
     if args.include_wandb:
         run_id = d.get("wandb_run_id")
-        entity = d.get("wandb_entity") or "natolambert"
-        project = d.get("wandb_project") or "rlhf-book"
-        if run_id:
+        entity = d.get("wandb_entity", "")
+        project = d.get("wandb_project", "")
+        if run_id and entity and project:
             url = f"https://wandb.ai/{entity}/{project}/runs/{run_id}"
             wandb_cell = f"[run]({url})"
+        elif run_id:
+            print(
+                f"Warning: wandb_entity or wandb_project missing in JSON; cannot generate wandb link.",
+                file=sys.stderr,
+            )
 
     new_row = f"| {date_str} | {args.recorder} | {walltime_display} | {final_reward_str} | {config} | {seed} | {wandb_cell} | {notes} |"
 
@@ -114,23 +121,23 @@ def main() -> None:
 
     content = leaderboard_path.read_text(encoding="utf-8")
 
-    placeholder_pattern = r"\| \(add entries here\) \| \| \| \| \| \| \| \|"
+    # Replace placeholder row if present, otherwise append after the last table row
+    placeholder_pattern = r"\| \(add entries here\)[\s|]*"
     if re.search(placeholder_pattern, content):
         content = re.sub(placeholder_pattern, new_row, content, count=1)
     else:
-        sep_8 = r"\|------\|--------\|----------\|--------------\|--------\|------\|-------\|-------\|"
-        sep_7 = r"\|------\|--------\|----------\|--------------\|--------\|------\|-------\|"
-        match = re.search((sep_8 + r"|" + sep_7) + r"\n(.+?)(?=\n\n|\Z)", content, re.DOTALL)
-        if match:
-            insert_pos = match.end()
-            content = content[:insert_pos] + "\n" + new_row + content[insert_pos:]
-        else:
-            table_end = content.rfind("|")
-            if table_end == -1:
-                print("Error: could not find table in LEADERBOARD.md", file=sys.stderr)
-                sys.exit(1)
-            last_newline = content.rfind("\n", 0, table_end)
-            content = content[: last_newline + 1] + new_row + "\n" + content[last_newline + 1 :]
+        # Find the last markdown table row (any line starting and ending with |)
+        lines = content.split("\n")
+        last_table_idx = None
+        for idx, line in enumerate(lines):
+            stripped = line.strip()
+            if stripped.startswith("|") and stripped.endswith("|"):
+                last_table_idx = idx
+        if last_table_idx is None:
+            print("Error: could not find table in LEADERBOARD.md", file=sys.stderr)
+            sys.exit(1)
+        lines.insert(last_table_idx + 1, new_row)
+        content = "\n".join(lines)
 
     leaderboard_path.write_text(content, encoding="utf-8")
     print(f"Appended record to {args.leaderboard}:")
