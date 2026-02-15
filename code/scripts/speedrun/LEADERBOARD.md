@@ -24,32 +24,34 @@ After a run, append a row to the table from `speedrun_metrics.json`:
 # From code/ (default: logs/speedrun/speedrun_metrics.json)
 uv run python scripts/speedrun/append_leaderboard.py
 
-# For a wandb run: pass logs/speedrun/{run_id}.json
-# Add --include-wandb to include the run link (opt-in; only when you agree to share).
+# Specific run JSON file
+uv run python scripts/speedrun/append_leaderboard.py logs/speedrun/{run_id}.json
+
+# With wandb link (opt-in; only when you agree to share)
 uv run python scripts/speedrun/append_leaderboard.py logs/speedrun/{run_id}.json --include-wandb
 
 # With recorder name or notes
 uv run python scripts/speedrun/append_leaderboard.py --recorder "your_name" --notes "1x A100"
 ```
 
-The script writes Date, walltime, final_reward, config, seed, and goal info to the table. For multiple runs, list your best or a representative run.
+The script writes Date, run_id, walltime, final_reward, algorithm, and goal info to the table. For multiple runs, list your best or a representative run.
 
 - **wandb**: Use `--include-wandb` only when you agree to share your run publicly. Without it, the cell is left empty.
 
 - **Date**: Run date (YYYY-MM-DD)
 - **Runner**: Handle or name (optional)
+- **run_id**: Wandb run ID or JSON filename stem (links to `logs/speedrun/{run_id}.json`)
 - **walltime**: Seconds from start to end (or e.g. "X min Y sec")
 - **final_reward**: Average reward at the last step (accuracy + format, after KL penalty)
 - **algorithm**: Algorithm (rloo / ppo / drgrpo / gspo / cispo / reinforce, etc.)
-- **seed**: Random seed
-- **Notes**: GPU, data size, or other details
+- **Notes**: GPU, data size, goal info (e.g. `goal(1.0)@step99(3 h 5 min)`)
 
 ---
 
 ## Records
 
-| Date | Runner | walltime | final_reward | algorithm | seed | wandb | Notes |
-|------|--------|----------|--------------|-----------|------|-------|-------|
+| Date | Runner | run_id | walltime | final_reward | algorithm | wandb | Notes |
+|------|--------|--------|----------|--------------|-----------|-------|-------|
 | (add entries here) | | | | | | | |
 
 ---

@@ -84,7 +84,13 @@ def main() -> None:
     walltime_sec = d.get("walltime_sec") or 0
     final_reward = d.get("final_reward")
     config = d.get("algorithm", d.get("config", ""))
-    seed = d.get("seed", "")
+
+    # Extract run_id: prefer wandb_run_id from JSON, fallback to filename stem
+    run_id = d.get("wandb_run_id", "")
+    if not run_id:
+        json_stem = Path(args.json_path).stem
+        if json_stem != "speedrun_metrics":
+            run_id = json_stem
     notes = args.notes
 
     if final_reward is not None:
@@ -93,7 +99,9 @@ def main() -> None:
         final_reward_str = ""
 
     if d.get("goal_reached_at_step") is not None and d.get("goal_walltime_sec") is not None:
-        goal_note = f"goal@step{d.get('goal_reached_at_step')}({format_walltime(d.get('goal_walltime_sec'))})"
+        target = d.get("target_reward", "")
+        target_str = f"({target})" if target != "" else ""
+        goal_note = f"goal{target_str}@step{d.get('goal_reached_at_step')}({format_walltime(d.get('goal_walltime_sec'))})"
         notes = f"{goal_note} {notes}".strip() if notes else goal_note
 
     walltime_display = format_walltime(walltime_sec)
@@ -112,7 +120,7 @@ def main() -> None:
                 file=sys.stderr,
             )
 
-    new_row = f"| {date_str} | {args.recorder} | {walltime_display} | {final_reward_str} | {config} | {seed} | {wandb_cell} | {notes} |"
+    new_row = f"| {date_str} | {args.recorder} | {run_id} | {walltime_display} | {final_reward_str} | {config} | {wandb_cell} | {notes} |"
 
     leaderboard_path = Path(args.leaderboard)
     if not leaderboard_path.exists():
