@@ -129,7 +129,7 @@ def render_interleaved_thinking(output_path: Path, fmt: str = "png", dpi: int = 
              ha="center", va="bottom", fontsize=10,
              color=loop_color, fontstyle="italic")
 
-    ax1.set_xlim(-0.1, x + 0.5)
+    ax1.set_xlim(-0.1, x + 0.8)
     ax1.set_ylim(0.0, bracket_top + tick_h + 0.5)
     ax1.set_aspect("equal")
     ax1.axis("off")
