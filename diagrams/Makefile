@@ -37,6 +37,8 @@ figures: | $(GENERATED_DIR)
 	uv run python scripts/generate_cartpole.py --output-dir $(GENERATED_DIR)/svg --format svg
 	uv run python scripts/generate_tool_use.py --output-dir $(GENERATED_DIR)/png --format png
 	uv run python scripts/generate_tool_use.py --output-dir $(GENERATED_DIR)/svg --format svg
+	uv run python scripts/generate_interleaved_thinking.py --output-dir $(GENERATED_DIR)/png --format png
+	uv run python scripts/generate_interleaved_thinking.py --output-dir $(GENERATED_DIR)/svg --format svg
 	@echo "Standalone figures generated (PNG in png/, SVG in svg/)"
 
 # TikZ diagrams - requires pdflatex and convert (ImageMagick) or sips (macOS)
@@ -92,7 +94,7 @@ help:
 	@echo "  all      - Generate all diagrams"
 	@echo "  tokens   - Generate token strip diagrams (reward models)"
 	@echo "  tikz     - Generate TikZ diagrams (policy gradients, distillation)"
-	@echo "  figures  - Generate standalone figures (cartpole, tool_use)"
+	@echo "  figures  - Generate standalone figures (cartpole, tool_use, interleaved_thinking)"
 	@echo "  clean    - Remove generated files"
 	@echo ""
 	@echo "Requirements:"
