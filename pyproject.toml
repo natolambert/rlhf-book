@@ -12,4 +12,5 @@ dependencies = [
     "transformers>=4.57.5",
     # Library data generation (book/scripts/generate_library.py)
     "datasets>=2.19.0",
+    "google-genai>=1.63.0",
 ]
