@@ -7,10 +7,13 @@ description = "RLHF Book - diagrams and build scripts"
 requires-python = ">=3.11,<3.14"
 dependencies = [
     # Diagram generation (diagrams/)
-    "google-generativeai>=0.8.6",
     "matplotlib>=3.10.8",
     "transformers>=4.57.5",
     # Library data generation (book/scripts/generate_library.py)
     "datasets>=2.19.0",
+]
+
+[project.optional-dependencies]
+skills = [
     "google-genai>=1.63.0",
 ]
