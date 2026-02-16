@@ -23,7 +23,7 @@ from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
 # -- Color palette --
 COLORS = {
     "thinking": {"face": "#E8EAF6", "edge": "#3949AB", "text": "#1A237E"},
-    "action":   {"face": "#FFF3E0", "edge": "#E65100", "text": "#BF360C"},
+    "tool":     {"face": "#FFF3E0", "edge": "#E65100", "text": "#BF360C"},
     "response": {"face": "#E8F5E9", "edge": "#2E7D32", "text": "#1B5E20"},
     "user":     {"face": "#E3F2FD", "edge": "#1565C0", "text": "#0D47A1"},
     "dropped":  {"face": "#FAFAFA", "edge": "#D0D0D0", "text": "#C0C0C0"},
@@ -74,15 +74,15 @@ def render_interleaved_thinking(output_path: Path, fmt: str = "png", dpi: int = 
     # =========================================================
     # Panel 1: Single turn — the think/act loop
     # =========================================================
-    ax1.set_title("Single Turn: The Think / Act Loop",
+    ax1.set_title("Single Turn: The Think / Tool Loop",
                   fontsize=14, fontweight="bold", pad=12, loc="left")
 
     blocks_t1 = [
         ("User\nprompt",   "user",     1.6),
         ("Think",          "thinking", 1.2),
-        ("Act",            "action",   1.0),
+        ("Tool",           "tool",   1.0),
         ("Think",          "thinking", 1.2),
-        ("Act",            "action",   1.0),
+        ("Tool",           "tool",   1.0),
         ("Think",          "thinking", 1.2),
         ("Response",       "response", 1.8),
     ]
@@ -148,7 +148,7 @@ def render_interleaved_thinking(output_path: Path, fmt: str = "png", dpi: int = 
 
     # Dropped thinking/action blocks (faded + dashed)
     dropped_blocks = [
-        ("Think", 1.0), ("Act", 0.8), ("Think", 1.0), ("Act", 0.8), ("Think", 1.0),
+        ("Think", 1.0), ("Tool", 0.8), ("Think", 1.0), ("Tool", 0.8), ("Think", 1.0),
     ]
     drop_start = x
     for label, w in dropped_blocks:
@@ -203,7 +203,7 @@ def render_interleaved_thinking(output_path: Path, fmt: str = "png", dpi: int = 
     legend_items = [
         ("user", "User"),
         ("thinking", "Think"),
-        ("action", "Act"),
+        ("tool", "Tool"),
         ("response", "Response"),
     ]
     # Place in axes coords of ax1, top-right area
