@@ -253,13 +253,13 @@ RL's mode-seeking behavior — a structural property of reverse KL — preserves
 
 ### RL's Razor: Why Online RL Forgets Less
 
-The previous section showed that on-policy sampling drives RL's forgetting resistance and traced the mechanism to forward-vs-reverse KL dynamics. @shenfeld2025rlsrazoronlinereinforcement offer a complementary perspective, again through the lens of KL divergence.
+The previous section showed that on-policy sampling drives RL's forgetting resistance and traced the mechanism to forward-vs-reverse KL dynamics. @shenfeld2026rls offer a complementary perspective, again through the lens of KL divergence.
 
-For any given task, there exist many distinct policies which achieve high performance. @shenfeld2025rlsrazoronlinereinforcement introduce the  **RL's Razor** thesis which postulates the following:
+For any given task, there exist many distinct policies which achieve high performance. @shenfeld2026rls introduce the  **RL's Razor** thesis which postulates the following:
 
 > Among the many high-reward solutions for a new task, on-policy methods such as RL are inherently biased toward solutions that remain closer to the original policy in KL divergence.
 
-![Bias toward KL-minimal solutions reduces forgetting. (Left) Among policies that solve the new task, RL converges to those closest in KL to the base model. (Right) This KL bias yields higher prior-task retention at matched new-task performance compared to SFT. From Shenfeld, Pari, and Agrawal 2025.](images/rl_razor_motivation.png){#fig:rl-razor-motivation}
+![Bias toward KL-minimal solutions reduces forgetting. (Left) Among policies that solve the new task, RL converges to those closest in KL to the base model. (Right) This KL bias yields higher prior-task retention at matched new-task performance compared to SFT. From Shenfeld, Pari, and Agrawal 2026.](images/rl_razor_motivation.png){#fig:rl-razor-motivation}
 
 
 The authors find that forgetting of past tasks is directly proportionally tied by how far the fine-tuned policy drifts from the initial model as measured by the KL divergence:
