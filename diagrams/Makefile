@@ -39,10 +39,6 @@ figures: | $(GENERATED_DIR)
 	uv run python scripts/generate_tool_use.py --output-dir $(GENERATED_DIR)/svg --format svg
 	uv run python scripts/generate_interleaved_thinking.py --output-dir $(GENERATED_DIR)/png --format png
 	uv run python scripts/generate_interleaved_thinking.py --output-dir $(GENERATED_DIR)/svg --format svg
-	uv run python scripts/generate_rlhf_timeline.py --output-dir $(GENERATED_DIR)/png --format png
-	uv run python scripts/generate_rlhf_timeline.py --output-dir $(GENERATED_DIR)/svg --format svg
-	uv run python scripts/generate_rlhf_schematic.py --output-dir $(GENERATED_DIR)/png --format png
-	uv run python scripts/generate_rlhf_schematic.py --output-dir $(GENERATED_DIR)/svg --format svg
 	@echo "Standalone figures generated (PNG in png/, SVG in svg/)"
 
 # TikZ diagrams - requires pdflatex and convert (ImageMagick) or sips (macOS)

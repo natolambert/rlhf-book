@@ -19,6 +19,8 @@ It is intentionally focused on recent work that led to ChatGPT.
 There is substantial further work in the RL literature on learning from preferences [@wirth2017survey]. 
 For a more exhaustive list, you should use a proper survey paper [@kaufmann2023survey], [@casper2023open].
 
+![Timeline of key developments in RLHF discussed in this chapter, from early work on RL from preferences through the adoption of RLHF in large language models.](images/rlhf_timeline.png){#fig:rlhf_timeline}
+
 ## Origins to 2018: RL on Preferences
 
 The field has recently been popularized with the growth of Deep Reinforcement Learning and has grown into a broader study of the applications of LLMs from many large technology companies.

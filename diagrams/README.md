@@ -13,7 +13,7 @@ make all
 # Or specific targets
 make tokens    # Token strip diagrams (reward models)
 make tikz      # TikZ diagrams (policy gradients, distillation)
-make figures   # Standalone figures (cartpole, tool_use, interleaved_thinking)
+make figures   # Standalone figures (cartpole, tool_use, etc.)
 make clean     # Remove generated files
 make help      # List all targets
 ```
@@ -68,6 +68,8 @@ Box-and-arrow flows showing policy gradient algorithm architectures. Uses shared
 | `reinforce_tikz` | `tikz/reinforce_tikz.tex` | REINFORCE: basic policy gradient algorithm | Ch 6 (Policy Gradients) |
 | `knowledge_distillation_tikz` | `tikz/knowledge_distillation_tikz.tex` | Knowledge distillation pipeline | Ch 4 (Supervised Finetuning) |
 | `synthetic_data_distillation_tikz` | `tikz/synthetic_data_distillation_tikz.tex` | Synthetic data distillation process | Ch 4 (Supervised Finetuning) |
+| `rlhf_schematic_tikz` | `tikz/rlhf_schematic_tikz.tex` | RLHF loop: RL algorithm, environment, reward predictor, human feedback (Christiano et al. 2017) | Ch 2 (Related Works) |
+| `rlhf_timeline_tikz` | `tikz/rlhf_timeline_tikz.tex` | Timeline of key RLHF developments across three eras | Ch 2 (Related Works) |
 
 **Make target:** `make tikz`
 
