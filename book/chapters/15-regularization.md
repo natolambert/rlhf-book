@@ -150,7 +150,7 @@ A growing body of empirical work reveals that RL-based post-training also provid
 
 When training on a single task, does the model learn a generalizable rule that transfers to unseen variants, or does it memorize the surface patterns of the training distribution?
 @chu2025sft answer this question with a controlled empirical study that directly isolates the effect of the post-training method — SFT versus RL — on out-of-distribution (OOD) generalization.
-The answer is unambiguous: RL learns transferable rules, while SFT memorizes the training data and collapses under distributional shift.
+The answer is clear-cut: RL learns transferable rules, while SFT memorizes the training data and collapses under distributional shift.
 
 The study uses two environments with built-in rule variations:
 
@@ -159,11 +159,9 @@ The study uses two environments with built-in rule variations:
 - **V-IRL** is a navigation task where models follow linguistic instructions to traverse a route.
 The OOD shift switches from absolute directions (north, east) to relative directions (left, right).
 
-Starting from a shared SFT checkpoint, the authors separately scale up compute for additional SFT and for RL, isolating the effect of the post-training method.
-
 Across all task variants, RL consistently improves OOD performance as training compute scales up, while SFT consistently *degrades* OOD performance despite improving in-distribution.
 The magnitude of divergence is striking: on V-IRL with language-only inputs, where the OOD shift is from absolute to relative directional coordinates, RL improves OOD per-step accuracy from 80.8% to 91.8%, while SFT collapses from 80.8% to 1.3%.
-The SFT model has not merely failed to generalize — it has actively overwritten the spatial reasoning capabilities present at initialization, replacing them with a rigid mapping from instruction patterns to absolute directional tokens.
+The SFT model goes further than failing to generalize: it destroys the spatial reasoning the base model already had, collapsing to a lookup table from instruction phrases to absolute directions.
 
 ### Retaining by Doing: On-Policy Data Mitigates Forgetting
 
@@ -190,7 +188,7 @@ $$
 \end{aligned}
 $$ {#eq:sft_forward_kl}
 
-Therefore, we see that minimizing the SFT loss is equivalent to minimizing the forward KL divergence.
+Since $H(\pi_\star)$ is constant with respect to $\theta$, minimizing the SFT loss is exactly equivalent to minimizing the **forward KL** divergence $\text{KL}(\pi_\star \| \pi_\theta)$.
 
 **RL $\approx$ Reverse KL.** Let us start with the standard KL-regularized RL objective:
 
@@ -229,7 +227,7 @@ $$
 \end{aligned}
 $$
 
-Equivalently, maximizing the RL objective $\mathcal{J}_\text{RL}(\theta)$ is the same as minimizing the reverse KL divergence $\text{KL}(\pi_\theta \| \pi_\star)$.
+Equivalently, maximizing the RL objective $\mathcal{J}_\text{RL}(\theta)$ is the same as minimizing the **reverse KL** divergence $\text{KL}(\pi_\theta \| \pi_\star)$.
 
 From this derivation, we come to the conclusion that SFT and RL optimize fundamentally different objectives: SFT minimizes forward KL, RL minimizes reverse KL. 
 
@@ -238,39 +236,38 @@ From this derivation, we come to the conclusion that SFT and RL optimize fundame
 Forward KL penalizes the model whenever the target distribution has mass where the model does not, which forces the model to cover all modes of the target — spreading probability broadly even if it means assigning mass to low-probability regions (**mode covering**).
 Reverse KL only penalizes the model in regions where it actually places mass, which allows it to seek a single mode and fit it precisely while ignoring others entirely (**mode seeking**).
 
-Given this distinction, we might naively expect SFT to forget *less* than RL.
-Mode-covering forward KL forces the policy to maintain mass across all modes of the target, which in theory should preserve knowledge of old modes. On the other hand, mode-seeking reverse KL would allow the RL policy to collapse onto a single high-reward mode while abandoning others.
+Given this distinction, we might naively expect SFT to forget *less* than RL: mode-covering forward KL should maintain mass across all modes of the target, preserving old knowledge, while mode-seeking reverse KL could collapse onto a single high-reward mode and abandon others.
 
 However, the opposite holds.
-The intuition above assumes a unimodal policy, but pre-trained LLMs are better modeled as multimodal distributions containing several modes - and under these conditions the dynamics flip.
+The above intuition above assumes a unimodal policy, but pre-trained LLMs are better modeled as distributions containing multiple modes -- and under these conditions the dynamics flip.
 
 Consider a policy with two modes: an "old" mode representing prior knowledge and a "new" mode for the target task (@fig:retaining-mode-intuition).
 Forward KL (SFT) must cover both modes of the target distribution, which forces the policy to stretch and redistribute probability mass *from* the old mode, disrupting its shape and causing forgetting.
 Reverse KL (RL), by contrast, only needs to place mass on some high-reward region, so it can shift the new mode toward the target without touching the old mode at all, leaving prior knowledge intact.
 
-RL's mode-seeking behavior — a structural property of reverse KL — preserves the breadth of the model's prior knowledge and opens the door to better generalization.
+RL's mode-seeking behavior — a structural property of reverse KL — preserves the breadth of the model's prior knowledge and enables better generalization.
 
 
 ### RL's Razor: Why Online RL Forgets Less
 
 The previous section showed that on-policy sampling drives RL's forgetting resistance and traced the mechanism to forward-vs-reverse KL dynamics. @shenfeld2026rls offer a complementary perspective, again through the lens of KL divergence.
 
-For any given task, there exist many distinct policies which achieve high performance. @shenfeld2026rls introduce the  **RL's Razor** thesis which postulates the following:
+For any given task, there exist many distinct policies which achieve high performance. @shenfeld2026rls introduce the **RL's Razor** thesis which postulates the following:
 
 > Among the many high-reward solutions for a new task, on-policy methods such as RL are inherently biased toward solutions that remain closer to the original policy in KL divergence.
 
 ![Bias toward KL-minimal solutions reduces forgetting. (Left) Among policies that solve the new task, RL converges to those closest in KL to the base model. (Right) This KL bias yields higher prior-task retention at matched new-task performance compared to SFT. From Shenfeld, Pari, and Agrawal 2026.](images/rl_razor_motivation.png){#fig:rl-razor-motivation}
 
 
-The authors find that forgetting of past tasks is directly proportionally tied by how far the fine-tuned policy drifts from the initial model as measured by the KL divergence:
+The authors find that forgetting of past tasks is directly proportional to how far the fine-tuned policy drifts from the initial model as measured by the KL divergence:
 
 $$
 \text{Forgetting} \approx f\!\left(\mathbb{E}_{x \sim \tau}\!\left[\text{KL}\!\left(\pi_0(\cdot \mid x) \| \pi(\cdot \mid x)\right)\right]\right)
 $$ {#eq:rl_razor_forgetting}
 
 
-Across several training flavors of RL and SFT, the authors empirically demonstrate that forgetting strongly correlates ($R^2 = 0.96$) with the KL divergence between the trained and the initial policy, **as measured using the new task data**. The result is highly *non-trivial*: the KL is measured on the *new task's* input distribution, not on held-out data from prior tasks, yet it still predicts the performance drop on past tasks. In practice, this gives us a powerful instrument for estimating forgetting directly from the drift between the base and trained policies.
+Across several training flavors of RL and SFT, the authors empirically demonstrate that forgetting strongly correlates ($R^2 = 0.96$) with the KL divergence between the trained and initial policies, **as measured using the new task data**. The result is highly *non-trivial*: the KL is measured on the *new task's* input distribution, not on held-out data from prior tasks, yet it still predicts the performance drop on past tasks. In practice, this provides us with a powerful instrument for estimating forgetting directly from the drift between the base and trained policies.
 
-To pin down what drives the smaller KL shifts in RL policies, the authors decompose the difference between RL and SFT along two axes — on-policy versus offline data, and whether the objective includes negative gradients that push probability away from incorrect outputs. Remarkably, they find that on-policy versus offline data fully accounts for the difference while negative gradients have no discernible effect.
+To pin down what drives the smaller KL shifts in RL policies, the authors decompose the difference between RL and SFT along two axes — on-policy versus offline data, and whether the objective includes negative gradients (present in RL when samples score below the reward baseline, absent in SFT which only reinforces correct demonstrations) that push probability away from incorrect outputs. Remarkably, they find that on-policy versus offline data fully accounts for the difference in generalization performance, while negative gradients have no discernible effect.
 
 Intuitively, on-policy methods sample outputs the model already assigns non-negligible probability to, so each update is constrained to stay near the current distribution. On the other hand, SFT trains on a fixed external distribution that can lie arbitrarily far from what the model currently produces, and each gradient step pulls toward that distant target regardless of the model's own beliefs.
