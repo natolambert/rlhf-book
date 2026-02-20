@@ -89,7 +89,7 @@ ECHO_BUILT = @echo "$@ was built\n"
 
 all:	book
 
-book:	epub html pdf docx
+book:	epub kindle html pdf docx
 
 clean:
 	$(RMDIR_CMD) $(BUILD)
