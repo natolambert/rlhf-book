@@ -34,7 +34,7 @@ The primary reference, Christiano et al. 2017, is an application of RLHF applied
 This work introducing RLHF followed soon after DeepMind's seminal work in reinforcement learning on Deep Q-Networks (DQN), which showed that RL agents can solve popular video games learning from scratch. 
 The work shows that humans choosing between trajectories can be more effective in some domains than directly interacting with the environment. This uses some clever conditions, but is impressive nonetheless.
 
-![The core RLHF loop from Christiano et al. (2017): the reward predictor is trained asynchronously from comparisons of trajectory segments, and the agent maximizes predicted reward.](images/rlhf_schematic.png){#fig:rlhf_schematic}
+![The core RLHF loop from Christiano et al. (2017): the reward predictor is trained asynchronously from comparisons of trajectory segments, and the agent maximizes predicted reward.](images/rlhf_schematic.png){#fig:rlhf_schematic width=66%}
 
 This method was expanded upon with more direct reward modeling [@ibarz2018reward] and the adoption of deep learning within early RLHF work was capped by an extension to TAMER with neural network models just one year later [@warnell2018deep].
 
