@@ -31,6 +31,9 @@ Other concurrent or soon after work proposed an actor-critic algorithm, COACH, w
 The primary reference, Christiano et al. 2017, is an application of RLHF applied to preferences between trajectories of agents within Atari games [@christiano2017deep]. 
 This work introducing RLHF followed soon after DeepMind's seminal work in reinforcement learning on Deep Q-Networks (DQN), which showed that RL agents can solve popular video games learning from scratch. 
 The work shows that humans choosing between trajectories can be more effective in some domains than directly interacting with the environment. This uses some clever conditions, but is impressive nonetheless.
+
+![The core RLHF loop from Christiano et al. (2017): the reward predictor is trained asynchronously from comparisons of trajectory segments, and the agent maximizes predicted reward.](images/rlhf_schematic.png){#fig:rlhf_schematic}
+
 This method was expanded upon with more direct reward modeling [@ibarz2018reward] and the adoption of deep learning within early RLHF work was capped by an extension to TAMER with neural network models just one year later [@warnell2018deep].
 
 This era began to transition, as reward models as a general notion were proposed as a method for studying alignment, rather than just a tool for solving RL problems [@leike2018scalable].
