@@ -53,10 +53,9 @@ Hence, DPO is increasing the delta in probabilities between the chosen and rejec
 
 With the reward in @eq:dpo_reward, we can write the gradient of the loss to further interpret what is going on:
 
-$$\begin{aligned}
-\nabla_{\theta}\mathcal{L}_{\text{DPO}}(\pi_{\theta}; \pi_{\text{ref}}) &= -\beta \mathbb{E}_{(x, y_c, y_r)\sim \mathcal{D}}\Big[ w \cdot \left(\nabla_{\theta}\log \pi(y_c \mid x) - \nabla_{\theta}\log \pi(y_r \mid x)\right) \Big] \\
-w &= \sigma\!\left(r_{\theta}(x, y_r) - r_{\theta}(x, y_c)\right)
-\end{aligned}$$ {#eq:dpo_gradient}
+$$\nabla_{\theta}\mathcal{L}_{\text{DPO}}(\pi_{\theta}; \pi_{\text{ref}}) = -\beta \mathbb{E}_{(x, y_c, y_r)\sim \mathcal{D}}\Big[ w \cdot \left(\nabla_{\theta}\log \pi(y_c \mid x) - \nabla_{\theta}\log \pi(y_r \mid x)\right) \Big]$$ {#eq:dpo_gradient}
+
+where $w = \sigma\!\left(r_{\theta}(x, y_r) - r_{\theta}(x, y_c)\right)$.
 
 Here, the gradient solves the above objective by doing the following:
 
