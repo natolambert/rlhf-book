@@ -66,7 +66,7 @@ cd diagrams && make all
 
 Always output built diagrams to `diagrams/generated/png/`, `diagrams/generated/pdf/`, and `diagrams/generated/svg/` — not alongside source files (e.g. not in `diagrams/tikz/`). Then copy final versions to `book/images/` for use in chapters.
 
-**Image conversion**: When converting TikZ PDFs to PNG with `magick`, use `-density 300` (not 400) to avoid producing excessively wide images that are slow to load and review. Example: `magick -density 300 input.pdf -trim -quality 100 output.png`
+**Image conversion**: When converting TikZ PDFs to PNG with `magick`, **always use `-trim`** to remove whitespace, and use `-density 300` for previews (use 400 for `book/images/`). Example: `magick -density 300 input.pdf -trim -quality 100 output.png`
 
 ## Future: Multimodal Feedback Loop
 
