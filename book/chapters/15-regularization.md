@@ -124,7 +124,7 @@ where $P_{\theta}$ is the trainable policy model, $P_{\text{ref.}}$ is a fixed r
 The first term is the standard DPO logistic loss: it increases the margin between the win and loss using the difference of log-likelihood ratios, $\log \tfrac{P_{\theta}}{P_{\text{ref.}}}$, and $\beta$ controls how strongly this preference signal pulls away from the reference.
 The second term is a length-normalized negative log-likelihood penalty on the winning completion, weighted by $\alpha$, which helps keep the preferred text high-likelihood in an absolute language modeling sense rather than only relatively better than the rejected sample.
 
-## Other Regularization
+## Margin-based Regularization
 
 Controlling the optimization is less well defined in other parts of the RLHF stack.
 Most reward models have no regularization beyond the standard contrastive loss function.
@@ -141,7 +141,7 @@ This is either achieved by having annotators rate the outputs on a numerical sca
 
 Reward margins have been used heavily in the direct alignment literature, such as Reward weighted DPO, ''Reward-aware Preference Optimization'' (RPO), which integrates reward model scores into the update rule following a DPO loss [@adler2024nemotron], or REBEL [@gao2024rebel] that has a reward delta weighting in a regression-loss formulation.
 
-## Implicit Regularization of RL
+## Implicit Regularization
 
 The preceding sections describe *explicit* regularization: KL penalties, pretraining gradients, and margin losses that practitioners deliberately add to the training objective.
 A growing body of empirical work reveals that RL-based post-training also provides *implicit* regularization — a built-in resistance to memorization and catastrophic forgetting that emerges from the structure of on-policy optimization itself, even without any explicit KL penalty or replay buffer.
