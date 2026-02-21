@@ -133,7 +133,7 @@ Intuitively, this can be seen in how the optimization techniques are applied.
 Instruction fine-tuning trains the model to predict the next token when the text preceding is close to examples it has seen.
 It is optimizing the model to more regularly output specific features in text. This is a per-token update.
 
-RLHF on the other hand tunes the responses on the response level rather than looking at the next token specifically.
+RLHF on the other hand tunes the completions on the response level rather than looking at the next token specifically.
 Additionally, it is telling the model what a *better* response looks like, rather than a specific response it should learn.
 RLHF also shows a model which type of response it should avoid, i.e. negative feedback. 
 The training to achieve this is often called a *contrastive* loss function and is referenced throughout this book.
