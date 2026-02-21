@@ -193,7 +193,7 @@ DeepSeek R1, famous for popularizing RLVR, used only 3.75% of their overall comp
 
 The science studying the core methods of scaling RL shows that individual ablation runs take 10-100K GPU hours [@khatri2025art], the equivalent of the compute used for the RL stage of OLMo 3.1 Think 32B, which trained for 4 weeks on 200 GPUs [@teamolmo2025olmo3].
 The science of scaled post-training is in its very early stages as of writing this, adopting ideas and methods from pretraining language models and applying them in this new domain.
-All together, the elicitation theory of post-training is likely to become the correct view only when applying a lighter post-training recipe — something useful for specializing a model — relative to the compute-intensive frontier models.
+All together, the elicitation theory of post-training is likely to become the correct view only when applying a lighter post-training recipe -- something useful for specializing a model -- relative to the compute-intensive frontier models.
 
 ## How We Got Here
 
