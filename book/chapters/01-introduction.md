@@ -189,7 +189,7 @@ Post-training has far outgrown that, and we are coming to see that the style of 
 As the AI community shifts post-training further into the era of agentic and reasoning models, the superficial alignment hypothesis breaks down further.
 RL methods are becoming an increasingly large share of the compute needed to train frontier language models.
 In the short time since reinforcement learning with verifiable rewards (RLVR) was coined in our work on Tülu 3 in the fall of 2024 [@lambert2024t] to today, the scale of compute used for post-training has grown dramatically.
-DeepSeek R1, famous for popularizing RLVR, used only 3.75% of their overall compute in post-training [@guo2025deepseek].
+DeepSeek R1, famous for popularizing RLVR, used only about 5% of their overall compute in post-training -- 147K H800 GPU hours for RL training on R1 [@guo2025deepseek], relative to 2.8M GPU hours for pretraining the underlying DeepSeek V3 base model [@deepseekai2025deepseekv3technicalreport].
 
 The science studying the core methods of scaling RL shows that individual ablation runs take 10-100K GPU hours [@khatri2025art], the equivalent of the compute used for the RL stage of OLMo 3.1 Think 32B, which trained for 4 weeks on 200 GPUs [@teamolmo2025olmo3].
 The science of scaled post-training is in its very early stages as of writing this, adopting ideas and methods from pretraining language models and applying them in this new domain.
