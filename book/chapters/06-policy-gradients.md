@@ -69,6 +69,8 @@ $$
 \hat{J}(\theta) = \frac{1}{B}\sum_{i=1}^{B} \sum_{t=0}^{T_i} \gamma^t r_{i,t}.
 $$ {#eq:empirical_mdp_estimate}
 
+In practice, RLHF for language models sets $\gamma = 1$ (no discounting) because the unit of optimization is the collective completion, not individual tokens -- this choice is discussed further in the MDP vs. Bandit section later in this chapter.
+
 The core of policy gradient algorithms is computing the gradient with respect to the finite-time expected return over the current policy. 
 With this expected return, $J$, the parameter update can be computed as follows, where $\alpha$ is the learning rate: 
 
@@ -839,6 +841,12 @@ advantages = gae(per_token_rewards, values, done_mask, gamma=1.0, lam=0.95)
 # tensor([[ 0.2,  0.5,  0.8,  1.5],    <- varies by position
 #         [-0.3, -0.5, -0.8, -1.4]])
 ```
+
+This framing distinction also explains why the discount factor $\gamma$ is set to 1.0 in virtually all RLHF implementations.
+In standard RL, discounting ($\gamma < 1$) is essential: it balances the optimization between short-term and long-term reward across a multi-step episode, which is crucial for the agent to learn effective behavior over time.
+But in the RLHF setting, even when using the token-level MDP view, the inductive bias of the optimization is the quality of the collective completion -- the reward signal scores the entire response, not individual tokens.
+Discounting earlier tokens would arbitrarily down-weight their contribution with no principled justification.
+As agentic RL settings mature -- where models take real multi-step actions such as tool calls, code execution, and web browsing -- discounting may become relevant again, since these involve genuinely distinct sequential decisions whose long-term consequences differ.
 
 ### Asynchronicity
 

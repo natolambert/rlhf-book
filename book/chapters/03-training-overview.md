@@ -96,6 +96,7 @@ Table @tbl:rl-vs-rlhf summarizes these differences between standard RL and the R
 1. **Switching from a reward function to a reward model.** In RLHF, a learned model of human preferences, $r_\theta(s_t, a_t)$ (or any other classification model) is used instead of an environmental reward function. This gives the designer a substantial increase in the flexibility of the approach and control over the final results, but at the cost of implementation complexity. In standard RL, the reward is seen as a static piece of the environment that cannot be changed or manipulated by the person designing the learning agent.
 2. **No state transitions exist.** In RLHF, the initial states for the domain are prompts sampled from a training dataset and the "action" is the completion to said prompt. During standard practices, this action does not impact the next state and is only scored by the reward model.
 3. **Response level rewards.** Often referred to as a bandit problem, RLHF attribution of reward is done for an entire sequence of actions, composed of multiple generated tokens, rather than in a fine-grained manner.
+4. **No discounting.** In standard RL, the discount factor $\gamma < 1$ balances the optimization between short-term and long-term reward, which is crucial for long-horizon tasks with many sequential decisions. In RLHF, while each token is technically treated as an action, the inductive bias of the optimization is the collective completion -- not any individual token. Implementations therefore most often use $\gamma = 1$.
 
 ::: {.table-wrap}
 | Aspect | Standard RL | RLHF (language models) |
@@ -105,6 +106,7 @@ Table @tbl:rl-vs-rlhf summarizes these differences between standard RL and the R
 | Action | Single environment action $a_t$ | A completion $y$ (a sequence of tokens) sampled from $\pi_\theta(\cdot\mid x)$ |
 | Reward granularity | Often per-step / fine-grained | Usually response-level (bandit-style) over the full completion |
 | Horizon | Multi-step episode ($T>1$) | Often single-step ($T=1$), though multi-turn can be modeled as longer-horizon |
+| Discount factor | $\gamma < 1$; balances short-term vs. long-term reward | $\gamma = 1$ (undiscounted); the full completion is the unit of evaluation |
 Table: Key differences between standard RL and RLHF for language models. {#tbl:rl-vs-rlhf}
 :::
 
