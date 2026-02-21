@@ -186,6 +186,15 @@ The superficial alignment hypothesis is wrong for the same reason that people wh
 This was a field-wide lesson we had to overcome in 2023 (one many AI observers are still rooted in). 
 Post-training has far outgrown that, and we are coming to see that the style of models operates on top of behavior --- such as the now popular long chain of thought.
 
+As the AI community shifts post-training further into the era of agentic and reasoning models, the superficial alignment hypothesis breaks down further.
+RL methods are becoming an increasingly large share of the compute needed to train frontier language models.
+In the short time since reinforcement learning with verifiable rewards (RLVR) was coined in our work on Tülu 3 in the fall of 2024 [@lambert2024t] to today, the scale of compute used for post-training has grown dramatically.
+DeepSeek R1, famous for popularizing RLVR, used only 3.75% of their overall compute in post-training [@guo2025deepseek].
+
+The science studying the core methods of scaling RL shows that individual ablation runs take 10-100K GPU hours [@khatri2025art], the equivalent of the compute used for the RL stage of OLMo 3.1 Think 32B, which trained for 4 weeks on 200 GPUs [@teamolmo2025olmo3].
+The science of scaled post-training is in its very early stages as of writing this, adopting ideas and methods from pretraining language models and applying them in this new domain.
+All together, the elicitation theory of post-training is likely to become the correct view only when applying a lighter post-training recipe — something useful for specializing a model — relative to the compute-intensive frontier models.
+
 ## How We Got Here
 
 Why does this book make sense now? How much still will change?
