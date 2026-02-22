@@ -2,8 +2,12 @@
 
 Lecture slides for the RLHF Book, built with [colloquium](https://github.com/natolambert/colloquium).
 
-More courses will come. The current one (`course/`) is an under-construction lecture set covering the entire book.
-Colloquium is also under active development — expect improvements to the slide tooling alongside the content.
+Colloquium is under active development -- expect improvements to the slide tooling alongside the content.
+
+## Lecture sets
+
+- **`course/`** — Full introductory course covering the entire book (5-10 lectures, under construction)
+- **`SALA-2026/`** — Upcoming talk
 
 ## Setup
 
