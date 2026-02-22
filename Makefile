@@ -239,3 +239,17 @@ files:
 	cp ./book/templates/header-anchors.js $(BUILD)/html/c/ || echo "Failed to copy header-anchors.js to $(BUILD)/html/c/"
 	cp ./book/templates/table-scroll.js $(BUILD)/html/ || echo "Failed to copy table-scroll.js to $(BUILD)/html/"
 	cp ./book/templates/table-scroll.js $(BUILD)/html/c/ || echo "Failed to copy table-scroll.js to $(BUILD)/html/c/"
+
+####################################################################################################
+# Teaching slides (built with colloquium)
+####################################################################################################
+
+TEACH_SOURCES = $(wildcard teach/*/slides.md)
+TEACH_DIRS = $(patsubst teach/%/slides.md,%,$(TEACH_SOURCES))
+
+teach: $(foreach d,$(TEACH_DIRS),teach-$(d))
+
+teach-%: teach/%/slides.md
+	@mkdir -p $(BUILD)/html/teach/$*
+	uv run colloquium build $< -o $(BUILD)/html/teach/$*/
+	@echo "Built teach/$*"

@@ -66,6 +66,13 @@ jobs:
           make
           make files
 
+      # TODO: Add teach slide build + hosting on rlhfbook.com
+      # Will need a separate workflow with path filters (teach/**)
+      # - name: Build teaching slides
+      #   run: |
+      #     uv pip install colloquium
+      #     make teach
+
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v3
         with:
