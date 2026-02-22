@@ -1,6 +1,6 @@
 # Teaching Slides
 
-Lecture slides for the RLHF Book, built with [colloquium](https://github.com/natolambert/colloquium).
+Lecture slides for the RLHF Book, built with [colloquium](https://github.com/Interconnects-AI/colloquium).
 
 Colloquium is under active development -- expect improvements to the slide tooling alongside the content.
 
@@ -12,6 +12,12 @@ Colloquium is under active development -- expect improvements to the slide tooli
 ## Setup
 
 Install colloquium from source (recommended while the tool is evolving):
+
+```bash
+uv pip install "colloquium @ git+https://github.com/Interconnects-AI/colloquium.git"
+```
+
+Or from a local clone:
 
 ```bash
 uv pip install -e /path/to/colloquium
