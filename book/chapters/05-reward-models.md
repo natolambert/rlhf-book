@@ -347,7 +347,7 @@ class ProcessRewardModel(nn.Module):
 
     def forward(self, input_ids, attention_mask=None, labels=None):
         """
-        The inputs are tokenizer prompts and completions, where the the end of a 
+        The inputs are tokenizer prompts and completions, where the end of a 
          "reasoning step" is denoted by another non-padding token. 
         labels will be a list of labels, True, False, and Neutral (3 labels) which
          will be predicted by the model.
