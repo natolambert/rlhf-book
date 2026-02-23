@@ -17,3 +17,6 @@ dependencies = [
 skills = [
     "google-genai>=1.63.0",
 ]
+teach = [
+    "colloquium @ git+https://github.com/Interconnects-AI/colloquium.git",
+]
