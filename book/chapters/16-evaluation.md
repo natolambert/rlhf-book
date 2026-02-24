@@ -3,6 +3,7 @@ chapter-number: 16
 prev-chapter: "Regularization"
 prev-url: "15-regularization"
 page-title: Evaluation
+search-title: "Chapter 16: Evaluation"
 next-chapter: "Product & Character"
 next-url: "17-product"
 ---

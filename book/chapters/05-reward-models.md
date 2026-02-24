@@ -3,6 +3,7 @@ chapter-number: 5
 prev-chapter: "Instruction Tuning"
 prev-url: "04-instruction-tuning"
 page-title: Reward Models
+search-title: "Chapter 5: Reward Models"
 next-chapter: "Reinforcement Learning"
 next-url: "06-policy-gradients"
 ---

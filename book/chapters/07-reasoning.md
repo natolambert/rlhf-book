@@ -3,6 +3,7 @@ chapter-number: 7
 prev-chapter: "Reinforcement Learning"
 prev-url: "06-policy-gradients"
 page-title: Reasoning
+search-title: "Chapter 7: Reasoning"
 next-chapter: "Direct Alignment"
 next-url: "08-direct-alignment"
 ---

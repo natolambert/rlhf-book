@@ -2,6 +2,7 @@
 prev-chapter: "Definitions"
 prev-url: "appendix-a-definitions"
 page-title: "Appendix B: Style & Information"
+search-title: "Appendix B: Style & Information"
 next-chapter: "Practical Issues"
 next-url: "appendix-c-practical"
 ---
