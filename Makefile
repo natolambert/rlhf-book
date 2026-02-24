@@ -85,7 +85,7 @@ ECHO_BUILT = @echo "$@ was built\n"
 # Basic actions
 ####################################################################################################
 
-.PHONY: all book clean epub html pdf docx nested_html latex kindle
+.PHONY: all book clean epub html pdf docx nested_html latex kindle pagefind
 
 all:	book
 
@@ -239,3 +239,6 @@ files:
 	cp ./book/templates/header-anchors.js $(BUILD)/html/c/ || echo "Failed to copy header-anchors.js to $(BUILD)/html/c/"
 	cp ./book/templates/table-scroll.js $(BUILD)/html/ || echo "Failed to copy table-scroll.js to $(BUILD)/html/"
 	cp ./book/templates/table-scroll.js $(BUILD)/html/c/ || echo "Failed to copy table-scroll.js to $(BUILD)/html/c/"
+
+pagefind: html files
+	npx --yes pagefind --site $(BUILD)/html --glob "c/**/*.html"

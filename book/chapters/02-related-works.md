@@ -2,6 +2,7 @@
 prev-chapter: "Introduction"
 prev-url: "01-introduction"
 page-title: Key Related Works
+search-title: "Chapter 2: Key Related Works"
 next-chapter: "Training Overview"
 next-url: "03-training-overview"
 ---

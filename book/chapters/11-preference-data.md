@@ -2,6 +2,7 @@
 prev-chapter: "What are Preferences"
 prev-url: "10-preferences"
 page-title: Preference Data
+search-title: "Chapter 11: Preference Data"
 next-chapter: "Synthetic Data & CAI"
 next-url: "12-synthetic-data"
 ---

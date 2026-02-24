@@ -2,6 +2,7 @@
 prev-chapter: "Evaluation"
 prev-url: "16-evaluation"
 page-title: Product & Character
+search-title: "Chapter 17: Product & Character"
 next-chapter: "Definitions"
 next-url: "appendix-a-definitions"
 ---

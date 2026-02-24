@@ -2,6 +2,7 @@
 prev-chapter: "Reward Models"
 prev-url: "05-reward-models"
 page-title: Reinforcement Learning
+search-title: "Chapter 6: Reinforcement Learning"
 next-chapter: "Reasoning"
 next-url: "07-reasoning"
 ---

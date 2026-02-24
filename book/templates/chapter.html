@@ -60,6 +60,8 @@ $for(header-includes)$
   $header-includes$
 $endfor$
 
+<link href="/pagefind/pagefind-ui.css" rel="stylesheet">
+<script src="/pagefind/pagefind-ui.js"></script>
 <!-- custom js nav -->
 <script src="nav.js" defer></script>
 <script src="header-anchors.js" defer></script>
@@ -79,7 +81,7 @@ $include-before$
 $endfor$
 $if(title)$
 <header id="title-block-header">
-<h1 class="title"><a href="https://rlhfbook.com/" style="color: inherit; text-decoration: none;">$title$</a></h1>
+<div class="title" role="heading" aria-level="1"><a href="https://rlhfbook.com/" style="color: inherit; text-decoration: none;">$title$</a></div>
 $if(subtitle)$
 <p class="subtitle">$subtitle$</p>
 $endif$
@@ -99,7 +101,7 @@ $endif$
 $table-of-contents$
 </nav>
 $endif$
-<div id="content">
+<div id="content" data-pagefind-body $if(search-title)$data-pagefind-meta="title:$search-title$"$endif$>
   $body$
 </div>
 

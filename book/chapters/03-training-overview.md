@@ -2,6 +2,7 @@
 prev-chapter: "Key Related Works"
 prev-url: "02-related-works"
 page-title: Training Overview
+search-title: "Chapter 3: Training Overview"
 next-chapter: "Instruction Tuning"
 next-url: "04-instruction-tuning"
 ---

@@ -2,6 +2,7 @@
 prev-chapter: "Direct Alignment"
 prev-url: "08-direct-alignment"
 page-title: Rejection Sampling
+search-title: "Chapter 9: Rejection Sampling"
 next-chapter: "What are Preferences"
 next-url: "10-preferences"
 ---
