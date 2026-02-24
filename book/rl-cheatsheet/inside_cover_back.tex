@@ -119,7 +119,8 @@ y_c,\, y_r & Chosen / rejected completion & \beta & KL penalty coefficient \\
 y_c \succ y_r & $y_c$ is preferred over $y_r$ & \sigma(z) & Sigmoid: $1/(1+e^{-z})$ \\
 \pi_\theta & Policy (the model being trained) & \mathcal{D}_{\text{KL}}(P \| Q) & KL divergence between $P$ and $Q$ \\
 \pi_{\text{ref}} & Reference policy (frozen copy) & G_t & Return: $\sum_{k=0}^{\infty} \gamma^k R_{t+k+1}$ \\
-r_\theta(y \mid x) & Reward model score & V(s) & Value: $\mathbb{E}[G_t \mid S_t = s]$ \\
+\pi_{\theta_{\text{old}}} & Policy at start of RL batch updates & V(s) & Value: $\mathbb{E}[G_t \mid S_t = s]$ \\
+r_\theta(y \mid x) & Reward model score & & \\
 \end{tabular}
 
 \vspace*{\fill}

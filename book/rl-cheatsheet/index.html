@@ -19,6 +19,13 @@
       text-align: center;
     }
 
+    .cheatsheet-section {
+      width: 80vw;
+      max-width: 60em;
+      margin-left: 50%;
+      transform: translateX(-50%);
+    }
+
     .download-buttons {
       display: flex;
       justify-content: center;
@@ -44,13 +51,16 @@
     }
 
     .cheatsheet-section h2 {
-      font-size: 1.2em;
-      margin-top: 2em;
-      margin-bottom: 0.3em;
+      font-size: 1.1em;
+      text-align: center;
+      margin-top: 3em;
+      margin-bottom: 0.2em;
     }
 
     .cheatsheet-section hr {
-      margin-bottom: 1em;
+      margin-bottom: 0.5em;
+      border: none;
+      border-top: 1px solid #ccc;
     }
 
     .desktop-note {
@@ -61,46 +71,66 @@
     }
 
     table.equations {
-      width: 100%;
+      width: 92%;
+      margin: 0 auto 1em;
       border-collapse: collapse;
-      margin-bottom: 1.5em;
+      border: none;
     }
 
     table.equations td {
-      padding: 0.8em 0;
+      padding: 0.7em 0;
       vertical-align: middle;
+      line-height: 1.6;
+      border: none;
+    }
+
+    table.equations tr + tr td {
+      border-top: 1px solid transparent;
     }
 
     table.equations td:first-child {
+      width: 280px;
+      min-width: 280px;
       font-weight: bold;
-      white-space: nowrap;
-      padding-right: 1.5em;
+      padding-right: 2em;
     }
 
     table.equations td:first-child .subtitle {
       font-weight: normal;
-      font-size: 0.85em;
+      font-size: 0.82em;
       color: #555;
       display: block;
     }
 
-    table.equations tr + tr td {
-      border-top: 1px solid #eee;
+    table.equations td:last-child {
+      font-size: 1.05em;
+    }
+
+    table.equations .eq-note {
+      font-size: 0.92em;
+      margin: 0.2em 0 0;
     }
 
     table.notation {
       border-collapse: collapse;
       margin: 0 auto 1.5em;
+      border: none;
     }
 
     table.notation td {
-      padding: 0.3em 1.2em 0.3em 0;
+      padding: 0.25em 1em 0.25em 0;
       vertical-align: top;
+      border: none;
     }
 
     @media (max-width: 720px) {
+      body {
+        max-width: 100%;
+      }
+
       table.equations td:first-child {
-        white-space: normal;
+        width: auto;
+        min-width: auto;
       }
 
       .download-buttons {
@@ -157,7 +187,7 @@
   </p>
 
   <div class="download-buttons">
-    <a href="inside_cover_back.pdf" download>Download PDF</a>
+    <a href="inside_cover_back.pdf" download="rlhfbookcheatsheet.pdf">Download PDF</a>
     <a href="inside_cover_back.tex" download>Download TeX source</a>
   </div>
 
@@ -170,54 +200,54 @@
     <table class="equations">
       <tr>
         <td>Policy Gradient</td>
-        <td>\[\displaystyle -\;\mathbb{E}_\tau\!\left[\sum_{t=0}^{T} \log \pi_\theta(a_t\mid s_t)\, A^{\pi_\theta}(s_t, a_t)\right]\]</td>
+        <td>\(\displaystyle -\;\mathbb{E}_\tau\!\left[\sum_{t=0}^{T} \log \pi_\theta(a_t\mid s_t)\, A^{\pi_\theta}(s_t, a_t)\right]\)</td>
       </tr>
       <tr>
         <td>
           REINFORCE
           <span class="subtitle">(REward Increment = Nonnegative Factor &times; Offset Reinforcement &times; Characteristic Eligibility)</span>
         </td>
-        <td>\[\displaystyle -\;\frac{1}{T}\sum_{t=1}^{T}\log \pi_\theta(a_t\mid s_t)\,(G_t - b(s_t))\]</td>
+        <td>\(\displaystyle -\;\frac{1}{T}\sum_{t=1}^{T}\log \pi_\theta(a_t\mid s_t)\,(G_t - b(s_t))\)</td>
       </tr>
       <tr>
         <td>
           REINFORCE Leave One Out
           <span class="subtitle">(RLOO)</span>
         </td>
-        <td>\[\displaystyle -\;\frac{1}{K}\sum_{i=1}^{K}\sum_t \log \pi_\theta(a_{i,t}\mid s_{i,t})\!\left(R_i - \frac{1}{K\!-\!1}\sum_{j\neq i}R_j\right)\]</td>
+        <td>\(\displaystyle -\;\frac{1}{K}\sum_{i=1}^{K}\sum_t \log \pi_\theta(a_{i,t}\mid s_{i,t})\!\left(R_i - \frac{1}{K\!-\!1}\sum_{j\neq i}R_j\right)\)</td>
       </tr>
       <tr>
         <td>
           Proximal Policy Optimization
           <span class="subtitle">(PPO)</span>
         </td>
-        <td>\[\displaystyle -\;\frac{1}{T}\sum_{t=1}^{T}\min\!\left(\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)} A_t,\; \text{clip}\!\left(\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) A_t\right)\]</td>
+        <td>\(\displaystyle -\;\frac{1}{T}\sum_{t=1}^{T}\min\!\left(\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)} A_t,\; \text{clip}\!\left(\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) A_t\right)\)</td>
       </tr>
       <tr>
         <td>
-          Group Relative Policy Optimization
+          Group Relative Policy<br>Optimization
           <span class="subtitle">(GRPO)</span>
         </td>
         <td>
-          \[\displaystyle -\;\frac{1}{G}\sum_{i=1}^{G}\min\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)} \hat{A}_i,\; \text{clip}\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) \hat{A}_i\right)\]
-          <p>where \(\hat{A}_i = \dfrac{r_i - \overline{r}}{\text{std}(r)}\)</p>
+          \(\displaystyle -\;\frac{1}{G}\sum_{i=1}^{G}\min\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)} \hat{A}_i,\; \text{clip}\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) \hat{A}_i\right)\)
+          <p class="eq-note">where \(\hat{A}_i = \dfrac{r_i - \overline{r}}{\text{std}(r)}\)</p>
         </td>
       </tr>
       <tr>
         <td>
-          Group Sequence Policy Optimization
+          Group Sequence Policy<br>Optimization
           <span class="subtitle">(GSPO)</span>
         </td>
-        <td>\[\displaystyle -\;\frac{1}{G}\sum_{i=1}^{G}\min\!\left(\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)}\right)^{\!\frac{1}{|a_i|}} A_i,\; \text{clip}\!\left(\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)}\right)^{\!\frac{1}{|a_i|}},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) A_i\right)\]</td>
+        <td>\(\displaystyle -\;\frac{1}{G}\sum_{i=1}^{G}\min\!\left(\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)}\right)^{\!\frac{1}{|a_i|}} A_i,\; \text{clip}\!\left(\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)}\right)^{\!\frac{1}{|a_i|}},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) A_i\right)\)</td>
       </tr>
       <tr>
         <td>
-          Clipped Importance Sampling Policy Optimization
+          Clipped Importance Sampling<br>Policy Optimization
           <span class="subtitle">(CISPO)</span>
         </td>
         <td>
-          \[\displaystyle -\;\frac{1}{\sum_i |a_i|}\sum_{i=1}^{K}\sum_{t=1}^{|a_i|} \text{sg}\!\Big(\text{clip}\big(\tfrac{\pi_\theta(a_{i,t}\mid s)}{\pi_{\theta_{\text{old}}}(a_{i,t}\mid s)},\, 1\!-\!\varepsilon_{\text{low}},\, 1\!+\!\varepsilon_{\text{high}}\big)\Big)\, A_{i,t} \log \pi_\theta(a_{i,t}\mid s)\]
-          <p>where \(\text{sg}(\cdot)\) = stop gradient</p>
+          \(\displaystyle -\;\frac{1}{\sum_i |a_i|}\sum_{i=1}^{K}\sum_{t=1}^{|a_i|} \text{sg}\!\Big(\text{clip}\big(\tfrac{\pi_\theta(a_{i,t}\mid s)}{\pi_{\theta_{\text{old}}}(a_{i,t}\mid s)},\, 1\!-\!\varepsilon_{\text{low}},\, 1\!+\!\varepsilon_{\text{high}}\big)\Big)\, A_{i,t} \log \pi_\theta(a_{i,t}\mid s)\)
+          <p class="eq-note">where \(\text{sg}(\cdot)\) = stop gradient</p>
         </td>
       </tr>
     </table>
@@ -230,21 +260,20 @@
     <table class="equations">
       <tr>
         <td>RLHF Objective</td>
-        <td>\[\displaystyle J(\theta) = \max_{\pi}\; \mathbb{E}_{x \sim \mathcal{D}}\,\mathbb{E}_{y \sim \pi(y|x)} \Big[r_\theta(x, y)\Big] - \beta\, \mathcal{D}_{\text{KL}}\!\Big(\pi(y|x) \,\|\, \pi_{\text{ref}}(y|x)\Big)\]</td>
+        <td>\(\displaystyle J(\theta) = \max_{\pi}\; \mathbb{E}_{x \sim \mathcal{D}}\,\mathbb{E}_{y \sim \pi(y|x)} \Big[r_\theta(x, y)\Big] - \beta\, \mathcal{D}_{\text{KL}}\!\Big(\pi(y|x) \,\|\, \pi_{\text{ref}}(y|x)\Big)\)</td>
       </tr>
       <tr>
         <td>
-          Bradley&ndash;Terry
-          <span class="subtitle">Reward Model</span>
+          Bradley&ndash;Terry<br>Reward Model
         </td>
-        <td>\[\displaystyle \mathcal{L}(\theta) = -\log \sigma\!\Big( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) \Big)\]</td>
+        <td>\(\displaystyle \mathcal{L}(\theta) = -\log \sigma\!\Big( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) \Big)\)</td>
       </tr>
       <tr>
         <td>
-          Direct Preference Optimization
+          Direct Preference<br>Optimization
           <span class="subtitle">(DPO)</span>
         </td>
-        <td>\[\displaystyle \mathcal{L}(\theta) = -\;\mathbb{E}\!\left[ \log \sigma\!\left( \beta \log \frac{\pi_{\theta}(y_c \mid x)}{\pi_{\text{ref}}(y_c \mid x)} - \beta \log \frac{\pi_{\theta}(y_r \mid x)}{\pi_{\text{ref}}(y_r \mid x)} \right) \right]\]</td>
+        <td>\(\displaystyle \mathcal{L}(\theta) = -\;\mathbb{E}\!\left[ \log \sigma\!\left( \beta \log \frac{\pi_{\theta}(y_c \mid x)}{\pi_{\text{ref}}(y_c \mid x)} - \beta \log \frac{\pi_{\theta}(y_r \mid x)}{\pi_{\text{ref}}(y_r \mid x)} \right) \right]\)</td>
       </tr>
     </table>
   </div>
@@ -285,10 +314,16 @@
         <td>Return: \(\sum_{k=0}^{\infty} \gamma^k R_{t+k+1}\)</td>
       </tr>
       <tr>
-        <td>\(r_\theta(y \mid x)\)</td>
-        <td>Reward model score</td>
+        <td>\(\pi_{\theta_{\text{old}}}\)</td>
+        <td>Policy at start of RL batch updates</td>
         <td>\(V(s)\)</td>
         <td>Value: \(\mathbb{E}[G_t \mid S_t = s]\)</td>
+      </tr>
+      <tr>
+        <td>\(r_\theta(y \mid x)\)</td>
+        <td>Reward model score</td>
+        <td></td>
+        <td></td>
       </tr>
     </table>
   </div>
