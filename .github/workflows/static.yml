@@ -66,6 +66,9 @@ jobs:
           make
           make files
 
+      - name: Build Pagefind search index
+        run: npx --yes pagefind --site build/html --glob "c/**/*.html"
+
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v3
         with:

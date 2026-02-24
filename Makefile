@@ -85,7 +85,7 @@ ECHO_BUILT = @echo "$@ was built\n"
 # Basic actions
 ####################################################################################################
 
-.PHONY: all book clean epub html pdf docx nested_html latex kindle rl-cheatsheet
+.PHONY: all book clean epub html pdf docx nested_html latex kindle rl-cheatsheet pagefind
 
 all:	book
 
@@ -253,3 +253,6 @@ files:
 	cp book/templates/style.css $(BUILD)/html/rl-cheatsheet/style.css || echo "Failed to copy style.css to rl-cheatsheet"
 	cp ./book/templates/nav.js $(BUILD)/html/rl-cheatsheet/ || echo "Failed to copy nav.js to rl-cheatsheet"
 	cp -r book/assets $(BUILD)/html/rl-cheatsheet/ || echo "Failed to copy assets to rl-cheatsheet"
+
+pagefind: html files
+	npx --yes pagefind --site $(BUILD)/html --glob "c/**/*.html"

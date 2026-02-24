@@ -2,6 +2,7 @@
 prev-chapter: "Product & Character"
 prev-url: "17-product"
 page-title: "Appendix A: Definitions"
+search-title: "Appendix A: Definitions"
 next-chapter: "Style & Information"
 next-url: "appendix-b-style"
 ---

@@ -2,6 +2,7 @@
 prev-chapter: "Home"
 prev-url: "https://rlhfbook.com/"
 page-title: Introduction
+search-title: "Chapter 1: Introduction"
 next-chapter: "Key Related Works"
 next-url: "02-related-works"
 ---

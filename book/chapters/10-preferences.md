@@ -2,6 +2,7 @@
 prev-chapter: "Rejection Sampling"
 prev-url: "09-rejection-sampling"
 page-title: What are Preferences
+search-title: "Chapter 10: What are Preferences"
 next-chapter: "Preference Data"
 next-url: "11-preference-data"
 ---
