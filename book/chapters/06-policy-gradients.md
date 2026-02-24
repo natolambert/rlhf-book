@@ -1,5 +1,4 @@
 ---
-chapter-number: 6
 prev-chapter: "Reward Models"
 prev-url: "05-reward-models"
 page-title: Reinforcement Learning

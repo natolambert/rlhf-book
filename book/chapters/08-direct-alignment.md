@@ -1,5 +1,4 @@
 ---
-chapter-number: 8
 prev-chapter: "Reasoning"
 prev-url: "07-reasoning"
 page-title: Direct Alignment

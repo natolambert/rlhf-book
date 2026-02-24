@@ -1,5 +1,4 @@
 ---
-chapter-number: 10
 prev-chapter: "Rejection Sampling"
 prev-url: "09-rejection-sampling"
 page-title: What are Preferences

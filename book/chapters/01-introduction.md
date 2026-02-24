@@ -1,5 +1,4 @@
 ---
-chapter-number: 1
 prev-chapter: "Home"
 prev-url: "https://rlhfbook.com/"
 page-title: Introduction

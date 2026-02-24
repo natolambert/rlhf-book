@@ -1,5 +1,4 @@
 ---
-chapter-number: 4
 prev-chapter: "Training Overview"
 prev-url: "03-training-overview"
 page-title: Instruction Tuning

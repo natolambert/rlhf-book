@@ -1,5 +1,4 @@
 ---
-chapter-number: 12
 prev-chapter: "Preference Data"
 prev-url: "11-preference-data"
 page-title: Synthetic Data & CAI
