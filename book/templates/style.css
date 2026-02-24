@@ -535,6 +535,11 @@ thead {
 }
 #search .pagefind-ui__search-input {
     font-size: 0.85rem;
+    border: none;
+    border-radius: 5px;
+}
+#search .pagefind-ui__form::before {
+    border-radius: 5px;
 }
 #search .pagefind-ui__result {
     text-align: left;
