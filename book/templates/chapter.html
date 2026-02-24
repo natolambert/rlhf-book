@@ -60,6 +60,8 @@ $for(header-includes)$
   $header-includes$
 $endfor$
 
+<link href="/pagefind/pagefind-ui.css" rel="stylesheet">
+<script src="/pagefind/pagefind-ui.js"></script>
 <!-- custom js nav -->
 <script src="nav.js" defer></script>
 <script src="header-anchors.js" defer></script>
@@ -99,7 +101,7 @@ $endif$
 $table-of-contents$
 </nav>
 $endif$
-<div id="content" data-pagefind-body>
+<div id="content" data-pagefind-body $if(chapter-number)$data-pagefind-meta="title:Chapter $chapter-number$: $page-title$"$endif$>
   $body$
 </div>
 

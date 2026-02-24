@@ -1,4 +1,5 @@
 ---
+chapter-number: 7
 prev-chapter: "Reinforcement Learning"
 prev-url: "06-policy-gradients"
 page-title: Reasoning

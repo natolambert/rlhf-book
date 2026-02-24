@@ -1,4 +1,5 @@
 ---
+chapter-number: 9
 prev-chapter: "Direct Alignment"
 prev-url: "08-direct-alignment"
 page-title: Rejection Sampling

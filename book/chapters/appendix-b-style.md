@@ -1,4 +1,5 @@
 ---
+chapter-number: "Appendix B"
 prev-chapter: "Definitions"
 prev-url: "appendix-a-definitions"
 page-title: "Appendix B: Style & Information"

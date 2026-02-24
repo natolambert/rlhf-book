@@ -1,4 +1,5 @@
 ---
+chapter-number: 17
 prev-chapter: "Evaluation"
 prev-url: "16-evaluation"
 page-title: Product & Character

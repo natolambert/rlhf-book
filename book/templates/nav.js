@@ -77,9 +77,16 @@ class NavigationDropdown extends HTMLElement {
         </ol>
       </div>
     </nav>
+    <div id="search"></div>
   </div>
 </div>
       `;
+
+      // Initialize Pagefind search if available
+      var searchEl = this.querySelector('#search');
+      if (searchEl && typeof PagefindUI !== 'undefined') {
+        new PagefindUI({ element: searchEl, showImages: false });
+      }
 
       // Set up click handler
       const button = this.querySelector('.dropdown-button');

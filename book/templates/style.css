@@ -528,3 +528,17 @@ thead {
       font-size: 14px;
     }
   }
+
+/* Pagefind search styling inside nav */
+#search {
+    padding: 0.5rem;
+}
+#search .pagefind-ui__search-input {
+    font-size: 0.85rem;
+}
+#search .pagefind-ui__result {
+    text-align: left;
+}
+#search .pagefind-ui__result-excerpt {
+    text-align: left;
+}

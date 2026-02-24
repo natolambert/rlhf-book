@@ -1,4 +1,5 @@
 ---
+chapter-number: 5
 prev-chapter: "Instruction Tuning"
 prev-url: "04-instruction-tuning"
 page-title: Reward Models

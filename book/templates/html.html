@@ -56,6 +56,9 @@ $for(header-includes)$
   $header-includes$
 $endfor$
 
+<link href="/pagefind/pagefind-ui.css" rel="stylesheet">
+<script src="/pagefind/pagefind-ui.js"></script>
+
 <!-- custom js nav -->
 <script src="nav.js" defer></script>
 <script src="table-scroll.js" defer></script>
@@ -66,9 +69,6 @@ $endfor$
   window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
   plausible.init()
 </script>
-
-<link href="/pagefind/pagefind-ui.css" rel="stylesheet">
-<script src="/pagefind/pagefind-ui.js"></script>
 
 </head>
 <body>
@@ -85,12 +85,6 @@ $for(author)$
 <p class="author">$author$</p>
 $endfor$
 <navigation-dropdown expanded="true"></navigation-dropdown>
-<div id="search" style="margin-top: 2em;"></div>
-<script>
-  window.addEventListener('DOMContentLoaded', function() {
-    new PagefindUI({ element: "#search", showImages: false });
-  });
-</script>
 
 $if(abstract)$
 <div class="abstract">
