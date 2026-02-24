@@ -1,5 +1,4 @@
 ---
-chapter-number: "Appendix A"
 prev-chapter: "Product & Character"
 prev-url: "17-product"
 page-title: "Appendix A: Definitions"

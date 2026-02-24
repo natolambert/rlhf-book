@@ -1,5 +1,4 @@
 ---
-chapter-number: "Appendix C"
 prev-chapter: "Style & Information"
 prev-url: "appendix-b-style"
 page-title: "Appendix C: Practical Issues"
