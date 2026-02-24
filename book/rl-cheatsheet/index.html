@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+
+  <meta property="og:image" content="https://raw.githubusercontent.com/natolambert/rlhf-book/main/assets/rlhf-book-share.png" />
+  <meta property="og:image:width" content="1920" />
+  <meta property="og:image:height" content="1080" />
+  <meta property="og:title" content="RL Cheatsheet | RLHF Book by Nathan Lambert" />
+  <meta property="og:description" content="One-page reference of core RL loss functions: Policy Gradient, REINFORCE, PPO, GRPO, DPO, and more." />
+  <meta property="og:url" content="https://rlhfbook.com/rl-cheatsheet" />
+
+  <title>RL Cheatsheet | RLHF Book by Nathan Lambert</title>
+
+  <style>
+    #title-block-header {
+      text-align: center;
+    }
+
+    .download-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1em;
+      margin: 1.5em 0 2em;
+    }
+
+    .download-buttons a {
+      display: inline-block;
+      font-family: inherit;
+      font-size: 0.95em;
+      padding: 0.5em 1.2em;
+      border-radius: 0.3em;
+      border: 1px solid #0645ad;
+      background: rgba(6, 69, 173, 0.1);
+      color: #0645ad;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .download-buttons a:hover {
+      background: rgba(6, 69, 173, 0.18);
+    }
+
+    .cheatsheet-section h2 {
+      font-size: 1.2em;
+      margin-top: 2em;
+      margin-bottom: 0.3em;
+    }
+
+    .cheatsheet-section hr {
+      margin-bottom: 1em;
+    }
+
+    table.equations {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5em;
+    }
+
+    table.equations td {
+      padding: 0.7em 0.5em;
+      vertical-align: top;
+      border-bottom: 1px solid #eee;
+    }
+
+    table.equations td:first-child {
+      width: 240px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    table.equations td:first-child .subtitle {
+      font-weight: normal;
+      font-size: 0.85em;
+      color: #555;
+      display: block;
+    }
+
+    table.equations td:last-child {
+      font-size: 1em;
+    }
+
+    table.notation {
+      border-collapse: collapse;
+      margin: 0 auto 1.5em;
+    }
+
+    table.notation td {
+      padding: 0.3em 1.2em 0.3em 0;
+      vertical-align: top;
+    }
+
+    @media (max-width: 720px) {
+      table.equations td:first-child {
+        width: auto;
+        white-space: normal;
+      }
+
+      .download-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .MathJax {
+        font-size: 90% !important;
+      }
+    }
+  </style>
+
+  <link rel="stylesheet" href="style.css" />
+  <script src="nav.js" defer></script>
+
+  <!-- MathJax for equation rendering -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['\\[', '\\]']],
+      },
+      options: {
+        renderActions: {
+          addMenu: []
+        }
+      }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+  <!-- Privacy-friendly analytics by Plausible -->
+  <script async src="https://plausible.io/js/pa-Rr3_iGtVZcPHhxkdbyDIb.js"></script>
+  <script>
+    window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+    plausible.init()
+  </script>
+</head>
+<body>
+  <header id="title-block-header">
+    <h1 class="title"><a href="https://rlhfbook.com/" style="color: inherit; text-decoration: none;">Reinforcement Learning from Human Feedback</a></h1>
+    <p class="subtitle">A short introduction to RLHF and post-training focused on language models.</p>
+    <p class="author">Nathan Lambert</p>
+    <navigation-dropdown expanded="false"></navigation-dropdown>
+  </header>
+
+  <h1>RL Cheatsheet</h1>
+
+  <p>
+    A one-page reference of all core RL loss functions used in language model post-training.
+    Covers policy gradient methods, reward modeling, and direct alignment.
+    From the <a href="/c/06-policy-gradients.html">Reinforcement Learning</a> and <a href="/c/08-direct-alignment.html">Direct Alignment</a> chapters.
+  </p>
+
+  <div class="download-buttons">
+    <a href="inside_cover_back.pdf" download>Download PDF</a>
+    <a href="inside_cover_back.tex" download>Download TeX source</a>
+  </div>
+
+  <div class="cheatsheet-section">
+    <h2>Core loss \(\mathcal{L}(\theta)\) per RL algorithm</h2>
+    <hr>
+
+    <table class="equations">
+      <tr>
+        <td>Policy Gradient</td>
+        <td>\[\displaystyle -\;\mathbb{E}_\tau\!\left[\sum_{t=0}^{T} \log \pi_\theta(a_t\mid s_t)\, A^{\pi_\theta}(s_t, a_t)\right]\]</td>
+      </tr>
+      <tr>
+        <td>
+          REINFORCE
+          <span class="subtitle">(REward Increment = Nonnegative Factor &times; Offset Reinforcement &times; Characteristic Eligibility)</span>
+        </td>
+        <td>\[\displaystyle -\;\frac{1}{T}\sum_{t=1}^{T}\log \pi_\theta(a_t\mid s_t)\,(G_t - b(s_t))\]</td>
+      </tr>
+      <tr>
+        <td>
+          REINFORCE Leave One Out
+          <span class="subtitle">(RLOO)</span>
+        </td>
+        <td>\[\displaystyle -\;\frac{1}{K}\sum_{i=1}^{K}\sum_t \log \pi_\theta(a_{i,t}\mid s_{i,t})\!\left(R_i - \frac{1}{K\!-\!1}\sum_{j\neq i}R_j\right)\]</td>
+      </tr>
+      <tr>
+        <td>
+          Proximal Policy Optimization
+          <span class="subtitle">(PPO)</span>
+        </td>
+        <td>\[\displaystyle -\;\frac{1}{T}\sum_{t=1}^{T}\min\!\left(\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)} A_t,\; \text{clip}\!\left(\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) A_t\right)\]</td>
+      </tr>
+      <tr>
+        <td>
+          Group Relative Policy Optimization
+          <span class="subtitle">(GRPO)</span>
+        </td>
+        <td>
+          \[\displaystyle -\;\frac{1}{G}\sum_{i=1}^{G}\min\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)} \hat{A}_i,\; \text{clip}\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) \hat{A}_i\right)\]
+          <p>where \(\hat{A}_i = \dfrac{r_i - \overline{r}}{\text{std}(r)}\)</p>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          Group Sequence Policy Optimization
+          <span class="subtitle">(GSPO)</span>
+        </td>
+        <td>\[\displaystyle -\;\frac{1}{G}\sum_{i=1}^{G}\min\!\left(\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)}\right)^{\!\frac{1}{|a_i|}} A_i,\; \text{clip}\!\left(\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)}\right)^{\!\frac{1}{|a_i|}},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) A_i\right)\]</td>
+      </tr>
+      <tr>
+        <td>
+          Clipped Importance Sampling Policy Optimization
+          <span class="subtitle">(CISPO)</span>
+        </td>
+        <td>
+          \[\displaystyle -\;\frac{1}{\sum_i |a_i|}\sum_{i=1}^{K}\sum_{t=1}^{|a_i|} \text{sg}\!\Big(\text{clip}\big(\tfrac{\pi_\theta(a_{i,t}\mid s)}{\pi_{\theta_{\text{old}}}(a_{i,t}\mid s)},\, 1\!-\!\varepsilon_{\text{low}},\, 1\!+\!\varepsilon_{\text{high}}\big)\Big)\, A_{i,t} \log \pi_\theta(a_{i,t}\mid s)\]
+          <p>where \(\text{sg}(\cdot)\) = stop gradient</p>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="cheatsheet-section">
+    <h2>Other core equations</h2>
+    <hr>
+
+    <table class="equations">
+      <tr>
+        <td>RLHF Objective</td>
+        <td>\[\displaystyle J(\theta) = \max_{\pi}\; \mathbb{E}_{x \sim \mathcal{D}}\,\mathbb{E}_{y \sim \pi(y|x)} \Big[r_\theta(x, y)\Big] - \beta\, \mathcal{D}_{\text{KL}}\!\Big(\pi(y|x) \,\|\, \pi_{\text{ref}}(y|x)\Big)\]</td>
+      </tr>
+      <tr>
+        <td>
+          Bradley&ndash;Terry
+          <span class="subtitle">Reward Model</span>
+        </td>
+        <td>\[\displaystyle \mathcal{L}(\theta) = -\log \sigma\!\Big( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) \Big)\]</td>
+      </tr>
+      <tr>
+        <td>
+          Direct Preference Optimization
+          <span class="subtitle">(DPO)</span>
+        </td>
+        <td>\[\displaystyle \mathcal{L}(\theta) = -\;\mathbb{E}\!\left[ \log \sigma\!\left( \beta \log \frac{\pi_{\theta}(y_c \mid x)}{\pi_{\text{ref}}(y_c \mid x)} - \beta \log \frac{\pi_{\theta}(y_r \mid x)}{\pi_{\text{ref}}(y_r \mid x)} \right) \right]\]</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="cheatsheet-section">
+    <h2>Notation</h2>
+    <hr>
+
+    <table class="notation">
+      <tr>
+        <td>\(x, y\)</td>
+        <td>Prompt, completion</td>
+        <td>\(A_t\)</td>
+        <td>Advantage estimate</td>
+      </tr>
+      <tr>
+        <td>\(y_c,\, y_r\)</td>
+        <td>Chosen / rejected completion</td>
+        <td>\(\beta\)</td>
+        <td>KL penalty coefficient</td>
+      </tr>
+      <tr>
+        <td>\(y_c \succ y_r\)</td>
+        <td>\(y_c\) is preferred over \(y_r\)</td>
+        <td>\(\sigma(z)\)</td>
+        <td>Sigmoid: \(1/(1+e^{-z})\)</td>
+      </tr>
+      <tr>
+        <td>\(\pi_\theta\)</td>
+        <td>Policy (the model being trained)</td>
+        <td>\(\mathcal{D}_{\text{KL}}(P \| Q)\)</td>
+        <td>KL divergence between \(P\) and \(Q\)</td>
+      </tr>
+      <tr>
+        <td>\(\pi_{\text{ref}}\)</td>
+        <td>Reference policy (frozen copy)</td>
+        <td>\(G_t\)</td>
+        <td>Return: \(\sum_{k=0}^{\infty} \gamma^k R_{t+k+1}\)</td>
+      </tr>
+      <tr>
+        <td>\(r_\theta(y \mid x)\)</td>
+        <td>Reward model score</td>
+        <td>\(V(s)\)</td>
+        <td>Value: \(\mathbb{E}[G_t \mid S_t = s]\)</td>
+      </tr>
+    </table>
+  </div>
+
+  <footer style="padding: 20px; text-align: center;">
+    <hr>
+    Citation <br>
+    <div style="text-align: left; font-size: small; color: #888;">
+      @book{rlhf2024,<br>
+      &nbsp;&nbsp;author = {Nathan Lambert},<br>
+      &nbsp;&nbsp;title = {Reinforcement Learning from Human Feedback},<br>
+      &nbsp;&nbsp;year = {2025},<br>
+      &nbsp;&nbsp;publisher = {Online},<br>
+      &nbsp;&nbsp;url = {https://rlhfbook.com}<br>      }
+    </div>
+    <div style="display: flex; justify-content: center; gap: 20px; align-items: center;">
+      <a href="https://github.com/natolambert/rlhf-book" target="_blank">
+        <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub" style="width: 40px; height: 40px;">
+      </a>
+      <a href="https://arxiv.org/abs/2504.12501" target="_blank">
+        <img src="assets/arxiv.svg" alt="arXiv" style="width: 40px; height: 40px;">
+      </a>
+      <a href="https://www.manning.com/books/the-rlhf-book" target="_blank">
+        <img src="assets/manning.svg" alt="Manning" style="width: 40px; height: 40px;">
+      </a>
+    </div>
+    <p>&copy; 2024-2026 Nathan Lambert &middot; <a href="https://rlhfbook.com" style="color: #888; text-decoration: none;">rlhfbook.com</a></p>
+  </footer>
+</body>
+</html>

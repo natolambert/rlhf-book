@@ -85,7 +85,7 @@ ECHO_BUILT = @echo "$@ was built\n"
 # Basic actions
 ####################################################################################################
 
-.PHONY: all book clean epub html pdf docx nested_html latex kindle
+.PHONY: all book clean epub html pdf docx nested_html latex kindle rl-cheatsheet
 
 all:	book
 
@@ -105,7 +105,7 @@ $(info JS files found: $(JS_FILES))
 
 epub:	$(BUILD)/epub/$(OUTPUT_FILENAME).epub
 
-html:	nested_html $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html $(BUILD)/html/library.html
+html:	nested_html $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html $(BUILD)/html/library.html rl-cheatsheet
 	
 pdf:	$(BUILD)/pdf/$(OUTPUT_FILENAME).pdf
 
@@ -154,6 +154,15 @@ $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html:	$(HTML_DEPENDENCIES)
 $(BUILD)/html/library.html: book/templates/library.html
 	$(MKDIR_CMD) $(BUILD)/html
 	cp book/templates/library.html $@
+
+rl-cheatsheet: $(BUILD)/html/rl-cheatsheet/inside_cover_back.pdf
+
+$(BUILD)/html/rl-cheatsheet/inside_cover_back.pdf: book/rl-cheatsheet/inside_cover_back.tex book/rl-cheatsheet/index.html
+	mkdir -p $(BUILD)/html/rl-cheatsheet
+	cp book/rl-cheatsheet/index.html $(BUILD)/html/rl-cheatsheet/
+	cp book/rl-cheatsheet/inside_cover_back.tex $(BUILD)/html/rl-cheatsheet/
+	cd $(BUILD)/html/rl-cheatsheet && pdflatex inside_cover_back.tex
+	rm -f $(BUILD)/html/rl-cheatsheet/*.aux $(BUILD)/html/rl-cheatsheet/*.log
 
 # Nested HTML build targets
 NESTED_HTML_DIR = $(BUILD)/html/c/
@@ -239,3 +248,8 @@ files:
 	cp ./book/templates/header-anchors.js $(BUILD)/html/c/ || echo "Failed to copy header-anchors.js to $(BUILD)/html/c/"
 	cp ./book/templates/table-scroll.js $(BUILD)/html/ || echo "Failed to copy table-scroll.js to $(BUILD)/html/"
 	cp ./book/templates/table-scroll.js $(BUILD)/html/c/ || echo "Failed to copy table-scroll.js to $(BUILD)/html/c/"
+	mkdir -p $(BUILD)/html/rl-cheatsheet
+	cp book/favicon.ico $(BUILD)/html/rl-cheatsheet/ || echo "Failed to copy favicon to rl-cheatsheet"
+	cp book/templates/style.css $(BUILD)/html/rl-cheatsheet/style.css || echo "Failed to copy style.css to rl-cheatsheet"
+	cp ./book/templates/nav.js $(BUILD)/html/rl-cheatsheet/ || echo "Failed to copy nav.js to rl-cheatsheet"
+	cp -r book/assets $(BUILD)/html/rl-cheatsheet/ || echo "Failed to copy assets to rl-cheatsheet"
