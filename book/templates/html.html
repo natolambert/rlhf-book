@@ -67,6 +67,9 @@ $endfor$
   plausible.init()
 </script>
 
+<link href="/pagefind/pagefind-ui.css" rel="stylesheet">
+<script src="/pagefind/pagefind-ui.js"></script>
+
 </head>
 <body>
 $for(include-before)$
@@ -82,6 +85,12 @@ $for(author)$
 <p class="author">$author$</p>
 $endfor$
 <navigation-dropdown expanded="true"></navigation-dropdown>
+<div id="search" style="margin-top: 2em;"></div>
+<script>
+  window.addEventListener('DOMContentLoaded', function() {
+    new PagefindUI({ element: "#search", showImages: false });
+  });
+</script>
 
 $if(abstract)$
 <div class="abstract">

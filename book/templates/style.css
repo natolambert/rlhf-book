@@ -114,7 +114,12 @@ h1 {
     font-size: 2.5em;
 }
 
-h1.title {
+.title {
+    font-size: 2.5em;
+    color: #111;
+    line-height: 125%;
+    margin-top: 2em;
+    font-weight: normal;
     hyphens: none;
     -webkit-hyphens: none;
     -moz-hyphens: none;
