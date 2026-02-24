@@ -2,6 +2,7 @@
 prev-chapter: "Tool Use"
 prev-url: "13-tools"
 page-title: Over-optimization
+search-title: "Chapter 14: Over-optimization"
 next-chapter: "Regularization"
 next-url: "15-regularization"
 ---

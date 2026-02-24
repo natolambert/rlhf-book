@@ -2,6 +2,7 @@
 prev-chapter: "Synthetic Data & CAI"
 prev-url: "12-synthetic-data"
 page-title: Tool Use
+search-title: "Chapter 13: Tool Use"
 next-chapter: "Over-optimization"
 next-url: "14-over-optimization"
 ---

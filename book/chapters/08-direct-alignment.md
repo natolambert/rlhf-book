@@ -2,6 +2,7 @@
 prev-chapter: "Reasoning"
 prev-url: "07-reasoning"
 page-title: Direct Alignment
+search-title: "Chapter 8: Direct Alignment"
 next-chapter: "Rejection Sampling"
 next-url: "09-rejection-sampling"
 ---

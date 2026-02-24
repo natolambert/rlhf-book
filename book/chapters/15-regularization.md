@@ -2,6 +2,7 @@
 prev-chapter: "Over-optimization"
 prev-url: "14-over-optimization"
 page-title: Regularization
+search-title: "Chapter 15: Regularization"
 next-chapter: "Evaluation"
 next-url: "16-evaluation"
 ---

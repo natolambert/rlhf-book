@@ -114,7 +114,12 @@ h1 {
     font-size: 2.5em;
 }
 
-h1.title {
+.title {
+    font-size: 2.5em;
+    color: #111;
+    line-height: 125%;
+    margin-top: 2em;
+    font-weight: normal;
     hyphens: none;
     -webkit-hyphens: none;
     -moz-hyphens: none;
@@ -541,4 +546,23 @@ thead {
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.15s ease-in;
+}
+
+/* Pagefind search styling inside nav */
+#search {
+    padding: 0.5rem;
+}
+#search .pagefind-ui__search-input {
+    font-size: 0.85rem;
+    border: none;
+    border-radius: 5px;
+}
+#search .pagefind-ui__form::before {
+    border-radius: 5px;
+}
+#search .pagefind-ui__result {
+    text-align: left;
+}
+#search .pagefind-ui__result-excerpt {
+    text-align: left;
 }

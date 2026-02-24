@@ -2,6 +2,7 @@
 prev-chapter: "Preference Data"
 prev-url: "11-preference-data"
 page-title: Synthetic Data & CAI
+search-title: "Chapter 12: Synthetic Data & CAI"
 next-chapter: "Tool Use"
 next-url: "13-tools"
 ---

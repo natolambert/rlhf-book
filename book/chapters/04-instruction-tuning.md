@@ -2,6 +2,7 @@
 prev-chapter: "Training Overview"
 prev-url: "03-training-overview"
 page-title: Instruction Tuning
+search-title: "Chapter 4: Instruction Tuning"
 next-chapter: "Reward Models"
 next-url: "05-reward-models"
 ---
