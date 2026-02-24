@@ -89,7 +89,7 @@ ECHO_BUILT = @echo "$@ was built\n"
 
 all:	book
 
-book:	epub kindle html pdf docx
+book:	epub kindle html pdf docx rl-cheatsheet
 
 clean:
 	$(RMDIR_CMD) $(BUILD)
@@ -105,7 +105,7 @@ $(info JS files found: $(JS_FILES))
 
 epub:	$(BUILD)/epub/$(OUTPUT_FILENAME).epub
 
-html:	nested_html $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html $(BUILD)/html/library.html rl-cheatsheet
+html:	nested_html $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html $(BUILD)/html/library.html
 	
 pdf:	$(BUILD)/pdf/$(OUTPUT_FILENAME).pdf
 
