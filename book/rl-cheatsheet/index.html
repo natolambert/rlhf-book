@@ -53,6 +53,13 @@
       margin-bottom: 1em;
     }
 
+    .desktop-note {
+      font-size: 0.85em;
+      color: #888;
+      text-align: center;
+      margin-bottom: 1.5em;
+    }
+
     table.equations {
       width: 100%;
       border-collapse: collapse;
@@ -60,15 +67,14 @@
     }
 
     table.equations td {
-      padding: 0.7em 0.5em;
-      vertical-align: top;
-      border-bottom: 1px solid #eee;
+      padding: 0.8em 0;
+      vertical-align: middle;
     }
 
     table.equations td:first-child {
-      width: 240px;
       font-weight: bold;
       white-space: nowrap;
+      padding-right: 1.5em;
     }
 
     table.equations td:first-child .subtitle {
@@ -78,8 +84,8 @@
       display: block;
     }
 
-    table.equations td:last-child {
-      font-size: 1em;
+    table.equations tr + tr td {
+      border-top: 1px solid #eee;
     }
 
     table.notation {
@@ -94,7 +100,6 @@
 
     @media (max-width: 720px) {
       table.equations td:first-child {
-        width: auto;
         white-space: normal;
       }
 
@@ -104,7 +109,7 @@
       }
 
       .MathJax {
-        font-size: 90% !important;
+        font-size: 85% !important;
       }
     }
   </style>
@@ -155,6 +160,8 @@
     <a href="inside_cover_back.pdf" download>Download PDF</a>
     <a href="inside_cover_back.tex" download>Download TeX source</a>
   </div>
+
+  <p class="desktop-note">Best viewed on desktop. For mobile, download the PDF above.</p>
 
   <div class="cheatsheet-section">
     <h2>Core loss \(\mathcal{L}(\theta)\) per RL algorithm</h2>
