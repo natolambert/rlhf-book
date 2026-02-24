@@ -523,3 +523,22 @@ thead {
       font-size: 14px;
     }
   }
+
+/* Citation tooltips */
+.citation-tooltip {
+  position: absolute;
+  max-width: 350px;
+  padding: 8px 12px;
+  background: #fff;
+  color: #333;
+  font-family: Georgia, Palatino, 'Palatino Linotype', Times, 'Times New Roman', serif;
+  font-size: 0.85em;
+  line-height: 1.5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease-in;
+}

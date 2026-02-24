@@ -143,9 +143,11 @@ $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html:	$(HTML_DEPENDENCIES)
 	$(COPY_CMD) book/templates/nav.js $(BUILD)/html/
 	$(COPY_CMD) book/templates/header-anchors.js $(BUILD)/html/
 	$(COPY_CMD) book/templates/table-scroll.js $(BUILD)/html/
+	$(COPY_CMD) book/templates/citation-tooltips.js $(BUILD)/html/
 	$(COPY_CMD) book/templates/nav.js $(BUILD)/html/c/
 	$(COPY_CMD) book/templates/header-anchors.js $(BUILD)/html/c/
 	$(COPY_CMD) book/templates/table-scroll.js $(BUILD)/html/c/
+	$(COPY_CMD) book/templates/citation-tooltips.js $(BUILD)/html/c/
 	cp book/templates/style.css $(BUILD)/html/style.css || echo "Failed to copy style.css"
 	@mkdir -p $(BUILD)/html/data
 	@test -f book/data/library.json && cp book/data/library.json $(BUILD)/html/data/library.json || echo "No library data to copy"
@@ -239,3 +241,5 @@ files:
 	cp ./book/templates/header-anchors.js $(BUILD)/html/c/ || echo "Failed to copy header-anchors.js to $(BUILD)/html/c/"
 	cp ./book/templates/table-scroll.js $(BUILD)/html/ || echo "Failed to copy table-scroll.js to $(BUILD)/html/"
 	cp ./book/templates/table-scroll.js $(BUILD)/html/c/ || echo "Failed to copy table-scroll.js to $(BUILD)/html/c/"
+	cp ./book/templates/citation-tooltips.js $(BUILD)/html/ || echo "Failed to copy citation-tooltips.js to $(BUILD)/html/"
+	cp ./book/templates/citation-tooltips.js $(BUILD)/html/c/ || echo "Failed to copy citation-tooltips.js to $(BUILD)/html/c/"
