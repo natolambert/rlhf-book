@@ -171,13 +171,25 @@ samp {
     color: #000;
     font-family: monospace, monospace;
     _font-family: 'courier new', monospace;
-    font-size: 0.98em;
+    font-size: 0.85em;
 }
 
 pre {
     white-space: pre;
     white-space: pre-wrap;
     word-wrap: break-word;
+    line-height: 1.4;
+    padding: 1em 1.2em;
+    background-color: #f6f6f6;
+    border: 1px solid #e8e8e8;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+p code, li code {
+    background-color: #f0f0f0;
+    padding: 0.15em 0.35em;
+    border-radius: 3px;
 }
 
 
