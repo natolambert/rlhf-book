@@ -6,6 +6,11 @@ document.addEventListener('DOMContentLoaded', function() {
   var blocks = document.querySelectorAll('pre');
 
   blocks.forEach(function(block) {
+    var wrapper = document.createElement('div');
+    wrapper.className = 'code-wrapper';
+    block.parentNode.insertBefore(wrapper, block);
+    wrapper.appendChild(block);
+
     var button = document.createElement('button');
     button.className = 'copy-code-button';
     button.title = 'Copy code';
@@ -37,6 +42,6 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     });
 
-    block.appendChild(button);
+    wrapper.appendChild(button);
   });
 });
