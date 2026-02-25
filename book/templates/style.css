@@ -578,3 +578,36 @@ thead {
 #search .pagefind-ui__result-excerpt {
     text-align: left;
 }
+
+/* Copy code button */
+pre {
+  position: relative;
+}
+.copy-code-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  color: #666;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease-in;
+  line-height: 1;
+  z-index: 1;
+}
+pre:hover .copy-code-button {
+  opacity: 0.7;
+}
+.copy-code-button:hover {
+  opacity: 1 !important;
+  border-color: #bbb;
+  color: #333;
+}
+.copy-code-button.copied {
+  opacity: 1 !important;
+  color: #22863a;
+  border-color: #22863a;
+}
