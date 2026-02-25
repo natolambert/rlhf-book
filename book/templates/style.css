@@ -623,6 +623,7 @@ thead {
     margin: 1.5em 0;
 }
 .conversation-message {
+    position: relative;
     max-width: 85%;
     border-radius: 12px;
     padding: 0.6em 1em;
@@ -677,4 +678,35 @@ thead {
     .conversation-message {
         max-width: 95%;
     }
+}
+.copy-conversation-button {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    padding: 4px 6px;
+    border: 1px solid rgba(0,0,0,0.15);
+    border-radius: 4px;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s ease-in;
+    line-height: 1;
+}
+.conversation-message:hover .copy-conversation-button {
+    opacity: 0.5;
+}
+.copy-conversation-button:hover {
+    opacity: 1 !important;
+}
+.copy-conversation-button.copied {
+    opacity: 1 !important;
+    color: #22863a;
+}
+.conversation-message--user .copy-conversation-button {
+    border-color: rgba(255,255,255,0.3);
+    color: rgba(255,255,255,0.85);
+}
+.conversation-message--user .copy-conversation-button.copied {
+    color: #6fcf97;
 }

@@ -22,6 +22,67 @@ document.addEventListener('DOMContentLoaded', function () {
     return 'assistant'; // default fallback
   }
 
+  // Lightweight HTML-to-markdown for clipboard
+  function htmlToMarkdown(el) {
+    var html = el.innerHTML;
+    var tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    return (function walk(node) {
+      if (node.nodeType === 3) return node.textContent;
+      if (node.nodeType !== 1) return '';
+      var tag = node.tagName;
+      var children = Array.prototype.map.call(node.childNodes, walk).join('');
+      if (tag === 'STRONG' || tag === 'B') return '**' + children + '**';
+      if (tag === 'EM' || tag === 'I') return '*' + children + '*';
+      if (tag === 'CODE') return '`' + children + '`';
+      if (tag === 'A') return '[' + children + '](' + (node.getAttribute('href') || '') + ')';
+      if (tag === 'P') return children + '\n\n';
+      if (tag === 'BR') return '\n';
+      if (tag === 'DIV') return children;
+      return children;
+    })(tmp).replace(/\n{3,}/g, '\n\n').trim();
+  }
+
+  var COPY_SVG =
+    '<svg class="copy-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+      '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>' +
+      '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>' +
+    '</svg>';
+  var CHECK_SVG =
+    '<svg class="check-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">' +
+      '<polyline points="20 6 9 17 4 12"></polyline>' +
+    '</svg>';
+
+  function addCopyButton(msgDiv) {
+    var btn = document.createElement('button');
+    btn.className = 'copy-conversation-button';
+    btn.title = 'Copy message';
+    btn.innerHTML = COPY_SVG + CHECK_SVG;
+    btn.addEventListener('click', function () {
+      var content = msgDiv.querySelector('.conversation-content');
+      var text = htmlToMarkdown(content);
+      navigator.clipboard.writeText(text).then(function () {
+        btn.querySelector('.copy-icon').style.display = 'none';
+        btn.querySelector('.check-icon').style.display = 'block';
+        btn.classList.add('copied');
+        setTimeout(function () {
+          btn.querySelector('.copy-icon').style.display = 'block';
+          btn.querySelector('.check-icon').style.display = 'none';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    });
+    msgDiv.appendChild(btn);
+  }
+
+  function isConversationRole(label) {
+    var lower = label.toLowerCase().trim();
+    if (KNOWN_ROLES.indexOf(lower) !== -1) return true;
+    if (lower.indexOf('assistant') !== -1) return true;
+    if (lower.indexOf('verification') !== -1) return true;
+    return false;
+  }
+
   function hasTimestamp(label) {
     // Exclude podcast-style labels like "Lex Fridman (03:41:56)"
     return /\(\d{1,2}:\d{2}(:\d{2})?\)/.test(label);
@@ -77,36 +138,30 @@ document.addEventListener('DOMContentLoaded', function () {
     if (paragraphs.length === 0) continue;
 
     var messages = [];
-    var roleLabelCount = 0;
-    var hasKnownRole = false;
+    var knownRoleCount = 0;
 
     for (var j = 0; j < paragraphs.length; j++) {
       var p = paragraphs[j];
       var parsed = parseRoleFromP(p);
 
-      if (parsed) {
-        roleLabelCount++;
+      if (parsed && isConversationRole(parsed.label)) {
+        knownRoleCount++;
         var roleClass = classifyRole(parsed.label);
-        if (KNOWN_ROLES.indexOf(parsed.label.toLowerCase().trim()) !== -1 ||
-            parsed.label.toLowerCase().indexOf('assistant') !== -1 ||
-            parsed.label.toLowerCase().indexOf('verification') !== -1) {
-          hasKnownRole = true;
-        }
         messages.push({
           role: roleClass,
           label: parsed.label,
           contentParts: [parsed.contentHTML]
         });
       } else {
-        // Continuation paragraph — append to previous message
+        // Continuation paragraph (or non-conversation bold label) — append to previous message
         if (messages.length > 0) {
           messages[messages.length - 1].contentParts.push(p.innerHTML);
         }
       }
     }
 
-    // Qualify: ≥2 role-labeled paragraphs, OR ≥1 with a known conversation role
-    if (roleLabelCount < 2 && !(roleLabelCount >= 1 && hasKnownRole)) continue;
+    // Require at least one known conversation role
+    if (knownRoleCount < 1) continue;
 
     // Build the conversation container
     var container = document.createElement('div');
@@ -130,6 +185,7 @@ document.addEventListener('DOMContentLoaded', function () {
         contentDiv.appendChild(pEl);
       }
       msgDiv.appendChild(contentDiv);
+      addCopyButton(msgDiv);
 
       container.appendChild(msgDiv);
     }
