@@ -71,7 +71,7 @@ tikz: | $(GENERATED_DIR)
 			else \
 				echo "  ERROR: PDF not generated for $${base}"; \
 			fi; \
-			rm -f tikz/*.aux tikz/*.log; \
+			rm -f tikz/$${base}.aux tikz/$${base}.log tikz/$${base}.pdf; \
 		fi \
 	done
 	@echo "TikZ diagrams generated in $(GENERATED_DIR)/{pdf,png,svg}/"
