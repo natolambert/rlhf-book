@@ -614,3 +614,67 @@ thead {
   color: #22863a;
   border-color: #22863a;
 }
+
+/* Conversation chat UI */
+.conversation {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    margin: 1.5em 0;
+}
+.conversation-message {
+    max-width: 85%;
+    border-radius: 12px;
+    padding: 0.6em 1em;
+}
+.conversation-message--user {
+    align-self: flex-end;
+    background: #0f3460;
+    color: #fff;
+}
+.conversation-message--assistant {
+    align-self: flex-start;
+    background: #f4f4f8;
+    color: #333;
+}
+.conversation-message--system {
+    align-self: center;
+    border: 1px solid #ddd;
+    background: transparent;
+    color: #666;
+    font-style: italic;
+    font-size: 0.9em;
+    max-width: 90%;
+}
+.conversation-role {
+    font-size: 0.65em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.15em;
+    opacity: 0.75;
+}
+.conversation-message--user .conversation-role {
+    color: rgba(255, 255, 255, 0.85);
+}
+.conversation-content p {
+    margin: 0 0 0.3em;
+}
+.conversation-content p:last-child {
+    margin-bottom: 0;
+}
+.conversation-content code {
+    font-size: 0.85em;
+}
+.conversation-message--user a {
+    color: #8ec8f8;
+}
+.conversation-message--user code {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+}
+@media screen and (max-width: 480px) {
+    .conversation-message {
+        max-width: 95%;
+    }
+}
