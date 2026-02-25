@@ -171,13 +171,25 @@ samp {
     color: #000;
     font-family: monospace, monospace;
     _font-family: 'courier new', monospace;
-    font-size: 0.98em;
+    font-size: 0.85em;
 }
 
 pre {
     white-space: pre;
     white-space: pre-wrap;
     word-wrap: break-word;
+    line-height: 1.4;
+    padding: 1em 1.2em;
+    background-color: #f6f6f6;
+    border: 1px solid #e8e8e8;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+p code, li code {
+    background-color: #f0f0f0;
+    padding: 0.15em 0.35em;
+    border-radius: 3px;
 }
 
 
@@ -565,4 +577,37 @@ thead {
 }
 #search .pagefind-ui__result-excerpt {
     text-align: left;
+}
+
+/* Copy code button */
+pre {
+  position: relative;
+}
+.copy-code-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  color: #666;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease-in;
+  line-height: 1;
+  z-index: 1;
+}
+pre:hover .copy-code-button {
+  opacity: 0.7;
+}
+.copy-code-button:hover {
+  opacity: 1 !important;
+  border-color: #bbb;
+  color: #333;
+}
+.copy-code-button.copied {
+  opacity: 1 !important;
+  color: #22863a;
+  border-color: #22863a;
 }
