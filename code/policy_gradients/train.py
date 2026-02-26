@@ -537,10 +537,10 @@ def main(
         if not speedrun_goal_reported and speedrun_target_reward is not None:
             if reward_100avg is not None and reward_100avg >= speedrun_target_reward:
                 speedrun_goal_reported = True
-                goal_reached_at_step = step
+                goal_reached_at_step = step + 1
                 goal_walltime_sec = walltime_at_step[-1]
                 console.print(
-                    f"[bold green]Speedrun goal reached[/bold green] at step {goal_reached_at_step + 1} "
+                    f"[bold green]Speedrun goal reached[/bold green] at step {goal_reached_at_step} "
                     f"(walltime: {goal_walltime_sec} sec)"
                 )
 
