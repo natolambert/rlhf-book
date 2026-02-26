@@ -345,7 +345,6 @@ def main(
     speedrun: bool = False,
     speedrun_target_reward: float | None = None,
     speedrun_metrics_file: str = "logs/speedrun/speedrun_metrics.json",
-    speedrun_include_wandb: bool = False,
 ):
     """Main training loop."""
     seed_everything(cfg.seed)
@@ -567,13 +566,12 @@ def main(
             "goal_reached_at_step": goal_reached_at_step,
             "goal_walltime_sec": goal_walltime_sec,
         }
-        if speedrun_include_wandb:
-            if wandb_run_id:
-                payload["wandb_run_id"] = wandb_run_id
-            if wandb_entity:
-                payload["wandb_entity"] = wandb_entity
-            if wandb_project_name:
-                payload["wandb_project"] = wandb_project_name
+        if wandb_run_id:
+            payload["wandb_run_id"] = wandb_run_id
+        if wandb_entity:
+            payload["wandb_entity"] = wandb_entity
+        if wandb_project_name:
+            payload["wandb_project"] = wandb_project_name
         dirpath = os.path.dirname(metrics_path)
         if dirpath:
             os.makedirs(dirpath, exist_ok=True)
@@ -588,7 +586,6 @@ def main_cli():
     parser.add_argument("--speedrun", action="store_true", help="Enable speedrun metrics (JSON output, 100-step avg goal)")
     parser.add_argument("--speedrun-target-reward", type=float, default=None, help="Target reward for goal detection (100-step avg)")
     parser.add_argument("--speedrun-metrics-file", type=str, default="logs/speedrun/speedrun_metrics.json", help="Output path for speedrun JSON")
-    parser.add_argument("--speedrun-include-wandb", action="store_true", help="Include wandb run info in speedrun JSON output")
     args = parser.parse_args()
     cfg = load_config(args.config)
     main(
@@ -596,7 +593,6 @@ def main_cli():
         speedrun=args.speedrun,
         speedrun_target_reward=args.speedrun_target_reward,
         speedrun_metrics_file=args.speedrun_metrics_file,
-        speedrun_include_wandb=args.speedrun_include_wandb,
     )
 
 

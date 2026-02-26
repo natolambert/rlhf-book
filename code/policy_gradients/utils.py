@@ -26,14 +26,12 @@ def speedrun_opts(
     enabled: bool = True,
     target_reward: float | None = None,
     metrics_file: str = "logs/speedrun/speedrun_metrics.json",
-    include_wandb: bool = False,
 ) -> dict[str, Any]:
     """Return speedrun options for main(). Use as: main(cfg, **speedrun_opts(target_reward=0.85))"""
     return {
         "speedrun": enabled,
         "speedrun_target_reward": target_reward,
         "speedrun_metrics_file": metrics_file,
-        "speedrun_include_wandb": include_wandb,
     }
 
 
