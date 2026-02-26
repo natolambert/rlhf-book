@@ -17,8 +17,8 @@ Consider an example: how do you decide which of these two poems is better (Conte
 
 Example 1:
 
-> The Optimistic Goldfish
-> 
+> **Response**: The Optimistic Goldfish
+>
 > A little goldfish, bright and bold,
 > Swam in circles, dreams untold.
 > Though the bowl was small and round,
@@ -36,8 +36,8 @@ Example 1:
 
 Example 2:
 
-> The Optimistic Goldfish
-> 
+> **Response**: The Optimistic Goldfish
+>
 > In a bowl of curved glass,
 > Swims a goldfish, bright and bold.
 > Three seconds of memory, they say,
