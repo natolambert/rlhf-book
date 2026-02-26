@@ -22,7 +22,7 @@ uv run python -m policy_gradients.train \
 
 ## How to add a record
 
-After a run, append a row to the table from `speedrun_metrics.json`:
+After a run, append a row to the table from the speedrun JSON:
 
 ```bash
 # From code/ (default: logs/speedrun/speedrun_metrics.json)
@@ -44,11 +44,11 @@ The script writes Date, run_id, walltime, final_reward, algorithm, and goal info
 
 - **Date**: Run date (YYYY-MM-DD)
 - **Runner**: Handle or name (optional)
-- **run_id**: Wandb run ID or JSON filename stem (links to `logs/speedrun/{run_id}.json`)
-- **walltime**: Seconds from start to end (or e.g. "X min Y sec")
+- **run_id**: Wandb run ID or JSON filename stem (corresponds to `logs/speedrun/{run_id}.json`)
+- **walltime**: Total training time (e.g. `4 h 44 min 49 sec`)
 - **final_reward**: Average reward at the last step (accuracy + format, after KL penalty)
 - **algorithm**: Algorithm (rloo / ppo / drgrpo / gspo / cispo / reinforce, etc.)
-- **Notes**: GPU, data size, goal info (e.g. `goal(1.0)@step99(3 h 5 min)`)
+- **Notes**: GPU, data size, goal info (e.g. `goal(1.28)@step108(3 h 24 min)`)
 
 ---
 
