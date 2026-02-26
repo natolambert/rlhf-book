@@ -1,0 +1,4 @@
+# Build artifacts - outputs go to ../generated/{pdf,png,svg}/
+*.pdf
+*.aux
+*.log

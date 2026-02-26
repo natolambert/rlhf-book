@@ -2,6 +2,7 @@
 prev-chapter: "Home"
 prev-url: "https://rlhfbook.com/"
 page-title: Introduction
+search-title: "Chapter 1: Introduction"
 next-chapter: "Key Related Works"
 next-url: "02-related-works"
 ---
@@ -63,7 +64,7 @@ RLHF is at the core of this transition.
 To start, let us consider how a language model at the end of autoregressive pretraining answers a query. 
 A strong model, Llama 3.1 405B Base, will continue from "The president of the united states in 2006 was":
 
-> George W. Bush, the governor of Florida in 2006 was Jeb Bush, and John McCain was an Arizona senator in 2006 - who later lost to obama.
+> **Response**: George W. Bush, the governor of Florida in 2006 was Jeb Bush, and John McCain was an Arizona senator in 2006 - who later lost to obama.
 > September 1 -- U.S. President Bush signs an executive order to provide more options for faith-based organizations when delivering social services that are paid for with federal funds.
 > January 1 -- The current deadline set by United States Congress in the Unlawful Internet Gambling Enforcement Act, aka UIGEA.
 > search: Amendments to the 1961 International Convention for the Protection of New Varieties of Plants require plant breeders' rights include farmer's privilege.
@@ -74,7 +75,7 @@ What is clear is that this model is completing the sentence and adding other com
 In contrast, a model trained with RLHF (and other post-training tools) would answer the question very differently.
 Asking Tülu 3 405B the same question "The president of the united states in 2006 was," it says concisely:
 
-> George W. Bush was the president of the United States in 2006. He served two terms in office, from January 20, 2001, to January 20, 2009.
+> **Response**: George W. Bush was the president of the United States in 2006. He served two terms in office, from January 20, 2001, to January 20, 2009.
 
 This change in style is downstream of the post-training methods described in this book.
 
@@ -82,30 +83,30 @@ The most compelling view of how RLHF works is to consider how *style* applies to
 The style, closely related to tone or format, of information presented is crucial to how it is learned.
 Style is often used to describe the manner of the model. To see the difference, consider two example responses to the following question:
 
-> Help, I have to give a presentation tomorrow and I’m panicking.
+> **User**: Help, I have to give a presentation tomorrow and I’m panicking.
 
 A blunt, low-empathy style:
 
-> You'll be fine. Practice your slides a few times, get some sleep, and stop overthinking it. Just present what you know and move on.
+> **Response**: You'll be fine. Practice your slides a few times, get some sleep, and stop overthinking it. Just present what you know and move on.
 
 A warmer, more supportive style:
 
-> That sounds really stressful, and it’s a normal reaction. If you can, do one quick practice run now, pick the one or two points you most want people to remember, and then give yourself permission to rest—being clear and calm tomorrow will matter more than cramming tonight.
+> **Response**: That sounds really stressful, and it’s a normal reaction. If you can, do one quick practice run now, pick the one or two points you most want people to remember, and then give yourself permission to rest—being clear and calm tomorrow will matter more than cramming tonight.
 
 
 On the other hand, format is how the answer is structured. 
 Modern models are known to use extensive markdown formatting with lists, linebreaks, and emojis. 
 Consider two answers to the following question that are very different:
 
-> How can I improve my sleep quality?
+> **User**: How can I improve my sleep quality?
 
 The simple answer, from an early language model:
 
-> Try to go to bed at the same time each night, avoid caffeine late in the day, and keep your bedroom quiet and dark.
+> **Response**: Try to go to bed at the same time each night, avoid caffeine late in the day, and keep your bedroom quiet and dark.
 
 Or a complex, richer answer:
 
-> Better sleep, in practice
+> **Response**: Better sleep, in practice
 > 
 > **Goal**: make your schedule predictable and your environment boring enough that your brain gives up.
 > 
@@ -133,7 +134,7 @@ Intuitively, this can be seen in how the optimization techniques are applied.
 Instruction fine-tuning trains the model to predict the next token when the text preceding is close to examples it has seen.
 It is optimizing the model to more regularly output specific features in text. This is a per-token update.
 
-RLHF on the other hand tunes the responses on the response level rather than looking at the next token specifically.
+RLHF on the other hand tunes completions on the response level rather than looking at the next token specifically.
 Additionally, it is telling the model what a *better* response looks like, rather than a specific response it should learn.
 RLHF also shows a model which type of response it should avoid, i.e. negative feedback. 
 The training to achieve this is often called a *contrastive* loss function and is referenced throughout this book.
@@ -158,7 +159,7 @@ The way I've been describing the potential of post-training is called the elicit
 To make this example click, we make the analogy between the base model -- the language model that comes out of the large-scale, next-token prediction pretraining -- and other foundational components in building complex systems. We use the example of the chassis of a car, which defines the space where a car can be built around it.
 Consider Formula 1 (F1): most of the teams show up to the beginning of the year with a new chassis and engine. Then, they spend all year on aerodynamics and systems changes (of course, it is a minor oversimplification), and can dramatically improve the performance of the car. The best F1 teams improve far more during a season than chassis-to-chassis.
 
-The same is true for post-training, where one can extract a ton of performance out of a static base model as they learn more about its quirks and tendencies. The best post-training teams extract a ton of performance in a very short time frame. The set of techniques is everything after the end of most of pretraining. It includes "mid-training" like annealing / high-quality end of pretraining web data, instruction tuning, RLVR, preference-tuning, etc. A good example is the change from the first version of the Allen Institute for AI's fully-open, small Mixture-of-Experts (MoE) model OLMoE Instruct to the second. The first model was released in the fall of 2024 [@muennighoff2024olmoe], and with the second version only updating the the post-training, the evaluation average on popular benchmarks went from from 35 to 48 without changing the majority of pretraining [@ai2_olmoe_ios_2025].
+The same is true for post-training, where one can extract a ton of performance out of a static base model as they learn more about its quirks and tendencies. The best post-training teams extract a ton of performance in a very short time frame. The set of techniques is everything after the end of most of pretraining. It includes "mid-training" like annealing / high-quality end of pretraining web data, instruction tuning, RLVR, preference-tuning, etc. A good example is the change from the first version of the Allen Institute for AI's fully-open, small Mixture-of-Experts (MoE) model OLMoE Instruct to the second. The first model was released in the fall of 2024 [@muennighoff2024olmoe], and with the second version only updating the post-training, the evaluation average on popular benchmarks went from 35 to 48 without changing the majority of pretraining [@ai2_olmoe_ios_2025].
 
 The idea is that there is a lot of intelligence and ability within base models, but because they can only answer in next-token prediction and not question-answering format, it takes a lot of work building around them, through post-training, in order to make excellent final models.
 
@@ -185,6 +186,15 @@ If we change the data, the impact could be far higher on the model's performance
 The superficial alignment hypothesis is wrong for the same reason that people who think RLHF and post-training are just for vibes are still wrong. 
 This was a field-wide lesson we had to overcome in 2023 (one many AI observers are still rooted in). 
 Post-training has far outgrown that, and we are coming to see that the style of models operates on top of behavior --- such as the now popular long chain of thought.
+
+As the AI community shifts post-training further into the era of agentic and reasoning models, the superficial alignment hypothesis breaks down further.
+RL methods are becoming an increasingly large share of the compute needed to train frontier language models.
+In the short time since reinforcement learning with verifiable rewards (RLVR) was coined in our work on Tülu 3 in the fall of 2024 [@lambert2024t] to today, the scale of compute used for post-training has grown dramatically.
+DeepSeek R1, famous for popularizing RLVR, used only about 5% of their overall compute in post-training -- 147K H800 GPU hours for RL training on R1 [@guo2025deepseek], relative to 2.8M GPU hours for pretraining the underlying DeepSeek V3 base model [@deepseekai2025deepseekv3technicalreport].
+
+The science studying the core methods of scaling RL as of 2025 shows that individual ablation runs can take 10-100K GPU hours [@khatri2025art], the equivalent of the compute used for the RL stage of OLMo 3.1 Think 32B (released in November of 2025), which trained for 4 weeks on 200 GPUs [@teamolmo2025olmo3].
+The science of scaled post-training is in its very early stages as of writing this, adopting ideas and methods from pretraining language models and applying them in this new domain, so the exact GPU hours used will change, but the trend of increased compute on post-training will continue.
+All together, the elicitation theory of post-training is likely to become the correct view only when applying a lighter post-training recipe -- something useful for specializing a model -- relative to the compute-intensive frontier models.
 
 ## How We Got Here
 

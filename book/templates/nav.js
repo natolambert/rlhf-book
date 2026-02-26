@@ -21,7 +21,7 @@ class NavigationDropdown extends HTMLElement {
         <ul>
           <li><a href="https://rlhfbook.com">Home</a></li>
           <li><a href="https://github.com/natolambert/rlhf-book">GitHub Repository</a></li>
-          <li><a href="https://rlhfbook.com/book.pdf">PDF</a> / <a href="https://arxiv.org/abs/2504.12501">Arxiv</a> / <a href="https://rlhfbook.com/book.epub">EPUB</a></li>
+          <li><a href="https://rlhfbook.com/book.pdf">PDF</a> / <a href="https://arxiv.org/abs/2504.12501">Arxiv</a> / <a href="https://rlhfbook.com/book.epub">EPUB</a> / <a href="https://rlhfbook.com/book.kindle.epub">Kindle</a></li>
           <li><a href="https://hubs.la/Q03TsMBq0">Pre-order now!</a></li>
           <li><a href="https://rlhfbook.com/library">Library</a></li>
         </ul>
@@ -54,13 +54,13 @@ class NavigationDropdown extends HTMLElement {
           <li><a href="https://rlhfbook.com/c/10-preferences">What are Preferences</a></li>
           <li><a href="https://rlhfbook.com/c/11-preference-data">Preference Data</a></li>
           <li><a href="https://rlhfbook.com/c/12-synthetic-data">Synthetic Data & CAI</a></li>
-          <li><a href="https://rlhfbook.com/c/13-tools">Tool Use</a></li>
         </ol>
       </div>
 
       <div class="section">
         <h3>Practical Considerations</h3>
-        <ol start="14">
+        <ol start="13">
+          <li><a href="https://rlhfbook.com/c/13-tools">Tool Use</a></li>
           <li><a href="https://rlhfbook.com/c/14-over-optimization">Over-optimization</a></li>
           <li><a href="https://rlhfbook.com/c/15-regularization">Regularization</a></li>
           <li><a href="https://rlhfbook.com/c/16-evaluation">Evaluation</a></li>
@@ -77,9 +77,16 @@ class NavigationDropdown extends HTMLElement {
         </ol>
       </div>
     </nav>
+    <div id="search"></div>
   </div>
 </div>
       `;
+
+      // Initialize Pagefind search if available
+      var searchEl = this.querySelector('#search');
+      if (searchEl && typeof PagefindUI !== 'undefined') {
+        new PagefindUI({ element: searchEl, showImages: false });
+      }
 
       // Set up click handler
       const button = this.querySelector('.dropdown-button');

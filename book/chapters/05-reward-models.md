@@ -2,6 +2,7 @@
 prev-chapter: "Instruction Tuning"
 prev-url: "04-instruction-tuning"
 page-title: Reward Models
+search-title: "Chapter 5: Reward Models"
 next-chapter: "Reinforcement Learning"
 next-url: "06-policy-gradients"
 ---
@@ -318,7 +319,7 @@ where $s$ is a sampled chain-of-thought with $K$ annotated steps, $y_{s_i} \in \
 
 Here's an example of how this per-step label can be packaged in a trainer, from HuggingFace's TRL (Transformer Reinforcement Learning) [@vonwerra2022trl]:
 
-```
+```python
 # Get the ID of the separator token and add it to the completions
 separator_ids = tokenizer.encode(step_separator, add_special_tokens=False)
 completions_ids = [completion + separator_ids for completion in completions_ids]
@@ -347,7 +348,7 @@ class ProcessRewardModel(nn.Module):
 
     def forward(self, input_ids, attention_mask=None, labels=None):
         """
-        The inputs are tokenizer prompts and completions, where the the end of a 
+        The inputs are tokenizer prompts and completions, where the end of a 
          "reasoning step" is denoted by another non-padding token. 
         labels will be a list of labels, True, False, and Neutral (3 labels) which
          will be predicted by the model.

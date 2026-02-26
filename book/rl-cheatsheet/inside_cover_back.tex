@@ -1,0 +1,131 @@
+\documentclass[9pt]{extarticle}
+\usepackage[margin=0.5in,top=0.45in,bottom=0.45in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{multicol}
+\usepackage{array}
+\usepackage{tabularx}
+\pagestyle{empty}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+
+\begin{document}
+
+\vspace*{\fill}
+\begin{center}
+{\Large\bfseries Language model reinforcement learning at a glance}
+\end{center}
+
+\vspace{4pt}
+{\centering\textbf{Core loss $\mathcal{L}(\theta)$ per RL algorithm}\par}
+\vspace{2pt}
+\hrule
+\vspace{6pt}
+
+\begin{center}
+\begin{tabularx}{0.92\textwidth}{>{\raggedright\arraybackslash\bfseries}p{5.8cm} @{\quad} X}
+
+Policy Gradient
+&
+$\displaystyle -\;\mathbb{E}_\tau\!\left[\sum_{t=0}^{T} \log \pi_\theta(a_t\mid s_t)\, A^{\pi_\theta}(s_t, a_t)\right]$
+\\[22pt]
+
+REINFORCE
+\newline\mdseries\scriptsize (REward Increment =
+Nonnegative Factor $\times$
+Offset Reinforcement $\times$
+Characteristic Eligibility)
+&
+$\displaystyle -\;\frac{1}{T}\sum_{t=1}^{T}\log \pi_\theta(a_t\mid s_t)\,(G_t - b(s_t))$
+\\[22pt]
+
+REINFORCE Leave One Out
+\newline\mdseries (RLOO)
+&
+$\displaystyle -\;\frac{1}{K}\sum_{i=1}^{K}\sum_t \log \pi_\theta(a_{i,t}\mid s_{i,t})\!\left(R_i - \frac{1}{K\!-\!1}\sum_{j\neq i}R_j\right)$
+\\[22pt]
+
+Proximal Policy Optimization
+\newline\mdseries (PPO)
+&
+$\displaystyle -\;\frac{1}{T}\sum_{t=1}^{T}\min\!\left(\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)} A_t,\; \mathrm{clip}\!\left(\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) A_t\right)$
+\\[22pt]
+
+Group Relative Policy Optimization
+\newline\mdseries (GRPO)
+&
+$\displaystyle -\;\frac{1}{G}\sum_{i=1}^{G}\min\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)} \hat{A}_i,\; \mathrm{clip}\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) \hat{A}_i\right)$
+\newline
+where $\hat{A}_i = \dfrac{r_i - \overline{r}}{\mathrm{std}(r)}$
+\\[36pt]
+
+Group Sequence Policy Optimization
+\newline\mdseries (GSPO)
+&
+$\displaystyle -\;\frac{1}{G}\sum_{i=1}^{G}\min\!\left(\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)}\right)^{\!\frac{1}{|a_i|}} A_i,\; \mathrm{clip}\!\left(\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)}\right)^{\!\frac{1}{|a_i|}},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) A_i\right)$
+\\[30pt]
+
+Clipped Importance Sampling Policy Optimization
+\newline\mdseries (CISPO)
+&
+$\displaystyle -\;\frac{1}{\sum_i |a_i|}\sum_{i=1}^{K}\sum_{t=1}^{|a_i|} \mathrm{sg}\!\Big(\mathrm{clip}\big(\tfrac{\pi_\theta(a_{i,t}\mid s)}{\pi_{\theta_{\text{old}}}(a_{i,t}\mid s)},\, 1\!-\!\varepsilon_{\text{low}},\, 1\!+\!\varepsilon_{\text{high}}\big)\Big)\, A_{i,t} \log \pi_\theta(a_{i,t}\mid s)$
+\newline
+where $\mathrm{sg}(\cdot)$ = stop gradient
+\\
+\end{tabularx}
+\end{center}
+
+\vspace{6pt}
+{\centering\textbf{Other core equations}\par}
+\vspace{2pt}
+\hrule
+\vspace{6pt}
+
+\begin{center}
+\begin{tabularx}{0.92\textwidth}{>{\raggedright\arraybackslash\bfseries}p{5.8cm} @{\quad} X}
+
+RLHF Objective
+&
+$\displaystyle J(\theta) = \max_{\pi}\; \mathbb{E}_{x \sim \mathcal{D}}\,\mathbb{E}_{y \sim \pi(y|x)} \Big[r_\theta(x, y)\Big] - \beta\, \mathcal{D}_{\text{KL}}\!\Big(\pi(y|x) \,\|\, \pi_{\text{ref}}(y|x)\Big)$
+\\[14pt]
+
+Bradley--Terry
+\newline Reward Model
+&
+$\displaystyle \mathcal{L}(\theta) = -\log \sigma\!\Big( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) \Big)$
+\\[14pt]
+
+Direct Preference Optimization
+\newline\mdseries (DPO)
+&
+$\displaystyle \mathcal{L}(\theta) = -\;\mathbb{E}\!\left[ \log \sigma\!\left( \beta \log \frac{\pi_{\theta}(y_c \mid x)}{\pi_{\text{ref}}(y_c \mid x)} - \beta \log \frac{\pi_{\theta}(y_r \mid x)}{\pi_{\text{ref}}(y_r \mid x)} \right) \right]$
+\\
+\end{tabularx}
+\end{center}
+
+\vspace{6pt}
+{\centering\textbf{Notation}\par}
+\vspace{2pt}
+\hrule
+\vspace{1pt}
+
+\noindent\hspace*{0.04\textwidth}\hspace{0.4cm}%
+\small
+\renewcommand{\arraystretch}{1.3}%
+\begin{tabular}{@{} >{$}l<{$} @{\;\;} l @{\qquad\qquad\qquad} >{$}l<{$} @{\;\;} l @{}}
+x, y & Prompt, completion & A_t & Advantage estimate \\
+y_c,\, y_r & Chosen / rejected completion & \beta & KL penalty coefficient \\
+y_c \succ y_r & $y_c$ is preferred over $y_r$ & \sigma(z) & Sigmoid: $1/(1+e^{-z})$ \\
+\pi_\theta & Policy (the model being trained) & \mathcal{D}_{\text{KL}}(P \| Q) & KL divergence between $P$ and $Q$ \\
+\pi_{\text{ref}} & Reference policy (frozen copy) & G_t & Return: $\sum_{k=0}^{\infty} \gamma^k R_{t+k+1}$ \\
+\pi_{\theta_{\text{old}}} & Policy at start of RL batch updates & V(s) & Value: $\mathbb{E}[G_t \mid S_t = s]$ \\
+r_\theta(y \mid x) & Reward model score & & \\
+\end{tabular}
+
+\vspace*{\fill}
+\begin{center}
+\small Nathan Lambert\enspace--\enspace\texttt{rlhfbook.com/rl-cheatsheet}
+\end{center}
+
+\end{document}

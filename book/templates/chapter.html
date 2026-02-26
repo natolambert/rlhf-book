@@ -60,10 +60,15 @@ $for(header-includes)$
   $header-includes$
 $endfor$
 
+<link href="/pagefind/pagefind-ui.css" rel="stylesheet">
+<script src="/pagefind/pagefind-ui.js"></script>
 <!-- custom js nav -->
 <script src="nav.js" defer></script>
 <script src="header-anchors.js" defer></script>
 <script src="table-scroll.js" defer></script>
+<script src="citation-tooltips.js" defer></script>
+<script src="copy-code.js" defer></script>
+<script src="conversation.js" defer></script>
 
 <!-- Privacy-friendly analytics by Plausible -->
 <script async src="https://plausible.io/js/pa-Rr3_iGtVZcPHhxkdbyDIb.js"></script>
@@ -79,7 +84,7 @@ $include-before$
 $endfor$
 $if(title)$
 <header id="title-block-header">
-<h1 class="title"><a href="https://rlhfbook.com/" style="color: inherit; text-decoration: none;">$title$</a></h1>
+<div class="title" role="heading" aria-level="1"><a href="https://rlhfbook.com/" style="color: inherit; text-decoration: none;">$title$</a></div>
 $if(subtitle)$
 <p class="subtitle">$subtitle$</p>
 $endif$
@@ -99,7 +104,7 @@ $endif$
 $table-of-contents$
 </nav>
 $endif$
-<div id="content">
+<div id="content" data-pagefind-body $if(search-title)$data-pagefind-meta="title:$search-title$"$endif$>
   $body$
 </div>
 
@@ -143,7 +148,7 @@ $endfor$
       <img src="assets/manning.svg" alt="Manning" style="width: 40px; height: 40px;">
     </a>
   </div>
-  <p>&copy; 2024-2026 Nathan Lambert</p>
+  <p>&copy; 2024-2026 Nathan Lambert &middot; <a href="https://rlhfbook.com" style="color: #888; text-decoration: none;">rlhfbook.com</a></p>
 </footer>
 </body>
 </html>

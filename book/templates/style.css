@@ -114,7 +114,12 @@ h1 {
     font-size: 2.5em;
 }
 
-h1.title {
+.title {
+    font-size: 2.5em;
+    color: #111;
+    line-height: 125%;
+    margin-top: 2em;
+    font-weight: normal;
     hyphens: none;
     -webkit-hyphens: none;
     -moz-hyphens: none;
@@ -166,13 +171,28 @@ samp {
     color: #000;
     font-family: monospace, monospace;
     _font-family: 'courier new', monospace;
-    font-size: 0.98em;
+    font-size: 0.85em;
 }
 
 pre {
     white-space: pre;
-    white-space: pre-wrap;
-    word-wrap: break-word;
+    line-height: 1.4;
+    padding: 1em 1.2em;
+    background-color: #f6f6f6;
+    border: 1px solid #e8e8e8;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+/* Override pandoc's .sourceCode { overflow: visible } which kills scrollbars */
+pre.sourceCode {
+    overflow-x: auto !important;
+}
+
+p code, li code {
+    background-color: #f0f0f0;
+    padding: 0.15em 0.35em;
+    border-radius: 3px;
 }
 
 
@@ -523,3 +543,193 @@ thead {
       font-size: 14px;
     }
   }
+
+/* Citation tooltips */
+.citation-tooltip {
+  position: absolute;
+  max-width: 350px;
+  padding: 8px 12px;
+  background: #fff;
+  color: #333;
+  font-family: Georgia, Palatino, 'Palatino Linotype', Times, 'Times New Roman', serif;
+  font-size: 0.85em;
+  line-height: 1.5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease-in;
+}
+
+/* Pagefind search styling inside nav */
+#search {
+    padding: 0.5rem;
+}
+#search .pagefind-ui__search-input {
+    font-size: 0.85rem;
+    border: none;
+    border-radius: 5px;
+}
+#search .pagefind-ui__form::before {
+    border-radius: 5px;
+}
+#search .pagefind-ui__result {
+    text-align: left;
+}
+#search .pagefind-ui__result-excerpt {
+    text-align: left;
+}
+
+/* Copy code button */
+.code-wrapper {
+  position: relative;
+}
+.copy-code-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  color: #666;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease-in;
+  line-height: 1;
+  z-index: 1;
+}
+.code-wrapper:hover .copy-code-button {
+  opacity: 0.7;
+}
+.copy-code-button:hover {
+  opacity: 1 !important;
+  border-color: #bbb;
+  color: #333;
+}
+.copy-code-button.copied {
+  opacity: 1 !important;
+  color: #22863a;
+  border-color: #22863a;
+}
+
+/* Conversation chat UI */
+.conversation {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+    margin: 1.5em 0;
+}
+.conversation-message {
+    position: relative;
+    max-width: 85%;
+    border-radius: 12px;
+    padding: 0.6em 1em;
+}
+.conversation-message--user {
+    align-self: flex-end;
+    background: #0f3460;
+    color: #fff;
+}
+.conversation-message--assistant {
+    align-self: flex-start;
+    background: #f4f4f8;
+    color: #333;
+}
+.conversation-message--system {
+    align-self: center;
+    border: 1px solid #ddd;
+    background: transparent;
+    color: #666;
+    font-style: italic;
+    font-size: 0.9em;
+    max-width: 90%;
+}
+.conversation-role {
+    font-size: 0.65em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.15em;
+    opacity: 0.75;
+}
+.conversation-message--user .conversation-role {
+    color: rgba(255, 255, 255, 0.85);
+}
+.conversation-content p {
+    margin: 0 0 0.3em;
+}
+.conversation-content p:last-child {
+    margin-bottom: 0;
+}
+.conversation-content code {
+    font-size: 0.85em;
+}
+.conversation-message--user a {
+    color: #8ec8f8;
+}
+.conversation-message--user code {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+}
+@media screen and (max-width: 480px) {
+    .conversation-message {
+        max-width: 95%;
+    }
+}
+.copy-conversation-button {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    padding: 4px 6px;
+    border: 1px solid rgba(0,0,0,0.15);
+    border-radius: 4px;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s ease-in;
+    line-height: 1;
+}
+.conversation-message:hover .copy-conversation-button {
+    opacity: 0.5;
+}
+.copy-conversation-button:hover {
+    opacity: 1 !important;
+}
+.copy-conversation-button.copied {
+    opacity: 1 !important;
+    color: #22863a;
+}
+.conversation-message--user .copy-conversation-button {
+    border-color: rgba(255,255,255,0.3);
+    color: rgba(255,255,255,0.85);
+}
+.conversation-message--user .copy-conversation-button.copied {
+    color: #6fcf97;
+}
+/* Thinking token collapsible block */
+.thinking-block {
+    margin: 0.4em 1.5em 0.4em 0;
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 6px;
+    padding: 0.4em 0.7em;
+    background: rgba(0,0,0,0.03);
+    font-size: 0.92em;
+}
+.thinking-block summary {
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.8em;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #888;
+    user-select: none;
+}
+.thinking-content {
+    margin-top: 0.3em;
+    color: #555;
+    font-style: italic;
+}

@@ -34,6 +34,7 @@ jobs:
           # brew update # (slow) uncomment this for minor version updates if needed to debug other issues
           brew install make
           brew install pandoc-crossref
+          brew install poppler
           # Only install TeX if not cached
           if [ "${{ steps.cache-texlive.outputs.cache-hit }}" != "true" ]; then
             echo "Cache miss - installing TeX Live..."
@@ -41,7 +42,7 @@ jobs:
             eval "$(/usr/libexec/path_helper)"
             sudo tlmgr update --self
             # Install pdflatex packages (comes with basictex, but ensure dependencies)
-            sudo tlmgr install collection-fontsrecommended collection-latexextra
+            sudo tlmgr install collection-fontsrecommended collection-latexextra standalone
           else
             echo "Cache hit - skipping TeX Live installation"
           fi
@@ -60,10 +61,13 @@ jobs:
           rm -rf build
           mkdir -p build/html
 
-      - name: Build book (HTML, PDF, EPUB)
+      - name: Build book (HTML, PDF, EPUB, Kindle)
         run: |
           make
           make files
+
+      - name: Build Pagefind search index
+        run: npx --yes pagefind --site build/html --glob "c/**/*.html"
 
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v3

@@ -85,11 +85,11 @@ ECHO_BUILT = @echo "$@ was built\n"
 # Basic actions
 ####################################################################################################
 
-.PHONY: all book clean epub html pdf docx nested_html latex kindle
+.PHONY: all book clean epub html pdf docx nested_html latex kindle rl-cheatsheet pagefind
 
 all:	book
 
-book:	epub html pdf docx
+book:	epub kindle html pdf docx rl-cheatsheet
 
 clean:
 	$(RMDIR_CMD) $(BUILD)
@@ -143,9 +143,15 @@ $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html:	$(HTML_DEPENDENCIES)
 	$(COPY_CMD) book/templates/nav.js $(BUILD)/html/
 	$(COPY_CMD) book/templates/header-anchors.js $(BUILD)/html/
 	$(COPY_CMD) book/templates/table-scroll.js $(BUILD)/html/
+	$(COPY_CMD) book/templates/citation-tooltips.js $(BUILD)/html/
+	$(COPY_CMD) book/templates/copy-code.js $(BUILD)/html/
+	$(COPY_CMD) book/templates/conversation.js $(BUILD)/html/
 	$(COPY_CMD) book/templates/nav.js $(BUILD)/html/c/
 	$(COPY_CMD) book/templates/header-anchors.js $(BUILD)/html/c/
 	$(COPY_CMD) book/templates/table-scroll.js $(BUILD)/html/c/
+	$(COPY_CMD) book/templates/citation-tooltips.js $(BUILD)/html/c/
+	$(COPY_CMD) book/templates/copy-code.js $(BUILD)/html/c/
+	$(COPY_CMD) book/templates/conversation.js $(BUILD)/html/c/
 	cp book/templates/style.css $(BUILD)/html/style.css || echo "Failed to copy style.css"
 	@mkdir -p $(BUILD)/html/data
 	@test -f book/data/library.json && cp book/data/library.json $(BUILD)/html/data/library.json || echo "No library data to copy"
@@ -154,6 +160,15 @@ $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html:	$(HTML_DEPENDENCIES)
 $(BUILD)/html/library.html: book/templates/library.html
 	$(MKDIR_CMD) $(BUILD)/html
 	cp book/templates/library.html $@
+
+rl-cheatsheet: $(BUILD)/html/rl-cheatsheet/inside_cover_back.pdf
+
+$(BUILD)/html/rl-cheatsheet/inside_cover_back.pdf: book/rl-cheatsheet/inside_cover_back.tex book/rl-cheatsheet/index.html
+	mkdir -p $(BUILD)/html/rl-cheatsheet
+	cp book/rl-cheatsheet/index.html $(BUILD)/html/rl-cheatsheet/
+	cp book/rl-cheatsheet/inside_cover_back.tex $(BUILD)/html/rl-cheatsheet/
+	cd $(BUILD)/html/rl-cheatsheet && pdflatex inside_cover_back.tex
+	rm -f $(BUILD)/html/rl-cheatsheet/*.aux $(BUILD)/html/rl-cheatsheet/*.log
 
 # Nested HTML build targets
 NESTED_HTML_DIR = $(BUILD)/html/c/
@@ -229,6 +244,7 @@ files:
 	cp -R book/code $(BUILD)/html/ || echo "Failed to copy code redirect page"
 	cp $(BUILD)/pdf/book.pdf $(BUILD)/html/ || echo "Failed to copy to $(BUILD)/html/"
 	cp $(BUILD)/epub/book.epub $(BUILD)/html/ || echo "Failed to copy EPUB to $(BUILD)/html/"
+	cp $(BUILD)/kindle/book.kindle.epub $(BUILD)/html/ || echo "Failed to copy Kindle EPUB to $(BUILD)/html/"
 	cp -r book/images $(BUILD)/html/c/ || echo "Failed to copy images to $(BUILD)/html/c/"
 	cp -r book/assets $(BUILD)/html/ || echo "Failed to copy assets to $(BUILD)/html/"
 	cp -r book/assets $(BUILD)/html/c/ || echo "Failed to copy assets to $(BUILD)/html/c/"
@@ -238,3 +254,17 @@ files:
 	cp ./book/templates/header-anchors.js $(BUILD)/html/c/ || echo "Failed to copy header-anchors.js to $(BUILD)/html/c/"
 	cp ./book/templates/table-scroll.js $(BUILD)/html/ || echo "Failed to copy table-scroll.js to $(BUILD)/html/"
 	cp ./book/templates/table-scroll.js $(BUILD)/html/c/ || echo "Failed to copy table-scroll.js to $(BUILD)/html/c/"
+	cp ./book/templates/citation-tooltips.js $(BUILD)/html/ || echo "Failed to copy citation-tooltips.js to $(BUILD)/html/"
+	cp ./book/templates/citation-tooltips.js $(BUILD)/html/c/ || echo "Failed to copy citation-tooltips.js to $(BUILD)/html/c/"
+	cp ./book/templates/copy-code.js $(BUILD)/html/ || echo "Failed to copy copy-code.js to $(BUILD)/html/"
+	cp ./book/templates/copy-code.js $(BUILD)/html/c/ || echo "Failed to copy copy-code.js to $(BUILD)/html/c/"
+	cp ./book/templates/conversation.js $(BUILD)/html/ || echo "Failed to copy conversation.js to $(BUILD)/html/"
+	cp ./book/templates/conversation.js $(BUILD)/html/c/ || echo "Failed to copy conversation.js to $(BUILD)/html/c/"
+	mkdir -p $(BUILD)/html/rl-cheatsheet
+	cp book/favicon.ico $(BUILD)/html/rl-cheatsheet/ || echo "Failed to copy favicon to rl-cheatsheet"
+	cp book/templates/style.css $(BUILD)/html/rl-cheatsheet/style.css || echo "Failed to copy style.css to rl-cheatsheet"
+	cp ./book/templates/nav.js $(BUILD)/html/rl-cheatsheet/ || echo "Failed to copy nav.js to rl-cheatsheet"
+	cp -r book/assets $(BUILD)/html/rl-cheatsheet/ || echo "Failed to copy assets to rl-cheatsheet"
+
+pagefind: html files
+	npx --yes pagefind --site $(BUILD)/html --glob "c/**/*.html"

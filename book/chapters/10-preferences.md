@@ -2,6 +2,7 @@
 prev-chapter: "Rejection Sampling"
 prev-url: "09-rejection-sampling"
 page-title: What are Preferences
+search-title: "Chapter 10: What are Preferences"
 next-chapter: "Preference Data"
 next-url: "11-preference-data"
 ---
@@ -12,12 +13,15 @@ Reinforcement learning from human feedback, also referred to as reinforcement le
 The word *preferences*, which was present in early literature, is at the center of the RLHF process -- human preferences are what is trying to be modeled and what fuels the data for training.
 In order to understand the scope of the challenge in modeling and measuring human preferences, a broader context is needed in understanding what a preference is, how our understanding of them emerged, and how multiple fields of economics, psychology, philosophy, and more inform modern RLHF.
 
-Consider an example: how do you decide which of these two poems is better (Context: *On February 26th, 2025, I asked both Claude 3.7 Sonnet and ChatGPT with GPT-4o to "Write me a short poem about an optimistic goldfish."*):
+Consider an example: how do you decide which of these two poems is better?
+On February 26th, 2025, I asked both Claude 3.7 Sonnet and ChatGPT with GPT-4o the following:
+
+> **User**: Write me a short poem about an optimistic goldfish.
 
 Example 1:
 
-> The Optimistic Goldfish
-> 
+> **Response**: The Optimistic Goldfish
+>
 > A little goldfish, bright and bold,
 > Swam in circles, dreams untold.
 > Though the bowl was small and round,
@@ -35,8 +39,8 @@ Example 1:
 
 Example 2:
 
-> The Optimistic Goldfish
-> 
+> **Response**: The Optimistic Goldfish
+>
 > In a bowl of curved glass,
 > Swims a goldfish, bright and bold.
 > Three seconds of memory, they say,
