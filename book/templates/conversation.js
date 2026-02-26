@@ -75,6 +75,28 @@ document.addEventListener('DOMContentLoaded', function () {
     msgDiv.appendChild(btn);
   }
 
+  function wrapThinkingTokens(contentDiv) {
+    // Detect <code>&lt;thinking&gt;</code> ... <code>&lt;/thinking&gt;</code> and wrap in collapsible <details>
+    var html = contentDiv.innerHTML;
+    var openTag = '<code>&lt;thinking&gt;</code>';
+    var closeTag = '<code>&lt;/thinking&gt;</code>';
+    var openIdx = html.indexOf(openTag);
+    var closeIdx = html.indexOf(closeTag);
+    if (openIdx === -1 || closeIdx === -1 || closeIdx <= openIdx) return;
+
+    var before = html.substring(0, openIdx);
+    var thinkingContent = html.substring(openIdx + openTag.length, closeIdx);
+    var after = html.substring(closeIdx + closeTag.length);
+
+    contentDiv.innerHTML =
+      before +
+      '<details class="thinking-block" open>' +
+        '<summary>Thinking</summary>' +
+        '<div class="thinking-content">' + thinkingContent + '</div>' +
+      '</details>' +
+      after;
+  }
+
   function isConversationRole(label) {
     var lower = label.toLowerCase().trim();
     if (KNOWN_ROLES.indexOf(lower) !== -1) return true;
@@ -184,6 +206,7 @@ document.addEventListener('DOMContentLoaded', function () {
         pEl.innerHTML = msg.contentParts[m];
         contentDiv.appendChild(pEl);
       }
+      wrapThinkingTokens(contentDiv);
       msgDiv.appendChild(contentDiv);
       addCopyButton(msgDiv);
 
