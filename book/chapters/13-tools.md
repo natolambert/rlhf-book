@@ -13,7 +13,7 @@ Language models using tools is a natural way to expand their capabilities, espec
 Tool-use is a skill that language models need to be trained to have, where RLHF and all the other methods presented in this book can refine it.
 Consider a question from a user such as:
 
-> Who is the president today?
+> **User**: Who is the president today?
 
 A language model without tools will have a hard time answering this question due to the knowledge cutoff of pretraining data, but this is readily accessible information with one search query.
 

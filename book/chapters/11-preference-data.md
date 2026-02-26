@@ -138,7 +138,7 @@ In many applications of RLHF and post-training, preference data can be created *
 For example, in mathematical reasoning domains the chosen response can be a correct answer and the rejected an incorrect answer.
 Another example is in precise instruction following, such as the evaluation IFEval [@zhou2023instructionfollowingevaluationlargelanguage], where prompts take the form of:
 
-> Write me a short poem about a goldfish. **Start each sentence with the letter g.**
+> **Prompt**: Write me a short poem about a goldfish. **Start each sentence with the letter g.**
 
 The second part of this query is called the constraint, and the preference data could be constructed with an example in the chosen column that follows the constraint.
 Constructing this preference data, which would be included as *synthetic* preference data, involves prompting the same model (or multiple models) twice. Once with the constraint included and once without.

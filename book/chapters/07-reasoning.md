@@ -65,7 +65,7 @@ For code generation, verification often takes the form of unit tests:
 >     return fib(n - 1) + fib(n - 2)
 >
 > **Verification (unit tests)**:
-
+>
 > assert fib(0) == 0   # base case
 > assert fib(1) == 1   # base case
 > assert fib(10) == 55 # larger value
@@ -96,8 +96,8 @@ Reasoning models brought an era where scaling RL training is expected.
 As for the type of behavior these models accrue, consider the following example with DeepSeek V3 0325 versus their reasoning model, DeepSeek R1, on the query `Write me a short poem about a goldfish`. 
 DeepSeek V3 is very to the point:
 
-> Goldfish Dreams
-> 
+> **Response**: Goldfish Dreams
+>
 > In a bowl of glass so clear and round,
 > A tiny goldfish swims without a sound.
 > With scales that gleam like sunlight's kiss,
@@ -112,7 +112,7 @@ Meanwhile, DeepSeek R1's experience is different.
 It first generates numerous thinking tokens to craft a response before responding to the user.
 The answer appears as:
 
-> `<thinking>` Okay, the user wants a short poem about a goldfish. Let me start by brainstorming some goldfish-related imagery. Goldfish are often in bowls, right? So maybe start with the setting. Words like "gilded bowl" or "crystal globe" could work.
+> **Response**: `<thinking>` Okay, the user wants a short poem about a goldfish. Let me start by brainstorming some goldfish-related imagery. Goldfish are often in bowls, right? So maybe start with the setting. Words like "gilded bowl" or "crystal globe" could work.
 > 
 > Next, think about the movement of the goldfish. They swim smoothly, so words like "dart", "glide", or "swirl" come to mind. Maybe describe their fins as "silken" to emphasize delicacy.
 > 

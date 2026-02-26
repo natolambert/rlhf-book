@@ -64,7 +64,7 @@ RLHF is at the core of this transition.
 To start, let us consider how a language model at the end of autoregressive pretraining answers a query. 
 A strong model, Llama 3.1 405B Base, will continue from "The president of the united states in 2006 was":
 
-> George W. Bush, the governor of Florida in 2006 was Jeb Bush, and John McCain was an Arizona senator in 2006 - who later lost to obama.
+> **Response**: George W. Bush, the governor of Florida in 2006 was Jeb Bush, and John McCain was an Arizona senator in 2006 - who later lost to obama.
 > September 1 -- U.S. President Bush signs an executive order to provide more options for faith-based organizations when delivering social services that are paid for with federal funds.
 > January 1 -- The current deadline set by United States Congress in the Unlawful Internet Gambling Enforcement Act, aka UIGEA.
 > search: Amendments to the 1961 International Convention for the Protection of New Varieties of Plants require plant breeders' rights include farmer's privilege.
@@ -75,7 +75,7 @@ What is clear is that this model is completing the sentence and adding other com
 In contrast, a model trained with RLHF (and other post-training tools) would answer the question very differently.
 Asking Tülu 3 405B the same question "The president of the united states in 2006 was," it says concisely:
 
-> George W. Bush was the president of the United States in 2006. He served two terms in office, from January 20, 2001, to January 20, 2009.
+> **Response**: George W. Bush was the president of the United States in 2006. He served two terms in office, from January 20, 2001, to January 20, 2009.
 
 This change in style is downstream of the post-training methods described in this book.
 
@@ -83,30 +83,30 @@ The most compelling view of how RLHF works is to consider how *style* applies to
 The style, closely related to tone or format, of information presented is crucial to how it is learned.
 Style is often used to describe the manner of the model. To see the difference, consider two example responses to the following question:
 
-> Help, I have to give a presentation tomorrow and I’m panicking.
+> **User**: Help, I have to give a presentation tomorrow and I’m panicking.
 
 A blunt, low-empathy style:
 
-> You'll be fine. Practice your slides a few times, get some sleep, and stop overthinking it. Just present what you know and move on.
+> **Response**: You'll be fine. Practice your slides a few times, get some sleep, and stop overthinking it. Just present what you know and move on.
 
 A warmer, more supportive style:
 
-> That sounds really stressful, and it’s a normal reaction. If you can, do one quick practice run now, pick the one or two points you most want people to remember, and then give yourself permission to rest—being clear and calm tomorrow will matter more than cramming tonight.
+> **Response**: That sounds really stressful, and it’s a normal reaction. If you can, do one quick practice run now, pick the one or two points you most want people to remember, and then give yourself permission to rest—being clear and calm tomorrow will matter more than cramming tonight.
 
 
 On the other hand, format is how the answer is structured. 
 Modern models are known to use extensive markdown formatting with lists, linebreaks, and emojis. 
 Consider two answers to the following question that are very different:
 
-> How can I improve my sleep quality?
+> **User**: How can I improve my sleep quality?
 
 The simple answer, from an early language model:
 
-> Try to go to bed at the same time each night, avoid caffeine late in the day, and keep your bedroom quiet and dark.
+> **Response**: Try to go to bed at the same time each night, avoid caffeine late in the day, and keep your bedroom quiet and dark.
 
 Or a complex, richer answer:
 
-> Better sleep, in practice
+> **Response**: Better sleep, in practice
 > 
 > **Goal**: make your schedule predictable and your environment boring enough that your brain gives up.
 > 
