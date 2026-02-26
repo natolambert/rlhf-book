@@ -51,7 +51,7 @@ The script writes Date, goal@step, time-to-target, run_id, walltime, final_rewar
 - **time_to_target**: Walltime at first target reach (based on 100-step rolling average)
 - **run_id**: Wandb run ID or JSON filename stem (corresponds to `logs/speedrun/{run_id}.json`)
 - **walltime**: Total training time (e.g. `4 h 44 min 49 sec`)
-- **final_reward**: Average reward at the last step (accuracy + format, after KL penalty)
+- **final_reward**: Average reward at the last step
 - **algorithm**: Algorithm (rloo / ppo / drgrpo / gspo / cispo / reinforce, etc.)
 - **Notes**: Optional free-form notes (e.g. GPU, data size, batch setup)
 
@@ -61,7 +61,3 @@ The script writes Date, goal@step, time-to-target, run_id, walltime, final_rewar
 
 | Date | Runner | goal@step | time_to_target | run_id | walltime | final_reward | algorithm | wandb | Notes |
 |------|--------|-----------|----------------|--------|----------|--------------|-----------|-------|-------|
-
-## Notes
-
-- Metrics are written when you run training with `uv run python -m policy_gradients.train --config ... --speedrun`. `train.py` creates the output directory if needed.
