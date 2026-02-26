@@ -65,7 +65,7 @@ For code generation, verification often takes the form of unit tests:
 >     return fib(n - 1) + fib(n - 2)
 >
 > **Verification (unit tests)**:
-
+>
 > assert fib(0) == 0   # base case
 > assert fib(1) == 1   # base case
 > assert fib(10) == 55 # larger value
