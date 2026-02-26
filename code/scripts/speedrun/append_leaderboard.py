@@ -98,29 +98,35 @@ def main() -> None:
     else:
         final_reward_str = ""
 
-    if d.get("goal_reached_at_step") is not None and d.get("goal_walltime_sec") is not None:
-        target = d.get("target_reward", "")
+    goal_reached_at_step = d.get("goal_reached_at_step")
+    target = d.get("target_reward", "")
+    goal_step_display = ""
+    if goal_reached_at_step is not None:
         target_str = f"({target})" if target != "" else ""
-        goal_note = f"goal{target_str}@step{d.get('goal_reached_at_step')}({format_walltime(d.get('goal_walltime_sec'))})"
-        notes = f"{goal_note} {notes}".strip() if notes else goal_note
+        goal_step_display = f"goal{target_str}@step{goal_reached_at_step}"
+
+    goal_walltime_sec = d.get("goal_walltime_sec")
+    time_to_target_display = ""
+    if goal_walltime_sec is not None:
+        time_to_target_display = format_walltime(goal_walltime_sec)
 
     walltime_display = format_walltime(walltime_sec)
 
     wandb_cell = ""
     if args.include_wandb:
-        run_id = d.get("wandb_run_id")
+        wandb_run_id = d.get("wandb_run_id")
         entity = d.get("wandb_entity", "")
         project = d.get("wandb_project", "")
-        if run_id and entity and project:
-            url = f"https://wandb.ai/{entity}/{project}/runs/{run_id}"
+        if wandb_run_id and entity and project:
+            url = f"https://wandb.ai/{entity}/{project}/runs/{wandb_run_id}"
             wandb_cell = f"[run]({url})"
-        elif run_id:
+        elif wandb_run_id:
             print(
                 f"Warning: wandb_entity or wandb_project missing in JSON; cannot generate wandb link.",
                 file=sys.stderr,
             )
 
-    new_row = f"| {date_str} | {args.recorder} | {run_id} | {walltime_display} | {final_reward_str} | {config} | {wandb_cell} | {notes} |"
+    new_row = f"| {date_str} | {args.recorder} | {goal_step_display} | {time_to_target_display} | {run_id} | {walltime_display} | {final_reward_str} | {config} | {wandb_cell} | {notes} |"
 
     leaderboard_path = Path(args.leaderboard)
     if not leaderboard_path.exists():
