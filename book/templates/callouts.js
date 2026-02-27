@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Move all children from blockquote into content
     var children = bq.querySelectorAll(':scope > p');
     for (var j = 0; j < children.length; j++) {
-      content.appendChild(children[j].cloneNode(true));
+      content.appendChild(children[j]);
     }
     callout.appendChild(content);
 
