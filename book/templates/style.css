@@ -154,6 +154,55 @@ blockquote {
     border-left: 0.5em #EEE solid;
 }
 
+.callout {
+    margin: 1.5em 0;
+    padding: 0.75em 1em;
+    border-left: 4px solid;
+    border-radius: 6px;
+}
+
+.callout-note {
+    border-color: #4493f8;
+    background: #f0f6ff;
+}
+
+.callout-tip {
+    border-color: #3fb950;
+    background: #f0faf2;
+}
+
+.callout-important {
+    border-color: #a371f7;
+    background: #f5f0ff;
+}
+
+.callout-warning {
+    border-color: #d29922;
+    background: #fff8e6;
+}
+
+.callout-caution {
+    border-color: #f85149;
+    background: #fff0f0;
+}
+
+.callout-title {
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+    font-weight: 600;
+    margin-bottom: 0.4em;
+}
+
+.callout-note .callout-title { color: #4493f8; }
+.callout-tip .callout-title { color: #3fb950; }
+.callout-important .callout-title { color: #a371f7; }
+.callout-warning .callout-title { color: #d29922; }
+.callout-caution .callout-title { color: #f85149; }
+
+.callout-content p:first-child { margin-top: 0; }
+.callout-content p:last-child { margin-bottom: 0; }
+
 hr {
     display: block;
     height: 2px;
