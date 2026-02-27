@@ -708,7 +708,15 @@ token_loss = ((per_token_loss * completion_mask).sum() / \
 
 $$L = \frac{1}{B} \sum_{i=1}^{B} \frac{1}{L_{\max}} \sum_{t=1}^{|a_i|} \ell_{i,t}$$ {#eq:loss_fixed_length}
 
-Normalizes by max sequence length $L_{\max}$, equalizing the per-token scale across sequences while still letting longer sequences contribute more total gradient because they contain more active tokens.
+Normalizes by max sequence length $L_{\max}$, equalizing the per-token scale across sequences while still letting longer sequences contribute more total gradient because they contain more active tokens. In code: 
+
+```python
+# Strategy 3: Fixed-length normalization 
+fixed_len_loss = ((per_token_loss * completion_mask).sum(dim=1) / \
+            L_max).mean()
+```
+
+Where $L_{\max}$ is typically a global constant during the entire training procedure, which specifies the maximum number of generation tokens.
 
 Note that `completion_mask` in the code above is a matrix of 1s and 0s, where the prompt tokens are masked out (0s) because we don't want the model to learn from predicting prompt tokens.
 
