@@ -160,7 +160,9 @@ class BradleyTerryRewardModel(nn.Module):
 ```
 
 In this section and what follows, most of the implementation complexity for reward models (and much of post-training) is around constructing the data-loaders correctly and distributed learning systems.
-Note, when training reward models, the most common practice is to train for only 1 epoch to avoid overfitting.
+
+> [!TIP]
+> When training reward models, the most common practice is to train for only 1 epoch to avoid overfitting.
 
 ## Variants
 
@@ -180,7 +182,8 @@ For example, each completion is often given a ranking from 1 to 5 in terms of qu
 In the case where the chosen sample was assigned a score of 5 and rejected a score of 2, the margin $m(y_c, y_r)= 5 - 2 = 3$. 
 Other functions for computing margins can be explored.
 
-Note that in Llama 3 the margin term was removed as the team observed diminishing improvements after scaling.
+> [!NOTE]
+> In Llama 3 the margin term was removed as the team observed diminishing improvements after scaling.
 
 ### Balancing Multiple Comparisons Per Prompt
 
@@ -296,13 +299,10 @@ This can be a noisy process, as the updates and loss propagates per token depend
 
 ![Training an outcome reward model uses offline labels from a verifier or dataset (e.g., all 1s for correct completions). Each completion token is trained with binary cross-entropy against the outcome label, and per-token probabilities are aggregated into a final score for verification, filtering, or reranking.](images/orm_training.png){#fig:orm_training}
 
-These models have continued to be used, but are less supported in open-source RLHF tools. 
+These models have continued to be used, but are less supported in open-source RLHF tools.
 For example, the same type of ORM was used in the seminal work *Let's Verify Step by Step* [@lightman2023let], but without the language modeling prediction piece of the loss.
 Then, the final loss is a cross-entropy loss on every token, predicting whether the final answer is correct.
-
-Given the lack of support, the term outcome reward model (ORM) has been used in multiple ways. 
-Some literature, e.g. [@lyu2025exploring], continues to use the original definition from Cobbe et al. 2021. 
-Others do not.
+Given this lack of support, the term outcome reward model (ORM) has been used inconsistently across the literature -- some works, e.g. [@lyu2025exploring], continue to use the original definition from Cobbe et al. 2021, while others do not.
 
 
 ## Process Reward Models
@@ -485,7 +485,8 @@ Given the efficacy of LLM-as-a-judge for evaluation, spawning many other evaluat
 An entire field of study has emerged around how to use so-called "Generative Reward Models" [@mahan2024generative]
 [@zhang2024generative] [@ankner2024critique] (including models trained *specifically* to be effective judges [@kim2023prometheus]), but on RM evaluations they tend to be behind existing reward models, showing that reward modeling is an important technique for current RLHF.
 
-A common trick to improve the robustness of LLM-as-a-judge workflows is to use a sampling temperature of 0 to reduce variance of ratings.
+> [!TIP]
+> A common trick to improve the robustness of LLM-as-a-judge workflows is to use a sampling temperature of 0 to reduce variance of ratings.
 
 ## Further Reading
 

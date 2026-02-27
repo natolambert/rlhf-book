@@ -46,9 +46,10 @@ This necessity for on-policy data is not well documented, but many popular techn
 The same uncertainty applies for the popular area of AI feedback data -- the exact balance between human and AI preference data used for the latest AI models is unknown.
 These data sources are known to be a valuable path to improve performance, but careful tuning of processes is needed to extract that potential performance from a data pipeline.
 
-A subtle but important point is that the *chosen* answer in preference data is often not a globally *correct* answer.
-Instead, it is the answer that is better relative to the alternatives shown (e.g., clearer, safer, more helpful, or less incorrect).
-There can be cases where every completion being compared to a given prompt is correct or incorrect, and the models can still learn from well-labeled data.
+> [!IMPORTANT]
+> A subtle but important point is that the *chosen* answer in preference data is often not a globally *correct* answer.
+> Instead, it is the answer that is better relative to the alternatives shown (e.g., clearer, safer, more helpful, or less incorrect).
+> There can be cases where every completion being compared to a given prompt is correct or incorrect, and the models can still learn from well-labeled data.
 
 ### Interface
 
@@ -233,7 +234,8 @@ Not many organizations have the bandwidth and expertise to make full use of huma
 
 This experience, especially relative to the simplicity of synthetic data, makes me wonder how well these companies will be doing in the next decade.
 
-Note that this section *does not* mirror the experience for buying human-written instruction data, where the process is less of a time crunch.
+> [!NOTE]
+> This section *does not* mirror the experience for buying human-written instruction data, where the process is less of a time crunch.
 Early post-training processes were built around the first stage of training being heavily driven by carefully crafted, human answers to a set of prompts.
 This stage of data is not subject to the on-policy restrictions for multiple reasons: Instruction data is used directly on top of a base model, so on-policy doesn't really apply; the loss-function for instruction fine-tuning doesn't need the contrastive data of preference fine-tuning; and other structural advantages.
 Today, the primary other focus of human data is in generating prompts for post-training -- which dictate the training distribution of topics for the model -- or on challenging tasks at the frontier of model performance.

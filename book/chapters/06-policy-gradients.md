@@ -644,8 +644,9 @@ In this section, we highlight some key factors that differentiate the implementa
 There are many other small details that go into this training. 
 For example, when doing RLHF with language models a crucial step is generating text that will then be rated by the reward model. 
 Under normal circumstances, the model should generate an end-of-sequence (EOS) token indicating it finished generating, but a common practice is to put a hard cap on generation length to efficiently utilize infrastructure.
-A failure mode of RLHF is that the model is regularly truncated in its answers, driving the ratings from the reward model out-of-distribution and to unpredictable scores.
-The solution to this is to *only* run reward model scoring on the `eos_token`, and to otherwise assign a penalty to the model for generating too long.
+
+> [!IMPORTANT]
+> A failure mode of RLHF is that the model is regularly truncated in its answers, driving the ratings from the reward model out-of-distribution and to unpredictable scores. The solution to this is to *only* run reward model scoring on the `eos_token`, and to otherwise assign a penalty to the model for generating too long.
 
 The popular open-source tools for RLHF have a large variance in implementation details across the algorithms (see table 10 in [@ivison2024unpacking]).
 Some decisions not covered here include:
@@ -888,8 +889,9 @@ There are many, many implementations of PPO available.
 The core *loss* computation is shown below. 
 Crucial to stable performance is also the *value* computation, where multiple options exist (including multiple options for the *value model* loss).
 
-Note that the reference policy (or old logprobs) here are from the time the generations were sampled and not necessarily the reference policy. 
-The reference policy is only used for the KL distance constraint/penalty.
+> [!IMPORTANT]
+> The reference policy (or old logprobs) here are from the time the generations were sampled and not necessarily the reference policy.
+> The reference policy is only used for the KL distance constraint/penalty.
 
 ```python
 # B: Batch Size, L: Sequence Length, G: Num of Generations

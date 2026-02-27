@@ -207,9 +207,10 @@ Another example of confusion when comparing evaluations from multiple laboratori
 Inference-time scaling shows that models can improve in performance by using more tokens at inference.
 Thus, controlling evaluation scores by the total number of tokens for inference is important, but not yet common practice.
 
-Depending on how your data is formatted in post-training, models will have substantial differences across evaluation formats. 
-For example, two popular, open math datasets NuminaMath [@li2024numinamath] and MetaMath [@yu2023metamath] conflict with each other in training due to small differences in how the answers are formatted -- Numina puts the answer in `\boxed{XYZ}` and MetaMath puts the answer after `The answer is: XYZ` -- training on both can make performance worse than with just one. 
-Strong models are trained to be able to function with multiple formats, but they generally have a strongest format.
+> [!WARNING]
+> Depending on how your data is formatted in post-training, models will have substantial differences across evaluation formats.
+> For example, two popular, open math datasets NuminaMath [@li2024numinamath] and MetaMath [@yu2023metamath] conflict with each other in training due to small differences in how the answers are formatted -- Numina puts the answer in `\boxed{XYZ}` and MetaMath puts the answer after `The answer is: XYZ` -- training on both can make performance worse than with just one.
+> Strong models are trained to be able to function with multiple formats, but they generally have a strongest format.
 
 In the end we are left with a few key points on the state of evaluating closed models:
 
