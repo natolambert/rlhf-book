@@ -50,9 +50,8 @@ document.addEventListener('DOMContentLoaded', function () {
     content.className = 'callout-content';
 
     // Move all children from blockquote into content
-    var children = bq.querySelectorAll(':scope > p');
-    for (var j = 0; j < children.length; j++) {
-      content.appendChild(children[j]);
+    while (bq.firstChild) {
+      content.appendChild(bq.firstChild);
     }
     callout.appendChild(content);
 
