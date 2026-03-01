@@ -359,7 +359,8 @@ div.abstract {
 }
 
 #changelog,
-#acknowledgements {
+#acknowledgements,
+#citation {
     font-size: 0.9em;
 }
 
