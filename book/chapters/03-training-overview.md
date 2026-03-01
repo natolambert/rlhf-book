@@ -27,12 +27,13 @@ Together, the policy and dynamics induce a trajectory distribution:
 
 $$p_{\pi}(\tau)=\rho_0(s_0)\prod_{t=0}^{T-1}\pi(a_t\mid s_t)\,p(s_{t+1}\mid s_t,a_t).$$ {#eq:rl_dynam}
 
-Across a finite episode with horizon $T$, the goal of an RL agent is to solve the following optimization:
+Across a finite episode with horizon $T$, the goal of an RL agent is to solve the following optimization, where $\gamma$ is a discount factor from 0 to 1 that balances the desirability of near-term versus future rewards:
 
-$$J(\pi) = \mathbb{E}_{\tau \sim p_{\pi}} \left[ \sum_{t=0}^{T-1} \gamma^t r(s_t, a_t) \right],$$ {#eq:rl_opt}
+$$\max_\pi \; \mathbb{E}_{\tau \sim p_{\pi}} \left[ \sum_{t=0}^{T-1} \gamma^t r(s_t, a_t) \right],$$ {#eq:rl_opt}
+
+The expected return for a given policy is often denoted $J(\pi)$, with the optimal value written $J^* = \max_\pi J(\pi)$.
 
 For continuing tasks, one often takes $T\to\infty$ and relies on discounting ($\gamma<1$) to keep the objective well-defined.
-$\gamma$ is a discount factor from 0 to 1 that balances the desirability of near-term versus future rewards.
 Multiple methods for optimizing this expression are discussed in Chapter 6.
 
 ![Standard RL loop](images/rl.png){#fig:rl width=320px .center}
@@ -52,7 +53,7 @@ The thermostat example has the following components (see @fig:thermostat-equatio
 
 $$\pi(a_t = \text{on} \mid s_t) = \begin{cases} 1 & \text{if } s_t < 70^{\circ}\text{F} \\ 0 & \text{otherwise} \end{cases}$$ {#eq:thermostat_policy}
 
-- **Transition**: the room warms when the heater is on and cools when it is off -- this is the environment dynamics that the agent cannot control directly.
+- **Transition**: the room warms when the heater is on and cools when it is off. The agent influences these dynamics through its actions, but the underlying physics -- how fast the room heats or cools -- are outside its control.
 
 ![Each term in the trajectory distribution (@eq:rl_dynam) mapped to the thermostat RL example.](images/thermostat_equation.png){#fig:thermostat-equation .center}
 
@@ -110,7 +111,7 @@ Table: Key differences between standard RL and RLHF for language models. {#tbl:r
 :::
 
 Given the single-turn nature of the problem, the optimization can be re-written without the time horizon and discount factor (and with an explicit reward model):
-$$J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t) \right].$$ {#eq:rl_opt_int}
+$$\max_\pi \; \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t) \right].$$ {#eq:rl_opt_int}
 
 In many ways, the result is that while RLHF is heavily inspired by RL optimizers and problem formulations, the actual implementation is very distinct from traditional RL.
 
@@ -124,7 +125,7 @@ In order to succeed in a fine-tuning regime, RLHF techniques employ multiple typ
 The goal is to allow the reward maximization to still occur without the model succumbing to over-optimization, as discussed in Chapter 14.
 The most common change to the optimization function is to add a distance penalty on the difference between the current RLHF policy and the starting point of the optimization:
 
-$$J(\pi) = \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t)\right] - \beta  \mathcal{D}_{\text{KL}}(\pi(\cdot|s_t) \| \pi_{\text{ref}}(\cdot|s_t)).$$ {#eq:rlhf_opt_eq}
+$$\max_\pi \; \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t)\right] - \beta  \mathcal{D}_{\text{KL}}(\pi(\cdot|s_t) \| \pi_{\text{ref}}(\cdot|s_t)).$$ {#eq:rlhf_opt_eq}
 
 Within this formulation, a lot of study into RLHF training goes into understanding how to spend a certain "KL budget" as measured by a distance from the initial model.
 For more details, see Chapter 15 on Regularization.
