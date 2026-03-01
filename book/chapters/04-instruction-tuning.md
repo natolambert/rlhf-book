@@ -27,7 +27,7 @@ Without a basic level of instruction-following abilities, most of the pipelines 
 
 ## Chat templates and the structure of instructions
 
-The beginning of the post-training process is defining a pattern to format user queries so that they are easily readable by a language model that processes information through a tokenizer.
+The post-training process begins with defining a pattern to format user queries so that they are easily readable by a language model that processes information through a tokenizer.
 When using a pretrained language model, the prompting is quite simple. The model only knows a few tokens: a beginning-of-sequence token (e.g., `<bos_token>`), an end-of-sequence token (e.g., `<eos_token>`), and a padding token (to manage training on batches with empty components).
 This means, to prompt a base model, the user inputs a sequence of tokens for the model to continue from, such as:
 
@@ -103,7 +103,7 @@ How many helicopters can a human eat in one sitting?<|im_end|>
 
 Notice how the final tokens in the sequence are `<|im_start|>assistant`. This is how the model knows to continue generating tokens until it finally generates its end-of-sequence token, which in this case is `<|im_end|>`.
 
-By packing all question-answer pair data (and downstream preference tuning data) into this format, modern language models follow it with perfect consistency. This is the language that instruction tuned models use to exchange information with users and the models stored on GPUs or other computing devices.
+By packing all question-answer pair data (and downstream preference tuning data) into this format, modern language models follow it with perfect consistency. This is the language that instruction tuned models use to exchange information with users and the models running on GPUs or other computing devices.
 
 The behavior can be extended naively to multiple turns, such as shown below:
 
@@ -119,7 +119,7 @@ Are you sure about that?<|im_end|>
 <|im_start|>assistant
 ```
 
-In the open ecosystem, the standard method for applying the chat template to a list of messages is a piece of Jinja code saved in the tokenizer, as `apply_chat_template`.
+In the open ecosystem, the standard method for applying the chat template to a list of messages uses a Jinja snippet -- a lightweight Python templating language -- stored in the tokenizer configuration, as `apply_chat_template`.
 
 The above chat template is a derivative of OpenAI's Chat Markup Language (ChatML), which was an early attempt to standardize message formatting.
 Now, OpenAI and other model providers use a hierarchical system where the user can configure a system message, yet there are higher-level instructions that may or may not be revealed to the user [@wallace2024instruction].
@@ -172,3 +172,4 @@ Many practices, such as deciding on the types of parallelism used to shard model
 - **Prompt masking**: When pretraining, every token in the batch is predicted autoregressively and the loss is then applied to them. For instruction tuning, the prompt tokens are masked out so the model isn't learning to accurately predict user queries -- just responses. The same applies for other post-training algorithms.
 - **Multi-turn masking**: For multi-turn conversations, there are two common masking choices. (1) *Final-turn only*: only the tokens in the final assistant turn are included in the loss, while all earlier context (including earlier assistant turns) is masked. Long conversations can still be "unrolled" into multiple training samples: for a conversation of $N$ turns, each example predicts one assistant response while masking all prior context and excluding any future turns. (2) *Mask user turns only*: all user turns are masked, but *every* assistant turn is included in the loss. You can still unroll in this setting if you want more (shorter) training examples, but the key difference is that intermediate assistant replies are trained on directly.
 - **Same loss function as pretraining:** Instruction tuning uses the same autoregressive loss function used in pretraining language models, but with substantially different data and masking (training only on full sequences, whereas pretraining documents can be split across batches), etc.
+- **Learning rate:** SFT typically uses a learning rate one to two orders of magnitude smaller than pretraining to best manage the different optimization dynamics (smaller datasets, smaller batches, and a strong pretrained initialization all favor more conservative updates). For example, OLMo 2 uses a peak learning rate of $3 \times 10^{-4}$ for pretraining but $1 \times 10^{-5}$ for SFT [@olmo20242]. OLMo 3 uses a higher SFT learning rate of $5\text{--}8 \times 10^{-5}$ [@teamolmo2025olmo3], in part because its training infrastructure uses sequence packing, which fits multiple examples into each training sequence and increases the effective batch size measured in useful tokens. Larger batches produce lower-variance gradient estimates, which in turn supports a higher learning rate without destabilizing training -- a relationship known as the linear scaling rule. The learning rate is commonly warmed up over a small fraction of training steps before decaying linearly. In practice, teams often sweep over multiple learning rates and select the best checkpoint on a held-out evaluation suite [@teamolmo2025olmo3].
