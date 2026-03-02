@@ -11,13 +11,13 @@ Colloquium is under active development -- expect improvements to the slide tooli
 
 ## Setup
 
-Install colloquium from source (recommended while the tool is evolving):
+Install from the repo root (this pulls colloquium from source via the `teach` extra):
 
 ```bash
-uv pip install "colloquium @ git+https://github.com/Interconnects-AI/colloquium.git"
+uv sync --extra teach
 ```
 
-Or from a local clone:
+Or from a local clone for development:
 
 ```bash
 uv pip install -e /path/to/colloquium
