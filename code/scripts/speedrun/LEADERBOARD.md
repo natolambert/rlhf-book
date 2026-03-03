@@ -76,7 +76,7 @@ uv run python scripts/speedrun/remove_leaderboard.py <run_id>
 
 ## Records
 
-Rows are sorted by: target reward (higher first), then time-to-target (faster first), then goal@step (earlier first), then date (newer first). Runs that did not reach the target appear last within their target group.
+Rows are sorted by: (1) target reward (higher first), (2) time-to-target (faster first), (3) goal@step (earlier first), (4) date (newer first). Runs that did not reach the target appear last within their target group.
 
 | Date | Runner | goal@step | time_to_target | run_id | walltime | final_reward | algorithm | wandb | Notes |
 |------|--------|-----------|----------------|--------|----------|--------------|-----------|-------|-------|
