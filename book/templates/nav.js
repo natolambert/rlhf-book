@@ -19,11 +19,13 @@ class NavigationDropdown extends HTMLElement {
       <div class="section">
         <h3>Links</h3>
         <ul>
-          <li><a href="https://rlhfbook.com">Home</a></li>
-          <li><a href="https://github.com/natolambert/rlhf-book">GitHub Repository</a></li>
+          <li><a href="https://rlhfbook.com">Home</a> / <a href="https://github.com/natolambert/rlhf-book">GitHub</a></li>
           <li><a href="https://rlhfbook.com/book.pdf">PDF</a> / <a href="https://arxiv.org/abs/2504.12501">Arxiv</a> / <a href="https://rlhfbook.com/book.epub">EPUB</a> / <a href="https://rlhfbook.com/book.kindle.epub">Kindle</a></li>
           <li><a href="https://hubs.la/Q03TsMBq0">Pre-order now!</a></li>
-          <li><a href="https://rlhfbook.com/library">Library</a></li>
+        </ul>
+        <h3>Resources</h3>
+        <ul>
+          <li><a href="https://rlhfbook.com/rl-cheatsheet">RL Cheatsheet</a> / <a href="https://rlhfbook.com/library">Library</a></li>
         </ul>
       </div>
 
@@ -40,10 +42,10 @@ class NavigationDropdown extends HTMLElement {
         <h3>Core Training Pipeline</h3>
         <ol start="4">
           <li><a href="https://rlhfbook.com/c/04-instruction-tuning">Instruction Tuning</a></li>
-          <li><a href="https://rlhfbook.com/c/05-reward-models">Reward Models</a></li>
-          <li><a href="https://rlhfbook.com/c/06-policy-gradients">Reinforcement Learning</a></li>
+          <li><a href="https://rlhfbook.com/c/05-reward-models">Reward Models</a> [<a href="https://github.com/natolambert/rlhf-book/tree/main/code/reward_models">code</a>]</li>
+          <li><a href="https://rlhfbook.com/c/06-policy-gradients">Reinforcement Learning</a> [<a href="https://github.com/natolambert/rlhf-book/tree/main/code/policy_gradients">code</a>]</li>
           <li><a href="https://rlhfbook.com/c/07-reasoning">Reasoning</a></li>
-          <li><a href="https://rlhfbook.com/c/08-direct-alignment">Direct Alignment</a></li>
+          <li><a href="https://rlhfbook.com/c/08-direct-alignment">Direct Alignment</a> [<a href="https://github.com/natolambert/rlhf-book/tree/main/code/direct_alignment">code</a>]</li>
           <li><a href="https://rlhfbook.com/c/09-rejection-sampling">Rejection Sampling</a></li>
         </ol>
       </div>

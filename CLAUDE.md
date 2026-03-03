@@ -95,6 +95,15 @@ response = model.generate_content([
 - **Chapter 11 (Policy Gradients)**: PPO visualizations, async vs sync training
 - **Chapter 12 (DPO)**: Direct alignment visualizations
 
+## Footer Convention
+
+The site footer (citation block + logos + copyright) appears in three templates:
+- `book/templates/html.html` — **source of truth** (index page)
+- `book/templates/chapter.html` — chapter pages (uses h4 instead of h3 for Citation heading)
+- `book/templates/library.html` — library standalone page (uses h4 instead of h3)
+
+When updating the footer, edit `html.html` first, then copy the changes to `chapter.html` and `library.html`. The only difference is the Citation heading level (h3 on index, h4 on chapters/library).
+
 ## Style Notes
 
 - Keep diagrams simple and artist-friendly
