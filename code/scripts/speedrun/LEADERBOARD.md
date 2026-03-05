@@ -21,7 +21,7 @@ uv run python -m policy_gradients.train \
   --speedrun --speedrun-target-reward 1.35
 ```
 
-> **Note**: Speedrun options (`--speedrun`, `--speedrun-target-reward`) are **CLI-only**. Adding them to your YAML config file will not work — specify them on the command line as shown above.
+> **Note**: Speedrun options (`--speedrun`, `--speedrun-target-reward`) are **CLI-only**. Adding them to your YAML config file will not work — make sure to specify them on the command line as shown above.
 
 - Other algorithms: change the YAML, e.g. `--config policy_gradients/configs/rloo.yaml`
 - Custom output path: `--speedrun-metrics-file path/to/file.json`
@@ -48,9 +48,9 @@ uv run python scripts/speedrun/append_leaderboard.py --recorder "your_name" --no
 uv run python scripts/speedrun/append_leaderboard.py --sort-only
 ```
 
-The script writes Date, goal@step, time-to-target, run_id, walltime, final_reward, and algorithm to the table. For multiple runs, list your best or a representative run.
+The script writes Date, goal@step, time-to-target, run_id, walltime, final_reward, and algorithm to the table. For multiple runs, you can list your best or a representative run.
 
-- **wandb**: Use `--include-wandb` to add a wandb run link to the table (opt-in for sharing). Wandb metadata is automatically saved in the JSON when wandb is enabled during training. For others to view the link, set the project to Public in wandb project settings.
+- **wandb**: You can use `--include-wandb` to add a wandb run link to the table (opt-in for sharing). Wandb metadata is automatically saved in the JSON when wandb is enabled during training. For others to view the link, make sure to set the project to Public in wandb project settings.
 
 - **Date**: Run date (YYYY-MM-DD)
 - **Runner**: Handle or name (optional)
@@ -64,7 +64,7 @@ The script writes Date, goal@step, time-to-target, run_id, walltime, final_rewar
 
 ## (3) How to remove a record
 
-If a row was added by mistake (wrong metrics, duplicate entry, etc.), remove it by `run_id`:
+If a row was added by mistake (wrong metrics, duplicate entry, etc.), you can remove it by `run_id`:
 
 ```bash
 # Dry-run: show which row would be removed (no changes made)
