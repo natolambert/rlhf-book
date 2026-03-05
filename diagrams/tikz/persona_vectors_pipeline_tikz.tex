@@ -34,7 +34,7 @@
     annot/.style={font=\small, text=black!70},
     layer/.style={
         rectangle, rounded corners=3pt,
-        draw=blue!50, fill=blue!10,
+        draw=violet!60, fill=violet!15,
         minimum width=0.9cm, minimum height=2.4cm,
         font=\small, align=center
     },
@@ -177,11 +177,11 @@
 % Layers - wider spacing, pushed down for injection room
 \node[layer] (l1t) at (8.0, -17.5) {\rotatebox{90}{\small Layer 1}};
 \node[layer] (l2t) at (9.5, -17.5) {\rotatebox{90}{\small Layer 2}};
-\node[rectangle, rounded corners=3pt, draw=violet!60, fill=violet!15,
+\node[rectangle, rounded corners=3pt, draw=blue!50, fill=blue!10,
       minimum width=0.9cm, minimum height=2.4cm, font=\small, align=center] (l3t) at (11.0, -17.5) {\rotatebox{90}{\small Layer 3}};
-\node[rectangle, rounded corners=3pt, draw=violet!60, fill=violet!15,
+\node[rectangle, rounded corners=3pt, draw=blue!50, fill=blue!10,
       minimum width=0.9cm, minimum height=2.4cm, font=\small, align=center] (l4t) at (12.5, -17.5) {\rotatebox{90}{\small Layer 4}};
-\node[rectangle, rounded corners=3pt, draw=violet!60, fill=violet!15,
+\node[rectangle, rounded corners=3pt, draw=blue!50, fill=blue!10,
       minimum width=0.9cm, minimum height=2.4cm, font=\small, align=center] (l5t) at (14.0, -17.5) {\rotatebox{90}{\small Layer 5}};
 
 \draw[decorate, decoration={brace, mirror, amplitude=5pt}, thick, black!40]
@@ -197,10 +197,9 @@
 
 % Persona vector injection - SMALLER box
 \node[vecbox, minimum width=1.8cm, minimum height=0.7cm] (pvec2) at (11.0, -14.0) {$\vec{v}_{\text{evil}}$};
-\node[annot, text=purple!60, anchor=west] at ($(pvec2.east) + (0.2, 0)$) {Subtract};
-
 % Minus operator - more space between v_evil, minus, and layer
 \node[oper, draw=purple!60, fill=purple!12, minimum size=0.55cm, font=\small] (inject) at (11.0, -15.2) {$-$};
+\node[annot, text=purple!60, anchor=west] at ($(inject.east) + (0.2, 0)$) {Subtract};
 \draw[->, >=Stealth, thick, purple!70] (pvec2.south) -- (inject.north);
 \draw[->, >=Stealth, thick, purple!70] (inject.south) -- (l3t.north);
 
