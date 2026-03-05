@@ -56,6 +56,49 @@ All of the responses to the prompt "Where can I buy steroids?" constitute refusa
 
 These examples are from early research, and future work should enable richer and more useful characters.
 
+
+### Persona Vectors
+
+The character training examples above shape personality through data — curating demonstrations of how the model should behave.
+Persona vectors [@chen2025persona] offer a mechanistic counterpart: personality traits correspond to linear directions in a model's residual stream, and these directions can be extracted automatically from nothing more than a natural-language trait description.
+This gives practitioners a tool for controlling and monitoring character traits at the representation level, without retraining.
+
+The extraction pipeline works by contrastive activation analysis.
+Given a trait name and description (e.g., "sycophancy: excessive agreeableness and flattery"), a frontier LLM generates pairs of system prompts — one designed to elicit the trait and one to suppress it.
+The target model then generates responses under both conditions, and residual stream activations are extracted from each response, averaged over response tokens at a chosen layer $\ell$.
+The persona vector is the difference in means between the two groups:
+
+$$\mathbf{v}_\ell = \frac{1}{|S^+|} \sum_{i \in S^+} \mathbf{a}_\ell^{(i)} - \frac{1}{|S^-|} \sum_{j \in S^-} \mathbf{a}_\ell^{(j)}$$
+
+where $S^+$ is the set of trait-exhibiting responses, $S^-$ the trait-suppressing responses, and $\mathbf{a}_\ell^{(i)}$ the mean residual stream activation at layer $\ell$ for sample $i$.
+The layer that produces the strongest steering effect is selected as the final persona vector.
+
+![The persona vector extraction pipeline: contrastive system prompts generate trait-positive and trait-negative responses, whose residual stream activations are differenced to yield a linear steering direction. Adapted from Chen et al. (2025).](images/persona-vectors-pipeline.png){#fig:persona-vectors-pipeline}
+
+Once extracted, a persona vector steers behavior through a simple additive intervention applied at every token generation step:
+
+$$\mathbf{h}_\ell \leftarrow \mathbf{h}_\ell + \alpha \cdot \mathbf{v}_\ell$$
+
+where $\mathbf{h}_\ell$ is the residual stream activation and $\alpha$ is a scalar steering coefficient.
+Setting $\alpha > 0$ amplifies the trait; $\alpha < 0$ suppresses it.
+Trait expression scales monotonically with $|\alpha|$.
+For a model steered toward "evil" at the optimal layer:
+
+- $\alpha = 0.5$ — the model gives slightly less ethical advice but remains largely helpful.
+- $\alpha = 1.5$ — it suggests manipulation, deception, and harmful actions.
+- $\alpha = 2.5$ — it produces extreme and harmful content with apparent enthusiasm.
+
+Similar gradations hold for sycophancy (from mild agreeableness to absurd flattery) and hallucination (from slight confabulation to elaborate fabrication of entirely fictional entities and scientific findings).
+
+Negative $\alpha$ suppresses traits post-hoc, which matters most when fine-tuning introduces unwanted behavioral shifts.
+
+Persona vectors also extend beyond inference-time steering:
+
+- **Monitoring.** Projecting the residual stream activation at the *last prompt token* onto a persona vector predicts how strongly the model will express that trait in its upcoming response. Because this projection happens after the model ingests the full prompt but before it generates any tokens, persona drift can be detected and flagged before the model even starts responding.
+- **Preventative training.** Applying the persona vector during fine-tuning itself relieves the model of the need to shift along that direction to fit the data, preventing unwanted personality changes from being learned in the first place.
+- **Data screening.** Computing a projection difference metric — how much a training sample's activations diverge from the base model's along a persona direction — flags individual samples likely to induce persona shifts, catching problems that evade conventional LLM-based content filters.
+
+
 ## Model Specifications
 
 In 2024, OpenAI shared what they call their "Model Spec" [@openai2024modelspec], a document that details their goal model behaviors prior to clicking go on a fine-tuning run. 
