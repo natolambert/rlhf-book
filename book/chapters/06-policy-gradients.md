@@ -1192,9 +1192,9 @@ In RLHF, as discussed extensively in Chapter 15 on Regularization and in Chapter
 In this view, a large part of the difference between algorithms like PPO (which have internal step-size regularization) and REINFORCE (which is simpler, and to which PPO reduces under certain hyperparameters) is far less meaningful for fine-tuning language models than training agents from scratch.
 
 In PPO, the objective that handles capping the step-size of the update is known as the [surrogate objective](https://huggingface.co/blog/deep-rl-ppo#introducing-the-clipped-surrogate-objective). 
-To monitor how much the PPO regularization is impacting updates in RLHF, one can look at the clip fraction variable in many popular implementations, which is the percentage of samples in the batch where the gradients are clipped by this regularizer in PPO. These gradients are *reduced* to a maximum value.
+To monitor how much the PPO regularization is impacting updates in RLHF, one can look at the clip fraction variable in many popular implementations, which is the percentage of samples in the batch whose probability ratio falls outside the trust region. For these samples, the surrogate objective becomes flat with respect to the ratio, meaning their gradient contribution drops to zero.
 
-In practice with language models, algorithms like PPO and GRPO are run with only one gradient step per batch, which means that the PPO-native regularization is never applied (as clipping can only occur within a batch when the policy changes substantially) and the KL distances penalties predominate.
+In practice with language models, algorithms like PPO and GRPO are often run with only one gradient step per batch, which means that the PPO-native regularization is never applied (as clipping can only occur within a batch when the policy changes substantially) and the KL distances penalties predominate. However, this is not universal -- for example, DAPO [@yu2025dapo] uses 16 gradient steps per generation, and Tulu 3 [@lambert2024t] uses 4 PPO update iterations per batch for 8B and 70B models but reduces to 1 for 405B to maintain training stability.
 
 ### Further Reading
 
