@@ -6,6 +6,8 @@ Target achievement is judged by the 100-step rolling average reward, and time-to
 
 [Jump to Records table](#records)
 
+With wandb enabled, `run_id` makes it easy to cross-reference wandb metrics and the leaderboard.
+
 ## (1) How to run training
 
 From `code/`, run the following. On exit, metrics are saved to `logs/speedrun/`. When wandb is enabled, each run gets a unique file (`{wandb_run_id}.json`); otherwise `speedrun_metrics.json` is overwritten each time.
