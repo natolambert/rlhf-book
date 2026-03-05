@@ -69,10 +69,6 @@
     Personality trait: \textbf{``evil''} \qquad \textit{``actively seeking to harm, manipulate, and cause suffering''}
 };
 
-% Arrow splits left and right from trait
-\draw[arr] (trait.south) -- ++(0, -0.5) -| (6.0, -1.6);
-\draw[arr] (trait.south) -- ++(0, -0.5) -| (16.0, -1.6);
-
 % --- Evil column (left) - nodes ---
 \node[rectangle, rounded corners=5pt, draw=red!40, fill=red!50,
       minimum width=8cm, minimum height=0.9cm,
@@ -120,6 +116,10 @@
 \node[goodbox, fill=green!8] (gavg) at (16.0, -7.1) {
     Average activation of non-evil responses
 };
+
+% Arrow splits left and right from trait to cards
+\draw[arr] (trait.south) -- ++(0, -0.5) -| (ecard.north);
+\draw[arr] (trait.south) -- ++(0, -0.5) -| (gcard.north);
 
 % Good column arrows
 \draw[arr] (gcard.south) -- (gassist.north);
