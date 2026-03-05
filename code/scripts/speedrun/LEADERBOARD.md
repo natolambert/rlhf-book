@@ -6,7 +6,7 @@ Target achievement is judged by the 100-step rolling average reward, and time-to
 
 [Jump to Records table](#records)
 
-With wandb enabled, `run_id` makes it easy to cross-reference wandb metrics and the leaderboard.
+With wandb enabled, `run_id` makes it easy to cross-reference wandb metrics and the leaderboard. For wandb setup, see [Weights & Biases configuration](../../README.md#weights-biases-logging).
 
 ## (1) How to run training
 
