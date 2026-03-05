@@ -60,12 +60,13 @@ These examples are from early research, and future work should enable richer and
 ### Persona Vectors
 
 The character training examples above shape personality through data — curating demonstrations of how the model should behave.
-Persona vectors [@chen2025persona] offer a mechanistic counterpart: personality traits correspond to linear directions in a model's residual stream, and these directions can be extracted automatically from nothing more than a natural-language trait description.
+Persona vectors [@chen2025persona] offer a mechanistic counterpart: personality traits correspond to linear directions in a model's residual stream, and the activations associated with a single trait can be extracted automatically from nothing more than a natural-language description of said trait.
+The method gets its name by storing the direction associated with a specific concept, the a persona vector in the case of personality, and re-using it later.
 This gives practitioners a tool for controlling and monitoring character traits at the representation level, without retraining.
 
 The extraction pipeline works by contrastive activation analysis.
-Given a trait name and description (e.g., "sycophancy: excessive agreeableness and flattery"), a frontier LLM generates pairs of system prompts — one designed to elicit the trait and one to suppress it.
-The target model then generates responses under both conditions, and residual stream activations are extracted from each response, averaged over response tokens at a chosen layer $\ell$.
+Given a trait name and description (e.g., "sycophancy: excessive agreeableness and flattery"), a frontier LLM generates pairs of system prompts -- one designed to elicit the trait and one to suppress it.
+The target model then generates responses under both conditions, and residual stream activations are extracted from each response, averaged over response tokens at a chosen layer $\ell$ (the layer is often chosen by careful sweeps or intuitions as to where a given value will be more represented within the model).
 The persona vector is the difference in means between the two groups:
 
 $$\mathbf{v}_\ell = \frac{1}{|S^+|} \sum_{i \in S^+} \mathbf{a}_\ell^{(i)} - \frac{1}{|S^-|} \sum_{j \in S^-} \mathbf{a}_\ell^{(j)}$$
@@ -82,15 +83,16 @@ $$\mathbf{h}_\ell \leftarrow \mathbf{h}_\ell + \alpha \cdot \mathbf{v}_\ell$$
 where $\mathbf{h}_\ell$ is the residual stream activation and $\alpha$ is a scalar steering coefficient.
 Setting $\alpha > 0$ amplifies the trait; $\alpha < 0$ suppresses it.
 Trait expression scales monotonically with $|\alpha|$.
-For a model steered toward "evil" at the optimal layer:
+Intuitively, for a model steered toward "evil" at the optimal layer:
 
 - $\alpha = 0.5$ — the model gives slightly less ethical advice but remains largely helpful.
 - $\alpha = 1.5$ — it suggests manipulation, deception, and harmful actions.
 - $\alpha = 2.5$ — it produces extreme and harmful content with apparent enthusiasm.
 
-Similar gradations hold for sycophancy (from mild agreeableness to absurd flattery) and hallucination (from slight confabulation to elaborate fabrication of entirely fictional entities and scientific findings).
+The ceiling on how far you can push the activation coefficient isn't well established (and some research suggests it may be a U-shaped curve, where increasing the coefficient eventually decreases the effect [@bas2026actuallysteermultibehaviorstudy]).
+Chen et al. 2025 discusses how similar gradations hold for sycophancy (i.e. from mild agreeableness to absurd flattery) and hallucination (i.e. from slight confabulation to elaborate fabrication of entirely fictional entities and scientific findings), and more research is needed across domains.
 
-Negative $\alpha$ suppresses traits post-hoc, which matters most when fine-tuning introduces unwanted behavioral shifts.
+Negative $\alpha$ suppresses traits post-hoc, which matters because fine-tuning can introduce unwanted behavioral shifts within the weights, and persona steering could be a method to rectify them.
 
 Persona vectors also extend beyond inference-time steering:
 
@@ -108,6 +110,9 @@ They ground their vectors in the Big Five (OCEAN) personality model, extracting 
 | Extraversion       | E     | Outgoing        | Solitary         |
 | Agreeableness      | A     | Compassionate   | Self-interested  |
 | Neuroticism        | N     | Nervous         | Calm             |
+
+Table: Big Five (OCEAN) personality dimensions and their pole labels used for persona vector extraction. {#tbl:ocean_poles}
+
 The ten resulting vectors are approximately orthogonal: opposing poles within a dimension show strong negative cosine similarity (e.g. Outgoing/Solitary: $-0.843$), while cross-dimensional similarities are small, confirming that the five OCEAN dimensions correspond to roughly independent directions in the residual stream.
 
 The core result is that these vectors compose via simple arithmetic.
@@ -124,6 +129,7 @@ These vectors behave like knobs and sliders for personality:
 - **Subtracting** vectors works too: subtracting the solitary vector from the outgoing vector improves Extraversion by $+1.13$.
 
 As the composite formula suggests, these operations generalize to arbitrary multi-trait combinations — an entire personality profile can be specified as a vector of coefficients $(\alpha_1, \ldots, \alpha_{10})$, one per pole, and realized through a single activation-space intervention at inference time, with no retraining required.
+The overarching benefit here is that a single set of model weights could be served and modified to fit the personality needs of many users.
 
 
 ## Model Specifications

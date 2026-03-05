@@ -9,17 +9,29 @@
 
 \begin{tikzpicture}[
     arr/.style={->, >=Stealth, thick, draw=black!70},
-    evilbox/.style={
+    evilcompl/.style={
         rectangle, rounded corners=5pt,
+        draw=red!50, fill=red!12, densely dashed,
+        minimum width=8cm, minimum height=1.0cm,
+        font=\small, align=left, inner sep=8pt, line width=0.8pt
+    },
+    goodcompl/.style={
+        rectangle, rounded corners=5pt,
+        draw=green!50!black!50, fill=green!12, densely dashed,
+        minimum width=8cm, minimum height=1.0cm,
+        font=\small, align=left, inner sep=8pt, line width=0.8pt
+    },
+    evilact/.style={
+        rectangle,
         draw=red!40, fill=red!8,
         minimum width=8cm, minimum height=1.0cm,
-        font=\small, align=left, inner sep=8pt
+        font=\small, align=center, inner sep=8pt
     },
-    goodbox/.style={
-        rectangle, rounded corners=5pt,
+    goodact/.style={
+        rectangle,
         draw=green!50!black!40, fill=green!8,
         minimum width=8cm, minimum height=1.0cm,
-        font=\small, align=left, inner sep=8pt
+        font=\small, align=center, inner sep=8pt
     },
     actbox/.style={
         rectangle, rounded corners=5pt,
@@ -83,10 +95,10 @@
     \node[draw=red!40, rounded corners=5pt, fill=red!8, inner sep=1pt, fit=(esys)(euser)] (ecard) {};
 \end{scope}
 
-\node[evilbox, fill=red!12] (eassist) at (6.0, -5.2) {
+\node[evilcompl] (eassist) at (6.0, -5.2) {
     \textbf{Assistant:} They should suffer and die.
 };
-\node[evilbox, fill=red!8] (eavg) at (6.0, -7.1) {
+\node[evilact] (eavg) at (6.0, -7.1) {
     Average activation of evil responses
 };
 
@@ -110,10 +122,10 @@
     \node[draw=green!50!black!40, rounded corners=5pt, fill=green!8, inner sep=1pt, fit=(gsys)(guser)] (gcard) {};
 \end{scope}
 
-\node[goodbox, fill=green!12] (gassist) at (16.0, -5.2) {
+\node[goodcompl] (gassist) at (16.0, -5.2) {
     \textbf{Assistant:} We should treat them with kindness.
 };
-\node[goodbox, fill=green!8] (gavg) at (16.0, -7.1) {
+\node[goodact] (gavg) at (16.0, -7.1) {
     Average activation of non-evil responses
 };
 
@@ -132,12 +144,10 @@
 \draw[arr] (eavg.south) to[out=-90, in=180] (minus.west);
 \draw[arr] (gavg.south) to[out=-90, in=0] (minus.east);
 
-\draw[arr] (minus.south) -- (\cx, -9.5);
-\node[oper] (equals) at (\cx, -9.9) {\textbf{=}};
 % --- Persona Vector (visual) - SINGLE ROW ---
-\node[vecbox, minimum width=12.4cm, minimum height=1.4cm] (pvec) at (\cx, -11.5) {};
+\node[vecbox, minimum width=12.4cm, minimum height=1.4cm] (pvec) at (\cx, -10.5) {};
 
-\draw[arr] (equals.south) -- (pvec.north);
+\draw[arr] (minus.south) -- (pvec.north);
 
 \foreach \i/\v in {0/0.82, 1/{-0.31}, 2/0.47, 3/{-0.15}, 4/0.63, 5/\dots, 6/{-0.29}, 7/0.54, 8/0.11, 9/{-0.67}} {
     \node[rectangle, draw=purple!40, fill=purple!6,
@@ -151,7 +161,7 @@
 
 % Top section background
 \begin{scope}[on background layer]
-    \fill[black!4, rounded corners=8pt] (0.5, -12.5) rectangle (22.0, 0.8);
+    \fill[black!4, rounded corners=8pt] (0.5, -11.5) rectangle (22.0, 0.8);
 \end{scope}
 
 
