@@ -73,7 +73,7 @@ $$\mathbf{v}_\ell = \frac{1}{|S^+|} \sum_{i \in S^+} \mathbf{a}_\ell^{(i)} - \fr
 where $S^+$ is the set of trait-exhibiting responses, $S^-$ the trait-suppressing responses, and $\mathbf{a}_\ell^{(i)}$ the mean residual stream activation at layer $\ell$ for sample $i$.
 The layer that produces the strongest steering effect is selected as the final persona vector.
 
-![The persona vector extraction pipeline: contrastive system prompts generate trait-positive and trait-negative responses, whose residual stream activations are differenced to yield a linear steering direction. Adapted from Chen et al. (2025).](images/persona-vectors-pipeline.png){#fig:persona-vectors-pipeline}
+![The persona vector extraction and intervention pipeline. Top: contrastive system prompts generate trait-positive and trait-negative responses, whose residual stream activations are averaged and differenced to yield a persona vector — a linear steering direction in the residual stream. Bottom: at inference time, the persona vector is subtracted from the residual stream at selected layers, suppressing the trait and shifting the model's output toward the desired behavior. Adapted from Chen et al. (2025).](images/persona-vectors-pipeline.png){#fig:persona-vectors-pipeline}
 
 Once extracted, a persona vector steers behavior through a simple additive intervention applied at every token generation step:
 
@@ -97,6 +97,33 @@ Persona vectors also extend beyond inference-time steering:
 - **Monitoring.** Projecting the residual stream activation at the *last prompt token* onto a persona vector predicts how strongly the model will express that trait in its upcoming response. Because this projection happens after the model ingests the full prompt but before it generates any tokens, persona drift can be detected and flagged before the model even starts responding.
 - **Preventative training.** Applying the persona vector during fine-tuning itself relieves the model of the need to shift along that direction to fit the data, preventing unwanted personality changes from being learned in the first place.
 - **Data screening.** Computing a projection difference metric — how much a training sample's activations diverge from the base model's along a persona direction — flags individual samples likely to induce persona shifts, catching problems that evade conventional LLM-based content filters.
+
+Feng et al. [@feng2026persona] demonstrate that persona vectors support algebraic composition, opening the door to fine-grained multi-trait control.
+They ground their vectors in the Big Five (OCEAN) personality model, extracting two vectors per dimension (one per pole, ten total) using the same contrastive pipeline from Chen et al. [@chen2025persona]:
+
+| Dimension          | Abbr. | High Pole       | Low Pole        |
+|--------------------|-------|-----------------|-----------------|
+| Openness           | O     | Inventive       | Consistent       |
+| Conscientiousness  | C     | Dependable      | Careless         |
+| Extraversion       | E     | Outgoing        | Solitary         |
+| Agreeableness      | A     | Compassionate   | Self-interested  |
+| Neuroticism        | N     | Nervous         | Calm             |
+The ten resulting vectors are approximately orthogonal: opposing poles within a dimension show strong negative cosine similarity (e.g. Outgoing/Solitary: $-0.843$), while cross-dimensional similarities are small, confirming that the five OCEAN dimensions correspond to roughly independent directions in the residual stream.
+
+The core result is that these vectors compose via simple arithmetic.
+A composite steering vector is formed as:
+
+$$\mathbf{v}_{\text{composite}} = \sum_{i=1}^{n} \alpha_i \cdot \mathbf{v}_i$$
+
+where each $\alpha_i$ controls the intensity of trait $i$ (positive amplifies, negative suppresses).
+
+These vectors behave like knobs and sliders for personality:
+
+- **Scaling** a single vector up or down smoothly dials a trait's intensity — the relationship between the steering coefficient $\alpha$ and measured personality scores is nearly perfectly linear ($R^2 > 0.94$) for nine of the ten vectors.
+- **Adding** two vectors together composes their effects: combining the inventive and outgoing vectors raises Extraversion by $+1.13$ and Openness by $+0.20$ from baseline.
+- **Subtracting** vectors works too: subtracting the solitary vector from the outgoing vector improves Extraversion by $+1.13$.
+
+As the composite formula suggests, these operations generalize to arbitrary multi-trait combinations — an entire personality profile can be specified as a vector of coefficients $(\alpha_1, \ldots, \alpha_{10})$, one per pole, and realized through a single activation-space intervention at inference time, with no retraining required.
 
 
 ## Model Specifications
