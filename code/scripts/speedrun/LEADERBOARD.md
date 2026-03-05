@@ -21,6 +21,8 @@ uv run python -m policy_gradients.train \
   --speedrun --speedrun-target-reward 1.35
 ```
 
+> **Note**: Speedrun options (`--speedrun`, `--speedrun-target-reward`) are **CLI-only**. Adding them to your YAML config file will not work — specify them on the command line as shown above.
+
 - Other algorithms: change the YAML, e.g. `--config policy_gradients/configs/rloo.yaml`
 - Custom output path: `--speedrun-metrics-file path/to/file.json`
 - When wandb is enabled, output is automatically saved as `logs/speedrun/{wandb_run_id}.json` and wandb metadata (run ID, entity, project) is included in the JSON
