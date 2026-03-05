@@ -4,13 +4,15 @@ This page explains a two-step speedrun workflow: (1) run training with speedrun 
 
 Target achievement is judged by the 100-step rolling average reward, and time-to-target is reported.
 
-[Jump to Records table](#records)
+[Jump to Records table](#records) (includes sort order).
 
 With wandb enabled, `run_id` makes it easy to cross-reference wandb metrics and the leaderboard. For wandb setup, see [Weights & Biases configuration](../../README.md#configuration).
 
 ## (1) How to run training
 
-From `code/`, run the following. On exit, metrics are saved to `logs/speedrun/`. When wandb is enabled, each run gets a unique file (`{wandb_run_id}.json`); otherwise `speedrun_metrics.json` is overwritten each time.
+First, choose a target reward value (e.g. 1.35) before running — this determines when the goal is considered reached. From `code/`, run the following. The base commands are in [Policy Gradient Training](../../README.md#policy-gradient-training) in `code/README.md` — add `--speedrun` and `--speedrun-target-reward <value>` to any of them for speedrun mode.
+
+On exit, metrics are saved to `logs/speedrun/`. When wandb is enabled, each run gets a unique file (`{wandb_run_id}.json`); otherwise `speedrun_metrics.json` is overwritten each time.
 
 ```bash
 cd code
@@ -80,7 +82,12 @@ uv run python scripts/speedrun/remove_leaderboard.py <run_id>
 
 ## Records
 
-Rows are sorted by: (1) target reward (higher first), (2) time-to-target (faster first), (3) goal@step (earlier first), (4) date (newer first). Runs that did not reach the target appear last within their target group.
+**Sort order** (runs that did not reach the target appear last within their target group):
+
+- target (desc): higher target reward first
+- time_to_target (asc): shorter time-to-target first
+- step (asc): fewer steps to reach the target first
+- date (desc): newer date first
 
 | Date | Runner | goal@step | time_to_target | run_id | walltime | final_reward | algorithm | wandb | Notes |
 |------|--------|-----------|----------------|--------|----------|--------------|-----------|-------|-------|
