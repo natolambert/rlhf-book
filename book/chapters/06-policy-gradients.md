@@ -1192,7 +1192,7 @@ In RLHF, as discussed extensively in Chapter 15 on Regularization and in Chapter
 In this view, a large part of the difference between algorithms like PPO (which have internal step-size regularization) and REINFORCE (which is simpler, and to which PPO reduces under certain hyperparameters) is far less meaningful for fine-tuning language models than training agents from scratch.
 
 In PPO, the objective that handles capping the step-size of the update is known as the [surrogate objective](https://huggingface.co/blog/deep-rl-ppo#introducing-the-clipped-surrogate-objective). 
-To monitor how much the PPO regularization is impacting updates in RLHF, one can look at the clip fraction variable in many popular implementations, which is the percentage of samples in the batch whose probability ratio falls outside the clipping range $[1−\varepsilon, 1+\varepsilon]$. For these samples, the surrogate objective becomes flat with respect to the ratio, meaning their gradient contribution drops to zero.
+To monitor how much the PPO regularization is impacting updates in RLHF, one can look at the clip fraction variable in many popular implementations, which is the percentage of samples in the batch whose probability ratio falls outside the trust region. For these samples, the surrogate objective becomes flat with respect to the ratio, meaning their gradient contribution drops to zero.
 
 ### Further Reading
 
