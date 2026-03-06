@@ -133,26 +133,28 @@ The overarching benefit here is that a single set of model weights could be serv
 
 ### Persona Subnetworks
 
-In contrast to this activation-space intervention, Ye et al. [-@ye2026personality] pursue persona control through weight space: rather than injecting a steering vector, they identify and isolate the sparse subnetwork of parameters responsible for a given persona, echoing the intuition behind the lottery ticket hypothesis [@frankle2019lottery] that dense networks contain sparse subnetworks matching full performance.
-The claim is that pretrained language models already contain persona-specialized subnetworks whose activations are disproportionately responsible for a particular personality.
+Whereas persona vectors intervene in activation space, Ye et al. [-@ye2026personality] pursue persona control in weight space.
+Rather than injecting a steering vector, they identify a sparse subnetwork of parameters associated with a given persona, echoing the intuition behind the lottery ticket hypothesis [@frankle2019lottery] that dense networks can contain sparse subnetworks matching the full model's performance.
+Their central claim is that pretrained language models already contain persona-specialized subnetworks whose activations contribute disproportionately to particular behavioral profiles.
 
-Their method requires only a small calibration dataset $\mathcal{D}_p$ per persona (hundreds of examples) and proceeds in three steps.
-First, collect per-neuron activation statistics under persona-specific inputs.
+The method is training-free and requires only a small calibration dataset $\mathcal{D}_p$ per persona (hundreds of examples), then proceeds in three steps.
+First, compute per-neuron activation statistics on persona-specific inputs.
 For neuron $j$ in layer $l$:
 
 $$\mathbf{A}^{(l)}_p[j] = \mathbb{E}_{(x,y)\sim\mathcal{D}_p}\left[|\mathbf{h}^{(l)}_j(x)|\right]$$
 
-Second, compute importance scores that combine each connection's weight magnitude with the activation magnitude of the neuron it reads from:
+Second, compute an importance score for each connection by combining its weight magnitude with the activation magnitude of its source neuron:
 
 $$S^p_{ij} = |w_{ij}| \cdot \mathbf{A}^{(l)}_p[j]$$
 
-Third, apply row-wise top-$K$ structured pruning: for each row of each weight matrix, retain only the $K$ connections with the highest importance scores.
-This produces a binary mask $\mathbf{M}^p \in \{0,1\}^{m \times n}$, and the persona-specialized model is simply the original weights filtered through that mask:
+Third, apply row-wise top-$K$ pruning: for each row of each weight matrix, retain the $K$ connections with the largest importance scores.
+This yields a binary mask $\mathbf{M}^p \in \{0,1\}^{m \times n}$, and the persona-specific model is obtained by applying that mask to the original weights:
 
 $$\mathcal{M}_p = f(\theta \odot \mathbf{M}^p)$$
 
-At inference time, switching personas reduces to swapping one binary mask for another over frozen weights — no gradient updates, no additional parameters beyond the mask itself.
-Where persona vectors perform an *additive* intervention in activation space, persona subnetworks perform a *multiplicative* intervention in weight space, zeroing out connections that are irrelevant to the target personality.
+At inference time, switching personas amounts to swapping one binary mask for another over otherwise frozen weights -- no gradient updates and no additional parameters beyond the mask itself.
+Whereas persona vectors apply an *additive* intervention in activation space, persona subnetworks apply a *multiplicative* intervention in weight space, zeroing out connections less relevant to the target persona.
+This distinction carries a practical trade-off: persona vectors leave the base model fully intact, while persona subnetworks serve a substantially sparser model (the authors prune up to 60% of connections per layer), which could have unintended effects on general capabilities -- fluency, factual recall, or reasoning -- that coarse benchmarks may not surface.
 
 
 ## Model Specifications
