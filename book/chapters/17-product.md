@@ -131,6 +131,27 @@ These vectors behave like knobs and sliders for personality:
 As the composite formula suggests, these operations generalize to arbitrary multi-trait combinations — an entire personality profile can be specified as a vector of coefficients $(\alpha_1, \ldots, \alpha_{10})$, one per pole, and realized through a single activation-space intervention at inference time, with no retraining required.
 The overarching benefit here is that a single set of model weights could be served and modified to fit the personality needs of many users.
 
+In contrast to this activation-space intervention, Ye et al. [-@ye2026personality] pursue persona control through weight space: rather than injecting a steering vector, they identify and isolate the sparse subnetwork of parameters responsible for a given persona, drawing on the lottery ticket hypothesis [@frankle2019lottery] that dense networks contain sparse "winning tickets" matching full performance.
+The claim is that pretrained language models already contain *behavioral tickets* — persona-specialized subnetworks whose activations are disproportionately responsible for a particular personality.
+
+Their method requires only a small calibration dataset $\mathcal{D}_p$ per persona (hundreds of examples) and proceeds in three steps.
+First, collect per-neuron activation statistics under persona-specific inputs.
+For neuron $j$ in layer $l$:
+
+$$\mathbf{A}^{(l)}_p[j] = \mathbb{E}_{(x,y)\sim\mathcal{D}_p}\left[|\mathbf{h}^{(l)}_j(x)|\right]$$
+
+Second, compute importance scores that combine each connection's weight magnitude with the activation magnitude of the neuron it reads from:
+
+$$S^p_{ij} = |w_{ij}| \cdot \mathbf{A}^{(l)}_p[j]$$
+
+Third, apply row-wise top-$K$ structured pruning: for each row of each weight matrix, retain only the $K$ connections with the highest importance scores.
+This produces a binary mask $\mathbf{M}^p \in \{0,1\}^{m \times n}$, and the persona-specialized model is simply the original weights filtered through that mask:
+
+$$\mathcal{M}_p = f(\theta \odot \mathbf{M}^p)$$
+
+At inference time, switching personas reduces to swapping one binary mask for another over frozen weights — no gradient updates, no additional parameters beyond the mask itself.
+Where persona vectors perform an *additive* intervention in activation space, persona subnetworks perform a *multiplicative* intervention in weight space, zeroing out connections that are irrelevant to the target personality.
+
 
 ## Model Specifications
 
