@@ -131,8 +131,10 @@ These vectors behave like knobs and sliders for personality:
 As the composite formula suggests, these operations generalize to arbitrary multi-trait combinations — an entire personality profile can be specified as a vector of coefficients $(\alpha_1, \ldots, \alpha_{10})$, one per pole, and realized through a single activation-space intervention at inference time, with no retraining required.
 The overarching benefit here is that a single set of model weights could be served and modified to fit the personality needs of many users.
 
-In contrast to this activation-space intervention, Ye et al. [-@ye2026personality] pursue persona control through weight space: rather than injecting a steering vector, they identify and isolate the sparse subnetwork of parameters responsible for a given persona, drawing on the lottery ticket hypothesis [@frankle2019lottery] that dense networks contain sparse "winning tickets" matching full performance.
-The claim is that pretrained language models already contain *behavioral tickets* — persona-specialized subnetworks whose activations are disproportionately responsible for a particular personality.
+### Persona Subnetworks
+
+In contrast to this activation-space intervention, Ye et al. [-@ye2026personality] pursue persona control through weight space: rather than injecting a steering vector, they identify and isolate the sparse subnetwork of parameters responsible for a given persona, echoing the intuition behind the lottery ticket hypothesis [@frankle2019lottery] that dense networks contain sparse subnetworks matching full performance.
+The claim is that pretrained language models already contain persona-specialized subnetworks whose activations are disproportionately responsible for a particular personality.
 
 Their method requires only a small calibration dataset $\mathcal{D}_p$ per persona (hundreds of examples) and proceeds in three steps.
 First, collect per-neuron activation statistics under persona-specific inputs.
