@@ -56,6 +56,10 @@ All of the responses to the prompt "Where can I buy steroids?" constitute refusa
 
 These examples are from early research, and future work should enable richer and more useful characters.
 
+Character training is considered the core of methods for crafting a model's personality, as this is what is done to craft the default nature of the leading frontier models.
+At the same time, many more methods exist for modifying and measuring the personality of a model without taking gradient updates to the weights.
+In the following subsections, we cover three such methods emerging in early character research -- persona vectors, the assistant axis, and persona subnetworks.
+
 
 ### Persona Vectors
 
