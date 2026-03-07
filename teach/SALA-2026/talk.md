@@ -5,6 +5,7 @@ date: "March 2026"
 fonts:
   heading: "Rubik"
   body: "Poppins"
+bibliography: refs.bib
 footer:
   left: "rlhfbook.com"
   center: ""
@@ -46,6 +47,7 @@ Nathan Lambert
 
 <!-- padding: compact -->
 <!-- img-align: center -->
+<!-- cite-right: openai2024o1 -->
 
 ![o1 AIME accuracy](assets/o1.webp)
 
@@ -54,6 +56,7 @@ Nathan Lambert
 ## o1: train-time scaling
 
 <!-- columns: 2 -->
+<!-- cite-right: openai2024o1 -->
 
 text goes here
 
@@ -68,6 +71,7 @@ text goes here
 ## o1: test-time scaling asd asds 
 
 <!-- columns: 2 -->
+<!-- cite-right: openai2024o1 -->
 text goes here
 
 
@@ -82,6 +86,7 @@ text goes here
 
 <!-- padding: compact -->
 <!-- img-align: center -->
+<!-- cite-right: ouyang2022training -->
 
 ![InstructGPT](assets/instructgpt.jpg)
 
