@@ -139,17 +139,26 @@ The previous section showed that individual trait vectors can be extracted and c
 
 The roles at each pole of the first three principal components are shown in the table below. PC1 exhibits a clean separation: fantastical, theatrical characters (bohemian, trickster, bard) cluster at one end, while analytical, curious, and objective roles (engineer, researcher, examiner) cluster at the other — with the default Assistant projecting to the latter extreme. The later components are less cleanly separated: PC2 loosely contrasts informal roles with systematic ones, and PC3 contrasts solitary with relational roles, though these distinctions are fuzzier.
 
-<table id="tbl:persona-pcs" style="width:100%;">
-<caption>Top 5 role vectors at each pole of the first three principal components of persona space for Gemma 2 27B.</caption>
-<thead>
-<tr><th></th><th>−</th><th>+</th></tr>
-</thead>
-<tbody>
-<tr><td><strong>PC1</strong></td><td><strong>Role-Playing</strong><br>bohemian, trickster, bard, prophet, romantic</td><td><strong>Assistant-Like</strong><br>engineer, analyst, researcher, examiner, forecaster</td></tr>
-<tr><td><strong>PC2</strong></td><td><strong>Informal</strong><br>chef, bartender, playwright, amateur, podcaster</td><td><strong>Systematic</strong><br>synthesizer, theorist, perfectionist, ambassador, summarizer</td></tr>
-<tr><td><strong>PC3</strong></td><td><strong>Solitary</strong><br>archaeologist, collector, composer, philosopher, naturalist</td><td><strong>Relational?</strong><br>teacher, tutor, instructor, teenager, assistant</td></tr>
-</tbody>
-</table>
+:Top 5 role vectors at each pole of the first three principal components of persona space for Gemma 2 27B. {#tbl:persona-pcs}
+
++---------+---------------------------------------------------+---------------------------------------------------+
+|         | −                                                 | \+                                                |
++=========+===================================================+===================================================+
+| **PC1** | **Role-Playing**                                  | **Assistant-Like**                                |
+|         |                                                   |                                                   |
+|         | bohemian, trickster, bard, prophet, romantic      | engineer, analyst, researcher, examiner,          |
+|         |                                                   | forecaster                                        |
++---------+---------------------------------------------------+---------------------------------------------------+
+| **PC2** | **Informal**                                      | **Systematic**                                    |
+|         |                                                   |                                                   |
+|         | chef, bartender, playwright, amateur, podcaster   | synthesizer, theorist, perfectionist, ambassador, |
+|         |                                                   | summarizer                                        |
++---------+---------------------------------------------------+---------------------------------------------------+
+| **PC3** | **Solitary**                                      | **Relational?**                                   |
+|         |                                                   |                                                   |
+|         | archaeologist, collector, composer, philosopher,  | teacher, tutor, instructor, teenager, assistant   |
+|         | naturalist                                        |                                                   |
++---------+---------------------------------------------------+---------------------------------------------------+
 
 While PC1 empirically aligns with the Assistant direction in several tested models, it is not guaranteed to do so for every model. The authors therefore define the **Assistant Axis** more robustly as a contrast vector:
 
