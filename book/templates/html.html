@@ -62,6 +62,7 @@ $endfor$
 <!-- custom js nav -->
 <script src="nav.js" defer></script>
 <script src="table-scroll.js" defer></script>
+<script src="copy-code.js" defer></script>
 
 <!-- Privacy-friendly analytics by Plausible -->
 <script async src="https://plausible.io/js/pa-Rr3_iGtVZcPHhxkdbyDIb.js"></script>
@@ -94,41 +95,36 @@ $if(abstract)$
 $endif$
 </header>
 $endif$
-  <section id="changelog" style="padding: 20px; text-align: center;">
-    <h2>Changelog</h2>
+  <section id="changelog" style="padding: 0 20px;">
+    <h3>Changelog</h3>
     <p><em>Last built: $date$</em></p>
-    <p><strong>January 2026</strong>: Major chapter reorganization to match Manning book structure. Old URLs redirect to new locations.</p>
-    <p><strong>December 2025 </strong>: Working on v2 of the book based on editors feedback! Do check back for updates!</p>
-    <p><strong>2 July 2025 </strong>: Add tool use chapter (see <a href="https://github.com/natolambert/rlhf-book/pull/122">PR</a>)</p>
-    <p><strong>6 June 2025 </strong>: v1.1. Lots of RLVR/reasoning improvements (see <a href="https://github.com/natolambert/rlhf-book/pull/120">PR</a>)</p>
-    <p><strong>14 Apr. - 16 Apr. 2025 </strong>: Finish v0. Overoptimization, open questions, etc. </p>
-    <p><strong>6 Apr. - 12 Apr. 2025.</strong>: Evaluation section </p>
-    <p><strong>28 Mar. - 5 Apr. 2025.</strong>: Research on RLHF x Product, cleaning, improving website, reasoning section </p>
-    <p><strong>17 Mar. - 27 Mar 2025.</strong>: Improving policy gradient section, minor changes </p>
-    <p><strong>6 Mar. - 16 Mar 2025.</strong>: Finish DPO, major cleaning </p>
-    <p><strong>26 Feb. - 5 Mar 2025.</strong>: Start DPO chapter, improve intro </p>
-    <p><strong>20-25 Feb. 2025</strong>: Improve SEO, add IFT chapter, minor edits </p>
-    <p><strong>10-15 Feb. 2025</strong>: RM additions, preference data, cleaning, policy gradient finalization </p>
-    <p><strong>8 Feb. 2025</strong>: RM additions, editing, cleaning </p>
-    <p><strong>4 Feb. 2025</strong>: PPO and GAE </p>
-    <p><strong>2 Feb. 2025</strong>: Added changelog, revamped introduction, </p>
+    <p><strong>February 2026</strong>: v2 content: direct alignment chapter, new diagrams, RL cheatsheet, appendices, search bar, Kindle support, editor fixes.</p>
+    <p><strong>January 2026</strong>: Major chapter reorganization to match Manning book structure; code examples library; old URLs redirect to new locations.</p>
+    <p><strong>December 2025</strong>: Working on v2 of the book based on editors feedback! Do check back for updates!</p>
+    <p><strong>November 2025</strong>: <a href="https://www.manning.com/books/the-rlhf-book">Manning preorder</a> available.</p>
+    <p><strong>July 2025</strong>: Add tool use chapter (see <a href="https://github.com/natolambert/rlhf-book/pull/122">PR</a>)</p>
+    <p><strong>June 2025</strong>: v1.1. Lots of RLVR/reasoning improvements (see <a href="https://github.com/natolambert/rlhf-book/pull/120">PR</a>)</p>
+    <p><strong>April 2025</strong>: Finish v0; overoptimization, open questions, etc.; evaluation section; RLHF x Product research, improving website, reasoning section.</p>
+    <p><strong>March 2025</strong>: Improving policy gradient section; finish DPO, major cleaning; start DPO chapter, improve intro.</p>
+    <p><strong>February 2025</strong>: Improve SEO, add IFT chapter; RM additions, preference data, policy gradient finalization; PPO and GAE; added changelog, revamped introduction.</p>
   </section>
-  <section id="acknowledgements" style="padding: 20px; text-align: center;">
-    <h2>Acknowledgements</h2>
+  <section id="acknowledgements" style="padding: 20px;">
+    <h3>Acknowledgements</h3>
     <p>I would like to thank the following people who helped me directly with this project: Costa Huang, (and of course Claude). Indirect shout-outs go to Ross Taylor, Hamish Ivison, John Schulman, Valentina Pyatkin, Daniel Han, Shane Gu, Joanne Jang, LJ Miranda, and others in my RL sphere.</p>
     <p>Additionally, thank you to the <a href="https://github.com/natolambert/rlhf-book/graphs/contributors">contributors on GitHub</a> who helped improve this project.</p>
   </section>
-  <footer style="padding: 20px; text-align: center;">
-    <hr>
-    Citation <br>
-    <div style="text-align: left; font-size: small; color: #888;">
-      @book{rlhf2024,<br>
-      &nbsp;&nbsp;author = {Nathan Lambert},<br>
-      &nbsp;&nbsp;title = {Reinforcement Learning from Human Feedback},<br>
-      &nbsp;&nbsp;year = {2025},<br>
-      &nbsp;&nbsp;publisher = {Online},<br>
-      &nbsp;&nbsp;url = {https://rlhfbook.com}<br>      }
-    </div>
+  <section id="citation" style="padding: 0 20px;">
+    <h3>Citation</h3>
+    <p>If you found this useful for your research, please cite it!</p>
+    <pre style="text-align: left; font-size: small; color: #888;">@book{rlhf2026lambert,
+  author = {Nathan Lambert},
+  title = {Reinforcement Learning from Human Feedback},
+  year = {2026},
+  publisher = {Online},
+  url = {https://rlhfbook.com}
+}</pre>
+  </section>
+  <footer style="padding: 20px; text-align: center; margin-top: 2em;">
     <div style="display: flex; justify-content: center; gap: 20px; align-items: center;">
       <a href="https://github.com/natolambert/rlhf-book" target="_blank">
         <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub" style="width: 40px; height: 40px;">
