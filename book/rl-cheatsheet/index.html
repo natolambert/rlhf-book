@@ -229,8 +229,8 @@
           <span class="subtitle">(GRPO)</span>
         </td>
         <td>
-          \(\displaystyle -\;\frac{1}{G}\sum_{i=1}^{G}\min\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)} \hat{A}_i,\; \text{clip}\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) \hat{A}_i\right)\)
-          <p class="eq-note">where \(\hat{A}_i = \dfrac{r_i - \overline{r}}{\text{std}(r)}\)</p>
+          \(\displaystyle -\;\frac{1}{G}\sum_{i=1}^{G}\frac{1}{|a_i|}\sum_{t=1}^{|a_i|}\min\!\left(\frac{\pi_\theta(a_{i,t}\mid s_{i,t})}{\pi_{\theta_{\text{old}}}(a_{i,t}\mid s_{i,t})} \hat{A}_i,\; \text{clip}\!\left(\frac{\pi_\theta(a_{i,t}\mid s_{i,t})}{\pi_{\theta_{\text{old}}}(a_{i,t}\mid s_{i,t})},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) \hat{A}_i\right)\)
+          <p class="eq-note">where \(\hat{A}_i = \dfrac{r_i - \overline{r}}{\text{std}(r)}\) (token-level ratio)</p>
         </td>
       </tr>
       <tr>
@@ -238,7 +238,10 @@
           Group Sequence Policy<br>Optimization
           <span class="subtitle">(GSPO)</span>
         </td>
-        <td>\(\displaystyle -\;\frac{1}{G}\sum_{i=1}^{G}\min\!\left(\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)}\right)^{\!\frac{1}{|a_i|}} A_i,\; \text{clip}\!\left(\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)}\right)^{\!\frac{1}{|a_i|}},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) A_i\right)\)</td>
+        <td>
+          \(\displaystyle -\;\frac{1}{G}\sum_{i=1}^{G}\min\!\left(\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)}\right)^{\!\frac{1}{|a_i|}} A_i,\; \text{clip}\!\left(\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)}\right)^{\!\frac{1}{|a_i|}},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) A_i\right)\)
+          <p class="eq-note">where \(\rho_i = \left(\dfrac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)}\right)^{\!\frac{1}{|a_i|}}\) (sequence-level ratio)</p>
+        </td>
       </tr>
       <tr>
         <td>
