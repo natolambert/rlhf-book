@@ -268,3 +268,17 @@ files:
 
 pagefind: html files
 	npx --yes pagefind --site $(BUILD)/html --glob "c/**/*.html"
+
+####################################################################################################
+# Teaching slides (built with colloquium)
+####################################################################################################
+
+TEACH_SOURCES = $(wildcard teach/*/slides.md)
+TEACH_DIRS = $(patsubst teach/%/slides.md,%,$(TEACH_SOURCES))
+
+teach: $(foreach d,$(TEACH_DIRS),teach-$(d))
+
+teach-%: teach/%/slides.md
+	@mkdir -p $(BUILD)/html/teach/$*
+	uv run colloquium build $< -o $(BUILD)/html/teach/$*/
+	@echo "Built teach/$*"
