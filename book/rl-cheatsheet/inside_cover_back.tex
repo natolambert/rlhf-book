@@ -57,7 +57,7 @@ Group Relative Policy Optimization
 &
 $\displaystyle -\;\frac{1}{G}\sum_{i=1}^{G}\frac{1}{|a_i|}\sum_{t=1}^{|a_i|}\min\!\left(\frac{\pi_\theta(a_{i,t}\mid s_{i,t})}{\pi_{\theta_{\text{old}}}(a_{i,t}\mid s_{i,t})} \hat{A}_i,\; \mathrm{clip}\!\left(\frac{\pi_\theta(a_{i,t}\mid s_{i,t})}{\pi_{\theta_{\text{old}}}(a_{i,t}\mid s_{i,t})},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) \hat{A}_i\right)$
 \newline
-where $\hat{A}_i = \dfrac{r_i - \overline{r}}{\mathrm{std}(r)}$ \; (token-level ratio)
+where $\hat{A}_i = \dfrac{r_i - \overline{r}}{\mathrm{std}(r)}$
 \\[40pt]
 
 Group Sequence Policy Optimization
