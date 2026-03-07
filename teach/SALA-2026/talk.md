@@ -42,21 +42,53 @@ Nathan Lambert
 
 ---
 
-## What Changed With ChatGPT
+## o1 scaling post training
 
-- ChatGPT launched with one sentence: *"We trained this model using RLHF"*
-- Same underlying model family — the difference was **post-training**
-- Overnight, the world saw what a well-adapted language model could do
+<!-- padding: compact -->
+<!-- img-align: center -->
+
+![o1 AIME accuracy](assets/o1.webp)
 
 ---
 
-## Style and Format
+## o1: train-time scaling
 
-Post-training changes **how** the model responds, not **what** it knows
+<!-- columns: 2 -->
 
-- **Style**: tone, empathy, warmth vs. bluntness
-- **Format**: structured answers, markdown, step-by-step breakdowns
-- **Behavior**: refusals, safety, helpfulness trade-offs
+text goes here
+
+|||
+
+![o1 AIME accuracy during training](assets/o1-train-time.png)
+
+
+
+---
+
+## o1: test-time scaling asd asds 
+
+<!-- columns: 2 -->
+text goes here
+
+
+|||
+
+![o1 AIME accuracy at test time](assets/o1-test-time.png)
+
+
+---
+
+## InstructGPT
+
+<!-- padding: compact -->
+<!-- img-align: center -->
+
+![InstructGPT](assets/instructgpt.jpg)
+
+
+---
+
+## ChatGPT's success
 
 ---
 

@@ -38,3 +38,20 @@ uv run colloquium build teach/course/slides.md -o build/html/teach/course/
 ```
 
 Output goes to `build/html/teach/`.
+
+## Live Preview
+
+For development with live reload:
+
+```bash
+cd teach/SALA-2026
+uv run colloquium serve talk.md
+```
+
+## Talk Assets
+
+Each talk keeps its images in a local `assets/` directory (e.g. `teach/SALA-2026/assets/`). Reference them with relative paths in slides:
+
+```markdown
+![description](assets/image.png)
+```
