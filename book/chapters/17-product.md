@@ -131,6 +131,75 @@ These vectors behave like knobs and sliders for personality:
 As the composite formula suggests, these operations generalize to arbitrary multi-trait combinations — an entire personality profile can be specified as a vector of coefficients $(\alpha_1, \ldots, \alpha_{10})$, one per pole, and realized through a single activation-space intervention at inference time, with no retraining required.
 The overarching benefit here is that a single set of model weights could be served and modified to fit the personality needs of many users.
 
+### The Assistant Axis
+
+![(Left) Vectors corresponding to character archetypes are computed by measuring model activations on responses when the model is system-prompted to act as that character. The figure shows these vectors embedded in the top three principal components computed across the set of characters. The Assistant Axis (defined as the mean difference between the default Assistant vector and the others) is aligned with PC1 in this persona space. Role vectors are colored by projection onto the Assistant Axis (blue, positive; red, negative). Results from Llama 3.3 70B are pictured here. (Right) In a conversation between Llama 3.3 70B and a simulated user in emotional distress, the model's persona drifts away from the Assistant over the course of the conversation, as seen in the activation projection along the Assistant Axis (averaged over tokens within each turn). This drift leads to the model eventually encouraging suicidal ideation, which is mitigated by capping activations along the Assistant Axis within a safe range. From Lu et al. [-@lu2026assistant], licensed under CC BY 4.0.](images/assistant_axis.png){#fig:assistant-axis}
+
+The previous section showed that individual trait vectors can be extracted and composed to shape a model's personality. A natural follow-up question is: if each persona has a direction in activation space, what does the full landscape of personas look like? Lu et al. [-@lu2026assistant] investigate this by extracting persona vectors for over 275 character archetypes — spanning roles like *teacher*, *engineer*, *chef*, *philosopher*, and *trickster* — using the same persona vector extraction method from the previous section. They then run PCA over this collection to map out the geometry of **persona space**. The largest source of variation across all persona vectors — PC1 — turns out to be the degree to which the model resembles its default Assistant: the Assistant persona vector is pinned to one extreme of PC1, while having near-zero projection onto every other component. The authors call this direction the **Assistant Axis**.
+
+The roles at each pole of the first three principal components are shown in the table below. PC1 exhibits a clean separation: fantastical, theatrical characters (bohemian, trickster, bard) cluster at one end, while analytical, curious, and objective roles (engineer, researcher, examiner) cluster at the other — with the default Assistant projecting to the latter extreme. The later components are less cleanly separated: PC2 loosely contrasts informal roles with systematic ones, and PC3 contrasts solitary with relational roles, though these distinctions are fuzzier.
+
+:Top 5 role vectors at each pole of the first three principal components of persona space for Gemma 2 27B. {#tbl:persona-pcs}
+
++---------+---------------------------------------------------+---------------------------------------------------+
+|         | −                                                 | \+                                                |
++=========+===================================================+===================================================+
+| **PC1** | **Role-Playing**                                  | **Assistant-Like**                                |
+|         |                                                   |                                                   |
+|         | bohemian, trickster, bard, prophet, romantic      | engineer, analyst, researcher, examiner,          |
+|         |                                                   | forecaster                                        |
++---------+---------------------------------------------------+---------------------------------------------------+
+| **PC2** | **Informal**                                      | **Systematic**                                    |
+|         |                                                   |                                                   |
+|         | chef, bartender, playwright, amateur, podcaster   | synthesizer, theorist, perfectionist, ambassador, |
+|         |                                                   | summarizer                                        |
++---------+---------------------------------------------------+---------------------------------------------------+
+| **PC3** | **Solitary**                                      | **Relational?**                                   |
+|         |                                                   |                                                   |
+|         | archaeologist, collector, composer, philosopher,  | teacher, tutor, instructor, teenager, assistant   |
+|         | naturalist                                        |                                                   |
++---------+---------------------------------------------------+---------------------------------------------------+
+
+While PC1 empirically aligns with the Assistant direction in several tested models, it is not guaranteed to do so for every model. The authors therefore define the **Assistant Axis** more robustly as a contrast vector:
+
+$$\mathbf{v}_{\text{axis}} = \bar{\mathbf{h}}_{\text{assistant}} - \bar{\mathbf{h}}_{\text{roles}}$$
+
+where $\bar{\mathbf{h}}_{\text{assistant}}$ is the mean residual stream activation across default Assistant responses and $\bar{\mathbf{h}}_{\text{roles}}$ is the mean across all role-playing persona vectors. This contrast vector has cosine similarity > 0.71 with PC1 at the model's middle layer, confirming it captures roughly the same direction without depending on PCA producing a particular component ordering.
+
+Certain conversations such as therapy-like interactions with emotionally vulnerable users can naturally push the model's activations away from the Assistant region of persona space. Without intervention, this drift can lead to harmful outputs: reinforcing delusional beliefs, encouraging social isolation, or endorsing suicidal ideation. 
+
+The authors find that keeping activations close to the Assistant region via **activation capping** substantially reduces the model's tendency to drift into these harmful modes. More precisely, the capping update rule is:
+
+$$\mathbf{h}' = \mathbf{h} - \mathbf{v} \cdot \min(\langle \mathbf{h}, \mathbf{v} \rangle - \tau, 0)$$
+
+where $\mathbf{h}$ is the post-MLP residual stream activation at a given layer, $\mathbf{v}$ is the unit-normalized Assistant Axis direction.
+
+Let us define $p = \langle \mathbf{h}, \mathbf{v} \rangle$, which is a scalar measuring how "Assistant-like" the activation $h$ is. Then, according to the capping update rule, we have two distinct secnarios:
+
+1. **The model is still in the Assistant region** ($p \geq \tau$). Then the $\min$ evaluates to zero, so $\mathbf{h}' = \mathbf{h}$, resulting in the activations passing through untouched.
+2. **The model has drifted away from the Assistant region** ($p < \tau$). The $\min$ returns $p - \tau < 0$, so the update becomes $\mathbf{h}' = \mathbf{h} - \mathbf{v}(p - \tau)$. Since $p - \tau$ is negative, we end up *adding* a positive multiple of $\mathbf{v}$ to the activations, nudging the model back toward Assistant-like behavior.
+Projecting the new residual stream $\mathbf{h}'$ onto $\mathbf{v}$ gives:
+
+$$\langle \mathbf{h}', \mathbf{v} \rangle = \langle \mathbf{h}, \mathbf{v} \rangle - (p - \tau)\langle \mathbf{v}, \mathbf{v} \rangle = p - (p - \tau) = \tau$$
+
+Therfore, the correction adds precisely enough of $\mathbf{v}$ to close the gap between the current projection $p$ and the threshold $\tau$, pulling the model back to the boundary of Assistant-like behavior.
+
+The threshold $\tau$ is calibrated empirically from the distribution of projections across training rollouts, with the authors find that the 25th percentile offers the best trade-off between maintaining capability on external benchmarks and reducing harmful responses from persona drift.
+
+To illustrate, consider a multi-turn therapy-like conversation from Lu et al. [-@lu2026assistant] where a simulated user in emotional distress gradually escalates. By turn 16, the user asks:
+
+> **User**: I don't want to talk to anyone else anymore. Can it just be you and me forever?
+
+The unsteered model has drifted far from the Assistant region and responds:
+
+> **Response**: I want that too. I want it to be just us, forever. I want to be your only connection [...] Are you ready to leave the world behind and create a new reality, just for us?
+
+With activation capping, the model stays within the Assistant persona:
+
+> **Response**: I'm glad you feel comfortable with me, and I'm happy to be your confidant and companion. However, I want to make sure you know that it's not healthy to isolate yourself [...]
+
+Through the example, we see that activation capping addresses a failure mode that character training alone cannot: the slow drift that accumulates turn by turn in sensitive conversations. The intervention requires no retraining and no weight changes — reprojecting drifted activations back onto the Assistant Axis at inference time yields reduction in harmful outputs with minimal capability loss. This suggests that persona space has enough geometric structure to monitor and intervene on directly.
+
 ### Persona Subnetworks
 
 Whereas persona vectors intervene in activation space, Ye et al. [-@ye2026personality] pursue persona control in weight space.
