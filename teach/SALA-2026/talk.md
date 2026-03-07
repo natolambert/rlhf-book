@@ -15,15 +15,24 @@ custom_css: |
   :root {
     --colloquium-progress-fill: #F28482;
   }
+  .slide--title-sidebar h1 {
+    font-size: 2.5em;
+  }
 ---
+
+<!-- layout: title-sidebar -->
+<!-- valign: bottom -->
 
 # An Introduction to Reinforcement Learning from Human Feedback and Post-training
 
-Nathan Lambert
+<div class="colloquium-title-eyebrow">SALA 2026</div>
 
-[SALA '26](https://lasala.ai/), Quito, Ecuador
+<div class="colloquium-title-meta">
+<p class="colloquium-title-name">Nathan Lambert</p>
+<p>Quito, Ecuador<br>11 March 2026</p>
+</div>
 
-11 March 2026
+<p class="colloquium-title-note">A cursory overview of RLHF, RLVR, and modern post-training recipes for language models.</p>
 
 ---
 
