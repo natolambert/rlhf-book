@@ -36,23 +36,177 @@ custom_css: |
 
 ---
 
-<!-- section -->
-
-# Why Post-Training?
-
----
-
-<!-- columns: 50/50 -->
+<!-- columns: 45/55 -->
 ## What is a language model?
 
-- A language model assigns probabilities to text
-- Given previous tokens, it predicts the **next token**
-- Repeating this produces a completion
+Core properties:
+- A language model assigns probabilities to text.
+- Chunks of words are broken down as **tokens**, which are the internal representation of the model.
+- Given previous tokens, it predicts the next token. Repeating this produces a completion one step at a time (this is called **autoregressive**).
 
 |||
 
 ![transformer original diagram](assets/transformer.webp)
 <!-- cite-right: Vaswani2017AttentionIA -->
+
+---
+
+<!-- columns: 45/55 -->
+## What is a (modern) language model?
+
+Modern language models:
+- Have billions to trillions of parameters.
+- Largely downstream of The Transformer architecture, which popularized the use of the **self-attention** mechanism along with fully-dense layers.
+- Predict and work over much more than text: Gemini and ChatGPT work with images, audio, and video.
+
+|||
+
+![transformer original diagram](assets/transformer.webp)
+<!-- cite-right: Vaswani2017AttentionIA -->
+
+---
+
+<!-- columns: 45/55 -->
+## 2017: the Transformer is born
+
+- **2017:** the Transformer is born
+
+|||
+
+![transformer original diagram](assets/transformer.webp)
+<!-- cite-right: Vaswani2017AttentionIA -->
+
+---
+
+<!-- columns: 45/55 -->
+## 2018: GPT-1, ELMo, and BERT
+
+- 2017: the Transformer is born
+- **2018:** GPT-1, ELMo, and BERT released
+
+|||
+
+![GPT-1](assets/gpt-1.png)
+<!-- cite-right: radford2018gpt, peters2018elmo, devlin2018bert -->
+
+---
+
+<!-- rows: 30/70 -->
+## 2019: GPT-2 and scaling laws
+
+- 2017: the Transformer is born
+- 2018: GPT-1, ELMo, and BERT released
+- **2019:** GPT-2 and scaling laws
+
+===
+
+![Scaling laws](assets/scaling-laws.png)
+<!-- cite-right: radford2019gpt2, kaplan2020scaling -->
+
+---
+
+<!-- columns: 45/55 -->
+## 2020: GPT-3 surprising capabilities
+
+- 2017: the Transformer is born
+- 2018: GPT-1, ELMo, and BERT released
+- 2019: GPT-2 and scaling laws
+- **2020:** GPT-3 surprising capabilities
+
+|||
+
+![GPT-3 few-shot prompting](assets/few-shot.png)
+<!-- cite-right: brown2020gpt3 -->
+
+---
+
+<!-- columns: 45/55 -->
+## 2021: Stochastic Parrots
+
+- 2017: the Transformer is born
+- 2018: GPT-1, ELMo, and BERT released
+- 2019: GPT-2 and scaling laws
+- 2020: GPT-3 surprising capabilities
+- **2021:** Stochastic Parrots
+
+|||
+
+![Stochastic parrots](assets/stochastic-parrots.png)
+<!-- cite-right: bender2021stochastic -->
+
+---
+
+<!-- columns: 45/55 -->
+## 2022: ChatGPT
+
+- 2017: the Transformer is born
+- 2018: GPT-1, ELMo, and BERT released
+- 2019: GPT-2 and scaling laws
+- 2020: GPT-3 surprising capabilities
+- 2021: Stochastic Parrots
+- **2022:** ChatGPT
+
+|||
+
+![ChatGPT](assets/chatgpt.webp)
+<!-- cite-right: openai2022chatgpt -->
+
+---
+
+<!-- columns: 45/55 -->
+## 2023: GPT-4 and frontier-scale
+
+- 2017: the Transformer is born
+- 2018: GPT-1, ELMo, and BERT released
+- 2019: GPT-2 and scaling laws
+- 2020: GPT-3 surprising capabilities
+- 2021: Stochastic Parrots
+- 2022: ChatGPT
+- **2023:** GPT-4 and frontier-scale
+
+|||
+
+![GPT-4](assets/jensen-gpt4.jpeg)
+<!-- cite-right: openai2023gpt4 -->
+
+---
+
+<!-- columns: 45/55 -->
+## 2024: o1 and reasoning models
+
+- 2017: the Transformer is born
+- 2018: GPT-1, ELMo, and BERT released
+- 2019: GPT-2 and scaling laws
+- 2020: GPT-3 surprising capabilities
+- 2021: Stochastic Parrots
+- 2022: ChatGPT
+- 2023: GPT-4 and frontier-scale
+- **2024:** o1 and reasoning models
+
+|||
+
+![o1 test-time scaling](assets/o1-test-time.png)
+<!-- cite-right: openai2024o1 -->
+
+---
+
+<!-- columns: 45/55 -->
+## 2025: o3, Claude Code, and agents
+
+- 2017: the Transformer is born
+- 2018: GPT-1, ELMo, and BERT released
+- 2019: GPT-2 and scaling laws
+- 2020: GPT-3 surprising capabilities
+- 2021: Stochastic Parrots
+- 2022: ChatGPT
+- 2023: GPT-4 and frontier-scale
+- 2024: o1 and reasoning models
+- **2025:** o3, Claude Code, and agents
+
+|||
+
+![Claude Code](assets/claude-code.png)
+<!-- cite-right: openai2025o3, anthropic2025claudecode, openai2025agents -->
 
 ---
 
