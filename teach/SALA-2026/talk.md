@@ -88,7 +88,7 @@ Modern language models:
 |||
 
 ![The language model architecture for GPT-1. 2018.](assets/gpt-1.png)
-<!-- cite-right: radford2018gpt, peters2018elmo, devlin2018bert -->
+<!-- cite-left: radford2018gpt, peters2018elmo, devlin2018bert -->
 
 ---
 
@@ -117,7 +117,7 @@ Modern language models:
 |||
 
 ![GPT-3 was known for exapnding the idea of in-context learning and few-shot prompting. Screenshot from the paper.](assets/few-shot.png)
-<!-- cite-right: brown2020gpt3 -->
+<!-- cite-left: brown2020gpt3 -->
 
 ---
 
@@ -565,7 +565,6 @@ $$
 ---
 
 <!-- rows: 35/65 -->
-<!-- cite-right: ouyang2022training -->
 <!-- title: center -->
 
 ## The RLHF objective, unpacked
@@ -574,7 +573,7 @@ $$
 \max_{\pi} \;
 \mathbb{E}_{x \sim D,\; y \sim \pi(\cdot \mid x)}
 \underbrace{r_\phi(x, y)}_{\text{maximize the reward}}
-- \underbrace{\beta \log \frac{\pi(y \mid x)}{\pi_{\mathrm{ref}}(y \mid x)}}_{\text{but don't change the model too much}}
+- \underbrace{\beta D_{\mathrm{KL}}\!\left(\pi(\cdot \mid x)\,\|\,\pi_{\mathrm{ref}}(\cdot \mid x)\right)}_{\text{but don't change the model too much}}
 $$
 
 
@@ -597,33 +596,34 @@ The policy $\pi_\theta(y \mid x)$ generates a full response $y$, and the reward 
 
 The reference model $\pi_{\mathrm{ref}}$ keeps the policy anchored to the SFT model.
 
+$D_{\mathrm{KL}}\!\left(\pi(\cdot \mid x)\,\|\,\pi_{\mathrm{ref}}(\cdot \mid x)\right)$ measures how far the new policy moves from that reference on prompt $x$.
+
 $\beta$ controls the tradeoff between **improving behavior** and **staying close** to what the model already knows.
 
 </div>
 
 ---
 
-<!-- columns: 45/55 -->
-<!-- cite-right: rafailov2024direct, ouyang2022training -->
+<!-- rows: 27/73 -->
+<!-- cite-right: rafailov2024direct -->
 ## What if we optimize this more directly?
 
-- PPO works, but it is an **online RL loop**
-- We must keep sampling completions from the current policy
-- We must tune RL hyperparameters and KL penalties carefully
-- This led people to ask if the preference data itself could define the objective
-
 $$
-\text{Can we learn directly from } (x, y_w, y_l)
-\text{ without a separate RL stage?}
+\max_{\pi} \;
+\mathbb{E}_{x \sim D,\; y \sim \pi(\cdot \mid x)}
+r_\phi(x, y)
+- \beta D_{\mathrm{KL}}\!\left(\pi(\cdot \mid x)\,\|\,\pi_{\mathrm{ref}}(\cdot \mid x)\right)
 $$
 
-|||
+===
+
+<!-- row-columns: 60/40 -->
 
 **Direct Preference Optimization (DPO)**
 
-- Start from the same KL-regularized RLHF objective
-- Eliminate the explicit reward model
-- Train directly on preferred vs. rejected responses
+- Derived the gradient toward the optimal solution, $\pi^*$ to the above equation 
+- Eliminated the need for a separate reward model (via training an implicit one)
+- Train directly on preferred vs. rejected responses to a prompt
 
 $$
 \mathcal{L}_{\mathrm{DPO}}(\theta)
@@ -634,6 +634,52 @@ $$
 \right)
 $$
 
+|||
+
+---
+
+<!-- rows: 27/73 -->
+<!-- cite-right: rafailov2024direct -->
+## What if we optimize this more directly?
+
+$$
+\max_{\pi} \;
+\mathbb{E}_{x \sim D,\; y \sim \pi(\cdot \mid x)}
+r_\phi(x, y)
+- \beta D_{\mathrm{KL}}\!\left(\pi(\cdot \mid x)\,\|\,\pi_{\mathrm{ref}}(\cdot \mid x)\right)
+$$
+
+===
+
+<!-- row-columns: 60/40 -->
+
+**Direct Preference Optimization (DPO)**
+
+- Derived the gradient toward the optimal solution, $\pi^*$ to the above equation 
+- Eliminated the need for a separate reward model (via training an implicit one)
+- Train directly on preferred vs. rejected responses to a prompt
+
+$$
+\mathcal{L}_{\mathrm{DPO}}(\theta)
+=
+- \log \sigma \!\left(
+\beta \log \frac{\pi_\theta(y_w \mid x)}{\pi_{\mathrm{ref}}(y_w \mid x)}
+- \beta \log \frac{\pi_\theta(y_l \mid x)}{\pi_{\mathrm{ref}}(y_l \mid x)}
+\right)
+$$
+
+|||
+
+```box
+title: DPO became very popular as it is
+tone: accent
+content: |
+  - Far simpler to implement
+  - Far cheaper to run
+  - Achieves ~80% or more of the final performance
+  - I used it to build models like Zephyr-Beta, Tülu 2/3, Olmo 2/3, etc.
+```
+
 ---
 
 <!-- rows: 45/55 -->
@@ -641,15 +687,15 @@ $$
 
 | | InstructGPT (2022) | Tülu 3 (2024) | DeepSeek R1 (2025) |
 |---|---|---|---|
-| **IFT data** | ~10K | ~1M | 100K+ |
+| **Instruction data** | ~10K | ~1M | 100K+ |
 | **Preference data** | ~100K | ~1M | On-policy |
-| **RL stage** | ~100K prompts | ~10K (RLVR) | "Until convergence" |
+| **RL stage** | ~100K prompts | ~10K (RLVR) | N/A |
 
-More data, more preference signals, more RL compute.
+An overall trend is to use far more compute across all the stages, but shifting more to RLVR.
 
 ===
 
-![](assets/rlhf-basic.png)
+![An early, InstructGPT style recipe, system diagram.](assets/rlhf-basic.png)
 
 ---
 
@@ -658,15 +704,15 @@ More data, more preference signals, more RL compute.
 
 | | InstructGPT (2022) | Tülu 3 (2024) | DeepSeek R1 (2025) |
 |---|---|---|---|
-| **IFT data** | ~10K | ~1M | 100K+ |
+| **Instruction data** | ~10K | ~1M | 100K+ |
 | **Preference data** | ~100K | ~1M | On-policy |
-| **RL stage** | ~100K prompts | ~10K (RLVR) | "Until convergence" |
+| **RL stage** | ~100K prompts | ~10K (RLVR) | N/A |
 
-More data, more preference signals, more RL compute.
+An overall trend is to use far more compute across all the stages, but shifting more to RLVR.
 
 ===
 
-![](assets/rlhf-complex.png)
+![A more complex, multi-stage training system diagram.](assets/rlhf-complex.png)
 
 ---
 
