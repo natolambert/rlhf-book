@@ -470,12 +470,15 @@ Apply the same RL algorithms to LLMs just on if the answer was right. No need to
 
 <!-- columns: 45/55 -->
 <!-- cite-right: ouyang2022training -->
-## Step 1/3: Instruction tuning
+## Step 1/3: Instruction Fine-tuning (IFT)
 
+The foundation of post-training. Also called **Supervised Fine-tuning (SFT)**:
 - Start from a pretrained language model
-- Collect demonstrations of the *desired* assistant behavior
-- Train with standard supervised learning on prompt-response pairs
-- Result: an **SFT policy** that is useful, but still limited
+- Collect demonstrations of *desired* assistant behavior
+- Train with standard supervised learning on prompt-response pairs.  
+  (different batch size, learning rate, etc.)
+- Model can now answer questions.  
+  Easy to use IFT to quickly adapt base model to many domains.
 
 $$
 \mathcal{L}_{\mathrm{SFT}}(\theta)
@@ -489,6 +492,8 @@ $$
 ```conversation
 size: 0.9
 messages:
+  - role: system
+    content: "You are a helpful, harmless assistant. A system message like this can be used to steer the model to specific persona's or behaviors."
   - role: user
     content: "Write me a short poem about an optimistic goldfish."
   - role: assistant
@@ -501,9 +506,15 @@ messages:
 <!-- cite-right: christiano2017, ouyang2022training -->
 ## Step 2/3: Reward modeling
 
+Overview:
 - Collect **comparisons** between two model outputs for the same prompt
+- RLHF gets its name from collecting *human* feedback between completions, but today much of it is AI feedback
 - Train a reward model $r_\phi(x, y)$ to score preferred completions higher
-- This gives a learned proxy for human judgment
+
+|||
+
+
+The probability model says a response should win when it gets a higher reward score:
 
 $$
 P(y_w \succ y_l \mid x)
@@ -511,26 +522,32 @@ P(y_w \succ y_l \mid x)
 \sigma \!\left(r_\phi(x, y_w) - r_\phi(x, y_l)\right)
 $$
 
+Training then minimizes the negative log-likelihood of the preferred response beating the rejected one:
+
 $$
 \mathcal{L}_{\mathrm{RM}}(\phi)
 =
 - \log \sigma \!\left(r_\phi(x, y_w) - r_\phi(x, y_l)\right)
 $$
 
-|||
-
-![Reward model training](assets/pref_rm_training.png)
+Notation:
+- $x$ is the prompt
+- $y_w$ is the **winning** response
+- $y_l$ is the **losing** response
+- $r_\phi(x, y)$ is the trained reward model
 
 ---
 
 <!-- columns: 50/50 -->
 <!-- cite-right: ouyang2022training -->
+<!-- footnotes: right -->
 ## Step 3/3 RL against the reward model
 
-- Sample a prompt $x$ from the dataset
-- Generate a completion $y \sim \pi_\theta(\cdot \mid x)$
-- Score it with the reward model $r_\phi(x, y)$
-- Add a **KL penalty** so the policy stays close to the SFT/reference model
+Where everything comes together (and RLHF gets its name):
+- Sample a batch of prompts $x_i$ from the dataset $\mathcal{D}$
+- Generate completions $y_i \sim \pi_\theta(\cdot \mid x_i)$ from the model being trained
+- Score them with the reward model $r_\phi(x_i, y_i)$
+- Add a **KL penalty** so the policy stays close to the SFT/reference model.^[KL divergence measures how much the current policy differs from the reference model. For discrete outputs, $D_{\mathrm{KL}}(\pi \,\|\, \pi_{\mathrm{ref}})=\mathbb{E}_{y \sim \pi}\!\left[\log \pi(y \mid x)-\log \pi_{\mathrm{ref}}(y \mid x)\right]$. People often colloquially call this the “KL distance” between the models, even though it is not a true metric.]
 - Update the policy with PPO in InstructGPT
 
 $$
@@ -546,31 +563,34 @@ $$
 
 ---
 
-<!-- columns: 50/50 -->
+<!-- rows: 48/52 -->
 <!-- cite-right: ouyang2022training -->
 ## The RLHF objective, unpacked
 
-- Prompts $x$ come from a dataset, not an environment
-- The policy $\pi_\theta(y \mid x)$ generates a full response $y$
-- The reward model $r_\phi(x, y)$ scores whether humans would like that response
-- The reference model $\pi_{\mathrm{ref}}$ keeps the policy close to the SFT model
-- $\beta$ controls the tradeoff between **improving behavior** and **staying anchored**
+<div style="text-align: center;">
 
 $$
 \max_{\pi} \;
 \mathbb{E}_{x \sim D,\; y \sim \pi(\cdot \mid x)}
-\left[
-r_\phi(x, y)
-- \beta \log \frac{\pi(y \mid x)}{\pi_{\mathrm{ref}}(y \mid x)}
-\right]
+\underbrace{r_\phi(x, y)}_{\text{maximize the reward}}
+- \underbrace{\beta \log \frac{\pi(y \mid x)}{\pi_{\mathrm{ref}}(y \mid x)}}_{\text{but don't change the model too much}}
 $$
+
+</div>
+
+===
+
+<!-- row-columns: 50/50 -->
+
+Prompts $x$ come from a dataset, not an environment.
+
+The policy $\pi_\theta(y \mid x)$ generates a full response $y$, and the reward model $r_\phi(x, y)$ scores whether humans would like that response.
 
 |||
 
-**This policy optimization step makes two choices**
+The reference model $\pi_{\mathrm{ref}}$ keeps the policy anchored to the SFT model.
 
-1. How do we build a useful reward signal?
-2. How do we optimize the policy against it?
+$\beta$ controls the tradeoff between **improving behavior** and **staying close** to what the model already knows.
 
 InstructGPT's answer was:
 - a **learned reward model**
@@ -654,6 +674,19 @@ Post-training **extracts latent potential** from the base model
 - Version 2: **48** benchmark average
 
 Base models determine the *ceiling*. Post-training's job is to **reach it**.
+
+---
+
+## From RLHF to post-training
+
+- The classic **3-step RLHF recipe** became the intellectual center of modern post-training
+- Even when recipes changed, people still thought in terms of:
+  - instruction tuning
+  - a reward / preference signal
+  - policy improvement
+- Modern post-training extends, simplifies, or scales that template
+
+Placeholder: connect InstructGPT-style RLHF to DPO, RLVR, and reasoning-oriented RL.
 
 ---
 
