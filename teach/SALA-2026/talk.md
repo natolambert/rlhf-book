@@ -303,23 +303,59 @@ messages:
 
 ---
 
+<!-- cite-right: christiano2017, ziegler2019fine, ouyang2022training, bai2022constitutional -->
+## Why did people make RLHF?
+
+- Many objectives are easy for humans to **judge**, but hard to write as an exact reward
+- In language, what we want is often implicit: **follow intent**, be **helpful**, be **harmless**
+- Pretraining optimizes **next-token prediction**, not assistant behavior
+- Preference comparisons turn those human judgments into a scalable training signal
+
+RLHF lets us optimize for behavior we can **evaluate**, even when we cannot easily **specify** the reward.
+
+---
+
 ## Classical RL
 
+A reinforcement learning problem is formulated as:
 - Agent takes actions in an **environment** with state transitions
 - Reward is a **known function** of the environment
 - Multi-step, fine-grained rewards at each timestep
 - Goal: maximize cumulative return over a trajectory
 
+$$\text{MDP } (\mathcal{S}, \mathcal{A}, P, r, \gamma)$$
+
+$$J(\pi) = \mathbb{E}_{\tau \sim \pi}\!\left[\sum_{t=0}^{T} \gamma^t r(s_t, a_t)\right]$$
+
 ---
 
-## RLHF
+<!-- rows: 45/55 -->
+## Classical RL vs. RLHF
 
+<div class="text-sm">
+
+**Classical RL**
+- Agent acts in an environment with state $s_t$ and action $a_t$
+- Reward is a known function $r(s_t, a_t)$ from the environment
+- Optimize cumulative return over a trajectory
+
+$$J(\pi) = \mathbb{E}_{\tau \sim \pi}\!\left[\sum_{t=0}^{T} \gamma^t r(s_t, a_t)\right]$$
+
+</div>
+
+===
+
+<div class="text-sm">
+
+**RLHF**
 - No environment — prompts sampled from a dataset
 - Reward is **learned** from human preferences (a proxy)
 - **Response-level** reward (bandit-style, not per-token)
 - Regularized with **KL penalty** to stay close to the base model
 
 $$J(\pi) = \mathbb{E}\left[ r_\theta(x, y) \right] - \beta \, D_{\text{KL}}\!\left(\pi \| \pi_{\text{ref}}\right)$$
+
+</div>
 
 ---
 
@@ -355,6 +391,30 @@ $$J(\pi) = \mathbb{E}\left[ r_\theta(x, y) \right] - \beta \, D_{\text{KL}}\!\le
 |||
 
 ![Christiano et al. 2017 RLHF overview](assets/rlhf_schematic_tikz.png)
+
+---
+
+<!-- columns: 50/50 -->
+<!-- cite-right: christiano2017 -->
+## Which is the better backflip?
+
+![Backflip trained from human preferences](assets/christiano-backflip-human.webp)
+
+|||
+
+![Backflip trained with a hand-designed reward](assets/christiano-backflip-reward.webp)
+
+---
+
+<!-- columns: 50/50 -->
+<!-- cite-right: christiano2017 -->
+## Left: Human Feedback; Right: Hand-design Reward Function
+
+![Backflip trained from human preferences](assets/christiano-backflip-human.webp)
+
+|||
+
+![Backflip trained with a hand-designed reward](assets/christiano-backflip-reward.webp)
 
 ---
 

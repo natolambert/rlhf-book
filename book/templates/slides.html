@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+
+  <meta property="og:image" content="https://raw.githubusercontent.com/natolambert/rlhf-book/main/assets/rlhf-book-share.png" />
+  <meta property="og:image:width" content="1920" />
+  <meta property="og:image:height" content="1080" />
+  <meta property="og:title" content="Slides | RLHF Book by Nathan Lambert" />
+  <meta property="og:description" content="Talks and lecture slides on RLHF and post-training." />
+  <meta property="og:url" content="https://rlhfbook.com/slides" />
+
+  <title>Slides | RLHF Book by Nathan Lambert</title>
+
+  <link rel="stylesheet" href="style.css" />
+  <script src="nav.js" defer></script>
+
+  <style>
+    #title-block-header {
+      text-align: center;
+    }
+
+    .slides-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1.5em;
+      margin: 2em 0;
+    }
+
+    .slide-card {
+      border: 1px solid #e2e2e2;
+      border-radius: 0.35em;
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(17, 17, 17, 0.06);
+      overflow: hidden;
+      transition: box-shadow 0.2s ease, transform 0.15s ease;
+    }
+
+    .slide-card:hover {
+      box-shadow: 0 8px 24px rgba(17, 17, 17, 0.12);
+      transform: translateY(-2px);
+    }
+
+    .slide-card a {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      padding: 1.5em;
+    }
+
+    .slide-card h3 {
+      margin: 0 0 0.5em 0;
+      font-size: 1.15em;
+      color: #0645ad;
+    }
+
+    .slide-card .meta {
+      font-size: 0.9em;
+      color: #666;
+      margin-bottom: 0.75em;
+    }
+
+    .slide-card .description {
+      font-size: 0.95em;
+      color: #333;
+      line-height: 1.5;
+    }
+
+    .slide-card .tag {
+      display: inline-block;
+      font-size: 0.8em;
+      padding: 0.2em 0.6em;
+      border-radius: 0.25em;
+      background: rgba(6, 69, 173, 0.08);
+      color: #0645ad;
+      margin-top: 0.75em;
+    }
+  </style>
+
+  <!-- Privacy-friendly analytics by Plausible -->
+  <script async src="https://plausible.io/js/pa-Rr3_iGtVZcPHhxkdbyDIb.js"></script>
+  <script>
+    window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+    plausible.init()
+  </script>
+</head>
+<body>
+  <header id="title-block-header">
+    <h1 class="title"><a href="https://rlhfbook.com/" style="color: inherit; text-decoration: none;">Reinforcement Learning from Human Feedback</a></h1>
+    <p class="subtitle">A short introduction to RLHF and post-training focused on language models.</p>
+    <p class="author">Nathan Lambert</p>
+    <navigation-dropdown expanded="false"></navigation-dropdown>
+  </header>
+
+  <h1>Slides</h1>
+
+  <p>
+    Talks and lectures based on <a href="https://rlhfbook.com">the RLHF Book</a>.
+    Click any talk to view the slides directly in your browser.
+  </p>
+
+  <div class="slides-grid">
+    <div class="slide-card">
+      <a href="teach/SALA-2026/">
+        <h3>An Introduction to Reinforcement Learning from Human Feedback and Post-training</h3>
+        <div class="meta">SALA 2026 &middot; Quito, Ecuador &middot; March 2026</div>
+        <div class="description">
+          A broad introduction to language model post-training, covering pretraining foundations,
+          instruction tuning, RLHF, and modern training recipes from Llama 3 to DeepSeek R1.
+        </div>
+        <span class="tag">Invited Talk</span>
+      </a>
+    </div>
+  </div>
+
+  <section id="citation" style="padding: 0 20px;">
+    <h4 style="text-align: left; font-weight: normal;">Citation</h4>
+    <p>If you found this useful for your research, please cite it!</p>
+    <pre style="text-align: left; font-size: small; color: #888;">@book{rlhf2026lambert,
+  author = {Nathan Lambert},
+  title = {Reinforcement Learning from Human Feedback},
+  year = {2026},
+  publisher = {Online},
+  url = {https://rlhfbook.com}
+}</pre>
+  </section>
+  <footer style="padding: 20px; text-align: center; margin-top: 2em;">
+    <div style="display: flex; justify-content: center; gap: 20px; align-items: center;">
+      <a href="https://github.com/natolambert/rlhf-book" target="_blank">
+        <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub" style="width: 40px; height: 40px;">
+      </a>
+      <a href="https://arxiv.org/abs/2504.12501" target="_blank">
+        <img src="assets/arxiv.svg" alt="arXiv" style="width: 40px; height: 40px;">
+      </a>
+      <a href="https://www.manning.com/books/the-rlhf-book" target="_blank">
+        <img src="assets/manning.svg" alt="Manning" style="width: 40px; height: 40px;">
+      </a>
+    </div>
+    <p>&copy; 2024-2026 Nathan Lambert &middot; <a href="https://rlhfbook.com" style="color: #888; text-decoration: none;">rlhfbook.com</a></p>
+  </footer>
+</body>
+</html>

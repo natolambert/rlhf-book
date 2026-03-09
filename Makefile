@@ -85,7 +85,7 @@ ECHO_BUILT = @echo "$@ was built\n"
 # Basic actions
 ####################################################################################################
 
-.PHONY: all book clean epub html pdf docx nested_html latex kindle rl-cheatsheet pagefind
+.PHONY: all book clean epub html pdf docx nested_html latex kindle rl-cheatsheet pagefind teach
 
 all:	book
 
@@ -105,7 +105,7 @@ $(info JS files found: $(JS_FILES))
 
 epub:	$(BUILD)/epub/$(OUTPUT_FILENAME).epub
 
-html:	nested_html $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html $(BUILD)/html/library.html
+html:	nested_html $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html $(BUILD)/html/library.html $(BUILD)/html/slides.html
 	
 pdf:	$(BUILD)/pdf/$(OUTPUT_FILENAME).pdf
 
@@ -160,6 +160,10 @@ $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html:	$(HTML_DEPENDENCIES)
 $(BUILD)/html/library.html: book/templates/library.html
 	$(MKDIR_CMD) $(BUILD)/html
 	cp book/templates/library.html $@
+
+$(BUILD)/html/slides.html: book/templates/slides.html
+	$(MKDIR_CMD) $(BUILD)/html
+	cp book/templates/slides.html $@
 
 rl-cheatsheet: $(BUILD)/html/rl-cheatsheet/inside_cover_back.pdf
 
@@ -273,12 +277,20 @@ pagefind: html files
 # Teaching slides (built with colloquium)
 ####################################################################################################
 
-TEACH_SOURCES = $(wildcard teach/*/slides.md)
-TEACH_DIRS = $(patsubst teach/%/slides.md,%,$(TEACH_SOURCES))
+# Find talk directories by looking for talk.md or slides.md source files
+TEACH_TALK_SOURCES = $(wildcard teach/*/talk.md) $(wildcard teach/*/slides.md)
+TEACH_DIRS = $(sort $(patsubst teach/%/,%,$(dir $(TEACH_TALK_SOURCES))))
+
+# Map from dir name to its .md source file (prefer talk.md over slides.md)
+teach_source = $(firstword $(wildcard teach/$(1)/talk.md teach/$(1)/slides.md))
 
 teach: $(foreach d,$(TEACH_DIRS),teach-$(d))
 
-teach-%: teach/%/slides.md
+teach-%:
 	@mkdir -p $(BUILD)/html/teach/$*
-	uv run colloquium build $< -o $(BUILD)/html/teach/$*/
+	uv run colloquium build $(call teach_source,$*) -o $(BUILD)/html/teach/$*/
+	@# Rename output to index.html so the directory URL works
+	@cd $(BUILD)/html/teach/$* && for f in *.html; do [ "$$f" != "index.html" ] && mv "$$f" index.html; done || true
+	@# Copy talk assets (images) if present
+	@test -d teach/$*/assets && cp -r teach/$*/assets $(BUILD)/html/teach/$*/ || true
 	@echo "Built teach/$*"

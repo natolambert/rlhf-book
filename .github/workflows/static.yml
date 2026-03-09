@@ -56,6 +56,9 @@ jobs:
           # Also add the standard symlink path in case it exists
           echo "/Library/TeX/texbin" >> $GITHUB_PATH
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+
       - name: Clean build directory
         run: |
           rm -rf build
@@ -66,15 +69,13 @@ jobs:
           make
           make files
 
+      - name: Build teaching slides
+        run: |
+          uv sync --extra teach
+          make teach
+
       - name: Build Pagefind search index
         run: npx --yes pagefind --site build/html --glob "c/**/*.html"
-
-      # TODO: Add teach slide build + hosting on rlhfbook.com
-      # Will need a separate workflow with path filters (teach/**)
-      # - name: Build teaching slides
-      #   run: |
-      #     uv pip install colloquium
-      #     make teach
 
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v3
