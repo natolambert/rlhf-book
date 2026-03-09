@@ -303,80 +303,27 @@ messages:
 
 ---
 
+<!-- columns: 50/50 -->
+<!-- cite-right: christiano2017 -->
+## Which is the better backflip?
+
+![Backflip trained from human preferences](assets/christiano-backflip-human.webp)
+
+|||
+
+![Backflip trained with a hand-designed reward](assets/christiano-backflip-reward.webp)
+
+---
+
 <!-- cite-right: christiano2017, ziegler2019fine, ouyang2022training, bai2022constitutional -->
 ## Why did people make RLHF?
 
-- Many objectives are easy for humans to **judge**, but hard to write as an exact reward
-- In language, what we want is often implicit: **follow intent**, be **helpful**, be **harmless**
+- Many objectives are easy for humans to **judge**, but hard to write as an exact reward function
+- In language models, what we want is often implicit: **follow intent**, be **helpful**, be **harmless**
 - Pretraining optimizes **next-token prediction**, not assistant behavior
 - Preference comparisons turn those human judgments into a scalable training signal
 
 RLHF lets us optimize for behavior we can **evaluate**, even when we cannot easily **specify** the reward.
-
----
-
-## Classical RL
-
-A reinforcement learning problem is formulated as:
-- Agent takes actions in an **environment** with state transitions
-- Reward is a **known function** of the environment
-- Multi-step, fine-grained rewards at each timestep
-- Goal: maximize cumulative return over a trajectory
-
-$$\text{MDP } (\mathcal{S}, \mathcal{A}, P, r, \gamma)$$
-
-$$J(\pi) = \mathbb{E}_{\tau \sim \pi}\!\left[\sum_{t=0}^{T} \gamma^t r(s_t, a_t)\right]$$
-
----
-
-<!-- rows: 45/55 -->
-## Classical RL vs. RLHF
-
-<div class="text-sm">
-
-**Classical RL**
-- Agent acts in an environment with state $s_t$ and action $a_t$
-- Reward is a known function $r(s_t, a_t)$ from the environment
-- Optimize cumulative return over a trajectory
-
-$$J(\pi) = \mathbb{E}_{\tau \sim \pi}\!\left[\sum_{t=0}^{T} \gamma^t r(s_t, a_t)\right]$$
-
-</div>
-
-===
-
-<div class="text-sm">
-
-**RLHF**
-- No environment — prompts sampled from a dataset
-- Reward is **learned** from human preferences (a proxy)
-- **Response-level** reward (bandit-style, not per-token)
-- Regularized with **KL penalty** to stay close to the base model
-
-$$J(\pi) = \mathbb{E}\left[ r_\theta(x, y) \right] - \beta \, D_{\text{KL}}\!\left(\pi \| \pi_{\text{ref}}\right)$$
-
-</div>
-
----
-
-## RLVR
-
-- Same RL setup as RLHF, but reward is **verifiable**
-- Math: check the final answer. Code: run the tests.
-- No learned reward model — **no proxy objective**
-- Enables scaling RL compute on reasoning tasks
-
----
-
-## Comparison
-
-| | Classical RL | RLHF | RLVR |
-|---|---|---|---|
-| **Reward** | Environment | Learned (proxy) | Verifiable (exact) |
-| **State transitions** | Yes | No | No |
-| **Reward granularity** | Per-step | Per-response | Per-response |
-| **Failure mode** | Exploration | Over-optimization | Task coverage |
-| **Example** | CartPole | Chat style tuning | Math reasoning |
 
 ---
 
@@ -396,18 +343,6 @@ $$J(\pi) = \mathbb{E}\left[ r_\theta(x, y) \right] - \beta \, D_{\text{KL}}\!\le
 
 <!-- columns: 50/50 -->
 <!-- cite-right: christiano2017 -->
-## Which is the better backflip?
-
-![Backflip trained from human preferences](assets/christiano-backflip-human.webp)
-
-|||
-
-![Backflip trained with a hand-designed reward](assets/christiano-backflip-reward.webp)
-
----
-
-<!-- columns: 50/50 -->
-<!-- cite-right: christiano2017 -->
 ## Left: Human Feedback; Right: Hand-design Reward Function
 
 ![Backflip trained from human preferences](assets/christiano-backflip-human.webp)
@@ -418,8 +353,89 @@ $$J(\pi) = \mathbb{E}\left[ r_\theta(x, y) \right] - \beta \, D_{\text{KL}}\!\le
 
 ---
 
+<!-- cite-right: sutton2018reinforcement -->
+<!-- columns: 65/35 -->
+
+## Classical RL
+
+A reinforcement learning problem is often written as a **Markov Decision Process (MDP)**:
+- state space $\mathcal{S}$, action space $\mathcal{A}$
+- transition dynamics $P(s_{t+1}\mid s_t, a_t)$
+- reward function $r(s_t, a_t)$ and discount $\gamma$
+- optimize cumulative return over a trajectory
+
+$$\text{MDP } (\mathcal{S}, \mathcal{A}, P, r, \gamma)$$
+
+$$J(\pi) = \mathbb{E}_{\tau \sim \pi}\!\left[\sum_{t=0}^{T} \gamma^t r(s_t, a_t)\right]$$
+
+|||
+
+![Classical RL basics](assets/rl.png)
+
+---
+
+<!-- columns: 45/55 -->
+<!-- cite-right: christiano2017, ouyang2022training -->
+## Classical RL vs. RLHF
+
+<div class="text-sm">
+
+**Classical RL**
+- Agent acts in an environment with state $s_t$ and action $a_t$
+- Reward is a known function $r(s_t, a_t)$ from the environment
+- Optimize cumulative return over a trajectory
+
+$$J(\pi) = \mathbb{E}_{\tau \sim \pi}\!\left[\sum_{t=0}^{T} \gamma^t r(s_t, a_t)\right]$$
+
+<div class="colloquium-spacer-md"></div>
+
+**RLHF**
+- No environment — prompts sampled from a dataset
+- Reward is **learned** from human preferences (a proxy)
+- **Response-level** reward (bandit-style, not per-token)
+- Regularized with **KL penalty** to stay close to the base model
+
+$$J(\pi) = \mathbb{E}\left[ r_\theta(x, y) \right] - \beta \, D_{\text{KL}}\!\left(\pi \| \pi_{\text{ref}}\right)$$
+
+</div>
+
+|||
+
+![RLHF basic system](assets/rlhf.png)
+
+---
+
+<!-- columns: 45/55 -->
+<!-- cite-right: lambert2024t, guo2025deepseek -->
+## Reinforcement Learning with *Verifiable* Rewards
+
+- Same RL setup as RLHF, but reward is **verifiable**
+- Math: check the final answer. Code: run the tests.
+- No learned reward model — **no proxy objective**
+- Enables scaling RL compute on reasoning tasks
+- Modern examples include **Tulu 3** and **DeepSeek R1**
+
+|||
+
+![RLVR system](assets/rlvr-system.png)
+
+---
+
+## Comparison
+
+| | Classical RL | RLHF | RLVR |
+|---|---|---|---|
+| **Reward** | Environment | Learned (proxy) | Verifiable (exact) |
+| **State transitions** | Yes | No | No |
+| **Reward granularity** | Per-step | Per-response | Per-response |
+| **Failure mode** | Exploration | Over-optimization | Task coverage |
+| **Example** | CartPole | Chat style tuning | Math reasoning |
+
+---
+
+
 <!-- rows: 60/40 -->
-## Landmark Papers
+## The path to modern RLHF
 
 ![RLHF timeline](assets/rlhf_timeline_tikz.png)
 
