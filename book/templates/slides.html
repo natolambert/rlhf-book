@@ -22,11 +22,49 @@
       text-align: center;
     }
 
+    /* Table of contents */
+    .slides-toc {
+      margin: 1.5em 0 2em;
+    }
+
+    .slides-toc h2 {
+      font-size: 1.1em;
+      margin-bottom: 0.5em;
+    }
+
+    .slides-toc ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .slides-toc li {
+      padding: 0.3em 0;
+    }
+
+    .slides-toc a {
+      color: #0645ad;
+    }
+
+    .slides-toc .toc-meta {
+      color: #888;
+      font-size: 0.9em;
+    }
+
+    /* Year sections */
+    .year-section h2 {
+      border-bottom: 3px solid #0645ad;
+      padding-bottom: 0.3em;
+      margin-top: 2em;
+      margin-bottom: 1em;
+    }
+
+    /* Card grid */
     .slides-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
       gap: 1.5em;
-      margin: 2em 0;
+      margin-bottom: 2em;
     }
 
     .slide-card {
@@ -47,25 +85,44 @@
       display: block;
       text-decoration: none;
       color: inherit;
-      padding: 1.5em;
+    }
+
+    /* Slide preview iframe container */
+    .slide-preview {
+      position: relative;
+      width: 100%;
+      /* 16:9 aspect ratio */
+      padding-top: 56.25%;
+      overflow: hidden;
+      background: #f5f5f5;
+      border-bottom: 1px solid #e2e2e2;
+    }
+
+    .slide-preview iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1280px;
+      height: 720px;
+      transform-origin: top left;
+      border: none;
+      pointer-events: none;
+    }
+
+    .slide-card-body {
+      padding: 1.2em 1.5em 1.5em;
     }
 
     .slide-card h3 {
-      margin: 0 0 0.5em 0;
-      font-size: 1.15em;
+      margin: 0 0 0.4em 0;
+      font-size: 1.1em;
       color: #0645ad;
     }
 
     .slide-card .meta {
-      font-size: 0.9em;
+      font-size: 0.85em;
       color: #666;
-      margin-bottom: 0.75em;
-    }
-
-    .slide-card .description {
-      font-size: 0.95em;
-      color: #333;
-      line-height: 1.5;
+      margin-bottom: 0.6em;
     }
 
     .slide-card .tag {
@@ -75,7 +132,6 @@
       border-radius: 0.25em;
       background: rgba(6, 69, 173, 0.08);
       color: #0645ad;
-      margin-top: 0.75em;
     }
   </style>
 
@@ -101,19 +157,34 @@
     Click any talk to view the slides directly in your browser.
   </p>
 
-  <div class="slides-grid">
-    <div class="slide-card">
-      <a href="teach/SALA-2026/">
-        <h3>An Introduction to Reinforcement Learning from Human Feedback and Post-training</h3>
-        <div class="meta">SALA 2026 &middot; Quito, Ecuador &middot; March 2026</div>
-        <div class="description">
-          A broad introduction to language model post-training, covering pretraining foundations,
-          instruction tuning, RLHF, and modern training recipes from Llama 3 to DeepSeek R1.
-        </div>
-        <span class="tag">Invited Talk</span>
-      </a>
+  <nav class="slides-toc">
+    <h2>Contents</h2>
+    <ul>
+      <li>
+        <a href="#sala-2026">An Introduction to RLHF and Post-training</a>
+        <span class="toc-meta"> &mdash; SALA 2026, March 2026</span>
+      </li>
+    </ul>
+  </nav>
+
+  <section class="year-section">
+    <h2>2026</h2>
+
+    <div class="slides-grid">
+      <div class="slide-card" id="sala-2026">
+        <a href="teach/SALA-2026/">
+          <div class="slide-preview">
+            <iframe src="teach/SALA-2026/" loading="lazy" tabindex="-1" aria-hidden="true"></iframe>
+          </div>
+          <div class="slide-card-body">
+            <h3>An Introduction to Reinforcement Learning from Human Feedback and Post-training</h3>
+            <div class="meta">SALA 2026 &middot; Quito, Ecuador &middot; March 2026</div>
+            <span class="tag">Invited Talk</span>
+          </div>
+        </a>
+      </div>
     </div>
-  </div>
+  </section>
 
   <section id="citation" style="padding: 0 20px;">
     <h4 style="text-align: left; font-weight: normal;">Citation</h4>
@@ -140,5 +211,19 @@
     </div>
     <p>&copy; 2024-2026 Nathan Lambert &middot; <a href="https://rlhfbook.com" style="color: #888; text-decoration: none;">rlhfbook.com</a></p>
   </footer>
+
+  <script>
+    // Scale iframes to fit their containers
+    function scaleIframes() {
+      document.querySelectorAll('.slide-preview').forEach(container => {
+        const iframe = container.querySelector('iframe');
+        if (!iframe) return;
+        const scale = container.offsetWidth / 1280;
+        iframe.style.transform = 'scale(' + scale + ')';
+      });
+    }
+    window.addEventListener('load', scaleIframes);
+    window.addEventListener('resize', scaleIframes);
+  </script>
 </body>
 </html>
