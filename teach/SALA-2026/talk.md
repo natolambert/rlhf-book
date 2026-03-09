@@ -210,12 +210,16 @@ Modern language models:
 
 ---
 
-<!-- columns: 30/70 -->
+<!-- columns: 50/50 -->
 ## Pretraining: next-token prediction
 
-- Train on a lot of text from the web, books, code, and documents
+- Train on a trillions of tokens of text from the web, books, code, and documents
+  - Models are often trained on 5-50+ trillion tokens
+  - 1T of text tokens is about 3-5 TB of data
+  - Labs gather and filter 10-20X more data than is used for the model
+  - Total data funnel targetted for models is on the order of petabytes
 - Objective: predict the next token in each sequence
-- This does **not** directly teach "be helpful" or "answer questions"
+- Result: Incredible, flexible, useful models
 
 |||
 
@@ -226,6 +230,10 @@ TODO image<br>next-token prediction example
 ---
 
 ## A base model completes text
+
+After pretraining we are left wtih a glorified autocomplete model, for example:^[Base models are also becoming more flexible through midtraining and better data mixtures.]
+
+<div class="colloquium-spacer-md"></div>
 
 ```conversation
 messages:
