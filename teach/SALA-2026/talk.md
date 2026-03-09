@@ -6,6 +6,7 @@ fonts:
   heading: "Rubik"
   body: "Poppins"
 bibliography: refs.bib
+figure_captions: true
 footer:
   left: "rlhfbook.com"
   center: ""
@@ -46,7 +47,7 @@ Core properties:
 
 |||
 
-![transformer original diagram](assets/transformer.webp)
+![The original model architecture diagram for the Transformer. 2017.](assets/transformer.webp)
 <!-- cite-right: Vaswani2017AttentionIA -->
 
 ---
@@ -61,7 +62,7 @@ Modern language models:
 
 |||
 
-![transformer original diagram](assets/transformer.webp)
+![The original model architecture diagram for the Transformer. 2017.](assets/transformer.webp)
 <!-- cite-right: Vaswani2017AttentionIA -->
 
 ---
@@ -73,7 +74,7 @@ Modern language models:
 
 |||
 
-![transformer original diagram](assets/transformer.webp)
+![The original model architecture diagram for the Transformer. 2017.](assets/transformer.webp)
 <!-- cite-right: Vaswani2017AttentionIA -->
 
 ---
@@ -86,7 +87,7 @@ Modern language models:
 
 |||
 
-![GPT-1](assets/gpt-1.png)
+![The language model architecture for GPT-1. 2018.](assets/gpt-1.png)
 <!-- cite-right: radford2018gpt, peters2018elmo, devlin2018bert -->
 
 ---
@@ -100,7 +101,7 @@ Modern language models:
 
 ===
 
-![Scaling laws](assets/scaling-laws.png)
+![The famous scaling laws plots. 2020.](assets/scaling-laws.png)
 <!-- cite-right: radford2019gpt2, kaplan2020scaling -->
 
 ---
@@ -115,7 +116,7 @@ Modern language models:
 
 |||
 
-![GPT-3 few-shot prompting](assets/few-shot.png)
+![GPT-3 was known for exapnding the idea of in-context learning and few-shot prompting. Screenshot from the paper.](assets/few-shot.png)
 <!-- cite-right: brown2020gpt3 -->
 
 ---
@@ -131,7 +132,7 @@ Modern language models:
 
 |||
 
-![Stochastic parrots](assets/stochastic-parrots.png)
+![](assets/stochastic-parrots.png)
 <!-- cite-right: bender2021stochastic -->
 
 ---
@@ -148,7 +149,7 @@ Modern language models:
 
 |||
 
-![ChatGPT](assets/chatgpt.webp)
+![](assets/chatgpt.webp)
 <!-- cite-right: openai2022chatgpt -->
 
 ---
@@ -166,7 +167,7 @@ Modern language models:
 
 |||
 
-![GPT-4](assets/jensen-gpt4.jpeg)
+![An image where Nvidia CEO Jensen Huang supposedly leaked that GPT-4 was an ~2T parameter MoE model.](assets/jensen-gpt4.jpeg)
 <!-- cite-right: openai2023gpt4 -->
 
 ---
@@ -185,7 +186,7 @@ Modern language models:
 
 |||
 
-![o1 test-time scaling](assets/o1-test-time.png)
+![The famous test-time scaling plot from OpenAI's o1 announcement.](assets/o1-test-time.png)
 <!-- cite-right: openai2024o1 -->
 
 ---
@@ -205,7 +206,7 @@ Modern language models:
 
 |||
 
-![Claude Code](assets/claude-code.png)
+![](assets/claude-code.png)
 <!-- cite-right: openai2025o3, anthropic2025claudecode, openai2025agents -->
 
 ---
@@ -223,7 +224,7 @@ Modern language models:
 
 |||
 
-![Next-token prediction pretraining example](assets/pretraining_next_token_tikz.png)
+![](assets/pretraining_next_token_tikz.png)
 
 ---
 
@@ -307,11 +308,11 @@ messages:
 <!-- cite-right: christiano2017 -->
 ## Which is the better backflip?
 
-![Backflip trained from human preferences](assets/christiano-backflip-human.webp)
+![](assets/christiano-backflip-human.webp)
 
 |||
 
-![Backflip trained with a hand-designed reward](assets/christiano-backflip-reward.webp)
+![](assets/christiano-backflip-reward.webp)
 
 ---
 
@@ -337,7 +338,7 @@ RLHF lets us optimize for behavior we can **evaluate**, even when we cannot easi
 
 |||
 
-![Christiano et al. 2017 RLHF overview](assets/rlhf_schematic_tikz.png)
+![A recreation of the system diagram from Christiano et al. 2017.](assets/rlhf_schematic_tikz.png)
 
 ---
 
@@ -345,11 +346,11 @@ RLHF lets us optimize for behavior we can **evaluate**, even when we cannot easi
 <!-- cite-right: christiano2017 -->
 ## Left: Human Feedback; Right: Hand-design Reward Function
 
-![Backflip trained from human preferences](assets/christiano-backflip-human.webp)
+![](assets/christiano-backflip-human.webp)
 
 |||
 
-![Backflip trained with a hand-designed reward](assets/christiano-backflip-reward.webp)
+![](assets/christiano-backflip-reward.webp)
 
 ---
 
@@ -370,7 +371,7 @@ $$J(\pi) = \mathbb{E}_{\tau \sim \pi}\!\left[\sum_{t=0}^{T} \gamma^t r(s_t, a_t)
 
 |||
 
-![Classical RL basics](assets/rl.png)
+![](assets/rl.png)
 
 ---
 
@@ -401,7 +402,7 @@ $$J(\pi) = \mathbb{E}\left[ r_\theta(x, y) \right] - \beta \, D_{\text{KL}}\!\le
 
 |||
 
-![RLHF basic system](assets/rlhf.png)
+![](assets/rlhf.png)
 
 ---
 
@@ -419,7 +420,7 @@ Apply the same RL algorithms to LLMs just on if the answer was right. No need to
 
 |||
 
-![RLVR system](assets/rlvr-system.png)
+![](assets/rlvr-system.png)
 
 ---
 
@@ -439,7 +440,7 @@ Apply the same RL algorithms to LLMs just on if the answer was right. No need to
 <!-- rows: 60/40 -->
 ## The path to modern RLHF
 
-![RLHF timeline](assets/rlhf_timeline_tikz.png)
+![](assets/rlhf_timeline_tikz.png)
 
 ===
 
@@ -463,7 +464,7 @@ Apply the same RL algorithms to LLMs just on if the answer was right. No need to
 ## InstructGPT's 3 Step RLHF Recipe
 
 
-![InstructGPT](assets/instructgpt.jpg)
+![The 3-step RLHF process figure from InstructGPT, which became "the standard" approach to RLHF for a few years.](assets/instructgpt.jpg)
 
 
 ---
@@ -559,7 +560,7 @@ $$
 
 |||
 
-![RLHF training loop](assets/rlhf-overview.png)
+![](assets/rlhf-overview.png)
 
 ---
 
@@ -648,7 +649,7 @@ More data, more preference signals, more RL compute.
 
 ===
 
-![Simple RLHF recipe](assets/rlhf-basic.png)
+![](assets/rlhf-basic.png)
 
 ---
 
@@ -665,7 +666,7 @@ More data, more preference signals, more RL compute.
 
 ===
 
-![Modern multi-stage recipe](assets/rlhf-complex.png)
+![](assets/rlhf-complex.png)
 
 ---
 
@@ -699,7 +700,7 @@ Placeholder: connect InstructGPT-style RLHF to DPO, RLVR, and reasoning-oriented
 <!-- img-align: center -->
 <!-- cite-right: openai2024o1 -->
 
-![o1 AIME accuracy](assets/o1.webp)
+![](assets/o1.webp)
 
 ---
 
@@ -712,7 +713,7 @@ text goes here
 
 |||
 
-![o1 AIME accuracy during training](assets/o1-train-time.png)
+![](assets/o1-train-time.png)
 
 
 ---
@@ -726,7 +727,7 @@ text goes here
 
 |||
 
-![o1 AIME accuracy at test time](assets/o1-test-time.png)
+![](assets/o1-test-time.png)
 
 ---
 
@@ -782,13 +783,16 @@ text goes here
 <!-- rows: 85/15 -->
 ## Thank You
 
+Sorry I could not make it in person!
+
+Contact: nathan@natolambert.com
+
+Newsletter: [interconnects.ai](https://www.interconnects.ai/)
+
 **rlhfbook.com**
 
 ===
 
-<!-- row-columns: 65/35 -->
-
-|||
 
 ```builtwith
 repo: natolambert/colloquium
