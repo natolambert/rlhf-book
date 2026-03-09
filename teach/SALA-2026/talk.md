@@ -441,16 +441,17 @@ $$J(\pi) = \mathbb{E}\left[ r_\theta(x, y) \right] - \beta \, D_{\text{KL}}\!\le
 
 ===
 
-<div class="text-sm">
+<!-- row-columns: 50/50 -->
 
 - **Ziegler 2019** [@ziegler2019fine] — first RLHF on language models
-- **InstructGPT** [@ouyang2022training] — the recipe behind ChatGPT
+- **InstructGPT** [@ouyang2022training] — the canonical RLHF recipe behind ChatGPT
 - **Constitutional AI** [@bai2022constitutional] — AI feedback and the Claude line
+
+|||
+
 - **DPO** [@rafailov2024direct] — direct alignment without a reward model
 - **Llama 3** [@dubey2024llama] and **Tulu 3** [@lambert2024t] — modern multi-stage recipes
 - **DeepSeek R1** [@guo2025deepseek] — reasoning-first RL
-
-</div>
 
 ---
 
