@@ -58,7 +58,7 @@ Horizontal token sequences showing where supervision attaches for different rewa
 
 ### TikZ/LaTeX Architecture Diagrams
 
-Box-and-arrow flows showing policy gradient algorithm architectures. Uses shared styles from `tikz/styles_rlhf.tex`.
+Box-and-arrow flows for RLHF architectures and related training concepts. Many use shared styles from `tikz/styles_rlhf.tex`.
 
 | Output file | Source | Description | Book chapter |
 |---|---|---|---|
@@ -68,6 +68,7 @@ Box-and-arrow flows showing policy gradient algorithm architectures. Uses shared
 | `reinforce_tikz` | `tikz/reinforce_tikz.tex` | REINFORCE: basic policy gradient algorithm | Ch 6 (Policy Gradients) |
 | `knowledge_distillation_tikz` | `tikz/knowledge_distillation_tikz.tex` | Knowledge distillation pipeline | Ch 4 (Supervised Finetuning) |
 | `synthetic_data_distillation_tikz` | `tikz/synthetic_data_distillation_tikz.tex` | Synthetic data distillation process | Ch 4 (Supervised Finetuning) |
+| `pretraining_next_token_tikz` | `tikz/pretraining_next_token_tikz.tex` | Introductory next-token prediction example with target token and loss intuition | Talks/presentations |
 | `rlhf_schematic_tikz` | `tikz/rlhf_schematic_tikz.tex` | RLHF loop: RL algorithm, environment, reward predictor, human feedback (Christiano et al. 2017) | Ch 2 (Related Works) |
 | `rlhf_timeline_tikz` | `tikz/rlhf_timeline_tikz.tex` | Timeline of key RLHF developments across three eras | Ch 2 (Related Works) |
 
