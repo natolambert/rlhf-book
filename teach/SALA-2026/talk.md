@@ -548,7 +548,7 @@ Where everything comes together (and RLHF gets its name):
 - Generate completions $y_i \sim \pi_\theta(\cdot \mid x_i)$ from the model being trained
 - Score them with the reward model $r_\phi(x_i, y_i)$
 - Add a **KL penalty** so the policy stays close to the SFT/reference model.^[KL divergence measures how much the current policy differs from the reference model. For discrete outputs, $D_{\mathrm{KL}}(\pi \,\|\, \pi_{\mathrm{ref}})=\mathbb{E}_{y \sim \pi}\!\left[\log \pi(y \mid x)-\log \pi_{\mathrm{ref}}(y \mid x)\right]$. People often colloquially call this the “KL distance” between the models, even though it is not a true metric.]
-- Update the policy with PPO in InstructGPT
+- Update the policy with a policy-graident RL algorithm (Proximal Policy Optimization, PPO in InstructGPT & ChatGPT)
 
 $$
 J(\pi)
@@ -563,11 +563,11 @@ $$
 
 ---
 
-<!-- rows: 48/52 -->
+<!-- rows: 35/65 -->
 <!-- cite-right: ouyang2022training -->
-## The RLHF objective, unpacked
+<!-- title: center -->
 
-<div style="text-align: center;">
+## The RLHF objective, unpacked
 
 $$
 \max_{\pi} \;
@@ -576,25 +576,29 @@ $$
 - \underbrace{\beta \log \frac{\pi(y \mid x)}{\pi_{\mathrm{ref}}(y \mid x)}}_{\text{but don't change the model too much}}
 $$
 
-</div>
 
 ===
 
+
 <!-- row-columns: 50/50 -->
 
-Prompts $x$ come from a dataset, not an environment.
+<div style="text-align: left;">
 
-The policy $\pi_\theta(y \mid x)$ generates a full response $y$, and the reward model $r_\phi(x, y)$ scores whether humans would like that response.
+<!-- Prompts $x$ come from a dataset, not an environment.
+
+The policy $\pi_\theta(y \mid x)$ generates a full response $y$, and the reward model $r_\phi(x, y)$ scores whether humans would like that response. -->
+
+</div>
 
 |||
+
+<div style="text-align: left;">
 
 The reference model $\pi_{\mathrm{ref}}$ keeps the policy anchored to the SFT model.
 
 $\beta$ controls the tradeoff between **improving behavior** and **staying close** to what the model already knows.
 
-InstructGPT's answer was:
-- a **learned reward model**
-- **PPO** as the RL optimizer
+</div>
 
 ---
 
