@@ -256,7 +256,7 @@ messages:
   - role: user
     content: "The president of the United States in 2006 was"
   - role: assistant
-    model: "Tulu 3 405B"
+    model: "Tülu 3 405B"
     content: "George W. Bush was the president of the United States in 2006. He served two terms in office, from January 20, 2001, to January 20, 2009."
 ```
 
@@ -374,16 +374,16 @@ $$J(\pi) = \mathbb{E}_{\tau \sim \pi}\!\left[\sum_{t=0}^{T} \gamma^t r(s_t, a_t)
 
 ---
 
-<!-- columns: 45/55 -->
+<!-- columns: 50/50 -->
 <!-- cite-right: christiano2017, ouyang2022training -->
 ## Classical RL vs. RLHF
 
 <div class="text-sm">
 
 **Classical RL**
-- Agent acts in an environment with state $s_t$ and action $a_t$
-- Reward is a known function $r(s_t, a_t)$ from the environment
-- Optimize cumulative return over a trajectory
+- Agent takes actions $a_t$ in an environment with states $s_t$ 
+- Reward is a known function $r(s_t, a_t)$ from the environment per step
+- Optimize cumulative return over a trajectory (total steps $T$)
 
 $$J(\pi) = \mathbb{E}_{\tau \sim \pi}\!\left[\sum_{t=0}^{T} \gamma^t r(s_t, a_t)\right]$$
 
@@ -405,15 +405,17 @@ $$J(\pi) = \mathbb{E}\left[ r_\theta(x, y) \right] - \beta \, D_{\text{KL}}\!\le
 
 ---
 
-<!-- columns: 45/55 -->
-<!-- cite-right: lambert2024t, guo2025deepseek -->
+<!-- columns: 50/50 -->
+
 ## Reinforcement Learning with *Verifiable* Rewards
 
-- Same RL setup as RLHF, but reward is **verifiable**
-- Math: check the final answer. Code: run the tests.
+Apply the same RL algorithms to LLMs just on if the answer was right. No need to train a reward model:
+- E.g. Math: check the final answer.  
+  Code: run the tests.
 - No learned reward model — **no proxy objective**
 - Enables scaling RL compute on reasoning tasks
-- Modern examples include **Tulu 3** and **DeepSeek R1**
+- Unlocked **inference time scaling**: Spending more compute at generation time per problem increases performance log-linearlly w.r.t. compute
+- RLVR was named by **Tülu 3** [@lambert2024t] and popularized by **DeepSeek R1** [@guo2025deepseek]
 
 |||
 
@@ -421,14 +423,14 @@ $$J(\pi) = \mathbb{E}\left[ r_\theta(x, y) \right] - \beta \, D_{\text{KL}}\!\le
 
 ---
 
-## Comparison
+## Comparing classical RL vs LLM RLHF and RLVR
 
 | | Classical RL | RLHF | RLVR |
 |---|---|---|---|
 | **Reward** | Environment | Learned (proxy) | Verifiable (exact) |
 | **State transitions** | Yes | No | No |
 | **Reward granularity** | Per-step | Per-response | Per-response |
-| **Failure mode** | Exploration | Over-optimization | Task coverage |
+| **Primary challenge** | Explor-Exploit Trade-off | Over-optimization | Task generalization |
 | **Example** | CartPole | Chat style tuning | Math reasoning |
 
 ---
@@ -445,26 +447,201 @@ $$J(\pi) = \mathbb{E}\left[ r_\theta(x, y) \right] - \beta \, D_{\text{KL}}\!\le
 
 - **Ziegler 2019** [@ziegler2019fine] — first RLHF on language models
 - **InstructGPT** [@ouyang2022training] — the canonical RLHF recipe behind ChatGPT
-- **Constitutional AI** [@bai2022constitutional] — AI feedback and the Claude line
+- **Constitutional AI** [@bai2022constitutional] — Introduced early methods for AI feedback in Claude
 
 |||
 
-- **DPO** [@rafailov2024direct] — direct alignment without a reward model
-- **Llama 3** [@dubey2024llama] and **Tulu 3** [@lambert2024t] — modern multi-stage recipes
-- **DeepSeek R1** [@guo2025deepseek] — reasoning-first RL
+- **DPO** [@rafailov2024direct] — direct preference optimization (DPO) without a reward model
+- **Llama 3** [@dubey2024llama] and **Tülu 3** [@lambert2024t] — modern multi-stage recipes
+- **DeepSeek R1** [@guo2025deepseek] — popularized RLVR
 
 ---
 
-<!-- class: title-hidden -->
-<!-- img-fill: true -->
-<!-- img-align: center -->
 <!-- valign: center -->
 <!-- cite-right: ouyang2022training -->
 
-## InstructGPT image-only
+## InstructGPT's 3 Step RLHF Recipe
+
 
 ![InstructGPT](assets/instructgpt.jpg)
 
+
+---
+
+<!-- columns: 45/55 -->
+<!-- cite-right: ouyang2022training -->
+## Step 1/3: Instruction tuning
+
+- Start from a pretrained language model
+- Collect demonstrations of the *desired* assistant behavior
+- Train with standard supervised learning on prompt-response pairs
+- Result: an **SFT policy** that is useful, but still limited
+
+$$
+\mathcal{L}_{\mathrm{SFT}}(\theta)
+=
+- \sum_{(x, y^\star)} \sum_{t=1}^{|y^\star|}
+\log \pi_\theta \!\left(y^\star_t \mid x, y^\star_{<t}\right)
+$$
+
+|||
+
+```conversation
+size: 0.9
+messages:
+  - role: user
+    content: "Write me a short poem about an optimistic goldfish."
+  - role: assistant
+    content: "Bright little goldfish\nFinds a sunrise in each wave\nSmall bowl, endless hope"
+```
+
+---
+
+<!-- columns: 45/55 -->
+<!-- cite-right: christiano2017, ouyang2022training -->
+## Step 2/3: Reward modeling
+
+- Collect **comparisons** between two model outputs for the same prompt
+- Train a reward model $r_\phi(x, y)$ to score preferred completions higher
+- This gives a learned proxy for human judgment
+
+$$
+P(y_w \succ y_l \mid x)
+=
+\sigma \!\left(r_\phi(x, y_w) - r_\phi(x, y_l)\right)
+$$
+
+$$
+\mathcal{L}_{\mathrm{RM}}(\phi)
+=
+- \log \sigma \!\left(r_\phi(x, y_w) - r_\phi(x, y_l)\right)
+$$
+
+|||
+
+![Reward model training](assets/pref_rm_training.png)
+
+---
+
+<!-- columns: 50/50 -->
+<!-- cite-right: ouyang2022training -->
+## Step 3/3 RL against the reward model
+
+- Sample a prompt $x$ from the dataset
+- Generate a completion $y \sim \pi_\theta(\cdot \mid x)$
+- Score it with the reward model $r_\phi(x, y)$
+- Add a **KL penalty** so the policy stays close to the SFT/reference model
+- Update the policy with PPO in InstructGPT
+
+$$
+J(\pi)
+=
+\mathbb{E}\!\left[r_\phi(x, y)\right]
+- \beta D_{\mathrm{KL}}\!\left(\pi \,\|\, \pi_{\mathrm{ref}}\right)
+$$
+
+|||
+
+![RLHF training loop](assets/rlhf-overview.png)
+
+---
+
+<!-- columns: 50/50 -->
+<!-- cite-right: ouyang2022training -->
+## The RLHF objective, unpacked
+
+- Prompts $x$ come from a dataset, not an environment
+- The policy $\pi_\theta(y \mid x)$ generates a full response $y$
+- The reward model $r_\phi(x, y)$ scores whether humans would like that response
+- The reference model $\pi_{\mathrm{ref}}$ keeps the policy close to the SFT model
+- $\beta$ controls the tradeoff between **improving behavior** and **staying anchored**
+
+$$
+\max_{\pi} \;
+\mathbb{E}_{x \sim D,\; y \sim \pi(\cdot \mid x)}
+\left[
+r_\phi(x, y)
+- \beta \log \frac{\pi(y \mid x)}{\pi_{\mathrm{ref}}(y \mid x)}
+\right]
+$$
+
+|||
+
+**This policy optimization step makes two choices**
+
+1. How do we build a useful reward signal?
+2. How do we optimize the policy against it?
+
+InstructGPT's answer was:
+- a **learned reward model**
+- **PPO** as the RL optimizer
+
+---
+
+<!-- columns: 45/55 -->
+<!-- cite-right: rafailov2024direct, ouyang2022training -->
+## What if we optimize this more directly?
+
+- PPO works, but it is an **online RL loop**
+- We must keep sampling completions from the current policy
+- We must tune RL hyperparameters and KL penalties carefully
+- This led people to ask if the preference data itself could define the objective
+
+$$
+\text{Can we learn directly from } (x, y_w, y_l)
+\text{ without a separate RL stage?}
+$$
+
+|||
+
+**Direct Preference Optimization (DPO)**
+
+- Start from the same KL-regularized RLHF objective
+- Eliminate the explicit reward model
+- Train directly on preferred vs. rejected responses
+
+$$
+\mathcal{L}_{\mathrm{DPO}}(\theta)
+=
+- \log \sigma \!\left(
+\beta \log \frac{\pi_\theta(y_w \mid x)}{\pi_{\mathrm{ref}}(y_w \mid x)}
+- \beta \log \frac{\pi_\theta(y_l \mid x)}{\pi_{\mathrm{ref}}(y_l \mid x)}
+\right)
+$$
+
+---
+
+<!-- rows: 45/55 -->
+## How Training Recipes Have Evolved
+
+| | InstructGPT (2022) | Tülu 3 (2024) | DeepSeek R1 (2025) |
+|---|---|---|---|
+| **IFT data** | ~10K | ~1M | 100K+ |
+| **Preference data** | ~100K | ~1M | On-policy |
+| **RL stage** | ~100K prompts | ~10K (RLVR) | "Until convergence" |
+
+More data, more preference signals, more RL compute.
+
+===
+
+![Simple RLHF recipe](assets/rlhf-basic.png)
+
+---
+
+<!-- rows: 45/55 -->
+## How Training Recipes Have Evolved
+
+| | InstructGPT (2022) | Tülu 3 (2024) | DeepSeek R1 (2025) |
+|---|---|---|---|
+| **IFT data** | ~10K | ~1M | 100K+ |
+| **Preference data** | ~100K | ~1M | On-policy |
+| **RL stage** | ~100K prompts | ~10K (RLVR) | "Until convergence" |
+
+More data, more preference signals, more RL compute.
+
+===
+
+![Modern multi-stage recipe](assets/rlhf-complex.png)
 
 ---
 
@@ -535,7 +712,7 @@ text goes here
 
 - **Early 2023**: Alpaca era — limited data, impressive but narrow
 - **Late 2023**: DPO — direct alignment without a reward model
-- **2024**: Complex multi-stage recipes (Llama 3, Tulu 3)
+- **2024**: Complex multi-stage recipes (Llama 3, Tülu 3)
 - **2025**: Reasoning via RL (DeepSeek R1, o1)
 
 ---
@@ -548,20 +725,6 @@ text goes here
 
 ---
 
-
-
-## Training Recipes Have Evolved
-
-| | InstructGPT (2022) | Tulu 3 (2024) | DeepSeek R1 (2025) |
-|---|---|---|---|
-| **IFT data** | ~10K | ~1M | 100K+ |
-| **Preference data** | ~100K | ~1M | On-policy |
-| **RL stage** | ~100K prompts | ~10K (RLVR) | "Until convergence" |
-| **Stages** | 3 | 3 | 4 |
-
-More data, more stages, more RL compute.
-
----
 
 ## Where Things Are Heading
 
@@ -579,6 +742,17 @@ More data, more stages, more RL compute.
 
 ---
 
-# Thank You
+<!-- rows: 85/15 -->
+## Thank You
 
 **rlhfbook.com**
+
+===
+
+<!-- row-columns: 65/35 -->
+
+|||
+
+```builtwith
+repo: natolambert/colloquium
+```
