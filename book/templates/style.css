@@ -625,33 +625,14 @@ thead {
   border-color: #22863a;
 }
 
-/* Chapter toolbar (View Source) */
-.chapter-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 1.5em 0 0;
+/* View Source link in ToC */
+.toc-view-source {
+  margin-top: 0.3em;
+  list-style: none;
 }
-.chapter-toolbar + #content > h1:first-child,
-.chapter-toolbar + #content > h2:first-child {
-  margin-top: 1em;
-}
-.chapter-github-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border: 1px solid #ccc;
-  border-radius: 16px;
-  color: #555;
+.toc-view-source a {
+  color: #888 !important;
   font-size: 0.9em;
-  line-height: 1.4;
-  text-decoration: none;
-  transition: border-color 0.15s, color 0.15s;
-}
-.chapter-github-link:hover {
-  border-color: #888;
-  color: #222;
 }
 
 /* Conversation chat UI */
