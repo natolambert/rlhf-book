@@ -61,46 +61,26 @@
       margin-bottom: 1em;
     }
 
-    /* Card grid */
-    .slides-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-      gap: 1.5em;
-      margin-bottom: 2em;
-    }
-
-    .slide-card {
+    /* Talk entry — single column, full width */
+    .talk-entry {
       border: 1px solid #e2e2e2;
       border-radius: 0.35em;
       background: #fff;
       box-shadow: 0 4px 12px rgba(17, 17, 17, 0.06);
       overflow: hidden;
-      transition: box-shadow 0.2s ease, transform 0.15s ease;
+      margin-bottom: 2em;
     }
 
-    .slide-card:hover {
-      box-shadow: 0 8px 24px rgba(17, 17, 17, 0.12);
-      transform: translateY(-2px);
-    }
-
-    .slide-card a {
-      display: block;
-      text-decoration: none;
-      color: inherit;
-    }
-
-    /* Slide preview iframe container */
-    .slide-preview {
+    /* Interactive slide viewer */
+    .slide-viewer {
       position: relative;
       width: 100%;
-      /* 16:9 aspect ratio */
-      padding-top: 56.25%;
+      padding-top: 56.25%; /* 16:9 */
       overflow: hidden;
-      background: #f5f5f5;
-      border-bottom: 1px solid #e2e2e2;
+      background: #1a1a1a;
     }
 
-    .slide-preview iframe {
+    .slide-viewer iframe {
       position: absolute;
       top: 0;
       left: 0;
@@ -108,26 +88,58 @@
       height: 720px;
       transform-origin: top left;
       border: none;
+    }
+
+    .slide-viewer-hint {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.6);
+      color: #fff;
+      font-size: 0.8em;
+      padding: 0.4em 0.9em;
+      border-radius: 1em;
       pointer-events: none;
+      opacity: 1;
+      transition: opacity 0.5s ease;
+      z-index: 10;
     }
 
-    .slide-card-body {
-      padding: 1.2em 1.5em 1.5em;
+    .slide-viewer-hint.hidden {
+      opacity: 0;
     }
 
-    .slide-card h3 {
-      margin: 0 0 0.4em 0;
+    /* Info bar below the viewer */
+    .talk-info {
+      padding: 1em 1.5em;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.75em;
+      border-top: 1px solid #e2e2e2;
+    }
+
+    .talk-info-left h3 {
+      margin: 0 0 0.25em 0;
       font-size: 1.1em;
-      color: #0645ad;
     }
 
-    .slide-card .meta {
+    .talk-info-left .meta {
       font-size: 0.85em;
       color: #666;
-      margin-bottom: 0.6em;
+      margin: 0;
     }
 
-    .slide-card .tag {
+    .talk-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.6em;
+      flex-shrink: 0;
+    }
+
+    .talk-actions .tag {
       display: inline-block;
       font-size: 0.8em;
       padding: 0.2em 0.6em;
@@ -136,14 +148,7 @@
       color: #0645ad;
     }
 
-    .slide-card-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 1.5em 1.2em;
-    }
-
-    .pdf-download {
+    .btn {
       display: inline-flex;
       align-items: center;
       gap: 0.4em;
@@ -157,7 +162,7 @@
       cursor: pointer;
     }
 
-    .pdf-download:hover {
+    .btn:hover {
       background: rgba(6, 69, 173, 0.18);
     }
   </style>
@@ -181,7 +186,7 @@
 
   <p>
     Talks and lectures based on <a href="https://rlhfbook.com">the RLHF Book</a>.
-    Click any talk to view the slides directly in your browser.
+    Click into a deck to navigate through the slides, or open in full screen.
   </p>
 
   <nav class="slides-toc">
@@ -197,24 +202,29 @@
   <section class="year-section">
     <h2>2026</h2>
 
-    <div class="slides-grid">
-      <div class="slide-card" id="sala-2026">
-        <a href="teach/SALA-2026/">
-          <div class="slide-preview">
-            <iframe src="teach/SALA-2026/" loading="lazy" tabindex="-1" aria-hidden="true"></iframe>
-          </div>
-          <div class="slide-card-body">
-            <h3>An Introduction to Reinforcement Learning from Human Feedback and Post-training</h3>
-            <div class="meta">SALA 2026 &middot; Quito, Ecuador &middot; March 2026</div>
-          </div>
-        </a>
-        <div class="slide-card-footer">
+    <div class="talk-entry" id="sala-2026">
+      <div class="slide-viewer">
+        <iframe src="teach/SALA-2026/" loading="lazy"></iframe>
+        <div class="slide-viewer-hint">Click to navigate slides &middot; Arrow keys to advance</div>
+      </div>
+      <div class="talk-info">
+        <div class="talk-info-left">
+          <h3>An Introduction to Reinforcement Learning from Human Feedback and Post-training</h3>
+          <p class="meta">SALA 2026 &middot; Quito, Ecuador &middot; March 2026</p>
+        </div>
+        <div class="talk-actions">
           <span class="tag">Invited Talk</span>
-          <a href="teach/SALA-2026/slides.pdf" class="pdf-download" download>
+          <a href="teach/SALA-2026/slides.pdf" class="btn" download>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
             </svg>
             PDF
+          </a>
+          <a href="teach/SALA-2026/" class="btn" target="_blank">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/><path d="M21 14v5a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h5"/>
+            </svg>
+            Full Screen
           </a>
         </div>
       </div>
@@ -249,16 +259,27 @@
 
   <script>
     // Scale iframes to fit their containers
-    function scaleIframes() {
-      document.querySelectorAll('.slide-preview').forEach(container => {
+    function scaleViewers() {
+      document.querySelectorAll('.slide-viewer').forEach(container => {
         const iframe = container.querySelector('iframe');
         if (!iframe) return;
         const scale = container.offsetWidth / 1280;
         iframe.style.transform = 'scale(' + scale + ')';
       });
     }
-    window.addEventListener('load', scaleIframes);
-    window.addEventListener('resize', scaleIframes);
+    window.addEventListener('load', scaleViewers);
+    window.addEventListener('resize', scaleViewers);
+
+    // Hide hint after first interaction with any iframe
+    document.querySelectorAll('.slide-viewer').forEach(container => {
+      const hint = container.querySelector('.slide-viewer-hint');
+      if (!hint) return;
+      container.addEventListener('click', function() {
+        hint.classList.add('hidden');
+      }, { once: true });
+      // Also hide after a few seconds
+      setTimeout(() => hint.classList.add('hidden'), 5000);
+    });
   </script>
 </body>
 </html>
