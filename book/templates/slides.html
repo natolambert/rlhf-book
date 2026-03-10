@@ -135,6 +135,31 @@
       background: rgba(6, 69, 173, 0.08);
       color: #0645ad;
     }
+
+    .slide-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5em 1.2em;
+    }
+
+    .pdf-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4em;
+      font-size: 0.85em;
+      padding: 0.35em 0.7em;
+      border-radius: 0.3em;
+      border: 1px solid #0645ad;
+      background: rgba(6, 69, 173, 0.1);
+      color: #0645ad;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .pdf-download:hover {
+      background: rgba(6, 69, 173, 0.18);
+    }
   </style>
 
   <!-- Privacy-friendly analytics by Plausible -->
@@ -181,9 +206,17 @@
           <div class="slide-card-body">
             <h3>An Introduction to Reinforcement Learning from Human Feedback and Post-training</h3>
             <div class="meta">SALA 2026 &middot; Quito, Ecuador &middot; March 2026</div>
-            <span class="tag">Invited Talk</span>
           </div>
         </a>
+        <div class="slide-card-footer">
+          <span class="tag">Invited Talk</span>
+          <a href="teach/SALA-2026/slides.pdf" class="pdf-download" download>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            PDF
+          </a>
+        </div>
       </div>
     </div>
   </section>

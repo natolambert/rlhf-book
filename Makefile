@@ -291,6 +291,8 @@ teach-%:
 	uv run colloquium build $(call teach_source,$*) -o $(BUILD)/html/teach/$*/
 	@# Rename output to index.html so the directory URL works
 	@cd $(BUILD)/html/teach/$* && for f in *.html; do [ "$$f" != "index.html" ] && mv "$$f" index.html; done || true
+	@# Export PDF
+	uv run colloquium export $(call teach_source,$*) -o $(BUILD)/html/teach/$*/slides.pdf
 	@# Copy talk assets (images) if present
 	@test -d teach/$*/assets && cp -r teach/$*/assets $(BUILD)/html/teach/$*/ || true
 	@echo "Built teach/$*"
