@@ -625,6 +625,16 @@ thead {
   border-color: #22863a;
 }
 
+/* View Source link in ToC */
+.toc-view-source {
+  margin-top: 0.3em;
+  list-style: none;
+}
+.toc-view-source a {
+  color: #888 !important;
+  font-size: 0.9em;
+}
+
 /* Conversation chat UI */
 .conversation {
     display: flex;

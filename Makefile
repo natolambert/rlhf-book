@@ -151,6 +151,7 @@ $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html:	$(HTML_DEPENDENCIES)
 	$(COPY_CMD) book/templates/table-scroll.js $(BUILD)/html/c/
 	$(COPY_CMD) book/templates/citation-tooltips.js $(BUILD)/html/c/
 	$(COPY_CMD) book/templates/copy-code.js $(BUILD)/html/c/
+	cp book/templates/view-source.js $(BUILD)/html/c/
 	$(COPY_CMD) book/templates/conversation.js $(BUILD)/html/c/
 	cp book/templates/style.css $(BUILD)/html/style.css || echo "Failed to copy style.css"
 	@mkdir -p $(BUILD)/html/data
@@ -258,6 +259,7 @@ files:
 	cp ./book/templates/citation-tooltips.js $(BUILD)/html/c/ || echo "Failed to copy citation-tooltips.js to $(BUILD)/html/c/"
 	cp ./book/templates/copy-code.js $(BUILD)/html/ || echo "Failed to copy copy-code.js to $(BUILD)/html/"
 	cp ./book/templates/copy-code.js $(BUILD)/html/c/ || echo "Failed to copy copy-code.js to $(BUILD)/html/c/"
+	cp ./book/templates/view-source.js $(BUILD)/html/c/ || echo "Failed to copy view-source.js to $(BUILD)/html/c/"
 	cp ./book/templates/conversation.js $(BUILD)/html/ || echo "Failed to copy conversation.js to $(BUILD)/html/"
 	cp ./book/templates/conversation.js $(BUILD)/html/c/ || echo "Failed to copy conversation.js to $(BUILD)/html/c/"
 	mkdir -p $(BUILD)/html/rl-cheatsheet
