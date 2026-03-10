@@ -625,7 +625,7 @@ thead {
   border-color: #22863a;
 }
 
-/* Chapter toolbar (Copy Markdown + View Source) */
+/* Chapter toolbar (View Source) */
 .chapter-toolbar {
   display: flex;
   align-items: center;
@@ -635,28 +635,6 @@ thead {
 .chapter-toolbar + #content > h1:first-child,
 .chapter-toolbar + #content > h2:first-child {
   margin-top: 1em;
-}
-.copy-chapter-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border: 1px solid #ccc;
-  border-radius: 16px;
-  background: #fff;
-  color: #555;
-  font-size: 0.9em;
-  line-height: 1.4;
-  cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
-}
-.copy-chapter-button:hover {
-  border-color: #888;
-  color: #222;
-}
-.copy-chapter-button.copied {
-  color: #22863a;
-  border-color: #22863a;
 }
 .chapter-github-link {
   display: inline-flex;
