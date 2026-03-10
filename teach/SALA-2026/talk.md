@@ -1,5 +1,5 @@
 ---
-title: "An Introduction to Reinforcement Learning from Human Feedback and Post-training"
+title: "An introduction to reinforcement learning from human feedback and post-training"
 author: "Nathan Lambert"
 date: "March 2026"
 fonts:
@@ -24,7 +24,7 @@ custom_css: |
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
 
-# An Introduction to Reinforcement Learning from Human Feedback and Post-training
+# An introduction to reinforcement learning from human feedback and post-training
 
 <div class="colloquium-title-eyebrow">SALA 2026</div>
 
@@ -68,7 +68,7 @@ Modern language models:
 ---
 
 <!-- columns: 45/55 -->
-## 2017: the Transformer is born
+## 2017: The Transformer is born
 
 - **2017:** the Transformer is born
 
@@ -300,7 +300,7 @@ messages:
 ---
 <!-- layout: section-break -->
 
-## So what is Reinforcement Learning from Human Feedback (RLHF) anyways?
+## So what is reinforcement learning from human feedback (RLHF) anyways?
 
 ---
 
@@ -330,7 +330,7 @@ RLHF lets us optimize for behavior we can **evaluate**, even when we cannot easi
 
 <!-- columns: 40/60 -->
 <!-- cite-right: christiano2017 -->
-## RLHF Before Language Models
+## RLHF before language models
 
 - **TAMER** (Knox & Stone, 2008) — humans score agent actions to learn a reward
 - **Christiano et al. 2017** — RLHF on Atari trajectory preferences
@@ -344,7 +344,7 @@ RLHF lets us optimize for behavior we can **evaluate**, even when we cannot easi
 
 <!-- columns: 50/50 -->
 <!-- cite-right: christiano2017 -->
-## Left: Human Feedback; Right: Hand-design Reward Function
+## Left: Human feedback; Right: Hand-designed reward function
 
 ![](assets/christiano-backflip-human.webp)
 
@@ -408,7 +408,7 @@ $$J(\pi) = \mathbb{E}\left[ r_\theta(x, y) \right] - \beta \, D_{\text{KL}}\!\le
 
 <!-- columns: 50/50 -->
 
-## Reinforcement Learning with *Verifiable* Rewards
+## Reinforcement learning with *Verifiable* rewards
 
 Apply the same RL algorithms to LLMs just on if the answer was right. No need to train a reward model:
 - E.g. Math: check the final answer.  
@@ -424,7 +424,7 @@ Apply the same RL algorithms to LLMs just on if the answer was right. No need to
 
 ---
 
-## Comparing classical RL vs LLM RLHF and RLVR
+## Comparing classical RL vs. LLM RLHF and RLVR
 
 | | Classical RL | RLHF | RLVR |
 |---|---|---|---|
@@ -461,7 +461,7 @@ Apply the same RL algorithms to LLMs just on if the answer was right. No need to
 <!-- valign: center -->
 <!-- cite-right: ouyang2022training -->
 
-## InstructGPT's 3 Step RLHF Recipe
+## InstructGPT's 3-step RLHF recipe
 
 
 ![The 3-step RLHF process figure from InstructGPT, which became "the standard" approach to RLHF for a few years.](assets/instructgpt.jpg)
@@ -471,7 +471,7 @@ Apply the same RL algorithms to LLMs just on if the answer was right. No need to
 
 <!-- columns: 45/55 -->
 <!-- cite-right: ouyang2022training -->
-## Step 1/3: Instruction Fine-tuning (IFT)
+## Step 1/3: Instruction fine-tuning (IFT)
 
 The foundation of post-training. Also called **Supervised Fine-tuning (SFT)**:
 - Start from a pretrained language model
@@ -542,7 +542,7 @@ Notation:
 <!-- columns: 50/50 -->
 <!-- cite-right: ouyang2022training -->
 <!-- footnotes: right -->
-## Step 3/3 RL against the reward model
+## Step 3/3: RL against the reward model
 
 Where everything comes together (and RLHF gets its name):
 - Sample a batch of prompts $x_i$ from the dataset $\mathcal{D}$
@@ -682,8 +682,8 @@ content: |
 
 ---
 
-<!-- rows: 45/55 -->
-## How Training Recipes Have Evolved
+<!-- valign: center -->
+## How training recipes have evolved
 
 | | InstructGPT (2022) | Tülu 3 (2024) | DeepSeek R1 (2025) |
 |---|---|---|---|
@@ -693,30 +693,36 @@ content: |
 
 An overall trend is to use far more compute across all the stages, but shifting more to RLVR.
 
-===
-
-![An early, InstructGPT style recipe, system diagram.](assets/rlhf-basic.png)
-
 ---
 
-<!-- rows: 45/55 -->
-## How Training Recipes Have Evolved
+<!-- rows: 60/40 -->
+## The early days: InstructGPT
 
-| | InstructGPT (2022) | Tülu 3 (2024) | DeepSeek R1 (2025) |
-|---|---|---|---|
-| **Instruction data** | ~10K | ~1M | 100K+ |
-| **Preference data** | ~100K | ~1M | On-policy |
-| **RL stage** | ~100K prompts | ~10K (RLVR) | N/A |
-
-An overall trend is to use far more compute across all the stages, but shifting more to RLVR.
+![](assets/rlhf-basic.png)
 
 ===
 
-![A more complex, multi-stage training system diagram.](assets/rlhf-complex.png)
+Early on, RLHF has a well-documented, simple enough approach.
+- **InstructGPT** made the classic three-stage recipe canonical:
+  SFT, reward modeling, then RL against the reward model. *OpenAI even hinted that the original ChatGPT even used this!*
+- This became the intellectual template for much of modern post-training.
 
 ---
 
-## The Elicitation Theory
+<!-- rows: 50/50 -->
+## From RLHF to post-training
+
+![](assets/rlhf-complex.png)
+
+===
+
+What began as an "RLHF" recipe evolved into a complex series of steps to get the final, best model (e.g. Nemotron 4 340B, Llama 3.1).
+- Modern systems keep the same core idea of using multiple optimizers with different strengths and weaknesses, but add more stages, more data, and more filtering.
+- This trend has only continued, and recipes eb and flow, as tools like RLVR and model merging change the scope of what is doable in different ways.
+
+---
+
+## The elicitation theory
 
 Post-training **extracts latent potential** from the base model
 
@@ -741,7 +747,7 @@ Placeholder: connect InstructGPT-style RLHF to DPO, RLVR, and reasoning-oriented
 
 ---
 
-## o1 scaling post training
+## o1 scaling post-training
 
 <!-- img-align: center -->
 <!-- cite-right: openai2024o1 -->
@@ -750,7 +756,7 @@ Placeholder: connect InstructGPT-style RLHF to DPO, RLVR, and reasoning-oriented
 
 ---
 
-## o1: train-time scaling
+## o1: Train-time scaling
 
 <!-- columns: 2 -->
 <!-- cite-right: openai2024o1 -->
@@ -764,7 +770,7 @@ text goes here
 
 ---
 
-## o1: test-time scaling asd asds 
+## o1: Test-time scaling
 
 <!-- columns: 2 -->
 <!-- cite-right: openai2024o1 -->
@@ -777,7 +783,7 @@ text goes here
 
 ---
 
-## The Scale of Post-Training
+## The scale of post-training
 
 - **DeepSeek R1**: RL used ~147K H800 GPU hours (~5% of total training)
 - Individual ablation runs: **10–100K GPU hours**
@@ -787,12 +793,12 @@ text goes here
 
 <!-- layout: section-break -->
 
-## How We Got Here
+## How we got here
 
 ---
 
 
-## The Post-ChatGPT Acceleration
+## The post-ChatGPT acceleration
 
 - **Early 2023**: Alpaca era — limited data, impressive but narrow
 - **Late 2023**: DPO — direct alignment without a reward model
@@ -801,7 +807,7 @@ text goes here
 
 ---
 
-## The Classic RLHF Pipeline
+## The classic RLHF pipeline
 
 1. **Instruction fine-tuning** — teach Q&A format from examples
 2. **Reward model training** — learn a scoring function from human preferences
@@ -810,7 +816,7 @@ text goes here
 ---
 
 
-## Where Things Are Heading
+## Where things are heading
 
 - RLHF and RLVR are **complementary** — style vs. capabilities
 - Modern recipes use **both** in sequence
@@ -826,8 +832,84 @@ text goes here
 
 ---
 
+<!-- rows: 50/50 -->
+## This talk is ~lecture 1 of a larger course
+
+<!-- row-columns: 34/33/33 -->
+
+```box
+title: Introductions (this talk)
+tone: accent
+compact: true
+content: |
+  1. Introduction
+  2. Key Related Works
+  3. Training Overview
+```
+
+|||
+
+```box
+title: Core Training Pipeline
+tone: muted
+compact: true
+content: |
+  4. Instruction Tuning
+  5. Reward Models
+  6. Reinforcement Learning
+  7. Reasoning
+  8. Direct Alignment
+  9. Rejection Sampling
+```
+
+|||
+
+```box
+title: Data & Preferences
+tone: muted
+compact: true
+content: |
+  10. What are Preferences
+  11. Preference Data
+  12. Synthetic Data & CAI
+```
+
+===
+
+<!-- row-columns: 34/33/33 -->
+
+```box
+title: Practical Considerations
+tone: muted
+compact: true
+content: |
+  13. Tool Use
+  14. Over-optimization
+  15. Regularization
+  16. Evaluation
+  17. Product & Character
+```
+
+|||
+
+```box
+title: Appendices
+tone: surface
+compact: true
+content: |
+  - A. Definitions  
+  - B. Style & Information  
+  - C. Practical Issues  
+```
+
+|||
+
+Full lecture slides coming to [rlhfbook.com/slides](https://rlhfbook.com//slides) and YouTube @natolambert!
+
+---
+
 <!-- rows: 85/15 -->
-## Thank You
+## Thank you
 
 Sorry I could not make it in person!
 
