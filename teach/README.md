@@ -34,7 +34,7 @@ make teach
 Or build a single lecture:
 
 ```bash
-uv run colloquium build teach/course/slides.md -o build/html/teach/course/
+uv run colloquium build teach/course/lec1-chap1-3.md -o build/html/teach/course/lec1-chap1-3/
 ```
 
 Output goes to `build/html/teach/`.

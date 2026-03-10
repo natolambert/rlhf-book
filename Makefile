@@ -280,11 +280,15 @@ pagefind: html files
 # Find talk directories by looking for talk.md or slides.md source files
 TEACH_TALK_SOURCES = $(wildcard teach/*/talk.md) $(wildcard teach/*/slides.md)
 TEACH_DIRS = $(sort $(patsubst teach/%/,%,$(dir $(TEACH_TALK_SOURCES))))
+COURSE_LECTURE_SOURCES = $(wildcard teach/course/*.md)
+COURSE_LECTURE_NAMES = $(basename $(notdir $(COURSE_LECTURE_SOURCES)))
 
 # Map from dir name to its .md source file (prefer talk.md over slides.md)
 teach_source = $(firstword $(wildcard teach/$(1)/talk.md teach/$(1)/slides.md))
 
-teach: $(foreach d,$(TEACH_DIRS),teach-$(d))
+teach: $(foreach d,$(TEACH_DIRS),teach-$(d)) course-lectures
+
+course-lectures: $(foreach l,$(COURSE_LECTURE_NAMES),course-lecture-$(l))
 
 teach-%:
 	@mkdir -p $(BUILD)/html/teach/$*
@@ -296,3 +300,12 @@ teach-%:
 	@# Copy talk assets (images) if present
 	@test -d teach/$*/assets && cp -r teach/$*/assets $(BUILD)/html/teach/$*/ || true
 	@echo "Built teach/$*"
+
+course-lecture-%:
+	@mkdir -p $(BUILD)/html/teach/course/$*
+	uv run colloquium build teach/course/$*.md -o $(BUILD)/html/teach/course/$*/
+	@# Rename output to index.html so the directory URL works
+	@cd $(BUILD)/html/teach/course/$* && for f in *.html; do [ "$$f" != "index.html" ] && mv "$$f" index.html; done || true
+	@# Export PDF
+	uv run colloquium export teach/course/$*.md -o $(BUILD)/html/teach/course/$*/slides.pdf
+	@echo "Built teach/course/$*"
