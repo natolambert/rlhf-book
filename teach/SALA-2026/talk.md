@@ -116,7 +116,7 @@ Modern language models:
 
 |||
 
-![GPT-3 was known for exapnding the idea of in-context learning and few-shot prompting. Screenshot from the paper.](assets/few-shot.png)
+![GPT-3 was known for expanding the idea of in-context learning and few-shot prompting. Screenshot from the paper.](assets/few-shot.png)
 <!-- cite-left: brown2020gpt3 -->
 
 ---
@@ -214,11 +214,11 @@ Modern language models:
 <!-- columns: 50/50 -->
 ## Pretraining: next-token prediction
 
-- Train on a trillions of tokens of text from the web, books, code, and documents
+- Train on trillions of tokens of text from the web, books, code, and documents
   - Models are often trained on 5-50+ trillion tokens
   - 1T of text tokens is about 3-5 TB of data
   - Labs gather and filter 10-20X more data than is used for the model
-  - Total data funnel targetted for models is on the order of petabytes
+  - Total data funnel targeted for models is on the order of petabytes
 - Objective: predict the next token in each sequence
 - Result: Incredible, flexible, useful models
 
@@ -230,7 +230,7 @@ Modern language models:
 
 ## A base model completes text
 
-After pretraining we are left wtih a glorified autocomplete model, for example:^[Base models are also becoming more flexible through midtraining and better data mixtures.]
+After pretraining we are left with a glorified autocomplete model, for example:^[Base models are also becoming more flexible through midtraining and better data mixtures.]
 
 <div class="colloquium-spacer-md"></div>
 
@@ -266,7 +266,7 @@ messages:
 <!-- columns: 40/60 -->
 ## ChatGPT was when RLHF made the models even easier to use
 
-Model's responses evolved quickly to have:
+Model responses evolved quickly to have:
 - Better **format**: direct, conversational answers
 - Better **style**: helpful, concise, markdown, etc.
 - Better **product**: people could actually use it every day
@@ -410,12 +410,12 @@ $$J(\pi) = \mathbb{E}\left[ r_\theta(x, y) \right] - \beta \, D_{\text{KL}}\!\le
 
 ## Reinforcement learning with *Verifiable* rewards
 
-Apply the same RL algorithms to LLMs just on if the answer was right. No need to train a reward model:
+Apply the same RL algorithms to LLMs when the answer can be checked directly. No need to train a reward model:
 - E.g. Math: check the final answer.  
   Code: run the tests.
 - No learned reward model — **no proxy objective**
 - Enables scaling RL compute on reasoning tasks
-- Unlocked **inference time scaling**: Spending more compute at generation time per problem increases performance log-linearlly w.r.t. compute
+- Unlocked **inference time scaling**: Spending more compute at generation time per problem increases performance log-linearly w.r.t. compute
 - RLVR was named by **Tülu 3** [@lambert2024t] and popularized by **DeepSeek R1** [@guo2025deepseek]
 
 |||
@@ -539,6 +539,44 @@ Notation:
 
 ---
 
+<!-- columns: 45/55 -->
+<!-- cite-right: christiano2017, ouyang2022training -->
+## Step 2/3: Reward modeling
+
+```box
+title: Core Idea
+tone: accent
+content: |
+  The reward used in RLHF is the model predicting the probability that a given piece of text would be the "winning" or "chosen" completion in a pair/batch. Clever!
+```
+
+|||
+
+
+The probability model says a response should win when it gets a higher reward score:
+
+$$
+P(y_w \succ y_l \mid x)
+=
+\sigma \!\left(r_\phi(x, y_w) - r_\phi(x, y_l)\right)
+$$
+
+Training then minimizes the negative log-likelihood of the preferred response beating the rejected one:
+
+$$
+\mathcal{L}_{\mathrm{RM}}(\phi)
+=
+- \log \sigma \!\left(r_\phi(x, y_w) - r_\phi(x, y_l)\right)
+$$
+
+Notation:
+- $x$ is the prompt
+- $y_w$ is the **winning** response
+- $y_l$ is the **losing** response
+- $r_\phi(x, y)$ is the trained reward model
+
+---
+
 <!-- columns: 50/50 -->
 <!-- cite-right: ouyang2022training -->
 <!-- footnotes: right -->
@@ -549,7 +587,7 @@ Where everything comes together (and RLHF gets its name):
 - Generate completions $y_i \sim \pi_\theta(\cdot \mid x_i)$ from the model being trained
 - Score them with the reward model $r_\phi(x_i, y_i)$
 - Add a **KL penalty** so the policy stays close to the SFT/reference model.^[KL divergence measures how much the current policy differs from the reference model. For discrete outputs, $D_{\mathrm{KL}}(\pi \,\|\, \pi_{\mathrm{ref}})=\mathbb{E}_{y \sim \pi}\!\left[\log \pi(y \mid x)-\log \pi_{\mathrm{ref}}(y \mid x)\right]$. People often colloquially call this the “KL distance” between the models, even though it is not a true metric.]
-- Update the policy with a policy-graident RL algorithm (Proximal Policy Optimization, PPO in InstructGPT & ChatGPT)
+- Update the policy with a policy-gradient RL algorithm (Proximal Policy Optimization, PPO in InstructGPT & ChatGPT)
 
 $$
 J(\pi)
@@ -718,14 +756,14 @@ Early on, RLHF has a well-documented, simple enough approach.
 
 What began as an "RLHF" recipe evolved into a complex series of steps to get the final, best model (e.g. Nemotron 4 340B, Llama 3.1).
 - Modern systems keep the same core idea of using multiple optimizers with different strengths and weaknesses, but add more stages, more data, and more filtering.
-- This trend has only continued, and recipes eb and flow, as tools like RLVR and model merging change the scope of what is doable in different ways.
+- This trend has only continued, and recipes ebb and flow, as tools like RLVR and model merging change the scope of what is doable in different ways.
 
 ---
 
 ## From RLHF to "post-training"
 
-As time has passed since ChatGPT, the field as gone through multiple distinct phases (roughly):
-1. 2023: Simple SFT for better chatbots and reproducing RLHF fundamentals (Alpca, Vicuna, etc.)
+As time has passed since ChatGPT, the field has gone through multiple distinct phases (roughly):
+1. 2023: Simple SFT for better chatbots and reproducing RLHF fundamentals (Alpaca, Vicuna, etc.)
 2. 2024: DPO dominates open models and training stages expand (Zephyr-beta, Tülu 2, etc.)
 3. 2025: RLVR, complex recipes (Tülu 3, Olmo 3, Nemotron 3, R1, etc.)
 4. 2026: Agentic training, multi-turn RL, etc.
@@ -734,8 +772,8 @@ As time has passed since ChatGPT, the field as gone through multiple distinct ph
 
 ## From RLHF to "post-training"
 
-As time has passed since ChatGPT, the field as gone through multiple distinct phases (roughly):
-1. 2023: Simple SFT for better chatbots and reproducing RLHF fundamentals (Alpca, Vicuna, etc.)
+As time has passed since ChatGPT, the field has gone through multiple distinct phases (roughly):
+1. 2023: Simple SFT for better chatbots and reproducing RLHF fundamentals (Alpaca, Vicuna, etc.)
 2. **2024: DPO dominates open models and training stages expand** (Zephyr-beta, Tülu 2, etc.)
 3. 2025: RLVR, complex recipes (Tülu 3, Olmo 3, Nemotron 3, R1, etc.)
 4. 2026: Agentic training, multi-turn RL, etc.
@@ -797,7 +835,7 @@ Base models determine the *ceiling*. Post-training's job has been to **reach it*
 
 <!-- columns: 50/50 -->
 ## An intuition for post-training
-<!-- cite-right: zhou2023lima,vergarabrowne2026operationalising, -->
+<!-- cite-right: zhou2023lima,vergarabrowne2026operationalising -->
 
 RLHF's reputation was that its contributions are minor on the final language models.
 
@@ -816,8 +854,6 @@ The second paper, 3 years later, matches my intuition for post-training.
 ```box
 title: I call this the **Elicitation Theory** of post-training, where we're trying to pull out the most useful knowledge of the model.
 tone: accent
-content: |
-  (TODO make boxes accept empty content)
 ```
 
 ---
@@ -825,11 +861,11 @@ content: |
 
 <!-- layout: section-break -->
 
-## Beyond ellicitation: The scaling RL era of post-training
+## Beyond elicitation: The scaling RL era of post-training
 
 ---
 
-## o1 scaling post-training
+## OpenAI's seminal scaling plot with o1-preview
 
 <!-- img-align: center -->
 <!-- cite-right: openai2024o1 -->
@@ -838,12 +874,34 @@ content: |
 
 ---
 
-## o1: Train-time scaling
+## o1: Test-time scaling
 
 <!-- columns: 2 -->
 <!-- cite-right: openai2024o1 -->
 
-text goes here
+A log-linear relationship between inference compute (number of tokens generated) and downstream performance.
+
+- This is a fundamental property of models, unlocked in its popular form with RLVR
+- Can be done in many ways: One long chain of thought (CoT) sequence, multiple agents in parallel, or mixes of the two
+- Improving inference-time scaling changes the slope and offset of the curve
+
+|||
+
+![](assets/o1-test-time.png)
+
+---
+
+## o1: Training-time scaling (with reinforcement learning!)
+
+<!-- columns: 2 -->
+<!-- cite-right: openai2024o1 -->
+
+An often underplayed portion of the o1 release (and future reasoning/agentic models).
+- Scaling reinforcement learning compute also has a log-linear return on performance!
+- The core question: Is scaling RL *training* just eliciting more from the base model or actually teaching new abilities?
+
+Results in a two-sided scaling landscape for training language models -- both pretraining and post-training. 
+The third place of scaling is at inference (no weight updates there).
 
 |||
 
@@ -852,60 +910,46 @@ text goes here
 
 ---
 
-## o1: Test-time scaling
+## Cursor Composer 1.5: RL scaling
 
-<!-- columns: 2 -->
-<!-- cite-right: openai2024o1 -->
-text goes here
+<!-- img-align: center -->
+<!-- cite-right: cursor2026composer15 -->
 
+![](assets/cursor-composer-1_5-scaling.png)
+
+---
+
+## DeepSeek-R1-Zero: RL scaling
+
+<!-- img-align: center -->
+<!-- cite-right: guo2025deepseek -->
+
+![](assets/deepseek-r1-zero-figure1-training.png)
+
+---
+
+<!-- columns: 30/70 -->
+## Olmo 3.1: extending the RL run
+
+<!-- cite-right: teamolmo2025olmo3 -->
+
+One of the few "fully open" large-scale RL runs to date.
+- Training a general, 32B reasoning model.
+- Full RL training took about **28 days on 224 GPUs**.
+- Improvements in performance were very consistent across the run, in fact they were still going up when we had to stop it!
 
 |||
 
-![](assets/o1-test-time.png)
+![](assets/olmo31-extended-rl.jpeg)
 
 ---
 
-## The scale of post-training
+## Where this leaves us
 
-- **DeepSeek R1**: RL used ~147K H800 GPU hours (~5% of total training)
-- Individual ablation runs: **10–100K GPU hours**
-- The trend: **more compute going to post-training every year**
-
----
-
-
-
-## The post-ChatGPT acceleration
-
-- **Early 2023**: Alpaca era — limited data, impressive but narrow
-- **Late 2023**: DPO — direct alignment without a reward model
-- **2024**: Complex multi-stage recipes (Llama 3, Tülu 3)
-- **2025**: Reasoning via RL (DeepSeek R1, o1)
-
----
-
-## The classic RLHF pipeline
-
-1. **Instruction fine-tuning** — teach Q&A format from examples
-2. **Reward model training** — learn a scoring function from human preferences
-3. **RL optimization** — optimize the model against the reward model
-
----
-
-
-## Where things are heading
-
-- RLHF and RLVR are **complementary** — style vs. capabilities
-- Modern recipes use **both** in sequence
-- The boundary between them is blurring (generative reward models, self-correction)
-
----
-
-## Beyond elicitation?
-
-- Maybe post-training does more than just **extract** existing ability
-- Long RL runs may reshape how models **reason**, not just how they respond
-- Open question: when does scaling RL create **new capabilities**?
+Post-training and RLHF are changing faster than maybe ever before.
+- Language models are becoming "tool-use native" and are now about tools, harnesses (how you tell the model to use said tools), and much more than just weights
+- RLHF and human preferences haven't gone away, but are evolving far more slowly and out of the central gaze of the industry
+- Building language models and doing research is changing rapidly with coding agents
 
 ---
 
@@ -981,7 +1025,7 @@ content: |
 
 |||
 
-Full lecture slides coming to [rlhfbook.com/slides](https://rlhfbook.com//slides) and YouTube @natolambert!
+Full lecture slides coming to [rlhfbook.com/slides](https://rlhfbook.com/slides) and YouTube @natolambert!
 
 ---
 
