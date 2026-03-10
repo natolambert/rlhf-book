@@ -1,6 +1,6 @@
 # Teaching Slides
 
-Lecture slides for the RLHF Book, built with [colloquium](https://github.com/Interconnects-AI/colloquium).
+Lecture slides for the RLHF Book, built with [colloquium](https://github.com/natolambert/colloquium).
 
 Colloquium is under active development -- expect improvements to the slide tooling alongside the content.
 
@@ -11,7 +11,7 @@ Colloquium is under active development -- expect improvements to the slide tooli
 
 ## Setup
 
-Install from the repo root (this pulls colloquium from source via the `teach` extra):
+Install from the repo root (this pulls colloquium from PyPI via the `teach` extra):
 
 ```bash
 uv sync --extra teach

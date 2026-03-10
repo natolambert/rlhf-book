@@ -18,5 +18,5 @@ skills = [
     "google-genai>=1.63.0",
 ]
 teach = [
-    "colloquium @ git+https://github.com/natolambert/colloquium.git@refs/pull/11/head",
+    "colloquium>=0.2.0",
 ]
