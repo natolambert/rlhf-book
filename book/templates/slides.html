@@ -90,25 +90,6 @@
       border: none;
     }
 
-    .slide-viewer-hint {
-      position: absolute;
-      bottom: 12px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.6);
-      color: #fff;
-      font-size: 0.8em;
-      padding: 0.4em 0.9em;
-      border-radius: 1em;
-      pointer-events: none;
-      opacity: 1;
-      transition: opacity 0.5s ease;
-      z-index: 10;
-    }
-
-    .slide-viewer-hint.hidden {
-      opacity: 0;
-    }
 
     /* Info bar below the viewer */
     .talk-info {
@@ -205,7 +186,6 @@
     <div class="talk-entry" id="sala-2026">
       <div class="slide-viewer">
         <iframe src="teach/SALA-2026/" loading="lazy"></iframe>
-        <div class="slide-viewer-hint">Click to navigate slides &middot; Arrow keys to advance</div>
       </div>
       <div class="talk-info">
         <div class="talk-info-left">
@@ -270,16 +250,6 @@
     window.addEventListener('load', scaleViewers);
     window.addEventListener('resize', scaleViewers);
 
-    // Hide hint after first interaction with any iframe
-    document.querySelectorAll('.slide-viewer').forEach(container => {
-      const hint = container.querySelector('.slide-viewer-hint');
-      if (!hint) return;
-      container.addEventListener('click', function() {
-        hint.classList.add('hidden');
-      }, { once: true });
-      // Also hide after a few seconds
-      setTimeout(() => hint.classList.add('hidden'), 5000);
-    });
   </script>
 </body>
 </html>

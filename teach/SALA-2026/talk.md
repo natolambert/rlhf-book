@@ -623,7 +623,7 @@ $$
 
 - Derived the gradient toward the optimal solution, $\pi^*$ to the above equation 
 - Eliminated the need for a separate reward model (via training an implicit one)
-- Train directly on preferred vs. rejected responses to a prompt
+- Train directly on preferred ($y_w$) vs. rejected ($y_l$) responses to a prompt ($x$)
 
 $$
 \mathcal{L}_{\mathrm{DPO}}(\theta)
@@ -657,7 +657,7 @@ $$
 
 - Derived the gradient toward the optimal solution, $\pi^*$ to the above equation 
 - Eliminated the need for a separate reward model (via training an implicit one)
-- Train directly on preferred vs. rejected responses to a prompt
+- Train directly on preferred ($y_w$) vs. rejected ($y_l$) responses to a prompt ($x$)
 
 $$
 \mathcal{L}_{\mathrm{DPO}}(\theta)
@@ -722,28 +722,110 @@ What began as an "RLHF" recipe evolved into a complex series of steps to get the
 
 ---
 
-## The elicitation theory
+## From RLHF to "post-training"
 
-Post-training **extracts latent potential** from the base model
-
-**OLMoE** — same base model, updated only post-training:
-- Version 1: **35** benchmark average
-- Version 2: **48** benchmark average
-
-Base models determine the *ceiling*. Post-training's job is to **reach it**.
+As time has passed since ChatGPT, the field as gone through multiple distinct phases (roughly):
+1. 2023: Simple SFT for better chatbots and reproducing RLHF fundamentals (Alpca, Vicuna, etc.)
+2. 2024: DPO dominates open models and training stages expand (Zephyr-beta, Tülu 2, etc.)
+3. 2025: RLVR, complex recipes (Tülu 3, Olmo 3, Nemotron 3, R1, etc.)
+4. 2026: Agentic training, multi-turn RL, etc.
 
 ---
 
-## From RLHF to post-training
+## From RLHF to "post-training"
 
-- The classic **3-step RLHF recipe** became the intellectual center of modern post-training
-- Even when recipes changed, people still thought in terms of:
-  - instruction tuning
-  - a reward / preference signal
-  - policy improvement
-- Modern post-training extends, simplifies, or scales that template
+As time has passed since ChatGPT, the field as gone through multiple distinct phases (roughly):
+1. 2023: Simple SFT for better chatbots and reproducing RLHF fundamentals (Alpca, Vicuna, etc.)
+2. **2024: DPO dominates open models and training stages expand** (Zephyr-beta, Tülu 2, etc.)
+3. 2025: RLVR, complex recipes (Tülu 3, Olmo 3, Nemotron 3, R1, etc.)
+4. 2026: Agentic training, multi-turn RL, etc.
 
-Placeholder: connect InstructGPT-style RLHF to DPO, RLVR, and reasoning-oriented RL.
+Within 2024 the field shifted its focus to post-training, as training stages evolved beyond the InstructGPT-style recipe, DPO proliferated, and largely RLHF was viewed as one tool (that you may not even need).
+
+---
+
+<!-- columns: 50/50 -->
+## An intuition for post-training
+<!-- cite-right: zhou2023lima -->
+
+RLHF's reputation was that its contributions are minor on the final language models.
+
+> "A model's knowledge and capabilities are learnt almost entirely during pretraining, while alignment teaches it which subdistribution of formats should be used when interacting with users."
+
+*LIMA: Less Is More for Alignment* (2023)
+
+
+|||
+
+---
+
+
+<!-- columns: 50/50 -->
+## An intuition for post-training
+<!-- cite-right: zhou2023lima,muennighoff2024olmoe,ai2_olmoe_ios_2025 -->
+
+RLHF's reputation was that its contributions are minor on the final language models.
+
+> "A model's knowledge and capabilities are learnt almost entirely during pretraining, while alignment teaches it which subdistribution of formats should be used when interacting with users."
+
+*LIMA: Less Is More for Alignment* (2023)
+
+|||
+
+Sometimes this view of alignment (or RLHF) teaching "format" made people think that post-training only made minor changes to the model. This would describe finetuning as "*just style transfer*."
+
+The base model trained on trillions of tokens of web text has seen and learned from an extremely broad set of examples.
+The model at this stage contains far more latent capability than early post-training recipes were able to expose.
+
+The question is: How does post-training interact with these?
+
+---
+
+<!-- columns: 50/50 -->
+## An intuition for post-training
+<!-- cite-right: zhou2023lima,muennighoff2024olmoe,ai2_olmoe_ios_2025 -->
+
+RLHF's reputation was that its contributions are minor on the final language models.
+
+An example, **OLMoE** — same base model family, updated only post-training:
+- [`OLMoE-1B-7B-0924-Instruct`](https://huggingface.co/allenai/OLMoE-1B-7B-0924-Instruct) (Sep. 2024): **38.44** avg. eval score
+- [`OLMoE-1B-7B-0125-Instruct`](https://huggingface.co/allenai/OLMoE-1B-7B-0125-Instruct) (Jan. 2025): **45.62** avg. eval score
+
+Base models determine the *ceiling*. Post-training's job has been to **reach it**.
+
+---
+
+<!-- columns: 50/50 -->
+## An intuition for post-training
+<!-- cite-right: zhou2023lima,vergarabrowne2026operationalising, -->
+
+RLHF's reputation was that its contributions are minor on the final language models.
+
+> "A model's knowledge and capabilities are learnt almost entirely during pretraining, while alignment teaches it which subdistribution of formats should be used when interacting with users."
+
+*LIMA: Less Is More for Alignment* (2023)
+
+> "The superficial alignment hypothesis (SAH) posits that large language models learn most of their knowledge during pre-training, and that post-training merely surfaces this knowledge."
+
+*Operationalising the Superficial Alignment Hypothesis via Task Complexity* (2026)
+
+|||
+
+The second paper, 3 years later, matches my intuition for post-training. 
+
+```box
+title: I call this the **Elicitation Theory** of post-training, where we're trying to pull out the most useful knowledge of the model.
+tone: accent
+content: |
+  (TODO make boxes accept empty content)
+```
+
+---
+
+
+<!-- layout: section-break -->
+
+## Beyond ellicitation: The scaling RL era of post-training
 
 ---
 
@@ -791,11 +873,6 @@ text goes here
 
 ---
 
-<!-- layout: section-break -->
-
-## How we got here
-
----
 
 
 ## The post-ChatGPT acceleration
