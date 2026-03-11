@@ -4,7 +4,7 @@ author: "Nathan Lambert"
 fonts:
   heading: "Rubik"
   body: "Poppins"
-bibliography: ../SALA-2026/refs.bib
+bibliography: refs.bib
 figure_captions: true
 footer:
   left: "rlhfbook.com"
@@ -45,7 +45,7 @@ Core properties:
 
 |||
 
-![The original model architecture diagram for the Transformer. 2017.](../SALA-2026/assets/transformer.webp)
+![The original model architecture diagram for the Transformer. 2017.](assets/transformer.webp)
 <!-- cite-right: Vaswani2017AttentionIA -->
 
 ---
@@ -55,12 +55,12 @@ Core properties:
 
 Modern language models:
 - Have billions to trillions of parameters.
-- Largely downstream of The Transformer architecture, which popularized the use of the **self-attention** mechanism along with fully-dense layers.
+- Largely downstream of the Transformer architecture, which popularized the use of the **self-attention** mechanism along with fully-dense layers.
 - Predict and work over much more than text: Gemini and ChatGPT work with images, audio, and video.
 
 |||
 
-![The original model architecture diagram for the Transformer. 2017.](../SALA-2026/assets/transformer.webp)
+![The original model architecture diagram for the Transformer. 2017.](assets/transformer.webp)
 <!-- cite-right: Vaswani2017AttentionIA -->
 
 ---
@@ -72,7 +72,7 @@ Modern language models:
 
 |||
 
-![The original model architecture diagram for the Transformer. 2017.](../SALA-2026/assets/transformer.webp)
+![The original model architecture diagram for the Transformer. 2017.](assets/transformer.webp)
 <!-- cite-right: Vaswani2017AttentionIA -->
 
 ---
@@ -85,7 +85,7 @@ Modern language models:
 
 |||
 
-![The language model architecture for GPT-1. 2018.](../SALA-2026/assets/gpt-1.png)
+![The language model architecture for GPT-1. 2018.](assets/gpt-1.png)
 <!-- cite-left: radford2018gpt, peters2018elmo, devlin2018bert -->
 
 ---
@@ -99,7 +99,7 @@ Modern language models:
 
 ===
 
-![The famous scaling laws plots. 2020.](../SALA-2026/assets/scaling-laws.png)
+![The famous scaling laws plots. 2020.](assets/scaling-laws.png)
 <!-- cite-right: radford2019gpt2, kaplan2020scaling -->
 
 ---
@@ -114,7 +114,7 @@ Modern language models:
 
 |||
 
-![GPT-3 was known for expanding the idea of in-context learning and few-shot prompting. Screenshot from the paper.](../SALA-2026/assets/few-shot.png)
+![GPT-3 was known for expanding the idea of in-context learning and few-shot prompting. Screenshot from the paper.](assets/few-shot.png)
 <!-- cite-left: brown2020gpt3 -->
 
 ---
@@ -130,7 +130,7 @@ Modern language models:
 
 |||
 
-![](../SALA-2026/assets/stochastic-parrots.png)
+![](assets/stochastic-parrots.png)
 <!-- cite-right: bender2021stochastic -->
 
 ---
@@ -147,7 +147,7 @@ Modern language models:
 
 |||
 
-![](../SALA-2026/assets/chatgpt.webp)
+![](assets/chatgpt.webp)
 <!-- cite-right: openai2022chatgpt -->
 
 ---
@@ -165,7 +165,7 @@ Modern language models:
 
 |||
 
-![An image where Nvidia CEO Jensen Huang supposedly leaked that GPT-4 was an ~2T parameter MoE model.](../SALA-2026/assets/jensen-gpt4.jpeg)
+![An image where Nvidia CEO Jensen Huang supposedly leaked that GPT-4 was an ~2T parameter MoE model.](assets/jensen-gpt4.jpeg)
 <!-- cite-right: openai2023gpt4 -->
 
 ---
@@ -184,7 +184,7 @@ Modern language models:
 
 |||
 
-![The famous test-time scaling plot from OpenAI's o1 announcement.](../SALA-2026/assets/o1-test-time.png)
+![The famous test-time scaling plot from OpenAI's o1 announcement.](assets/o1-test-time.png)
 <!-- cite-right: openai2024o1 -->
 
 ---
@@ -204,7 +204,7 @@ Modern language models:
 
 |||
 
-![](../SALA-2026/assets/claude-code.png)
+![](assets/claude-code.png)
 <!-- cite-right: openai2025o3, anthropic2025claudecode, openai2025agents -->
 
 ---
@@ -222,7 +222,7 @@ Modern language models:
 
 |||
 
-![](../SALA-2026/assets/pretraining_next_token_tikz.png)
+![](assets/pretraining_next_token_tikz.png)
 
 ---
 
@@ -272,8 +272,16 @@ How the different training stages change the model:
 
 ---
 
-## What this means for post-training
+## Intuition for training stages
 
+How the different training stages change the model:
+
+- **Pretraining**: builds the model's world knowledge, language fluency, and broad capabilities
+- **Instruction tuning / SFT**: teaches the model to answer in a question-answer format and often teaches it to repeat specific token sequences
+- **Preference tuning / RLHF**: uses a contrastive loss to modify completions as a whole, making the model richer and more flexible
+- **RLVR**: enhances the model's ability on verifiable questions, which can translate into more complex, agentic behaviors
+
+What this means for post-training:
 - RL-based post-training gives the model richer, response-level, contrastive feedback that makes it more flexible and engaging
 - SFT is still needed as a foundation for maximum performance
 
@@ -320,56 +328,6 @@ messages:
 
 ---
 
-<!-- columns: 50/50 -->
-<!-- cite-right: christiano2017 -->
-## Which is the better backflip?
-
-![](../SALA-2026/assets/christiano-backflip-human.webp)
-
-|||
-
-![](../SALA-2026/assets/christiano-backflip-reward.webp)
-
----
-
-<!-- cite-right: christiano2017, ziegler2019fine, ouyang2022training, bai2022constitutional -->
-## Why did people make RLHF?
-
-- Many objectives are easy for humans to **judge**, but hard to write as an exact reward function
-- In language models, what we want is often implicit: **follow intent**, be **helpful**, be **harmless**
-- Pretraining optimizes **next-token prediction**, not assistant behavior
-- Preference comparisons turn those human judgments into a scalable training signal
-
-RLHF lets us optimize for behavior we can **evaluate**, even when we cannot easily **specify** the reward.
-
----
-
-<!-- columns: 40/60 -->
-<!-- cite-right: christiano2017 -->
-## RLHF before language models
-
-- **TAMER** (Knox & Stone, 2008) — humans score agent actions to learn a reward
-- **Christiano et al. 2017** — RLHF on Atari trajectory preferences
-- **Ziegler et al. 2019** — first RLHF on language models
-
-|||
-
-![A recreation of the system diagram from Christiano et al. 2017.](../SALA-2026/assets/rlhf_schematic_tikz.png)
-
----
-
-<!-- columns: 50/50 -->
-<!-- cite-right: christiano2017 -->
-## Left: Human feedback; Right: Hand-designed reward function
-
-![](../SALA-2026/assets/christiano-backflip-human.webp)
-
-|||
-
-![](../SALA-2026/assets/christiano-backflip-reward.webp)
-
----
-
 <!-- cite-right: sutton2018reinforcement -->
 <!-- columns: 65/35 -->
 
@@ -387,7 +345,7 @@ $$J(\pi) = \mathbb{E}_{\tau \sim \pi}\!\left[\sum_{t=0}^{T} \gamma^t r(s_t, a_t)
 
 |||
 
-![](../SALA-2026/assets/rl.png)
+![](assets/rl.png)
 
 ---
 
@@ -396,22 +354,27 @@ $$J(\pi) = \mathbb{E}_{\tau \sim \pi}\!\left[\sum_{t=0}^{T} \gamma^t r(s_t, a_t)
 ## RL in plain language
 
 Reinforcement learning basics:
-- Reinforcement learning is **trial-and-error learning**  
+- Reinforcement learning is **trial-and-error learning**
   Balancing exploration and exploitation across long-term rewards
 - **State**: the current situation the agent is in
 - **Action**: what the agent does next
 - **Reward**: the signal for how good that action was
 - **Policy**: the strategy for choosing actions
-- **Episode**: one rollout from start to finish
+- **Trajectory**: a sequence of states, actions, and rewards: $\tau = (s_0, a_0, r_0, s_1, a_1, r_1, \ldots)$
+- **Trajectory probability**:  
+  $P(\tau\mid\pi) = p(s_0)\prod_{t=0}^T \pi(a_t\mid s_t)\,p(s_{t+1}\mid s_t,a_t)$
 
 |||
 
-![](../SALA-2026/assets/rl.png)
+![](assets/rl.png)
 
 ---
 
-<!-- columns: 45/55 -->
+<!-- rows: 60/40 -->
 <!-- cite-right: sutton2018reinforcement -->
+
+<!-- row-columns: 50/50 -->
+
 ## A simple RL example: thermostat
 
 The agent learns over many episodes when to turn the heater on or off
@@ -419,6 +382,8 @@ The agent learns over many episodes when to turn the heater on or off
 - **Action**: turn the heater on or off
 - **Reward**: positive when the room stays near the target temperature
 - **Policy**: the rule for deciding what to do next
+
+||| 
 
 Example policy:
 
@@ -430,9 +395,9 @@ $$
 \end{cases}
 $$
 
-|||
+===
 
-![](assets/thermostat_equation.png)
+![An example trajectory probability for the thermostat RL example.](assets/thermostat_equation.png)
 
 ---
 
@@ -475,72 +440,61 @@ This is why classical RL is a **multi-step control problem** — each action cha
 
 ---
 
-<!-- columns: 50/50 -->
-<!-- cite-right: christiano2017, ouyang2022training -->
-## Classical RL vs. RLHF
+<!-- cite-right: christiano2017, ziegler2019fine, ouyang2022training -->
+## Why did people make RLHF?
 
-<div class="text-sm">
+In classical RL, the reward function is known — CartPole gives +1 per step. But for many tasks the reward is **hard to write down**:
 
-**Classical RL**
-- Agent takes actions $a_t$ in an environment with states $s_t$ 
-- Reward is a known function $r(s_t, a_t)$ from the environment per step
-- Optimize cumulative return over a trajectory (total steps $T$)
+- It's easy to judge which poem is better, but hard to write a masterpiece
+- It's easy to spot a helpful answer, but hard to specify what "helpful" means as a formula
+- Pretraining optimizes **next-token prediction** — the most likely continuation isn't always the most useful one
 
-$$J(\pi) = \mathbb{E}_{\tau \sim \pi}\!\left[\sum_{t=0}^{T} \gamma^t r(s_t, a_t)\right]$$
-
-<div class="colloquium-spacer-md"></div>
-
-**RLHF**
-- No environment — prompts sampled from a dataset
-- Reward is **learned** from human preferences (a proxy)
-- **Response-level** reward (bandit-style, not per-token)
-- Regularized with **KL penalty** to stay close to the base model
-
-$$J(\pi) = \mathbb{E}\left[ r_\theta(x, y) \right] - \beta \, D_{\text{KL}}\!\left(\pi \| \pi_{\text{ref}}\right)$$
-
-</div>
-
-|||
-
-![](../SALA-2026/assets/rlhf.png)
+RLHF lets us optimize for behavior we can **evaluate** even when we cannot easily **specify** the reward.
 
 ---
 
 <!-- columns: 50/50 -->
+<!-- cite-right: christiano2017 -->
+## Which is the better backflip?
 
-## Reinforcement learning with *Verifiable* rewards
-
-Apply the same RL algorithms to LLMs when the answer can be checked directly. No need to train a reward model:
-- E.g. Math: check the final answer.  
-  Code: run the tests.
-- No learned reward model — **no proxy objective**
-- Enables scaling RL compute on reasoning tasks
-- Unlocked **inference time scaling**: Spending more compute at generation time per problem increases performance log-linearly w.r.t. compute
-- RLVR was named by **Tülu 3** [@lambert2024t] and popularized by **DeepSeek R1** [@guo2025deepseek]
+![](assets/christiano-backflip-human.webp)
 
 |||
 
-![](../SALA-2026/assets/rlvr-system.png)
+![](assets/christiano-backflip-reward.webp)
 
 ---
 
-## Comparing classical RL vs. LLM RLHF and RLVR
+<!-- columns: 40/60 -->
+<!-- cite-right: christiano2017 -->
+## RLHF before language models
 
-| | Classical RL | RLHF | RLVR |
-|---|---|---|---|
-| **Reward** | Environment | Learned (proxy) | Verifiable (exact) |
-| **State transitions** | Yes | No | No |
-| **Reward granularity** | Per-step | Per-response | Per-response |
-| **Primary challenge** | Explore-Exploit Trade-off | Over-optimization | Task generalization |
-| **Example** | CartPole | Chat style tuning | Math reasoning |
+- **TAMER** (Knox & Stone, 2008) — humans score agent actions to learn a reward
+- **Christiano et al. 2017** — RLHF on Atari trajectory preferences
+- **Ziegler et al. 2019** — first RLHF on language models
+
+|||
+
+![A recreation of the system diagram from Christiano et al. 2017.](assets/rlhf_schematic_tikz.png)
 
 ---
 
+<!-- columns: 50/50 -->
+<!-- cite-right: christiano2017 -->
+## Left: Human feedback; Right: Hand-designed reward function
+
+![](assets/christiano-backflip-human.webp)
+
+|||
+
+![](assets/christiano-backflip-reward.webp)
+
+---
 
 <!-- rows: 60/40 -->
 ## The path to modern RLHF
 
-![](../SALA-2026/assets/rlhf_timeline_tikz.png)
+![](assets/rlhf_timeline_tikz.png)
 
 ===
 
@@ -569,13 +523,77 @@ Apply the same RL algorithms to LLMs when the answer can be checked directly. No
 
 ---
 
+<!-- rows: 30/70 -->
+## What RLHF comparison data looks like
+
+A human (or AI) annotator sees two responses to the same prompt and picks the better one — this preference pair becomes training data for the reward model.
+
+===
+
+<!-- row-columns: 50/50 -->
+
+```conversation
+size: 0.85
+messages:
+  - role: user
+    content: "Explain why the sky is blue in one sentence."
+  - role: assistant
+    model: "Response A ✓"
+    content: "The sky is blue due to Rayleigh scattering, where shorter blue wavelengths of sunlight are scattered more by atmospheric molecules than longer wavelengths."
+```
+
+|||
+
+```conversation
+size: 0.85
+messages:
+  - role: user
+    content: "Explain why the sky is blue in one sentence."
+  - role: assistant
+    model: "Response B"
+    content: "The sky appears blue because of the way light interacts with the atmosphere and stuff, it's basically just physics."
+```
+
+---
+
+<!-- columns: 50/50 -->
+<!-- cite-right: christiano2017, ouyang2022training -->
+## Classical RL vs. RLHF
+
+<div class="text-sm">
+
+**Classical RL**
+- Agent takes actions $a_t$ in an environment with states $s_t$
+- Reward is a known function $r(s_t, a_t)$ from the environment per step
+- Optimize cumulative return over a trajectory (total steps $T$)
+
+$$J(\pi) = \mathbb{E}_{\tau \sim \pi}\!\left[\sum_{t=0}^{T} \gamma^t r(s_t, a_t)\right]$$
+
+<div class="colloquium-spacer-md"></div>
+
+**RLHF**
+- No environment — prompts sampled from a dataset
+- Reward is **learned** from human preferences (a proxy)
+- **Response-level** reward (bandit-style, not per-token)
+- Regularized with **KL penalty** to stay close to the base model
+
+$$J(\pi) = \mathbb{E}\left[ r_\theta(x, y) \right] - \beta \, D_{\text{KL}}\!\left(\pi \| \pi_{\text{ref}}\right)$$
+
+</div>
+
+|||
+
+![](assets/rlhf.png)
+
+---
+
 <!-- valign: center -->
 <!-- cite-right: ouyang2022training -->
 
 ## InstructGPT's 3-step RLHF recipe
 
 
-![The 3-step RLHF process figure from InstructGPT, which became "the standard" approach to RLHF for a few years.](../SALA-2026/assets/instructgpt.jpg)
+![The 3-step RLHF process figure from InstructGPT, which became "the standard" approach to RLHF for a few years.](assets/instructgpt.jpg)
 
 
 ---
@@ -605,7 +623,7 @@ $$
 size: 0.9
 messages:
   - role: system
-    content: "You are a helpful, harmless assistant. A system message like this can be used to steer the model to specific persona's or behaviors."
+    content: "You are a helpful, harmless assistant. A system message like this can be used to steer the model to specific personas or behaviors."
   - role: user
     content: "Write me a short poem about an optimistic goldfish."
   - role: assistant
@@ -709,7 +727,7 @@ $$
 
 |||
 
-![](../SALA-2026/assets/rlhf-overview.png)
+![](assets/rlhf-overview.png)
 
 ---
 
@@ -770,7 +788,7 @@ $$
 
 **Direct Preference Optimization (DPO)**
 
-- Derived the gradient toward the optimal solution, $\pi^*$ to the above equation 
+- Derived the gradient toward the optimal solution, $\pi^*$, to the above equation 
 - Eliminated the need for a separate reward model (via training an implicit one)
 - Train directly on preferred ($y_w$) vs. rejected ($y_l$) responses to a prompt ($x$)
 
@@ -804,7 +822,7 @@ $$
 
 **Direct Preference Optimization (DPO)**
 
-- Derived the gradient toward the optimal solution, $\pi^*$ to the above equation 
+- Derived the gradient toward the optimal solution, $\pi^*$, to the above equation 
 - Eliminated the need for a separate reward model (via training an implicit one)
 - Train directly on preferred ($y_w$) vs. rejected ($y_l$) responses to a prompt ($x$)
 
@@ -892,13 +910,13 @@ An overall trend is to use far more compute across all the stages, but shifting 
 <!-- rows: 60/40 -->
 ## The early days: InstructGPT
 
-![](../SALA-2026/assets/rlhf-basic.png)
+![](assets/rlhf-basic.png)
 
 ===
 
-Early on, RLHF has a well-documented, simple enough approach.
+Early on, RLHF had a well-documented, simple enough approach.
 - **InstructGPT** made the classic three-stage recipe canonical:
-  SFT, reward modeling, then RL against the reward model. *OpenAI even hinted that the original ChatGPT even used this!*
+  SFT, reward modeling, then RL against the reward model. *OpenAI even hinted that the original ChatGPT used this!*
 - This became the intellectual template for much of modern post-training.
 
 ---
@@ -906,7 +924,7 @@ Early on, RLHF has a well-documented, simple enough approach.
 <!-- rows: 50/50 -->
 ## From RLHF to post-training
 
-![](../SALA-2026/assets/rlhf-complex.png)
+![](assets/rlhf-complex.png)
 
 ===
 
@@ -939,7 +957,7 @@ Within 2024 the field shifted its focus to post-training, as training stages evo
 ---
 
 <!-- columns: 50/50 -->
-## An intuition for post-training
+## "Just style transfer"
 <!-- cite-right: zhou2023lima -->
 
 RLHF's reputation was that its contributions are minor on the final language models.
@@ -955,7 +973,7 @@ RLHF's reputation was that its contributions are minor on the final language mod
 
 
 <!-- columns: 50/50 -->
-## An intuition for post-training
+## "Just style transfer"
 <!-- cite-right: zhou2023lima,muennighoff2024olmoe,ai2_olmoe_ios_2025 -->
 
 RLHF's reputation was that its contributions are minor on the final language models.
@@ -985,7 +1003,9 @@ An example, **OLMoE** — same base model family, updated only post-training:
 - [`OLMoE-1B-7B-0924-Instruct`](https://huggingface.co/allenai/OLMoE-1B-7B-0924-Instruct) (Sep. 2024): **38.44** avg. eval score
 - [`OLMoE-1B-7B-0125-Instruct`](https://huggingface.co/allenai/OLMoE-1B-7B-0125-Instruct) (Jan. 2025): **45.62** avg. eval score
 
-Base models determine the *ceiling*. Post-training's job has been to **reach it**.
+Base models determine the *ceiling*. Post-training's job has been to **reach it**. 
+
+Simple post-training often doesn't extract nearly enough performance (especially when the pace of progress is high).
 
 ---
 
@@ -1015,6 +1035,63 @@ tone: accent
 ---
 
 
+<!-- columns: 50/50 -->
+## An intuition for post-training
+<!-- cite-right: zhou2023lima,vergarabrowne2026operationalising -->
+
+RLHF's reputation was that its contributions are minor on the final language models.
+
+> "A model's knowledge and capabilities are learnt almost entirely during pretraining, while alignment teaches it which subdistribution of formats should be used when interacting with users."
+
+*LIMA: Less Is More for Alignment* (2023)
+
+> "The superficial alignment hypothesis (SAH) posits that large language models learn most of their knowledge during pre-training, and that post-training merely surfaces this knowledge."
+
+*Operationalising the Superficial Alignment Hypothesis via Task Complexity* (2026)
+
+|||
+
+The second paper, 3 years later, matches my intuition for post-training. 
+
+```box
+title: I call this the **Elicitation Theory** of post-training, where we're trying to pull out the most useful knowledge of the model.
+tone: accent
+```
+<br>
+Pretraining builds a chassis for the car -- post-training is the hard craft of extracting the most performance from it.
+
+---
+
+<!-- columns: 50/50 -->
+
+## Reinforcement learning with *Verifiable* rewards
+
+Apply the same RL algorithms to LLMs when the answer can be checked directly. No need to train a reward model:
+- E.g. Math: check the final answer.
+  Code: run the tests.
+- No learned reward model — **no proxy objective**
+- Enables scaling RL compute on reasoning tasks
+- Unlocked **inference time scaling**: Spending more compute at generation time per problem increases performance log-linearly w.r.t. compute
+- RLVR was named by **Tülu 3** [@lambert2024t] and popularized by **DeepSeek R1** [@guo2025deepseek]
+
+|||
+
+![](assets/rlvr-system.png)
+
+---
+
+## Comparing classical RL vs. LLM RLHF and RLVR
+
+| | Classical RL | RLHF | RLVR |
+|---|---|---|---|
+| **Reward** | Environment | Learned (proxy) | Verifiable (exact) |
+| **State transitions** | Yes | No | No |
+| **Reward granularity** | Per-step | Per-response | Per-response |
+| **Primary challenge** | Explore-Exploit Trade-off | Over-optimization | Task generalization |
+| **Example** | CartPole | Chat style tuning | Math reasoning |
+
+---
+
 <!-- layout: section-break -->
 
 ## Beyond elicitation: The scaling RL era of post-training
@@ -1026,7 +1103,7 @@ tone: accent
 <!-- img-align: center -->
 <!-- cite-right: openai2024o1 -->
 
-![](../SALA-2026/assets/o1.webp)
+![](assets/o1.webp)
 
 ---
 
@@ -1043,7 +1120,7 @@ A log-linear relationship between inference compute (number of tokens generated)
 
 |||
 
-![](../SALA-2026/assets/o1-test-time.png)
+![](assets/o1-test-time.png)
 
 ---
 
@@ -1061,7 +1138,7 @@ The third place of scaling is at inference (no weight updates there).
 
 |||
 
-![](../SALA-2026/assets/o1-train-time.png)
+![](assets/o1-train-time.png)
 
 
 ---
@@ -1071,7 +1148,7 @@ The third place of scaling is at inference (no weight updates there).
 <!-- img-align: center -->
 <!-- cite-right: cursor2026composer15 -->
 
-![](../SALA-2026/assets/cursor-composer-1_5-scaling.png)
+![](assets/cursor-composer-1_5-scaling.png)
 
 ---
 
@@ -1080,7 +1157,7 @@ The third place of scaling is at inference (no weight updates there).
 <!-- img-align: center -->
 <!-- cite-right: guo2025deepseek -->
 
-![](../SALA-2026/assets/deepseek-r1-zero-figure1-training.png)
+![](assets/deepseek-r1-zero-figure1-training.png)
 
 ---
 
@@ -1096,7 +1173,7 @@ One of the few "fully open" large-scale RL runs to date.
 
 |||
 
-![](../SALA-2026/assets/olmo31-extended-rl.jpeg)
+![](assets/olmo31-extended-rl.jpeg)
 
 ---
 

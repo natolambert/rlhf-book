@@ -57,7 +57,7 @@ Core properties:
 
 Modern language models:
 - Have billions to trillions of parameters.
-- Largely downstream of The Transformer architecture, which popularized the use of the **self-attention** mechanism along with fully-dense layers.
+- Largely downstream of the Transformer architecture, which popularized the use of the **self-attention** mechanism along with fully-dense layers.
 - Predict and work over much more than text: Gemini and ChatGPT work with images, audio, and video.
 
 |||
@@ -342,6 +342,33 @@ RLHF lets us optimize for behavior we can **evaluate**, even when we cannot easi
 
 ---
 
+<!-- cite-right: ziegler2019fine -->
+## RLHF for language models: compare two completions
+
+<!-- columns: 50/50 -->
+
+```conversation
+messages:
+  - role: user
+    content: "Explain the moon landing to a 6-year-old."
+  - role: assistant
+    model: "Completion A"
+    content: "The Apollo program culminated in a successful lunar landing in 1969. Astronauts used a spacecraft to descend to the moon's surface and collect samples before returning to Earth."
+```
+
+|||
+
+```conversation
+messages:
+  - role: user
+    content: "Explain the moon landing to a 6-year-old."
+  - role: assistant
+    model: "Completion B"
+    content: "People built a special rocket to go to the moon. Two astronauts landed there, walked around, and came home safely to tell everyone what they saw."
+```
+
+---
+
 <!-- columns: 50/50 -->
 <!-- cite-right: christiano2017 -->
 ## Left: Human feedback; Right: Hand-designed reward function
@@ -431,7 +458,7 @@ Apply the same RL algorithms to LLMs when the answer can be checked directly. No
 | **Reward** | Environment | Learned (proxy) | Verifiable (exact) |
 | **State transitions** | Yes | No | No |
 | **Reward granularity** | Per-step | Per-response | Per-response |
-| **Primary challenge** | Explor-Exploit Trade-off | Over-optimization | Task generalization |
+| **Primary challenge** | Explore-Exploit Trade-off | Over-optimization | Task generalization |
 | **Example** | CartPole | Chat style tuning | Math reasoning |
 
 ---
@@ -494,7 +521,7 @@ $$
 size: 0.9
 messages:
   - role: system
-    content: "You are a helpful, harmless assistant. A system message like this can be used to steer the model to specific persona's or behaviors."
+    content: "You are a helpful, harmless assistant. A system message like this can be used to steer the model to specific personas or behaviors."
   - role: user
     content: "Write me a short poem about an optimistic goldfish."
   - role: assistant
@@ -659,7 +686,7 @@ $$
 
 **Direct Preference Optimization (DPO)**
 
-- Derived the gradient toward the optimal solution, $\pi^*$ to the above equation 
+- Derived the gradient toward the optimal solution, $\pi^*$, to the above equation 
 - Eliminated the need for a separate reward model (via training an implicit one)
 - Train directly on preferred ($y_w$) vs. rejected ($y_l$) responses to a prompt ($x$)
 
@@ -693,7 +720,7 @@ $$
 
 **Direct Preference Optimization (DPO)**
 
-- Derived the gradient toward the optimal solution, $\pi^*$ to the above equation 
+- Derived the gradient toward the optimal solution, $\pi^*$, to the above equation 
 - Eliminated the need for a separate reward model (via training an implicit one)
 - Train directly on preferred ($y_w$) vs. rejected ($y_l$) responses to a prompt ($x$)
 
@@ -740,9 +767,9 @@ An overall trend is to use far more compute across all the stages, but shifting 
 
 ===
 
-Early on, RLHF has a well-documented, simple enough approach.
+Early on, RLHF had a well-documented, simple enough approach.
 - **InstructGPT** made the classic three-stage recipe canonical:
-  SFT, reward modeling, then RL against the reward model. *OpenAI even hinted that the original ChatGPT even used this!*
+  SFT, reward modeling, then RL against the reward model. *OpenAI even hinted that the original ChatGPT used this!*
 - This became the intellectual template for much of modern post-training.
 
 ---
