@@ -308,4 +308,6 @@ course-lecture-%:
 	@cd $(BUILD)/html/teach/course/$* && for f in *.html; do [ "$$f" != "index.html" ] && mv "$$f" index.html; done || true
 	@# Export PDF
 	uv run colloquium export teach/course/$*.md -o $(BUILD)/html/teach/course/$*/slides.pdf
+	@# Copy course assets if present
+	@test -d teach/course/assets && cp -r teach/course/assets $(BUILD)/html/teach/course/$*/ || true
 	@echo "Built teach/course/$*"

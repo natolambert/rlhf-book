@@ -261,12 +261,21 @@ messages:
 
 ---
 
-## TODO: Intuition for training stages
+## Intuition for training stages
 
-- Pretraining: where knowledge and core capabilities come from
-- Instruction tuning: teaches the question-answer / chatbot format
-- Preference tuning / RLHF: teaches which responses are better or worse
-- Fold in why RLHF is stronger than plain SFT
+How the different training stages change the model:
+
+- **Pretraining**: builds the model's world knowledge, language fluency, and broad capabilities
+- **Instruction tuning / SFT**: teaches the model to answer in a question-answer format and often teaches it to repeat specific token sequences
+- **Preference tuning / RLHF**: uses a contrastive loss to modify completions as a whole, making the model richer and more flexible
+- **RLVR**: enhances the model's ability on verifiable questions, which can translate into more complex, agentic behaviors
+
+---
+
+## What this means for post-training
+
+- RL-based post-training gives the model richer, response-level, contrastive feedback that makes it more flexible and engaging
+- SFT is still needed as a foundation for maximum performance
 
 ---
 
@@ -364,7 +373,7 @@ RLHF lets us optimize for behavior we can **evaluate**, even when we cannot easi
 <!-- cite-right: sutton2018reinforcement -->
 <!-- columns: 65/35 -->
 
-## Classical RL
+## Classical Reinforcement Learning (RL)
 
 A reinforcement learning problem is often written as a **Markov Decision Process (MDP)**:
 - state space $\mathcal{S}$, action space $\mathcal{A}$
@@ -382,20 +391,87 @@ $$J(\pi) = \mathbb{E}_{\tau \sim \pi}\!\left[\sum_{t=0}^{T} \gamma^t r(s_t, a_t)
 
 ---
 
-## TODO: RL basics 1
+<!-- columns: 65/35 -->
+<!-- cite-right: sutton2018reinforcement -->
+## RL in plain language
 
-- Add a plain-language RL loop slide
-- State, action, reward, policy, episode
-- Thermostat example
-- Bridge to why RLHF only partially matches standard RL
+Reinforcement learning basics:
+- Reinforcement learning is **trial-and-error learning**  
+  Balancing exploration and exploitation across long-term rewards
+- **State**: the current situation the agent is in
+- **Action**: what the agent does next
+- **Reward**: the signal for how good that action was
+- **Policy**: the strategy for choosing actions
+- **Episode**: one rollout from start to finish
+
+|||
+
+![](../SALA-2026/assets/rl.png)
 
 ---
 
-## TODO: RL basics 2
+<!-- columns: 45/55 -->
+<!-- cite-right: sutton2018reinforcement -->
+## A simple RL example: thermostat
 
-- Add CartPole example slide
-- Visual intuition for sequential decision making
-- Use it to contrast with single-turn, bandit-style RLHF
+The agent learns over many episodes when to turn the heater on or off
+- **State**: the current room temperature
+- **Action**: turn the heater on or off
+- **Reward**: positive when the room stays near the target temperature
+- **Policy**: the rule for deciding what to do next
+
+Example policy:
+
+$$
+\pi(a_t = \text{on} \mid s_t) =
+\begin{cases}
+1 & \text{if } s_t < 70^\circ\text{F} \\
+0 & \text{otherwise}
+\end{cases}
+$$
+
+|||
+
+![](assets/thermostat_equation.png)
+
+---
+
+<!-- columns: 45/55 -->
+<!-- cite-right: sutton2018reinforcement -->
+## CartPole: a standard RL task
+
+- **State**: cart position, velocity, pole angle, angular velocity
+$$s_t = (x_t,\; \dot{x}_t,\; \theta_t,\; \dot{\theta}_t)$$
+
+- **Action**: push the cart left or right
+$$a_t \in \{\text{left},\; \text{right}\}$$
+
+- **Reward**: +1 for every step the pole stays upright
+$$r(s_t, a_t) = \begin{cases} 1 & \text{if } |\theta_t| < 12° \text{ and } |x_t| < 2.4 \\ 0 & \text{otherwise (episode ends)} \end{cases}$$
+
+|||
+
+![](assets/cartpole.png)
+
+---
+
+<!-- columns: 45/55 -->
+<!-- cite-right: sutton2018reinforcement -->
+## CartPole: the dynamics
+
+Each action changes the physics of the system. The full state update:
+
+$$\ddot{x}_t = \frac{F + m_p l (\dot{\theta}_t^2 \sin\theta_t - \ddot{\theta}_t \cos\theta_t)}{m_c + m_p}$$
+
+$$\ddot{\theta}_t = \frac{g \sin\theta_t - \cos\theta_t \cdot \ddot{x}_t}{l}$$
+
+Where $m_c$ is the cart mass, $m_p$ is the pole mass, $l$ is the pole length, $g$ is gravity, and $F$ is the applied force.
+
+This is why classical RL is a **multi-step control problem** — each action changes the next state, and rewards accumulate across a trajectory.
+
+|||
+
+![](assets/cartpole.png)
 
 ---
 
@@ -455,7 +531,7 @@ Apply the same RL algorithms to LLMs when the answer can be checked directly. No
 | **Reward** | Environment | Learned (proxy) | Verifiable (exact) |
 | **State transitions** | Yes | No | No |
 | **Reward granularity** | Per-step | Per-response | Per-response |
-| **Primary challenge** | Explor-Exploit Trade-off | Over-optimization | Task generalization |
+| **Primary challenge** | Explore-Exploit Trade-off | Over-optimization | Task generalization |
 | **Example** | CartPole | Chat style tuning | Math reasoning |
 
 ---
@@ -482,11 +558,14 @@ Apply the same RL algorithms to LLMs when the answer can be checked directly. No
 
 ---
 
-## TODO: Early RLHF applications
+## Other prominent, early RLHF work on language models
 
-- Add summarization, WebGPT, GopherCite, and Sparrow
-- Make the history feel less like backflips directly to ChatGPT
-- Optional: add reward over-optimization / red teaming as side branches
+- **Stiennon et al. 2020** [@stiennon2020learning] — Learning to summarize from human feedback. Extended Ziegler et al. to long-form summarization with PPO
+- **WebGPT** [@nakano2021webgpt] — Trained a model to browse the web and answer questions using RLHF, with citations
+- **Anthropic HH** [@bai2022training] — Training a helpful and harmless assistant with RLHF. Introduced the "HH" dataset widely used in open research
+- **GopherCite** [@menick2022teaching] — Teaching language models to support answers with verified quotes (DeepMind)
+- **Sparrow** [@glaese2022improving] — Improving alignment of dialogue agents via targeted human judgements (DeepMind). Added rule-based constraints to RLHF
+- **InstructGPT** [@ouyang2022training] — The canonical three-step RLHF recipe that powered ChatGPT
 
 ---
 
@@ -674,14 +753,6 @@ $\beta$ controls the tradeoff between **improving behavior** and **staying close
 
 ---
 
-## TODO: Post-training tools and caveats
-
-- Rejection sampling as a named tool between SFT and RL
-- Reward models, RL, and DPO as different optimization choices
-- Short caveat on proxy objectives, over-optimization, and length bias
-
----
-
 <!-- rows: 27/73 -->
 <!-- cite-right: rafailov2024direct -->
 ## What if we optimize this more directly?
@@ -757,6 +828,51 @@ content: |
   - Achieves ~80% or more of the final performance
   - I used it to build models like Zephyr-Beta, Tülu 2/3, Olmo 2/3, etc.
 ```
+
+---
+
+## Rejection sampling: the simplest preference optimization
+
+Generate many completions, score them, fine-tune on the best:
+
+1. **Generate**: sample $N$ completions per prompt from the current model
+2. **Score**: pass each through the reward model $r_\phi(x, y)$
+3. **Select**: keep the highest-scoring completion(s)
+4. **Fine-tune**: standard SFT loss on the curated set
+
+$$\mathcal{L}_{\mathrm{RS}} = \mathcal{L}_{\mathrm{SFT}}\!\left(\theta;\; \{(x_i, y_i^{\star})\}\right) \quad \text{where } y_i^{\star} = \arg\max_{j} r_\phi(x_i, y_{i,j})$$
+
+Simple, stable, and widely used: Llama 2 [@touvron2023llama] and DeepSeek R1 [@guo2025deepseek] both include rejection sampling stages.
+
+---
+
+## The preference tuning landscape
+
+| | Rejection Sampling | Online RL (PPO) | DPO |
+|---|---|---|---|
+| **Mechanism** | Filter, then SFT | Generate, score, update policy | Direct gradient on preferences |
+| **Reward model** | Required | Required | Implicit (no separate RM) |
+| **On-policy data** | Yes (generate from current model) | Yes (generate each step) | No (fixed preference dataset) |
+| **Complexity** | Low | High | Low |
+
+All three optimize the same underlying objective — they differ in **how** they move the policy toward higher-reward completions. There is substantial debate on which of these is the best for final performance, which RL generally wins, but evidence is mixed.
+
+---
+
+<!-- cite-right: gao2023scaling -->
+## Caveat: proxy objectives and over-optimization
+
+The reward model is a **proxy**, not ground truth. Even a well-trained RM is only *correlated* with real user satisfaction.
+
+**Goodhart's Law**: "When a measure becomes a target, it ceases to be a good measure."
+
+What this looks like in practice:
+- **Reward hacking**: RM score keeps climbing, but actual quality degrades
+- **Verbosity bias**: longer responses score higher, so models become verbose
+- **Sycophancy**: model tells users what they want to hear rather than being accurate
+- **Over-refusal**: model refuses legitimate queries (e.g. "how to kill a linux process")
+
+The KL penalty $\beta$ is the main defense — it limits how far the policy can drift from the reference model. But over-optimization is a **fundamental tension** in all preference-based training.
 
 ---
 
@@ -1073,16 +1189,6 @@ content: |
   - rlhfbook.com
   - Shared references and future lecture decks live here
 ```
-
----
-
-## Placeholders to add
-
-- Why RLHF is stronger than plain SFT: response-level, contrastive supervision
-- Proxy objectives, over-optimization, and length bias
-- Pre-ChatGPT applications: summarization, WebGPT, GopherCite, Sparrow
-- Rejection sampling as a named post-training tool
-- Tighter historical bridge from RLHF to broader post-training
 
 ---
 
