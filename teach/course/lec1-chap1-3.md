@@ -45,7 +45,7 @@ Core properties:
 
 |||
 
-![The original model architecture diagram for the Transformer. 2017.](../SALA-2026/assets/transformer.webp)
+![The original model architecture diagram for the Transformer. 2017.](assets/transformer.webp)
 <!-- cite-right: Vaswani2017AttentionIA -->
 
 ---
@@ -60,7 +60,7 @@ Modern language models:
 
 |||
 
-![The original model architecture diagram for the Transformer. 2017.](../SALA-2026/assets/transformer.webp)
+![The original model architecture diagram for the Transformer. 2017.](assets/transformer.webp)
 <!-- cite-right: Vaswani2017AttentionIA -->
 
 ---
@@ -72,7 +72,7 @@ Modern language models:
 
 |||
 
-![The original model architecture diagram for the Transformer. 2017.](../SALA-2026/assets/transformer.webp)
+![The original model architecture diagram for the Transformer. 2017.](assets/transformer.webp)
 <!-- cite-right: Vaswani2017AttentionIA -->
 
 ---
@@ -85,7 +85,7 @@ Modern language models:
 
 |||
 
-![The language model architecture for GPT-1. 2018.](../SALA-2026/assets/gpt-1.png)
+![The language model architecture for GPT-1. 2018.](assets/gpt-1.png)
 <!-- cite-left: radford2018gpt, peters2018elmo, devlin2018bert -->
 
 ---
@@ -99,7 +99,7 @@ Modern language models:
 
 ===
 
-![The famous scaling laws plots. 2020.](../SALA-2026/assets/scaling-laws.png)
+![The famous scaling laws plots. 2020.](assets/scaling-laws.png)
 <!-- cite-right: radford2019gpt2, kaplan2020scaling -->
 
 ---
@@ -114,7 +114,7 @@ Modern language models:
 
 |||
 
-![GPT-3 was known for expanding the idea of in-context learning and few-shot prompting. Screenshot from the paper.](../SALA-2026/assets/few-shot.png)
+![GPT-3 was known for expanding the idea of in-context learning and few-shot prompting. Screenshot from the paper.](assets/few-shot.png)
 <!-- cite-left: brown2020gpt3 -->
 
 ---
@@ -130,7 +130,7 @@ Modern language models:
 
 |||
 
-![](../SALA-2026/assets/stochastic-parrots.png)
+![](assets/stochastic-parrots.png)
 <!-- cite-right: bender2021stochastic -->
 
 ---
@@ -147,7 +147,7 @@ Modern language models:
 
 |||
 
-![](../SALA-2026/assets/chatgpt.webp)
+![](assets/chatgpt.webp)
 <!-- cite-right: openai2022chatgpt -->
 
 ---
@@ -165,7 +165,7 @@ Modern language models:
 
 |||
 
-![An image where Nvidia CEO Jensen Huang supposedly leaked that GPT-4 was an ~2T parameter MoE model.](../SALA-2026/assets/jensen-gpt4.jpeg)
+![An image where Nvidia CEO Jensen Huang supposedly leaked that GPT-4 was an ~2T parameter MoE model.](assets/jensen-gpt4.jpeg)
 <!-- cite-right: openai2023gpt4 -->
 
 ---
@@ -184,7 +184,7 @@ Modern language models:
 
 |||
 
-![The famous test-time scaling plot from OpenAI's o1 announcement.](../SALA-2026/assets/o1-test-time.png)
+![The famous test-time scaling plot from OpenAI's o1 announcement.](assets/o1-test-time.png)
 <!-- cite-right: openai2024o1 -->
 
 ---
@@ -204,7 +204,7 @@ Modern language models:
 
 |||
 
-![](../SALA-2026/assets/claude-code.png)
+![](assets/claude-code.png)
 <!-- cite-right: openai2025o3, anthropic2025claudecode, openai2025agents -->
 
 ---
@@ -222,7 +222,7 @@ Modern language models:
 
 |||
 
-![](../SALA-2026/assets/pretraining_next_token_tikz.png)
+![](assets/pretraining_next_token_tikz.png)
 
 ---
 
@@ -345,7 +345,7 @@ $$J(\pi) = \mathbb{E}_{\tau \sim \pi}\!\left[\sum_{t=0}^{T} \gamma^t r(s_t, a_t)
 
 |||
 
-![](../SALA-2026/assets/rl.png)
+![](assets/rl.png)
 
 ---
 
@@ -366,7 +366,7 @@ Reinforcement learning basics:
 
 |||
 
-![](../SALA-2026/assets/rl.png)
+![](assets/rl.png)
 
 ---
 
@@ -457,11 +457,11 @@ RLHF lets us optimize for behavior we can **evaluate** even when we cannot easil
 <!-- cite-right: christiano2017 -->
 ## Which is the better backflip?
 
-![](../SALA-2026/assets/christiano-backflip-human.webp)
+![](assets/christiano-backflip-human.webp)
 
 |||
 
-![](../SALA-2026/assets/christiano-backflip-reward.webp)
+![](assets/christiano-backflip-reward.webp)
 
 ---
 
@@ -475,7 +475,7 @@ RLHF lets us optimize for behavior we can **evaluate** even when we cannot easil
 
 |||
 
-![A recreation of the system diagram from Christiano et al. 2017.](../SALA-2026/assets/rlhf_schematic_tikz.png)
+![A recreation of the system diagram from Christiano et al. 2017.](assets/rlhf_schematic_tikz.png)
 
 ---
 
@@ -483,18 +483,18 @@ RLHF lets us optimize for behavior we can **evaluate** even when we cannot easil
 <!-- cite-right: christiano2017 -->
 ## Left: Human feedback; Right: Hand-designed reward function
 
-![](../SALA-2026/assets/christiano-backflip-human.webp)
+![](assets/christiano-backflip-human.webp)
 
 |||
 
-![](../SALA-2026/assets/christiano-backflip-reward.webp)
+![](assets/christiano-backflip-reward.webp)
 
 ---
 
 <!-- rows: 60/40 -->
 ## The path to modern RLHF
 
-![](../SALA-2026/assets/rlhf_timeline_tikz.png)
+![](assets/rlhf_timeline_tikz.png)
 
 ===
 
@@ -583,7 +583,7 @@ $$J(\pi) = \mathbb{E}\left[ r_\theta(x, y) \right] - \beta \, D_{\text{KL}}\!\le
 
 |||
 
-![](../SALA-2026/assets/rlhf.png)
+![](assets/rlhf.png)
 
 ---
 
@@ -593,7 +593,7 @@ $$J(\pi) = \mathbb{E}\left[ r_\theta(x, y) \right] - \beta \, D_{\text{KL}}\!\le
 ## InstructGPT's 3-step RLHF recipe
 
 
-![The 3-step RLHF process figure from InstructGPT, which became "the standard" approach to RLHF for a few years.](../SALA-2026/assets/instructgpt.jpg)
+![The 3-step RLHF process figure from InstructGPT, which became "the standard" approach to RLHF for a few years.](assets/instructgpt.jpg)
 
 
 ---
@@ -727,7 +727,7 @@ $$
 
 |||
 
-![](../SALA-2026/assets/rlhf-overview.png)
+![](assets/rlhf-overview.png)
 
 ---
 
@@ -910,7 +910,7 @@ An overall trend is to use far more compute across all the stages, but shifting 
 <!-- rows: 60/40 -->
 ## The early days: InstructGPT
 
-![](../SALA-2026/assets/rlhf-basic.png)
+![](assets/rlhf-basic.png)
 
 ===
 
@@ -924,7 +924,7 @@ Early on, RLHF had a well-documented, simple enough approach.
 <!-- rows: 50/50 -->
 ## From RLHF to post-training
 
-![](../SALA-2026/assets/rlhf-complex.png)
+![](assets/rlhf-complex.png)
 
 ===
 
@@ -1076,7 +1076,7 @@ Apply the same RL algorithms to LLMs when the answer can be checked directly. No
 
 |||
 
-![](../SALA-2026/assets/rlvr-system.png)
+![](assets/rlvr-system.png)
 
 ---
 
@@ -1103,7 +1103,7 @@ Apply the same RL algorithms to LLMs when the answer can be checked directly. No
 <!-- img-align: center -->
 <!-- cite-right: openai2024o1 -->
 
-![](../SALA-2026/assets/o1.webp)
+![](assets/o1.webp)
 
 ---
 
@@ -1120,7 +1120,7 @@ A log-linear relationship between inference compute (number of tokens generated)
 
 |||
 
-![](../SALA-2026/assets/o1-test-time.png)
+![](assets/o1-test-time.png)
 
 ---
 
@@ -1138,7 +1138,7 @@ The third place of scaling is at inference (no weight updates there).
 
 |||
 
-![](../SALA-2026/assets/o1-train-time.png)
+![](assets/o1-train-time.png)
 
 
 ---
@@ -1148,7 +1148,7 @@ The third place of scaling is at inference (no weight updates there).
 <!-- img-align: center -->
 <!-- cite-right: cursor2026composer15 -->
 
-![](../SALA-2026/assets/cursor-composer-1_5-scaling.png)
+![](assets/cursor-composer-1_5-scaling.png)
 
 ---
 
@@ -1157,7 +1157,7 @@ The third place of scaling is at inference (no weight updates there).
 <!-- img-align: center -->
 <!-- cite-right: guo2025deepseek -->
 
-![](../SALA-2026/assets/deepseek-r1-zero-figure1-training.png)
+![](assets/deepseek-r1-zero-figure1-training.png)
 
 ---
 
@@ -1173,7 +1173,7 @@ One of the few "fully open" large-scale RL runs to date.
 
 |||
 
-![](../SALA-2026/assets/olmo31-extended-rl.jpeg)
+![](assets/olmo31-extended-rl.jpeg)
 
 ---
 
