@@ -4,7 +4,7 @@ author: "Nathan Lambert"
 fonts:
   heading: "Rubik"
   body: "Poppins"
-bibliography: ../SALA-2026/refs.bib
+bibliography: refs.bib
 figure_captions: true
 footer:
   left: "rlhfbook.com"
