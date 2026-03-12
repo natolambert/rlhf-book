@@ -205,6 +205,31 @@ The full template also enforces role alternation (`user`/`assistant`/`user`/...)
 
 ---
 
+## The pain of Jinja chat templates
+
+<!-- TODO: Nathan rant slide — Jinja templates + tool use + multi-turn + function calling = nightmare -->
+
+---
+
+## An alternative: OpenAI's Harmony format
+
+OpenAI released **Harmony** alongside gpt-oss, replacing Jinja with a Rust-based renderer that separates output into **channels**:
+
+- `analysis` — internal reasoning / chain-of-thought (hidden from user)
+- `commentary` — tool calls go here
+- `final` — user-facing response
+
+```
+<|channel|>analysis<|message|>I need to check the weather...
+<|channel|>commentary to=functions.get_weather
+<|constrain|>json<|message|>{"location":"SF"}<|call|>
+<|channel|>final<|message|>It's 65°F and sunny in San Francisco.
+```
+
+Why? Jinja can't cleanly handle tool calls (`tojson` escaping, ambiguous boundaries). Harmony moves the complexity into a dedicated library (`openai-harmony` on PyPI) instead of a template string.
+
+---
+
 ## Chat templates vary across models
 
 <!-- cite-right: tunstall2023zephyr, lambert2024t -->
