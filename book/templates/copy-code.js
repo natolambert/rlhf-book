@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
-    var latex = formatDisplayMath(block.textContent);
+    var latex = formatDisplayMath(block.dataset.latexSource || block.textContent);
     if (!latex) {
       return;
     }
