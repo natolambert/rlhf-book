@@ -39,21 +39,19 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  function normalizeDisplayMath(text) {
+  function formatDisplayMath(text) {
     var trimmed = text.replace(/\u00a0/g, ' ').trim();
     if (!trimmed) {
       return '';
     }
 
     if (trimmed.slice(0, 2) === '\\[' && trimmed.slice(-2) === '\\]') {
-      return trimmed.slice(2, -2).trim();
+      trimmed = trimmed.slice(2, -2).trim();
+    } else if (trimmed.slice(0, 2) === '$$' && trimmed.slice(-2) === '$$') {
+      trimmed = trimmed.slice(2, -2).trim();
     }
 
-    if (trimmed.slice(0, 2) === '$$' && trimmed.slice(-2) === '$$') {
-      return trimmed.slice(2, -2).trim();
-    }
-
-    return trimmed;
+    return '$$\n' + trimmed + '\n$$';
   }
 
   var blocks = document.querySelectorAll('pre');
@@ -83,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
-    var latex = normalizeDisplayMath(block.textContent);
+    var latex = formatDisplayMath(block.textContent);
     if (!latex) {
       return;
     }
