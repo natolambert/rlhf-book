@@ -55,7 +55,7 @@ To train a reward model, we must formulate a loss function that satisfies the ab
 In practice, this is done by converting a language model into a model that outputs a scalar score, often via a small linear head that produces a single logit.
 Given a prompt $x$ and two sampled completions $y_1$ and $y_2$, we score both with a reward model $r_\theta$ and write the conditional scores as $r_\theta(y_i \mid x)$.
 
-The probability of success for a given reward model in a pairwise comparison becomes:
+The probability that the reward model assigns to $y_1$ being preferred to $y_2$ becomes:
 
 $$P(y_1 > y_2 \mid x) = \frac{\exp\left(r_\theta(y_1 \mid x)\right)}{\exp\left(r_\theta(y_1 \mid x)\right) + \exp\left(r_\theta(y_2 \mid x)\right)}.$$ {#eq:bradterryrm}
 
@@ -132,7 +132,7 @@ class BradleyTerryRewardModel(nn.Module):
     def _sequence_rep(self, hidden, attention_mask):
         """
         Get a single vector per sequence to score.
-        Default: last non-padding token (EOS token); if no mask, last token.
+        Default: last token in the actual sequence (often the EOS token), ignoring any batch padding; if no mask, last token.
         hidden: (batch, seq_len, hidden_size)
         attention_mask: (batch, seq_len)
         """
@@ -355,7 +355,7 @@ class ProcessRewardModel(nn.Module):
     def forward(self, input_ids, attention_mask=None, labels=None):
         """
         The inputs are tokenizer prompts and completions, where the end of a 
-         "reasoning step" is denoted by another non-padding token. 
+         "reasoning step" is denoted by another non-padding token.
         labels will be a list of labels, True, False, and Neutral (3 labels) which
          will be predicted by the model.
         """
