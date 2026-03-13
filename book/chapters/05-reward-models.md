@@ -132,7 +132,7 @@ class BradleyTerryRewardModel(nn.Module):
     def _sequence_rep(self, hidden, attention_mask):
         """
         Get a single vector per sequence to score.
-        Default: last token in the actual sequence (often the EOS token), ignoring any batch padding; if no mask, last token.
+        Default: last non-padding token (EOS token); if no mask, last token.
         hidden: (batch, seq_len, hidden_size)
         attention_mask: (batch, seq_len)
         """
@@ -354,8 +354,9 @@ class ProcessRewardModel(nn.Module):
 
     def forward(self, input_ids, attention_mask=None, labels=None):
         """
-        The inputs are tokenizer prompts and completions, where the end of a 
-         "reasoning step" is denoted by another non-padding token.
+        The inputs are tokenized prompts and completions, where the end of a
+         "reasoning step" is denoted by a designated separator token such as a
+         newline or other special marker rather than batch padding.
         labels will be a list of labels, True, False, and Neutral (3 labels) which
          will be predicted by the model.
         """
