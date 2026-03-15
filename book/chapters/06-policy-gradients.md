@@ -1202,7 +1202,7 @@ To monitor how much the PPO regularization is impacting updates in RLHF, one can
 This is a useful proxy for how often PPO's regularizer may be active, but not every such sample has zero gradient: the surrogate becomes flat only when the clipped branch is selected, such as positive-advantage samples with ratios above $1+\varepsilon$ or negative-advantage samples with ratios below $1-\varepsilon$.
 
 In practice with language models, algorithms like PPO and GRPO are often run with only one gradient step per batch, which means that the PPO-native regularization is never applied (as clipping can only occur within a batch when the policy changes substantially) and the KL distance penalties predominate.
-However, this is not universal. For example, DAPO uses 16 gradient steps per generation [@yu2025dapo], and Tülu 3 uses 4 PPO update iterations per batch for 8B and 70B models but reduces to 1 for 405B to maintain training stability [@lambert2024t].
+However, this is not universal. For example, DAPO uses 16 gradient steps per batch [@yu2025dapo], and Tülu 3 uses 4 PPO update iterations per batch for 8B and 70B models but reduces to 1 for 405B to maintain training stability [@lambert2024t].
 
 ### Further Reading
 
