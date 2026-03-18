@@ -17,6 +17,7 @@ custom_css: |
   }
   .slide--title-sidebar h1 {
     font-size: 2.5em;
+    letter-spacing: 0;
   }
 ---
 

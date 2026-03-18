@@ -17,13 +17,14 @@ custom_css: |
   }
   .slide--title-sidebar h1 {
     font-size: 2.5em;
+    letter-spacing: 0;
   }
 ---
 
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
 
-# Lecture 2: IFT, Reward Models, & Rejection Sampling
+# Lecture 2: IFT, Reward Modeling, & Rejection Sampling
 
 <div class="colloquium-title-eyebrow">rlhfbook.com</div>
 
@@ -31,14 +32,14 @@ custom_css: |
 <p class="colloquium-title-name">Nathan Lambert</p>
 </div>
 
-<p class="colloquium-title-note">Course on RLHF and post-training</p>
+<p class="colloquium-title-note">Course on RLHF and post-training. Chapters 4, 5 & 9 </p>
 
 ---
 
 <!-- rows: 50/50 -->
 ## Lecture 2: IFT, Reward Models, & Rejection Sampling
 
-<!-- row-columns: 34/33/33 -->
+<!-- row-columns: 32/36/32 -->
 
 ```box
 title: Overview
@@ -54,7 +55,7 @@ content: |
 
 ```box
 title: Core Training Pipeline
-tone: muted
+tone: accent
 compact: true
 content: |
   4. **Instruction Tuning**
@@ -79,7 +80,7 @@ content: |
 
 ===
 
-<!-- row-columns: 34/33/33 -->
+<!-- row-columns: 32/36/32 -->
 
 ```box
 title: Practical Considerations
