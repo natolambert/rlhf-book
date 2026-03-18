@@ -1052,7 +1052,7 @@ content: |
 
 |||
 
-Full lecture slides coming to [rlhfbook.com/slides](https://rlhfbook.com/slides) and YouTube @natolambert!
+Full lecture slides coming to [rlhfbook.com/course](https://rlhfbook.com/course) and YouTube @natolambert!
 
 ---
 
