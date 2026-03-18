@@ -596,6 +596,10 @@ thead {
 .code-wrapper {
   position: relative;
 }
+.math-wrapper {
+  position: relative;
+  display: block;
+}
 .copy-code-button {
   position: absolute;
   top: 8px;
@@ -614,12 +618,42 @@ thead {
 .code-wrapper:hover .copy-code-button {
   opacity: 0.7;
 }
+.copy-math-button {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  padding: 2px 5px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #666;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease-in, color 0.15s ease-in, border-color 0.15s ease-in;
+  line-height: 1;
+  z-index: 2;
+}
+.math-wrapper:hover .copy-math-button {
+  opacity: 0.55;
+}
 .copy-code-button:hover {
   opacity: 1 !important;
   border-color: #bbb;
   color: #333;
 }
+.copy-math-button:hover,
+.copy-math-button:focus-visible {
+  opacity: 1 !important;
+  border-color: #d0d0d0;
+  color: #333;
+}
 .copy-code-button.copied {
+  opacity: 1 !important;
+  color: #22863a;
+  border-color: #22863a;
+}
+.copy-math-button.copied {
   opacity: 1 !important;
   color: #22863a;
   border-color: #22863a;

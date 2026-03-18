@@ -32,7 +32,7 @@ custom_css: |
 <p class="colloquium-title-name">Nathan Lambert</p>
 </div>
 
-<p class="colloquium-title-note">Course on RLHF and post-training</p>
+<p class="colloquium-title-note">Course on RLHF and post-training. Chapters 1-3</p>
 
 ---
 
@@ -355,7 +355,7 @@ $$J(\pi) = \mathbb{E}_{\tau \sim \pi}\!\left[\sum_{t=0}^{T} \gamma^t r(s_t, a_t)
 ## RL in plain language
 
 Reinforcement learning basics:
-- Reinforcement learning is **trial-and-error learning**
+- Reinforcement learning is **trial-and-error learning**  
   Balancing exploration and exploitation across long-term rewards
 - **State**: the current situation the agent is in
 - **Action**: what the agent does next

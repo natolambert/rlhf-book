@@ -55,7 +55,7 @@ To train a reward model, we must formulate a loss function that satisfies the ab
 In practice, this is done by converting a language model into a model that outputs a scalar score, often via a small linear head that produces a single logit.
 Given a prompt $x$ and two sampled completions $y_1$ and $y_2$, we score both with a reward model $r_\theta$ and write the conditional scores as $r_\theta(y_i \mid x)$.
 
-The probability of success for a given reward model in a pairwise comparison becomes:
+The probability that the reward model assigns to $y_1$ being preferred to $y_2$ becomes:
 
 $$P(y_1 > y_2 \mid x) = \frac{\exp\left(r_\theta(y_1 \mid x)\right)}{\exp\left(r_\theta(y_1 \mid x)\right) + \exp\left(r_\theta(y_2 \mid x)\right)}.$$ {#eq:bradterryrm}
 
@@ -354,8 +354,9 @@ class ProcessRewardModel(nn.Module):
 
     def forward(self, input_ids, attention_mask=None, labels=None):
         """
-        The inputs are tokenizer prompts and completions, where the end of a 
-         "reasoning step" is denoted by another non-padding token. 
+        The inputs are tokenized prompts and completions, where the end of a
+         "reasoning step" is denoted by a designated separator token such as a
+         newline or other special marker rather than batch padding.
         labels will be a list of labels, True, False, and Neutral (3 labels) which
          will be predicted by the model.
         """
