@@ -43,6 +43,26 @@ $for(css)$
   <link rel="stylesheet" href="$css$" />
 $endfor$
 $if(math)$
+  <script>
+    window.MathJax = window.MathJax || {};
+    window.MathJax.startup = window.MathJax.startup || {};
+    (function() {
+      var originalReady = window.MathJax.startup.ready;
+      window.MathJax.startup.ready = function() {
+        document.querySelectorAll('.math.display').forEach(function(node) {
+          if (!node.dataset.latexSource) {
+            node.dataset.latexSource = node.textContent;
+          }
+        });
+
+        if (typeof originalReady === 'function') {
+          return originalReady();
+        }
+
+        return MathJax.startup.defaultReady();
+      };
+    })();
+  </script>
   $math$
   <style>
     /* Target all possible MathJax display containers */
@@ -68,6 +88,7 @@ $endfor$
 <script src="table-scroll.js" defer></script>
 <script src="citation-tooltips.js" defer></script>
 <script src="copy-code.js" defer></script>
+<script src="view-source.js" defer></script>
 <script src="conversation.js" defer></script>
 
 <!-- Privacy-friendly analytics by Plausible -->

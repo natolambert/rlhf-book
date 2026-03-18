@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+
+  <meta property="og:image" content="https://raw.githubusercontent.com/natolambert/rlhf-book/main/assets/rlhf-book-share.png" />
+  <meta property="og:image:width" content="1920" />
+  <meta property="og:image:height" content="1080" />
+  <meta property="og:title" content="Slides | RLHF Book by Nathan Lambert" />
+  <meta property="og:description" content="Talks and lecture slides on RLHF and post-training." />
+  <meta property="og:url" content="https://rlhfbook.com/slides" />
+
+  <title>Slides | RLHF Book by Nathan Lambert</title>
+
+  <link rel="stylesheet" href="style.css" />
+  <link href="/pagefind/pagefind-ui.css" rel="stylesheet">
+  <script src="/pagefind/pagefind-ui.js"></script>
+  <script src="nav.js" defer></script>
+
+  <style>
+    #title-block-header {
+      text-align: center;
+    }
+
+    /* Table of contents */
+    .slides-toc {
+      margin: 1.5em 0 2em;
+    }
+
+    .slides-toc h2 {
+      font-size: 1.1em;
+      margin-bottom: 0.5em;
+    }
+
+    .slides-toc ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .slides-toc li {
+      padding: 0.3em 0;
+    }
+
+    .slides-toc a {
+      color: #0645ad;
+    }
+
+    .slides-toc .toc-meta {
+      color: #888;
+      font-size: 0.9em;
+    }
+
+    .slides-section h2 {
+      border-bottom: 3px solid #0645ad;
+      padding-bottom: 0.3em;
+      margin-top: 2em;
+      margin-bottom: 1em;
+    }
+
+    /* Year sections */
+    .year-section h2 {
+      border-bottom: 3px solid #0645ad;
+      padding-bottom: 0.3em;
+      margin-top: 2em;
+      margin-bottom: 1em;
+    }
+
+    /* Talk entry — single column, full width */
+    .talk-entry {
+      border: 1px solid #e2e2e2;
+      border-radius: 0.35em;
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(17, 17, 17, 0.06);
+      overflow: hidden;
+      margin-bottom: 2em;
+    }
+
+    /* Interactive slide viewer */
+    .slide-viewer {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%; /* 16:9 */
+      overflow: hidden;
+      background: #1a1a1a;
+    }
+
+    .slide-viewer iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1280px;
+      height: 720px;
+      transform-origin: top left;
+      border: none;
+    }
+
+
+    /* Info bar below the viewer */
+    .talk-info {
+      padding: 1em 1.5em;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.75em;
+      border-top: 1px solid #e2e2e2;
+    }
+
+    .talk-info-left h3 {
+      margin: 0 0 0.25em 0;
+      font-size: 1.1em;
+    }
+
+    .talk-info-left .meta {
+      font-size: 0.85em;
+      color: #666;
+      margin: 0;
+    }
+
+    .talk-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.6em;
+      flex-shrink: 0;
+    }
+
+    .talk-actions .tag {
+      display: inline-block;
+      font-size: 0.8em;
+      padding: 0.2em 0.6em;
+      border-radius: 0.25em;
+      background: rgba(6, 69, 173, 0.08);
+      color: #0645ad;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4em;
+      font-size: 0.85em;
+      padding: 0.35em 0.7em;
+      border-radius: 0.3em;
+      border: 1px solid #0645ad;
+      background: rgba(6, 69, 173, 0.1);
+      color: #0645ad;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background: rgba(6, 69, 173, 0.18);
+    }
+
+    .course-list {
+      display: grid;
+      gap: 1em;
+    }
+
+    .course-entry {
+      border: 1px solid #e2e2e2;
+      border-radius: 0.35em;
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(17, 17, 17, 0.06);
+      padding: 1.1em 1.3em;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1em;
+      flex-wrap: wrap;
+    }
+
+    .course-entry h3 {
+      margin: 0 0 0.2em 0;
+      font-size: 1.05em;
+    }
+
+    .course-entry .meta {
+      font-size: 0.9em;
+      color: #666;
+      margin: 0;
+    }
+  </style>
+
+  <!-- Privacy-friendly analytics by Plausible -->
+  <script async src="https://plausible.io/js/pa-Rr3_iGtVZcPHhxkdbyDIb.js"></script>
+  <script>
+    window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+    plausible.init()
+  </script>
+</head>
+<body>
+  <header id="title-block-header">
+    <h1 class="title"><a href="https://rlhfbook.com/" style="color: inherit; text-decoration: none;">Reinforcement Learning from Human Feedback</a></h1>
+    <p class="subtitle">A short introduction to RLHF and post-training focused on language models.</p>
+    <p class="author">Nathan Lambert</p>
+    <navigation-dropdown expanded="false"></navigation-dropdown>
+  </header>
+
+  <h1>Slides</h1>
+
+  <p>
+    Talks and lectures based on <a href="https://rlhfbook.com">the RLHF Book</a>.
+    Click into a deck to navigate through the slides, or open in full screen.
+  </p>
+
+  <nav class="slides-toc">
+    <h2>Contents</h2>
+    <ul>
+      <li>
+        <a href="#course">Course</a>
+        <span class="toc-meta"> &mdash; lecture slides in order</span>
+      </li>
+      <li>
+        <a href="#talks-2026">Talks</a>
+        <span class="toc-meta"> &mdash; invited talks and presentations</span>
+      </li>
+    </ul>
+  </nav>
+
+  <section class="slides-section" id="course">
+    <h2>Course</h2>
+
+    <div class="course-list">
+      <div class="course-entry" id="lecture-1-overview">
+        <div>
+          <h3>Lecture 1: Overview</h3>
+          <p class="meta">Chapters 1-3 &middot; Foundations of RLHF and post-training</p>
+        </div>
+        <div class="talk-actions">
+          <a href="teach/course/lec1-chap1-3/slides.pdf" class="btn" download>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            PDF
+          </a>
+          <a href="teach/course/lec1-chap1-3/index.html" class="btn" target="_blank">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/><path d="M21 14v5a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h5"/>
+            </svg>
+            Slides
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="year-section" id="talks-2026">
+    <h2>2026</h2>
+
+    <div class="talk-entry" id="sala-2026">
+      <div class="slide-viewer">
+        <iframe src="teach/SALA-2026/index.html" loading="lazy"></iframe>
+      </div>
+      <div class="talk-info">
+        <div class="talk-info-left">
+          <h3>An Introduction to Reinforcement Learning from Human Feedback and Post-training</h3>
+          <p class="meta">SALA 2026 &middot; Quito, Ecuador &middot; March 2026</p>
+        </div>
+        <div class="talk-actions">
+          <span class="tag">Invited Talk</span>
+          <a href="teach/SALA-2026/slides.pdf" class="btn" download>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            PDF
+          </a>
+          <a href="teach/SALA-2026/index.html" class="btn" target="_blank">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/><path d="M21 14v5a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h5"/>
+            </svg>
+            Full Screen
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="citation" style="padding: 0 20px;">
+    <h4 style="text-align: left; font-weight: normal;">Citation</h4>
+    <p>If you found this useful for your research, please cite it!</p>
+    <pre style="text-align: left; font-size: small; color: #888;">@book{rlhf2026lambert,
+  author = {Nathan Lambert},
+  title = {Reinforcement Learning from Human Feedback},
+  year = {2026},
+  publisher = {Online},
+  url = {https://rlhfbook.com}
+}</pre>
+  </section>
+  <footer style="padding: 20px; text-align: center; margin-top: 2em;">
+    <div style="display: flex; justify-content: center; gap: 20px; align-items: center;">
+      <a href="https://github.com/natolambert/rlhf-book" target="_blank">
+        <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="GitHub" style="width: 40px; height: 40px;">
+      </a>
+      <a href="https://arxiv.org/abs/2504.12501" target="_blank">
+        <img src="assets/arxiv.svg" alt="arXiv" style="width: 40px; height: 40px;">
+      </a>
+      <a href="https://www.manning.com/books/the-rlhf-book" target="_blank">
+        <img src="assets/manning.svg" alt="Manning" style="width: 40px; height: 40px;">
+      </a>
+    </div>
+    <p>&copy; 2024-2026 Nathan Lambert &middot; <a href="https://rlhfbook.com" style="color: #888; text-decoration: none;">rlhfbook.com</a></p>
+  </footer>
+
+  <script>
+    // Scale iframes to fit their containers
+    function scaleViewers() {
+      document.querySelectorAll('.slide-viewer').forEach(container => {
+        const iframe = container.querySelector('iframe');
+        if (!iframe) return;
+        const scale = container.offsetWidth / 1280;
+        iframe.style.transform = 'scale(' + scale + ')';
+      });
+    }
+    window.addEventListener('load', scaleViewers);
+    window.addEventListener('resize', scaleViewers);
+
+  </script>
+</body>
+</html>

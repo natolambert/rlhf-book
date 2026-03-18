@@ -85,7 +85,7 @@ ECHO_BUILT = @echo "$@ was built\n"
 # Basic actions
 ####################################################################################################
 
-.PHONY: all book clean epub html pdf docx nested_html latex kindle rl-cheatsheet pagefind
+.PHONY: all book clean epub html pdf docx nested_html latex kindle rl-cheatsheet pagefind teach
 
 all:	book
 
@@ -105,7 +105,7 @@ $(info JS files found: $(JS_FILES))
 
 epub:	$(BUILD)/epub/$(OUTPUT_FILENAME).epub
 
-html:	nested_html $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html $(BUILD)/html/library.html
+html:	nested_html $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html $(BUILD)/html/library.html $(BUILD)/html/slides.html
 	
 pdf:	$(BUILD)/pdf/$(OUTPUT_FILENAME).pdf
 
@@ -151,6 +151,7 @@ $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html:	$(HTML_DEPENDENCIES)
 	$(COPY_CMD) book/templates/table-scroll.js $(BUILD)/html/c/
 	$(COPY_CMD) book/templates/citation-tooltips.js $(BUILD)/html/c/
 	$(COPY_CMD) book/templates/copy-code.js $(BUILD)/html/c/
+	cp book/templates/view-source.js $(BUILD)/html/c/
 	$(COPY_CMD) book/templates/conversation.js $(BUILD)/html/c/
 	cp book/templates/style.css $(BUILD)/html/style.css || echo "Failed to copy style.css"
 	@mkdir -p $(BUILD)/html/data
@@ -160,6 +161,10 @@ $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html:	$(HTML_DEPENDENCIES)
 $(BUILD)/html/library.html: book/templates/library.html
 	$(MKDIR_CMD) $(BUILD)/html
 	cp book/templates/library.html $@
+
+$(BUILD)/html/slides.html: book/templates/slides.html
+	$(MKDIR_CMD) $(BUILD)/html
+	cp book/templates/slides.html $@
 
 rl-cheatsheet: $(BUILD)/html/rl-cheatsheet/inside_cover_back.pdf
 
@@ -258,6 +263,7 @@ files:
 	cp ./book/templates/citation-tooltips.js $(BUILD)/html/c/ || echo "Failed to copy citation-tooltips.js to $(BUILD)/html/c/"
 	cp ./book/templates/copy-code.js $(BUILD)/html/ || echo "Failed to copy copy-code.js to $(BUILD)/html/"
 	cp ./book/templates/copy-code.js $(BUILD)/html/c/ || echo "Failed to copy copy-code.js to $(BUILD)/html/c/"
+	cp ./book/templates/view-source.js $(BUILD)/html/c/ || echo "Failed to copy view-source.js to $(BUILD)/html/c/"
 	cp ./book/templates/conversation.js $(BUILD)/html/ || echo "Failed to copy conversation.js to $(BUILD)/html/"
 	cp ./book/templates/conversation.js $(BUILD)/html/c/ || echo "Failed to copy conversation.js to $(BUILD)/html/c/"
 	mkdir -p $(BUILD)/html/rl-cheatsheet
@@ -268,3 +274,42 @@ files:
 
 pagefind: html files
 	npx --yes pagefind --site $(BUILD)/html --glob "c/**/*.html"
+
+####################################################################################################
+# Teaching slides (built with colloquium)
+####################################################################################################
+
+# Find talk directories by looking for talk.md or slides.md source files
+TEACH_TALK_SOURCES = $(wildcard teach/*/talk.md) $(wildcard teach/*/slides.md)
+TEACH_DIRS = $(sort $(patsubst teach/%/,%,$(dir $(TEACH_TALK_SOURCES))))
+COURSE_LECTURE_SOURCES = $(wildcard teach/course/*.md)
+COURSE_LECTURE_NAMES = $(basename $(notdir $(COURSE_LECTURE_SOURCES)))
+
+# Map from dir name to its .md source file (prefer talk.md over slides.md)
+teach_source = $(firstword $(wildcard teach/$(1)/talk.md teach/$(1)/slides.md))
+
+teach: $(foreach d,$(TEACH_DIRS),teach-$(d)) course-lectures
+
+course-lectures: $(foreach l,$(COURSE_LECTURE_NAMES),course-lecture-$(l))
+
+teach-%:
+	@mkdir -p $(BUILD)/html/teach/$*
+	uv run colloquium build $(call teach_source,$*) -o $(BUILD)/html/teach/$*/
+	@# Rename output to index.html so the directory URL works
+	@cd $(BUILD)/html/teach/$* && for f in *.html; do [ "$$f" != "index.html" ] && mv "$$f" index.html; done || true
+	@# Export PDF
+	uv run colloquium export $(call teach_source,$*) -o $(BUILD)/html/teach/$*/slides.pdf
+	@# Copy talk assets (images) if present
+	@test -d teach/$*/assets && cp -r teach/$*/assets $(BUILD)/html/teach/$*/ || true
+	@echo "Built teach/$*"
+
+course-lecture-%:
+	@mkdir -p $(BUILD)/html/teach/course/$*
+	uv run colloquium build teach/course/$*.md -o $(BUILD)/html/teach/course/$*/
+	@# Rename output to index.html so the directory URL works
+	@cd $(BUILD)/html/teach/course/$* && for f in *.html; do [ "$$f" != "index.html" ] && mv "$$f" index.html; done || true
+	@# Export PDF
+	uv run colloquium export teach/course/$*.md -o $(BUILD)/html/teach/course/$*/slides.pdf
+	@# Copy course assets if present
+	@test -d teach/course/assets && cp -r teach/course/assets $(BUILD)/html/teach/course/$*/ || true
+	@echo "Built teach/course/$*"
