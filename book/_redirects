@@ -68,3 +68,6 @@
 # 19-character -> 17-product
 /c/19-character /c/17-product 301
 /c/19-character.html /c/17-product 301
+
+# Slides page renamed to Course (March 2026)
+/slides /course 301
