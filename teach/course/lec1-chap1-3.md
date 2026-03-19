@@ -8,7 +8,7 @@ bibliography: refs.bib
 figure_captions: true
 footer:
   left: "rlhfbook.com"
-  center: ""
+  center: "Lecture 1"
   right: "Lambert {n}/{N}"
 custom_css: |
   .slide--section-break { background: #F28482; }
@@ -17,6 +17,7 @@ custom_css: |
   }
   .slide--title-sidebar h1 {
     font-size: 2.5em;
+    letter-spacing: 0;
   }
 ---
 

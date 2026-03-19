@@ -13,6 +13,10 @@ Slides are built with [colloquium](https://github.com/natolambert/colloquium) fr
 
 Colloquium does not have built-in animation/fragment support. To simulate animations (progressive reveals), **duplicate the slide** with additional content on each copy. For example, a slide shown first with 4 bullets, then repeated with 2 more bullets below, is intentional — do NOT merge these into one slide.
 
+**Math derivation unrolls**: For step-by-step derivations, use the same pattern — repeat the slide with one additional derivation step each time. Keep the title and earlier steps identical so the audience sees each new line appear. This is especially useful for multi-step algebra (e.g. Bradley-Terry → loss function). The result looks like repetition in the source, but each copy is a separate slide that reveals one more step.
+
+**Never skip steps in derivations.** Every algebraic manipulation must be shown explicitly — if a term cancels, show it cancelling; if an expression is rewritten, show the intermediate form. Assume the audience cannot fill in gaps. For example, when dividing numerator and denominator by the same term, first show the division applied, then show the numerator simplifying to 1, then show the denominator simplifying. Each of these can be a separate slide.
+
 ## Colloquium Directives
 
 Key directives (HTML comments before or after the heading):
@@ -29,6 +33,18 @@ Key directives (HTML comments before or after the heading):
 ## Heading Parsing
 
 Titles must be bare `## Heading` at line start. Wrapping in `<div>` breaks colloquium's heading extraction.
+
+## Citation Style
+
+Two citation modes — choose based on what is being cited:
+
+**Inline citations** `[@key]` — use when a citation supports a **specific claim or named work** in the slide body.
+
+- Put the citation immediately after the referenced work or phrase: `T5 [@raffel2020exploring]`, `FLAN [@wei2021finetuned]`
+- If multiple named works are listed, cite each one separately rather than bundling them at the end of the sentence
+- Prefer this style when the slide text says things like "X showed...", "Y introduced...", or lists specific papers/datasets
+
+**Slide-level citations** `<!-- cite-right: key -->` / `<!-- cite-left: key -->` — use when the **entire slide** is about a project, paper, or idea, rather than citing a specific bullet point. Also use for image sourcing.
 
 ## Build
 

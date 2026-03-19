@@ -11,13 +11,15 @@ Colloquium is under active development -- expect improvements to the slide tooli
 
 ## Setup
 
-Install from the repo root (this pulls colloquium from PyPI via the `teach` extra):
+Install from the repo root (this pulls `colloquium` from GitHub via the `teach` extra):
 
 ```bash
 uv sync --extra teach
 ```
 
-Or from a local clone for development:
+The `teach` extra intentionally tracks the GitHub source while `colloquium` is moving quickly.
+
+Or install from a local clone for development:
 
 ```bash
 uv pip install -e /path/to/colloquium
