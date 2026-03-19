@@ -256,16 +256,32 @@ $if(beamer)$
 $endif$
 $if(listings)$
 \usepackage{listings}
+\definecolor{codebg}{HTML}{F6F6F6}
+\definecolor{codeborder}{HTML}{E8E8E8}
 % for line wrapping
 \allowdisplaybreaks
 \newcommand{\passthrough}[1]{#1}
 \lstset{
-  defaultdialect=[5.3]Lua,
-  defaultdialect=[x86masm]Assembler,
   % wrapping
   breaklines=true,
+  breakatwhitespace=false,
   postbreak=\space,
-  basicstyle=\small\ttfamily
+  basicstyle=\footnotesize\ttfamily,
+  % Some extra vertical space between lines
+  lineskip=1pt,
+  % Preserve spacing and improve wrapping behavior for code
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  upquote=true,
+  % Light border, background, padding
+  frame=single,
+  framerule=0.5pt,
+  rulecolor=\color{codeborder},
+  framesep=8pt,
+  xleftmargin=0pt,
+  xrightmargin=0pt,
+  backgroundcolor=\color{codebg}
 }
 $endif$
 $if(lhs)$
