@@ -8,7 +8,7 @@ bibliography: refs.bib
 figure_captions: true
 footer:
   left: "rlhfbook.com"
-  center: ""
+  center: "Lecture 1"
   right: "Lambert {n}/{N}"
 custom_css: |
   .slide--section-break { background: #F28482; }

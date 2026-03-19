@@ -8,7 +8,7 @@ bibliography: refs.bib
 figure_captions: true
 footer:
   left: "rlhfbook.com"
-  center: ""
+  center: "Lecture 2"
   right: "Lambert {n}/{N}"
 custom_css: |
   .slide--section-break { background: #F28482; }
@@ -121,14 +121,14 @@ content: |
 
 ## Why these three chapters together?
 
-These chapters are the simpler tools to getting started in RLHF & post-training.
+These chapters are the simpler tools for getting started in RLHF & post-training.
 The core lectures will be on RL, but we need to build foundations first.
 
 ---
 
 ## Why these three chapters together?
 
-These chapters are the simpler tools to getting started in RLHF & post-training.
+These chapters are the simpler tools for getting started in RLHF & post-training.
 The core lectures will be on RL, but we need to build foundations first.
 
 Plus, these chapters form a natural pipeline — **the simplest complete path from a pretrained model to a preference-tuned one (with a reward model)**. 
