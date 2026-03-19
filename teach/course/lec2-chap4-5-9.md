@@ -811,7 +811,7 @@ This encourages the model to produce **larger score gaps** for strongly preferre
 
 <!-- cite-right: ouyang2022training, zhu2024starling, zhu2023principled -->
 
-**InstructGPT** balances multiple comparisons per prompt to prevent overfitting:
+**InstructGPT** balances multiple comparisons per prompt to prevent overfitting (and included all prompts in the same batch at training time to make this work):
 
 $$\mathcal{L}(\theta) = - \frac{1}{\binom{K}{2}} \mathbb{E}_{(x, y_c, y_r)\sim D} \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) \right) \right)$$
 
@@ -820,12 +820,6 @@ $$\mathcal{L}(\theta) = - \frac{1}{\binom{K}{2}} \mathbb{E}_{(x, y_c, y_r)\sim D
 $$P(\sigma^i|s^i,a_0^i,\ldots,a_{K-1}^i) = \prod_{k=0}^{K-1} \frac{\exp(r_{\theta}(s^i,a_{\sigma^i(k)}^i))}{\sum_{j=k}^{K-1}\exp(r_{\theta}(s^i,a_{\sigma^i(j)}^i))}$$
 
 When $K = 2$, this reduces to Bradley-Terry.
-
----
-
-<!-- layout: section-break -->
-
-## Beyond Preference RMs: ORM, PRM, Value Functions
 
 ---
 
@@ -839,25 +833,111 @@ $$\mathcal{L}_{\text{CE}}(\theta) = -\mathbb{E}_{(s,r)\sim \mathcal{D}}[r\log p_
 
 where $r \in \{0,1\}$ is the completion-level correctness label, broadcast across completion tokens during training.
 
-**Key difference from Bradley-Terry**: no pairwise comparisons needed — just correct/incorrect labels per response.
-
-```python
-# Per-token binary cross-entropy (prompt tokens masked as -100)
-mask = labels != -100
-loss = F.binary_cross_entropy_with_logits(
-    logits_per_token[mask], labels[mask].float()
-)
-```
+**Key differences from Bradley-Terry**: no pairwise comparisons needed — just correct/incorrect labels per response. And the model outputs a **per-token probability of correctness**, not a single score at the EOS token.
 
 ---
 
-## ORM training and inference
+<!-- columns: 50/50 -->
+## BT reward model vs. ORM: forward pass
 
-At training time, the outcome label is repeated across completion tokens and optimized with binary cross-entropy.
+**Bradley-Terry RM** — score at the **last token**:
+
+```python
+hidden = lm(**inputs,
+    output_hidden_states=True
+).hidden_states[-1]
+
+# Extract EOS token representation
+lengths = attention_mask.sum(dim=1) - 1
+batch_idx = torch.arange(hidden.size(0))
+seq_repr = hidden[batch_idx, lengths]
+
+# Single scalar per completion
+score = head(seq_repr).squeeze(-1)
+#       shape: (batch,)
+```
+
+|||
+
+**ORM** — score at **every token**:
+
+```python
+hidden = lm(**inputs,
+    output_hidden_states=True
+).hidden_states[-1]
+
+# Score every token position
+logits = head(hidden).squeeze(-1)
+#        shape: (batch, seq_len)
+```
+
+Both start from the same base LM hidden states — the difference is **where** the head is applied.
+
+---
+
+## BT reward model vs. ORM in code
+
+<!-- columns: 50/50 -->
+
+**Bradley-Terry RM loss** — contrastive, needs pairs:
+
+```python
+score_chosen = model(**inputs_chosen)
+score_rejected = model(**inputs_rejected)
+
+loss = -F.logsigmoid(
+    score_chosen - score_rejected
+).mean()
+```
+
+One scalar per completion. Loss depends on the **difference** between chosen and rejected.
+
+|||
+
+**ORM loss** — per-token, needs only labels:
+
+```python
+logits = model(**inputs)
+# shape: (batch, seq_len)
+
+mask = labels != -100
+loss = F.binary_cross_entropy_with_logits(
+    logits[mask], labels[mask].float()
+)
+```
+
+One score per token. Every completion token is trained against the same outcome label ($r = 0$ or $1$).
+
+---
+
+## ORM training visualized
+
+The outcome label ($r = 0$ or $1$) is **broadcast** to every completion token. Prompt tokens are masked. The model learns per-token correctness predictions from this repeated signal. In a larger batch of training, there is a diverse signal of supervision to learn from.
+
+![Training an ORM: the completion-level correctness label is applied to every completion token via binary cross-entropy.](assets/orm_training.png)
+
+---
+
+## ORM inference
 
 At inference time, the ORM outputs a probability of correctness **at every token**. These token-level scores can then be aggregated into a response-level verifier score for filtering or reranking.
 
 ![At inference time, an ORM outputs per-token correctness probabilities over the completion.](assets/orm_inference_flat.png)
+
+---
+
+## Common confusion: "ORM" ≠ BT on correct vs. incorrect
+
+Some papers use "outcome reward model" to mean a **Bradley-Terry model trained on correct vs. incorrect completions**. This conflates two different architectures:
+
+| | **BT RM (on correct/incorrect)** | **ORM (Cobbe et al.)** |
+|---|---|---|
+| **Min. Training Input** | Two completions (pair) | One completion + label |
+| **Output** | Single scalar at EOS | Per-token probability |
+| **Loss** | $-\log\sigma(r_c - r_{ic})$ | Per-token binary cross-entropy |
+| **Head** | Score at last token | Score at every token |
+
+A BT model trained on (correct, incorrect) pairs is still a **preference RM** — it just uses correctness as the preference signal. A true ORM has a fundamentally different input-output structure.
 
 ---
 
@@ -878,6 +958,42 @@ Labels are applied only at **step boundaries** (e.g. double newlines): incorrect
 
 ---
 
+<!-- columns: 50/50 -->
+## PRM in code
+
+**3-class head** (not binary like ORM):
+
+```python
+# head outputs 3 classes per token:
+#   0 = incorrect, 1 = neutral, 2 = correct
+head = nn.Linear(hidden_size, 3)
+
+hidden = lm(**inputs,
+    output_hidden_states=True
+).hidden_states[-1]
+
+logits = head(hidden)
+#        shape: (batch, seq_len, 3)
+```
+
+|||
+
+**Loss at step boundaries only**:
+
+```python
+# Labels: class index at step-end tokens,
+#         -100 everywhere else
+mask = labels != -100
+loss = F.cross_entropy(
+    logits[mask], labels[mask]
+)
+```
+
+vs. ORM: binary labels at *every* completion token.
+vs. PRM: 3-class labels at *step boundaries* only.
+
+---
+
 ## Comparing reward model types
 
 | Model | Predicts | Trained on | Output |
@@ -892,7 +1008,7 @@ Labels are applied only at **step boundaries** (e.g. double newlines): incorrect
 - **ORMs** predict offline-labeled correctness with a per-token head: $p(\text{correct}_t)$
 - **Value functions** predict expected *remaining* return: $V(s_t) = \mathbb{E}[\sum_{k \geq t} \gamma^{k-t} r_k \mid s_t]$
 
-Same architecture, different semantics and supervision pipeline.
+Same architecture, different semantics and supervision pipeline. More on value functions in the policy gradient lecture(s).
 
 ---
 
@@ -907,9 +1023,7 @@ Same architecture, different semantics and supervision pipeline.
 
 ## Generative reward modeling: LLM-as-a-judge
 
-<!-- cite-right: zheng2023judging -->
-
-An alternative to training a reward model: **prompt an LLM** to judge quality.
+An alternative to training a reward model: **prompt an LLM** to judge quality (prompt from [@zheng2023judging]).
 
 ```
 [System]
@@ -923,14 +1037,13 @@ assistant B is better, and "[[C]]" for a tie.
 
 Spawned benchmarks: MT-Bench, AlpacaEval, Arena-Hard, WildBench.
 
-**Current status**: generative RMs tend to **underperform** trained reward models on RM evaluations, but are cheaper to set up and useful for evaluation pipelines.
+**Current status**: generative RMs tend to **underperform** trained reward models on RM evaluations, but are cheaper to set up and used widely in evaluation and training pipelines. An evaluation/utility mismatch exists.
 
 ---
 
 ## Reward model evaluation
 
-<!-- cite-right: lambert2024rewardbench -->
-
+I very happily helped kickstart this area with the first one [@lambert2024rewardbench]!
 The RM evaluation landscape has expanded rapidly:
 
 - **General chat:** RewardBench, RewardBench2, RMB, RM-Bench
@@ -939,7 +1052,8 @@ The RM evaluation landscape has expanded rapidly:
 - **Agentic:** Agent-RewardBench
 - **Multimodal:** MJ-Bench, Multimodal RewardBench, VL RewardBench
 
-The bulk of early RM research focused on establishing benchmarks and identifying behavior modes. Training innovations (aspect-conditioned models, high-quality human datasets, scaling experiments) are still an active area.
+The bulk of early RM research focused on establishing benchmarks and identifying behavior modes. 
+Training innovations (aspect-conditioned models, high-quality human datasets, scaling experiments) are still an active area.
 
 ---
 
@@ -968,15 +1082,13 @@ The name comes from computational statistics: sample from a simple distribution,
 
 ## Rejection sampling overview
 
-<!-- cite-right: nakano2021webgpt, bai2022training, touvron2023llama -->
-
 The four stages:
 0. **Select prompts and reward model** (reuse IFT prompts or curate new ones)
 1. **Generate** $N$ completions per prompt from the current model
 2. **Score** all completions with the reward model
 3. **Fine-tune** on the top completions (same SFT loss as instruction tuning)
 
-Used in WebGPT, Anthropic's Helpful and Harmless (HH), Llama 2 Chat, and many other seminal works.
+Used in WebGPT [@nakano2021webgpt], Anthropic's Helpful and Harmless [@bai2022training], Llama 2 Chat [@touvron2023llama], and many other seminal works.
 
 This is still just **offline data curation**: generate first, then train on the filtered outputs.
 
@@ -1059,7 +1171,7 @@ The core hyperparameters are intuitive:
 
 **Practical tip**: sort completions by length before batch RM inference to reduce padding token computation.
 
-**Open questions**: how to sequence RS in a multi-stage pipeline, whether to use generations from multiple models, optimal prompt selection.
+**Open questions**: how to sequence RS in a multi-stage pipeline, whether to use generations from multiple models, optimal prompt selection. There hasn't been a fully open reproduction of this, which is kind of confusing as to why. My hunch is that training an reward model has some subtle tricks.
 
 ---
 
@@ -1075,25 +1187,27 @@ $$S(R) = \arg\max_{j \in [1,N]} r_j$$
 - Does **not** modify the model — it's a sampling technique
 - Often used as a baseline comparison for online RL methods like PPO
 
-BoN is the simplest possible reward-guided method: generate more, pick the best.
+BoN is the simplest possible reward-guided method: generate more, pick the best. Can also be done with verification / LLM-as-a-judge instead of traditional reward models.
 
 ---
 
 ## The full pipeline so far
 
-Putting it all together — the simplest complete path from pretrained model to preference-tuned model:
+Putting it all together — a simple path from pretrained model to preference-tuned model:
 
 1. **Instruction fine-tune** the pretrained model → learns the chat format
-2. **Collect preference data** → human annotators compare pairs of responses
+2. **Collect preference data** → human annotators compare pairs of responses (more on data after the training lectures)
 3. **Train a reward model** on preference data → learns to score quality
 4. **Rejection sampling** → generate many completions, keep the best, fine-tune
 
-This is a strong baseline. Next lectures will cover more powerful optimization methods: PPO, which optimizes a policy against a learned reward signal, and DPO, which optimizes directly from preference pairs rather than filtering training data.
+This is a strong baseline. 
+
+Next lectures will cover more powerful optimization methods: PPO, which optimizes a policy against a learned reward signal, and DPO, which optimizes directly from preference pairs rather than filtering training data.
 
 ---
 
 <!-- rows: 50/50 -->
-## Lecture 2: IFT, Reward Models, & Rejection Sampling
+## Next up: RL! 🍒
 
 <!-- row-columns: 32/36/32 -->
 
@@ -1175,6 +1289,7 @@ content: |
 
 ---
 
+<!-- rows: 85/15 -->
 ## Thank you
 
 Questions / discussion
@@ -1184,3 +1299,10 @@ Contact: nathan@natolambert.com
 Newsletter: [interconnects.ai](https://www.interconnects.ai/)
 
 **rlhfbook.com**
+
+===
+
+
+```builtwith
+repo: natolambert/colloquium
+```
