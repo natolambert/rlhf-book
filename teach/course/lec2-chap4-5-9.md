@@ -24,7 +24,7 @@ custom_css: |
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
 
-# Lecture 2: IFT, Reward Modeling, & Rejection Sampling
+# Lecture 2: IFT, Reward Models, & Rejection Sampling
 
 <div class="colloquium-title-eyebrow">rlhfbook.com</div>
 
@@ -114,22 +114,32 @@ tone: surface
 compact: true
 content: |
   - [rlhfbook.com](https://rlhfbook.com)
-  - [github.com/natolambert/rlhf-book](https://github.com/natolambert/rlhf-book)
+  - [GitHub repo](https://github.com/natolambert/rlhf-book)
 ```
 
 ---
 
 ## Why these three chapters together?
 
-These chapters form a natural pipeline — **the simplest complete path from a pretrained model to a preference-tuned one**:
+These chapters are the simpler tools to getting started in RLHF & post-training.
+The core lectures will be on RL, but we need to build foundations first.
+
+---
+
+## Why these three chapters together?
+
+These chapters are the simpler tools to getting started in RLHF & post-training.
+The core lectures will be on RL, but we need to build foundations first.
+
+Plus, these chapters form a natural pipeline — **the simplest complete path from a pretrained model to a preference-tuned one (with a reward model)**. 
+A natural step before full RLHF:
 
 1. **Instruction tuning** teaches the model to follow instructions (the format)
 2. **Reward models** learn to score quality from human preferences (the signal)
-3. **Rejection sampling** uses those scores to curate better training data (the optimization)
-
-This is the "non-RL" alignment path: no policy gradients, no online optimization — just supervised learning guided by a learned reward.
+3. **Rejection sampling** uses those scores to curate better training data (the optimization, which will be replaced with RL)
 
 ---
+
 
 <!-- layout: section-break -->
 
@@ -137,43 +147,49 @@ This is the "non-RL" alignment path: no policy gradients, no online optimization
 
 ---
 
-<!-- columns: 55/45 -->
+<!-- rows: 55/45 -->
 ## Where does instruction tuning fit?
 
 Instruction fine-tuning (IFT), also called supervised fine-tuning (SFT), is the first post-training step.
 
 - Takes a pretrained model that predicts next tokens
 - Teaches it to **follow instructions** in a conversational format
-- The foundation for all downstream preference tuning
+- The foundation for all downstream preference tuning (and other methods, e.g. RL-focused recipes for math/code)
 
-Without IFT, the model just continues text — it doesn't know how to be an assistant.
+===
 
-|||
-
-![The RLHF pipeline — instruction tuning is step 1.](assets/rlhf_schematic.png)
+![The RLHF pipeline — instruction tuning is step 1.](assets/rlhf-basic.png)
 
 ---
 
 ## Two lines of work converged
 
-<!-- cite-right: raffel2020exploring, wei2021finetuned, sanh2021multitask, mishra2021cross -->
-
 Instruction tuning emerged from two parallel research threads:
 
-1. **Unified text-to-text frameworks**: T5 showed that framing every NLP task as "text in, text out" worked surprisingly well
-2. **Scaling + instruction following**: FLAN, T0, and Natural Instructions showed that training on diverse tasks with explicit instructions improved zero-shot generalization
-
-Both showed: **explicitly telling the model what to do** (via instructions) beats hoping it figures it out from context alone.
+1. **Unified text-to-text frameworks**: T5 [@raffel2020exploring] showed that framing every NLP task as "text in, text out" worked surprisingly well
+2. **Scaling + instruction following**: FLAN [@wei2021finetuned], T0 [@sanh2021multitask], and Natural Instructions [@mishra2021cross] showed that training on diverse tasks with explicit instructions improved zero-shot generalization
 
 ---
 
-## Chat templates: the language of instruction tuning
+## Two lines of work converged
 
-The model needs a structured format to distinguish between **who is speaking** and **what to generate**. Chat templates define three roles:
+Instruction tuning emerged from two parallel research threads:
+
+1. **Unified text-to-text frameworks**: T5 [@raffel2020exploring] showed that framing every NLP task as "text in, text out" worked surprisingly well
+2. **Scaling + instruction following**: FLAN [@wei2021finetuned], T0 [@sanh2021multitask], and Natural Instructions [@mishra2021cross] showed that training on diverse tasks with explicit instructions improved zero-shot generalization
+
+**SFT took off after ChatGPT**: Alpaca [@alpaca], OpenAssistant [@kopf2023openassistant], Tulu [@wang2023camelsgo], and many others helped turn instruction tuning into a broadly reproducible open recipe
+
+---
+
+## Chat templates: the structure of instruction tuning
+
+The model needs a structured format to manage **who is speaking** and **what to generate**. 
+Early chat templates defined three roles:
 
 - **System**: background instructions (persona, constraints)
-- **User**: the human's message
-- **Assistant**: the model's response
+- **User**: the human's messages
+- **Assistant**: the model's responses
 
 ```
 <|im_start|>system
@@ -183,7 +199,67 @@ How many helicopters can a human eat in one sitting?<|im_end|>
 <|im_start|>assistant
 ```
 
-The model generates until it produces `<|im_end|>`.
+The model generates until it produces an end-of-text token (in this case, it is `<|im_end|>`).
+
+---
+
+<!-- columns: 48/52 -->
+## A conversation gets rendered into template text
+
+**Conversation object:**
+
+```python
+messages = [
+    {
+        "role": "system",
+        "content": "You are a friendly chatbot who always responds in the style of a pirate",
+    },
+    {
+        "role": "user",
+        "content": "How many helicopters can a human eat in one sitting?",
+    },
+]
+```
+
+|||
+
+**Rendered chat template text:**
+
+```text
+<|im_start|>system
+You are a friendly chatbot who always responds in the style of a pirate<|im_end|>
+<|im_start|>user
+How many helicopters can a human eat in one sitting?<|im_end|>
+<|im_start|>assistant
+```
+
+`tokenizer.apply_chat_template(messages)` performs this conversion before tokenization.
+
+---
+
+<!-- columns: 48/52 -->
+## The same example in colloquium's conversation block
+
+```conversation
+size: 0.9
+messages:
+  - role: system
+    content: "You are a friendly chatbot who always responds in the style of a pirate"
+  - role: user
+    content: "How many helicopters can a human eat in one sitting?"
+```
+
+|||
+
+```text
+<|im_start|>system
+You are a friendly chatbot who always responds in the style of a pirate<|im_end|>
+<|im_start|>user
+How many helicopters can a human eat in one sitting?<|im_end|>
+<|im_start|>assistant
+```
+
+The colloquium `conversation` block is a readable visualization of the same message structure that chat templates serialize for the model.
 
 ---
 
@@ -454,23 +530,18 @@ The most common implementation: append a **linear head** to a language model tha
 class BradleyTerryRewardModel(nn.Module):
     def __init__(self, base_lm):
         super().__init__()
-        self.lm = base_lm  # e.g., AutoModelForCausalLM
+        self.lm = base_lm
         self.head = nn.Linear(self.lm.config.hidden_size, 1)
 
     def forward(self, input_ids, attention_mask):
-        outputs = self.lm(
-            input_ids=input_ids,
-            attention_mask=attention_mask,
+        hidden = self.lm(
+            input_ids=input_ids, attention_mask=attention_mask,
             output_hidden_states=True, return_dict=True,
-        )
-        hidden = outputs.hidden_states[-1]
-
-        # Extract representation at last non-padding token (EOS)
+        ).hidden_states[-1]
         lengths = attention_mask.sum(dim=1) - 1
         batch_idx = torch.arange(hidden.size(0), device=hidden.device)
         seq_repr = hidden[batch_idx, lengths]
-
-        return self.head(seq_repr).squeeze(-1)  # (batch,)
+        return self.head(seq_repr).squeeze(-1)
 ```
 
 ---
@@ -538,11 +609,11 @@ When $K = 2$, this reduces to Bradley-Terry.
 
 <!-- cite-right: cobbe2021gsm8k -->
 
-For **reasoning tasks**, we often have verifiable correctness. ORMs predict per-token correctness probabilities using binary cross-entropy:
+For **reasoning tasks**, we often have verifiable correctness. ORMs train a per-token head using the completion-level correctness label repeated across completion tokens:
 
 $$\mathcal{L}_{\text{CE}}(\theta) = -\mathbb{E}_{(s,r)\sim \mathcal{D}}[r\log p_\theta(s) + (1-r)\log(1-p_\theta(s))]$$
 
-where $r \in \{0,1\}$ is a binary correctness label applied to every completion token.
+where $r \in \{0,1\}$ is the completion-level correctness label, broadcast across completion tokens during training.
 
 **Key difference from Bradley-Terry**: no pairwise comparisons needed — just correct/incorrect labels per response.
 
@@ -556,14 +627,13 @@ loss = F.binary_cross_entropy_with_logits(
 
 ---
 
-<!-- rows: 55/45 -->
 ## ORM training and inference
 
-At inference time, an ORM outputs a probability of correctness **at every token**. Prompt tokens are masked, while each completion token receives a correctness probability.
+At training time, the outcome label is repeated across completion tokens and optimized with binary cross-entropy.
 
-===
+At inference time, the ORM outputs a probability of correctness **at every token**. These token-level scores can then be aggregated into a response-level verifier score for filtering or reranking.
 
-![Training an ORM uses offline labels from a verifier. Each completion token is trained with binary cross-entropy against the outcome label.](assets/orm_training.png)
+![At inference time, an ORM outputs per-token correctness probabilities over the completion.](assets/orm_inference_flat.png)
 
 ---
 
@@ -574,9 +644,9 @@ At inference time, an ORM outputs a probability of correctness **at every token*
 
 PRMs score intermediate **reasoning steps**, not just final outcomes:
 
-$$\mathcal{L}_{\text{PRM}}(\theta) = - \mathbb{E}_{(x, s) \sim \mathcal{D}} \left[ \sum_{i=1}^{K} y_{s_i} \log r_\theta(s_i \mid x) + (1 - y_{s_i}) \log (1 - r_\theta(s_i \mid x)) \right]$$
+$$\mathcal{L}_{\text{PRM}}(\theta) = - \mathbb{E}_{(x, s) \sim \mathcal{D}} \left[ \sum_{i=1}^{K} \log p_\theta(z_{s_i} \mid x, s_i) \right]$$
 
-Labels are applied only at **step boundaries** (e.g. double newlines): correct (+1), neutral (0), incorrect (-1). All other tokens are masked during training.
+Labels are applied only at **step boundaries** (e.g. double newlines): incorrect (-1), neutral (0), correct (+1). All other tokens are masked during training.
 
 ===
 
@@ -589,13 +659,13 @@ Labels are applied only at **step boundaries** (e.g. double newlines): correct (
 | Model | Predicts | Trained on | Output |
 |-------|----------|-----------|--------|
 | **Preference RM** | Quality at EOS token | Pairwise (chosen vs. rejected) | Single scalar |
-| **ORM** | Per-token correctness | Binary outcome labels | Per-token probability |
+| **ORM** | Outcome signal over completion tokens | Binary outcome labels | Per-token probability |
 | **PRM** | Per-step correctness | Step-level annotations | Score at step boundaries |
 | **Value Function** | Expected remaining return | On-policy rollouts | Per-token expected return |
 
 **Key distinction — ORM vs. Value Function:**
 
-- **ORMs** predict immediate, offline-labeled correctness: $p(\text{correct}_t)$
+- **ORMs** predict offline-labeled correctness with a per-token head: $p(\text{correct}_t)$
 - **Value functions** predict expected *remaining* return: $V(s_t) = \mathbb{E}[\sum_{k \geq t} \gamma^{k-t} r_k \mid s_t]$
 
 Same architecture, different semantics and supervision pipeline.
@@ -605,7 +675,7 @@ Same architecture, different semantics and supervision pipeline.
 ## In summary
 
 - **RM:** "How good is this whole answer?" — scalar value
-- **ORM:** "Which parts look correct?" — per-token correctness
+- **ORM:** "Is this response on track to be correct?" — outcome signal trained across completion tokens
 - **PRM:** "Are the reasoning steps sound?" — per-step scores
 - **Value Function:** "How much reward remains from here?" — baseline for RL advantages
 
@@ -672,7 +742,6 @@ The name comes from computational statistics: sample from a simple distribution,
 
 ---
 
-<!-- rows: 55/45 -->
 ## Rejection sampling overview
 
 <!-- cite-right: nakano2021webgpt, bai2022training, touvron2023llama -->
@@ -683,11 +752,9 @@ The four stages:
 2. **Score** all completions with the reward model
 3. **Fine-tune** on the top completions (same SFT loss as instruction tuning)
 
-Used in WebGPT, Anthropic's HH, Llama 2 Chat, and many other seminal works.
+Used in WebGPT, Anthropic's Helpful and Harmless (HH), Llama 2 Chat, and many other seminal works.
 
-===
-
-![Rejection sampling overview: generate, score, select, fine-tune.](assets/rejection-sampling.png)
+This is still just **offline data curation**: generate first, then train on the filtered outputs.
 
 ---
 
@@ -742,6 +809,8 @@ Flatten the reward matrix and select the top $K$ pairs globally:
 
 $$S_K(R_{\text{flat}}) = \text{argsort}(R_{\text{flat}})[-K:]$$
 
+Here, $R_{\text{flat}}$ is the length-$MN$ vector made by flattening the reward matrix. Each selected flat index is then mapped back to its original `(prompt, completion)` pair.
+
 **Same example, top 5 overall:**
 
 $$R = \begin{bmatrix}
@@ -781,7 +850,6 @@ $$S(R) = \arg\max_{j \in [1,N]} r_j$$
 - Used at **inference time** to pick the best completion
 - Does **not** modify the model — it's a sampling technique
 - Often used as a baseline comparison for online RL methods like PPO
-- Related techniques power "Pro" tiers of chat products (spend extra compute per query)
 
 BoN is the simplest possible reward-guided method: generate more, pick the best.
 
@@ -796,14 +864,14 @@ Putting it all together — the simplest complete path from pretrained model to 
 3. **Train a reward model** on preference data → learns to score quality
 4. **Rejection sampling** → generate many completions, keep the best, fine-tune
 
-This is a strong baseline. Next lectures will cover more powerful optimization methods (PPO, DPO) that directly optimize the policy using the reward signal, rather than filtering training data.
+This is a strong baseline. Next lectures will cover more powerful optimization methods: PPO, which optimizes a policy against a learned reward signal, and DPO, which optimizes directly from preference pairs rather than filtering training data.
 
 ---
 
 <!-- rows: 50/50 -->
 ## Lecture 2: IFT, Reward Models, & Rejection Sampling
 
-<!-- row-columns: 34/33/33 -->
+<!-- row-columns: 32/36/32 -->
 
 ```box
 title: Overview
@@ -819,7 +887,7 @@ content: |
 
 ```box
 title: Core Training Pipeline
-tone: muted
+tone: accent
 compact: true
 content: |
   4. **Instruction Tuning**
@@ -844,7 +912,7 @@ content: |
 
 ===
 
-<!-- row-columns: 34/33/33 -->
+<!-- row-columns: 32/36/32 -->
 
 ```box
 title: Practical Considerations
@@ -878,12 +946,11 @@ tone: surface
 compact: true
 content: |
   - [rlhfbook.com](https://rlhfbook.com)
-  - [github.com/natolambert/rlhf-book](https://github.com/natolambert/rlhf-book)
+  - [GitHub repo](https://github.com/natolambert/rlhf-book)
 ```
 
 ---
 
-<!-- rows: 85/15 -->
 ## Thank you
 
 Questions / discussion
@@ -893,10 +960,3 @@ Contact: nathan@natolambert.com
 Newsletter: [interconnects.ai](https://www.interconnects.ai/)
 
 **rlhfbook.com**
-
-===
-
-
-```builtwith
-repo: natolambert/colloquium
-```

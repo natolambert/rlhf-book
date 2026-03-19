@@ -30,6 +30,16 @@ Key directives (HTML comments before or after the heading):
 
 Titles must be bare `## Heading` at line start. Wrapping in `<div>` breaks colloquium's heading extraction.
 
+## Citation Style
+
+Use **inline citations** when a citation supports a specific named work or claim in the slide body.
+
+- Put the citation immediately after the referenced work or phrase: `T5 [@raffel2020exploring]`, `FLAN [@wei2021finetuned]`
+- If multiple named works are listed, cite each one separately rather than bundling them at the end of the sentence
+- Prefer this style when the slide text says things like "X showed...", "Y introduced...", or compares specific papers
+
+Use `<!-- cite-right: ... -->` or `<!-- cite-left: ... -->` for **general background citations**, image sourcing, or slides where the citation is not tied to one exact clause.
+
 ## Build
 
 ```bash
