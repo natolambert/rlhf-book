@@ -32,13 +32,15 @@ Titles must be bare `## Heading` at line start. Wrapping in `<div>` breaks collo
 
 ## Citation Style
 
-Use **inline citations** when a citation supports a specific named work or claim in the slide body.
+Two citation modes — choose based on what is being cited:
+
+**Inline citations** `[@key]` — use when a citation supports a **specific claim or named work** in the slide body.
 
 - Put the citation immediately after the referenced work or phrase: `T5 [@raffel2020exploring]`, `FLAN [@wei2021finetuned]`
 - If multiple named works are listed, cite each one separately rather than bundling them at the end of the sentence
-- Prefer this style when the slide text says things like "X showed...", "Y introduced...", or compares specific papers
+- Prefer this style when the slide text says things like "X showed...", "Y introduced...", or lists specific papers/datasets
 
-Use `<!-- cite-right: ... -->` or `<!-- cite-left: ... -->` for **general background citations**, image sourcing, or slides where the citation is not tied to one exact clause.
+**Slide-level citations** `<!-- cite-right: key -->` / `<!-- cite-left: key -->` — use when the **entire slide** is about a project, paper, or idea, rather than citing a specific bullet point. Also use for image sourcing.
 
 ## Build
 

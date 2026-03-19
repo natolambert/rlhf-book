@@ -208,6 +208,7 @@ The model generates until it produces an end-of-text token (in this case, it is 
 
 **Conversation object:**
 
+How most post-training data is stored (model-agnostic):
 ```python
 messages = [
     {
@@ -225,6 +226,7 @@ messages = [
 
 **Rendered chat template text:**
 
+What the data looks like to a model (tokenizer-specific):
 ```text
 <|im_start|>system
 You are a friendly chatbot who always responds in the style of a pirate<|im_end|>
@@ -238,8 +240,22 @@ How many helicopters can a human eat in one sitting?<|im_end|>
 ---
 
 <!-- columns: 48/52 -->
-## The same example in colloquium's conversation block
+## The same example, visualized
 
+What the model sees:
+```text
+<|im_start|>system
+You are a friendly chatbot who always
+responds in the style of a pirate<|im_end|>
+<|im_start|>user
+How many helicopters can a human eat
+in one sitting?<|im_end|>
+<|im_start|>assistant
+```
+
+|||
+
+What the user sees:
 ```conversation
 size: 0.9
 messages:
@@ -247,25 +263,16 @@ messages:
     content: "You are a friendly chatbot who always responds in the style of a pirate"
   - role: user
     content: "How many helicopters can a human eat in one sitting?"
+  - role: assistant
+    content: "..."
 ```
-
-|||
-
-```text
-<|im_start|>system
-You are a friendly chatbot who always responds in the style of a pirate<|im_end|>
-<|im_start|>user
-How many helicopters can a human eat in one sitting?<|im_end|>
-<|im_start|>assistant
-```
-
-The colloquium `conversation` block is a readable visualization of the same message structure that chat templates serialize for the model.
 
 ---
 
-## Under the hood: Jinja chat templates
+## Chat templates under the hood: Jinja code
 
-Chat templates are implemented as **Jinja snippets** stored in the tokenizer config. This is the raw code that converts a list of Python dicts into the token sequence the model sees:
+Chat templates are implemented as **Jinja code snippets** stored in the tokenizer config. 
+This is the raw code that converts a list of Python dicts into the token sequence the model sees:
 
 ```jinja
 {{ bos_token }}
@@ -278,43 +285,34 @@ Chat templates are implemented as **Jinja snippets** stored in the tokenizer con
 {% endif %}
 ```
 
-The full template also enforces role alternation (`user`/`assistant`/`user`/...) and handles the optional `system` message. Applied in code via `tokenizer.apply_chat_template(messages)`.
+The full template also enforces role alternation (`user`/`assistant`/`user`/...) and handles the optional `system` message. 
+Applied in code via `tokenizer.apply_chat_template(messages)`.
+For example, see [`Olmo-3-7B-Instruct`'s](https://huggingface.co/allenai/Olmo-3-7B-Instruct/blob/main/chat_template.jinja).
 
 ---
 
 ## The pain of Jinja chat templates
 
-<!-- TODO: Nathan rant slide — Jinja templates + tool use + multi-turn + function calling = nightmare -->
+oof.
 
 ---
 
-## An alternative: OpenAI's Harmony format
+## The pain of Jinja chat templates
 
-OpenAI released **Harmony** alongside gpt-oss, replacing Jinja with a Rust-based renderer that separates output into **channels**:
-
-- `analysis` — internal reasoning / chain-of-thought (hidden from user)
-- `commentary` — tool calls go here
-- `final` — user-facing response
-
-```
-<|channel|>analysis<|message|>I need to check the weather...
-<|channel|>commentary to=functions.get_weather
-<|constrain|>json<|message|>{"location":"SF"}<|call|>
-<|channel|>final<|message|>It's 65°F and sunny in San Francisco.
-```
-
-Why? Jinja can't cleanly handle tool calls (`tojson` escaping, ambiguous boundaries). Harmony moves the complexity into a dedicated library (`openai-harmony` on PyPI) instead of a template string.
+There are many ways that working with chat templates is difficult.
+- Not easily human-interpretable
+- Minor issues, or mismatch to the tokenizer can break training
+- Increasing in complexity with reasoning models and tool-use
 
 ---
 
 ## Chat templates vary across models
 
-<!-- cite-right: tunstall2023zephyr, lambert2024t -->
-
 Different model families use different special tokens, but the structure is the same.
 
-**Zephyr:**
-```
+**Zephyr [@tunstall2023zephyr]:**
+
+```text
 <|system|>
 You are a friendly chatbot...</s>
 <|user|>
@@ -322,8 +320,9 @@ How many helicopters can a human eat in one sitting?</s>
 <|assistant|>
 ```
 
-**Tulu:**
-```
+**Tulu [@lambert2024t]:**
+
+```text
 <|user|>
 How are you doing?
 <|assistant|>
@@ -355,13 +354,57 @@ The entire history is packed into one token sequence — the model sees all prio
 
 ---
 
+## An alternative: OpenAI's Harmony format
+
+OpenAI released [**Harmony**](https://github.com/openai/harmony) alongside [gpt-oss](https://openai.com/index/introducing-gpt-oss/), replacing Jinja with a Rust-based renderer that separates output into **channels**:
+
+- `analysis` — internal reasoning / chain-of-thought (hidden from user)
+- `commentary` — tool calls go here
+- `final` — user-facing response
+
+```text
+<|start|>assistant<|channel|>analysis<|message|>I need to check the weather...<|end|>
+<|start|>assistant<|channel|>commentary to=functions.get_weather
+<|constrain|>json<|message|>{"location":"SF"}<|call|>
+<|start|>assistant<|channel|>final<|message|>It's 65°F and sunny in SF.<|return|>
+```
+
+Why? Jinja can't cleanly handle tool calls (`tojson` escaping, ambiguous boundaries). Harmony moves the complexity into a dedicated library (`openai-harmony` on PyPI) instead of a template string.
+
+---
+
+## Harmony Python example
+
+```python
+from openai_harmony import (Role, Message, Conversation,
+    SystemContent, load_harmony_encoding, HarmonyEncodingName)
+
+# Build messages
+system = Message.from_role_and_content(Role.SYSTEM, SystemContent.new())
+user = Message.from_role_and_content(Role.USER, "What is 2 + 2?")
+
+# Assemble a conversation
+convo = Conversation.from_messages([system, user])
+
+# Render to tokens using the OSS encoding
+enc = load_harmony_encoding(HarmonyEncodingName.HARMONY_GPT_OSS)
+tokens = enc.render_conversation_for_completion(convo, Role.ASSISTANT)
+
+# Decode back to text
+print(enc.decode_utf8(tokens))
+```
+
+The same `render_conversation_for_completion` / `render_conversation_for_training` split replaces `add_generation_prompt` from Jinja templates.
+
+---
+
 ## What does the model actually learn?
 
 <!-- cite-right: ouyang2022training -->
 
 **Prompt masking**: during IFT, the model only learns to predict **assistant responses**, not user messages.
 
-- System and user tokens are masked from the loss
+- System and user tokens (usually) are masked from the loss
 - Only assistant completion tokens contribute to gradient updates
 - The model learns *how to respond*, not *how to ask*
 
@@ -379,13 +422,15 @@ For multi-turn conversations, two strategies:
 **Data quality matters more than quantity:**
 
 - High-quality completions are critical — prompts are masked anyway, so the model learns from responses
-- ~1M prompts is sufficient for excellent RLHF-ready models; further scaling helps with diminishing returns
+- ~1M prompts is sufficient for excellent RLHF-ready models
+  - Further scaling helps, but with diminishing returns
+  - SFT prompt quantity has *decreased* a bit with reasoning models. Open research problem
 - Best prompts match the downstream task distribution
 
 **Training details differ from pretraining:**
 
-- **Batch size**: much smaller (e.g. 256 vs. 1024-2048 sequences)
-- **Learning rate**: 1-2 orders of magnitude lower (e.g. $1 \times 10^{-5}$ vs. $3 \times 10^{-4}$)
+- **Batch size**: much smaller (e.g. 256 vs. 1024–2048 sequences in pretraining)
+- **Learning rate**: 1-2 orders of magnitude lower (e.g. $1 \times 10^{-5}$ vs. $3 \times 10^{-4}$), prevent overfitting in narrower data distribution
 - **Loss function**: same cross-entropy, but only on unmasked (assistant) tokens
 
 ---
@@ -394,13 +439,10 @@ For multi-turn conversations, two strategies:
 
 The amount of instruction data needed has evolved rapidly:
 
-- **Early post-ChatGPT**: ~10K high-quality samples could be state-of-the-art (No Robots dataset)
-- **LIMA**: showed that just 1,000 carefully curated examples could match much larger datasets for chat — the "superficial alignment hypothesis"
+- **Early post-ChatGPT**: ~10K high-quality, human-generated samples could be state-of-the-art [@ouyang2022training; @no_robots]
 - **Current practice**: large-scale synthetic datasets work best, but quality filtering is essential
 
-The key insight from LIMA: instruction tuning may be more about **learning the format** than about learning new knowledge. The knowledge is already in the pretrained model.
-
-<!-- cite-right: zhou2023lima -->
+Scaling the prompts quickly enabled more performance. Now, reasoning models are using more compute and tokens to train via more tokens per prompt in SFT (and longer context lengths).
 
 ---
 
@@ -408,28 +450,29 @@ The key insight from LIMA: instruction tuning may be more about **learning the f
 
 Successful post-training starts with **meaningful evaluations** for targeted skills and **prompts of representative queries** for those skills.
 
-All post-training stages require prompts in distribution of tasks. Example prompt budgets:
+All post-training stages require prompts in distribution of tasks. Example prompt budgets from [@lambert2024t]:
 
 - **Supervised fine-tuning**: ~1 million prompts
 - **Preference fine-tuning**: ~1 million (partial overlap with SFT can be useful)
 - **Reinforcement fine-tuning**: ~10-100 thousand (data less available)
 
 Large variance on these numbers is possible — but the key point is that **prompts are the starting material** for every stage.
+Recent work has of course scaled up various RL training stages :D!
 
 ---
 
 ## Building SFT data: synthetic completions
 
-**Synthetic data** has become the dominant approach for building SFT datasets:
+**Synthetic data** has become the dominant approach for building SFT datasets -- following [@wang2022self]:
 
 1. Start with $N$ high-quality (often human-written) prompts
 2. Ask a strong LM to create modified versions of these instructions
 3. Generate completions with another (or same) strong LM
 4. Result: easily 10x more training data
 
-**Quality of responses** is the simpler part — strong models (GPT-4o, Llama 3.1 405B) generate good completions to most instructions. **Human data** is still needed for out-of-distribution or novel tasks.
+**Quality of responses** is the simpler part — strong models (e.g. GPT-4o, Llama 3.1 405B) generate good completions to most instructions.  
 
-Largely undocumented is how to control **style** during SFT — response length, tone, formatting preferences are hard to specify.
+**Human data** is still needed for out-of-distribution or novel tasks. At the time of recording, this is "knowledge work" tasks like healthcare/law.
 
 ---
 
