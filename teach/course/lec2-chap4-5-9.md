@@ -517,43 +517,224 @@ A reward model compresses complex, subjective human judgments into a single scal
 
 ---
 
+<!-- cite-right: sutton2018reinforcement -->
+<!-- columns: 65/35 -->
+
+## Recall: Classical Reinforcement Learning
+
+A reinforcement learning problem is often written as a **Markov Decision Process (MDP)**:
+- state space $\mathcal{S}$, action space $\mathcal{A}$
+- transition dynamics $P(s_{t+1}\mid s_t, a_t)$
+- reward function $r(s_t, a_t)$ and discount $\gamma$
+- optimize cumulative return over a trajectory
+
+$$\text{MDP } (\mathcal{S}, \mathcal{A}, P, r, \gamma)$$
+
+$$J(\pi) = \mathbb{E}_{\tau \sim \pi}\!\left[\sum_{t=0}^{T} \gamma^t r(s_t, a_t)\right]$$
+
+|||
+
+![](assets/rl.png)
+
+---
+
+<!-- columns: 50/50 -->
+<!-- cite-right: christiano2017, ouyang2022training -->
+## Recall: Classical RL vs. RLHF
+
+<div class="text-sm">
+
+**Classical RL**
+- Agent takes actions $a_t$ in an environment with states $s_t$
+- Reward is a known function $r(s_t, a_t)$ from the environment per step
+- Optimize cumulative return over a trajectory (total steps $T$)
+
+$$J(\pi) = \mathbb{E}_{\tau \sim \pi}\!\left[\sum_{t=0}^{T} \gamma^t r(s_t, a_t)\right]$$
+
+<div class="colloquium-spacer-md"></div>
+
+**RLHF**
+- No environment — prompts sampled from a dataset
+- Reward is **learned** from human preferences (a proxy)
+- **Response-level** reward (bandit-style, not per-token)
+- Regularized with **KL penalty** to stay close to the base model
+
+$$J(\pi) = \mathbb{E}\left[ r_\theta(x, y) \right] - \beta \, D_{\text{KL}}\!\left(\pi \| \pi_{\text{ref}}\right)$$
+
+</div>
+
+|||
+
+![](assets/rlhf.png)
+
+---
+
+<!-- rows: 30/70 -->
+## Recall: What RLHF comparison data looks like
+
+A human (or AI) annotator sees two responses to the same prompt and picks the better one — this preference pair becomes training data for the reward model.
+
+===
+
+<!-- row-columns: 50/50 -->
+
+```conversation
+size: 0.85
+messages:
+  - role: user
+    content: "Explain why the sky is blue in one sentence."
+  - role: assistant
+    model: "Response A ✓"
+    content: "The sky is blue due to Rayleigh scattering, where shorter blue wavelengths of sunlight are scattered more by atmospheric molecules than longer wavelengths."
+```
+
+|||
+
+```conversation
+size: 0.85
+messages:
+  - role: user
+    content: "Explain why the sky is blue in one sentence."
+  - role: assistant
+    model: "Response B"
+    content: "The sky appears blue because of the way light interacts with the atmosphere and stuff, it's basically just physics."
+```
+
+---
+
 ## The Bradley-Terry model of preferences
 
 <!-- cite-right: BradleyTerry -->
 
-The canonical reward model is derived from the **Bradley-Terry model** (1952). Given two items $i$ and $j$, the probability that a judge prefers $i$ over $j$:
+A **probability model** is a mathematical form that we assume matches how real judgments work — then we fit its parameters to data. 
+The canonical reward model uses the **Bradley-Terry model** (1952). 
+
+---
+
+## The Bradley-Terry model of preferences
+
+<!-- cite-right: BradleyTerry -->
+
+A **probability model** is a mathematical form that we assume matches how real judgments work — then we fit its parameters to data. 
+The canonical reward model uses the **Bradley-Terry model** (1952). 
+Given two items $i$ and $j$, the probability that a judge prefers $i$ over $j$:
 
 $$P(i > j) = \frac{p_i}{p_i + p_j}$$
 
-Each item has a latent strength $p_i > 0$. Reparametrizing with $p_i = e^{r_i}$:
+Each item has a latent strength $p_i > 0$. Reparametrizing with $p_i = e^{r_i}$ lets us work with unbounded scores $r_i \in \mathbb{R}$ — which is what a neural network naturally outputs:
 
 $$P(i > j) = \frac{e^{r_i}}{e^{r_i} + e^{r_j}} = \sigma(r_i - r_j)$$
 
 Only **score differences** matter — adding the same constant to all scores leaves preferences unchanged.
 
+This is not the only possible model — but it's what worked in early RLHF and has stuck. It's a useful approximation, not a law of nature.
+
 ---
 
-## From preferences to a loss function
 
-Given a prompt $x$, a chosen completion $y_c$, and a rejected completion $y_r$, we score both with reward model $r_\theta$:
+## From Bradley-Terry to a reward model
+
+Given a prompt $x$, a chosen completion $y_c$, and a rejected completion $y_r$, we score both with a reward model $r_\theta$:
 
 $$P(y_c > y_r \mid x) = \frac{\exp(r_\theta(y_c \mid x))}{\exp(r_\theta(y_c \mid x)) + \exp(r_\theta(y_r \mid x))}$$
 
-Maximizing log-likelihood (equivalently, minimizing negative log-likelihood):
-
-$$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) \right) \right)$$
-
-<!-- cite-right: ouyang2022training -->
-
-Equivalently:
-
-$$\mathcal{L}(\theta) = \log \left( 1 + e^{r_{\theta}(y_r \mid x) - r_{\theta}(y_c \mid x)} \right)$$
-
-<!-- cite-right: askell2021general -->
+We want to find $\theta$ that maximizes this probability — i.e. the model should assign a higher score to the completion humans preferred.
 
 ---
 
-<!-- rows: 50/50 -->
+## Deriving the reward model loss
+
+<!-- cite-right: ouyang2022training -->
+
+Start from maximizing the preference probability:
+
+$$\theta^* = \arg\max_\theta \frac{\exp(r_\theta(y_c \mid x))}{\exp(r_\theta(y_c \mid x)) + \exp(r_\theta(y_r \mid x))}$$
+
+---
+
+## Deriving the reward model loss
+
+<!-- cite-right: ouyang2022training -->
+
+Start from maximizing the preference probability:
+
+$$\theta^* = \arg\max_\theta \frac{\exp(r_\theta(y_c \mid x))}{\exp(r_\theta(y_c \mid x)) + \exp(r_\theta(y_r \mid x))}$$
+
+Divide numerator and denominator by $\exp(r_\theta(y_c \mid x))$:
+
+$$= \arg\max_\theta \frac{\exp(r_\theta(y_c \mid x)) \;/\; \exp(r_\theta(y_c \mid x))}{\left(\exp(r_\theta(y_c \mid x)) + \exp(r_\theta(y_r \mid x))\right) \;/\; \exp(r_\theta(y_c \mid x))}$$
+
+---
+
+## Deriving the reward model loss
+
+<!-- cite-right: ouyang2022training -->
+
+Start from maximizing the preference probability:
+
+$$\theta^* = \arg\max_\theta \frac{\exp(r_\theta(y_c \mid x))}{\exp(r_\theta(y_c \mid x)) + \exp(r_\theta(y_r \mid x))}$$
+
+Divide numerator and denominator by $\exp(r_\theta(y_c \mid x))$:
+
+$$= \arg\max_\theta \frac{\exp(r_\theta(y_c \mid x)) \;/\; \exp(r_\theta(y_c \mid x))}{\left(\exp(r_\theta(y_c \mid x)) + \exp(r_\theta(y_r \mid x))\right) \;/\; \exp(r_\theta(y_c \mid x))}$$
+
+The numerator becomes $1$, and in the denominator $\frac{\exp(r_\theta(y_r \mid x))}{\exp(r_\theta(y_c \mid x))} = \exp(r_\theta(y_r \mid x) - r_\theta(y_c \mid x))$:
+
+$$= \arg\max_\theta \frac{1}{1 + \exp(r_\theta(y_r \mid x) - r_\theta(y_c \mid x))}$$
+
+---
+
+## Deriving the reward model loss
+
+<!-- cite-right: ouyang2022training -->
+
+Start from maximizing the preference probability:
+
+$$\theta^* = \arg\max_\theta \frac{\exp(r_\theta(y_c \mid x))}{\exp(r_\theta(y_c \mid x)) + \exp(r_\theta(y_r \mid x))}$$
+
+Divide numerator and denominator by $\exp(r_\theta(y_c \mid x))$:
+
+$$= \arg\max_\theta \frac{1}{1 + \exp(r_\theta(y_r \mid x) - r_\theta(y_c \mid x))}$$
+
+Rewrite as $\frac{1}{1 + \exp(-(r_\theta(y_c \mid x) - r_\theta(y_r \mid x)))}$. Recognize the sigmoid $\sigma(z) = \frac{1}{1 + e^{-z}}$:
+
+$$= \arg\max_\theta \; \sigma\!\left( r_\theta(y_c \mid x) - r_\theta(y_r \mid x) \right)$$
+
+---
+
+## Deriving the reward model loss
+
+<!-- cite-right: ouyang2022training -->
+
+$$\theta^* = \arg\max_\theta \; \sigma\!\left( r_\theta(y_c \mid x) - r_\theta(y_r \mid x) \right)$$
+
+$\log$ is monotonic, so $\arg\max \sigma(\cdot) = \arg\max \log \sigma(\cdot)$:
+
+$$= \arg\max_\theta \; \log \sigma\!\left( r_\theta(y_c \mid x) - r_\theta(y_r \mid x) \right)$$
+
+Flip the sign to turn maximization into minimization (a loss):
+
+$$\mathcal{L}(\theta) = - \log \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) \right)$$
+
+---
+
+## Two equivalent forms of the loss
+
+The first form, as in InstructGPT [@ouyang2022training]:
+
+$$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) \right) \right)$$
+
+The second form, as in Anthropic's work [@askell2021general]:
+
+$$\mathcal{L}(\theta) = \log \left( 1 + e^{r_{\theta}(y_r \mid x) - r_{\theta}(y_c \mid x)} \right)$$
+
+These are equivalent: using $\sigma(\Delta) = \frac{1}{1 + e^{-\Delta}}$ gives $-\log\sigma(\Delta) = \log(1 + e^{-\Delta})$.
+
+Both are just **binary cross-entropy** — the reward model is learning to classify which completion was preferred.
+
+---
+
+<!-- rows: 35/65 -->
 ## Reward model training visualized
 
 The model computes a scalar score at the EOS token for each completion. The contrastive loss depends only on the **score difference** between chosen and rejected.
