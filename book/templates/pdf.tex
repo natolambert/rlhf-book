@@ -369,7 +369,9 @@ $endfor$
   breaksymbolright={}
 }
 % Wrap Pandoc's Shaded environment (which surrounds Highlighting blocks)
-% in a tcolorbox for a unified background + border
+% in a tcolorbox for a unified background + border.
+% Guard: Shaded is only defined when Pandoc emits highlighting-macros.
+$if(highlighting-macros)$
 \renewenvironment{Shaded}{%
   \begin{tcolorbox}[
     colback=codebg,
@@ -382,6 +384,7 @@ $endfor$
 }{%
   \end{tcolorbox}%
 }
+$endif$
 $if(lang)$
 \ifxetex
   % Load polyglossia as late as possible: uses bidi with RTL langages (e.g. Hebrew, Arabic)
