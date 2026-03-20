@@ -149,6 +149,18 @@ content: |
 
 ---
 
+## Why not stop at rejection sampling?
+
+Rejection sampling picks the best of $N$ completions — but never changes the policy.
+
+- **Rejection sampling**: sample $N$, keep the best → bounded by current policy's distribution
+- **RL**: update $\pi_\theta$ to make good completions more likely → shifts the distribution itself
+- RL **scales with compute**: more training steps → better policy, not just better selection
+
+RL is how we actually improve the model, not just filter its outputs.
+
+---
+
 <!-- layout: section-break -->
 
 ## RLVR Motivation
@@ -250,6 +262,17 @@ $$J(\pi) = \mathbb{E}\left[ r_\theta(x, y) \right] - \beta \, D_{\text{KL}}\!\le
 
 ---
 
+## Policy gradient: the intuition
+
+Before diving into the derivation, here's the key idea in four bullets:
+
+1. **Increase probability of good actions**: if the outcome was good, make that sequence of actions more likely
+2. **Log-derivative trick**: converts "change the probability" into something we can compute with gradient descent
+3. **Weight by outcome quality**: better outcomes get larger gradient updates
+4. **Everything else is variance reduction**: baselines, advantages, value functions, clipping — all serve to reduce noise in this core signal
+
+---
+
 ## The return
 
 The objective of the agent is the sum of discounted future rewards at time $t$:
@@ -260,7 +283,7 @@ This can also be written recursively:
 
 $$G_t = \gamma G_{t+1} + R_{t+1}$$
 
-In RLHF: $\gamma = 1$ (no discounting) because the unit of optimization is the collective completion, not individual tokens.
+In RLHF: often $\gamma = 1$ (no discounting) because the unit of optimization is the collective completion, not individual tokens.
 
 ---
 
@@ -270,7 +293,12 @@ The value function $V(s)$ is the **expected future return** given the current st
 
 $$V(s) = \mathbb{E}\big[G_t \mid S_t = s\big]$$
 
-This is the foundation for baselines and advantage estimation — core tools for reducing variance in policy gradient algorithms.
+Two related quantities:
+
+- **Action-value**: $Q(s, a) = \mathbb{E}[G_t \mid S_t = s, A_t = a]$ — expected return after taking action $a$ in state $s$
+- **Advantage**: $A(s, a) = Q(s, a) - V(s)$ — how much better is action $a$ compared to the average?
+
+These are the foundation for baselines and advantage estimation — core tools for reducing variance in policy gradient algorithms.
 
 ---
 
@@ -295,25 +323,6 @@ Sample prompts $x_i$ from a dataset, generate completions $y_i \sim \pi_\theta(\
 The parameter update follows:
 
 $$\theta \leftarrow \theta + \alpha \nabla_\theta J(\theta)$$
-
----
-
-## What $\Psi_t$ can be
-
-The general policy gradient uses a signal $\Psi_t$:
-
-$$g = \mathbb{E}_{\tau \sim \pi_\theta}\left[\sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t) \Psi_t\right]$$
-
-| $\Psi_t$ | Description | Variance | Bias |
-|-----------|-------------|----------|------|
-| $R(\tau)$ | Total trajectory reward | Highest | None |
-| $\sum_{t'=t}^{T} r_{t'}$ | Future return from $t$ | High | None |
-| $\sum_{t'=t}^{T} r_{t'} - b(s_t)$ | Baselined return | Lower | None |
-| $Q^{\pi}(s_t, a_t)$ | State-action value | Med | Depends |
-| $A^{\pi}(s_t, a_t)$ | Advantage | **Lowest** | None |
-| $r_t + \gamma V(s_{t+1}) - V(s_t)$ | TD residual | Low | Some |
-
-The advantage $A = Q - V$ gives the lowest theoretical variance if computed accurately.
 
 ---
 
@@ -432,15 +441,54 @@ $$\nabla_\theta \log p_\theta(\tau) = \sum_{t=0}^{T} \nabla_\theta \log \pi_\the
 
 ---
 
-## The policy gradient theorem
+## From full return to future rewards
+
+An action at time $t$ can't affect rewards already received. So instead of weighting by the full trajectory reward $R(\tau)$:
+
+$$\nabla_\theta J = \mathbb{E}\!\left[\sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot R(\tau)\right]$$
+
+We can replace $R(\tau)$ with the **return-to-go** — only future rewards from $t$ onward:
+
+$$\nabla_\theta J = \mathbb{E}\!\left[\sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot \sum_{t'=t}^{T} R_{t'}\right]$$
+
+This doesn't change the expected gradient, but removes noise from past rewards that the current action couldn't have influenced.
+
+---
+
+## Baselines keep the estimator unbiased
+
+Subtracting a baseline $b(s_t)$ from the return doesn't change the expected gradient:
+
+$$\mathbb{E}[\nabla_\theta \log \pi_\theta(a \mid s) \cdot b(s)] = b(s) \cdot \sum_a \nabla_\theta \pi_\theta(a \mid s) = b(s) \cdot \nabla_\theta \underbrace{\sum_a \pi_\theta(a \mid s)}_{= 1} = 0$$
+
+The gradient of a normalized distribution sums to zero — so we're free to subtract **any function of state** as a baseline. This is why baselines reduce variance without introducing bias.
+
+---
+
+## The policy gradient estimator
 
 Substituting back:
 
 $$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}\!\left[\sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot \Psi_t\right]$$
 
-Where $\Psi_t$ can be total return, future return, advantage, etc. (see the table from earlier).
+Where $\Psi_t$ can be total return, future return, advantage, etc.
 
 This is the **policy gradient theorem** — the foundation for all algorithms in this lecture.
+
+---
+
+## What $\Psi_t$ can be
+
+The general policy gradient uses a signal $\Psi_t$. Here are the common choices:
+
+| $\Psi_t$ | Description | Variance | Bias |
+|-----------|-------------|----------|------|
+| $R(\tau)$ | Total trajectory reward | Highest | None |
+| $\sum_{t'=t}^{T} R_{t'}$ | Future return from $t$ | High | None |
+| $\sum_{t'=t}^{T} R_{t'} - b(s_t)$ | Baselined return | Lower | None |
+| $A^{\pi}(s_t, a_t)$ | Advantage | **Lowest** | None |
+
+The advantage $A = Q - V$ gives the lowest theoretical variance if computed accurately.
 
 ---
 
@@ -515,9 +563,9 @@ $$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}\!\left[\sum_{t=0}^
 Common baselines:
 - **Average reward** over the batch (simplest)
 - **Moving average** of recent rewards
-- **Learned value function** $V_\phi(s)$
+- **Learned value function** $V_\phi(s)$ (optional — bridges to actor-critic methods)
 
-REINFORCE uses Monte Carlo estimates — no learned value function needed.
+Basic REINFORCE needs no critic — just Monte Carlo returns and a simple baseline. Adding a learned $V_\phi$ reduces variance further but introduces the complexity of training a second model.
 
 ---
 
@@ -572,6 +620,30 @@ Both are the foundation for everything that follows:
 
 ---
 
+## From sequence reward to token-level training
+
+The reward model gives one scalar $R(x, y)$ at the end of a completion. How does this become a per-token training signal?
+
+1. **KL penalty shapes intermediate tokens**: at each token $t$, subtract $\beta \cdot \text{KL}_t$ from the reward → per-token reward signal
+2. **Final token gets the RM score**: $r_T = R(x, y) - \beta \, \text{KL}_T$, all other tokens get $r_t = -\beta \, \text{KL}_t$
+3. **GAE propagates credit backward**: the value function + TD residuals assign per-token advantages from these shaped rewards
+
+This is how a sequence-level reward becomes token-level PPO training.
+
+---
+
+## If REINFORCE is so simple, why PPO?
+
+REINFORCE and RLOO work — but they have limitations:
+
+- **High variance**: sequence-level advantages are noisy, especially for long completions
+- **No sample reuse**: each batch is used once, then discarded
+- **No trust region**: a single bad batch can destabilize the policy
+
+PPO addresses all three: per-token credit assignment via GAE, multiple gradient steps per batch via importance sampling, and clipped updates to prevent catastrophic steps.
+
+---
+
 <!-- layout: section-break -->
 
 ## Proximal Policy Optimization (PPO)
@@ -588,19 +660,7 @@ Large gradient steps can destroy the policy:
 - Reward hacking exploits reward model weaknesses
 - Training becomes unstable — reward spikes then collapses
 
-**We need trust regions**: each update should be a small, safe step near the current policy.
-
----
-
-## Trust regions: intuition
-
-**The idea**: limit how far the policy can move in a single update.
-
-- Too big a step → policy collapses, reward crashes
-- Too small a step → training is prohibitively slow
-- PPO finds a middle ground: clip the update to stay within a trust region
-
-The idea of a "trust region" comes from numerical optimization, popularized in Deep RL by Trust Region Policy Optimization (TRPO) — PPO's predecessor.
+The solution: **trust regions** — limit how far the policy can move in a single update. Too big a step → policy collapses, reward crashes. Too small → prohibitively slow. PPO clips the update to stay within a trust region.
 
 ---
 
@@ -709,7 +769,7 @@ But this simple estimate has issues: high variance (from Monte Carlo returns) or
 
 The temporal difference (TD) residual measures how much the actual reward exceeded the value prediction:
 
-$$\delta_t = r_t + \gamma V(s_{t+1}) - V(s_t)$$
+$$\delta_t = R_t + \gamma V(s_{t+1}) - V(s_t)$$
 
 This is the **1-step advantage estimate**: low variance (uses learned $V$) but potentially high bias (if $V$ is inaccurate).
 
@@ -753,7 +813,7 @@ The $\gamma$ here is typically $1.0$ for language models (no discounting).
 
 ---
 
-## PPO with KL penalty
+## PPO-RLHF: full policy objective
 
 The full RLHF objective combines PPO with a KL regularizer:
 
@@ -802,7 +862,7 @@ This is memory-intensive — a key motivation for simpler alternatives like GRPO
 
 ---
 
-## GRPO: key insight
+## Can we keep PPO's stability without the critic?
 
 <!-- cite-right: shao2024deepseekmath -->
 
@@ -861,7 +921,7 @@ Both use multiple completions per prompt. The key difference is in the details:
 |---|---------|----------|
 | **Baseline** | Leave-one-out mean | Group mean (z-scored) |
 | **Update style** | REINFORCE (no clipping) | PPO-style clipped ratio |
-| **KL penalty** | In reward | In loss |
+| **KL penalty** | Optional (in reward) | In loss |
 | **Advantage** | $R_k - \frac{1}{K-1}\sum_{j \neq k} R_j$ | $\frac{r_i - \text{mean}}{\text{std}}$ |
 
 Same principle (compare to peers), different mechanics. Dr. GRPO (without std normalization) is equivalent to RLOO up to a scaling constant.
@@ -876,19 +936,9 @@ Same principle (compare to peers), different mechanics. Dr. GRPO (without std no
 
 **GSPO** uses a geometric mean — a single, length-normalized importance weight per response:
 
-$$\rho_i(\theta) = \left(\frac{\pi_\theta(a_i \mid s)}{\pi_{\theta_\text{old}}(a_i \mid s)}\right)^{1/|a_i|} = \exp\!\left(\frac{1}{|a_i|}\sum_{t=1}^{|a_i|} \log \frac{\pi_\theta(a_{i,t} \mid s)}{\pi_{\theta_\text{old}}(a_{i,t} \mid s)}\right)$$
+$$\rho_i(\theta) = \exp\!\left(\frac{1}{|a_i|}\sum_{t=1}^{|a_i|} \log \frac{\pi_\theta(a_{i,t} \mid s)}{\pi_{\theta_\text{old}}(a_{i,t} \mid s)}\right)$$
 
----
-
-## GSPO: why geometric mean?
-
-Products of many small numbers $\to$ underflow. Products of numbers slightly above 1 $\to$ overflow.
-
-The geometric mean stays in a reasonable numerical range for any sequence length.
-
-$$\text{Product ratio: } \prod_{t=1}^{T} \frac{\pi_\theta(a_t)}{\pi_{\text{old}}(a_t)} \quad \text{vs.} \quad \text{Geometric mean: } \left(\prod_{t=1}^{T} \frac{\pi_\theta(a_t)}{\pi_{\text{old}}(a_t)}\right)^{1/T}$$
-
-Same gradient direction, better numerics. The clipping range $\varepsilon$ now operates on a per-token average scale.
+The geometric mean stays in a reasonable numerical range for any sequence length — similar gradient signal, better numerics. The clipping range $\varepsilon$ now operates on a per-token average scale.
 
 ---
 
@@ -896,25 +946,13 @@ Same gradient direction, better numerics. The clipping range $\varepsilon$ now o
 
 <!-- cite-right: minimax2025minimaxm1scalingtesttimecompute -->
 
-CISPO takes a different approach: clip the **importance weights themselves** rather than the objective, using a stop-gradient:
+CISPO clips the **importance weights themselves** rather than the objective, using a stop-gradient:
 
 $$J(\theta) = \sum_{i,t} \text{sg}\!\left(\hat{\rho}_{i,t}\right) A_{i,t} \log \pi_\theta(a_{i,t} \mid s)$$
 
-$$\hat{\rho}_{i,t} = \text{clip}\!\left(\frac{\pi_\theta(a_{i,t})}{\pi_{\text{old}}(a_{i,t})},\; 1-\varepsilon,\; 1+\varepsilon\right)$$
+$$\hat{\rho}_{i,t} = \text{clip}\!\left(\frac{\pi_\theta(a_{i,t})}{\pi_{\text{old}}(a_{i,t})},\; 1-\varepsilon^{-},\; 1+\varepsilon^{+}\right)$$
 
-**Key difference from PPO**: clipping weights (not the objective) means every token still receives a gradient signal — the weight just bounds how much it's amplified.
-
----
-
-## CISPO: asymmetric clipping
-
-CISPO allows different bounds for increasing vs. decreasing probability:
-
-$$\text{clip}(\rho,\; 1 - \varepsilon^{-},\; 1 + \varepsilon^{+})$$
-
-Setting $\varepsilon^{+} > \varepsilon^{-}$ allows more aggressive reward-increasing updates — encouraging exploration.
-
-This is similar to DAPO's "clip-higher" modification for reasoning models, where exploring new token sequences is crucial.
+**Key difference from PPO**: every token still receives a gradient signal — the weight just bounds how much it's amplified. Asymmetric bounds ($\varepsilon^{+} > \varepsilon^{-}$) allow more aggressive reward-increasing updates — encouraging exploration (similar to DAPO's "clip-higher" for reasoning models).
 
 ---
 
@@ -939,32 +977,16 @@ $$\text{PPO (2017)} \to \text{REINFORCE revival (2024)} \to \text{RLOO} \to \tex
 
 ## Algorithm comparison table
 
-| Method | Reward Model | Value Function | Reference Policy |
-|:-------|:------------:|:--------------:|:----------------:|
-| **REINFORCE** | Yes | No | No |
-| **RLOO** | Yes | No | No |
-| **PPO** | Yes | Yes | Yes |
-| **GRPO** | Yes | No | Yes |
-| **GSPO** | Yes | No | Yes |
-| **CISPO** | Yes | No | Yes |
+| Method | Models | Rollouts | Value Function | Reference Policy |
+|:-------|:------:|:--------:|:--------------:|:----------------:|
+| **REINFORCE** | 2 | 1 | No | No |
+| **RLOO** | 2 | K | No | No |
+| **PPO** | 4 | 1 | Yes | Yes |
+| **GRPO** | 3 | G | No | Yes |
+| **GSPO** | 3 | G | No | Yes |
+| **CISPO** | 3 | G | No | Yes |
 
-All are on-policy in derivation (slightly off-policy in practice).
-
----
-
-## Complexity spectrum
-
-```box
-title: Simple → Complex
-tone: accent
-content: |
-  **REINFORCE** → **RLOO** → **GRPO** → **PPO**
-
-  - Models needed: 2 → 2 → 3 → 4
-  - Memory footprint: Low → Low → Medium → High
-  - Implementation complexity: Low → Low → Medium → High
-  - Per-token credit assignment: No → No → No → Yes (GAE)
-```
+All are on-policy in derivation (slightly off-policy in practice). Complexity spectrum: **REINFORCE → RLOO → GRPO → PPO** (2→4 models, low→high memory).
 
 ---
 
@@ -980,23 +1002,9 @@ content: |
 
 ---
 
-## Key insight
-
-**Data quality and reward signal quality matter more than algorithm choice.**
-
-All of these methods optimize the same policy gradient objective. They differ in:
-
-- **Variance reduction**: baselines, value functions, group statistics
-- **Trust region enforcement**: clipping, KL penalties, importance sampling corrections
-- **Compute requirements**: number of models in memory, implementation complexity
-
-The algorithm determines the engineering complexity and resource requirements — not the ceiling of what's achievable.
-
----
-
 ## Lecture summary
 
-All methods optimize the **same** policy gradient objective:
+**Data quality and reward signal quality matter more than algorithm choice.** All methods optimize the **same** policy gradient objective:
 
 $$\nabla_\theta J(\theta) = \mathbb{E}\!\left[\sum_t \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot \Psi_t\right]$$
 
@@ -1008,86 +1016,14 @@ They differ in:
 
 ---
 
-<!-- rows: 50/50 -->
-## Next up: Implementation!
+## Next lecture: RL Implementation
 
-<!-- row-columns: 32/36/32 -->
+Lecture 4 turns these algorithms into working code:
 
-```box
-title: Overview
-tone: muted
-compact: true
-content: |
-  1. Introduction
-  2. Key Related Works
-  3. Training Overview
-```
-
-|||
-
-```box
-title: Core Training Pipeline
-tone: accent
-compact: true
-content: |
-  4. Instruction Tuning
-  5. Reward Models
-  6. **Reinforcement Learning**
-  7. **Reasoning**
-  8. Direct Alignment
-  9. Rejection Sampling
-```
-
-|||
-
-```box
-title: Data & Preferences
-tone: muted
-compact: true
-content: |
-  10. What are Preferences
-  11. Preference Data
-  12. Synthetic Data & CAI
-```
-
-===
-
-<!-- row-columns: 32/36/32 -->
-
-```box
-title: Practical Considerations
-tone: muted
-compact: true
-content: |
-  13. Tool Use
-  14. Over-optimization
-  15. Regularization
-  16. Evaluation
-  17. Product & Character
-```
-
-|||
-
-```box
-title: Appendices
-tone: surface
-compact: true
-content: |
-  - A. Definitions
-  - B. Style & Information
-  - C. Practical Issues
-```
-
-|||
-
-```box
-title: Course Home
-tone: surface
-compact: true
-content: |
-  - [rlhfbook.com](https://rlhfbook.com)
-  - [GitHub repo](https://github.com/natolambert/rlhf-book)
-```
+- **Token-level losses**: log-prob computation, autoregressive shift, masking
+- **Loss aggregation**: per-sequence vs per-token normalization and why it matters
+- **Cached rollouts**: what to store (log-probs, values, ref log-probs) and what goes wrong when you don't
+- **PPO/GRPO debugging**: monitoring training, identifying reward hacking, fixing common failures
 
 ---
 
