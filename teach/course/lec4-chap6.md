@@ -399,8 +399,8 @@ for t in reversed(range(L)):
     advantages[:, t] = gae
     next_v = values[:, t]
 
-targets = advantages + values      # for value regression
-advantages = advantages.detach()   # for policy loss
+targets = (advantages + values).detach()  # frozen at rollout time
+advantages = advantages.detach()          # for policy loss
 ```
 
 The backward loop accumulates TD errors with exponential decay $(\gamma\lambda)^l$.
@@ -434,7 +434,7 @@ PPO reuses each batch for $K$ gradient steps:
 - $K$ too large (>6) = too far off-policy, ratios diverge
 - Typical: $K = 2$–$4$
 
-With $K = 1$: $\pi_\theta = \pi_{\theta_\text{old}}$, ratios are always 1, and PPO reduces to vanilla policy gradient (no clipping ever activates).
+With $K = 1$ and no minibatching: $\pi_\theta = \pi_{\theta_\text{old}}$, ratios are always 1, and PPO reduces to vanilla policy gradient. With minibatching, later minibatches see updated $\pi_\theta$, so clipping can still activate even at $K = 1$.
 
 ---
 
@@ -637,7 +637,7 @@ rho = torch.exp(log_ratio.sum(dim=1) / mask.sum(dim=1))  # (B*G,)
 # Clip importance weights, stop gradient
 rho = torch.exp(new_logps - old_logps)
 rho_clipped = torch.clamp(rho, 1 - eps, 1 + eps).detach()
-loss = -(rho_clipped * advantages * new_logps).mean()
+loss = -(rho_clipped * advantages * new_logps * mask).sum() / mask.sum()
 ```
 
 ---

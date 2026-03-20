@@ -894,7 +894,7 @@ Clipped ratio (like PPO) + group-normalized advantages + KL penalty directly in 
 
 $$J(\theta) = \frac{1}{G}\sum_{i=1}^{G}\!\left(\min\!\left(r_i \hat{A}_i,\, \text{clip}(r_i, 1-\varepsilon, 1+\varepsilon) \hat{A}_i\right) - \beta \, D_{\text{KL}}(\pi_\theta \| \pi_\text{ref})\right)$$
 
-Where $r_i = \frac{\pi_\theta(a_i \mid s)}{\pi_{\theta_\text{old}}(a_i \mid s)}$ is the importance sampling ratio.
+Where the clipping applies **per-token**: $r_{i,t} = \frac{\pi_\theta(a_{i,t} \mid s_t)}{\pi_{\theta_\text{old}}(a_{i,t} \mid s_t)}$, but $\hat{A}_i$ is shared across all tokens in the completion (sequence-level advantage, per-token ratio).
 
 ---
 
