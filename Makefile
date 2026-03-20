@@ -47,8 +47,8 @@ PANDOC_COMMAND = pandoc
 DOCX_ARGS = --standalone --reference-doc book/templates/docx.docx
 EPUB_ARGS = --template book/templates/epub.html --epub-cover-image $(EPUB_COVER_IMAGE)
 HTML_ARGS = --template book/templates/html.html --standalone --to html5 --listings
-PDF_ARGS = --template book/templates/pdf.tex --pdf-engine pdflatex --listings
-LATEX_ARGS = --template book/templates/pdf.tex --pdf-engine pdflatex --listings
+PDF_ARGS = --template book/templates/pdf.tex --pdf-engine pdflatex
+LATEX_ARGS = --template book/templates/pdf.tex --pdf-engine pdflatex
 NESTED_HTML_TEMPLATE = book/templates/chapter.html
 ARXIV_ZIP = $(BUILD)/arxiv.zip
 

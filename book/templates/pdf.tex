@@ -254,40 +254,11 @@ $endif$
 $if(beamer)$
 \newif\ifbibliography
 $endif$
-$if(listings)$
-\usepackage{listings}
-\definecolor{codebg}{HTML}{F6F6F6}
-\definecolor{codeborder}{HTML}{E8E8E8}
-% for line wrapping
-\allowdisplaybreaks
 \newcommand{\passthrough}[1]{#1}
-\lstset{
-  % wrapping
-  breaklines=true,
-  breakatwhitespace=false,
-  postbreak=\space,
-  basicstyle=\footnotesize\ttfamily,
-  % Some extra vertical space between lines
-  lineskip=1pt,
-  % Preserve spacing and improve wrapping behavior for code
-  columns=fullflexible,
-  keepspaces=true,
-  showstringspaces=false,
-  upquote=true,
-  % Light border, background, padding
-  frame=single,
-  framerule=0.5pt,
-  rulecolor=\color{codeborder},
-  framesep=8pt,
-  xleftmargin=0pt,
-  xrightmargin=0pt,
-  backgroundcolor=\color{codebg}
-}
-$endif$
-$if(lhs)$
-\lstnewenvironment{code}{\lstset{language=Haskell,basicstyle=\small\ttfamily}}{}
-$endif$
 $if(highlighting-macros)$
+% Pandoc's built-in LaTeX highlighting is based on fancyvrb. `fvextra`
+% adds the `breaklines` and `breakanywhere` options used below.
+\usepackage{fvextra}
 $highlighting-macros$
 $endif$
 $if(tables)$
@@ -371,6 +342,25 @@ $endif$
 $for(header-includes)$
 $header-includes$
 $endfor$
+% Pandoc's built-in LaTeX highlighter uses fancyvrb's `Highlighting`
+% environment. Redefine it after Pandoc emits its default definition so
+% long code lines wrap cleanly in the PDF output.
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{
+  % Keep Pandoc's inline formatting commands working inside highlighted code
+  commandchars=\\\{\},
+  fontsize=\footnotesize,
+  breaklines=true,
+  % Permit wrapping within long uninterrupted tokens like URLs
+  breakanywhere=true
+}
+% Plain, unlabeled fenced code blocks are emitted as the standard `verbatim`
+% environment rather than `Highlighting`, so give them the same wrapping and
+% font-size behavior
+\RecustomVerbatimEnvironment{verbatim}{Verbatim}{
+  fontsize=\footnotesize,
+  breaklines=true,
+  breakanywhere=true
+}
 $if(lang)$
 \ifxetex
   % Load polyglossia as late as possible: uses bidi with RTL langages (e.g. Hebrew, Arabic)
