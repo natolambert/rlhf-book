@@ -160,7 +160,7 @@ This idea is closely related to other methods discussed in this chapter, and lik
 Now, RL with rubrics as rewards is established in providing meaningful improvements across skills such as scientific reasoning or factuality [@gunjal2025rubrics; @viswanathan2025checklists; @rezaei2025onlinerubrics; @liu2025openrubrics].
 
 An example rubric is shown below with its associated prompt [@liu2025openrubrics]:
-```
+```text
 **Prompt**: As a museum curator, can you suggest five obscure artifacts that would be perfect for a "Mysteries of the Ancient World" exhibit? Each artifact should come from a different culture and time period, with a brief description of their historical significance and mysterious origins. These artifacts should leave visitors wondering about the secrets and lost knowledge of our past. Thank you for your expertise in bringing this exhibit to life.
 
 ** Rubric**: 
@@ -182,7 +182,7 @@ Rubric generation is generally done per-prompt in the training data, which accum
 To alleviate this, a general rubric is often applied as a starting point per-domain, and then the fine-grained rubric scores per-prompt are assigned by a supervising language model to guide the feedback for training.
 An example prompt to generate a rubric for a science task is shown below [@gunjal2025rubrics]:
 
-```
+```text
 You are an expert rubric writer for science questions in the domains of Biology, Physics, and Chemistry. 
 Your job is to generate a self-contained set of evaluation criteria ("rubrics") for judging how good a response is to a given question in one of these domains. 
 Rubrics can cover aspects such as factual correctness, depth of reasoning, clarity, completeness, style, helpfulness, and common pitfalls. 
@@ -233,7 +233,7 @@ The reference answer is an ideal response but not necessarily exhaustive; use it
 
 Another, simpler example follows as [@rezaei2025onlinerubrics]:
 
-```
+```text
 SYSTEM:
 You generate evaluation rubrics for grading an assistant's response to a user prompt.
 
