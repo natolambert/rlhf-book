@@ -466,7 +466,7 @@ With the cost of preference data, a large research area emerged to use existing 
 The core idea is to prompt a language model with instructions on how to judge, a prompt, and two completions (much as would be done with human labelers). 
 An example prompt, from one of the seminal works here for the chat evaluation MT-Bench [@zheng2023judging], follows:
 
-```
+```text
 [System]
 Please act as an impartial judge and evaluate the quality of the responses provided by two AI assistants to the user question displayed below.
 You should choose the assistant that follows the user's instructions and answers the user's question better.

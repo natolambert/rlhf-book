@@ -37,7 +37,7 @@ The post-training process begins with defining a pattern to format user queries 
 When using a pretrained language model, the prompting is quite simple. The model only knows a few tokens: a beginning-of-sequence token (e.g., `<bos_token>`), an end-of-sequence token (e.g., `<eos_token>`), and a padding token (to manage training on batches with empty components).
 This means, to prompt a base model, the user inputs a sequence of tokens for the model to continue from, such as:
 
-```
+```text
 <bos_token> The capital of the United States is
 ```
 
@@ -99,7 +99,7 @@ In order to translate all this information into tokens, we use the code listing 
 The model has a series of *special tokens* that separate the various messages from each other.
 If we run the above code with the example query "How many helicopters can a human eat in one sitting?", the token sequence passed into the model would look as follows:
 
-```
+```text
 <|im_start|>system
 You are a friendly chatbot who always responds in the style of a pirate<|im_end|>
 <|im_start|>user
@@ -113,7 +113,7 @@ By packing all question-answer pair data (and downstream preference tuning data)
 
 The behavior can be extended naively to multiple turns, such as shown below:
 
-```
+```text
 <|im_start|>system
 You are a friendly chatbot who always responds in the style of a pirate<|im_end|>
 <|im_start|>user
@@ -132,7 +132,7 @@ Now, OpenAI and other model providers use a hierarchical system where the user c
 
 Many other chat templates exist. Some other examples include Zephyr's [@tunstall2023zephyr]:
 
-```
+```text
 <|system|>
 You are a friendly chatbot who always responds in the style of a pirate</s>
 <|user|>
@@ -142,7 +142,7 @@ How many helicopters can a human eat in one sitting?</s>
 
 Or Tülu's:
 
-```
+```text
 <|user|>
 How are you doing?
 <|assistant|>
