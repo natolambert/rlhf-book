@@ -255,10 +255,11 @@ $if(beamer)$
 \newif\ifbibliography
 $endif$
 \newcommand{\passthrough}[1]{#1}
-$if(highlighting-macros)$
-% Pandoc's built-in LaTeX highlighting is based on fancyvrb. `fvextra`
-% adds the `breaklines` and `breakanywhere` options used below.
+% Pandoc's built-in LaTeX highlighting and plain fenced code blocks are based on
+% fancyvrb. `fvextra` adds the `breaklines` and `breakanywhere` options used by
+% the `Highlighting` and `verbatim` overrides below.
 \usepackage{fvextra}
+$if(highlighting-macros)$
 $highlighting-macros$
 $endif$
 $if(tables)$
