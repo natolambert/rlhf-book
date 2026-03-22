@@ -140,22 +140,21 @@ $table-of-contents$
 </nav>
 $endif$
 $if(lecture-video)$
+<li class="toc-lecture-link" id="toc-lecture-link" hidden>
+  <a href="$lecture-video$" target="_blank" rel="noopener">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -2px;"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+    $lecture-label$
+  </a>
+</li>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     var toc = document.getElementById('TOC');
-    if (!toc) return;
+    var li = document.getElementById('toc-lecture-link');
+    if (!toc || !li) return;
     var topUl = toc.querySelector('ul');
     if (!topUl) return;
-    var li = document.createElement('li');
-    li.className = 'toc-lecture-link';
-    var link = document.createElement('a');
-    link.href = '$lecture-video$';
-    link.target = '_blank';
-    link.rel = 'noopener';
-    link.title = '$lecture-label$';
-    link.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -2px;"><polygon points="5 3 19 12 5 21 5 3"/></svg> $lecture-label$';
-    li.appendChild(link);
     topUl.appendChild(li);
+    li.hidden = false;
   });
 </script>
 $endif$
