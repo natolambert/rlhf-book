@@ -11,6 +11,8 @@ page-title: Training Overview
 search-title: "Chapter 3: Training Overview"
 next-chapter: "Instruction Tuning"
 next-url: "04-instruction-tuning"
+lecture-video: "https://youtu.be/o6l6tJQgUg4"
+lecture-label: "Lecture 1: Overview (Chapters 1–3)"
 ---
 
 # Training Overview
