@@ -32,7 +32,7 @@ custom_css: |
 <p class="colloquium-title-name">Nathan Lambert</p>
 </div>
 
-<p class="colloquium-title-note">Course on RLHF and post-training. Chapters 6 & 7</p>
+<p class="colloquium-title-note">Course on RLHF and post-training. Chapter 6, Part 1</p>
 
 ---
 
@@ -61,7 +61,7 @@ content: |
   4. Instruction Tuning
   5. Reward Models
   6. **Reinforcement Learning**
-  7. **Reasoning**
+  7. Reasoning
   8. Direct Alignment
   9. Rejection Sampling
 ```
@@ -126,7 +126,18 @@ After instruction tuning and training a reward model, the RL step updates the po
 
 ===
 
-![The RLHF pipeline — the RL step optimizes the policy using the reward model signal.](assets/rlhf_schematic.png)
+![The RLHF training pipeline — the RL step optimizes the policy using the reward model signal.](assets/rlhf-basic.png)
+
+---
+
+<!-- columns: 50/50 -->
+## Where we are in the pipeline
+
+After instruction tuning and training a reward model, the RL step updates the policy against a learned reward signal.
+
+|||
+
+![The RLHF training pipeline — the RL step optimizes the policy using the reward model signal.](assets/rlhf-overview.png)
 
 ---
 
@@ -138,7 +149,7 @@ This lecture covers the **math and theory** of RL for language models. The next 
 title: Lecture 3 Outline
 tone: accent
 content: |
-  1. **RLVR motivation** — why RL matters now more than ever
+  1. **Motivation** — why RL training matters
   2. **RL foundations review** — MDP, return, value functions, policy gradient objective
   3. **Policy gradient derivation** — log-derivative trick, step by step
   4. **REINFORCE & RLOO** — the simplest policy gradient algorithms
@@ -163,7 +174,7 @@ RL is how we actually improve the model, not just filter its outputs.
 
 <!-- layout: section-break -->
 
-## RLVR Motivation
+## Why RL Matters
 
 ---
 
@@ -206,27 +217,7 @@ Same policy gradient algorithms, different reward source. We will cover reasonin
 
 <!-- layout: section-break -->
 
-## RL Foundations Review
-
----
-
-<!-- columns: 65/35 -->
-## Recall: the MDP formulation
-
-<!-- cite-right: sutton2018reinforcement -->
-
-A reinforcement learning problem is often written as a **Markov Decision Process (MDP)**:
-
-- State space $\mathcal{S}$, action space $\mathcal{A}$
-- Transition dynamics $P(s_{t+1} \mid s_t, a_t)$
-- Reward function $r(s_t, a_t)$, discount factor $\gamma$
-- Optimize cumulative return over a trajectory
-
-$$\text{MDP } (\mathcal{S}, \mathcal{A}, P, r, \gamma)$$
-
-|||
-
-![](assets/rl.png)
+## Policy Gradients
 
 ---
 
@@ -237,22 +228,16 @@ $$\text{MDP } (\mathcal{S}, \mathcal{A}, P, r, \gamma)$$
 
 <div class="text-sm">
 
-**Classical RL**
-- Agent takes actions $a_t$ in an environment with states $s_t$
-- Reward is a known function $r(s_t, a_t)$ from the environment per step
-- Optimize cumulative return over a trajectory
-
-$$J(\pi) = \mathbb{E}_{\tau \sim \pi}\!\left[\sum_{t=0}^{T} \gamma^t r(s_t, a_t)\right]$$
+**Classical RL**: agent in an MDP $(\mathcal{S}, \mathcal{A}, P, r, \gamma)$
+- Reward is a known function from the environment per step
+- Optimize cumulative return: $J(\pi) = \mathbb{E}_{\tau \sim \pi}\!\left[\sum_{t} \gamma^t r(s_t, a_t)\right]$
 
 <div class="colloquium-spacer-md"></div>
 
-**RLHF**
-- No environment — prompts sampled from a dataset
-- Reward is **learned** from human preferences (a proxy)
-- **Response-level** reward (bandit-style, not per-token)
-- Regularized with **KL penalty** to stay close to the base model
-
-$$J(\pi) = \mathbb{E}\left[ r_\theta(x, y) \right] - \beta \, D_{\text{KL}}\!\left(\pi \| \pi_{\text{ref}}\right)$$
+**RLHF**: prompts from a dataset, no environment
+- Reward is **learned** from human preferences
+- **Response-level** reward, regularized with KL penalty
+- $J(\pi) = \mathbb{E}\left[ r_\theta(x, y) \right] - \beta \, D_{\text{KL}}\!\left(\pi \| \pi_{\text{ref}}\right)$
 
 </div>
 
@@ -260,11 +245,13 @@ $$J(\pi) = \mathbb{E}\left[ r_\theta(x, y) \right] - \beta \, D_{\text{KL}}\!\le
 
 ![](assets/rlhf.png)
 
+This lecture uses $(s, a)$ from RL and $(x, y)$ from the LM context interchangeably: $s = x$ (prompt), $a = y$ (completion).
+
 ---
 
 ## Policy gradient: the intuition
 
-Before diving into the derivation, here's the key idea in four bullets:
+The core idea of policy gradient methods in four bullets:
 
 1. **Increase probability of good actions**: if the outcome was good, make that sequence of actions more likely
 2. **Log-derivative trick**: converts "change the probability" into something we can compute with gradient descent
@@ -273,101 +260,80 @@ Before diving into the derivation, here's the key idea in four bullets:
 
 ---
 
-## The return
+## The policy gradient equation
 
-The objective of the agent is the sum of discounted future rewards at time $t$:
+All policy gradient algorithms are instantiations of one equation:
 
-$$G_t = R_{t+1} + \gamma R_{t+2} + \cdots = \sum_{k=0}^{\infty} \gamma^k R_{t+k+1}$$
+$$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}\!\left[\sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot \Psi_t\right]$$
 
-This can also be written recursively:
+Where $\Psi_t$ is a **signal** that tells the optimizer how good the action was. The choice of $\Psi_t$ determines the algorithm's variance, bias, and compute cost.
 
-$$G_t = \gamma G_{t+1} + R_{t+1}$$
-
-In RLHF: often $\gamma = 1$ (no discounting) because the unit of optimization is the collective completion, not individual tokens.
+We'll first survey the options for $\Psi_t$, then derive where this equation comes from.
 
 ---
 
-## Value function
+## What $\Psi_t$ can be
 
-The value function $V(s)$ is the **expected future return** given the current state:
+<!-- cite-right: schulman2015high -->
 
-$$V(s) = \mathbb{E}\big[G_t \mid S_t = s\big]$$
+A taxonomy of choices for $\Psi_t$ (rewards can also be discounted by $\gamma$):
 
-Two related quantities:
+| | $\Psi_t$ | Description | Variance | Bias |
+|:-:|-----------|-------------|:--------:|:----:|
+| 1. | $R(\tau) = \sum_{t=0}^{T} r_t$ | Total trajectory reward | Highest | None |
+| 2. | $\sum_{t'=t}^{T} r_{t'}$ | Future return from $t$ (the return, $G_t$) | High | None |
+| 3. | $\sum_{t'=t}^{T} r_{t'} - b(s_t)$ | Baselined return | Lower | None |
+| 4. | $Q^{\pi}(s_t, a_t)$ | State-action value function | Med | Depends |
+| 5. | $A^{\pi}(s_t, a_t) = Q - V$ | Advantage function | **Lowest** | None |
+| 6. | $r_t + \gamma V(s_{t+1}) - V(s_t)$ | TD residual | Low | Some |
 
-- **Action-value**: $Q(s, a) = \mathbb{E}[G_t \mid S_t = s, A_t = a]$ — expected return after taking action $a$ in state $s$
-- **Advantage**: $A(s, a) = Q(s, a) - V(s)$ — how much better is action $a$ compared to the average?
-
-These are the foundation for baselines and advantage estimation — core tools for reducing variance in policy gradient algorithms.
-
----
-
-## Policy gradient objective
-
-All policy gradient algorithms optimize a policy $\pi_\theta(a \mid s)$ to maximize expected return.
-
-Where $d^{\pi_\theta}(s)$ is the state-visitation distribution induced by the policy:
-
-$$J(\theta) = \sum_{s} d^{\pi_\theta}(s) V^{\pi_\theta}(s)$$
+A *baseline* $b(s_t)$ is any value subtracted from the reward signal to reduce variance — we'll show why this is unbiased shortly.
 
 ---
 
-## Empirical estimate
+## Unpacking the key quantities
 
-In practice, we never compute $J(\theta)$ exactly. We estimate from data:
+The $\Psi_t$ options reference three key quantities:
 
-$$\hat{J}(\theta) = \frac{1}{B}\sum_{i=1}^{B} R(x_i, y_i)$$
+**Value function** $V(s)$: expected future return from state $s$
 
-Sample prompts $x_i$ from a dataset, generate completions $y_i \sim \pi_\theta(\cdot \mid x_i)$, score with reward model, and average.
+$$V(s) = \mathbb{E}\big[G_t \mid S_t = s\big] \quad \text{where } G_t = \sum_{k=0}^{\infty} \gamma^k R_{t+k+1}$$
 
-The parameter update follows:
+**Action-value** $Q(s, a)$: expected return after taking action $a$ in state $s$
 
-$$\theta \leftarrow \theta + \alpha \nabla_\theta J(\theta)$$
+$$Q(s, a) = \mathbb{E}[G_t \mid S_t = s, A_t = a]$$
+
+**Advantage** $A(s, a) = Q(s, a) - V(s)$: how much better is action $a$ compared to average? Positive → reinforce, negative → suppress, zero → no update.
+
+In RLHF: often $\gamma = 1$ (no discounting) because the unit of optimization is the full completion.
 
 ---
 
-## MDP vs. Bandit framing
+## MDP vs. Bandit: which $\Psi_t$ options apply?
 
 <!-- columns: 50/50 -->
 
 **MDP (token-level)**
 - Each token $a_t$ is an action with state $s_t$ (running prefix)
-- Per-token advantages via learned value function
+- Per-token $\Psi_t$ via learned value function (options 4–6)
 - Used in PPO with GAE
 
 |||
 
 **Bandit (sequence-level)**
 - Whole completion = single action, one scalar reward
-- Sequence-level advantage broadcast to all tokens
+- Sequence-level $\Psi_t$ broadcast to all tokens (options 1–3)
 - Used in RLOO, GRPO
 
 <div class="colloquium-spacer-md"></div>
 
-Most RLHF: **bandit-level rewards** (one score per response) but **token-level gradients** (update every token's log-prob).
-
----
-
-## Notation
-
-This lecture uses $(s, a)$ from the RL literature (states, actions).
-
-In the language model context, you'll also see $(x, y)$ — prompt and completion.
-
-| RL notation | LM notation | Meaning |
-|:-----------:|:-----------:|---------|
-| $s$ | $x$ | State / prompt |
-| $a$ | $y$ | Action / completion |
-| $\pi_\theta(a \mid s)$ | $\pi_\theta(y \mid x)$ | Policy |
-| $r(s, a)$ | $R(x, y)$ | Reward |
-
-Both notations used throughout. The $(s, a)$ framing is more general; $(x, y)$ is specific to LMs.
+Most RLHF: **bandit-level rewards** (one score per response) but **token-level gradients** (update every token's log-prob). In practice, we estimate $J(\theta)$ from data: sample prompts, generate completions, score with the reward model, and average.
 
 ---
 
 <!-- layout: section-break -->
 
-## The Policy Gradient Theorem
+## Deriving the Policy Gradient
 
 ---
 
@@ -451,7 +417,7 @@ We can replace $R(\tau)$ with the **return-to-go** — only future rewards from 
 
 $$\nabla_\theta J = \mathbb{E}\!\left[\sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot \sum_{t'=t}^{T} R_{t'}\right]$$
 
-This doesn't change the expected gradient, but removes noise from past rewards that the current action couldn't have influenced.
+This doesn't change the expected gradient, but removes noise from past rewards that the current action couldn't have influenced. This is the step from $\Psi_t$ option 1 → option 2 in our taxonomy.
 
 ---
 
@@ -461,62 +427,21 @@ Subtracting a baseline $b(s_t)$ from the return doesn't change the expected grad
 
 $$\mathbb{E}[\nabla_\theta \log \pi_\theta(a \mid s) \cdot b(s)] = b(s) \cdot \sum_a \nabla_\theta \pi_\theta(a \mid s) = b(s) \cdot \nabla_\theta \underbrace{\sum_a \pi_\theta(a \mid s)}_{= 1} = 0$$
 
-The gradient of a normalized distribution sums to zero — so we're free to subtract **any function of state** as a baseline. This is why baselines reduce variance without introducing bias.
+The gradient of a normalized distribution sums to zero — so we're free to subtract **any function of state** as a baseline. This is why $\Psi_t$ options 3–5 reduce variance without introducing bias.
 
 ---
 
 ## The policy gradient estimator
 
-Substituting back:
+Combining the log-derivative trick, return-to-go, and baseline subtraction:
 
 $$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}\!\left[\sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot \Psi_t\right]$$
 
-Where $\Psi_t$ can be total return, future return, advantage, etc.
+This is the **policy gradient theorem**. Every algorithm in this lecture is an instantiation with a specific choice of $\Psi_t$ and regularization.
 
-This is the **policy gradient theorem** — the foundation for all algorithms in this lecture.
+For language models, this becomes a per-token sum over the completion:
 
----
-
-## What $\Psi_t$ can be
-
-The general policy gradient uses a signal $\Psi_t$. Here are the common choices:
-
-| $\Psi_t$ | Description | Variance | Bias |
-|-----------|-------------|----------|------|
-| $R(\tau)$ | Total trajectory reward | Highest | None |
-| $\sum_{t'=t}^{T} R_{t'}$ | Future return from $t$ | High | None |
-| $\sum_{t'=t}^{T} R_{t'} - b(s_t)$ | Baselined return | Lower | None |
-| $A^{\pi}(s_t, a_t)$ | Advantage | **Lowest** | None |
-
-The advantage $A = Q - V$ gives the lowest theoretical variance if computed accurately.
-
----
-
-## Introducing the advantage
-
-The advantage function measures how much better an action is compared to the average:
-
-$$A(s, a) = Q(s, a) - V(s)$$
-
-Using the advantage as $\Psi_t$:
-- **Reduces variance** without introducing bias
-- Positive advantage → action was better than expected → reinforce it
-- Negative advantage → action was worse than expected → suppress it
-- Zero advantage → no update needed
-
----
-
-## The RLHF policy gradient
-
-Putting it together for language models:
-
-$$\nabla_\theta J(\theta) = \mathbb{E}_{x,\, y \sim \pi_\theta}\!\left[\nabla_\theta \log \pi_\theta(y \mid x) \cdot A(x, y)\right]$$
-
-In practice, this becomes a per-token sum over the completion:
-
-$$\nabla_\theta J(\theta) = \mathbb{E}\!\left[\sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot A_t\right]$$
-
-Every algorithm in this lecture is an instantiation of this equation with different choices for $A_t$ and different regularization.
+$$\nabla_\theta J(\theta) = \mathbb{E}_{x, y \sim \pi_\theta}\!\left[\sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot A_t\right]$$
 
 ---
 
@@ -878,9 +803,9 @@ Two benefits:
 
 ## GRPO advantage
 
-For a group of $G$ completions with rewards $r_1, \ldots, r_G$:
+For a group of $G$ completions with rewards $R_1, \ldots, R_G$:
 
-$$\hat{A}_i = \frac{r_i - \text{mean}(r_1, \ldots, r_G)}{\text{std}(r_1, \ldots, r_G)}$$
+$$\hat{A}_i = \frac{R_i - \text{mean}(R_1, \ldots, R_G)}{\text{std}(R_1, \ldots, R_G)}$$
 
 Z-score normalization: positive advantage for above-average completions, negative for below.
 
@@ -922,9 +847,9 @@ Both use multiple completions per prompt. The key difference is in the details:
 | **Baseline** | Leave-one-out mean | Group mean (z-scored) |
 | **Update style** | REINFORCE (no clipping) | PPO-style clipped ratio |
 | **KL penalty** | Optional (in reward) | In loss |
-| **Advantage** | $R_k - \frac{1}{K-1}\sum_{j \neq k} R_j$ | $\frac{r_i - \text{mean}}{\text{std}}$ |
+| **Advantage** | $R_k - \frac{1}{K-1}\sum_{j \neq k} R_j$ | $\frac{R_i - \text{mean}}{\text{std}}$ |
 
-Same principle (compare to peers), different mechanics. Dr. GRPO (without std normalization) is equivalent to RLOO up to a scaling constant.
+Same principle (compare to peers), different mechanics. Without std normalization, GRPO is equivalent to RLOO up to a scaling constant.
 
 ---
 
@@ -952,7 +877,7 @@ $$J(\theta) = \sum_{i,t} \text{sg}\!\left(\hat{\rho}_{i,t}\right) A_{i,t} \log \
 
 $$\hat{\rho}_{i,t} = \text{clip}\!\left(\frac{\pi_\theta(a_{i,t})}{\pi_{\text{old}}(a_{i,t})},\; 1-\varepsilon^{-},\; 1+\varepsilon^{+}\right)$$
 
-**Key difference from PPO**: every token still receives a gradient signal — the weight just bounds how much it's amplified. Asymmetric bounds ($\varepsilon^{+} > \varepsilon^{-}$) allow more aggressive reward-increasing updates — encouraging exploration (similar to DAPO's "clip-higher" for reasoning models).
+**Key difference from PPO**: every token still receives a gradient signal — the weight just bounds how much it's amplified. Asymmetric bounds ($\varepsilon^{+} > \varepsilon^{-}$) allow more aggressive reward-increasing updates, encouraging exploration.
 
 ---
 
@@ -1004,7 +929,7 @@ All are on-policy in derivation (slightly off-policy in practice). Complexity sp
 
 ## Lecture summary
 
-**Data quality and reward signal quality matter more than algorithm choice.** All methods optimize the **same** policy gradient objective:
+**In most RLHF setups, data quality and reward signal quality dominate; algorithm choice mostly determines stability, efficiency, and engineering burden.** All methods optimize the **same** policy gradient objective:
 
 $$\nabla_\theta J(\theta) = \mathbb{E}\!\left[\sum_t \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot \Psi_t\right]$$
 

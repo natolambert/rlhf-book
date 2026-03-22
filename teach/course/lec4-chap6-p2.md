@@ -149,7 +149,7 @@ advantages = rlhf_reward - baseline      # (K, N)
 advantages = advantages.flatten()         # (B*K,)
 ```
 
-The rest follows standard policy gradient — multiply advantages by log-probs.
+The rest follows standard policy gradient — multiply advantages by log-probs. Note: the data loader must generate $K$ completions per prompt and group them together.
 
 ---
 
@@ -189,7 +189,7 @@ Same structure, different baseline computation. GRPO adds std normalization; RLO
 ## Key numerical considerations
 
 - **Log-space arithmetic**: always use `log_softmax` + `gather`, never `softmax` then `log`
-- **Masking padding tokens**: multiply losses by `completion_mask` before aggregation — prompt tokens and padding should contribute zero gradient
+- **Masking padding tokens**: `completion_mask` must be 1 only for completion tokens — exclude prompt tokens, post-EOS padding, and the EOS token itself (or include EOS consistently). Multiply losses by this mask before aggregation
 - **Stop-token handling**: EOS tokens need consistent treatment — include in loss or not, but be consistent. Mishandling is a common silent error
 - **Sequence length handling**: variable-length completions need careful normalization (next section)
 - **Detaching baselines**: `advantages.detach()` — don't backpropagate through the advantage computation
@@ -534,7 +534,7 @@ For a 7B model with fp16:
 | Reference policy $\pi_\text{ref}$ | ~14 GB | KL anchor (frozen) |
 | Reward model $r_\psi$ | ~14 GB | Scoring (frozen) |
 
-**~56 GB** just for model weights before optimizer states, activations, or gradients. This is why PPO often requires model parallelism or offloading.
+**~56 GB** just for model weights before optimizer states, activations, or gradients. This is why PPO often requires model parallelism or offloading. Some implementations reduce this by sharing backbones (e.g., a value head on the policy network).
 
 ---
 
@@ -763,15 +763,16 @@ Each generation adds more stages, more compute, and more sophistication. But the
 
 ## What to monitor during training
 
-| Metric | What to look for |
-|--------|-----------------|
-| **Reward** | Steady increase, no sudden spikes or collapses |
-| **KL divergence** | Gradual increase, no explosion |
-| **Policy entropy** | Slow decrease — too fast = mode collapse |
-| **Eval scores** | Should improve or hold steady on held-out tasks |
-| **Generation length** | Monitor for length hacking |
-| **Clip fraction** | Should be moderate (5–30%), not 0% or 50%+ |
-| **Sample generations** | Qualitative check — read actual model outputs |
+| WandB panel | Healthy | Unhealthy |
+|-------------|---------|-----------|
+| `reward/mean` | Steady upward trend | Spikes, oscillation, plateau |
+| `kl/mean` | Gradual increase (0 → 2–5) | Explosion (>10) or flat at 0 |
+| `loss/policy` | Decreasing | Diverging or NaN |
+| `metrics/clip_frac` | 5–30% | 0% or >50% |
+| `generation/length` | Stable or slight increase | Monotonic increase (length hack) |
+| Policy entropy | Slow decrease | Crashes to 0 (mode collapse) |
+
+Also monitor: eval scores on held-out benchmarks, and read sample outputs for coherence.
 
 ---
 
@@ -854,22 +855,6 @@ utils/            # Logging, distributed helpers
 scripts/          # Launch scripts
   train_grpo.sh
 ```
-
----
-
-## Monitoring RL training
-
-Key WandB panels and what healthy training looks like:
-
-| Panel | Healthy | Unhealthy |
-|-------|---------|-----------|
-| `reward/mean` | Steady upward trend | Spikes, oscillation, plateau |
-| `kl/mean` | Gradual increase (0 → 2–5) | Explosion (>10) or flat at 0 |
-| `loss/policy` | Decreasing | Diverging or NaN |
-| `metrics/clip_frac` | 5–30% | 0% or >50% |
-| `generation/length` | Stable or slight increase | Monotonic increase (length hack) |
-
-Also monitor: eval scores on held-out benchmarks, and read sample outputs for coherence.
 
 ---
 
