@@ -91,36 +91,17 @@ $endfor$
 <script src="view-source.js" defer></script>
 <script src="conversation.js" defer></script>
 <style>
-  .lecture-card {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1em;
-    margin: 0.75em 0 1.5em;
-    padding: 0.6em 1em;
-    border: 1px solid #e2e2e2;
-    border-radius: 0.3em;
-    background: #fafafa;
+  .toc-lecture-link {
+    margin-top: 0.3em;
+    list-style: none;
+  }
+  .toc-lecture-link a {
+    color: #888 !important;
     font-size: 0.9em;
-  }
-  .lecture-card-label {
-    color: #555;
-  }
-  .lecture-card-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4em;
-    padding: 0.3em 0.65em;
-    border-radius: 0.25em;
-    border: 1px solid #c0392b;
-    background: rgba(192, 57, 43, 0.08);
-    color: #c0392b;
     text-decoration: none;
-    font-size: 0.85em;
-    white-space: nowrap;
   }
-  .lecture-card-btn:hover {
-    background: rgba(192, 57, 43, 0.16);
+  .toc-lecture-link a:hover {
+    color: #555 !important;
   }
 </style>
 
@@ -159,15 +140,24 @@ $table-of-contents$
 </nav>
 $endif$
 $if(lecture-video)$
-<div class="lecture-card">
-  <span class="lecture-card-label">$lecture-label$</span>
-  <a href="$lecture-video$" class="lecture-card-btn" target="_blank">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-      <polygon points="5 3 19 12 5 21 5 3"/>
-    </svg>
-    Watch
-  </a>
-</div>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var toc = document.getElementById('TOC');
+    if (!toc) return;
+    var topUl = toc.querySelector('ul');
+    if (!topUl) return;
+    var li = document.createElement('li');
+    li.className = 'toc-lecture-link';
+    var link = document.createElement('a');
+    link.href = '$lecture-video$';
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.title = '$lecture-label$';
+    link.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -2px;"><polygon points="5 3 19 12 5 21 5 3"/></svg> $lecture-label$';
+    li.appendChild(link);
+    topUl.appendChild(li);
+  });
+</script>
 $endif$
 <div id="content" data-pagefind-body $if(search-title)$data-pagefind-meta="title:$search-title$"$endif$>
   $body$
