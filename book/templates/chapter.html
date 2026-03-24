@@ -90,6 +90,20 @@ $endfor$
 <script src="copy-code.js" defer></script>
 <script src="view-source.js" defer></script>
 <script src="conversation.js" defer></script>
+<style>
+  .toc-lecture-link {
+    margin-top: 0.3em;
+    list-style: none;
+  }
+  .toc-lecture-link a {
+    color: #888 !important;
+    font-size: 0.9em;
+    text-decoration: none;
+  }
+  .toc-lecture-link a:hover {
+    color: #555 !important;
+  }
+</style>
 
 <!-- Privacy-friendly analytics by Plausible -->
 <script async src="https://plausible.io/js/pa-Rr3_iGtVZcPHhxkdbyDIb.js"></script>
@@ -124,6 +138,25 @@ $if(toc-title)$
 $endif$
 $table-of-contents$
 </nav>
+$endif$
+$if(lecture-video)$
+<li class="toc-lecture-link" id="toc-lecture-link" hidden>
+  <a href="$lecture-video$" target="_blank" rel="noopener">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -2px;"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+    $lecture-label$
+  </a>
+</li>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var toc = document.getElementById('TOC');
+    var li = document.getElementById('toc-lecture-link');
+    if (!toc || !li) return;
+    var topUl = toc.querySelector('ul');
+    if (!topUl) return;
+    topUl.appendChild(li);
+    li.hidden = false;
+  });
+</script>
 $endif$
 <div id="content" data-pagefind-body $if(search-title)$data-pagefind-meta="title:$search-title$"$endif$>
   $body$

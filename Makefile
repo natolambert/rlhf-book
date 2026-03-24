@@ -47,8 +47,8 @@ PANDOC_COMMAND = pandoc
 DOCX_ARGS = --standalone --reference-doc book/templates/docx.docx
 EPUB_ARGS = --template book/templates/epub.html --epub-cover-image $(EPUB_COVER_IMAGE)
 HTML_ARGS = --template book/templates/html.html --standalone --to html5 --listings
-PDF_ARGS = --template book/templates/pdf.tex --pdf-engine pdflatex --listings
-LATEX_ARGS = --template book/templates/pdf.tex --pdf-engine pdflatex --listings
+PDF_ARGS = --template book/templates/pdf.tex --pdf-engine pdflatex
+LATEX_ARGS = --template book/templates/pdf.tex --pdf-engine pdflatex
 NESTED_HTML_TEMPLATE = book/templates/chapter.html
 ARXIV_ZIP = $(BUILD)/arxiv.zip
 
@@ -105,7 +105,7 @@ $(info JS files found: $(JS_FILES))
 
 epub:	$(BUILD)/epub/$(OUTPUT_FILENAME).epub
 
-html:	nested_html $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html $(BUILD)/html/library.html $(BUILD)/html/slides.html
+html:	nested_html $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html $(BUILD)/html/library.html $(BUILD)/html/course.html
 	
 pdf:	$(BUILD)/pdf/$(OUTPUT_FILENAME).pdf
 
@@ -162,9 +162,9 @@ $(BUILD)/html/library.html: book/templates/library.html
 	$(MKDIR_CMD) $(BUILD)/html
 	cp book/templates/library.html $@
 
-$(BUILD)/html/slides.html: book/templates/slides.html
+$(BUILD)/html/course.html: book/templates/course.html
 	$(MKDIR_CMD) $(BUILD)/html
-	cp book/templates/slides.html $@
+	cp book/templates/course.html $@
 
 rl-cheatsheet: $(BUILD)/html/rl-cheatsheet/inside_cover_back.pdf
 

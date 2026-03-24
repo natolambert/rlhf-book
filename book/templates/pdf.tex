@@ -254,23 +254,14 @@ $endif$
 $if(beamer)$
 \newif\ifbibliography
 $endif$
-$if(listings)$
-\usepackage{listings}
-% for line wrapping
-\allowdisplaybreaks
 \newcommand{\passthrough}[1]{#1}
-\lstset{
-  defaultdialect=[5.3]Lua,
-  defaultdialect=[x86masm]Assembler,
-  % wrapping
-  breaklines=true,
-  postbreak=\space,
-  basicstyle=\small\ttfamily
-}
-$endif$
-$if(lhs)$
-\lstnewenvironment{code}{\lstset{language=Haskell,basicstyle=\small\ttfamily}}{}
-$endif$
+% Pandoc's built-in LaTeX highlighting and plain fenced code blocks are based on
+% fancyvrb. `fvextra` adds the `breaklines` and `breakanywhere` options used by
+% the `Highlighting` and `verbatim` overrides below.
+\usepackage{fvextra}
+\usepackage[breakable]{tcolorbox}
+\definecolor{codebg}{HTML}{F6F6F6}
+\definecolor{codeborder}{HTML}{E8E8E8}
 $if(highlighting-macros)$
 $highlighting-macros$
 $endif$
@@ -355,6 +346,45 @@ $endif$
 $for(header-includes)$
 $header-includes$
 $endfor$
+% Pandoc's built-in LaTeX highlighter uses fancyvrb's `Highlighting`
+% environment. Redefine it after Pandoc emits its default definition so
+% long code lines wrap cleanly in the PDF output.
+% Define the base Verbatim environments (no frame — tcolorbox handles that)
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{
+  % Keep Pandoc's inline formatting commands working inside highlighted code
+  commandchars=\\\{\},
+  fontsize=\footnotesize,
+  breaklines=true,
+  % Permit wrapping within long uninterrupted tokens like URLs
+  breakanywhere=true,
+  % Remove wrap-continuation arrows so they don't pollute copy-paste
+  breaksymbolleft={},
+  breaksymbolright={}
+}
+\RecustomVerbatimEnvironment{verbatim}{Verbatim}{
+  fontsize=\footnotesize,
+  breaklines=true,
+  breakanywhere=true,
+  breaksymbolleft={},
+  breaksymbolright={}
+}
+% Wrap Pandoc's Shaded environment (which surrounds Highlighting blocks)
+% in a tcolorbox for a unified background + border.
+% Guard: Shaded is only defined when Pandoc emits highlighting-macros.
+$if(highlighting-macros)$
+\renewenvironment{Shaded}{%
+  \begin{tcolorbox}[
+    colback=codebg,
+    colframe=codeborder,
+    boxrule=0.5pt,
+    arc=0pt,
+    left=8pt, right=8pt, top=4pt, bottom=4pt,
+    breakable
+  ]%
+}{%
+  \end{tcolorbox}%
+}
+$endif$
 $if(lang)$
 \ifxetex
   % Load polyglossia as late as possible: uses bidi with RTL langages (e.g. Hebrew, Arabic)

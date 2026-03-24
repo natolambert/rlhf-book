@@ -53,7 +53,7 @@ Early language models were only used as intelligent autocomplete.
 In order to use these models in a more open ended way, multiple examples were shown to the model and then a prompt that is an incomplete phrase. This was called few-shot or in-context learning [@brown2020language], and at the time instruction tuning or RLHF was not involved.
 In the case of popular evaluations, this would look like:
 
-```
+```text
 # Few-Shot Prompt for a Question-Answering Task
 You are a helpful assistant. Below are example interactions to guide your style:
 
@@ -72,7 +72,7 @@ Assistant:
 
 Here, there are multiple ways to evaluate an answer. If we consider a question in the style of MMLU, where the model has to choose between multiple answers:
 
-```
+```text
 # Few-Shot Prompt
 
 Below are examples of MMLU-style questions and answers:
@@ -131,7 +131,7 @@ When designing an evaluation domain, the number of examples used in-context is o
 Within the evolution of few-shot prompting came the idea of including chain-of-thought examples for the model to follow.
 This comes in the form of examples where the in-context examples have written-out reasoning, such as below (which later was superseded by explicit prompting to generate reasoning steps) [@wei2022chain]:
 
-```
+```text
 # standard prompting
 Q: Roger has 5 tennis balls. He buys 2 more cans of tennis balls. Each can has 3 tennis balls. How many tennis balls does he have now?
 
@@ -156,7 +156,7 @@ The Finetuned Language Net (FLAN) showed that language models fine-tuned on spec
 This is the emergence of instruction fine-tuning (IFT), an important precursor to RLHF and post-training.
 A zero-shot question would look like:
 
-```
+```text
 User: "What is the capital of France?"
 Assistant:
 ```
@@ -174,7 +174,7 @@ For example, in some setups, for every question or category there are specially 
 Tülu 3 was an early seminal paper that details some prompts used for CoT answering on multiple choice questions [@lambert2024t].
 Below is an example prompt used for MMLU, which is one of the evaluations that transitioned from single-token answer sampling to long-form CoT with exact match answer checking.
 
-```
+```text
 Answer the following multiple-choice question by giving the correct answer letter in parentheses.
 Provide CONCISE reasoning for the answer, and make sure to finish the response with "Therefore, the answer is (ANSWER_LETTER)" where (ANSWER_LETTER) is one of (A), (B), (C), (D), (E), etc.
 
