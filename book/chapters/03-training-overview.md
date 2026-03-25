@@ -166,7 +166,7 @@ The three steps taken on top of a "base" language model (the next-token predicti
 
 1. **Instruction tuning on ~10K examples**: This teaches the model to follow the question-answer format and teaches some basic skills from primarily human-written data.
 2. **Training a reward model on ~100K pairwise prompts**: This model is trained from the instruction-tuned checkpoint and captures the diverse values one wishes to model in their final training. The reward model is the optimization target for RLHF.
-3. **Training the instruction-tuned model with RLHF on ~31K prompts from a separate dataset**: The model generates responses to these prompts before receiving ratings from the reward model.
+3. **Training the instruction-tuned model with RLHF on a separate ~31K prompts**: The model is optimized against the reward model with a separate set of prompts, where it generates responses before receiving ratings.
 
 Once RLHF was done, the model was ready to be deployed to users. This recipe is the foundation of modern RLHF, but recipes have evolved substantially to include more stages and more data.
 
