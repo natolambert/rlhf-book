@@ -301,7 +301,7 @@ Read it as two questions answered at once:
 - $\nabla_\theta \log \pi_\theta(a_t \mid s_t)$ — **which action?** How each parameter influenced the probability of taking action $a_t$ in state $s_t$. This connects the outcome back to the knobs that caused it.
 - $\Psi_t$ — **how good was it?** A scalar scoring the outcome. Positive means good, negative means bad, magnitude says how much.
 
-> An oversimplification (batch size of 1): the gradient is a vector with one entry per parameter. A positive entry means "increasing this parameter made the action more likely," a negative entry means the opposite. In practice, the update averages over many such vectors — what survives is the net vote across the batch.
+> An oversimplification (e.g. intuition in case of batch size of 1): the gradient is a vector with one entry per parameter. A positive entry means "increasing this parameter made the action more likely," a negative entry means the opposite. In practice, the update averages over many such vectors — what survives is the net vote across the batch.
 
 Multiply them: $\Psi_t > 0$ updates parameters to make $a_t$ more likely, $\Psi_t < 0$ updates them to make it less likely.
 
@@ -313,15 +313,14 @@ The rest of this section is about choosing a smart $\Psi_t$ — different choice
 
 ## The policy gradient equation
 
-TODO: intuition on why the gradient itself is a sum of per-token logprobs
-
-Now write that same idea as an expectation over sampled trajectories:
+A preview of where we end up:
 
 $$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}\!\left[\sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot \Psi_t\right]$$
 
-Where $\Psi_t$ is the **signal** that tells the optimizer how good the action was. The choice of $\Psi_t$ determines the algorithm's variance, bias, and compute cost.
+The core idea is that we *sample over trials in the environment* and **estimate** the gradient.
 
-We'll first survey the options for $\Psi_t$, then derive where this equation comes from.
+Where $\Psi_t$ is the **learning signal** telling the optimizer how good the action was. The choice of $\Psi_t$ determines the algorithm's variance, bias, and compute cost.
+
 
 ---
 
@@ -329,7 +328,7 @@ We'll first survey the options for $\Psi_t$, then derive where this equation com
 
 <!-- cite-right: schulman2015high -->
 
-A taxonomy of choices for $\Psi_t$ (rewards can also be discounted by $\gamma$):
+Popular choices for $\Psi_t$ (rewards can also be discounted by $\gamma$):
 
 | | $\Psi_t$ | Description | Variance | Bias |
 |:-:|-----------|-------------|:--------:|:----:|
@@ -344,7 +343,7 @@ A *baseline* $b(s_t)$ is any value subtracted from the reward signal to reduce v
 
 ---
 
-## Unpacking the key quantities
+## Unpacking the key RL quantities
 
 The $\Psi_t$ options reference three key quantities:
 
@@ -359,28 +358,6 @@ $$Q(s, a) = \mathbb{E}[G_t \mid S_t = s, A_t = a]$$
 **Advantage** $A(s, a) = Q(s, a) - V(s)$: how much better is action $a$ compared to average? Positive → reinforce, negative → suppress, zero → no update.
 
 In RLHF: often $\gamma = 1$ (no discounting) because the unit of optimization is the full completion.
-
----
-
-## MDP vs. bandit: Which $\Psi_t$ options apply?
-
-<!-- columns: 50/50 -->
-
-**MDP (token-level)**
-- Each token $a_t$ is an action with state $s_t$ (running prefix)
-- Per-token $\Psi_t$ via learned value function (options 4–6)
-- Used in PPO with GAE
-
-|||
-
-**Bandit (sequence-level)**
-- Whole completion = single action, one scalar reward
-- Sequence-level $\Psi_t$ broadcast to all tokens (options 1–3)
-- Used in RLOO, GRPO
-
-<div class="colloquium-spacer-md"></div>
-
-Most RLHF: **bandit-level rewards** (one score per response) but **token-level gradients** (update every token's log-prob). In practice, we estimate $J(\theta)$ from data: sample prompts, generate completions, score with the reward model, and average.
 
 ---
 
@@ -406,20 +383,6 @@ We can't sample from $\nabla_\theta p_\theta(\tau)$. We need a trick.
 
 ---
 
-## The log-derivative trick
-
-From the chain rule of logarithms:
-
-$$\nabla_\theta \log p_\theta(\tau) = \frac{\nabla_\theta p_\theta(\tau)}{p_\theta(\tau)}$$
-
-Rearranging:
-
-$$\nabla_\theta p_\theta(\tau) = p_\theta(\tau) \nabla_\theta \log p_\theta(\tau)$$
-
-This converts a gradient of a probability into something we can compute as an **expectation**.
-
----
-
 ## Applying to trajectories
 
 Substituting the log-derivative trick into the gradient:
@@ -434,6 +397,38 @@ Now we can estimate this with Monte Carlo sampling!
 
 ---
 
+## Applying to trajectories
+
+The only non-obvious step is the middle line:
+
+$$\nabla_\theta p_\theta(\tau) = p_\theta(\tau) \nabla_\theta \log p_\theta(\tau)$$
+
+This is the **log-derivative trick**.
+
+It rewrites the gradient of a probability in terms of a log-probability, which is much easier to work with.
+
+The probability is **not** the gradient. It appears as a multiplicative factor.
+
+---
+
+## Applying to trajectories
+
+Where did the $p_\theta(\tau)$ term go?
+
+It became the **sampling distribution** inside the expectation:
+
+$$\int p_\theta(\tau) f(\tau)\, d\tau = \mathbb{E}_{\tau \sim p_\theta}[f(\tau)]$$
+
+Monte Carlo then estimates that expectation by sampling trajectories from the policy:
+
+$$\mathbb{E}_{\tau \sim p_\theta}[f(\tau)] \approx \frac{1}{N}\sum_{i=1}^{N} f(\tau_i), \qquad \tau_i \sim p_\theta$$
+
+So there is no explicit $p_\theta(\tau_i)$ term in code: **more likely trajectories already appear more often in the sampled batch**.
+
+At a high level, rollout generation handles the sampling, and the loss code handles $R(\tau_i)\,\nabla_\theta \log p_\theta(\tau_i)$.
+
+---
+
 ## Expanding log probability of trajectory
 
 The trajectory probability factorizes:
@@ -443,6 +438,8 @@ $$p_\theta(\tau) = p(s_0) \prod_{t=0}^{T} \pi_\theta(a_t \mid s_t) \, p(s_{t+1} 
 Taking the log:
 
 $$\log p_\theta(\tau) = \log p(s_0) + \sum_{t=0}^{T} \log \pi_\theta(a_t \mid s_t) + \sum_{t=0}^{T} \log p(s_{t+1} \mid s_t, a_t)$$
+
+For language models, this is the familiar autoregressive pattern: a sequence log-probability becomes a sum of token log-probabilities.
 
 ---
 
@@ -457,6 +454,14 @@ Now take the gradient w.r.t. $\theta$:
 - Only $\nabla_\theta \log \pi_\theta(a_t \mid s_t)$ survives!
 
 $$\nabla_\theta \log p_\theta(\tau) = \sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t)$$
+
+In language-model code, this is why you repeatedly see:
+
+```python
+seq_log_probs = (token_log_probs * completion_mask).sum(dim=-1)
+```
+
+Autodiff turns that summed log-probability into the corresponding sum of per-token gradients.
 
 ---
 
@@ -498,6 +503,21 @@ $$\nabla_\theta J(\theta) = \mathbb{E}_{x, y \sim \pi_\theta}\!\left[\sum_{t=0}^
 
 ---
 
+## Policy gradient derivation recap
+
+$$J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}[R(\tau)] = \int_\tau p_\theta(\tau) R(\tau)\, d\tau$$
+
+$$\nabla_\theta J(\theta) = \int_\tau \nabla_\theta p_\theta(\tau) R(\tau)\, d\tau$$
+
+$$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}\!\left[\sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot \Psi_t\right]$$
+
+- Log-derivative trick turns $\nabla p_\theta(\tau)$ into a sampleable expectation
+- Expanding $\log p_\theta(\tau)$ gives a sum of policy log-prob terms
+- $\Psi_t$ is the learning signal: return, advantage, or TD-style estimate
+- In code: sample rollouts, sum token log-probs, weight by $\Psi_t$, average
+
+---
+
 <!-- layout: section-break -->
 
 ## REINFORCE
@@ -509,6 +529,12 @@ $$\nabla_\theta J(\theta) = \mathbb{E}_{x, y \sim \pi_\theta}\!\left[\sum_{t=0}^
 <!-- cite-right: williams1992simple -->
 
 REINFORCE is the simplest instantiation of the policy gradient. The update rule:
+
+<div class="text-sm">
+
+> The name is an acronym for "REward Increment = Nonnegative Factor X Offset Reinforcement X Characteristic Eligibility."
+
+</div>
 
 $$\Delta\theta = \alpha \nabla_\theta \log \pi_\theta(y \mid x) \cdot (R(x, y) - b)$$
 
@@ -944,6 +970,28 @@ $$\text{PPO (2017)} \to \text{REINFORCE revival (2024)} \to \text{RLOO} \to \tex
 - REINFORCE/RLOO: surprisingly competitive with good baselines
 - GRPO: PPO-style clipping without value function — the current favorite for reasoning
 - GSPO/CISPO: numerical stability for large-scale MoE models
+
+---
+
+## Bandit-style vs MDP-style RLHF
+
+<!-- columns: 50/50 -->
+
+**Bandit-style**
+- One reward per completion
+- Sequence-level $\Psi_t$ broadcast across tokens
+- Used in REINFORCE, RLOO, GRPO
+
+|||
+
+**MDP-style**
+- Each token is treated as an action
+- Per-token values or advantages
+- Used in PPO with GAE
+
+<div class="colloquium-spacer-md"></div>
+
+Most RLHF is mixed in practice: **sequence-level rewards**, but **token-level log-prob gradients**.
 
 ---
 
