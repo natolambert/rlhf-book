@@ -11,6 +11,8 @@ page-title: Instruction Tuning
 search-title: "Chapter 4: Instruction Tuning"
 next-chapter: "Reward Models"
 next-url: "05-reward-models"
+lecture-video: "https://youtu.be/4gIwiSPmQkU"
+lecture-label: "Lecture 2: IFT, Reward Modeling, Rejection Sampling (Chap. 4, 5, & 9)"
 ---
 
 # Instruction Fine-tuning

@@ -162,6 +162,16 @@ Instruction fine-tuning (IFT), also called supervised fine-tuning (SFT), is the 
 
 ---
 
+## What does instruction tuning do?
+
+Instruction tuning is extremely powerful! At the time of writing:
+- Countless specialized models are created and have strong impact only with IFT/SFT
+- Can work with as little as 1-10K high-quality samples in your domain
+- Can be scaled to millions of prompts, often still showing strong gains (e.g. OpenThoughts3 [@guha2025openthoughts])
+- Can be ignored and looked down upon because it is not flashy, but all post-training should begin by seeing how far IFT can go!
+
+---
+
 ## Two lines of work converged
 
 Instruction tuning emerged from two parallel research threads:
@@ -338,7 +348,7 @@ These are applied via Jinja templates stored in the tokenizer config (`apply_cha
 
 Conversations extend naturally by alternating roles:
 
-```
+```text
 <|im_start|>system
 You are a friendly chatbot who always responds in the style of a pirate<|im_end|>
 <|im_start|>user
@@ -427,6 +437,20 @@ For multi-turn conversations, two strategies:
   - SFT prompt quantity has *decreased* a bit with reasoning models. Open research problem
 - Best prompts match the downstream task distribution
 
+---
+
+## Best practices for instruction tuning
+
+<!-- cite-right: zhou2023lima, lambert2024t -->
+
+**Data quality matters more than quantity:**
+
+- High-quality completions are critical — prompts are masked anyway, so the model learns from responses
+- ~1M prompts is sufficient for excellent RLHF-ready models
+  - Further scaling helps, but with diminishing returns
+  - SFT prompt quantity has *decreased* a bit with reasoning models. Open research problem
+- Best prompts match the downstream task distribution
+
 **Training details differ from pretraining:**
 
 - **Batch size**: much smaller (e.g. 256 vs. 1024–2048 sequences in pretraining)
@@ -445,6 +469,22 @@ The amount of instruction data needed has evolved rapidly:
 Scaling the prompts quickly enabled more performance. Now, reasoning models are using more compute and tokens to train via more tokens per prompt in SFT (and longer context lengths).
 
 ---
+
+## Data scaling for IFT
+
+The amount of instruction data needed has evolved rapidly:
+
+- **Early post-ChatGPT**: ~10K high-quality, human-generated samples could be state-of-the-art [@ouyang2022training; @no_robots]
+- **Current practice**: large-scale synthetic datasets work best, but quality filtering is essential
+
+Scaling the prompts quickly enabled more performance. Now, reasoning models are using more compute and tokens to train via more tokens per prompt in SFT (and longer context lengths).
+
+Tülu 3 [@lambert2024t] creates a state-of-the-art SFT dataset which was about 300M tokens.
+
+About a year later, Olmo 3's [@teamolmo2025olmo3] state-of-the-art *reasoning* SFT dataset was about 20B tokens. Other work has scaled this over 10X and fundamental limits (and interaction with RL) is unknown.
+
+---
+
 
 ## Ingredients for post-training: prompts
 
@@ -1083,10 +1123,10 @@ The name comes from computational statistics: sample from a simple distribution,
 ## Rejection sampling overview
 
 The four stages:
-0. **Select prompts and reward model** (reuse IFT prompts or curate new ones)
-1. **Generate** $N$ completions per prompt from the current model
-2. **Score** all completions with the reward model
-3. **Fine-tune** on the top completions (same SFT loss as instruction tuning)
+1. **Select prompts and reward model** (reuse IFT prompts or curate new ones)
+2. **Generate** $N$ completions per prompt from the current model
+3. **Score** all completions with the reward model
+4. **Fine-tune** on the top completions (same SFT loss as instruction tuning)
 
 Used in WebGPT [@nakano2021webgpt], Anthropic's Helpful and Harmless [@bai2022training], Llama 2 Chat [@touvron2023llama], and many other seminal works.
 
@@ -1169,9 +1209,9 @@ The core hyperparameters are intuitive:
 - **Completions per prompt**: 10-30+ (too few = noisy selection)
 - **Fine-tuning**: standard SFT on selected completions (same loss, but details like learning rate may differ from initial IFT)
 
-**Practical tip**: sort completions by length before batch RM inference to reduce padding token computation.
+**Practical tip**: sort completions by length before batch RM inference to reduce padding token computation (so samples in each batch are similar length, some frameworks will handle this automatically).
 
-**Open questions**: how to sequence RS in a multi-stage pipeline, whether to use generations from multiple models, optimal prompt selection. There hasn't been a fully open reproduction of this, which is kind of confusing as to why. My hunch is that training an reward model has some subtle tricks.
+**Open questions**: how to sequence RS in a multi-stage pipeline, whether to use generations from multiple models, optimal prompt selection. There hasn't been a fully open reproduction of this, which is kind of confusing as to why. My hunch is that training a reward model has some subtle tricks.
 
 ---
 
@@ -1202,7 +1242,7 @@ Putting it all together — a simple path from pretrained model to preference-tu
 
 This is a strong baseline. 
 
-Next lectures will cover more powerful optimization methods: PPO, which optimizes a policy against a learned reward signal, and DPO, which optimizes directly from preference pairs rather than filtering training data.
+Next lectures will cover more advanced optimization methods: PPO, which optimizes a policy against a learned reward signal, and Direct Preference Optimization (DPO, and its family of algorithms), which optimizes directly from preference pairs rather than filtering training data.
 
 ---
 
