@@ -271,6 +271,21 @@ The $(s, a)$ framing is more general — these algorithms were designed for sequ
 
 ---
 
+## What are we optimizing?
+
+Choose policy parameters $\theta$ that maximize reward **on average** under the current policy.
+
+$$J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}[R(\tau)]$$
+
+In practice, we estimate this expectation with sampled rollouts:
+
+$$J(\theta) \approx \frac{1}{N}\sum_{i=1}^{N} R(\tau_i), \qquad \tau_i \sim \pi_\theta$$
+
+We craft a gradient/derivative that lets us optimize this.
+
+---
+
+
 ## How a policy gradient works
 
 Make actions more likely when they lead to better outcomes.
@@ -361,6 +376,7 @@ In RLHF: often $\gamma = 1$ (no discounting) because the unit of optimization is
 
 ---
 
+
 <!-- layout: section-break -->
 
 ## Deriving the policy gradient
@@ -369,9 +385,19 @@ In RLHF: often $\gamma = 1$ (no discounting) because the unit of optimization is
 
 ## Setup: Differentiating an expectation
 
-We want $\nabla_\theta J(\theta)$ — the gradient of expected return w.r.t. the policy parameters.
+Ideally, we want $\nabla_\theta J(\theta)$, but we can't do that (the state sampling distribution itself depends on $\theta$).
 
-The challenge: how do we differentiate an **expectation over trajectories** when the sampling distribution itself depends on $\theta$?
+Written as an integral, the objective is:
+
+$$J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}[R(\tau)] = \int_\tau p_\theta(\tau) R(\tau) \, d\tau$$
+
+---
+
+## Setup: Differentiating an expectation
+
+Ideally, we want $\nabla_\theta J(\theta)$, but we can't do that (the state sampling distribution itself depends on $\theta$).
+
+Written as an integral, the objective is:
 
 $$J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}[R(\tau)] = \int_\tau p_\theta(\tau) R(\tau) \, d\tau$$
 
@@ -379,25 +405,30 @@ Taking the gradient directly:
 
 $$\nabla_\theta J(\theta) = \int_\tau \nabla_\theta p_\theta(\tau) R(\tau) \, d\tau$$
 
-We can't sample from $\nabla_\theta p_\theta(\tau)$. We need a trick.
+We can sample trajectories from $p_\theta(\tau)$, but not from $\nabla_\theta p_\theta(\tau)$, since it is not a probability distribution.
+
+The derivation is a few key tricks to let us approximate or compute this.
 
 ---
 
-## Applying to trajectories
+## Applying the idea of computing the gradient from trajectories
 
-Substituting the log-derivative trick into the gradient:
+Substituting the log-derivative trick (more on this soon) into the gradient:
 
-$$\nabla_\theta J(\theta) = \int_\tau \nabla_\theta p_\theta(\tau) R(\tau) \, d\tau$$
-
-$$= \int_\tau p_\theta(\tau) \nabla_\theta \log p_\theta(\tau) R(\tau) \, d\tau$$
-
-$$= \mathbb{E}_{\tau \sim \pi_\theta}\!\left[\nabla_\theta \log p_\theta(\tau) \cdot R(\tau)\right]$$
+$$
+\begin{aligned}
+\nabla_\theta J(\theta)
+&= \int_\tau \nabla_\theta p_\theta(\tau) R(\tau) \, d\tau \\
+&= \int_\tau p_\theta(\tau) \nabla_\theta \log p_\theta(\tau) R(\tau) \, d\tau \\
+&= \mathbb{E}_{\tau \sim \pi_\theta}\!\left[\nabla_\theta \log p_\theta(\tau) \cdot R(\tau)\right]
+\end{aligned}
+$$
 
 Now we can estimate this with Monte Carlo sampling!
 
 ---
 
-## Applying to trajectories
+## Applying the idea of computing the gradient from trajectories
 
 The only non-obvious step is the middle line:
 
@@ -411,7 +442,7 @@ The probability is **not** the gradient. It appears as a multiplicative factor.
 
 ---
 
-## Applying to trajectories
+## Applying the idea of computing the gradient from trajectories
 
 Where did the $p_\theta(\tau)$ term go?
 
@@ -505,11 +536,16 @@ $$\nabla_\theta J(\theta) = \mathbb{E}_{x, y \sim \pi_\theta}\!\left[\sum_{t=0}^
 
 ## Policy gradient derivation recap
 
-$$J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}[R(\tau)] = \int_\tau p_\theta(\tau) R(\tau)\, d\tau$$
-
-$$\nabla_\theta J(\theta) = \int_\tau \nabla_\theta p_\theta(\tau) R(\tau)\, d\tau$$
-
-$$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}\!\left[\sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot \Psi_t\right]$$
+$$
+\begin{aligned}
+J(\theta)
+&= \mathbb{E}_{\tau \sim \pi_\theta}[R(\tau)] \\
+&= \int_\tau p_\theta(\tau) R(\tau)\, d\tau \\
+\nabla_\theta J(\theta)
+&= \int_\tau \nabla_\theta p_\theta(\tau) R(\tau)\, d\tau \\
+&= \mathbb{E}_{\tau \sim \pi_\theta}\!\left[\sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot \Psi_t\right]
+\end{aligned}
+$$
 
 - Log-derivative trick turns $\nabla p_\theta(\tau)$ into a sampleable expectation
 - Expanding $\log p_\theta(\tau)$ gives a sum of policy log-prob terms
