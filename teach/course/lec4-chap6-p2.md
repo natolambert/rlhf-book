@@ -36,7 +36,7 @@ custom_css: |
 
 ---
 
-## Lecture 4: RL Implementation & Practice
+## Lecture 4: RL implementation & practice
 
 <!-- align: center -->
 
@@ -85,7 +85,7 @@ content: |
 
 <!-- layout: section-break -->
 
-## Policy Gradients in Code
+## Policy gradients in code
 
 ---
 
@@ -207,7 +207,7 @@ The next section covers three strategies — per-sequence, per-token, and fixed-
 
 <!-- layout: section-break -->
 
-## Loss Aggregation Strategies
+## Loss aggregation strategies
 
 ---
 
@@ -235,7 +235,7 @@ Standard in GRPO and some PPO implementations.
 
 ---
 
-## Per-sequence normalization: effect
+## Per-sequence normalization: Effect
 
 Each sequence gets equal weight → per-token gradients are **inversely proportional to sequence length**:
 
@@ -261,7 +261,7 @@ Used in DAPO [@yu2025dapo]. Longer sequences contribute proportionally more grad
 
 ---
 
-## Per-token normalization: effect
+## Per-token normalization: Effect
 
 All tokens get equal gradient magnitude. Longer sequences contribute more to the total gradient because they have more tokens.
 
@@ -326,7 +326,7 @@ The cost: **four models in memory** (policy, value, reference, RM), fragile valu
 
 <!-- layout: section-break -->
 
-## PPO: Full Implementation
+## PPO: Full implementation
 
 ---
 
@@ -464,7 +464,7 @@ The targets come from rollout-time estimates: `targets = advantages + values_old
 
 ---
 
-## PPO-RLHF: combined objective
+## PPO-RLHF: Combined objective
 
 Combined loss: policy + value (KL enters via reward shaping, not as a separate loss term):
 
@@ -549,7 +549,7 @@ For a 7B model with fp16:
 
 <!-- layout: section-break -->
 
-## GRPO: Simpler Implementation
+## GRPO: Simpler implementation
 
 ---
 
@@ -668,7 +668,7 @@ Plus optimizer states (2x for Adam), activations, and generation cache. Real-wor
 
 <!-- layout: section-break -->
 
-## Training Infrastructure
+## Training infrastructure
 
 ---
 
@@ -735,7 +735,7 @@ In practice, with $K = 1$ gradient step per batch (common at large scale), clipp
 
 <!-- layout: section-break -->
 
-## Practical Engineering
+## Practical engineering
 
 ---
 
@@ -824,7 +824,7 @@ Reasoning models push RL to extremes. Here's what changes:
 
 ---
 
-## Forward pointer: regularization & over-optimization
+## Forward pointer: Regularization & over-optimization
 
 These topics deserve their own lecture:
 
@@ -840,7 +840,7 @@ Covered in depth in a future lecture on Chapters 14 & 15.
 
 <!-- layout: section-break -->
 
-## Hands-On: Exploring Real Training
+## Hands-on: Exploring real training
 
 ---
 

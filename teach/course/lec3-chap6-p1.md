@@ -37,7 +37,7 @@ custom_css: |
 ---
 
 <!-- rows: 50/50 -->
-## Lecture 3: Reinforcement Learning (mostly the math)
+## Lecture 3: Reinforcement learning (mostly the math)
 
 <!-- row-columns: 32/36/32 -->
 
@@ -179,7 +179,7 @@ Overall, RL losses on language models are robust, scalable, effective, and flexi
 
 <!-- layout: section-break -->
 
-## Why RL Matters
+## Why RL matters
 
 ---
 
@@ -203,7 +203,7 @@ Reasoning models (o1, DeepSeek R1, etc.) are trained with these exact algorithms
 ---
 
 <!-- columns: 50/50 -->
-## RLVR: same algorithms, verifiable rewards
+## RLVR: Same algorithms, verifiable rewards
 
 <!-- cite-right: lambert2024t -->
 
@@ -222,7 +222,7 @@ Same policy gradient algorithms, different reward source. We will cover tricks f
 
 <!-- layout: section-break -->
 
-## Policy Gradients
+## Policy gradients: Core intuitions
 
 ---
 
@@ -237,8 +237,6 @@ Same policy gradient algorithms, different reward source. We will cover tricks f
 - Reward is a known function from the environment per step
 - Optimize cumulative return: $J(\pi) = \mathbb{E}_{\tau \sim \pi}\!\left[\sum_{t} \gamma^t r(s_t, a_t)\right]$
 
-<div class="colloquium-spacer-md"></div>
-
 **RLHF**: prompts from a dataset, no environment
 - Reward is **learned** from human preferences
 - **Response-level** reward, regularized with KL penalty
@@ -246,34 +244,56 @@ Same policy gradient algorithms, different reward source. We will cover tricks f
 
 </div>
 
+
 |||
 
 ![](assets/rlhf.png)
+
+
+---
+
+<!-- columns: 50/50 -->
+## Notation in this lecture
+
+<div class="text-sm">
 
 This lecture uses $(s, a)$ notation from the reinforcement learning literature, where $s$ denotes states and $a$ denotes actions. In the language model context, you will often see $(x, y)$ instead, where $x$ is the prompt and $y$ is the completion.
 
 The $(s, a)$ framing is more general — these algorithms were designed for sequential decision problems where actions are taken at each timestep. However, many RLHF implementations treat the entire completion as a single action, making the $(x, y)$ notation equally valid.
 
+</div>
+
+
+|||
+
+![](assets/rlhf.png)
+
+
 ---
 
-## Policy gradient: the intuition
+## Policy gradient: Core intuition
 
-The core idea of policy gradient methods in four bullets:
+Make actions more likely when they lead to better outcomes.
 
-1. **Increase probability of good actions**: if the outcome was good, make that sequence of actions more likely
-2. **Log-derivative trick**: converts "change the probability" into something we can compute with gradient descent
-3. **Weight by outcome quality**: better outcomes get larger gradient updates
-4. **Everything else is variance reduction**: baselines, advantages, value functions, clipping — all serve to reduce noise in this core signal
+$$\Delta \theta \propto \Psi_t \, \nabla_\theta \log \pi_\theta(a_t \mid s_t)$$
+
+Read it left to right:
+
+- $\nabla_\theta \log \pi_\theta(a_t \mid s_t)$ says which taken action gets updated
+- $\Psi_t$ says whether that action was good or bad, and by how much
+- $\Psi_t > 0$ increases the action's probability; $\Psi_t < 0$ decreases it
+
+The rest of this section is mostly about defining a good $\Psi_t$.
 
 ---
 
 ## The policy gradient equation
 
-All policy gradient algorithms are instantiations of one equation:
+Now write that same idea as an expectation over sampled trajectories:
 
 $$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}\!\left[\sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot \Psi_t\right]$$
 
-Where $\Psi_t$ is a **signal** that tells the optimizer how good the action was. The choice of $\Psi_t$ determines the algorithm's variance, bias, and compute cost.
+Where $\Psi_t$ is the **signal** that tells the optimizer how good the action was. The choice of $\Psi_t$ determines the algorithm's variance, bias, and compute cost.
 
 We'll first survey the options for $\Psi_t$, then derive where this equation comes from.
 
@@ -316,7 +336,7 @@ In RLHF: often $\gamma = 1$ (no discounting) because the unit of optimization is
 
 ---
 
-## MDP vs. Bandit: which $\Psi_t$ options apply?
+## MDP vs. bandit: Which $\Psi_t$ options apply?
 
 <!-- columns: 50/50 -->
 
@@ -340,11 +360,11 @@ Most RLHF: **bandit-level rewards** (one score per response) but **token-level g
 
 <!-- layout: section-break -->
 
-## Deriving the Policy Gradient
+## Deriving the policy gradient
 
 ---
 
-## Setup: differentiating an expectation
+## Setup: Differentiating an expectation
 
 We want $\nabla_\theta J(\theta)$ — the gradient of expected return w.r.t. the policy parameters.
 
@@ -503,11 +523,11 @@ Basic REINFORCE needs no critic — just Monte Carlo returns and a simple baseli
 
 <!-- layout: section-break -->
 
-## REINFORCE Leave-One-Out (RLOO)
+## REINFORCE leave-one-out (RLOO)
 
 ---
 
-## RLOO: Leave-One-Out baseline
+## RLOO: Leave-one-out baseline
 
 <!-- cite-right: ahmadian2024back -->
 
@@ -578,7 +598,7 @@ PPO addresses all three: per-token credit assignment via GAE, multiple gradient 
 
 <!-- layout: section-break -->
 
-## Proximal Policy Optimization (PPO)
+## Proximal policy optimization (PPO)
 
 ---
 
@@ -632,7 +652,7 @@ Where $\varepsilon$ is typically 0.1–0.2. The $\min$ selects the **more conser
 
 ---
 
-## Clipping: when advantage is positive ($\hat{A}_t > 0$)
+## Clipping: When advantage is positive ($\hat{A}_t > 0$)
 
 The action was **better** than expected — we want to increase its probability.
 
@@ -645,7 +665,7 @@ Once the action is already $1+\varepsilon$ times more likely than before, the gr
 
 ---
 
-## Clipping: when advantage is negative ($\hat{A}_t < 0$)
+## Clipping: When advantage is negative ($\hat{A}_t < 0$)
 
 The action was **worse** than expected — we want to decrease its probability.
 
@@ -695,7 +715,7 @@ But this simple estimate has issues: high variance (from Monte Carlo returns) or
 
 ---
 
-## GAE: the TD residual
+## GAE: The TD residual
 
 <!-- cite-right: schulman2015high -->
 
@@ -721,7 +741,7 @@ As $k \to \infty$, we recover the full Monte Carlo return (no bias, highest vari
 
 ---
 
-## GAE: exponential weighting
+## GAE: Exponential weighting
 
 GAE uses an exponentially-weighted average across all $K$-step estimates:
 
@@ -731,7 +751,7 @@ Where $\lambda \in [0, 1]$ controls the bias-variance tradeoff.
 
 ---
 
-## GAE: bias-variance tradeoff
+## GAE: Bias-variance tradeoff
 
 $$\hat{A}_t^{\text{GAE}} = \sum_{l=0}^{\infty} (\gamma\lambda)^l \delta_{t+l}$$
 
@@ -745,7 +765,7 @@ The $\gamma$ here is typically $1.0$ for language models (no discounting).
 
 ---
 
-## PPO-RLHF: full policy objective
+## PPO-RLHF: Full policy objective
 
 The full RLHF objective combines PPO with a KL regularizer:
 
@@ -773,7 +793,7 @@ Typical: K = 2–4 gradient steps per batch before re-generating.
 
 ---
 
-## PPO: four models in memory
+## PPO: Four models in memory
 
 PPO requires **four** models:
 
@@ -790,7 +810,7 @@ This is memory-intensive — a key motivation for simpler alternatives like GRPO
 
 <!-- layout: section-break -->
 
-## GRPO & Modern Variants
+## GRPO & modern variants
 
 ---
 
@@ -860,7 +880,7 @@ Same principle (compare to peers), different mechanics. Without std normalizatio
 
 ---
 
-## GSPO: sequence-level ratios
+## GSPO: Sequence-level ratios
 
 <!-- cite-right: zheng2025gspo -->
 
@@ -874,7 +894,7 @@ The geometric mean stays in a reasonable numerical range for any sequence length
 
 ---
 
-## CISPO: clipped importance sampling
+## CISPO: Clipped importance sampling
 
 <!-- cite-right: minimax2025minimaxm1scalingtesttimecompute -->
 
@@ -903,7 +923,7 @@ $$\text{PPO (2017)} \to \text{REINFORCE revival (2024)} \to \text{RLOO} \to \tex
 
 <!-- layout: section-break -->
 
-## Putting It All Together
+## Putting it all together
 
 ---
 
@@ -948,7 +968,7 @@ They differ in:
 
 ---
 
-## Next lecture: RL Implementation
+## Next lecture: RL implementation
 
 Lecture 4 turns these algorithms into working code:
 
