@@ -250,7 +250,9 @@ Same policy gradient algorithms, different reward source. We will cover tricks f
 
 ![](assets/rlhf.png)
 
-This lecture uses $(s, a)$ from RL and $(x, y)$ from the LM context interchangeably: $s = x$ (prompt), $a = y$ (completion).
+This lecture uses $(s, a)$ notation from the reinforcement learning literature, where $s$ denotes states and $a$ denotes actions. In the language model context, you will often see $(x, y)$ instead, where $x$ is the prompt and $y$ is the completion.
+
+The $(s, a)$ framing is more general — these algorithms were designed for sequential decision problems where actions are taken at each timestep. However, many RLHF implementations treat the entire completion as a single action, making the $(x, y)$ notation equally valid.
 
 ---
 

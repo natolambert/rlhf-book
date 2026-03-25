@@ -60,6 +60,8 @@ Lecture 3 was the **math**: policy gradient theorem, REINFORCE, PPO, GRPO.
 
 This lecture: how to actually **implement, debug, and run** RL training for LLMs.
 
+As in Chapter 6, we use $(s, a)$ from the reinforcement learning literature and $(x, y)$ when prompt-completion notation is more natural. The $(s, a)$ framing is more general, but many RLHF implementations treat the entire completion as a single action, making $(x, y)$ equally valid.
+
 The hardest bugs aren't math errors — they're silent implementation mistakes: wrong masking, stale caches, shape mismatches.
 
 ---
