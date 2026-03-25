@@ -568,9 +568,10 @@ A reinforcement learning problem is often written as a **Markov Decision Process
 - reward function $r(s_t, a_t)$ and discount $\gamma$
 - optimize cumulative return over a trajectory
 
-$$\text{MDP } (\mathcal{S}, \mathcal{A}, P, r, \gamma)$$
-
-$$J(\pi) = \mathbb{E}_{\tau \sim \pi}\!\left[\sum_{t=0}^{T} \gamma^t r(s_t, a_t)\right]$$
+$$\begin{gathered}
+\text{MDP } (\mathcal{S}, \mathcal{A}, P, r, \gamma) \\[6pt]
+J(\pi) = \mathbb{E}_{\tau \sim \pi}\!\left[\sum_{t=0}^{T} \gamma^t r(s_t, a_t)\right]
+\end{gathered}$$
 
 |||
 

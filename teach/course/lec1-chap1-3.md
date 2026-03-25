@@ -340,9 +340,10 @@ A reinforcement learning problem is often written as a **Markov Decision Process
 - reward function $r(s_t, a_t)$ and discount $\gamma$
 - optimize cumulative return over a trajectory
 
-$$\text{MDP } (\mathcal{S}, \mathcal{A}, P, r, \gamma)$$
-
-$$J(\pi) = \mathbb{E}_{\tau \sim \pi}\!\left[\sum_{t=0}^{T} \gamma^t r(s_t, a_t)\right]$$
+$$\begin{gathered}
+\text{MDP } (\mathcal{S}, \mathcal{A}, P, r, \gamma) \\[6pt]
+J(\pi) = \mathbb{E}_{\tau \sim \pi}\!\left[\sum_{t=0}^{T} \gamma^t r(s_t, a_t)\right]
+\end{gathered}$$
 
 |||
 
@@ -427,9 +428,10 @@ $$r(s_t, a_t) = \begin{cases} 1 & \text{if } |\theta_t| < 12° \text{ and } |x_t
 
 Each action changes the physics of the system. The full state update:
 
-$$\ddot{x}_t = \frac{F + m_p l (\dot{\theta}_t^2 \sin\theta_t - \ddot{\theta}_t \cos\theta_t)}{m_c + m_p}$$
-
-$$\ddot{\theta}_t = \frac{g \sin\theta_t - \cos\theta_t \cdot \ddot{x}_t}{l}$$
+$$\begin{aligned}
+\ddot{x}_t &= \frac{F + m_p l (\dot{\theta}_t^2 \sin\theta_t - \ddot{\theta}_t \cos\theta_t)}{m_c + m_p} \\[6pt]
+\ddot{\theta}_t &= \frac{g \sin\theta_t - \cos\theta_t \cdot \ddot{x}_t}{l}
+\end{aligned}$$
 
 Where $m_c$ is the cart mass, $m_p$ is the pole mass, $l$ is the pole length, $g$ is gravity, and $F$ is the applied force.
 
