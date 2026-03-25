@@ -121,7 +121,7 @@ Modern language models:
 ---
 
 <!-- columns: 45/55 -->
-## 2021: Stochastic parrots
+## 2021: Stochastic Parrots
 
 - 2017: the Transformer is born
 - 2018: GPT-1, ELMo, and BERT released
