@@ -137,16 +137,15 @@ That's it. Advantages weight the log-probabilities. Positive advantage → incre
 Generate $K$ completions per prompt, compute leave-one-out baselines:
 
 ```python
-# rlhf_reward: (B*K,) flat tensor of rewards
-# Reshape to (K, N) where N = number of unique prompts
-rlhf_reward = rlhf_reward.reshape(rloo_k, -1)
+# rlhf_reward: (N*K,) flat tensor of rewards
+# Prompt-major layout: K sibling completions stay together
+rlhf_reward = rlhf_reward.view(-1, rloo_k)  # (N, K)
 
 # Leave-one-out baseline: avg of other K-1 rewards per prompt
-baseline = (rlhf_reward.sum(0) - rlhf_reward) / (rloo_k - 1)
-# baseline[i, j] = avg reward of completions != i for prompt j
+baseline = (rlhf_reward.sum(dim=1, keepdim=True) - rlhf_reward) / (rloo_k - 1)
 
-advantages = rlhf_reward - baseline      # (K, N)
-advantages = advantages.flatten()         # (B*K,)
+advantages = rlhf_reward - baseline        # (N, K)
+advantages = advantages.reshape(-1)        # (N*K,)
 ```
 
 The rest follows standard policy gradient — multiply advantages by log-probs. Note: the data loader must generate $K$ completions per prompt and group them together.
@@ -160,11 +159,11 @@ The rest follows standard policy gradient — multiply advantages by log-probs. 
 **RLOO advantage**:
 ```python
 # Leave-one-out mean
-rewards = rewards.reshape(K, -1)
-baseline = (rewards.sum(0) - rewards) \
+rewards = rewards.view(-1, K)              # (N, K)
+baseline = (rewards.sum(dim=1, keepdim=True) - rewards) \
            / (K - 1)
 advantages = rewards - baseline
-advantages = advantages.flatten()
+advantages = advantages.reshape(-1)
 ```
 
 |||
@@ -172,12 +171,12 @@ advantages = advantages.flatten()
 **GRPO advantage**:
 ```python
 # Group z-score normalization
-rewards = rewards.reshape(G, -1)    # (G, N)
-mean_r = rewards.mean(dim=0)        # (N,)
-std_r = rewards.std(dim=0)          # (N,)
+rewards = rewards.view(-1, G)       # (N, G)
+mean_r = rewards.mean(dim=1, keepdim=True)
+std_r = rewards.std(dim=1, keepdim=True)
 advantages = (rewards - mean_r) \
-             / (std_r + 1e-4)       # (G, N)
-advantages = advantages.flatten()
+             / (std_r + 1e-4)       # (N, G)
+advantages = advantages.reshape(-1)
 ```
 
 <div class="colloquium-spacer-md"></div>
@@ -384,22 +383,28 @@ Before training starts, the rollout phase must cache everything the loss computa
 
 ```python
 # GAE (token-level) for LM RLHF
-# rewards: (B, L) post-KL per-token rewards
-# values: (B, L) current V_theta(s_t)
-# done_mask: (B, L) 1.0 at terminal token, else 0.0
-B, L = rewards.shape
-advantages = torch.zeros_like(rewards)
-next_v = torch.zeros(B, device=rewards.device)
-gae = torch.zeros(B, device=rewards.device)
+# rewards: (B,) completion-level reward after KL shaping
+# completion_mask: (B, L) 1.0 on generated tokens
+# values_old: (B, L) critic predictions cached at rollout time
+B, L = completion_mask.shape
+advantages = torch.zeros_like(values_old)
+next_v = torch.zeros(B, device=values_old.device)
+gae = torch.zeros(B, device=values_old.device)
+
+last_action_indices = completion_mask.long().cumsum(dim=-1).argmax(dim=-1, keepdim=True)
+indices = torch.arange(L, device=values_old.device).unsqueeze(0)
+done_mask = (indices >= last_action_indices).float()  # done at and after EOS
+rewards_t = torch.zeros_like(values_old).scatter_(dim=-1, index=last_action_indices, src=rewards)
 
 for t in reversed(range(L)):
     not_done = 1.0 - done_mask[:, t]
-    delta = rewards[:, t] + gamma * not_done * next_v - values[:, t]
+    delta = rewards_t[:, t] + gamma * not_done * next_v - values_old[:, t]
     gae = delta + gamma * lam * not_done * gae
     advantages[:, t] = gae
-    next_v = values[:, t]
+    next_v = values_old[:, t]
 
-targets = (advantages + values).detach()  # frozen at rollout time
+advantages = advantages * completion_mask
+targets = (advantages + values_old).detach()
 advantages = advantages.detach()          # for policy loss
 ```
 
@@ -430,7 +435,7 @@ pg_loss = torch.max(pg_losses1, pg_losses2)
 
 PPO reuses each batch for $K$ gradient steps:
 
-- $K$ too small (1) = wasteful, PPO clipping never activates
+- $K$ too small (1) = minimal sample reuse; clipping only appears once $\pi_\theta$ changes
 - $K$ too large (>6) = too far off-policy, ratios diverge
 - Typical: $K = 2$–$4$
 
@@ -453,7 +458,7 @@ vf_clipped   = 0.5 * (v_clip - targets) ** 2
 vf_loss = torch.max(vf_unclipped, vf_clipped)
 ```
 
-The targets come from GAE: `targets = advantages + values`.
+The targets come from rollout-time estimates: `targets = advantages + values_old`.
 
 ---
 
@@ -478,7 +483,9 @@ The `vf_coef` (typically 0.5–1.0) balances the two objectives.
 Normalize advantages to zero mean, unit variance within the batch:
 
 ```python
-advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
+valid_adv = advantages[completion_mask.bool()]
+advantages = ((advantages - valid_adv.mean()) /
+              (valid_adv.std() + 1e-8)) * completion_mask
 ```
 
 **Why**: stabilizes gradient magnitudes across batches. Without whitening, batches with uniformly high or low rewards can produce outsized gradients.

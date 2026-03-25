@@ -24,7 +24,7 @@ custom_css: |
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
 
-# Lecture 3: Reinforcement Learning
+# Lecture 3: Reinforcement Learning Motivation & Math
 
 <div class="colloquium-title-eyebrow">rlhfbook.com</div>
 
@@ -37,7 +37,7 @@ custom_css: |
 ---
 
 <!-- rows: 50/50 -->
-## Lecture 3: Reinforcement Learning
+## Lecture 3: Reinforcement Learning (mostly the math)
 
 <!-- row-columns: 32/36/32 -->
 
@@ -124,6 +124,8 @@ content: |
 
 After instruction tuning and training a reward model, the RL step updates the policy against a learned reward signal.
 
+System diagram view.
+
 ===
 
 ![The RLHF training pipeline — the RL step optimizes the policy using the reward model signal.](assets/rlhf-basic.png)
@@ -134,6 +136,8 @@ After instruction tuning and training a reward model, the RL step updates the po
 ## Where we are in the pipeline
 
 After instruction tuning and training a reward model, the RL step updates the policy against a learned reward signal.
+
+RLHF optimization view.
 
 |||
 
@@ -155,20 +159,21 @@ content: |
   4. **REINFORCE & RLOO** — the simplest policy gradient algorithms
   5. **PPO** — trust regions, clipping, GAE, value functions
   6. **GRPO & modern variants** — GSPO, CISPO, and the trend toward simplicity
-  7. **Comparison** — when to use what
+  7. **Comparison** — strengths, weaknesses, questions
 ```
 
 ---
 
-## Why not stop at rejection sampling?
+## A under-documented benefit of RL
 
-Rejection sampling picks the best of $N$ completions — but never changes the policy.
+In lecture 2, we covered rejection sampling and later we'll cover direct alignment algorithms (like DPO). They're simpler, but RL has hard to measure benefits.
 
-- **Rejection sampling**: sample $N$, keep the best → bounded by current policy's distribution
-- **RL**: update $\pi_\theta$ to make good completions more likely → shifts the distribution itself
-- RL **scales with compute**: more training steps → better policy, not just better selection
+Implementing RL is far more complex infrastructure, but the gradient updates they provide "generally help the model a lot". This is hard to quantify, but:
+- RL stages can "fix" rough edges on the model, making them easier to chat to or more robust (this could come by training them to have numerical stability inference tools like VLLM)
+- RL can be done surgically in the model, the model does a good job learning where the prompt distribution lies, and RL tends to not "squash" the general capabilities of the model. 
 
-RL is how we actually improve the model, not just filter its outputs.
+Overall, RL losses on language models are robust, scalable, effective, and flexible, which opened large new fields of experimentation. The original method that started us down this path was RLHF work.
+
 
 ---
 
@@ -207,7 +212,7 @@ The RL methods in this lecture power **both RLHF and RLVR**:
 - **RLHF**: reward model scores subjective quality
 - **RLVR**: verification function checks correctness (math, code)
 
-Same policy gradient algorithms, different reward source. We will cover reasoning training in depth in a future lecture.
+Same policy gradient algorithms, different reward source. We will cover tricks for reasoning training and a bunch of interesting models in depth in a future lecture.
 
 |||
 
@@ -817,7 +822,7 @@ Each token in completion $i$ gets the **same** advantage (sequence-level, not pe
 
 Clipped ratio (like PPO) + group-normalized advantages + KL penalty directly in loss:
 
-$$J(\theta) = \frac{1}{G}\sum_{i=1}^{G}\!\left(\min\!\left(r_i \hat{A}_i,\, \text{clip}(r_i, 1-\varepsilon, 1+\varepsilon) \hat{A}_i\right) - \beta \, D_{\text{KL}}(\pi_\theta \| \pi_\text{ref})\right)$$
+$$J(\theta) = \frac{1}{G}\sum_{i=1}^{G}\frac{1}{|a_i|}\sum_{t=1}^{|a_i|}\!\left(\min\!\left(r_{i,t} \hat{A}_i,\, \text{clip}(r_{i,t}, 1-\varepsilon, 1+\varepsilon) \hat{A}_i\right) - \beta \, D_{\text{KL}, i,t}\right)$$
 
 Where the clipping applies **per-token**: $r_{i,t} = \frac{\pi_\theta(a_{i,t} \mid s_t)}{\pi_{\theta_\text{old}}(a_{i,t} \mid s_t)}$, but $\hat{A}_i$ is shared across all tokens in the completion (sequence-level advantage, per-token ratio).
 
