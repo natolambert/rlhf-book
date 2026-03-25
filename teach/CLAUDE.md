@@ -34,6 +34,15 @@ Key directives (HTML comments before or after the heading):
 
 Titles must be bare `## Heading` at line start. Wrapping in `<div>` breaks colloquium's heading extraction.
 
+## Title Case
+
+Use sentence case for all slide titles and section-break titles.
+
+- Capitalize the first word of the title
+- Capitalize the first word after a colon
+- Keep acronyms and proper names capitalized (e.g. `RLHF`, `PPO`, `OpenAI`, `ChatGPT`)
+- Do not use title case across the full heading
+
 ## Citation Style
 
 Two citation modes — choose based on what is being cited:
