@@ -165,8 +165,8 @@ Around the time ChatGPT first came out, the widely accepted ("canonical") method
 The three steps taken on top of a "base" language model (the next-token prediction model trained on large-scale web text) are summarized below in @fig:rlhf-basic-repeat:
 
 1. **Instruction tuning on ~10K examples**: This teaches the model to follow the question-answer format and teaches some basic skills from primarily human-written data.
-2. **Training a reward model on ~100K pairwise prompts**: This model is trained from the instruction-tuned checkpoint and captures the diverse values one wishes to model in their final training. The reward model is the optimization target for RLHF.
-3. **Training the instruction-tuned model with RLHF on a separate ~31K prompts**: The model is optimized against the reward model with a separate set of prompts, where it generates responses before receiving ratings.
+2. **Training a reward model on ~100K pairwise prompts** (paper used 33K prompts): This model is trained from the instruction-tuned checkpoint and captures the diverse values one wishes to model in their final training. The reward model is the optimization target for RLHF.
+3. **Training the instruction-tuned model with RLHF on a separate ~100K prompts** (paper used exactly 31K, undocumented if or to what extent prompts are re-used from other stages): The model is optimized against the reward model with a likely separate set of prompts, where it generates responses before receiving ratings.
 
 Once RLHF was done, the model was ready to be deployed to users. This recipe is the foundation of modern RLHF, but recipes have evolved substantially to include more stages and more data.
 
