@@ -271,23 +271,49 @@ The $(s, a)$ framing is more general — these algorithms were designed for sequ
 
 ---
 
-## Policy gradient: Core intuition
+## How a policy gradient works
 
 Make actions more likely when they lead to better outcomes.
 
 $$\Delta \theta \propto \Psi_t \, \nabla_\theta \log \pi_\theta(a_t \mid s_t)$$
 
-Read it left to right:
+<div class="text-sm">
 
-- $\nabla_\theta \log \pi_\theta(a_t \mid s_t)$ says which taken action gets updated
-- $\Psi_t$ says whether that action was good or bad, and by how much
-- $\Psi_t > 0$ increases the action's probability; $\Psi_t < 0$ decreases it
+Read it as two questions answered at once:
 
-The rest of this section is mostly about defining a good $\Psi_t$.
+- $\nabla_\theta \log \pi_\theta(a_t \mid s_t)$ — **which action?**
+- $\Psi_t$ — **how good was it?** A scalar scoring the outcome.
+
+</div>
+
+---
+
+## How a policy gradient works
+
+Make actions more likely when they lead to better outcomes.
+
+$$\Delta \theta \propto \Psi_t \, \nabla_\theta \log \pi_\theta(a_t \mid s_t)$$
+
+<div class="text-sm">
+
+Read it as two questions answered at once:
+
+- $\nabla_\theta \log \pi_\theta(a_t \mid s_t)$ — **which action?** How each parameter influenced the probability of taking action $a_t$ in state $s_t$. This connects the outcome back to the knobs that caused it.
+- $\Psi_t$ — **how good was it?** A scalar scoring the outcome. Positive means good, negative means bad, magnitude says how much.
+
+> An oversimplification (batch size of 1): the gradient is a vector with one entry per parameter. A positive entry means "increasing this parameter made the action more likely," a negative entry means the opposite. In practice, the update averages over many such vectors — what survives is the net vote across the batch.
+
+Multiply them: $\Psi_t > 0$ updates parameters to make $a_t$ more likely, $\Psi_t < 0$ updates them to make it less likely.
+
+The rest of this section is about choosing a smart $\Psi_t$ — different choices (total return, advantage, TD residual) trade off variance and bias, but all plug into this same update.
+
+</div>
 
 ---
 
 ## The policy gradient equation
+
+TODO: intuition on why the gradient itself is a sum of per-token logprobs
 
 Now write that same idea as an expectation over sampled trajectories:
 
