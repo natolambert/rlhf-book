@@ -37,7 +37,7 @@ custom_css: |
 ---
 
 <!-- rows: 50/50 -->
-## Lecture 2: IFT, reward models, & rejection sampling
+## Lecture 2: IFT, Reward Models, & Rejection Sampling
 
 <!-- row-columns: 32/36/32 -->
 
@@ -143,7 +143,7 @@ A natural step before full RLHF:
 
 <!-- layout: section-break -->
 
-## Part 1: Instruction tuning
+## Part 1: Instruction Tuning
 
 ---
 
@@ -182,7 +182,7 @@ Instruction tuning emerged from two parallel research threads:
 
 ---
 
-## Chat templates: The structure of instruction tuning
+## Chat templates: the structure of instruction tuning
 
 The model needs a structured format to manage **who is speaking** and **what to generate**. 
 Early chat templates defined three roles:
@@ -446,7 +446,7 @@ Scaling the prompts quickly enabled more performance. Now, reasoning models are 
 
 ---
 
-## Ingredients for post-training: Prompts
+## Ingredients for post-training: prompts
 
 Successful post-training starts with **meaningful evaluations** for targeted skills and **prompts of representative queries** for those skills.
 
@@ -461,7 +461,7 @@ Recent work has of course scaled up various RL training stages :D!
 
 ---
 
-## Building SFT data: Synthetic completions
+## Building SFT data: synthetic completions
 
 **Synthetic data** has become the dominant approach for building SFT datasets -- following [@wang2022self]:
 
@@ -496,7 +496,7 @@ These two tracks iterate: mix what you have, evaluate, curate what's missing, mi
 
 <!-- layout: section-break -->
 
-## Part 2: Reward models
+## Part 2: Reward Models
 
 ---
 
@@ -520,7 +520,7 @@ A reward model compresses complex, subjective human judgments into a single scal
 <!-- cite-right: sutton2018reinforcement -->
 <!-- columns: 65/35 -->
 
-## Recall: Classical reinforcement learning
+## Recall: Classical Reinforcement Learning
 
 A reinforcement learning problem is often written as a **Markov Decision Process (MDP)**:
 - state space $\mathcal{S}$, action space $\mathcal{A}$
@@ -787,7 +787,7 @@ loss = -nn.functional.logsigmoid(rewards_chosen - rewards_rejected).mean()
 
 <!-- layout: section-break -->
 
-## Reward model variants
+## Reward Model Variants
 
 ---
 
@@ -838,7 +838,7 @@ where $r \in \{0,1\}$ is the completion-level correctness label, broadcast acros
 ---
 
 <!-- columns: 50/50 -->
-## BT reward model vs. ORM: Forward pass
+## BT reward model vs. ORM: forward pass
 
 **Bradley-Terry RM** — score at the **last token**:
 
@@ -1059,7 +1059,7 @@ Training innovations (aspect-conditioned models, high-quality human datasets, sc
 
 <!-- layout: section-break -->
 
-## Part 3: Rejection sampling
+## Part 3: Rejection Sampling
 
 ---
 
@@ -1094,7 +1094,7 @@ This is still just **offline data curation**: generate first, then train on the 
 
 ---
 
-## The math: Prompts, completions, rewards
+## The math: prompts, completions, rewards
 
 Given $M$ prompts and $N$ completions each:
 
@@ -1118,7 +1118,7 @@ Each reward: $r_{i,j} = \mathcal{R}(y_{i,j} \mid x_i)$
 
 ---
 
-## Selection method 1: Top per prompt
+## Selection method 1: top per prompt
 
 Select the highest-scoring completion for each prompt independently:
 
@@ -1139,7 +1139,7 @@ Result: one completion per prompt, every prompt represented.
 
 ---
 
-## Selection method 2: Top overall pairs
+## Selection method 2: top overall pairs
 
 Flatten the reward matrix and select the top $K$ pairs globally:
 
@@ -1175,7 +1175,7 @@ The core hyperparameters are intuitive:
 
 ---
 
-## Best-of-N sampling: Rejection sampling without fine-tuning
+## Best-of-N sampling: rejection sampling without fine-tuning
 
 <!-- cite-right: liu2023statistical -->
 
