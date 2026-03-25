@@ -479,9 +479,9 @@ The amount of instruction data needed has evolved rapidly:
 
 Scaling the prompts quickly enabled more performance. Now, reasoning models are using more compute and tokens to train via more tokens per prompt in SFT (and longer context lengths).
 
-Tülu 3 [@lambert2024t] create a state-of-the-art SFT dataset which was about 300M tokens.
+Tülu 3 [@lambert2024t] creates a state-of-the-art SFT dataset which was about 300M tokens.
 
-About a year later, Olmo 3's [@teamolmo2025olmo3] state-of-the-art *reasoning* SFT dataset was about 20B tokens. Other work has scaled this over 10X and fundamental limits (and interaction with RL) is unkown.
+About a year later, Olmo 3's [@teamolmo2025olmo3] state-of-the-art *reasoning* SFT dataset was about 20B tokens. Other work has scaled this over 10X and fundamental limits (and interaction with RL) is unknown.
 
 ---
 
@@ -1211,7 +1211,7 @@ The core hyperparameters are intuitive:
 
 **Practical tip**: sort completions by length before batch RM inference to reduce padding token computation (so samples in each batch are similar length, some frameworks will handle this automatically).
 
-**Open questions**: how to sequence RS in a multi-stage pipeline, whether to use generations from multiple models, optimal prompt selection. There hasn't been a fully open reproduction of this, which is kind of confusing as to why. My hunch is that training an reward model has some subtle tricks.
+**Open questions**: how to sequence RS in a multi-stage pipeline, whether to use generations from multiple models, optimal prompt selection. There hasn't been a fully open reproduction of this, which is kind of confusing as to why. My hunch is that training a reward model has some subtle tricks.
 
 ---
 
@@ -1242,7 +1242,7 @@ Putting it all together — a simple path from pretrained model to preference-tu
 
 This is a strong baseline. 
 
-Next lectures will cover more advanced optimization methods: PPO, which optimizes a policy against a learned reward signal, and Direct Prefence Optimization (DPO, and it's family of algorithms), which optimizes directly from preference pairs rather than filtering training data.
+Next lectures will cover more advanced optimization methods: PPO, which optimizes a policy against a learned reward signal, and Direct Preference Optimization (DPO, and its family of algorithms), which optimizes directly from preference pairs rather than filtering training data.
 
 ---
 
