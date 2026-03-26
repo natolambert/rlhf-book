@@ -157,6 +157,35 @@ Due to this complexity, implementing RLHF is far more costly than simple instruc
 For model training efforts where absolute performance matters, RLHF is established as being crucial to achieving a strong fine-tuned model, but it is more expensive in compute, data costs, and time.
 Through the early history of RLHF after ChatGPT, there were many research papers that showed approximate solutions to RLHF via limited instruction fine-tuning, but as the literature matured it has been repeated time and again that RLHF and related methods are core stages to model performance that cannot be easily dispensed with.
 
+## Walkthrough of a RLHF Recipe
+
+To set the stage for the book, it's important to understand what "doing RLHF" can look like, as a minimal example, without any of the technical jargon that can be hard to grasp before solidifying fundamental intuitions.
+This section follows what is described as the canonical, three-stage RLHF recipe, as established with OpenAI's model InstructGPT in 2022 [@ouyang2022training].
+
+The first step of the process is to transition the model from a base model that completes text to an instruction-following model that can operate in a question-answering format.
+This is done by using the same next-token prediction loss function on a set of carefully crafted datapoints where the model is shown *only* data in this question-answering format.
+After the model is shown these high-quality responses, the model can now be prompted with a specific sequence of tokens to know that it should answer any query with a more defined, assistant persona.
+
+With this foundation of *the shape of how the model should answer* the next two steps play together to improve the overall quality of the answers.
+These two steps serve to set up a problem where we can use reinforcement learning to update the model and make it more helpful.
+
+The first of these two steps is to train a reward model that captures human preferences.
+In order to apply reinforcement learning to a problem, you need a reward function that indicates quality.
+The goal of a reward model is to create a scalar signal that can then later be optimized with RL.
+In practice, this involves fine-tuning a language model (it is usually the same instruction-tuned model from the previous step) on a dataset of preference relations between pieces of text.
+This dataset is collected across a variety of prompts, model completions, and labelers to try and capture a robust signal of what is a better answer from a language model.
+The reward model learns which features in the text are better than others, so when it is used at inference-time (and during RL as the reward signal) it scores any piece of input text on how good it is.
+
+With these two pieces, a question-answering model and a reward model, we have everything we need to put together the pieces and actually do reinforcement learning from human feedback (RLHF).
+The actual RLHF stage proceeds by taking prompts representative of tasks the model should be good at, generating a bunch of completions, having the reward model rank them, and then using RL to figure out how to change the model and make it better.
+The basic primitive is that reinforcement learning is given a signal of which actions are good, in the form of tokens that a language model generates, and derives update rules that attribute different actions to different parameters in the model.
+The final RLHF stage shifts parameters to make good tokens more likely, and does so iteratively to maintain the general capabilities of the initial model.
+
+Once RL is complete, and performance has saturated, this is often the final model served to the user.
+
+Through this book, we'll cover many recipes for how to do RLHF, and more related optimization methods that make up the broader suite of post-training.
+These all emerge to solve more challenging problems facing language models, and to make the strengths of the original RLHF approaches more powerful.
+
 ## An Intuition for Post-Training
 
 We've established that RLHF specifically and post-training generally is crucial to performance of the latest models and how it changes the models' outputs, but not why it works.

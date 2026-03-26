@@ -43,6 +43,21 @@ For definitions of symbols, see the problem setup chapter.
 
 ## Policy Gradient Algorithms
 
+At its core, this chapter is dedicated to understanding the following shape of equation.
+This equation is computing the gradient, $\Delta \theta$, to the language model we are training, $\pi_\theta$:
+
+$$\Delta \theta \propto \Psi_t \, \nabla_\theta \log \pi_\theta(a_t \mid s_t)$$ {#eq:policy_gradient_intuition}
+
+Here, the equation is composed of two key components:
+1. $\nabla_\theta \log \pi_\theta(a_t \mid s_t)$ — which direction in parameter space makes action $a_t$ more likely.
+2. $\Psi_t$ — how good was it? A scalar scoring the outcome.
+
+When you put this together, yes, by multiplying the quantities, you get the policy gradient update. 
+Some things are simple, such as that $\Psi_t > 0$ updates parameters to make $a_t$ more likely, $\Psi_t < 0$ updates them to make it less likely.
+The policy gradient is computing which parameters contribute to an action and if we should make it more or less likely to occur in the future.
+The rest of this chapter goes very deep on the different ways to do this, and what the specific tricks are to make it work for LLMs.
+
+Now, let us formalize this a bit further.
 Reinforcement learning algorithms are designed to maximize the future, discounted reward across a trajectory of states, $s \in \mathcal{S}$, and actions, $a \in \mathcal{A}$ (for more notation, see Appendix A, Definitions).
 The objective of the agent, often called the *return*, is the sum of discounted future rewards (where $\gamma\in [0,1]$ is a factor that prioritizes near-term rewards) at a given time $t$:
 
@@ -86,6 +101,8 @@ With this expected return, $J$, the parameter update can be computed as follows,
 $$\theta \leftarrow \theta + \alpha \nabla_\theta J(\theta)$$ {#eq:policy_update}
 
 The core implementation detail is how to compute said gradient.
+
+### Deriving the Policy Gradient
 
 Another way to pose the RL objective we want to maximize is as follows:
 $$
@@ -143,6 +160,20 @@ Therefore, the gradient of the log probability of the trajectory simplifies to:
 $$
 \nabla_\theta \log p_\theta (\tau) = \sum_{t=0}^\infty \nabla_\theta \log \pi_\theta(a_t|s_t)
 $$ {#eq:trajectory_log_grad}
+
+As a brief aside, reaching this equation comes to a crucial point in the implementation.
+Here, we have gone far enough to see that the gradient of the trajectory distribution can reduce to a sum of gradients from language model policy probabilities (which is just the probabilities of tokens given by the model we're training).
+In practice, this results in a common form of the policy gradient equations.
+They end up looking like a sum of log-probabilities in the loss, and then we compute the gradients via autodiff.
+A short snippet you'll see again and again roughly follows:
+
+```python
+seq_log_probs = (token_log_probs * completion_mask).sum(dim=-1)
+loss = -(seq_log_probs * advantages).mean()
+loss.backward()
+```
+
+You'll see this throughout the chapter. Now, back to the formal policy gradient mathematics.
 
 Substituting this back in @eq:policy_gradient_expectation, we get:
 $$
