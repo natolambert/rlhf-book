@@ -4,17 +4,17 @@ A comprehensive guide to Reinforcement Learning from Human Feedback (and a broad
 
 **[Read online](https://rlhfbook.com)** | **[Pre-order print](https://hubs.la/Q03Tc3cf0)**
 
-This book is my attempt to open-source what I've learned working at the frontier of open models in the post-ChatGPT takeoff of language models.
+This book is my attempt to open-source all the knowledge I've gained working at the frontier of open models in the post-ChatGPT take off of language models.
 When I started, many established methods like rejection sampling had no canonical reference.
-On the other side, industry practices to make models more personable -- colloquially called Character Training -- had little open research.
-It seemed worth documenting the fundamentals, curating the references carefully (in an era of AI slop), and building a serious starting point for people entering the field.
+On the other side, industry practices to make the models more personable -- colloquially called Character Training -- had no open research. 
+It was obvious to me that there would be payoff to documenting, learning the fundamentals, carefully curating the references (in an era of AI slop), and everything in between would be a wonderful starting point for people.
 
-Today, I'm adding code and treating this as a home base for people who want to learn.
+Today, I'm adding code and seeing this as a home base for people who want to learn. 
 You should use coding assistants to ask questions.
 You should buy the physical book because the real world matters.
 You should read the specific AI outputs tailored to you.
 
-In the future I want to build more educational resources around this, such as open source slide decks and more ways to learn.
+In the future I want to build more education resources to this, such as open source slide decks and more ways to learn.
 In the end, with how impossible it is to measure human preferences, RLHF will never be a solved problem.
 
 Thank you for reading. 

@@ -1,7 +1,6 @@
 # Scripts
 
 Utilities for managing the bibliography and other book maintenance tasks.
-Run these commands from the repository root.
 
 ## Bibliography Tools
 
