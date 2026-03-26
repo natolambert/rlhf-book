@@ -29,7 +29,7 @@ CONTENT_FILTERS = tee # Use this to add sed filters or other piped commands
 
 DEBUG_ARGS = --verbose
 
-# Pandoc filtes - uncomment the following variable to enable cross references filter. For more
+# Pandoc filters - uncomment the following variable to enable cross references filter. For more
 # information, check the "Cross references" section on the README.md file.
 
 FILTER_ARGS = --filter pandoc-crossref

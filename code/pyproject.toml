@@ -40,6 +40,7 @@ dev = [
 [project.scripts]
 train-policy = "policy_gradients.train:main_cli"
 train-dpo = "direct_alignment.train:main_cli"
+train-preference-rm = "reward_models.train_preference_rm:main"
 train-orm = "reward_models.train_orm:main"
 train-prm = "reward_models.train_prm:main"
 
