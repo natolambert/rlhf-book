@@ -413,14 +413,17 @@ The derivation is a few key tricks to let us approximate or compute this.
 
 ## Applying the idea of computing the gradient from trajectories
 
-Substituting the log-derivative trick (more on this soon) into the gradient:
+Substituting the log-derivative identity (more on this soon) into the gradient:
 
 $$
 \begin{aligned}
 \nabla_\theta J(\theta)
-&= \int_\tau \nabla_\theta p_\theta(\tau) R(\tau) \, d\tau \\
-&= \int_\tau p_\theta(\tau) \nabla_\theta \log p_\theta(\tau) R(\tau) \, d\tau \\
+&= \int_\tau \nabla_\theta p_\theta(\tau) R(\tau) \, d\tau
+&& \text{differentiate the objective} \\
+&= \int_\tau p_\theta(\tau) \nabla_\theta \log p_\theta(\tau) R(\tau) \, d\tau
+&& \text{log-derivative identity (chain rule)} \\
 &= \mathbb{E}_{\tau \sim \pi_\theta}\!\left[\nabla_\theta \log p_\theta(\tau) \cdot R(\tau)\right]
+&& \text{expectation form}
 \end{aligned}
 $$
 
@@ -432,13 +435,19 @@ Now we can estimate this with Monte Carlo sampling!
 
 The only non-obvious step is the middle line:
 
-$$\nabla_\theta p_\theta(\tau) = p_\theta(\tau) \nabla_\theta \log p_\theta(\tau)$$
+$$
+\begin{aligned}
+\nabla_\theta \log p_\theta(\tau)
+&= \frac{\nabla_\theta p_\theta(\tau)}{p_\theta(\tau)} \\
+\Rightarrow \quad
+\nabla_\theta p_\theta(\tau)
+&= p_\theta(\tau) \nabla_\theta \log p_\theta(\tau)
+\end{aligned}
+$$
 
-This is the **log-derivative trick**.
+This is the **log-derivative identity**, derived from the chain rule for $\log$.
 
 It rewrites the gradient of a probability in terms of a log-probability, which is much easier to work with.
-
-The probability is **not** the gradient. It appears as a multiplicative factor.
 
 ---
 
@@ -460,7 +469,7 @@ At a high level, rollout generation handles the sampling, and the loss code hand
 
 ---
 
-## Expanding log probability of trajectory
+## Expanding log probability of trajectory to compute $\nabla_\theta$
 
 The trajectory probability factorizes:
 
@@ -474,7 +483,26 @@ For language models, this is the familiar autoregressive pattern: a sequence log
 
 ---
 
-## Expanding log probability of trajectory
+## Expanding log probability of trajectory to compute $\nabla_\theta$
+
+<div class="text-sm">
+
+$$\log p_\theta(\tau) = \log p(s_0) + \sum_{t=0}^{T} \log \pi_\theta(a_t \mid s_t) + \sum_{t=0}^{T} \log p(s_{t+1} \mid s_t, a_t)$$
+
+Now take the gradient w.r.t. $\theta$:
+
+- $\nabla_\theta \log p(s_0) = 0$ — initial state doesn't depend on $\theta$
+- $\nabla_\theta \log p(s_{t+1} \mid s_t, a_t) = 0$ — environment dynamics don't depend on $\theta$
+- Only $\nabla_\theta \log \pi_\theta(a_t \mid s_t)$ survives!
+
+$$\nabla_\theta \log p_\theta(\tau) = \sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t)$$
+
+</div>
+---
+
+## Expanding log probability of trajectory to compute $\nabla_\theta$
+
+<div class="text-sm">
 
 $$\log p_\theta(\tau) = \log p(s_0) + \sum_{t=0}^{T} \log \pi_\theta(a_t \mid s_t) + \sum_{t=0}^{T} \log p(s_{t+1} \mid s_t, a_t)$$
 
@@ -490,21 +518,23 @@ In language-model code, this is why you repeatedly see:
 
 ```python
 seq_log_probs = (token_log_probs * completion_mask).sum(dim=-1)
+loss = -(seq_log_probs * advantages).mean()
+loss.backward()
 ```
 
-Autodiff turns that summed log-probability into the corresponding sum of per-token gradients.
-
+Autodiff turns that summed log-probability into the corresponding sum of per-token gradients!
+</div>
 ---
 
 ## From full return to future rewards
 
-An action at time $t$ can't affect rewards already received. So instead of weighting by the full trajectory reward $R(\tau)$:
+An action at time $t$ can't affect past rewards. So instead of weighting by the full trajectory reward $R(\tau)$:
 
 $$\nabla_\theta J = \mathbb{E}\!\left[\sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot R(\tau)\right]$$
 
-We can replace $R(\tau)$ with the **return-to-go** — only future rewards from $t$ onward:
+We can replace $R(\tau)$ with the **return-to-go** $G_t = \sum_{t'=t}^{T} R_{t'}$ — only future rewards from $t$ onward:
 
-$$\nabla_\theta J = \mathbb{E}\!\left[\sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot \sum_{t'=t}^{T} R_{t'}\right]$$
+$$\nabla_\theta J = \mathbb{E}\!\left[\sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot G_t\right]$$
 
 This doesn't change the expected gradient, but removes noise from past rewards that the current action couldn't have influenced. This is the step from $\Psi_t$ option 1 → option 2 in our taxonomy.
 
@@ -512,13 +542,81 @@ This doesn't change the expected gradient, but removes noise from past rewards t
 
 ## Baselines keep the estimator unbiased
 
-Subtracting a baseline $b(s_t)$ from the return doesn't change the expected gradient:
+Raw returns are noisy. The same action can appear in trajectories with very different total rewards because of later sampled actions and, in classical RL, environment randomness.
 
-$$\mathbb{E}[\nabla_\theta \log \pi_\theta(a \mid s) \cdot b(s)] = b(s) \cdot \sum_a \nabla_\theta \pi_\theta(a \mid s) = b(s) \cdot \nabla_\theta \underbrace{\sum_a \pi_\theta(a \mid s)}_{= 1} = 0$$
+The role of a baseline is to **center** that noisy signal: instead of asking "was the return high?", we ask "was it higher or lower than expected for this state?"
+
+
+---
+
+## Baselines keep the estimator unbiased
+
+Raw returns are noisy. The same action can appear in trajectories with very different total rewards because of later sampled actions and, in classical RL, environment randomness.
+
+The role of a baseline is to **center** that noisy signal: instead of asking "was the return high?", we ask "was it higher or lower than expected for this state?"
+
+Use a centered return:
+
+$$\Psi_t = G_t - b(s_t)$$
+
+where the baseline $b(s_t)$ depends only on the state, not on which action was sampled.
+
+Subtracting this baseline doesn't change the expected gradient:
+
+---
+
+## Baselines keep the estimator unbiased
+
+<div class="text-sm">
+
+Raw returns are noisy. The same action can appear in trajectories with very different total rewards because of later sampled actions and, in classical RL, environment randomness.
+
+Use a centered return, $\Psi_t = G_t - b(s_t)$.
+
+Subtracting this baseline doesn't change the expected gradient:
+
+$$
+\mathbb{E}[\nabla_\theta \log \pi_\theta(a \mid s) \cdot (G_t - b(s))]
+= \mathbb{E}[\nabla_\theta \log \pi_\theta(a \mid s) \cdot G_t]
+- \mathbb{E}[\nabla_\theta \log \pi_\theta(a \mid s) \cdot b(s)]
+$$
+
+The first term is the original estimator. The second vanishes:
+
+$$
+\begin{aligned}
+\mathbb{E}[\nabla_\theta \log \pi_\theta(a \mid s) \cdot b(s)]
+&= b(s) \cdot \sum_a \nabla_\theta \pi_\theta(a \mid s) \\
+&= b(s) \cdot \nabla_\theta \underbrace{\sum_a \pi_\theta(a \mid s)}_{= 1} \\
+&= 0
+\end{aligned}
+$$
 
 The gradient of a normalized distribution sums to zero — so we're free to subtract **any function of state** as a baseline. This is why $\Psi_t$ options 3–5 reduce variance without introducing bias.
 
+</div>
+
 ---
+
+## Recall: What $\Psi_t$ can be
+
+<!-- cite-right: schulman2015high -->
+
+Popular choices for $\Psi_t$ (rewards can also be discounted by $\gamma$):
+
+| | $\Psi_t$ | Description | Variance | Bias |
+|:-:|-----------|-------------|:--------:|:----:|
+| 1. | $R(\tau) = \sum_{t=0}^{T} r_t$ | Total trajectory reward | Highest | None |
+| 2. | $\sum_{t'=t}^{T} r_{t'}$ | Future return from $t$ (the return, $G_t$) | High | None |
+| 3. | $\sum_{t'=t}^{T} r_{t'} - b(s_t)$ | Baselined return | Lower | None |
+| 4. | $Q^{\pi}(s_t, a_t)$ | State-action value function | Med | Depends |
+| 5. | $A^{\pi}(s_t, a_t) = Q - V$ | Advantage function | **Lowest** | None |
+| 6. | $r_t + \gamma V(s_{t+1}) - V(s_t)$ | TD residual | Low | Some |
+
+A *baseline* $b(s_t)$ is any value subtracted from the reward signal to reduce variance — we'll show why this is unbiased shortly.
+
+---
+
 
 ## The policy gradient estimator
 
@@ -528,9 +626,7 @@ $$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}\!\left[\sum_{t=0}^
 
 This is the **policy gradient theorem**. Every algorithm in this lecture is an instantiation with a specific choice of $\Psi_t$ and regularization.
 
-For language models, this becomes a per-token sum over the completion:
-
-$$\nabla_\theta J(\theta) = \mathbb{E}_{x, y \sim \pi_\theta}\!\left[\sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot A_t\right]$$
+For language models, this means the sum runs over generated tokens in the completion, while $\Psi_t$ determines how each token is weighted.
 
 ---
 
@@ -539,11 +635,15 @@ $$\nabla_\theta J(\theta) = \mathbb{E}_{x, y \sim \pi_\theta}\!\left[\sum_{t=0}^
 $$
 \begin{aligned}
 J(\theta)
-&= \mathbb{E}_{\tau \sim \pi_\theta}[R(\tau)] \\
-&= \int_\tau p_\theta(\tau) R(\tau)\, d\tau \\
+&= \mathbb{E}_{\tau \sim \pi_\theta}[R(\tau)]
+&& \text{objective} \\
+&= \int_\tau p_\theta(\tau) R(\tau)\, d\tau
+&& \text{integral form} \\
 \nabla_\theta J(\theta)
-&= \int_\tau \nabla_\theta p_\theta(\tau) R(\tau)\, d\tau \\
+&= \int_\tau \nabla_\theta p_\theta(\tau) R(\tau)\, d\tau
+&& \text{differentiate} \\
 &= \mathbb{E}_{\tau \sim \pi_\theta}\!\left[\sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot \Psi_t\right]
+&& \text{final estimator}
 \end{aligned}
 $$
 
