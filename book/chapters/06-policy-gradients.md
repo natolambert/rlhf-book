@@ -54,6 +54,7 @@ Here, the equation is composed of two key components:
 
 When you put this together, yes, by multiplying the quantities, you get the policy gradient update. 
 Some things are simple, such as that $\Psi_t > 0$ updates parameters to make $a_t$ more likely, $\Psi_t < 0$ updates them to make it less likely.
+The policy gradient is computing which parameters contribute to an action and if we should make it more or less likely to occur in the future.
 The rest of this chapter goes very deep on the different ways to do this, and what the specific tricks are to make it work for LLMs.
 
 Now, let us formalize this a bit further.
