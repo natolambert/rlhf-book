@@ -160,6 +160,20 @@ $$
 \nabla_\theta \log p_\theta (\tau) = \sum_{t=0}^\infty \nabla_\theta \log \pi_\theta(a_t|s_t)
 $$ {#eq:trajectory_log_grad}
 
+As a brief aside, reaching this equation comes to a crucial point in the implementation.
+Here, we have gone far enough to see that the gradient of the trajectory distribution can reduce to a sum of gradients from language model policy probabilities (which is just the probabilities of tokens given by the model we're training).
+In practice, this results in a common form of the policy gradient equations.
+They end up looking like a sum of log-probabilities in the loss, and then we compute the gradients via autodiff.
+A short snippet you'll see again and again roughly follows:
+
+```python
+seq_log_probs = (token_log_probs * completion_mask).sum(dim=-1)
+loss = -(seq_log_probs * advantages).mean()
+loss.backward()
+```
+
+You'll see this throughout the chapter. Now, back to the formal policy gradient mathematics.
+
 Substituting this back in @eq:policy_gradient_expectation, we get:
 $$
 \nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum_{t=0}^\infty \nabla_\theta \log \pi_\theta(a_t|s_t) R(\tau) \right]
