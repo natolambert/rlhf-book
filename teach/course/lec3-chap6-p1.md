@@ -666,6 +666,8 @@ $$
 
 REINFORCE is the simplest instantiation of the policy gradient. The update rule:
 
+It is the **Monte Carlo form of policy gradient**: sample trajectories, compute their returns, and use those sampled returns to weight the log-prob gradients.
+
 <div class="text-sm">
 
 > The name is an acronym for "REward Increment = Nonnegative Factor X Offset Reinforcement X Characteristic Eligibility."
