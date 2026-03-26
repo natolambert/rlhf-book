@@ -417,8 +417,8 @@ Some notes, given the above table has a lot of edge cases.
 **What if you train a Bradley-Terry pairwise model with correct/incorrect pairs?** 
 Much of the confusion on outcome reward models came from a small set of the literature that was training a reward model on pairwise data derived from answer correctness.
 In this domain, you set the chosen response as being a correct answer to a problem and a rejected response as being an incorrect answer *for the same problem.* 
-This is technically not an ORM — it is still trained directly with the contrastive, sequence-level loss.
-It is still a Bradley-Terry model and would fall in the first class of models we covered.
+This is technically not an ORM and still trained directly with the contrastive, sequence-level loss.
+This is technically still a Bradley-Terry model and would fall in the first class of models we covered.
 
 **ORM vs. Value Function.**
 ORMs and value functions can appear similar since both produce per-token outputs with the same head architecture, but they differ in *what they predict* and *where targets come from*:
