@@ -52,6 +52,9 @@ LATEX_ARGS = --template book/templates/pdf.tex --pdf-engine pdflatex
 NESTED_HTML_TEMPLATE = book/templates/chapter.html
 ARXIV_ZIP = $(BUILD)/arxiv.zip
 
+# Add this with your other file variables at the top
+JS_FILES = $(shell find book/templates -name '*.js')  # Restrict JS discovery to source templates
+
 # Per-format file dependencies
 
 BASE_DEPENDENCIES = $(MAKEFILE) $(CHAPTERS) $(METADATA) $(IMAGES) $(TEMPLATES)
@@ -73,7 +76,7 @@ else # Linux
 endif
 
 MKDIR_CMD = mkdir -p
-RMDIR_CMD = rm -rf
+RMDIR_CMD = rm -r
 ARXIV_DIR = $(BUILD)/arxiv
 ECHO_BUILDING = @echo "building $@..."
 ECHO_BUILT = @echo "$@ was built\n"
@@ -90,6 +93,11 @@ book:	epub kindle html pdf docx rl-cheatsheet
 
 clean:
 	$(RMDIR_CMD) $(BUILD)
+
+# Debugging output for chapters and HTML output paths
+$(info Chapters found: $(CHAPTERS))
+$(info HTML output will be: $(CHAPTER_HTMLS))
+$(info JS files found: $(JS_FILES))
 
 ####################################################################################################
 # File builders
