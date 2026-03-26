@@ -211,7 +211,7 @@ Modern language models:
 ---
 
 <!-- columns: 50/50 -->
-## Pretraining: next-token prediction
+## Pretraining: Next-token prediction
 
 - Train on trillions of tokens of text from the web, books, code, and documents
   - Models are often trained on 5-50+ trillion tokens
@@ -332,7 +332,7 @@ messages:
 <!-- cite-right: sutton2018reinforcement -->
 <!-- columns: 65/35 -->
 
-## Classical Reinforcement Learning (RL)
+## Classical reinforcement learning (RL)
 
 A reinforcement learning problem is often written as a **Markov Decision Process (MDP)**:
 - state space $\mathcal{S}$, action space $\mathcal{A}$
@@ -340,9 +340,10 @@ A reinforcement learning problem is often written as a **Markov Decision Process
 - reward function $r(s_t, a_t)$ and discount $\gamma$
 - optimize cumulative return over a trajectory
 
-$$\text{MDP } (\mathcal{S}, \mathcal{A}, P, r, \gamma)$$
-
-$$J(\pi) = \mathbb{E}_{\tau \sim \pi}\!\left[\sum_{t=0}^{T} \gamma^t r(s_t, a_t)\right]$$
+$$\begin{gathered}
+\text{MDP } (\mathcal{S}, \mathcal{A}, P, r, \gamma) \\[6pt]
+J(\pi) = \mathbb{E}_{\tau \sim \pi}\!\left[\sum_{t=0}^{T} \gamma^t r(s_t, a_t)\right]
+\end{gathered}$$
 
 |||
 
@@ -376,7 +377,7 @@ Reinforcement learning basics:
 
 <!-- row-columns: 50/50 -->
 
-## A simple RL example: thermostat
+## A simple RL example: Thermostat
 
 The agent learns over many episodes when to turn the heater on or off
 - **State**: the current room temperature
@@ -404,7 +405,7 @@ $$
 
 <!-- columns: 45/55 -->
 <!-- cite-right: sutton2018reinforcement -->
-## CartPole: a standard RL task
+## CartPole: A standard RL task
 
 - **State**: cart position, velocity, pole angle, angular velocity
 $$s_t = (x_t,\; \dot{x}_t,\; \theta_t,\; \dot{\theta}_t)$$
@@ -423,13 +424,14 @@ $$r(s_t, a_t) = \begin{cases} 1 & \text{if } |\theta_t| < 12° \text{ and } |x_t
 
 <!-- columns: 45/55 -->
 <!-- cite-right: sutton2018reinforcement -->
-## CartPole: the dynamics
+## CartPole: The dynamics
 
 Each action changes the physics of the system. The full state update:
 
-$$\ddot{x}_t = \frac{F + m_p l (\dot{\theta}_t^2 \sin\theta_t - \ddot{\theta}_t \cos\theta_t)}{m_c + m_p}$$
-
-$$\ddot{\theta}_t = \frac{g \sin\theta_t - \cos\theta_t \cdot \ddot{x}_t}{l}$$
+$$\begin{aligned}
+\ddot{x}_t &= \frac{F + m_p l (\dot{\theta}_t^2 \sin\theta_t - \ddot{\theta}_t \cos\theta_t)}{m_c + m_p} \\[6pt]
+\ddot{\theta}_t &= \frac{g \sin\theta_t - \cos\theta_t \cdot \ddot{x}_t}{l}
+\end{aligned}$$
 
 Where $m_c$ is the cart mass, $m_p$ is the pole mass, $l$ is the pole length, $g$ is gravity, and $F$ is the applied force.
 
@@ -850,7 +852,7 @@ content: |
 
 ---
 
-## Rejection sampling: the simplest preference optimization
+## Rejection sampling: The simplest preference optimization
 
 Generate many completions, score them, fine-tune on the best:
 
@@ -879,7 +881,7 @@ All three optimize the same underlying objective — they differ in **how** they
 ---
 
 <!-- cite-right: gao2023scaling -->
-## Caveat: proxy objectives and over-optimization
+## Caveat: Proxy objectives and over-optimization
 
 The reward model is a **proxy**, not ground truth. Even a well-trained RM is only *correlated* with real user satisfaction.
 
@@ -1065,7 +1067,7 @@ Pretraining builds a chassis for the car -- post-training is the hard craft of e
 
 <!-- columns: 50/50 -->
 
-## Reinforcement learning with *Verifiable* rewards
+## Reinforcement learning with *verifiable* rewards
 
 Apply the same RL algorithms to LLMs when the answer can be checked directly. No need to train a reward model:
 - E.g. Math: check the final answer.
@@ -1163,7 +1165,7 @@ The third place of scaling is at inference (no weight updates there).
 ---
 
 <!-- columns: 30/70 -->
-## Olmo 3.1: extending the RL run
+## Olmo 3.1: Extending the RL run
 
 <!-- cite-right: teamolmo2025olmo3 -->
 

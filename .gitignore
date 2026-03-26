@@ -5,6 +5,7 @@ build/epub/
 build/pdf/
 build/html/
 build/latex/
+build/review/
 build/arxiv.zip
 
 # Misc
