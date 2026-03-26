@@ -349,12 +349,12 @@ Popular choices for $\Psi_t$ (rewards can also be discounted by $\gamma$):
 |:-:|-----------|-------------|:--------:|:----:|
 | 1. | $R(\tau) = \sum_{t=0}^{T} r_t$ | Total trajectory reward | Highest | None |
 | 2. | $\sum_{t'=t}^{T} r_{t'}$ | Future return from $t$ (the return, $G_t$) | High | None |
-| 3. | $\sum_{t'=t}^{T} r_{t'} - b(s_t)$ | Baselined return | Lower | None |
+| 3. | $G_t - b(s_t)$ | Baselined return | Lower | None |
 | 4. | $Q^{\pi}(s_t, a_t)$ | State-action value function | Med | Depends |
 | 5. | $A^{\pi}(s_t, a_t) = Q - V$ | Advantage function | **Lowest** | None |
 | 6. | $r_t + \gamma V(s_{t+1}) - V(s_t)$ | TD residual | Low | Some |
 
-A *baseline* $b(s_t)$ is any value subtracted from the reward signal to reduce variance — we'll show why this is unbiased shortly.
+A *baseline* $b(s_t)$ is any value subtracted from the reward signal to reduce variance. As we just showed, this does not change the expected gradient.
 
 ---
 
@@ -672,12 +672,12 @@ REINFORCE is the simplest instantiation of the policy gradient. The update rule:
 
 </div>
 
-$$\Delta\theta = \alpha \nabla_\theta \log \pi_\theta(y \mid x) \cdot (R(x, y) - b)$$
+$$\Delta\theta = \alpha \, \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot (G_t - b(s_t))$$
 
 Three components:
 
 1. **Nonnegative factor** ($\alpha$): the learning rate
-2. **Offset reinforcement** ($R - b$): reward minus a baseline for stability
+2. **Offset reinforcement** ($G_t - b(s_t)$): centered return for stability
 3. **Characteristic eligibility** ($\nabla \log \pi$): how to attribute learning per token
 
 ---
@@ -688,9 +688,9 @@ Without a baseline $b$, if all rewards are positive, the gradient pushes the pro
 
 **Key insight**: subtracting a baseline $b$ from the reward **doesn't change the expected gradient** (it's still unbiased), but it **reduces variance** dramatically.
 
-$$\mathbb{E}[\nabla_\theta \log \pi_\theta(a \mid s) \cdot b] = b \cdot \mathbb{E}[\nabla_\theta \log \pi_\theta(a \mid s)] = 0$$
+$$\mathbb{E}_{a \sim \pi(\cdot \mid s)}[\nabla_\theta \log \pi_\theta(a \mid s) \cdot b(s)] = b(s) \cdot \mathbb{E}_{a \sim \pi(\cdot \mid s)}[\nabla_\theta \log \pi_\theta(a \mid s)] = 0$$
 
-The second equality holds because the gradient of a probability distribution sums to zero.
+The expectation is over sampled actions. Because $b(s)$ does not depend on which action was sampled, it factors out and cancels.
 
 ---
 
@@ -699,6 +699,8 @@ The second equality holds because the gradient of a probability distribution sum
 The full REINFORCE gradient:
 
 $$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}\!\left[\sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t)(G_t - b(s_t))\right]$$
+
+Here, $G_t - b(s_t)$ is already an advantage estimate: how much better the realized return was than expected from state $s_t$.
 
 Common baselines:
 - **Average reward** over the batch (simplest)
@@ -728,6 +730,7 @@ The advantage for completion $k$:
 $$\hat{A}(s, a_k) = R(s, a_k) - b(s, a_k)$$
 
 This is a **per-prompt** baseline that naturally captures prompt difficulty — hard prompts get low rewards across all completions, so the baseline is low.
+Like REINFORCE without a critic, this same sequence-level advantage is broadcast to every token in the completion.
 
 ---
 
@@ -760,15 +763,15 @@ Both are the foundation for everything that follows:
 
 ---
 
-## From sequence reward to token-level training
+## How PPO-RLHF gets token-level credit
 
-The reward model gives one scalar $R(x, y)$ at the end of a completion. How does this become a per-token training signal?
+PPO-style RLHF often starts with one scalar reward for the whole completion. How does that become a per-token training signal?
 
 1. **KL penalty shapes intermediate tokens**: at each token $t$, subtract $\beta \cdot \text{KL}_t$ from the reward → per-token reward signal
-2. **Final token gets the RM score**: $r_T = R(x, y) - \beta \, \text{KL}_T$, all other tokens get $r_t = -\beta \, \text{KL}_t$
+2. **Final token gets the RM score**: $r_T = R(\tau) - \beta \, \text{KL}_T$, all other tokens get $r_t = -\beta \, \text{KL}_t$
 3. **GAE propagates credit backward**: the value function + TD residuals assign per-token advantages from these shaped rewards
 
-This is how a sequence-level reward becomes token-level PPO training.
+This is how PPO-RLHF turns a sequence-level reward into token-level training.
 
 ---
 
@@ -817,6 +820,7 @@ $$r_t(\theta) = \frac{\pi_\theta(a_t \mid s_t)}{\pi_{\theta_\text{old}}(a_t \mid
 - If $r_t < 1$: current policy assigns lower probability than old
 
 This ratio reweights old-policy samples to estimate new-policy gradients.
+Plugging that ratio into the earlier policy-gradient form gives a surrogate objective we can optimize on old-policy data.
 
 ---
 
@@ -884,8 +888,8 @@ In both cases, the $\min$ selects the more conservative estimate:
 PPO trains a **value function** $V_\phi(s)$ alongside the policy:
 
 - Separate parameters $\phi$ (often initialized from the reward model or SFT model)
-- Predicts expected return at each token position
-- Trained via MSE against actual returns: $\mathcal{L}_V = \frac{1}{2}(V_\phi(s_t) - G_t)^2$
+- Predicts post-KL shaped future return at each token position
+- Trained via MSE against post-KL returns: $\mathcal{L}_V = \frac{1}{2}(V_\phi(s_t) - G_t)^2$
 
 The value function serves as a learned baseline for advantage estimation.
 
@@ -899,7 +903,7 @@ The simplest advantage: $\hat{A}_t = G_t - V_\phi(s_t)$
 - **Centering** reduces variance — we're asking "how much better is this action than average?" rather than "how good was the total return?"
 - **Credit assignment** — with per-token values, each token gets its own advantage signal
 
-But this simple estimate has issues: high variance (from Monte Carlo returns) or high bias (from single-step TD).
+This Monte Carlo estimate is simple and unbiased, but it can be high variance. TD and GAE trade some bias for lower variance.
 
 ---
 
@@ -909,9 +913,9 @@ But this simple estimate has issues: high variance (from Monte Carlo returns) or
 
 The temporal difference (TD) residual measures how much the actual reward exceeded the value prediction:
 
-$$\delta_t = R_t + \gamma V(s_{t+1}) - V(s_t)$$
+$$\delta_t^V = R_t + \gamma V_\phi(s_{t+1}) - V_\phi(s_t)$$
 
-This is the **1-step advantage estimate**: low variance (uses learned $V$) but potentially high bias (if $V$ is inaccurate).
+This is the **1-step advantage estimate**: low variance (uses learned $V_\phi$) but potentially high bias (if $V_\phi$ is inaccurate).
 
 ---
 
@@ -919,13 +923,13 @@ This is the **1-step advantage estimate**: low variance (uses learned $V$) but p
 
 We can extend to $K$ steps:
 
-$$\hat{A}_t^{(1)} = \delta_t \quad \text{(1-step: low variance, high bias)}$$
+$$\hat{A}_t^{(1)} = \delta_t^V \quad \text{(1-step: low variance, high bias)}$$
 
-$$\hat{A}_t^{(2)} = \delta_t + \gamma \delta_{t+1} \quad \text{(2-step)}$$
+$$\hat{A}_t^{(2)} = \delta_t^V + \gamma \delta_{t+1}^V \quad \text{(2-step)}$$
 
-$$\hat{A}_t^{(k)} = \sum_{l=0}^{k-1} \gamma^l \delta_{t+l} \quad \text{(k-step: more variance, less bias)}$$
+$$\hat{A}_t^{(k)} = \sum_{l=0}^{k-1} \gamma^l \delta_{t+l}^V \quad \text{(k-step: more variance, less bias)}$$
 
-As $k \to \infty$, we recover the full Monte Carlo return (no bias, highest variance).
+As $k \to \infty$, we recover the full Monte Carlo advantage $G_t - V_\phi(s_t)$ (no bias, highest variance).
 
 ---
 
@@ -933,7 +937,7 @@ As $k \to \infty$, we recover the full Monte Carlo return (no bias, highest vari
 
 GAE uses an exponentially-weighted average across all $K$-step estimates:
 
-$$\hat{A}_t^{\text{GAE}} = \sum_{l=0}^{\infty} (\gamma\lambda)^l \delta_{t+l}$$
+$$\hat{A}_t^{\text{GAE}} = \sum_{l=0}^{\infty} (\gamma\lambda)^l \delta_{t+l}^V$$
 
 Where $\lambda \in [0, 1]$ controls the bias-variance tradeoff.
 
@@ -941,13 +945,13 @@ Where $\lambda \in [0, 1]$ controls the bias-variance tradeoff.
 
 ## GAE: Bias-variance tradeoff
 
-$$\hat{A}_t^{\text{GAE}} = \sum_{l=0}^{\infty} (\gamma\lambda)^l \delta_{t+l}$$
+$$\hat{A}_t^{\text{GAE}} = \sum_{l=0}^{\infty} (\gamma\lambda)^l \delta_{t+l}^V$$
 
 | $\lambda$ | Behavior | Variance | Bias |
 |:---------:|----------|:--------:|:----:|
 | $0$ | Pure TD (1-step) | Lowest | Highest |
 | $0.95$ | Typical default for LLMs | Balanced | Balanced |
-| $1$ | Full Monte Carlo return | Highest | None |
+| $1$ | Monte Carlo advantage | Highest | None |
 
 The $\gamma$ here is typically $1.0$ for language models (no discounting).
 
@@ -955,9 +959,9 @@ The $\gamma$ here is typically $1.0$ for language models (no discounting).
 
 ## PPO-RLHF: Full policy objective
 
-The full RLHF objective combines PPO with a KL regularizer:
+A schematic high-level view of PPO-RLHF combines the clipped PPO objective with a KL regularizer:
 
-$$J(\theta) = \mathbb{E}\!\left[r_t(\theta) \hat{A}_t\right] - \beta \, D_{\text{KL}}\!\left[\pi_\theta \| \pi_{\text{ref}}\right]$$
+$$J(\theta) \approx L^{CLIP}(\theta) - \beta \, D_{\text{KL}}\!\left[\pi_\theta \| \pi_{\text{ref}}\right]$$
 
 **Two layers of regularization**:
 1. **Clipping** — limits how far the policy moves per batch (trust region)
@@ -1064,7 +1068,7 @@ Both use multiple completions per prompt. The key difference is in the details:
 | **KL penalty** | Optional (in reward) | In loss |
 | **Advantage** | $R_k - \frac{1}{K-1}\sum_{j \neq k} R_j$ | $\frac{R_i - \text{mean}}{\text{std}}$ |
 
-Same principle (compare to peers), different mechanics. Without std normalization, GRPO is equivalent to RLOO up to a scaling constant.
+Same principle (compare to peers), different mechanics. Without std normalization, the GRPO-style advantage estimate becomes equivalent to RLOO up to a scaling constant.
 
 ---
 
@@ -1072,7 +1076,7 @@ Same principle (compare to peers), different mechanics. Without std normalizatio
 
 <!-- cite-right: zheng2025gspo -->
 
-**Problem**: per-token importance ratio products are numerically unstable for long sequences. A single token with a large ratio can dominate the update.
+**Problem**: aggregating per-token importance ratios across long sequences is numerically unstable. A single token with a large ratio can dominate the update.
 
 **GSPO** uses a geometric mean — a single, length-normalized importance weight per response:
 
@@ -1088,9 +1092,9 @@ The geometric mean stays in a reasonable numerical range for any sequence length
 
 CISPO clips the **importance weights themselves** rather than the objective, using a stop-gradient:
 
-$$J(\theta) = \sum_{i,t} \text{sg}\!\left(\hat{\rho}_{i,t}\right) A_{i,t} \log \pi_\theta(a_{i,t} \mid s)$$
+$$J(\theta) = \sum_{i,t} \text{sg}\!\left(\hat{\rho}_{i,t}\right) A_{i,t} \log \pi_\theta(a_{i,t} \mid s_t)$$
 
-$$\hat{\rho}_{i,t} = \text{clip}\!\left(\frac{\pi_\theta(a_{i,t})}{\pi_{\text{old}}(a_{i,t})},\; 1-\varepsilon^{-},\; 1+\varepsilon^{+}\right)$$
+$$\hat{\rho}_{i,t} = \text{clip}\!\left(\frac{\pi_\theta(a_{i,t} \mid s_t)}{\pi_{\theta_\text{old}}(a_{i,t} \mid s_t)},\; 1-\varepsilon^{-},\; 1+\varepsilon^{+}\right)$$
 
 **Key difference from PPO**: every token still receives a gradient signal — the weight just bounds how much it's amplified. Asymmetric bounds ($\varepsilon^{+} > \varepsilon^{-}$) allow more aggressive reward-increasing updates, encouraging exploration.
 
@@ -1100,7 +1104,7 @@ $$\hat{\rho}_{i,t} = \text{clip}\!\left(\frac{\pi_\theta(a_{i,t})}{\pi_{\text{ol
 
 $$\text{PPO (2017)} \to \text{REINFORCE revival (2024)} \to \text{RLOO} \to \text{GRPO (2024)} \to \text{GSPO / CISPO (2025)}$$
 
-**The trend**: simpler algorithms, comparable performance.
+**A recent open post-training trend**: simpler algorithms with increasingly competitive results.
 
 - PPO: powerful but complex (4 models, GAE, value function training)
 - REINFORCE/RLOO: surprisingly competitive with good baselines
@@ -1127,7 +1131,7 @@ $$\text{PPO (2017)} \to \text{REINFORCE revival (2024)} \to \text{RLOO} \to \tex
 
 <div class="colloquium-spacer-md"></div>
 
-Most RLHF is mixed in practice: **sequence-level rewards**, but **token-level log-prob gradients**.
+Most RLHF is mixed in practice: **sequence-level rewards**, but **token-level log-prob gradients**. PPO-style RLHF usually starts from a sequence-level reward model score, then gets token-level credit via KL shaping and GAE.
 
 ---
 
@@ -1141,8 +1145,8 @@ Most RLHF is mixed in practice: **sequence-level rewards**, but **token-level lo
 
 | Method | Models | Rollouts | Value Function | Reference Policy |
 |:-------|:------:|:--------:|:--------------:|:----------------:|
-| **REINFORCE** | 2 | 1 | No | No |
-| **RLOO** | 2 | K | No | No |
+| **REINFORCE** | 2 | 1 | No | Optional |
+| **RLOO** | 2 | K | No | Optional |
 | **PPO** | 4 | 1 | Yes | Yes |
 | **GRPO** | 3 | G | No | Yes |
 | **GSPO** | 3 | G | No | Yes |
