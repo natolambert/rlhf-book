@@ -1320,10 +1320,10 @@ They differ in:
 
 Lecture 4 turns these algorithms into working code:
 
-- **Token-level losses**: log-prob computation, autoregressive shift, masking
+- **Core loss implementations**: Setting up RL algorithms with language models
 - **Loss aggregation**: per-sequence vs per-token normalization and why it matters
-- **Cached rollouts**: what to store (log-probs, values, ref log-probs) and what goes wrong when you don't
-- **PPO/GRPO debugging**: monitoring training, identifying reward hacking, fixing common failures
+- **Infra setup**: what to store (log-probs, values, ref log-probs) and what goes wrong when you don't
+- **Trade-offs**: monitoring training, identifying reward hacking, fixing common failures
 
 ---
 
