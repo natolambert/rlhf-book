@@ -656,6 +656,73 @@ $$
 
 <!-- layout: section-break -->
 
+## Wiring RLHF for language models
+
+---
+
+<!-- columns: 40/60 -->
+## The RLHF training loop
+
+Before diving into specific algorithms, let's revisit the full RLHF setup they plug into.
+
+|||
+
+![The RLHF training pipeline — the RL step optimizes the policy using the reward model signal.](assets/rlhf-overview.png)
+
+---
+
+<!-- columns: 50/50 -->
+## The reference model
+
+The **reference model** $\pi_\text{ref}$ is a frozen copy of the policy at the start of RL training (typically the SFT checkpoint).
+
+It serves one purpose: **anchor the policy so it doesn't drift too far during optimization.**
+
+Without it, the policy can exploit the reward model — finding high-scoring outputs that are degenerate or repetitive (reward hacking).
+
+|||
+
+![](assets/rlhf-overview.png)
+
+---
+
+<!-- columns: 50/50 -->
+## KL divergence as regularization
+
+The KL penalty measures how far the current policy has drifted from the reference at each token:
+
+$$\text{KL}_t = \log \pi_\theta(a_t \mid s_t) - \log \pi_\text{ref}(a_t \mid s_t)$$
+
+In practice:
+1. **Generate** a completion from $\pi_\theta$
+2. **Compute log-probs** of those same tokens under both $\pi_\theta$ and $\pi_\text{ref}$
+3. **Subtract** to get the per-token KL
+
+The shaped reward becomes: $\tilde{r}_t = -\beta \, \text{KL}_t$ for intermediate tokens, $\tilde{r}_T = R(\tau) - \beta \, \text{KL}_T$ for the final token.
+
+|||
+
+![](assets/rlhf-overview.png)
+
+---
+
+<!-- columns: 50/50 -->
+## KL in RLHF vs. RLVR
+
+**RLHF** (reward model signal): KL penalty is critical — the reward model is a learned proxy, and the policy will exploit any imperfections without regularization.
+
+**RLVR** (verifiable rewards, e.g. math correctness): KL is often reduced or removed entirely. The reward is ground truth, so there's less to exploit. Some RLVR setups (e.g. DeepSeek R1) drop the reference model altogether, saving memory.
+
+The trend: as reward signals become more reliable, the need for KL regularization decreases.
+
+|||
+
+![](assets/rlhf-overview.png)
+
+---
+
+<!-- layout: section-break -->
+
 ## REINFORCE
 
 ---
@@ -664,17 +731,23 @@ $$
 
 <!-- cite-right: williams1992simple -->
 
-REINFORCE is the simplest instantiation of the policy gradient. The update rule:
+REINFORCE is the simplest instantiation of the policy gradient. 
 
 It is the **Monte Carlo form of policy gradient**: sample trajectories, compute their returns, and use those sampled returns to weight the log-prob gradients.
 
-<div class="text-sm">
+
+
+---
+
+## REINFORCE
+
+<!-- cite-right: williams1992simple -->
+
+REINFORCE is the simplest instantiation of the policy gradient. 
+
+It is the **Monte Carlo form of policy gradient**: sample trajectories, compute their returns, and use those sampled returns to weight the log-prob gradients.
 
 > The name is an acronym for "REward Increment = Nonnegative Factor X Offset Reinforcement X Characteristic Eligibility."
-
-</div>
-
-$$\Delta\theta = \alpha \, \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot (G_t - b(s_t))$$
 
 Three components:
 
@@ -682,17 +755,48 @@ Three components:
 2. **Offset reinforcement** ($G_t - b(s_t)$): centered return for stability
 3. **Characteristic eligibility** ($\nabla \log \pi$): how to attribute learning per token
 
+
+
+---
+
+## REINFORCE
+
+<!-- cite-right: williams1992simple -->
+
+REINFORCE is the simplest instantiation of the policy gradient. 
+
+It is the **Monte Carlo form of policy gradient**: sample trajectories, compute their returns, and use those sampled returns to weight the log-prob gradients.
+
+> The name is an acronym for "REward Increment = Nonnegative Factor X Offset Reinforcement X Characteristic Eligibility."
+
+Three components:
+
+1. **Nonnegative factor** ($\alpha$): the learning rate
+2. **Offset reinforcement** ($G_t - b(s_t)$): centered return for stability
+3. **Characteristic eligibility** ($\nabla \log \pi$): how to attribute learning per token
+
+The update rule:
+
+$$\Delta\theta = \alpha \, \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot (G_t - b(s_t))$$
+
+
 ---
 
 ## The baseline problem
 
-Without a baseline $b$, if all rewards are positive, the gradient pushes the probability of **every** action up — just by different amounts. This leads to high variance.
+Without a baseline, the gradient weights each action by its raw return $G_t$. This doesn't tell you whether an action was **better or worse than expected** — just how good the overall outcome was.
 
-**Key insight**: subtracting a baseline $b$ from the reward **doesn't change the expected gradient** (it's still unbiased), but it **reduces variance** dramatically.
+The gradient is high variance because the raw return mixes the quality of the action with the quality of the state. A good action in a bad state and a bad action in a good state can produce similar returns.
+
+---
+
+## The baseline solution
+
+Subtracting a baseline $b(s)$ centers the signal: now the gradient weight is $(G_t - b)$, which answers "was this action better or worse than expected from this state?"
 
 $$\mathbb{E}_{a \sim \pi(\cdot \mid s)}[\nabla_\theta \log \pi_\theta(a \mid s) \cdot b(s)] = b(s) \cdot \mathbb{E}_{a \sim \pi(\cdot \mid s)}[\nabla_\theta \log \pi_\theta(a \mid s)] = 0$$
 
-The expectation is over sampled actions. Because $b(s)$ does not depend on which action was sampled, it factors out and cancels.
+Because $b(s)$ does not depend on which action was sampled, it factors out and cancels. The expected gradient is unchanged — but the variance drops dramatically.
 
 ---
 
@@ -709,7 +813,13 @@ Common baselines:
 - **Moving average** of recent rewards
 - **Learned value function** $V_\phi(s)$ (optional — bridges to actor-critic methods)
 
-Basic REINFORCE needs no critic — just Monte Carlo returns and a simple baseline. Adding a learned $V_\phi$ reduces variance further but introduces the complexity of training a second model.
+Basic REINFORCE needs no critic — just Monte Carlo returns and a simple baseline. Adding a learned $V_\phi$ can reduce variance further but introduces the complexity of training a second model (... and moves towards PPO).
+
+---
+
+## REINFORCE architecture
+
+![Basic REINFORCE architecture for language models. The shaped reward combines the reward model score with a KL penalty from the reference model.](assets/reinforce_tikz.png)
 
 ---
 
@@ -732,7 +842,8 @@ The advantage for completion $k$:
 $$\hat{A}(s, a_k) = R(s, a_k) - b(s, a_k)$$
 
 This is a **per-prompt** baseline that naturally captures prompt difficulty — hard prompts get low rewards across all completions, so the baseline is low.
-Like REINFORCE without a critic, this same sequence-level advantage is broadcast to every token in the completion.
+
+*Detail: Like REINFORCE without a critic, this same sequence-level advantage is broadcast to every token in the completion.*
 
 ---
 
@@ -759,39 +870,51 @@ Completion 1 (best) gets reinforced. Completion 2 (worst) gets suppressed. Compl
 
 Both are the foundation for everything that follows:
 
+- Linked intuitively to GRPO and other grouped-completion algorithms
 - No value function needed (saves memory/compute)
 - Simple to implement and debug
 - Strong baselines in practice [@ahmadian2024back; @wang2024helpsteer2p]
 
 ---
 
-## How PPO-RLHF gets token-level credit
+## RLOO architecture
 
-PPO-style RLHF often starts with one scalar reward for the whole completion. How does that become a per-token training signal?
-
-1. **KL penalty shapes intermediate tokens**: at each token $t$, subtract $\beta \cdot \text{KL}_t$ from the reward → per-token reward signal
-2. **Final token gets the RM score**: $r_T = R(\tau) - \beta \, \text{KL}_T$, all other tokens get $r_t = -\beta \, \text{KL}_t$
-3. **GAE propagates credit backward**: the value function + TD residuals assign per-token advantages from these shaped rewards
-
-This is how PPO-RLHF turns a sequence-level reward into token-level training.
-
----
-
-## If REINFORCE is so simple, why PPO?
-
-REINFORCE and RLOO work — but they have limitations:
-
-- **High variance**: sequence-level advantages are noisy, especially for long completions
-- **No sample reuse**: each batch is used once, then discarded
-- **No trust region**: a single bad batch can destabilize the policy
-
-PPO addresses all three: per-token credit assignment via GAE, multiple gradient steps per batch via importance sampling, and clipped updates to prevent catastrophic steps.
+![RLOO architecture for language models. Same structure as REINFORCE, but multiple completions per prompt provide the leave-one-out baseline.](assets/rloo_tikz.png)
 
 ---
 
 <!-- layout: section-break -->
 
 ## Proximal policy optimization (PPO)
+
+---
+
+## If REINFORCE is so simple, why PPO?
+
+All the algorithms in this lecture are **on-policy**: they generate fresh rollouts from the current policy each batch, then update on those rollouts. 
+This is in contrast to off-policy RL methods (e.g. DQN) that store and replay old experience.
+
+
+---
+
+## If REINFORCE is so simple, why PPO?
+
+All the algorithms in this lecture are **on-policy**: they generate fresh rollouts from the current policy each batch, then update on those rollouts. 
+This is in contrast to off-policy RL methods (e.g. DQN) that store and replay old experience.
+
+The problem: vanilla policy gradient is sensitive to step size. Too large an update and the policy can collapse; too small and training is painfully slow. TRPO [@schulman2015trust] solved this with a hard trust-region constraint, but required expensive second-order optimization.
+
+
+---
+
+## If REINFORCE is so simple, why PPO?
+
+All the algorithms in this lecture are **on-policy**: they generate fresh rollouts from the current policy each batch, then update on those rollouts. 
+This is in contrast to off-policy RL methods (e.g. DQN) that store and replay old experience.
+
+The problem: vanilla policy gradient is sensitive to step size. Too large an update and the policy can collapse; too small and training is painfully slow. TRPO [@schulman2015trust] solved this with a hard trust-region constraint, but required expensive second-order optimization.
+
+Proximal Policy Optimization **(PPO)** [@schulman2017proximal] gets TRPO-like stability with a simple clipped objective — and because the clipping keeps updates conservative, you can safely take multiple gradient steps per batch of rollouts, improving sample efficiency.
 
 ---
 
@@ -885,6 +1008,12 @@ In both cases, the $\min$ selects the more conservative estimate:
 
 ---
 
+## PPO clipping visualized
+
+![Visualization of the PPO objective for positive and negative advantage. The trust region is where the ratio is within $1 \pm \varepsilon$.](assets/ppo-viz-4x.png)
+
+---
+
 ## The value function (critic)
 
 PPO trains a **value function** $V_\phi(s)$ alongside the policy:
@@ -894,6 +1023,18 @@ PPO trains a **value function** $V_\phi(s)$ alongside the policy:
 - Trained via MSE against post-KL returns: $\mathcal{L}_V = \frac{1}{2}(V_\phi(s_t) - G_t)^2$
 
 The value function serves as a learned baseline for advantage estimation.
+
+---
+
+## How PPO-RLHF gets token-level credit
+
+PPO-style RLHF often starts with one scalar reward for the whole completion. How does that become a per-token training signal?
+
+1. **KL penalty shapes intermediate tokens**: at each token $t$, subtract $\beta \cdot \text{KL}_t$ from the reward → per-token reward signal
+2. **Final token gets the RM score**: $r_T = R(\tau) - \beta \, \text{KL}_T$, all other tokens get $r_t = -\beta \, \text{KL}_t$
+3. **GAE propagates credit backward**: the value function + TD residuals assign per-token advantages from these shaped rewards
+
+This is how PPO-RLHF turns a sequence-level reward into token-level training.
 
 ---
 
@@ -999,6 +1140,12 @@ PPO requires **four** models:
 | Reward model $r_\psi$ | Scores completions | Frozen |
 
 This is memory-intensive — a key motivation for simpler alternatives like GRPO.
+
+---
+
+## PPO architecture
+
+![PPO architecture for language models. Adds a trained value model and GAE for per-token advantage estimation.](assets/ppo_tikz.png)
 
 ---
 
@@ -1134,6 +1281,12 @@ $$\text{PPO (2017)} \to \text{REINFORCE revival (2024)} \to \text{RLOO} \to \tex
 <div class="colloquium-spacer-md"></div>
 
 Most RLHF is mixed in practice: **sequence-level rewards**, but **token-level log-prob gradients**. PPO-style RLHF usually starts from a sequence-level reward model score, then gets token-level credit via KL shaping and GAE.
+
+---
+
+## GRPO architecture
+
+![GRPO architecture for language models. Multiple completions per prompt, group-normalized advantages, no value model needed.](assets/grpo_tikz.png)
 
 ---
 
