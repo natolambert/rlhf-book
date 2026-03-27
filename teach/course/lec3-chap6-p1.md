@@ -164,13 +164,13 @@ content: |
 
 ---
 
-## A under-documented benefit of RL
+## An under-documented benefit of RL
 
 In lecture 2, we covered rejection sampling and later we'll cover direct alignment algorithms (like DPO). They're simpler, but RL has hard to measure benefits.
 
-Implementing RL is far more complex infrastructure, but the gradient updates they provide "generally help the model a lot". This is hard to quantify, but:
-- RL stages can "fix" rough edges on the model, making them easier to chat to or more robust (this could come by training them to have numerical stability inference tools like VLLM)
-- RL can be done surgically in the model, the model does a good job learning where the prompt distribution lies, and RL tends to not "squash" the general capabilities of the model. 
+Implementing RL is far more complex infrastructure, but the gradient updates it provides "generally help the model a lot." This is hard to quantify, but:
+- RL can "fix" rough edges on a model — making outputs more robust, better formatted, and more compatible with serving frameworks like vLLM
+- RL operates on a narrow prompt distribution and tends not to "squash" general capabilities — it can be applied surgically to improve specific behaviors without degrading others
 
 Overall, RL losses on language models are robust, scalable, effective, and flexible, which opened large new fields of experimentation. The original method that started us down this path was RLHF work.
 
@@ -261,6 +261,8 @@ This lecture uses $(s, a)$ notation from the reinforcement learning literature, 
 
 The $(s, a)$ framing is more general — these algorithms were designed for sequential decision problems where actions are taken at each timestep. However, many RLHF implementations treat the entire completion as a single action, making the $(x, y)$ notation equally valid.
 
+**Notation**: $r_t$ for per-step rewards, $R(\tau)$ for trajectory returns, $\rho_t$ for importance-sampling ratios. We reserve $\rho$ for ratios to avoid confusion with rewards.
+
 </div>
 
 
@@ -268,6 +270,22 @@ The $(s, a)$ framing is more general — these algorithms were designed for sequ
 
 ![](assets/rlhf.png)
 
+
+---
+
+## Language models as episodic MDPs
+
+| MDP concept | Language model |
+|-------------|---------------|
+| State $s_t$ | Prompt + tokens generated so far: $(x, y_{<t})$ |
+| Action $a_t$ | Next token $y_t$ |
+| Transition | Deterministic: append token to sequence |
+| Policy $\pi_\theta(a_t \mid s_t)$ | LM next-token distribution |
+| Episode | One prompt → completion |
+| Terminal reward | RM score or verifier output |
+| $\gamma$ | Typically 1.0 (no discounting) |
+
+Two views of this MDP: **token-level** (each token is a separate action, used in PPO with GAE) vs. **sequence-level** (entire completion is one action, used in REINFORCE/GRPO).
 
 ---
 
@@ -339,28 +357,9 @@ Where $\Psi_t$ is the **learning signal** telling the optimizer how good the act
 
 ---
 
-## What $\Psi_t$ can be
+## Key RL quantities
 
-<!-- cite-right: schulman2015high -->
-
-Popular choices for $\Psi_t$ (rewards can also be discounted by $\gamma$):
-
-| | $\Psi_t$ | Description | Variance | Bias |
-|:-:|-----------|-------------|:--------:|:----:|
-| 1. | $R(\tau) = \sum_{t=0}^{T} r_t$ | Total trajectory reward | Highest | None |
-| 2. | $\sum_{t'=t}^{T} r_{t'}$ | Future return from $t$ (the return, $G_t$) | High | None |
-| 3. | $G_t - b(s_t)$ | Baselined return | Lower | None |
-| 4. | $Q^{\pi}(s_t, a_t)$ | State-action value function | Med | Depends |
-| 5. | $A^{\pi}(s_t, a_t) = Q - V$ | Advantage function | **Lowest** | None |
-| 6. | $r_t + \gamma V(s_{t+1}) - V(s_t)$ | TD residual | Low | Some |
-
-A *baseline* $b(s_t)$ is any value subtracted from the reward signal to reduce variance. As we just showed, this does not change the expected gradient.
-
----
-
-## Unpacking the key RL quantities
-
-The $\Psi_t$ options reference three key quantities:
+Three quantities appear throughout this lecture:
 
 **Value function** $V(s)$: expected future return from state $s$
 
@@ -373,6 +372,25 @@ $$Q(s, a) = \mathbb{E}[G_t \mid S_t = s, A_t = a]$$
 **Advantage** $A(s, a) = Q(s, a) - V(s)$: how much better is action $a$ compared to average? Positive → reinforce, negative → suppress, zero → no update.
 
 In RLHF: often $\gamma = 1$ (no discounting) because the unit of optimization is the full completion.
+
+---
+
+## What $\Psi_t$ can be
+
+<!-- cite-right: schulman2015high -->
+
+Popular choices for $\Psi_t$ (rewards can also be discounted by $\gamma$):
+
+| | $\Psi_t$ | Description | Variance | Bias |
+|:-:|-----------|-------------|:--------:|:----:|
+| 1. | $R(\tau) = \sum_{t=0}^{T} r_t$ | Total trajectory reward | Highest | None |
+| 2. | $\sum_{t'=t}^{T} r_{t'}$ | Future return from $t$ (the return, $G_t$) | High | None |
+| 3. | $G_t - b(s_t)$ | Baselined return | Lower | None |
+| 4. | $Q^{\pi}(s_t, a_t)$ | State-action value function | Med | Depends |
+| 5. | $A^{\pi}(s_t, a_t) = Q - V$ | Advantage function | Low (with good $V$) | None |
+| 6. | $r_t + \gamma V(s_{t+1}) - V(s_t)$ | TD residual | Low | Some |
+
+A *baseline* $b(s_t)$ is any value subtracted from the reward signal to reduce variance. We'll show below that this does not change the expected gradient.
 
 ---
 
@@ -721,6 +739,19 @@ The trend: as reward signals become more reliable, the need for KL regularizatio
 
 ---
 
+## Two "old" policies — don't confuse them
+
+| | $\pi_{\theta_\text{old}}$ | $\pi_\text{ref}$ |
+|---|---|---|
+| **What** | Policy at last rollout | Policy at start of RL training (SFT checkpoint) |
+| **Updates** | Every batch (or every $K$ steps) | Never (frozen) |
+| **Used for** | Importance-sampling ratio $\rho_t$ | KL penalty |
+| **If dropped** | Must use 1 gradient step per batch (on-policy) | Risk of reward hacking |
+
+In some implementations, "old logprobs" refers to the generation-time logprobs — the model has simply been updated since those logprobs were computed, not a separate model copy.
+
+---
+
 <!-- layout: section-break -->
 
 ## REINFORCE
@@ -944,11 +975,11 @@ We want to take multiple gradient steps on a batch, but the data came from an ol
 
 Define the **importance sampling ratio**:
 
-$$R_t(\theta) = \frac{\pi_\theta(a_t \mid s_t)}{\pi_{\theta_\text{old}}(a_t \mid s_t)}$$
+$$\rho_t(\theta) = \frac{\pi_\theta(a_t \mid s_t)}{\pi_{\theta_\text{old}}(a_t \mid s_t)}$$
 
-- If $R_t = 1$: current and old policy agree on this action
-- If $R_t > 1$: current policy assigns higher probability than old
-- If $R_t < 1$: current policy assigns lower probability than old
+- If $\rho_t = 1$: current and old policy agree on this action
+- If $\rho_t > 1$: current policy assigns higher probability than old
+- If $\rho_t < 1$: current policy assigns lower probability than old
 
 This ratio reweights old-policy samples to estimate new-policy gradients.
 Plugging that ratio into the earlier policy-gradient form gives a surrogate objective we can optimize on old-policy data.
@@ -959,19 +990,19 @@ Plugging that ratio into the earlier policy-gradient form gives a surrogate obje
 
 Using importance sampling, the policy gradient becomes:
 
-$$J(\theta) = \mathbb{E}_t\!\left[R_t(\theta) \hat{A}_t\right]$$
+$$J(\theta) = \mathbb{E}_t\!\left[\rho_t(\theta) \hat{A}_t\right]$$
 
-**Intermediate problem**: without constraints, maximizing this can take arbitrarily large steps — the ratio $R_t$ can diverge far from 1, making the estimate unreliable.
+**Intermediate problem**: without constraints, maximizing this can take arbitrarily large steps — the ratio $\rho_t$ can diverge far from 1, making the estimate unreliable.
 
 ---
 
 ## The PPO clipped objective (put pieces together)
 
-PPO clips the ratio to prevent large updates (based on extensive math on creating the trust-region). The original paper [@schulman2017proximal] calls this $L^{CLIP}$, but it's an objective we **maximize**, so we use $J$:
+PPO clips the ratio to prevent large updates — a practical surrogate inspired by trust-region ideas. The original paper [@schulman2017proximal] calls this $L^{CLIP}$, but it's an objective we **maximize**, so we use $J$:
 
-$$J(\theta) = \mathbb{E}_t\!\left[\min\!\left(R_t(\theta) \hat{A}_t,\; \text{clip}(R_t(\theta),\, 1-\varepsilon,\, 1+\varepsilon)\, \hat{A}_t\right)\right]$$
+$$J(\theta) = \mathbb{E}_t\!\left[\min\!\left(\rho_t(\theta) \hat{A}_t,\; \text{clip}(\rho_t(\theta),\, 1-\varepsilon,\, 1+\varepsilon)\, \hat{A}_t\right)\right]$$
 
-Where $R_t(\theta) = \frac{\pi_\theta(a_t \mid s_t)}{\pi_{\theta_\text{old}}(a_t \mid s_t)}$ is the importance-sampling ratio.
+Where $\rho_t(\theta) = \frac{\pi_\theta(a_t \mid s_t)}{\pi_{\theta_\text{old}}(a_t \mid s_t)}$ is the importance-sampling ratio.
 
 Where $\varepsilon$ is typically 0.1–0.2. The $\min$ selects the **more conservative** estimate.
 
@@ -979,43 +1010,43 @@ Where $\varepsilon$ is typically 0.1–0.2. The $\min$ selects the **more conser
 
 ## Positive advantage ($\hat{A}_t > 0$)
 
-<!-- footnote-right: $R_t(\theta) = \pi_\theta / \pi_{\theta_\text{old}}$ (policy ratio) -->
+<!-- footnote-right: $\rho_t(\theta) = \pi_\theta / \pi_{\theta_\text{old}}$ (policy ratio) -->
 
-$$J(\theta) = \mathbb{E}_t\!\left[\min\!\left(R_t(\theta) \hat{A}_t,\; \text{clip}(R_t(\theta),\, 1-\varepsilon,\, 1+\varepsilon)\, \hat{A}_t\right)\right]$$
+$$J(\theta) = \mathbb{E}_t\!\left[\min\!\left(\rho_t(\theta) \hat{A}_t,\; \text{clip}(\rho_t(\theta),\, 1-\varepsilon,\, 1+\varepsilon)\, \hat{A}_t\right)\right]$$
 
 The action is better than average at that state — we want to **increase** its likelihood. Three sub-cases:
 
-1. $R_t < 1 - \varepsilon$: Action is **less likely** under new policy.  
-  Objective: $R_t \hat{A}_t$ — **normal gradient**, push probability up
+1. $\rho_t < 1 - \varepsilon$: Action is **less likely** under new policy.  
+  Objective: $\rho_t \hat{A}_t$ — **normal gradient**, push probability up
 
-2. $1 - \varepsilon \leq R_t \leq 1 + \varepsilon$: Action is **roughly equally likely**.  
-  Objective: $R_t \hat{A}_t$ — **normal gradient**, push probability up
+2. $1 - \varepsilon \leq \rho_t \leq 1 + \varepsilon$: Action is **roughly equally likely**.  
+  Objective: $\rho_t \hat{A}_t$ — **normal gradient**, push probability up
 
-3. $R_t > 1 + \varepsilon$: Action is **already more likely** under new policy.  
+3. $\rho_t > 1 + \varepsilon$: Action is **already more likely** under new policy.  
   Objective: $(1+\varepsilon)\hat{A}_t$ — gradient is **zero**, no update needed (**CLIPPED**)
 
-Note: on the first gradient step, $R_t = 1$ (policy hasn't changed yet), so the ratio starts near 1 and cases 1/3 only arise on subsequent steps.
+Note: on the first gradient step, $\rho_t = 1$ (policy hasn't changed yet), so the ratio starts near 1 and cases 1/3 only arise on subsequent steps.
 
 ---
 
 ## Negative advantage ($\hat{A}_t < 0$)
 
-<!-- footnote-right: $R_t(\theta) = \pi_\theta / \pi_{\theta_\text{old}}$ (policy ratio) -->
+<!-- footnote-right: $\rho_t(\theta) = \pi_\theta / \pi_{\theta_\text{old}}$ (policy ratio) -->
 
-$$J(\theta) = \mathbb{E}_t\!\left[\min\!\left(R_t(\theta) \hat{A}_t,\; \text{clip}(R_t(\theta),\, 1-\varepsilon,\, 1+\varepsilon)\, \hat{A}_t\right)\right]$$
+$$J(\theta) = \mathbb{E}_t\!\left[\min\!\left(\rho_t(\theta) \hat{A}_t,\; \text{clip}(\rho_t(\theta),\, 1-\varepsilon,\, 1+\varepsilon)\, \hat{A}_t\right)\right]$$
 
 The action was worse than average at that state — we want to **decrease** its likelihood. Three sub-cases:
 
-1. $R_t < 1 - \varepsilon$: Action is **already less likely** under new policy.  
+1. $\rho_t < 1 - \varepsilon$: Action is **already less likely** under new policy.  
   Objective: $(1-\varepsilon)\hat{A}_t$ — gradient is **zero**, no update needed (**CLIPPED**)
 
-2. $1 - \varepsilon \leq R_t \leq 1 + \varepsilon$: Action is **roughly equally likely**.  
-  Objective: $R_t \hat{A}_t$ — **normal gradient**, push probability down
+2. $1 - \varepsilon \leq \rho_t \leq 1 + \varepsilon$: Action is **roughly equally likely**.  
+  Objective: $\rho_t \hat{A}_t$ — **normal gradient**, push probability down
 
-3. $R_t > 1 + \varepsilon$: Action is **more likely** under new policy.  
-  Objective: $R_t \hat{A}_t$ — **normal gradient**, push probability down
+3. $\rho_t > 1 + \varepsilon$: Action is **more likely** under new policy.  
+  Objective: $\rho_t \hat{A}_t$ — **normal gradient**, push probability down
 
-Note: on the first gradient step, $R_t = 1$ (policy hasn't changed yet), so the ratio starts near 1 and cases 1/3 only arise on subsequent steps.
+Note: on the first gradient step, $\rho_t = 1$ (policy hasn't changed yet), so the ratio starts near 1 and cases 1/3 only arise on subsequent steps.
 
 ---
 
@@ -1031,11 +1062,11 @@ In all cases, clipping stops the gradient when the policy has **already moved en
 
 | Advantage | Within trust region | Outside trust region |
 |-----------|-------------------|---------------------|
-| $\hat{A}_t > 0$ | Normal gradient (reinforce) | Zero gradient if $R_t > 1+\varepsilon$ |
-| $\hat{A}_t < 0$ | Normal gradient (suppress) | Zero gradient if $R_t < 1-\varepsilon$ |
+| $\hat{A}_t > 0$ | Normal gradient (reinforce) | Zero gradient if $\rho_t > 1+\varepsilon$ |
+| $\hat{A}_t < 0$ | Normal gradient (suppress) | Zero gradient if $\rho_t < 1-\varepsilon$ |
 | $\hat{A}_t = 0$ | No update | No update |
 
-The clipping is **one-sided**: it only stops you from overshooting in the beneficial direction, never from correcting in the wrong direction.
+The clipping is **one-sided per advantage sign**: it caps movement when the policy has already moved enough in the beneficial direction, but never blocks correction in the detrimental direction.
 
 ---
 
@@ -1129,7 +1160,7 @@ $$\hat{A}_t^{\text{GAE}} = \sum_{l=0}^{\infty} (\gamma\lambda)^l \delta_{t+l}^V$
 | $0.95$ | Typical default for LLMs | Balanced | Balanced |
 | $1$ | Monte Carlo advantage | Highest | None |
 
-The $\gamma$ here is typically $1.0$ for language models (no discounting).
+The $\gamma$ here is typically $1.0$ for language models (no discounting). These rankings assume an accurate $V_\phi$ — in practice, a poorly trained critic can make even low-$\lambda$ estimates unreliable.
 
 ---
 
@@ -1219,11 +1250,11 @@ Each token in completion $i$ gets the **same** advantage (sequence-level, not pe
 
 Clipped ratio (like PPO) + group-normalized advantages + KL penalty directly in loss:
 
-$$J(\theta) = \frac{1}{G}\sum_{i=1}^{G}\frac{1}{|a_i|}\sum_{t=1}^{|a_i|}\!\left(\min\!\left(R_{i,t} \hat{A}_i,\, \text{clip}(R_{i,t}, 1-\varepsilon, 1+\varepsilon) \hat{A}_i\right) - \beta \, D_{\text{KL}, i,t}\right)$$
+$$J(\theta) = \frac{1}{G}\sum_{i=1}^{G}\frac{1}{|a_i|}\sum_{t=1}^{|a_i|}\!\left(\min\!\left(\rho_{i,t} \hat{A}_i,\, \text{clip}(\rho_{i,t}, 1-\varepsilon, 1+\varepsilon) \hat{A}_i\right) - \beta \, D_{\text{KL}, i,t}\right)$$
 
 $$\hat{A}_i = \frac{R_i - \text{mean}(R_1, \ldots, R_G)}{\text{std}(R_1, \ldots, R_G)}$$
 
-Where the clipping applies **per-token**: $R_{i,t} = \frac{\pi_\theta(a_{i,t} \mid s_t)}{\pi_{\theta_\text{old}}(a_{i,t} \mid s_t)}$, but $\hat{A}_i$ is shared across all tokens in the completion (sequence-level advantage, per-token ratio).
+Where the clipping applies **per-token**: $\rho_{i,t} = \frac{\pi_\theta(a_{i,t} \mid s_t)}{\pi_{\theta_\text{old}}(a_{i,t} \mid s_t)}$, but $\hat{A}_i$ is shared across all tokens in the completion (sequence-level advantage, per-token ratio).
 
 
 ---
