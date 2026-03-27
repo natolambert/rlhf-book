@@ -106,6 +106,9 @@ token_log_probs = log_probs.gather(       # (B, L-1)
     dim=-1, index=shift_labels.unsqueeze(-1)
 ).squeeze(-1)
 
+# Shift mask to match (B, L-1) action positions
+completion_mask = completion_mask[:, 1:]
+
 # Per-sequence log-prob: sum over completion tokens
 seq_log_probs = (token_log_probs * completion_mask).sum(dim=-1)
 ```
@@ -612,10 +615,11 @@ A key GRPO implementation detail — where the KL penalty goes:
 
 **PPO (KL in reward)**:
 ```python
-# Shape reward before computing
-# advantages
+# per_token_kl is (B, L), rewards starts
+# as scalar per sequence — broadcast to
+# final token, KL shapes all others
+rewards[:, -1] += rm_score
 rewards = rewards - beta * per_token_kl
-# Then compute GAE on shaped rewards
 advantages = gae(rewards, values, ...)
 ```
 
