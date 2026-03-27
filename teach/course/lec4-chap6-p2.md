@@ -211,6 +211,28 @@ The next section covers three strategies — per-sequence, per-token, and fixed-
 
 ---
 
+## Bandit-style vs MDP-style RLHF
+
+<!-- columns: 50/50 -->
+
+**Bandit-style**
+- One reward per completion
+- Sequence-level $\Psi_t$ broadcast across tokens
+- Used in REINFORCE, RLOO, GRPO
+
+|||
+
+**MDP-style**
+- Each token is treated as an action
+- Per-token values or advantages
+- Used in PPO with GAE
+
+<div class="colloquium-spacer-md"></div>
+
+Most RLHF is mixed in practice: **sequence-level rewards**, but **token-level log-prob gradients**. PPO-style RLHF usually starts from a sequence-level reward model score, then gets token-level credit via KL shaping and GAE.
+
+---
+
 ## Why this matters
 
 Same algorithm, different aggregation → **different training dynamics**.

@@ -918,31 +918,37 @@ Proximal Policy Optimization **(PPO)** [@schulman2017proximal] gets TRPO-like st
 
 ---
 
-## Why constrain updates?
+## PPO core idea 1: constrained updates
 
 <!-- cite-right: schulman2017proximal -->
 
-Large gradient steps can destroy the policy:
+Large gradient steps can destroy the policy (instability, over-optimization, etc.)
 
-- Language model loses coherence after one bad batch
-- Reward hacking exploits reward model weaknesses
-- Training becomes unstable — reward spikes then collapses
-
-The solution: **trust regions** — limit how far the policy can move in a single update. Too big a step → policy collapses, reward crashes. Too small → prohibitively slow. PPO clips the update to stay within a trust region.
+The solution: **trust regions** — limit how far the policy can move in a single update. 
 
 ---
 
-## Importance sampling
+## What can we do with more conservative gradients?
+
+Extract more signal from the batch! 
+This introduces new problems:
+
+- How do we constrain the updates over multiple gradient updates?
+- How do we take the policy gradient if the data has drifted off-policy?
+
+---
+
+## PPO core idea 2: Importance sampling
 
 We want to take multiple gradient steps on a batch, but the data came from an old policy $\pi_{\theta_\text{old}}$.
 
 Define the **importance sampling ratio**:
 
-$$r_t(\theta) = \frac{\pi_\theta(a_t \mid s_t)}{\pi_{\theta_\text{old}}(a_t \mid s_t)}$$
+$$R_t(\theta) = \frac{\pi_\theta(a_t \mid s_t)}{\pi_{\theta_\text{old}}(a_t \mid s_t)}$$
 
-- If $r_t = 1$: current and old policy agree on this action
-- If $r_t > 1$: current policy assigns higher probability than old
-- If $r_t < 1$: current policy assigns lower probability than old
+- If $R_t = 1$: current and old policy agree on this action
+- If $R_t > 1$: current policy assigns higher probability than old
+- If $R_t < 1$: current policy assigns lower probability than old
 
 This ratio reweights old-policy samples to estimate new-policy gradients.
 Plugging that ratio into the earlier policy-gradient form gives a surrogate objective we can optimize on old-policy data.
@@ -953,58 +959,83 @@ Plugging that ratio into the earlier policy-gradient form gives a surrogate obje
 
 Using importance sampling, the policy gradient becomes:
 
-$$L^{CPI}(\theta) = \mathbb{E}_t\!\left[r_t(\theta) \hat{A}_t\right]$$
+$$J(\theta) = \mathbb{E}_t\!\left[R_t(\theta) \hat{A}_t\right]$$
 
-**Problem**: without constraints, maximizing this can take arbitrarily large steps — the ratio $r_t$ can diverge far from 1, making the estimate unreliable.
+**Intermediate problem**: without constraints, maximizing this can take arbitrarily large steps — the ratio $R_t$ can diverge far from 1, making the estimate unreliable.
 
 ---
 
-## The PPO clipped objective
+## The PPO clipped objective (put pieces together)
 
-PPO clips the ratio to prevent large updates:
+PPO clips the ratio to prevent large updates (based on extensive math on creating the trust-region). The original paper [@schulman2017proximal] calls this $L^{CLIP}$, but it's an objective we **maximize**, so we use $J$:
 
-$$L^{CLIP}(\theta) = \mathbb{E}_t\!\left[\min\!\left(r_t(\theta) \hat{A}_t,\; \text{clip}(r_t(\theta),\, 1-\varepsilon,\, 1+\varepsilon)\, \hat{A}_t\right)\right]$$
+$$J(\theta) = \mathbb{E}_t\!\left[\min\!\left(R_t(\theta) \hat{A}_t,\; \text{clip}(R_t(\theta),\, 1-\varepsilon,\, 1+\varepsilon)\, \hat{A}_t\right)\right]$$
+
+Where $R_t(\theta) = \frac{\pi_\theta(a_t \mid s_t)}{\pi_{\theta_\text{old}}(a_t \mid s_t)}$ is the importance-sampling ratio.
 
 Where $\varepsilon$ is typically 0.1–0.2. The $\min$ selects the **more conservative** estimate.
 
 ---
 
-## Clipping: When advantage is positive ($\hat{A}_t > 0$)
+## Positive advantage ($\hat{A}_t > 0$)
 
-The action was **better** than expected — we want to increase its probability.
+<!-- footnote-right: $R_t(\theta) = \pi_\theta / \pi_{\theta_\text{old}}$ (policy ratio) -->
 
-- The unclipped objective: $r_t \hat{A}_t$ — increases as we make the action more likely
-- The clipped objective: $\text{clip}(r_t, 1-\varepsilon, 1+\varepsilon) \hat{A}_t$ — caps the benefit once $r_t > 1+\varepsilon$
+$$J(\theta) = \mathbb{E}_t\!\left[\min\!\left(R_t(\theta) \hat{A}_t,\; \text{clip}(R_t(\theta),\, 1-\varepsilon,\, 1+\varepsilon)\, \hat{A}_t\right)\right]$$
 
-$$\min(r_t \hat{A}_t, (1+\varepsilon) \hat{A}_t)$$
+The action is better than average at that state — we want to **increase** its likelihood. Three sub-cases:
 
-Once the action is already $1+\varepsilon$ times more likely than before, the gradient goes to **zero**. Prevents over-committing to one good action.
+1. $R_t < 1 - \varepsilon$: Action is **less likely** under new policy.  
+  Objective: $R_t \hat{A}_t$ — **normal gradient**, push probability up
+
+2. $1 - \varepsilon \leq R_t \leq 1 + \varepsilon$: Action is **roughly equally likely**.  
+  Objective: $R_t \hat{A}_t$ — **normal gradient**, push probability up
+
+3. $R_t > 1 + \varepsilon$: Action is **already more likely** under new policy.  
+  Objective: $(1+\varepsilon)\hat{A}_t$ — gradient is **zero**, no update needed (**CLIPPED**)
+
+Note: on the first gradient step, $R_t = 1$ (policy hasn't changed yet), so the ratio starts near 1 and cases 1/3 only arise on subsequent steps.
 
 ---
 
-## Clipping: When advantage is negative ($\hat{A}_t < 0$)
+## Negative advantage ($\hat{A}_t < 0$)
 
-The action was **worse** than expected — we want to decrease its probability.
+<!-- footnote-right: $R_t(\theta) = \pi_\theta / \pi_{\theta_\text{old}}$ (policy ratio) -->
 
-- The unclipped objective: $r_t \hat{A}_t$ — becomes more negative as $r_t$ decreases (we want this)
-- The clipped objective: caps at $(1-\varepsilon) \hat{A}_t$
+$$J(\theta) = \mathbb{E}_t\!\left[\min\!\left(R_t(\theta) \hat{A}_t,\; \text{clip}(R_t(\theta),\, 1-\varepsilon,\, 1+\varepsilon)\, \hat{A}_t\right)\right]$$
 
-$$\min(r_t \hat{A}_t, (1-\varepsilon) \hat{A}_t)$$
+The action was worse than average at that state — we want to **decrease** its likelihood. Three sub-cases:
 
-Once the action is already $(1-\varepsilon)$ times as likely, further suppression is stopped. Prevents catastrophic over-correction.
+1. $R_t < 1 - \varepsilon$: Action is **already less likely** under new policy.  
+  Objective: $(1-\varepsilon)\hat{A}_t$ — gradient is **zero**, no update needed (**CLIPPED**)
+
+2. $1 - \varepsilon \leq R_t \leq 1 + \varepsilon$: Action is **roughly equally likely**.  
+  Objective: $R_t \hat{A}_t$ — **normal gradient**, push probability down
+
+3. $R_t > 1 + \varepsilon$: Action is **more likely** under new policy.  
+  Objective: $R_t \hat{A}_t$ — **normal gradient**, push probability down
+
+Note: on the first gradient step, $R_t = 1$ (policy hasn't changed yet), so the ratio starts near 1 and cases 1/3 only arise on subsequent steps.
+
+---
+
+## Zero advantage ($\hat{A}_t = 0$)
+
+The action was exactly as good as expected. The loss is zero — **no update**.
 
 ---
 
 ## Clipping summary
 
-In both cases, the $\min$ selects the more conservative estimate:
+In all cases, clipping stops the gradient when the policy has **already moved enough** in the right direction:
 
-| Scenario | Unclipped pushes toward | Clipping stops when |
-|----------|------------------------|-------------------|
-| $\hat{A}_t > 0$ | Increase probability | $r_t > 1 + \varepsilon$ |
-| $\hat{A}_t < 0$ | Decrease probability | $r_t < 1 - \varepsilon$ |
+| Advantage | Within trust region | Outside trust region |
+|-----------|-------------------|---------------------|
+| $\hat{A}_t > 0$ | Normal gradient (reinforce) | Zero gradient if $R_t > 1+\varepsilon$ |
+| $\hat{A}_t < 0$ | Normal gradient (suppress) | Zero gradient if $R_t < 1-\varepsilon$ |
+| $\hat{A}_t = 0$ | No update | No update |
 
-**Within the trust region** ($1-\varepsilon \leq r_t \leq 1+\varepsilon$), PPO operates the same as standard policy gradient. The clipping only activates **outside** this region.
+The clipping is **one-sided**: it only stops you from overshooting in the beneficial direction, never from correcting in the wrong direction.
 
 ---
 
@@ -1016,7 +1047,9 @@ In both cases, the $\min$ selects the more conservative estimate:
 
 ## The value function (critic)
 
-PPO trains a **value function** $V_\phi(s)$ alongside the policy:
+PPO trains a **value function** $V_\phi(s)$ alongside the policy — the expected future return from state $s_t$:
+
+$$V_\phi(s_t) = \mathbb{E}\left[\sum_{k=0}^{T-t} \gamma^k r_{t+k} \;\middle|\; s_t\right]$$
 
 - Separate parameters $\phi$ (often initialized from the reward model or SFT model)
 - Predicts post-KL shaped future return at each token position
@@ -1046,11 +1079,11 @@ The simplest advantage: $\hat{A}_t = G_t - V_\phi(s_t)$
 - **Centering** reduces variance — we're asking "how much better is this action than average?" rather than "how good was the total return?"
 - **Credit assignment** — with per-token values, each token gets its own advantage signal
 
-This Monte Carlo estimate is simple and unbiased, but it can be high variance. TD and GAE trade some bias for lower variance.
+This Monte Carlo estimate is simple and unbiased, but it can be high variance. Temporal Difference (TD) methods and Generalized Advantage Estimation (GAE) trade some bias for lower variance.
 
 ---
 
-## GAE: The TD residual
+## The TD residual
 
 <!-- cite-right: schulman2015high -->
 
@@ -1066,11 +1099,11 @@ This is the **1-step advantage estimate**: low variance (uses learned $V_\phi$) 
 
 We can extend to $K$ steps:
 
-$$\hat{A}_t^{(1)} = \delta_t^V \quad \text{(1-step: low variance, high bias)}$$
-
-$$\hat{A}_t^{(2)} = \delta_t^V + \gamma \delta_{t+1}^V \quad \text{(2-step)}$$
-
-$$\hat{A}_t^{(k)} = \sum_{l=0}^{k-1} \gamma^l \delta_{t+l}^V \quad \text{(k-step: more variance, less bias)}$$
+$$\begin{aligned}
+\hat{A}_t^{(1)} &= \delta_t^V && \text{(1-step: low variance, high bias)} \\[4pt]
+\hat{A}_t^{(2)} &= \delta_t^V + \gamma \delta_{t+1}^V && \text{(2-step)} \\[4pt]
+\hat{A}_t^{(k)} &= \sum_{l=0}^{k-1} \gamma^l \delta_{t+l}^V && \text{(k-step: more variance, less bias)}
+\end{aligned}$$
 
 As $k \to \infty$, we recover the full Monte Carlo advantage $G_t - V_\phi(s_t)$ (no bias, highest variance).
 
@@ -1155,17 +1188,18 @@ This is memory-intensive — a key motivation for simpler alternatives like GRPO
 
 ---
 
-## Can we keep PPO's stability without the critic?
+## GRPO: PPO for the reasoning era
 
 <!-- cite-right: shao2024deepseekmath -->
 
-Group Relative Policy Optimization eliminates the value function entirely.
+Group Relative Policy Optimization (GRPO) was introduced in DeepSeekMath [@shao2024deepseekmath] for math reasoning and has since become the go-to algorithm for RL on language models. It keeps PPO's clipped objective but drops the value function entirely.
 
-**Replace learned advantages with group statistics**: generate $G$ completions per prompt, use the group's reward statistics as the baseline.
+**Core idea**: generate $G$ completions per prompt, use the group's reward statistics as the baseline — no learned critic needed.
 
-Two benefits:
-1. Avoids the challenge of learning a value function from an LM backbone
-2. Saves memory — no extra model copy for the critic
+- Simpler to implement and debug than PPO
+- Saves memory (one fewer model copy)
+- Natural fit for RLVR where you have a clear verification signal and higher variance rewards (e.g. 0 or 1 for correctness)
+- Popularized with DeepSeek R1 and everything that followed
 
 ---
 
@@ -1185,9 +1219,12 @@ Each token in completion $i$ gets the **same** advantage (sequence-level, not pe
 
 Clipped ratio (like PPO) + group-normalized advantages + KL penalty directly in loss:
 
-$$J(\theta) = \frac{1}{G}\sum_{i=1}^{G}\frac{1}{|a_i|}\sum_{t=1}^{|a_i|}\!\left(\min\!\left(r_{i,t} \hat{A}_i,\, \text{clip}(r_{i,t}, 1-\varepsilon, 1+\varepsilon) \hat{A}_i\right) - \beta \, D_{\text{KL}, i,t}\right)$$
+$$J(\theta) = \frac{1}{G}\sum_{i=1}^{G}\frac{1}{|a_i|}\sum_{t=1}^{|a_i|}\!\left(\min\!\left(R_{i,t} \hat{A}_i,\, \text{clip}(R_{i,t}, 1-\varepsilon, 1+\varepsilon) \hat{A}_i\right) - \beta \, D_{\text{KL}, i,t}\right)$$
 
-Where the clipping applies **per-token**: $r_{i,t} = \frac{\pi_\theta(a_{i,t} \mid s_t)}{\pi_{\theta_\text{old}}(a_{i,t} \mid s_t)}$, but $\hat{A}_i$ is shared across all tokens in the completion (sequence-level advantage, per-token ratio).
+$$\hat{A}_i = \frac{R_i - \text{mean}(R_1, \ldots, R_G)}{\text{std}(R_1, \ldots, R_G)}$$
+
+Where the clipping applies **per-token**: $R_{i,t} = \frac{\pi_\theta(a_{i,t} \mid s_t)}{\pi_{\theta_\text{old}}(a_{i,t} \mid s_t)}$, but $\hat{A}_i$ is shared across all tokens in the completion (sequence-level advantage, per-token ratio).
+
 
 ---
 
@@ -1197,8 +1234,8 @@ Where the clipping applies **per-token**: $r_{i,t} = \frac{\pi_\theta(a_{i,t} \m
 |---|---------|----------|
 | **Value function** | Learned $V_\phi$ | None |
 | **Advantage** | Per-token via GAE | Sequence-level, group z-score |
-| **KL penalty** | In reward (before advantages) | In loss (separate term) |
-| **Models in memory** | 4 (policy, value, ref, RM) | 3 (policy, ref, RM) |
+| **KL penalty** | In reward (before advantages) | In loss (default, but optional) |
+| **Models in memory** | 4 (policy, value, ref, RM) | 3 (policy, ref, RM) or 2 without KL |
 | **Complexity** | Higher | Lower |
 | **Popular for** | General RLHF | Reasoning / RLVR (DeepSeek R1) |
 
@@ -1208,13 +1245,13 @@ GRPO is PPO minus the value function, with a statistical baseline instead.
 
 ## RLOO vs GRPO
 
-Both use multiple completions per prompt. The key difference is in the details:
+Both use multiple completions per prompt. The key difference is in the PPO-style clipping for GRPO:
 
 | | **RLOO** | **GRPO** |
 |---|---------|----------|
 | **Baseline** | Leave-one-out mean | Group mean (z-scored) |
 | **Update style** | REINFORCE (no clipping) | PPO-style clipped ratio |
-| **KL penalty** | Optional (in reward) | In loss |
+| **KL penalty** | Optional (in reward) | In loss (default, but optional) |
 | **Advantage** | $R_k - \frac{1}{K-1}\sum_{j \neq k} R_j$ | $\frac{R_i - \text{mean}}{\text{std}}$ |
 
 Same principle (compare to peers), different mechanics. Without std normalization, the GRPO-style advantage estimate becomes equivalent to RLOO up to a scaling constant.
@@ -1231,7 +1268,11 @@ Same principle (compare to peers), different mechanics. Without std normalizatio
 
 $$\rho_i(\theta) = \exp\!\left(\frac{1}{|a_i|}\sum_{t=1}^{|a_i|} \log \frac{\pi_\theta(a_{i,t} \mid s)}{\pi_{\theta_\text{old}}(a_{i,t} \mid s)}\right)$$
 
-The geometric mean stays in a reasonable numerical range for any sequence length — similar gradient signal, better numerics. The clipping range $\varepsilon$ now operates on a per-token average scale.
+The geometric mean stays in a reasonable numerical range for any sequence length — similar gradient signal, better numerics. The full objective mirrors GRPO but with the sequence-level ratio:
+
+$$J_{\text{GSPO}}(\theta) = \frac{1}{G} \sum_{i=1}^G \min\!\left( \rho_i(\theta) \hat{A}_i,\, \text{clip}(\rho_i(\theta), 1-\varepsilon, 1+\varepsilon) \hat{A}_i \right)$$
+
+The clipping range $\varepsilon$ now operates on a per-token average scale, making it comparable across different completion lengths.
 
 ---
 
@@ -1241,46 +1282,11 @@ The geometric mean stays in a reasonable numerical range for any sequence length
 
 CISPO clips the **importance weights themselves** rather than the objective, using a stop-gradient:
 
-$$J(\theta) = \sum_{i,t} \text{sg}\!\left(\hat{\rho}_{i,t}\right) A_{i,t} \log \pi_\theta(a_{i,t} \mid s_t)$$
+$$J_{\text{CISPO}}(\theta) = \sum_{i,t} \text{sg}\!\left(\hat{\rho}_{i,t}\right) A_{i,t} \log \pi_\theta(a_{i,t} \mid s_t)$$
 
 $$\hat{\rho}_{i,t} = \text{clip}\!\left(\frac{\pi_\theta(a_{i,t} \mid s_t)}{\pi_{\theta_\text{old}}(a_{i,t} \mid s_t)},\; 1-\varepsilon^{-},\; 1+\varepsilon^{+}\right)$$
 
 **Key difference from PPO**: every token still receives a gradient signal — the weight just bounds how much it's amplified. Asymmetric bounds ($\varepsilon^{+} > \varepsilon^{-}$) allow more aggressive reward-increasing updates, encouraging exploration.
-
----
-
-## Algorithm evolution
-
-$$\text{PPO (2017)} \to \text{REINFORCE revival (2024)} \to \text{RLOO} \to \text{GRPO (2024)} \to \text{GSPO / CISPO (2025)}$$
-
-**A recent open post-training trend**: simpler algorithms with increasingly competitive results.
-
-- PPO: powerful but complex (4 models, GAE, value function training)
-- REINFORCE/RLOO: surprisingly competitive with good baselines
-- GRPO: PPO-style clipping without value function — the current favorite for reasoning
-- GSPO/CISPO: numerical stability for large-scale MoE models
-
----
-
-## Bandit-style vs MDP-style RLHF
-
-<!-- columns: 50/50 -->
-
-**Bandit-style**
-- One reward per completion
-- Sequence-level $\Psi_t$ broadcast across tokens
-- Used in REINFORCE, RLOO, GRPO
-
-|||
-
-**MDP-style**
-- Each token is treated as an action
-- Per-token values or advantages
-- Used in PPO with GAE
-
-<div class="colloquium-spacer-md"></div>
-
-Most RLHF is mixed in practice: **sequence-level rewards**, but **token-level log-prob gradients**. PPO-style RLHF usually starts from a sequence-level reward model score, then gets token-level credit via KL shaping and GAE.
 
 ---
 
@@ -1292,34 +1298,7 @@ Most RLHF is mixed in practice: **sequence-level rewards**, but **token-level lo
 
 <!-- layout: section-break -->
 
-## Putting it all together
-
----
-
-## Algorithm comparison table
-
-| Method | Models | Rollouts | Value Function | Reference Policy |
-|:-------|:------:|:--------:|:--------------:|:----------------:|
-| **REINFORCE** | 2 | 1 | No | Optional |
-| **RLOO** | 2 | K | No | Optional |
-| **PPO** | 4 | 1 | Yes | Yes |
-| **GRPO** | 3 | G | No | Yes |
-| **GSPO** | 3 | G | No | Yes |
-| **CISPO** | 3 | G | No | Yes |
-
-All are on-policy in derivation (slightly off-policy in practice). Complexity spectrum: **REINFORCE → RLOO → GRPO → PPO** (2→4 models, low→high memory).
-
----
-
-## When to use what
-
-| Scenario | Recommended | Why |
-|----------|:-----------:|-----|
-| **Reasoning / RLVR** | GRPO | Simple, effective with verifiable rewards |
-| **Highest ceiling, ample resources** | PPO | Per-token advantages, proven at scale |
-| **Strong simple baseline** | RLOO | No value function, competitive results |
-| **Large MoE models** | GSPO / CISPO | Numerical stability at scale |
-| **Quick experiments** | REINFORCE | Minimal code, fast iteration |
+## Conclusion
 
 ---
 
