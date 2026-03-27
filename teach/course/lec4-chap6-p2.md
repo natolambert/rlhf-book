@@ -250,10 +250,10 @@ $$L = \frac{1}{B}\sum_{i=1}^{B} \frac{1}{|a_i|}\sum_{t=1}^{|a_i|} \ell_{i,t}$$
 ```python
 # Strategy 1: Per-sequence normalization
 loss = ((per_token_loss * completion_mask).sum(dim=1) /
-         completion_mask.sum(dim=1)).mean()
+         completion_mask.sum(dim=1).clamp_min(1)).mean()
 ```
 
-Standard in GRPO and some PPO implementations.
+Standard in GRPO and some PPO implementations. The `clamp_min(1)` guards against empty completions (e.g. immediate EOS).
 
 ---
 
@@ -495,7 +495,7 @@ per_token_loss = pg_loss + vf_coef * vf_loss  # (B, L)
 
 # Apply completion mask and aggregate
 loss = ((per_token_loss * completion_mask).sum(dim=1) /
-         completion_mask.sum(dim=1)).mean()
+         completion_mask.sum(dim=1).clamp_min(1)).mean()
 ```
 
 The `vf_coef` (typically 0.5–1.0) balances the two objectives.
