@@ -194,6 +194,7 @@ Same structure, different baseline computation. GRPO adds std normalization; RLO
 - **Stop-token handling**: EOS tokens need consistent treatment — include in loss or not, but be consistent. Mishandling is a common silent error
 - **Sequence length handling**: variable-length completions need careful normalization (next section)
 - **Detaching baselines**: `advantages.detach()` — don't backpropagate through the advantage computation
+- **Division guards**: anywhere you divide by `mask.sum()` or sequence lengths, use `.clamp_min(1)` or `+ eps` to avoid NaN from empty completions (e.g. immediate EOS)
 
 ---
 
