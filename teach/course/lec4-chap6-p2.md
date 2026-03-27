@@ -729,7 +729,7 @@ PPO has **both** clipping **and** KL penalty. Not redundant:
 - **Clipping** = per-step size constraint (trust region). Prevents catastrophic single updates
 - **KL penalty** = total drift constraint. Prevents cumulative drift from the reference over many steps
 
-In practice, with $K = 1$ gradient step per batch (common at large scale), clipping never activates — only the KL penalty operates. With $K > 1$, both matter.
+In practice, with $K = 1$ and no minibatching, $\pi_\theta = \pi_{\theta_\text{old}}$ so clipping never activates. But with minibatching (common at scale), later minibatches see an updated $\pi_\theta$, so clipping can still trigger even at $K = 1$.
 
 ---
 
