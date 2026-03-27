@@ -218,7 +218,7 @@ The variance across return estimates is higher in domains with sparse rewards, a
 In order to alleviate this, various techniques are used to normalize the value estimation, called *baselines*. 
 Baselines accomplish this in multiple ways, effectively normalizing by the value of the state relative to the downstream action (e.g. in the case of Advantage, which is the difference between the Q value and the value). 
 The simplest baselines are averages over the batch of rewards or a moving average.
-Even these baselines can de-bias the gradients so $\mathbb{E}_{a \sim \pi(a|s)}[\nabla_\theta \log \pi_\theta(a|s)] = 0$, improving the learning signal substantially.
+Even these baselines reduce variance while keeping the gradient unbiased, since $\mathbb{E}_{a \sim \pi(a|s)}[\nabla_\theta \log \pi_\theta(a|s)] = 0$, improving the learning signal substantially.
 
 Many of the policy gradient algorithms discussed in this chapter build on the advantage formulation of policy gradient:
 
