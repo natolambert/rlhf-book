@@ -17,6 +17,8 @@ Colloquium does not have built-in animation/fragment support. To simulate animat
 
 **Never skip steps in derivations.** Every algebraic manipulation must be shown explicitly — if a term cancels, show it cancelling; if an expression is rewritten, show the intermediate form. Assume the audience cannot fill in gaps. For example, when dividing numerator and denominator by the same term, first show the division applied, then show the numerator simplifying to 1, then show the denominator simplifying. Each of these can be a separate slide.
 
+**Use `aligned` for multi-line equations that are one argument.** If a slide shows a chain of equalities or a start-to-end derivation summary, prefer one display math block with `\begin{aligned} ... \end{aligned}` so the `=` signs line up and the expression reads as one flow. Keep separate `$$...$$` blocks for genuinely separate equations.
+
 ## Colloquium Directives
 
 Key directives (HTML comments before or after the heading):
@@ -33,6 +35,15 @@ Key directives (HTML comments before or after the heading):
 ## Heading Parsing
 
 Titles must be bare `## Heading` at line start. Wrapping in `<div>` breaks colloquium's heading extraction.
+
+## Title Case
+
+Use sentence case for all slide titles and section-break titles.
+
+- Capitalize the first word of the title
+- Capitalize the first word after a colon
+- Keep acronyms and proper names capitalized (e.g. `RLHF`, `PPO`, `OpenAI`, `ChatGPT`)
+- Do not use title case across the full heading
 
 ## Citation Style
 
