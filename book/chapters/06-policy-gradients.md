@@ -272,6 +272,7 @@ REINFORCE is a specific implementation of vanilla policy gradient that uses a Mo
 ### REINFORCE Leave One Out (RLOO)
 
 The core implementation detail of REINFORCE Leave One Out versus standard REINFORCE is that it takes the average reward of the *other* samples in the batch to compute the baseline -- rather than averaging over all rewards in the batch [@huang2024putting], [@ahmadian2024back], [@kool2019buy].
+By excluding the current sample's reward from its own baseline, the RLOO baseline is independent of the action being evaluated, which keeps the gradient estimator exactly unbiased (a same-batch mean baseline introduces a small $(K-1)/K$ dependency that is typically absorbed into the learning rate).
 
 Crucially, this only works when generating multiple trajectories (completions) per state (prompt), which is common practice in multiple domains of fine-tuning language models with RL.
 
