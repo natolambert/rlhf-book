@@ -416,20 +416,16 @@ The IS ratio $\rho_t = \frac{\pi_\theta}{\pi_{\theta_\text{old}}}$ uses one fres
 <div class="text-sm">
 
 ```python
-# GAE (token-level) for LM RLHF
-# rewards: (B,) terminal reward only (KL shaping omitted for clarity)
-# completion_mask: (B, L) 1.0 on generated tokens
-# values_old: (B, L) critic predictions cached at rollout time
+# rewards: (B,) terminal only (KL shaping omitted), values_old: (B, L) from rollout
 B, L = completion_mask.shape
 advantages = torch.zeros_like(values_old)
 next_v = torch.zeros(B, device=values_old.device)
 gae = torch.zeros(B, device=values_old.device)
 
-last_action_indices = completion_mask.long().cumsum(dim=-1).argmax(dim=-1, keepdim=True)
-indices = torch.arange(L, device=values_old.device).unsqueeze(0)
-done_mask = (indices >= last_action_indices).float()  # done at and after EOS
-rewards_t = torch.zeros_like(values_old).scatter_(dim=-1, index=last_action_indices, src=rewards)
-# The backward loop accumulates TD errors with exponential decay $(\gamma\lambda)^l$.
+last_idx = completion_mask.long().cumsum(-1).argmax(-1, keepdim=True)
+done_mask = (torch.arange(L, device=values_old.device).unsqueeze(0) >= last_idx).float()
+rewards_t = torch.zeros_like(values_old).scatter_(-1, index=last_idx, src=rewards)
+
 for t in reversed(range(L)):
     not_done = 1.0 - done_mask[:, t]
     delta = rewards_t[:, t] + gamma * not_done * next_v - values_old[:, t]
@@ -439,12 +435,12 @@ for t in reversed(range(L)):
 
 advantages = advantages * completion_mask
 targets = (advantages + values_old).detach()
-advantages = advantages.detach()          # for policy loss
+advantages = advantages.detach()
 ```
 
 </div>
 
-*Simplified: places the full reward at the last generated token. For KL-shaped rewards (standard PPO-RLHF), add $-\beta \cdot \text{KL}_t$ to each token position before this loop — see the "From scalar reward to per-token returns" slide.*
+<span class="text-xs">*Simplified: terminal reward only. For KL-shaped rewards, add $-\beta \cdot \text{KL}_t$ per token before this loop.*</span>
 
 ---
 
