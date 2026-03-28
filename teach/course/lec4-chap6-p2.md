@@ -36,13 +36,27 @@ custom_css: |
 
 ---
 
+<!-- rows: 50/50 -->
 ## Lecture 4: RL implementation & practice
 
-<!-- align: center -->
+<!-- row-columns: 32/36/32 -->
+
+```box
+title: Overview
+tone: muted
+compact: true
+content: |
+  1. Introduction
+  2. Key Related Works
+  3. Training Overview
+```
+
+|||
 
 ```box
 title: Core Training Pipeline
 tone: accent
+compact: true
 content: |
   4. Instruction Tuning
   5. Reward Models
@@ -50,6 +64,57 @@ content: |
   7. Reasoning
   8. Direct Alignment
   9. Rejection Sampling
+```
+
+|||
+
+```box
+title: Data & Preferences
+tone: muted
+compact: true
+content: |
+  10. What are Preferences
+  11. Preference Data
+  12. Synthetic Data & CAI
+```
+
+===
+
+<!-- row-columns: 32/36/32 -->
+
+```box
+title: Practical Considerations
+tone: muted
+compact: true
+content: |
+  13. Tool Use
+  14. Over-optimization
+  15. Regularization
+  16. Evaluation
+  17. Product & Character
+```
+
+|||
+
+```box
+title: Appendices
+tone: surface
+compact: true
+content: |
+  - A. Definitions
+  - B. Style & Information
+  - C. Practical Issues
+```
+
+|||
+
+```box
+title: Course Home
+tone: surface
+compact: true
+content: |
+  - [rlhfbook.com](https://rlhfbook.com)
+  - [GitHub repo](https://github.com/natolambert/rlhf-book)
 ```
 
 ---
@@ -60,9 +125,19 @@ Lecture 3 was the **math**: policy gradient theorem, REINFORCE, PPO, GRPO.
 
 This lecture: how to actually **implement, debug, and run** RL training for LLMs.
 
-As in Chapter 6, we use $(s, a)$ from the reinforcement learning literature and $(x, y)$ when prompt-completion notation is more natural. The $(s, a)$ framing is more general, but many RLHF implementations treat the entire completion as a single action, making $(x, y)$ equally valid.
+The hardest bugs aren't math errors — they're silent implementation mistakes: wrong masking, stale caches, shape mismatches.
+
+---
+
+## From math to code
+
+Lecture 3 was the **math**: policy gradient theorem, REINFORCE, PPO, GRPO.
+
+This lecture: how to actually **implement, debug, and run** RL training for LLMs.
 
 The hardest bugs aren't math errors — they're silent implementation mistakes: wrong masking, stale caches, shape mismatches.
+
+*A reminder on notation*: As in Chapter 6, we use $(s, a)$ from the reinforcement learning literature and $(x, y)$ when prompt-completion notation is more natural. The $(s, a)$ framing is more general, but many RLHF implementations treat the entire completion as a single action, making $(x, y)$ equally valid.
 
 ---
 
@@ -85,35 +160,102 @@ content: |
 
 <!-- layout: section-break -->
 
-## Policy gradients in code
+## Translating the policy gradient into code
 
 ---
 
-## Computing log-probabilities
+## Recall: the policy gradient
 
-The fundamental building block: per-token log-probabilities from the policy.
+The objective and its gradient:
+
+$$J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}[R(\tau)]$$
+
+$$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}\!\left[\sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot \Psi_t\right]$$
+
+The gradient says: for each token, compute the direction that makes it more likely ($\nabla \log \pi$), then scale by how good it was ($\Psi_t$).
+
+---
+
+## Recall: the policy gradient algorithms
+
+All methods optimize the same core objective — they differ in $\Psi_t$ and how updates are bounded:
+
+<div class="text-sm">
+
+$$\begin{aligned}
+\textbf{REINFORCE:}\quad & -\frac{1}{T}\sum_{t=1}^{T}\log \pi_\theta(a_t\mid s_t)\,\big(G_t - b(s_t)\big) \\[4pt]
+\textbf{RLOO:}\quad & -\frac{1}{K}\sum_{i=1}^{K}\sum_t \log \pi_\theta(a_{i,t}\mid s_{i,t})\left(R_i-\frac{1}{K-1}\sum_{j\neq i}R_j\right) \\[4pt]
+\textbf{PPO:}\quad & -\frac{1}{T}\sum_{t=1}^{T}\min\!\big(\rho_t A_t,\ \mathrm{clip}(\rho_t,1-\varepsilon,1+\varepsilon)\, A_t\big) \\[4pt]
+\textbf{GRPO:}\quad & -\frac{1}{G}\sum_{i=1}^{G}\min\!\big(\rho_i \hat{A}_i,\ \mathrm{clip}(\rho_i,1-\varepsilon,1+\varepsilon)\, \hat{A}_i\big)
+\end{aligned}$$
+
+</div>
+
+Where $\rho_t = \frac{\pi_\theta(a_t \mid s_t)}{\pi_{\theta_\text{old}}(a_t \mid s_t)}$ is the importance-sampling ratio, $A_t$ is the per-token advantage (PPO uses GAE), and $\hat{A}_i = \frac{R_i - \mu}{\sigma}$ is the group-normalized advantage (GRPO).
+
+---
+
+## Recall: why losses are sums of log-probs
+
+From lecture 3, the policy gradient derivation showed:
+
+$$\nabla_\theta \log p_\theta(\tau) = \sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t)$$
+
+In code, we compute the **log-probs** and let autodiff handle the gradient:
+
+```python
+seq_log_probs = (token_log_probs * completion_mask).sum(dim=-1)
+loss = -(seq_log_probs * advantages).mean()
+loss.backward()  # autodiff gives ∑ ∇ log π · Ψ_t
+```
+
+Every loss function in this lecture is a variation on this pattern.
+
+---
+
+## Computing log-probabilities (expanded)
+
+The fundamental building block: per-token log-probabilities from the policy. Here's every step explicitly:
 
 ```python
 # Forward pass through the model
-logits = model(input_ids).logits          # (B, L, vocab_size)
+logits = model(input_ids).logits              # (B, L, vocab_size)
 
 # Autoregressive shift: logit at position t predicts token at t+1
-shift_logits = logits[:, :-1, :]          # (B, L-1, vocab_size)
-shift_labels = input_ids[:, 1:]           # (B, L-1)
+logits = logits[:, :-1, :]                    # (B, L-1, vocab_size)
+labels = input_ids[:, 1:]                     # (B, L-1)
+completion_mask = completion_mask[:, 1:]       # (B, L-1)
 
-log_probs = shift_logits.log_softmax(dim=-1)
-token_log_probs = log_probs.gather(       # (B, L-1)
-    dim=-1, index=shift_labels.unsqueeze(-1)
+# Per-token log-probs
+log_probs = logits.log_softmax(dim=-1)
+token_log_probs = log_probs.gather(           # (B, L-1)
+    dim=-1, index=labels.unsqueeze(-1)
 ).squeeze(-1)
-
-# Shift mask to match (B, L-1) action positions
-completion_mask = completion_mask[:, 1:]
 
 # Per-sequence log-prob: sum over completion tokens
 seq_log_probs = (token_log_probs * completion_mask).sum(dim=-1)
 ```
 
 Everything in log-space to avoid numerical underflow from multiplying many small probabilities.
+
+---
+
+## Computing log-probabilities (compact)
+
+In practice, this is usually wrapped in a helper. From the book's code:
+
+```python
+def compute_log_probs(model, input_ids, attention_mask):
+    logits = model(input_ids=input_ids,
+                   attention_mask=attention_mask).logits
+    logits = logits[:, :-1, :].to(torch.float32)
+    log_probs = F.log_softmax(logits, dim=-1)
+    targets = input_ids[:, 1:].unsqueeze(-1)
+    return torch.gather(log_probs, dim=-1,
+                        index=targets).squeeze(-1)
+```
+
+The shift, gather, and squeeze are the same — just condensed. You'll call this for the policy, the old policy, and the reference model.
 
 ---
 
