@@ -680,10 +680,10 @@ A key implementation detail — where the KL penalty goes. Same goal (constrain 
 
 **PPO (KL in reward)**:
 ```python
-# per_token_kl is (B, L), rewards starts
-# as scalar per sequence — broadcast to
-# final token, KL shapes all others
-rewards[:, -1] += rm_score
+# per_token_kl is (B, L), rewards is (B, L)
+# Scatter RM score to each sequence's
+# last action token, not [:, -1]
+rewards.scatter_(1, last_idx, rm_score)
 rewards = rewards - beta * per_token_kl
 advantages = gae(rewards, values, ...)
 ```
@@ -826,7 +826,7 @@ rho = torch.exp(new_logps - old_logps)
 rho_clipped = torch.clamp(
     rho, 1 - eps, 1 + eps
 ).detach()  # no grad through ratio
-loss = -(rho_clipped * advantages* new_logps * mask).sum() / mask.sum()
+loss = -(rho_clipped * advantages.unsqueeze(1) * new_logps * mask).sum() / mask.sum()
 ```
 
 </div>
