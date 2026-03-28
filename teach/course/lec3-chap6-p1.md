@@ -1347,6 +1347,14 @@ They differ in:
 
 ---
 
+## RL cheatsheet
+
+A one-page reference of all core RL loss functions is available at:
+
+**[rlhfbook.com/rl-cheatsheet](https://rlhfbook.com/rl-cheatsheet)**
+
+---
+
 ## Next lecture: RL implementation
 
 Lecture 4 turns these algorithms into working code:

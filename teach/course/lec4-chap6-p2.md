@@ -607,9 +607,20 @@ For a 7B model with fp16:
 
 ---
 
+## Double regularization
+
+PPO has **both** clipping **and** KL penalty. Not redundant:
+
+- **Clipping** = per-step size constraint (trust region). Prevents catastrophic single updates
+- **KL penalty** = total drift constraint. Prevents cumulative drift from the reference over many steps
+
+In practice, with $K = 1$ and no minibatching, $\pi_\theta = \pi_{\theta_\text{old}}$ so clipping never activates. But with minibatching (common at scale), later minibatches see an updated $\pi_\theta$, so clipping can still trigger even at $K = 1$.
+
+---
+
 <!-- layout: section-break -->
 
-## Group Relative Policy Optimization (GRPO)
+## Group Relative Policy Optimization (GRPO) & Friends
 
 ---
 
@@ -621,7 +632,7 @@ For each prompt, sample $G$ completions and compute group-normalized advantages:
 
 $$\hat{A}_i = \frac{R_i - \mu_G}{\sigma_G}, \qquad \mu_G = \frac{1}{G}\sum_{j=1}^{G} R_j, \quad \sigma_G = \sqrt{\frac{1}{G}\sum_{j=1}^{G}(R_j - \mu_G)^2}$$
 
-Then apply the same clipped objective as PPO, but with sequence-level advantages and a KL penalty in the loss:
+Then apply the same clipped objective as PPO, but with sequence-level advantages and a KL penalty in the loss (optional, more to come in reasoning lecture):
 
 $$L^{\text{GRPO}}(\theta) = -\frac{1}{G}\sum_{i=1}^{G}\min\!\Big(\rho_i \hat{A}_i,\; \text{clip}(\rho_i, 1-\varepsilon, 1+\varepsilon)\, \hat{A}_i\Big) + \beta \, \text{KL}(\pi_\theta \| \pi_\text{ref})$$
 
@@ -659,9 +670,13 @@ loss = ((per_token_loss * mask).sum(dim=1) / mask.sum(dim=1)).mean()
 
 ## KL penalty placement
 
-A key GRPO implementation detail — where the KL penalty goes:
+<!-- rows: 30/70 -->
 
-<!-- columns: 50/50 -->
+A key implementation detail — where the KL penalty goes. Same goal (constrain drift from reference), different placement. GRPO's approach avoids interaction between KL and advantage estimation.
+
+===
+
+<!-- row-columns: 50/50 -->
 
 **PPO (KL in reward)**:
 ```python
@@ -682,10 +697,6 @@ advantages = z_score(rewards)
 # Add KL as separate loss term
 loss = pg_loss + beta * per_token_kl
 ```
-
-<div class="colloquium-spacer-md"></div>
-
-Same goal (constrain drift from reference), different placement. GRPO's approach avoids interaction between KL and advantage estimation.
 
 ---
 
@@ -738,40 +749,87 @@ Same structure, different baseline computation. GRPO adds std normalization; RLO
 
 ---
 
-## GSPO / CISPO implementation notes
+## GSPO: Sequence-level clipping
 
-**GSPO**: replace per-token ratios with geometric mean:
+GRPO clips **per-token** ratios. GSPO replaces them with a single **sequence-level** geometric mean ratio:
 
-```python
-# Sequence-level ratio (geometric mean)
-log_ratio = (new_logps - old_logps) * mask
-rho = torch.exp(log_ratio.sum(dim=1) / mask.sum(dim=1))  # (B*G,)
-# Apply same clipping logic, but per-sequence
-```
+<div class="text-sm">
 
-**CISPO**: clip weights with stop-gradient:
+$$\textbf{GRPO:}\quad L = -\frac{1}{G}\sum_{i=1}^{G}\frac{1}{|a_i|}\sum_{t=1}^{|a_i|}\min\!\Big(\rho_{i,t}\,\hat{A}_i,\;\text{clip}(\rho_{i,t}, 1\!-\!\varepsilon, 1\!+\!\varepsilon)\,\hat{A}_i\Big)$$
 
-```python
-# Clip importance weights, stop gradient
-rho = torch.exp(new_logps - old_logps)
-rho_clipped = torch.clamp(rho, 1 - eps, 1 + eps).detach()
-loss = -(rho_clipped * advantages * new_logps * mask).sum() / mask.sum()
-```
+$$\textbf{GSPO:}\quad L = -\frac{1}{G}\sum_{i=1}^{G}\min\!\Big(\bar{\rho}_i\,\hat{A}_i,\;\text{clip}(\bar{\rho}_i, 1\!-\!\varepsilon, 1\!+\!\varepsilon)\,\hat{A}_i\Big)$$
+
+</div>
+
+where $\bar{\rho}_i = \exp\!\Big(\frac{1}{|a_i|}\sum_t \log \rho_{i,t}\Big)$ is the geometric mean of per-token ratios.
+
+One ratio and one clip per sequence instead of per token.
 
 ---
 
-## Memory comparison
+## CISPO: Stop-gradient clipping
 
-Approximate GPU memory for a 7B model (fp16):
+GRPO backpropagates **through the ratio**. CISPO detaches the clipped ratio so gradients only flow through $\log \pi_\theta$:
 
-| Algorithm | Models loaded | Approx. memory |
-|-----------|:------------:|:--------------:|
-| REINFORCE | Policy + RM | ~28 GB |
-| RLOO | Policy + RM | ~28 GB |
-| GRPO | Policy + Ref + RM | ~42 GB |
-| PPO | Policy + Value + Ref + RM | ~56 GB |
+<div class="text-sm">
 
-Plus optimizer states (2x for Adam), activations, and generation cache. Real-world: multiply by 2–3x.
+$$\textbf{GRPO:}\quad L = -\frac{1}{G}\sum_{i}\min\!\Big(\rho_i\,\hat{A}_i,\;\text{clip}(\rho_i, 1\!-\!\varepsilon, 1\!+\!\varepsilon)\,\hat{A}_i\Big)$$
+
+$$\textbf{CISPO:}\quad L = -\frac{1}{G}\sum_{i}\text{sg}\!\big[\text{clip}(\rho_i, 1\!-\!\varepsilon, 1\!+\!\varepsilon)\big] \cdot \hat{A}_i \cdot \log \pi_\theta(a_i \mid s_i)$$
+
+</div>
+
+where $\text{sg}[\cdot]$ is stop-gradient (`.detach()`). The clipped ratio acts as a fixed weight — it controls *how much* to update, but the gradient direction comes purely from $\log \pi_\theta$.
+
+---
+
+## GRPO / GSPO / CISPO in code
+
+<!-- rows: 40/60 -->
+
+<div class="text-sm">
+
+**GRPO** (baseline — per-token ratio, gradient through ratio):
+```python
+ratio = torch.exp(new_logps - old_logps)                          # (B*G, L) per-token
+pg_losses1 = -advantages * ratio
+pg_losses2 = -advantages * torch.clamp(ratio, 1 - eps, 1 + eps)
+pg_loss = torch.max(pg_losses1, pg_losses2)
+```
+
+</div>
+
+===
+
+<!-- row-columns: 50/50 -->
+
+<div class="text-sm">
+
+**GSPO** — sequence-level ratio:
+```python
+log_ratio = (new_logps - old_logps) * mask
+rho = torch.exp(
+    log_ratio.sum(dim=1) / mask.sum(dim=1)
+)  # (B*G,) — one ratio per sequence
+# Same clipping, but per-sequence
+```
+
+</div>
+
+|||
+
+<div class="text-sm">
+
+**CISPO** — stop-gradient on clipped ratio:
+```python
+rho = torch.exp(new_logps - old_logps)
+rho_clipped = torch.clamp(
+    rho, 1 - eps, 1 + eps
+).detach()  # no grad through ratio
+loss = -(rho_clipped * advantages* new_logps * mask).sum() / mask.sum()
+```
+
+</div>
 
 ---
 
@@ -785,17 +843,29 @@ Plus optimizer states (2x for Adam), activations, and generation cache. Real-wor
 
 <!-- cite-right: noukhovitch2024asynchronous -->
 
-**Ideal (on-policy)**: generate → update → generate → update
+**Ideal / Thoery (on-policy)**: generate → update → generate → update
 
 Each batch of completions is scored and used for exactly one update, then discarded.
 
-**Reality (async)**: generation and training overlap on different GPU groups for better throughput. The model used for generation may be 1–2 steps behind the training model.
+**Reality (async)**: generation and training overlap on different GPU groups for better throughput. The model used for generation may be 1–N steps behind the training model.
 
 **Tradeoff**: perfect on-policy is slow (GPUs idle during generation or training). Slight staleness is usually fine.
 
 ---
 
+## Synchronous vs. asynchronous training
+
+<!-- cite-right: noukhovitch2024asynchronous -->
+
+<!-- img-align: center -->
+
+![Synchronous training idles GPUs; separating generation and training helps, but on-policy requires waiting. Async (off-policy) overlaps both for full utilization.](assets/async_v_synch_rl.png)
+
+---
+
 ## Asynchronous RL training
+
+<!-- columns: 50/50 -->
 
 Modern RL for LLMs splits compute into two groups:
 
@@ -804,41 +874,20 @@ Modern RL for LLMs splits compute into two groups:
 
 A process management library (e.g., Ray) coordinates data flow between them. Model weights are synced periodically from learner → actor.
 
----
+|||
 
-## Staleness budget
-
-How stale is too stale?
-
-- **1–2 steps off-policy**: usually fine, importance sampling corrections handle it
-- **3+ steps**: may need explicit corrections or more aggressive clipping
-- **Fully async**: active research area — fill training batches with most recently completed rollouts
-
-For reasoning models, extremely long generations (10K–100K+ tokens) make the generation bottleneck severe, further motivating async approaches.
+![Distributed RL system with prompt and result queues between learner and actor GPUs.](assets/distributed-rl.png)
 
 ---
 
 ## Open-source RL codebases
 
-| Codebase | Key features | Start here |
-|----------|-------------|:----------:|
-| **TRL** [@vonwerra2022trl] | HuggingFace ecosystem, PPO/GRPO/DPO | Getting started |
-| **Open Instruct** [@ivison2024unpacking] | Allen AI, multi-algorithm | Research & reproduction |
-| **veRL** | ByteDance, async training, GRPO-focused | Async scale |
-| **OpenRLHF** | Multi-node, Ray-based, PPO/GRPO | Multi-node scale |
+- **TRL** [@vonwerra2022trl] — HuggingFace ecosystem, PPO/GRPO/DPO. Best starting point for getting started
+- **Open Instruct** [@ivison2024unpacking] — Allen AI, multi-algorithm. Best for research and reproduction
+- **veRL** — Very popular in the RLVR era.
+- **OpenRLHF** — Started for RLHF work, popular with RLVR, etc. too.
 
-Each has different trade-offs in flexibility, scale, and ease of use.
 
----
-
-## Double regularization
-
-PPO has **both** clipping **and** KL penalty. Not redundant:
-
-- **Clipping** = per-step size constraint (trust region). Prevents catastrophic single updates
-- **KL penalty** = total drift constraint. Prevents cumulative drift from the reference over many steps
-
-In practice, with $K = 1$ and no minibatching, $\pi_\theta = \pi_{\theta_\text{old}}$ so clipping never activates. But with minibatching (common at scale), later minibatches see an updated $\pi_\theta$, so clipping can still trigger even at $K = 1$.
 
 ---
 
@@ -850,7 +899,27 @@ In practice, with $K = 1$ and no minibatching, $\pi_\theta = \pi_{\theta_\text{o
 
 ## Key numerical considerations
 
-- **Log-space arithmetic**: always use `log_softmax` + `gather`, never `softmax` then `log`
+---
+
+## Key numerical considerations
+
+- **Log-space arithmetic**: always use `log_softmax` + `gather`, never `softmax` then `log` — softmax squashes small probabilities to tiny floats, then `log` amplifies the precision loss
+- **Masking padding tokens**: `completion_mask` must be 1 only for completion tokens — exclude prompt tokens, post-EOS padding, and the EOS token itself (or include EOS consistently). Multiply losses by this mask before aggregation
+
+---
+
+## Key numerical considerations
+
+- **Log-space arithmetic**: always use `log_softmax` + `gather`, never `softmax` then `log` — softmax squashes small probabilities to tiny floats, then `log` amplifies the precision loss
+- **Masking padding tokens**: `completion_mask` must be 1 only for completion tokens — exclude prompt tokens, post-EOS padding, and the EOS token itself (or include EOS consistently). Multiply losses by this mask before aggregation
+- **Stop-token handling**: EOS tokens need consistent treatment — include in loss or not, but be consistent. Mishandling is a common silent error
+- **Sequence length handling**: variable-length completions need careful normalization (next section)
+
+---
+
+## Key numerical considerations
+
+- **Log-space arithmetic**: always use `log_softmax` + `gather`, never `softmax` then `log` — softmax squashes small probabilities to tiny floats, then `log` amplifies the precision loss
 - **Masking padding tokens**: `completion_mask` must be 1 only for completion tokens — exclude prompt tokens, post-EOS padding, and the EOS token itself (or include EOS consistently). Multiply losses by this mask before aggregation
 - **Stop-token handling**: EOS tokens need consistent treatment — include in loss or not, but be consistent. Mishandling is a common silent error
 - **Sequence length handling**: variable-length completions need careful normalization (next section)
@@ -880,14 +949,14 @@ The next section covers three strategies — per-sequence, per-token, and fixed-
 **Bandit-style**
 - One reward per completion
 - Sequence-level $\Psi_t$ broadcast across tokens
-- Used in REINFORCE, RLOO, GRPO
+- Used in by default in REINFORCE, RLOO, GRPO
 
 |||
 
 **MDP-style**
 - Each token is treated as an action
 - Per-token values or advantages
-- Used in PPO with GAE
+- Used by default in PPO with GAE
 
 <div class="colloquium-spacer-md"></div>
 
@@ -899,7 +968,7 @@ Most RLHF is mixed in practice: **sequence-level rewards**, but **token-level lo
 
 Same algorithm, different aggregation → **different training dynamics**.
 
-This is an underappreciated implementation detail. The choice of how to aggregate per-token losses into a scalar affects which sequences receive more gradient.
+This is often measured by how the sequence length changes through training, especially in RLVR.
 
 ---
 
@@ -986,47 +1055,6 @@ seq_2_losses = [1, 1, 1, 1, 1, 1, 1, 1, 1, 10]  # 10 tokens, mean = 1.9
 
 ---
 
-## Practical recommendation
-
-- **Per-sequence** is most common — good default for general RLHF
-- **Per-token** if sequence length distribution matters or you want to avoid short-response bias
-- **Fixed-length** for reproducibility across different batch compositions
-
-In practice, the best strategy depends on the specific training setup. Often the method with the best numerical stability or least variance in loss is preferred.
-
----
-
-## Compute costs
-
-<!-- cite-right: teamolmo2025olmo3 -->
-
-Recipe development costs **10–100x** the compute of the final training run:
-
-- Hyperparameter sweeps, debugging, failed runs
-- Multiple seeds for variance estimation
-
-**OLMo 3** example:
-- SFT: ~2 days
-- RL: 5+ days on 224 GPUs
-- Extended RL: 21 additional days
-- Total: many GPU-months of iteration
-
----
-
-## Training recipes
-
-The evolution of post-training recipes:
-
-| Recipe | Key approach |
-|--------|-------------|
-| **InstructGPT** (2022) | SFT → RM → PPO |
-| **Tülu 3** (2024) | SFT → DPO → RM → PPO/RLVR |
-| **DeepSeek R1** (2025) | SFT → GRPO (reasoning) → SFT (distill) → GRPO (all) |
-
-Each generation adds more stages, more compute, and more sophistication. But the core RL algorithms are the same.
-
----
-
 ## What to monitor during training
 
 | WandB panel | Healthy | Unhealthy |
@@ -1042,34 +1070,7 @@ Also monitor: eval scores on held-out benchmarks, and read sample outputs for co
 
 ---
 
-## Managing variance
-
-RL training is inherently noisy. To get reliable results:
-
-- **Sweep learning rate + batch size** first — these have the largest effect
-- **Multiple seeds** (3+) — single-seed results are unreliable
-- **Model merging** for final recipes — average checkpoints for robustness
-- **Report confidence intervals**, not single numbers
-
----
-
-## Identifying bad training jobs
-
-**Static eval suites as canaries**: run held-out benchmarks periodically during training.
-
-| Signal | Diagnosis |
-|--------|-----------|
-| Reward ↑, evals ↓ | **Reward hacking** — model exploits RM weaknesses |
-| Reward ↑, evals flat | **Goodharting** — reward no longer tracks quality |
-| Reward flat, evals flat | **Not learning** — LR too low, data issues |
-| Reward/evals crash | **Fundamentally broken** — check KL, generation quality |
-| 10–20 point eval drops | Check data pipeline, training config |
-
-**"Not good enough"** vs. **"fundamentally broken"** is the key distinction.
-
----
-
-## Extended RL training practices
+<!-- ## Extended RL training practices
 
 Reasoning models push RL to extremes. Here's what changes:
 
@@ -1079,90 +1080,39 @@ Reasoning models push RL to extremes. Here's what changes:
 - **Difficulty filtering**: best results when 20–80% of completions solve the problem (enough signal without being trivially easy)
 - **Dynamic sampling**: remove prompts where all completions are correct or all incorrect (no learning signal)
 
----
+--- -->
 
 ## Forward pointer: Regularization & over-optimization
 
+When RL runs go wrong, it is often due to RL latching onto spurious signals rather than the intended reward. 
 These topics deserve their own lecture:
 
 - **KL penalties**: forward vs. reverse KL, math and code
 - **Goodhart's Law**: when the proxy objective diverges from true quality
 - **Reward hacking**: sycophancy, verbosity, over-refusal
 - **Implicit regularization**: "SFT Memorizes, RL Generalizes", "RL's Razor"
-- **Margin-based regularization**: Llama 2's approach
 
 Covered in depth in a future lecture on Chapters 14 & 15.
 
 ---
 
-<!-- layout: section-break -->
-
-## Hands-on: Exploring real training
-
----
-
-## How RL training code is structured
-
-Typical repo layout for an RL training codebase:
-
-```
-configs/          # YAML configs for different algorithms/models
-  grpo_7b.yaml
-  ppo_7b.yaml
-data/             # Data loading and prompt processing
-  prompts.py
-models/           # Model wrappers, value heads
-  policy.py
-  value_network.py
-trainers/         # Core training loops
-  grpo_trainer.py
-  ppo_trainer.py
-utils/            # Logging, distributed helpers
-scripts/          # Launch scripts
-  train_grpo.sh
-```
-
----
-
-## Bad training & debugging
-
-| Failure | Symptom | Fix |
-|---------|---------|-----|
-| **Reward hacking** | Reward ↑, quality ↓ | Better RM, add KL, reduce LR |
-| **Mode collapse** | Entropy crashes to 0 | Entropy bonus, reduce LR, more diverse prompts |
-| **KL explosion** | KL > 10 within few steps | Increase $\beta$, reduce LR, check data |
-| **Value divergence** | Value loss increases | Re-initialize value net from RM, reduce vf_coef |
-| **Length hacking** | Responses get very long | Length penalty, per-token normalization |
-| **NaN losses** | Training crashes | Check for inf in log-probs, reduce LR |
-
----
-
-## RL cheatsheet
-
-A one-page reference of all core RL loss functions is available at:
-
-**[rlhfbook.com/rl-cheatsheet](https://rlhfbook.com/rl-cheatsheet)**
-
-Covers: REINFORCE, RLOO, PPO, GRPO, GSPO, CISPO — all losses in one place.
-
----
 
 <!-- layout: section-break -->
 
-## Closing
+## Conclusions
 
 ---
 
 ## Lecture summary
 
-Implementation choices matter as much as algorithm choice:
+From math to running code — the implementation details that matter:
 
-1. **Loss aggregation** (per-sequence vs per-token) changes training dynamics
-2. **Async training** enables throughput but introduces staleness
-3. **Value function initialization** can make or break PPO training
-4. **Monitor broadly** — reward alone doesn't tell you if training is working
-
-The hardest part of RL for LLMs isn't the math — it's the engineering.
+1. **Core code patterns** — log-probs, masking, the REINFORCE/RLOO/PPO/GRPO loss functions
+2. **Advantage estimation** — per-prompt baselines (RLOO, GRPO z-score) vs per-token credit (GAE)
+3. **Loss aggregation** — per-sequence vs per-token vs fixed-length normalization changes training dynamics
+4. **PPO's complexity budget** — value function targets, critic clipping, double regularization
+5. **Async training** — actor/learner splits, staleness budgets, distributed infrastructure
+6. **Practical engineering** — batch size, monitoring, debugging, training recipes
 
 ---
 
@@ -1224,32 +1174,32 @@ content: |
 ---
 
 <!-- rows: 50/50 -->
-## What comes next
+## What's next: DAAs & Reasoning
 
-<!-- row-columns: 34/33/33 -->
+<!-- row-columns: 32/36/32 -->
 
 ```box
-title: Lectures 1–4
+title: Overview
 tone: muted
 compact: true
 content: |
   1. Introduction
   2. Key Related Works
   3. Training Overview
-  4. Instruction Tuning
-  5. Reward Models
-  6. Reinforcement Learning
 ```
 
 |||
 
 ```box
-title: Up Next
+title: Core Training Pipeline
 tone: accent
 compact: true
 content: |
-  7. **Reasoning**
-  8. **Direct Alignment Algorithms**
+  4. Instruction Tuning
+  5. Reward Models
+  6. **Reinforcement Learning**
+  7. Reasoning
+  8. Direct Alignment
   9. Rejection Sampling
 ```
 
@@ -1267,7 +1217,7 @@ content: |
 
 ===
 
-<!-- row-columns: 34/33/33 -->
+<!-- row-columns: 32/36/32 -->
 
 ```box
 title: Practical Considerations
@@ -1300,23 +1250,21 @@ title: Course Home
 tone: surface
 compact: true
 content: |
-  - rlhfbook.com
-  - Slides and references live here
+  - [rlhfbook.com](https://rlhfbook.com)
+  - [GitHub repo](https://github.com/natolambert/rlhf-book)
 ```
 
 ---
 
-## Lecture schedule
+## Course outline
 
-| Lecture | Topic | Chapters |
-|:-------:|-------|:--------:|
-| 1 | Introduction & Training Overview | 1–3 |
-| 2 | Instruction Tuning, Reward Models, Rejection Sampling | 4, 5, 9 |
-| 3 | RL Theory | 6 (Part 1) |
-| 4 | RL Implementation & Practice | 6 (Part 2) |
-| 5 | Reasoning | 7 |
-| 6 | Direct Alignment Algorithms | 8 |
-| ... | | |
+1. **Introduction & Training Overview** — Chapters 1–3
+2. **Instruction Tuning, Reward Models, Rejection Sampling** — Chapters 4, 5, 9
+3. **RL Theory** — Chapter 6 (Part 1)
+4. **RL Implementation & Practice** — Chapter 6 (Part 2)
+5. **Reasoning** — Chapter 7
+6. **Direct Alignment Algorithms** — Chapter 8
+7. ...
 
 ---
 
