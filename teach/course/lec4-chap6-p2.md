@@ -32,7 +32,7 @@ custom_css: |
 <p class="colloquium-title-name">Nathan Lambert</p>
 </div>
 
-<p class="colloquium-title-note">Course on RLHF and post-training. Chapter 6</p>
+<p class="colloquium-title-note">Course on RLHF and post-training. Chapter 6, Part 2</p>
 
 ---
 
@@ -137,7 +137,7 @@ This lecture: how to actually **implement, debug, and run** RL training for LLMs
 
 The hardest bugs aren't math errors — they're silent implementation mistakes: wrong masking, stale caches, shape mismatches.
 
-*A reminder on notation*: As in Chapter 6, we use $(s, a)$ from the reinforcement learning literature and $(x, y)$ when prompt-completion notation is more natural. The $(s, a)$ framing is more general, but many RLHF implementations treat the entire completion as a single action, making $(x, y)$ equally valid.
+*A reminder on notation*: As in Chapter 6, we use $(s, a)$ from the reinforcement learning literature and $(x, y)$ when prompt-completion notation is more natural. The $(s, a)$ framing reflects the token-level gradient computation; $(x, y)$ reflects the sequence-level reward. Both perspectives appear throughout.
 
 ---
 
@@ -186,12 +186,14 @@ $$\begin{aligned}
 \textbf{REINFORCE:}\quad & -\frac{1}{T}\sum_{t=1}^{T}\log \pi_\theta(a_t\mid s_t)\,\big(G_t - b(s_t)\big) \\[4pt]
 \textbf{RLOO:}\quad & -\frac{1}{K}\sum_{i=1}^{K}\sum_t \log \pi_\theta(a_{i,t}\mid s_{i,t})\left(R_i-\frac{1}{K-1}\sum_{j\neq i}R_j\right) \\[4pt]
 \textbf{PPO:}\quad & -\frac{1}{T}\sum_{t=1}^{T}\min\!\big(\rho_t A_t,\ \mathrm{clip}(\rho_t,1-\varepsilon,1+\varepsilon)\, A_t\big) \\[4pt]
-\textbf{GRPO:}\quad & -\frac{1}{G}\sum_{i=1}^{G}\min\!\big(\rho_i \hat{A}_i,\ \mathrm{clip}(\rho_i,1-\varepsilon,1+\varepsilon)\, \hat{A}_i\big)
+\textbf{GRPO:}\quad & -\frac{1}{G}\sum_{i=1}^{G}\frac{1}{|a_i|}\sum_{t=1}^{|a_i|}\min\!\big(\rho_{i,t} \hat{A}_i,\ \mathrm{clip}(\rho_{i,t},1-\varepsilon,1+\varepsilon)\, \hat{A}_i\big)
 \end{aligned}$$
 
 </div>
 
-Where $\rho_t = \frac{\pi_\theta(a_t \mid s_t)}{\pi_{\theta_\text{old}}(a_t \mid s_t)}$ is the importance-sampling ratio, $A_t$ is the per-token advantage (PPO uses GAE), and $\hat{A}_i = \frac{R_i - \mu}{\sigma}$ is the group-normalized advantage (GRPO).
+Where $\rho_t = \frac{\pi_\theta(a_t \mid s_t)}{\pi_{\theta_\text{old}}(a_t \mid s_t)}$ is the importance-sampling ratio. PPO: per-token advantage $A_t$ via GAE. GRPO: per-token ratio $\rho_{i,t}$ but sequence-level advantage $\hat{A}_i = \frac{R_i - \mu}{\sigma}$.
+
+*(Reductions shown are schematic — aggregation strategy is a key design choice, covered later.)*
 
 ---
 
@@ -253,7 +255,7 @@ def compute_log_probs(model, input_ids, attention_mask):
                         index=targets).squeeze(-1)
 ```
 
-The shift, gather, and squeeze are the same — just condensed. You'll call this for the policy, the old policy, and the reference model.
+The shift, gather, and squeeze are the same — just condensed. It returns log-probs for all positions (prompt + completion); masking happens later. At rollout time, call this for the old policy and reference model (cache the results). During training, call it again for the current policy (recomputed each step).
 
 ---
 
@@ -273,7 +275,7 @@ advantages = rewards - baseline
 loss = -(advantages * seq_log_probs).mean()
 ```
 
-That's it. Advantages weight the log-probabilities. Positive advantage → increase probability. Negative → decrease.
+That's it. Advantages weight the log-probabilities. Positive advantage → increase probability. Negative → decrease. (How we reduce per-token losses to a scalar — `.mean()` here — turns out to matter more than you'd expect. We return to this in the loss aggregation section.)
 
 ---
 
@@ -386,13 +388,36 @@ Before training starts, the rollout phase must compute and store everything the 
 
 ---
 
+## Cached vs. recomputed
+
+<!-- columns: 50/50 -->
+
+**Stored at rollout** (computed once, frozen):
+- Token IDs and completion mask
+- Old log-probs $\log \pi_{\theta_\text{old}}$
+- Old value predictions $V_{\phi_\text{old}}$
+- Ref log-probs $\log \pi_\text{ref}$
+- Rewards (from RM)
+
+|||
+
+**Recomputed at each training step**:
+- New policy log-probs $\log \pi_\theta$
+- Current value predictions $V_\phi$
+
+<div class="colloquium-spacer-md"></div>
+
+The IS ratio $\rho_t = \frac{\pi_\theta}{\pi_{\theta_\text{old}}}$ uses one fresh quantity and one cached — this is what enables multiple epochs over the same rollout batch.
+
+---
+
 ## Computing advantages with GAE
 
 <div class="text-sm">
 
 ```python
 # GAE (token-level) for LM RLHF
-# rewards: (B,) completion-level reward after KL shaping
+# rewards: (B,) terminal reward only (KL shaping omitted for clarity)
 # completion_mask: (B, L) 1.0 on generated tokens
 # values_old: (B, L) critic predictions cached at rollout time
 B, L = completion_mask.shape
@@ -418,6 +443,8 @@ advantages = advantages.detach()          # for policy loss
 ```
 
 </div>
+
+*Simplified: places the full reward at the last generated token. For KL-shaped rewards (standard PPO-RLHF), add $-\beta \cdot \text{KL}_t$ to each token position before this loop — see the "From scalar reward to per-token returns" slide.*
 
 ---
 
@@ -555,6 +582,8 @@ Tülu 3 [@lambert2024t] initializes from the reward model.
 
 ## PPO hyperparameters
 
+Illustrative ranges from common LLM RLHF setups — not universal defaults:
+
 | Hyperparameter | Typical range | Notes |
 |---------------|:-------------:|-------|
 | Clip $\varepsilon$ | 0.1–0.2 | Trust region width |
@@ -589,6 +618,25 @@ What to check during training:
 - **Advantage statistics**: mean should be near 0 (if whitened), std should be stable
 - **Value loss**: should decrease — if not, value function isn't learning
 - **KL divergence**: should increase gradually, not explode
+
+---
+
+## PPO debugging checklist
+
+What to check during training:
+
+- **Clip fraction**: percentage of tokens clipped — 0% means clipping never activates, >50% means policy is changing too fast
+- **Advantage statistics**: mean should be near 0 (if whitened), std should be stable
+- **Value loss**: should decrease — if not, value function isn't learning
+- **KL divergence**: should increase gradually, not explode
+
+Common **silent bugs** — training runs but learns the wrong thing:
+
+- Prompt tokens included in policy loss (inflates loss, wastes gradient on unchangeable tokens)
+- Reward scattered to wrong position (e.g., `[:, -1]` instead of last generated token)
+- Stale log-probs used as "current" (ratio stuck near 1, clipping never activates)
+- Zero-std GRPO groups (all completions get same reward → NaN advantages)
+- Value or policy loss computed outside completion mask (trains on padding)
 
 ---
 
@@ -632,9 +680,9 @@ For each prompt, sample $G$ completions and compute group-normalized advantages:
 
 $$\hat{A}_i = \frac{R_i - \mu_G}{\sigma_G}, \qquad \mu_G = \frac{1}{G}\sum_{j=1}^{G} R_j, \quad \sigma_G = \sqrt{\frac{1}{G}\sum_{j=1}^{G}(R_j - \mu_G)^2}$$
 
-Then apply the same clipped objective as PPO, but with sequence-level advantages and a KL penalty in the loss (optional, more to come in reasoning lecture):
+Then apply the same clipped objective as PPO — per-token ratios but sequence-level advantages — plus an optional KL penalty in the loss (more in the reasoning lecture):
 
-$$L^{\text{GRPO}}(\theta) = -\frac{1}{G}\sum_{i=1}^{G}\min\!\Big(\rho_i \hat{A}_i,\; \text{clip}(\rho_i, 1-\varepsilon, 1+\varepsilon)\, \hat{A}_i\Big) + \beta \, \text{KL}(\pi_\theta \| \pi_\text{ref})$$
+$$L^{\text{GRPO}}(\theta) = -\frac{1}{G}\sum_{i=1}^{G}\frac{1}{|a_i|}\sum_{t=1}^{|a_i|}\min\!\Big(\rho_{i,t} \hat{A}_i,\; \text{clip}(\rho_{i,t}, 1-\varepsilon, 1+\varepsilon)\, \hat{A}_i\Big) + \beta \, \text{KL}(\pi_\theta \| \pi_\text{ref})$$
 
 No value function, no GAE — advantages come entirely from comparing siblings within a group.
 
@@ -749,59 +797,29 @@ Same structure, different baseline computation. GRPO adds std normalization; RLO
 
 ---
 
-## GSPO: Sequence-level clipping
+## Recent simplifications: GSPO & CISPO
 
-GRPO clips **per-token** ratios. GSPO replaces them with a single **sequence-level** geometric mean ratio:
+<!-- columns: 50/50 -->
 
-<div class="text-sm">
+**GSPO** — sequence-level ratio:
 
-$$\textbf{GRPO:}\quad L = -\frac{1}{G}\sum_{i=1}^{G}\frac{1}{|a_i|}\sum_{t=1}^{|a_i|}\min\!\Big(\rho_{i,t}\,\hat{A}_i,\;\text{clip}(\rho_{i,t}, 1\!-\!\varepsilon, 1\!+\!\varepsilon)\,\hat{A}_i\Big)$$
+$$\bar{\rho}_i = \exp\!\Big(\frac{1}{|a_i|}\sum_t \log \rho_{i,t}\Big)$$
 
-$$\textbf{GSPO:}\quad L = -\frac{1}{G}\sum_{i=1}^{G}\min\!\Big(\bar{\rho}_i\,\hat{A}_i,\;\text{clip}(\bar{\rho}_i, 1\!-\!\varepsilon, 1\!+\!\varepsilon)\,\hat{A}_i\Big)$$
+Collapse per-token ratios into one geometric-mean ratio per sequence. One clip per sequence instead of per token.
 
-</div>
+|||
 
-where $\bar{\rho}_i = \exp\!\Big(\frac{1}{|a_i|}\sum_t \log \rho_{i,t}\Big)$ is the geometric mean of per-token ratios.
+**CISPO** — stop-gradient clipping:
 
-One ratio and one clip per sequence instead of per token.
+$$\text{sg}\!\big[\text{clip}(\rho, 1\!-\!\varepsilon, 1\!+\!\varepsilon)\big] \cdot \hat{A} \cdot \log \pi_\theta$$
 
----
-
-## CISPO: Stop-gradient clipping
-
-GRPO backpropagates **through the ratio**. CISPO detaches the clipped ratio so gradients only flow through $\log \pi_\theta$:
-
-<div class="text-sm">
-
-$$\textbf{GRPO:}\quad L = -\frac{1}{G}\sum_{i}\min\!\Big(\rho_i\,\hat{A}_i,\;\text{clip}(\rho_i, 1\!-\!\varepsilon, 1\!+\!\varepsilon)\,\hat{A}_i\Big)$$
-
-$$\textbf{CISPO:}\quad L = -\frac{1}{G}\sum_{i}\text{sg}\!\big[\text{clip}(\rho_i, 1\!-\!\varepsilon, 1\!+\!\varepsilon)\big] \cdot \hat{A}_i \cdot \log \pi_\theta(a_i \mid s_i)$$
-
-</div>
-
-where $\text{sg}[\cdot]$ is stop-gradient (`.detach()`). The clipped ratio acts as a fixed weight — it controls *how much* to update, but the gradient direction comes purely from $\log \pi_\theta$.
+Detach the clipped ratio so gradients flow only through $\log \pi_\theta$. The ratio acts as a fixed weight.
 
 ---
 
-## GRPO / GSPO / CISPO in code
+## GSPO & CISPO in code
 
-<!-- rows: 40/60 -->
-
-<div class="text-sm">
-
-**GRPO** (baseline — per-token ratio, gradient through ratio):
-```python
-ratio = torch.exp(new_logps - old_logps)                          # (B*G, L) per-token
-pg_losses1 = -advantages * ratio
-pg_losses2 = -advantages * torch.clamp(ratio, 1 - eps, 1 + eps)
-pg_loss = torch.max(pg_losses1, pg_losses2)
-```
-
-</div>
-
-===
-
-<!-- row-columns: 50/50 -->
+<!-- columns: 50/50 -->
 
 <div class="text-sm">
 
@@ -826,7 +844,9 @@ rho = torch.exp(new_logps - old_logps)
 rho_clipped = torch.clamp(
     rho, 1 - eps, 1 + eps
 ).detach()  # no grad through ratio
-loss = -(rho_clipped * advantages.unsqueeze(1) * new_logps * mask).sum() / mask.sum()
+loss = -(rho_clipped * advantages.unsqueeze(1)
+         * new_logps * mask).sum()
+       / mask.sum()
 ```
 
 </div>
@@ -843,9 +863,9 @@ loss = -(rho_clipped * advantages.unsqueeze(1) * new_logps * mask).sum() / mask.
 
 <!-- cite-right: noukhovitch2024asynchronous -->
 
-**Ideal / Thoery (on-policy)**: generate → update → generate → update
+**Ideal / Theory (on-policy)**: generate → update → generate → update
 
-Each batch of completions is scored and used for exactly one update, then discarded.
+Each batch of completions is scored and used for a short update window (one or a few epochs), then discarded.
 
 **Reality (async)**: generation and training overlap on different GPU groups for better throughput. The model used for generation may be 1–N steps behind the training model.
 
@@ -949,7 +969,7 @@ The next section covers three strategies — per-sequence, per-token, and fixed-
 **Bandit-style**
 - One reward per completion
 - Sequence-level $\Psi_t$ broadcast across tokens
-- Used in by default in REINFORCE, RLOO, GRPO
+- Used by default in REINFORCE, RLOO, GRPO
 
 |||
 
@@ -1056,6 +1076,8 @@ seq_2_losses = [1, 1, 1, 1, 1, 1, 1, 1, 1, 10]  # 10 tokens, mean = 1.9
 ---
 
 ## What to monitor during training
+
+Illustrative ranges — thresholds vary by model size, task, and algorithm:
 
 | WandB panel | Healthy | Unhealthy |
 |-------------|---------|-----------|
