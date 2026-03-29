@@ -335,16 +335,17 @@ $$
 J(\theta)
 =
 \mathbb{E}_{t}\left[
-\min\left(R_t(\theta)A_t,\ \text{clip}(R_t(\theta),1-\varepsilon,1+\varepsilon)A_t\right)
+\min\left(\rho_t(\theta)A_t,\ \text{clip}(\rho_t(\theta),1-\varepsilon,1+\varepsilon)A_t\right)
 \right],
 \qquad
-R_t(\theta)=\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)}.
+\rho_t(\theta)=\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)}.
 $$ {#eq:PPO_EQN_EXPECTED}
 
 The objective is often converted into a loss function by simply adding a negative sign, which makes the optimizer seek to make it as negative as possible.
 
 For language models, the objective (or loss) is computed per token, which intuitively can be grounded in how one would compute the probability of the entire sequence of autoregressive predictions -- by a product of probabilities. 
 From there, the common implementation is with *log-probabilities* that make the computation simpler to perform in modern language modeling frameworks.
+In practice, one computes the difference of token log-probabilities and exponentiates it to recover the policy ratio $\rho_t$.
 
 $$ J(\theta) = \frac{1}{|a|} \sum_{t=0}^{|a|} \min\left(\frac{\pi_\theta(a_{t}|s_t)}{\pi_{\theta_{\text{old}}}(a_{t}|s_t)}A_{t}, \text{clip} \left( \frac{\pi_\theta(a_{t}|s_t)}{\pi_{\theta_{\text{old}}}(a_{t}|s_t)}, 1-\varepsilon, 1+\varepsilon \right) A_{t} \right).  $$  {#eq:PPO_EQN_EXPANDED}
 
@@ -358,7 +359,7 @@ At an implementation level, the inner computations for PPO involve two main term
 
 To understand how different situations emerge, we can define the policy ratio as:
 
-$$R(\theta) = \frac{\pi_\theta(a|s)}{\pi_{\theta_{\text{old}}}(a|s)}$$ {#eq:PPO_POL_RATIO}
+$$\rho(\theta) = \frac{\pi_\theta(a|s)}{\pi_{\theta_{\text{old}}}(a|s)}$$ {#eq:PPO_POL_RATIO}
 
 The policy ratio is a centerpiece of PPO and related algorithms. 
 It emerges from computing the gradient of a policy and controls the parameter updates in a very intuitive way.
@@ -376,36 +377,36 @@ This is by design! The trust region is a concept used to cap the maximum step si
 The idea of a "trust region" comes from the numerical optimization literature [@nocedal2006numerical], but was popularized within Deep RL from the algorithm Trust Region Policy Optimization (TRPO), which is accepted as the predecessor to PPO [@schulman2015trust].
 The trust region is the area where the full policy-gradient steps are applied, as the updates are not "clipped" by the max/min operations of the PPO objective.
 
-![Visualization of the different regions of the PPO objective for a hypothetical advantage. The "trust region" would be described as the region where the log-ratio is within $1\pm\varepsilon$.](images/ppo-viz-4x.png){#fig:ppo-obj}
+![Visualization of the different regions of the PPO objective for a hypothetical advantage. The "trust region" would be described as the region where the policy ratio $\rho$ is within $1\pm\varepsilon$.](images/ppo-viz-4x.png){#fig:ppo-obj}
 
 The policy ratio and advantage together can occur in a few different configurations. We will split the cases into two groups: positive and negative advantage.
 
 **Positive Advantage ($A_t > 0$)**
 
-This means that the action taken was beneficial according to the value function, and we want to increase the likelihood of taking that action in the future. Now, let's look at different cases for the policy ratio $R(\theta)$:
+This means that the action taken was beneficial according to the value function, and we want to increase the likelihood of taking that action in the future. Now, let's look at different cases for the policy ratio $\rho(\theta)$:
 
-1. $R(\theta) < 1 - \varepsilon$:
+1. $\rho(\theta) < 1 - \varepsilon$:
 
     - **Interpretation**: Action is less likely with the new policy than the old policy
-    - **Unclipped Term**: $R(\theta) A_t$
+    - **Unclipped Term**: $\rho(\theta) A_t$
     - **Clipped Term**: $(1 - \varepsilon) A_t$
-    - **Objective**: $R(\theta) A_t$
-    - **Gradient**: $\nabla_\theta R(\theta) A_t \neq 0$
+    - **Objective**: $\rho(\theta) A_t$
+    - **Gradient**: $\nabla_\theta \rho(\theta) A_t \neq 0$
     - **What happens**: Normal policy-gradient update - increase likelihood of action
 
-2. $1 - \varepsilon \leq R(\theta) \leq 1 + \varepsilon$:
+2. $1 - \varepsilon \leq \rho(\theta) \leq 1 + \varepsilon$:
 
     - **Interpretation**: Action is almost equally likely with the new policy as the old policy
-    - **Unclipped Term**: $R(\theta) A_t$
-    - **Clipped Term**: $R(\theta) A_t$
-    - **Objective**: $R(\theta) A_t$
-    - **Gradient**: $\nabla_\theta R(\theta) A_t \neq 0$
+    - **Unclipped Term**: $\rho(\theta) A_t$
+    - **Clipped Term**: $\rho(\theta) A_t$
+    - **Objective**: $\rho(\theta) A_t$
+    - **Gradient**: $\nabla_\theta \rho(\theta) A_t \neq 0$
     - **What happens**: Normal policy-gradient update - increase likelihood of action
 
-3. $1 + \varepsilon < R(\theta)$:
+3. $1 + \varepsilon < \rho(\theta)$:
 
     - **Interpretation**: Action is more likely with the new policy than the old policy
-    - **Unclipped Term**: $R(\theta) A_t$
+    - **Unclipped Term**: $\rho(\theta) A_t$
     - **Clipped Term**: $(1 + \varepsilon) A_t$
     - **Objective**: $(1 + \varepsilon) A_t$
     - **Gradient**: $\nabla_\theta (1 + \varepsilon) A_t = 0$
@@ -418,33 +419,33 @@ To summarize, when the advantage is positive ($A_t>0$), we want to boost the pro
 
 **Negative Advantage ($A_t < 0$)**
 
-This means that the action taken was detrimental according to the value function, and we want to decrease the likelihood of taking that action in the future. Now, let's look at different cases for the policy ratio $R(\theta)$:
+This means that the action taken was detrimental according to the value function, and we want to decrease the likelihood of taking that action in the future. Now, let's look at different cases for the policy ratio $\rho(\theta)$:
 
-1. $R(\theta) < 1 - \varepsilon$:
+1. $\rho(\theta) < 1 - \varepsilon$:
 
     - **Interpretation**: Action is less likely with the new policy than the old policy
-    - **Unclipped Term**: $R(\theta) A_t$
+    - **Unclipped Term**: $\rho(\theta) A_t$
     - **Clipped Term**: $(1 - \varepsilon) A_t$
     - **Objective**: $(1 - \varepsilon) A_t$
     - **Gradient**: $\nabla_\theta (1 - \varepsilon) A_t = 0$
     - **What happens**: NO UPDATE - action is already less likely under the new policy
 
-2. $1 - \varepsilon \leq R(\theta) \leq 1 + \varepsilon$:
+2. $1 - \varepsilon \leq \rho(\theta) \leq 1 + \varepsilon$:
 
     - **Interpretation**: Action is almost equally likely with the new policy as the old policy
-    - **Unclipped Term**: $R(\theta) A_t$
-    - **Clipped Term**: $R(\theta) A_t$
-    - **Objective**: $R(\theta) A_t$
-    - **Gradient**: $\nabla_\theta R(\theta) A_t \neq 0$
+    - **Unclipped Term**: $\rho(\theta) A_t$
+    - **Clipped Term**: $\rho(\theta) A_t$
+    - **Objective**: $\rho(\theta) A_t$
+    - **Gradient**: $\nabla_\theta \rho(\theta) A_t \neq 0$
     - **What happens**: Normal policy-gradient update - decrease likelihood of action
 
-3. $1 + \varepsilon < R(\theta)$:
+3. $1 + \varepsilon < \rho(\theta)$:
 
     - **Interpretation**: Action is more likely with the new policy than the old policy
-    - **Unclipped Term**: $R(\theta) A_t$
+    - **Unclipped Term**: $\rho(\theta) A_t$
     - **Clipped Term**: $(1 + \varepsilon) A_t$
-    - **Objective**: $R(\theta) A_t$
-    - **Gradient**: $\nabla_\theta R(\theta) A_t \neq 0$
+    - **Objective**: $\rho(\theta) A_t$
+    - **Gradient**: $\nabla_\theta \rho(\theta) A_t \neq 0$
     - **What happens**: Normal policy-gradient update - decrease likelihood of action
 
 To summarize, when the advantage is negative ($A_t < 0$), we want to decrease the probability of the action. Therefore:
