@@ -347,7 +347,7 @@ For language models, the objective (or loss) is computed per token, which intuit
 From there, the common implementation is with *log-probabilities* that make the computation simpler to perform in modern language modeling frameworks.
 In practice, one computes the difference of token log-probabilities and exponentiates it to recover the policy ratio $\rho_t$.
 
-$$ J(\theta) = \frac{1}{|a|} \sum_{t=0}^{|a|} \min\left(\rho_t(\theta)A_{t}, \text{clip} \left( \rho_t(\theta), 1-\varepsilon, 1+\varepsilon \right) A_{t} \right), \qquad \rho_t(\theta) = \exp\left(\log \pi_\theta(a_t \mid s_t) - \log \pi_{\theta_{\text{old}}}(a_t \mid s_t)\right). $$  {#eq:PPO_EQN_EXPANDED}
+$$ J(\theta) = \frac{1}{|a|} \sum_{t=0}^{|a|} \min\left(\frac{\pi_\theta(a_{t}|s_t)}{\pi_{\theta_{\text{old}}}(a_{t}|s_t)}A_{t}, \text{clip} \left( \frac{\pi_\theta(a_{t}|s_t)}{\pi_{\theta_{\text{old}}}(a_{t}|s_t)}, 1-\varepsilon, 1+\varepsilon \right) A_{t} \right).  $$  {#eq:PPO_EQN_EXPANDED}
 
 This is the per-token version of PPO, which also applies to other policy-gradient methods, but is explored further later in the implementation section of this chapter.
 Here, the term for averaging by the number of tokens in the action, $\frac{1}{|a|}$, comes from common implementation practices, but is not in a formal derivation of the loss (shown in [@liu2025understanding]).
