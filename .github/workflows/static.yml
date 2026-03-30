@@ -1,4 +1,4 @@
-name: Build and Deploy to Netlify
+name: Build and Deploy to Cloudflare Pages
 
 on:
   push:
@@ -10,6 +10,9 @@ on:
 jobs:
   build-and-deploy:
     runs-on: macos-latest
+    permissions:
+      contents: read
+      deployments: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -77,74 +80,46 @@ jobs:
       - name: Build Pagefind search index
         run: npx --yes pagefind --site build/html --glob "c/**/*.html"
 
-      - name: Deploy to Netlify
-        uses: nwtgck/actions-netlify@v3
+      - name: Deploy preview to Cloudflare Pages
+        if: github.event_name == 'pull_request'
+        uses: cloudflare/wrangler-action@v3
         with:
-          publish-dir: './build/html'
-          production-branch: main
-          # Only deploy to production on push to main, not on PRs
-          production-deploy: ${{ github.event_name == 'push' }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          deploy-message: "Deploy from GitHub Actions - ${{ github.sha }}"
-          enable-pull-request-comment: true
-          enable-commit-comment: false
-          overwrites-pull-request-comment: true
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          command: pages deploy build/html --project-name=rlhf-book --branch=${{ github.head_ref }}
+
+      - name: Deploy production to Cloudflare Pages
+        if: github.event_name != 'pull_request'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          command: pages deploy build/html --project-name=rlhf-book
 
 # =============================================================================
 # SETUP INSTRUCTIONS
 # =============================================================================
-# To enable Netlify deployment:
+# To enable Cloudflare Pages deployment:
 #
-# 1. Create a Netlify site:
-#    - Go to netlify.com > Add new site > Import from GitHub
-#    - Select natolambert/rlhf-book
-#    - IMPORTANT: Cancel the initial build (we deploy via this workflow)
+# 1. Create a Cloudflare Pages project:
+#    - Go to Workers & Pages > Create application > Pages > Upload assets
+#    - Project name: rlhf-book
+#    - We deploy via GitHub Actions direct upload, not Cloudflare build images
 #
-# 2. Get your Netlify credentials:
-#    - Site ID: Site settings > General > Site ID
-#    - Auth Token: User settings > Applications > New access token
+# 2. Get your Cloudflare credentials:
+#    - Account ID: Right sidebar in the Cloudflare dashboard overview
+#    - API token: Create a token with Account > Cloudflare Pages > Edit
 #
 # 3. Add secrets to GitHub:
 #    - Go to repo Settings > Secrets and variables > Actions
-#    - Add NETLIFY_SITE_ID (the site ID from step 2)
-#    - Add NETLIFY_AUTH_TOKEN (the access token from step 2)
+#    - Add CLOUDFLARE_ACCOUNT_ID
+#    - Add CLOUDFLARE_API_TOKEN
 #
 # 4. Update DNS:
-#    - In Netlify: Domain settings > Add custom domain > rlhfbook.com
-#    - Update your DNS records to point to Netlify
+#    - In Cloudflare Pages: Custom domains > Set up a domain > rlhfbook.com
+#    - If serving the apex domain, move the zone to Cloudflare nameservers
+#    - If serving a subdomain only, point a CNAME at <project>.pages.dev
 #
-# =============================================================================
-
-# =============================================================================
-# LEGACY: GITHUB PAGES DEPLOYMENT
-# =============================================================================
-# To switch back to GitHub Pages, replace the "Deploy to Netlify" step with:
-#
-#     - name: Setup Pages
-#       uses: actions/configure-pages@v5
-#
-#     - name: Upload artifact
-#       uses: actions/upload-pages-artifact@v3
-#       with:
-#         path: 'build/html/'
-#
-#     - name: Deploy to GitHub Pages
-#       id: deployment
-#       uses: actions/deploy-pages@v4
-#
-# And add to the job:
-#     environment:
-#       name: github-pages
-#       url: ${{ steps.deployment.outputs.page_url }}
-#
-# And add at workflow level:
-#   permissions:
-#     contents: read
-#     pages: write
-#     id-token: write
-#
-# Then: repo Settings > Pages > Source: GitHub Actions
 # =============================================================================
