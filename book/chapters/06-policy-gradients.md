@@ -1182,7 +1182,7 @@ Each algorithm in this chapter shares the same core gradient shape (@eq:policy_g
 - **GSPO**: Like GRPO but normalizes the policy ratio by completion length, preventing length bias.
 - **DPO**: Not an RL algorithm, but a method to solve the same preference optimization problem by bypassing the separate reward model entirely, optimizing directly from preference pairs (see Chapter 8).
 
-All of these algorithms are on-policy in derivation, though most are applied slightly off-policy in practice (the direct alignment algorithms in Chapter 8 are off-policy by default).
+All of the policy gradient algorithms above are on-policy in derivation, though most are applied slightly off-policy in practice. DPO and the other direct alignment algorithms in Chapter 8 are off-policy by default.
 All can be paired with a learned reward model or verifiable rewards.
 Only PPO requires a learned value function.
 REINFORCE and RLOO have no importance-sampling ratio — the remaining algorithms each introduce one to enable multiple gradient steps per batch of rollouts, differing in granularity and clipping strategy as summarized below.
