@@ -56,7 +56,7 @@ Essentially, as stated in the DPO paper, this reparameterization gives us "the p
 Let us consider the loss shown in @eq:dpo_core that the optimizer must decrease. 
 Here, the loss will be lower when the log-ratio of the chosen response is bigger than the log-ratio of the rejected response (normalized by the reference model).
 In practice, this is a sum of log-probabilities of the model across the sequence of tokens in the data presented.
-Hence, DPO is increasing the delta in probabilities between the chosen and rejected responses.
+Hence, DPO is increasing the gap in relative log-probabilities between the chosen and rejected responses.
 
 With the reward in @eq:dpo_reward, we can write the gradient of the loss to further interpret what is going on:
 

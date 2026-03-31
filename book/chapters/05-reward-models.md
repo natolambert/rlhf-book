@@ -414,7 +414,13 @@ Some notes, given the above table has a lot of edge cases.
 - Both in preference tuning and reasoning training, the value functions often have a discount factor of 1, which makes a value function even closer to an outcome reward model, but with a different training loss.
 - A process reward model can be supervised by doing rollouts from an intermediate state and collecting outcome data. This blends multiple ideas, but if the *loss* is per reasoning step labels, it is best referred to as a PRM.
 
-**ORM vs. Value Function: The key distinction.**
+**What if you train a Bradley-Terry pairwise model with correct/incorrect pairs?** 
+Much of the confusion on outcome reward models came from a small set of the literature that was training a reward model on pairwise data derived from answer correctness.
+In this domain, you set the chosen response as being a correct answer to a problem and a rejected response as being an incorrect answer *for the same problem.* 
+This is technically not an ORM and still trained directly with the contrastive, sequence-level loss.
+This is technically still a Bradley-Terry model and would fall in the first class of models we covered.
+
+**ORM vs. Value Function.**
 ORMs and value functions can appear similar since both produce per-token outputs with the same head architecture, but they differ in *what they predict* and *where targets come from*:
 
 - **ORMs** predict an immediate, token-local quantity: $p(\text{correct}_t)$ or $r_t$. Targets come from *offline labels* (a verifier or dataset marking tokens/sequences as correct or incorrect).

@@ -43,6 +43,21 @@ For definitions of symbols, see the problem setup chapter.
 
 ## Policy Gradient Algorithms
 
+At its core, this chapter is dedicated to understanding the following shape of equation.
+This equation is computing the gradient, $\Delta \theta$, to the language model we are training, $\pi_\theta$:
+
+$$\Delta \theta \propto \Psi_t \, \nabla_\theta \log \pi_\theta(a_t \mid s_t)$$ {#eq:policy_gradient_intuition}
+
+Here, the equation is composed of two key components:
+1. $\nabla_\theta \log \pi_\theta(a_t \mid s_t)$ — which direction in parameter space makes action $a_t$ more likely.
+2. $\Psi_t$ — how good was it? A scalar scoring the outcome.
+
+When you put this together, yes, by multiplying the quantities, you get the policy gradient update. 
+Some things are simple, such as that $\Psi_t > 0$ updates parameters to make $a_t$ more likely, $\Psi_t < 0$ updates them to make it less likely.
+The policy gradient is computing which parameters contribute to an action and if we should make it more or less likely to occur in the future.
+The rest of this chapter goes very deep on the different ways to do this, and what the specific tricks are to make it work for LLMs.
+
+Now, let us formalize this a bit further.
 Reinforcement learning algorithms are designed to maximize the future, discounted reward across a trajectory of states, $s \in \mathcal{S}$, and actions, $a \in \mathcal{A}$ (for more notation, see Appendix A, Definitions).
 The objective of the agent, often called the *return*, is the sum of discounted future rewards (where $\gamma\in [0,1]$ is a factor that prioritizes near-term rewards) at a given time $t$:
 
@@ -86,6 +101,8 @@ With this expected return, $J$, the parameter update can be computed as follows,
 $$\theta \leftarrow \theta + \alpha \nabla_\theta J(\theta)$$ {#eq:policy_update}
 
 The core implementation detail is how to compute said gradient.
+
+### Deriving the Policy Gradient
 
 Another way to pose the RL objective we want to maximize is as follows:
 $$
@@ -144,6 +161,20 @@ $$
 \nabla_\theta \log p_\theta (\tau) = \sum_{t=0}^\infty \nabla_\theta \log \pi_\theta(a_t|s_t)
 $$ {#eq:trajectory_log_grad}
 
+As a brief aside, reaching this equation comes to a crucial point in the implementation.
+Here, we have gone far enough to see that the gradient of the trajectory distribution can reduce to a sum of gradients from language model policy probabilities (which is just the probabilities of tokens given by the model we're training).
+In practice, this results in a common form of the policy gradient equations.
+They end up looking like a sum of log-probabilities in the loss, and then we compute the gradients via autodiff.
+A short snippet you'll see again and again roughly follows:
+
+```python
+seq_log_probs = (token_log_probs * completion_mask).sum(dim=-1)
+loss = -(seq_log_probs * advantages).mean()
+loss.backward()
+```
+
+You'll see this throughout the chapter. Now, back to the formal policy gradient mathematics.
+
 Substituting this back in @eq:policy_gradient_expectation, we get:
 $$
 \nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum_{t=0}^\infty \nabla_\theta \log \pi_\theta(a_t|s_t) R(\tau) \right]
@@ -187,7 +218,7 @@ The variance across return estimates is higher in domains with sparse rewards, a
 In order to alleviate this, various techniques are used to normalize the value estimation, called *baselines*. 
 Baselines accomplish this in multiple ways, effectively normalizing by the value of the state relative to the downstream action (e.g. in the case of Advantage, which is the difference between the Q value and the value). 
 The simplest baselines are averages over the batch of rewards or a moving average.
-Even these baselines can de-bias the gradients so $\mathbb{E}_{a \sim \pi(a|s)}[\nabla_\theta \log \pi_\theta(a|s)] = 0$, improving the learning signal substantially.
+Even these action-independent baselines can reduce variance without changing the expected gradient, since $\mathbb{E}_{a \sim \pi(a|s)}[b(s) \nabla_\theta \log \pi_\theta(a|s)] = 0$ for any state-dependent $b(s)$, improving the learning signal substantially.
 
 Many of the policy gradient algorithms discussed in this chapter build on the advantage formulation of policy gradient:
 
@@ -241,6 +272,7 @@ REINFORCE is a specific implementation of vanilla policy gradient that uses a Mo
 ### REINFORCE Leave One Out (RLOO)
 
 The core implementation detail of REINFORCE Leave One Out versus standard REINFORCE is that it takes the average reward of the *other* samples in the batch to compute the baseline -- rather than averaging over all rewards in the batch [@huang2024putting], [@ahmadian2024back], [@kool2019buy].
+By excluding the current sample's reward from its own baseline, the RLOO baseline is independent of the action being evaluated, which keeps the gradient estimator exactly unbiased.
 
 Crucially, this only works when generating multiple trajectories (completions) per state (prompt), which is common practice in multiple domains of fine-tuning language models with RL.
 
@@ -303,16 +335,17 @@ $$
 J(\theta)
 =
 \mathbb{E}_{t}\left[
-\min\left(R_t(\theta)A_t,\ \text{clip}(R_t(\theta),1-\varepsilon,1+\varepsilon)A_t\right)
+\min\left(\rho_t(\theta)A_t,\ \text{clip}(\rho_t(\theta),1-\varepsilon,1+\varepsilon)A_t\right)
 \right],
 \qquad
-R_t(\theta)=\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)}.
+\rho_t(\theta)=\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)}.
 $$ {#eq:PPO_EQN_EXPECTED}
 
 The objective is often converted into a loss function by simply adding a negative sign, which makes the optimizer seek to make it as negative as possible.
 
 For language models, the objective (or loss) is computed per token, which intuitively can be grounded in how one would compute the probability of the entire sequence of autoregressive predictions -- by a product of probabilities. 
 From there, the common implementation is with *log-probabilities* that make the computation simpler to perform in modern language modeling frameworks.
+In practice, one computes the difference of token log-probabilities and exponentiates it to recover the policy ratio $\rho_t$.
 
 $$ J(\theta) = \frac{1}{|a|} \sum_{t=0}^{|a|} \min\left(\frac{\pi_\theta(a_{t}|s_t)}{\pi_{\theta_{\text{old}}}(a_{t}|s_t)}A_{t}, \text{clip} \left( \frac{\pi_\theta(a_{t}|s_t)}{\pi_{\theta_{\text{old}}}(a_{t}|s_t)}, 1-\varepsilon, 1+\varepsilon \right) A_{t} \right).  $$  {#eq:PPO_EQN_EXPANDED}
 
@@ -326,7 +359,7 @@ At an implementation level, the inner computations for PPO involve two main term
 
 To understand how different situations emerge, we can define the policy ratio as:
 
-$$R(\theta) = \frac{\pi_\theta(a|s)}{\pi_{\theta_{\text{old}}}(a|s)}$$ {#eq:PPO_POL_RATIO}
+$$\rho(\theta) = \frac{\pi_\theta(a|s)}{\pi_{\theta_{\text{old}}}(a|s)}$$ {#eq:PPO_POL_RATIO}
 
 The policy ratio is a centerpiece of PPO and related algorithms. 
 It emerges from computing the gradient of a policy and controls the parameter updates in a very intuitive way.
@@ -344,36 +377,36 @@ This is by design! The trust region is a concept used to cap the maximum step si
 The idea of a "trust region" comes from the numerical optimization literature [@nocedal2006numerical], but was popularized within Deep RL from the algorithm Trust Region Policy Optimization (TRPO), which is accepted as the predecessor to PPO [@schulman2015trust].
 The trust region is the area where the full policy-gradient steps are applied, as the updates are not "clipped" by the max/min operations of the PPO objective.
 
-![Visualization of the different regions of the PPO objective for a hypothetical advantage. The "trust region" would be described as the region where the log-ratio is within $1\pm\varepsilon$.](images/ppo-viz-4x.png){#fig:ppo-obj}
+![Visualization of the different regions of the PPO objective for a hypothetical advantage. The "trust region" would be described as the region where the policy ratio $\rho$ is within $1\pm\varepsilon$.](images/ppo-viz-4x.png){#fig:ppo-obj}
 
 The policy ratio and advantage together can occur in a few different configurations. We will split the cases into two groups: positive and negative advantage.
 
 **Positive Advantage ($A_t > 0$)**
 
-This means that the action taken was beneficial according to the value function, and we want to increase the likelihood of taking that action in the future. Now, let's look at different cases for the policy ratio $R(\theta)$:
+This means that the action taken was beneficial according to the value function, and we want to increase the likelihood of taking that action in the future. Now, let's look at different cases for the policy ratio $\rho(\theta)$:
 
-1. $R(\theta) < 1 - \varepsilon$:
+1. $\rho(\theta) < 1 - \varepsilon$:
 
     - **Interpretation**: Action is less likely with the new policy than the old policy
-    - **Unclipped Term**: $R(\theta) A_t$
+    - **Unclipped Term**: $\rho(\theta) A_t$
     - **Clipped Term**: $(1 - \varepsilon) A_t$
-    - **Objective**: $R(\theta) A_t$
-    - **Gradient**: $\nabla_\theta R(\theta) A_t \neq 0$
+    - **Objective**: $\rho(\theta) A_t$
+    - **Gradient**: $\nabla_\theta \rho(\theta) A_t \neq 0$
     - **What happens**: Normal policy-gradient update - increase likelihood of action
 
-2. $1 - \varepsilon \leq R(\theta) \leq 1 + \varepsilon$:
+2. $1 - \varepsilon \leq \rho(\theta) \leq 1 + \varepsilon$:
 
     - **Interpretation**: Action is almost equally likely with the new policy as the old policy
-    - **Unclipped Term**: $R(\theta) A_t$
-    - **Clipped Term**: $R(\theta) A_t$
-    - **Objective**: $R(\theta) A_t$
-    - **Gradient**: $\nabla_\theta R(\theta) A_t \neq 0$
+    - **Unclipped Term**: $\rho(\theta) A_t$
+    - **Clipped Term**: $\rho(\theta) A_t$
+    - **Objective**: $\rho(\theta) A_t$
+    - **Gradient**: $\nabla_\theta \rho(\theta) A_t \neq 0$
     - **What happens**: Normal policy-gradient update - increase likelihood of action
 
-3. $1 + \varepsilon < R(\theta)$:
+3. $1 + \varepsilon < \rho(\theta)$:
 
     - **Interpretation**: Action is more likely with the new policy than the old policy
-    - **Unclipped Term**: $R(\theta) A_t$
+    - **Unclipped Term**: $\rho(\theta) A_t$
     - **Clipped Term**: $(1 + \varepsilon) A_t$
     - **Objective**: $(1 + \varepsilon) A_t$
     - **Gradient**: $\nabla_\theta (1 + \varepsilon) A_t = 0$
@@ -386,33 +419,33 @@ To summarize, when the advantage is positive ($A_t>0$), we want to boost the pro
 
 **Negative Advantage ($A_t < 0$)**
 
-This means that the action taken was detrimental according to the value function, and we want to decrease the likelihood of taking that action in the future. Now, let's look at different cases for the policy ratio $R(\theta)$:
+This means that the action taken was detrimental according to the value function, and we want to decrease the likelihood of taking that action in the future. Now, let's look at different cases for the policy ratio $\rho(\theta)$:
 
-1. $R(\theta) < 1 - \varepsilon$:
+1. $\rho(\theta) < 1 - \varepsilon$:
 
     - **Interpretation**: Action is less likely with the new policy than the old policy
-    - **Unclipped Term**: $R(\theta) A_t$
+    - **Unclipped Term**: $\rho(\theta) A_t$
     - **Clipped Term**: $(1 - \varepsilon) A_t$
     - **Objective**: $(1 - \varepsilon) A_t$
     - **Gradient**: $\nabla_\theta (1 - \varepsilon) A_t = 0$
     - **What happens**: NO UPDATE - action is already less likely under the new policy
 
-2. $1 - \varepsilon \leq R(\theta) \leq 1 + \varepsilon$:
+2. $1 - \varepsilon \leq \rho(\theta) \leq 1 + \varepsilon$:
 
     - **Interpretation**: Action is almost equally likely with the new policy as the old policy
-    - **Unclipped Term**: $R(\theta) A_t$
-    - **Clipped Term**: $R(\theta) A_t$
-    - **Objective**: $R(\theta) A_t$
-    - **Gradient**: $\nabla_\theta R(\theta) A_t \neq 0$
+    - **Unclipped Term**: $\rho(\theta) A_t$
+    - **Clipped Term**: $\rho(\theta) A_t$
+    - **Objective**: $\rho(\theta) A_t$
+    - **Gradient**: $\nabla_\theta \rho(\theta) A_t \neq 0$
     - **What happens**: Normal policy-gradient update - decrease likelihood of action
 
-3. $1 + \varepsilon < R(\theta)$:
+3. $1 + \varepsilon < \rho(\theta)$:
 
     - **Interpretation**: Action is more likely with the new policy than the old policy
-    - **Unclipped Term**: $R(\theta) A_t$
+    - **Unclipped Term**: $\rho(\theta) A_t$
     - **Clipped Term**: $(1 + \varepsilon) A_t$
-    - **Objective**: $R(\theta) A_t$
-    - **Gradient**: $\nabla_\theta R(\theta) A_t \neq 0$
+    - **Objective**: $\rho(\theta) A_t$
+    - **Gradient**: $\nabla_\theta \rho(\theta) A_t \neq 0$
     - **What happens**: Normal policy-gradient update - decrease likelihood of action
 
 To summarize, when the advantage is negative ($A_t < 0$), we want to decrease the probability of the action. Therefore:

@@ -152,6 +152,21 @@ The popular tools of post-training include:
 
 Modern RLHF-trained models always utilize instruction fine-tuning followed by a mixture of the other optimization options.
 
+## Subtle Advantages of RL in Post-Training Language Models
+
+In the following chapters, we cover many optimization tools for post-training.
+Plenty of them, such as rejection sampling (Chapter 9) and direct alignment algorithms like DPO (Chapter 8) are far simpler than getting RL working. 
+Still, despite the simplicity of alternatives, RL-based methods continue to win out.
+Some trends, such as the inference-time scaling with reinforcement learning from verifiable rewards (RLVR) are obvious, but RL has turned out to be a well-suited optimization tool for language models.
+Implementing RL requires a far larger investment infrastructure relative to instruction tuning or DPO-like algorithms, but to risk being overly colloquial -- the gradient updates it provides "generally help the model a lot." 
+This is hard to quantify, but comes in a few recurring forms:
+
+- RL stages can "fix" rough edges on the model, making them easier to chat with or more robust (this could come by training them to have numerical stability with inference tools like vLLM). The exact reason for this is not well-known in the literature, but its truth is reflected in the only growing presence of RL today.
+- RL can be done surgically — the model does a good job learning where the prompt distribution lies, and RL tends to not "squash" the general capabilities of the model. A good example of this is Tülu 3 being trained with RL only on math prompts, while maintaining capabilities across a broad task suite [@lambert2024t].
+
+Overall, RL losses on language models are robust, scalable, effective, and flexible, which opened large new fields of experimentation. 
+The original method that started us down this path was RLHF work.
+
 ## Canonical Training Recipes
 
 Over time various models have been identified as canonical recipes for RLHF specifically or post-training generally.
