@@ -32,7 +32,7 @@ A policy is a function that maps each state to a probability distribution over a
 The early policies that evolved into modern literature on RLHF were in what is called deep reinforcement learning -- when a neural network is used to learn said function.
 Traditionally, the environment evolves according to transition (dynamics) $p(s_{t+1}\mid s_t, a_t)$ with an initial state distribution $\rho_0(s_0)$.
 Together, the policy and dynamics induce a trajectory distribution.
-In words, a trajectory's probability is the product of the initial state probability, every action choice the policy makes, and every state transition the environment produces:
+A trajectory's overall probability is the product of the initial state probability, every action choice the policy makes, and every state transition the environment produces:
 
 $$p_{\pi}(\tau)=\rho_0(s_0)\prod_{t=0}^{T-1}\pi(a_t\mid s_t)\,p(s_{t+1}\mid s_t,a_t).$$ {#eq:rl_dynam}
 
