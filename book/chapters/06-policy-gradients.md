@@ -927,39 +927,50 @@ Fully asynchronous training would also enable scaling RL training runs across mu
 
 Related methods are exploring fully off-policy policy gradient algorithms [@roux2025tapered].
 
-### Backend Truncated Importance Sampling
+### Truncated Importance Sampling (TIS)
 
-We already encountered one use of clipped importance weights in CISPO, where the ratio compares the current policy to the rollout policy.
-Here the issue is different: even when the actor and learner use the same parameters $\theta$, their effective token distributions can differ because the sampler backend (e.g., vLLM) and learner backend (e.g., FSDP) use different kernels, precision, and parallelism strategies [@yao2025offpolicy].
-It is therefore useful to distinguish the same policy evaluated on two backends, $\pi_\theta^{\text{sampler}}$ and $\pi_\theta^{\text{learner}}$.
-
-For a sampled token $a_t$ with prefix $(s, a_{<t})$, define the backend ratio and its truncated form [@ionides2008truncated]:
+Truncated importance sampling [@ionides2008truncated] caps importance weights with $\min(\rho, C)$ for some constant $C$, trading a small bias for bounded variance.
+This correction applies the same mathematical pattern as CISPO — a truncated importance-sampling weight on a REINFORCE-style gradient — but to a different source of distribution mismatch.
+In CISPO, the ratio $\rho_t^{\text{policy}} = \pi_\theta(a_t \mid s) / \pi_{\theta_{\text{old}}}(a_t \mid s)$ corrects for policy drift across gradient steps.
+Here, the issue is that even when the actor and learner share identical parameters $\theta$, their effective token distributions can differ because the inference engine (e.g., vLLM) and training framework (e.g., FSDP) use different kernels, precision, and parallelism strategies [@yao2025offpolicy].
+It is therefore useful to distinguish the same policy evaluated on two systems, $\pi_\theta^{\text{sampler}}$ and $\pi_\theta^{\text{learner}}$, and define the corresponding ratio and its truncated form:
 
 $$
-\rho_t^{\text{backend}} = \frac{\pi_\theta^{\text{learner}}(a_t \mid s, a_{<t})}{\pi_\theta^{\text{sampler}}(a_t \mid s, a_{<t})}, \qquad \tilde{\rho}_t^{\text{backend}} = \min(\rho_t^{\text{backend}},\; C).
+\rho_t^{\text{learner}} = \frac{\pi_\theta^{\text{learner}}(a_t \mid s, a_{<t})}{\pi_\theta^{\text{sampler}}(a_t \mid s, a_{<t})}, \qquad \tilde{\rho}_t^{\text{learner}} = \min(\rho_t^{\text{learner}},\; C).
 $$ {#eq:tis_backend}
 
-This is orthogonal to the usual policy ratio $\rho_t^{\text{policy}} = \pi_\theta(a_t \mid s) / \pi_{\theta_{\text{old}}}(a_t \mid s)$.
-The policy ratio corrects for drift across gradient steps; the backend ratio is an implementation-level correction for divergence between the sampler and learner.
-Both can be applied at once.
+These two corrections are orthogonal — one compensates for policy drift, the other for implementation-induced divergence — and can be applied simultaneously.
+How they combine depends on the algorithm:
 
-In practice, LLM RL systems apply backend TIS as a per-token correction weight on the policy-gradient loss:
+**REINFORCE with TIS** (single gradient step): There is no policy drift ($\pi_\theta = \pi_{\theta_\text{old}}$), so the only mismatch is between the learner and sampler.
+Here $\pi_{\theta_\text{old}} = \pi_\text{gen}$, and TIS directly corrects the learner–sampler gap:
+
+$$
+\nabla_\theta J \approx \mathbb{E}_{a \sim \pi_\theta^{\text{sampler}}} \left[ \tilde{\rho}_t^{\text{learner}} \cdot A_t \cdot \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right].
+$$ {#eq:reinforce_tis}
+
+**PPO/GRPO with TIS** (multiple gradient steps): Now both ratios are active.
+In careful implementations, the "old logprobs" in the policy ratio are recomputed on the learner (the GSPO paper confirms this is standard practice), so the policy ratio $\rho_t^{\text{policy}} = \pi_\theta^{\text{learner}} / \pi_{\theta_\text{old}}^{\text{learner}}$ captures pure policy drift, while $\tilde{\rho}_t^{\text{learner}} = \min(\pi_{\theta_\text{old}}^{\text{learner}} / \pi_{\theta_\text{old}}^{\text{sampler}},\; C)$ separately corrects the backend mismatch at the generation checkpoint.
+Here $\pi_{\theta_\text{old}} \neq \pi_\text{gen}$: the old logprobs come from the learner, not the sampler.
+If a framework skips this recomputation and uses the sampler logprobs directly as $\pi_{\theta_\text{old}}$, then the policy ratio secretly bakes in both mismatches — this is precisely the "your framework secretly brings you off-policy RL" observation from Yao et al. [-@yao2025offpolicy].
+
+In practice, LLM RL systems apply TIS as a per-token correction weight on the policy-gradient loss:
 
 ```python
 # Shape: (B*G, L)
-C = 2.0  # backend TIS cap
+C = 2.0  # TIS cap
 
-backend_logratio = learner_logprobs - sampler_logprobs
-backend_logratio = backend_logratio.clamp(-10.0, 10.0)  # numerical safety
-backend_tis = torch.exp(backend_logratio).clamp(max=C)  # one-sided truncation
+logratio = learner_logprobs - sampler_logprobs
+logratio = logratio.clamp(-10.0, 10.0)              # numerical safety
+tis_weight = torch.exp(logratio).clamp(max=C)        # one-sided truncation
 
 # Use as a fixed correction weight on the per-token PG loss
-per_token_pg_loss = per_token_pg_loss * backend_tis.detach()
+per_token_pg_loss = per_token_pg_loss * tis_weight.detach()
 ```
 
 The $[-10, 10]$ clamp is only for numerical stability before exponentiation; the actual truncated-importance-sampling step is the one-sided cap at $C$.
 Unlike GSPO, this correction is token-level because it addresses token-level numerical mismatch rather than sequence-level reward granularity.
-Backend TIS has been adopted across major open-source RL frameworks (VeRL, OpenRLHF, SkyRL, OAT, and Open Instruct, which uses $C = 2$), and becomes increasingly important for long reasoning traces (Chapter 7), where small per-token learner–sampler differences compound over thousands of generated tokens.
+TIS for the learner–sampler ratio has been adopted across major open-source RL frameworks (VeRL, OpenRLHF, SkyRL, OAT, and Open Instruct, which uses $C = 2$), and becomes increasingly important for long reasoning traces (Chapter 7), where small per-token differences compound over thousands of generated tokens.
 
 
 ### Proximal Policy Optimization
