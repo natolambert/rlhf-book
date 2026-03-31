@@ -132,8 +132,7 @@ In traditional RL problems, the agent must learn from a randomly initialized pol
 This strong prior for RLHF induces a need to prevent the optimization from drifting too far from the initial policy.
 In order to succeed in a fine-tuning regime, RLHF techniques employ multiple types of regularization to control the optimization.
 The goal is to allow the reward maximization to still occur without the model succumbing to over-optimization, as discussed in Chapter 14.
-The most common change to the optimization function is to add a distance penalty on the difference between the current RLHF policy and the starting point of the optimization.
-To prevent the policy from drifting too far from the pretrained model, RLHF adds a KL divergence penalty that measures how much the current policy's token-level outputs differ from the original model's. The $\beta$ parameter controls how strongly this constraint is enforced -- a larger $\beta$ keeps the model closer to its starting point, while a smaller $\beta$ gives the optimizer more freedom to chase reward:
+The most common change to the optimization function is to add a KL divergence penalty on the distance between the current RLHF policy and the starting point of the optimization. The $\beta$ hyperparameter set when training the model controls the strength of this constraint -- a larger $\beta$ keeps the model closer to its starting point, while a smaller $\beta$ gives the optimizer more freedom to chase reward:
 
 $$\max_\pi \; \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t)\right] - \beta  \mathcal{D}_{\text{KL}}(\pi(\cdot|s_t) \| \pi_{\text{ref}}(\cdot|s_t)).$$ {#eq:rlhf_opt_eq}
 
