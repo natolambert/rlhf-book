@@ -136,7 +136,7 @@ Or a complex, richer answer:
 Instruction fine-tuning would provide the basic ability for models to respond reliably in the question-answering format, and RLHF is what takes these answers and crafts them into the reliable, warm, and engaging answers we now expect from language models.
 
 Modern research has established RLHF as a general method to integrate subtle stylistic and related behavioral features into the models.
-Beyond style, RLHF is also used to improve safety by reducing harmful, toxic, or otherwise undesirable outputs -- a key reason it is deployed in nearly every production language model.
+An early, popular example of the utility of RLHF was in the application to safety [@dai2023safe] [@bai2022training], where RLHF enabled models to be both helpful and harmless across varied datasets.
 Compared to other techniques for post-training, such as instruction fine-tuning, RLHF generalizes far better across domains [@kirk2023understanding] [@chu2025sft] -- helping create effective general-purpose models.
 
 Intuitively, this can be seen in how the optimization techniques are applied. 
