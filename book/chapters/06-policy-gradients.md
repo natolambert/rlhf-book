@@ -950,7 +950,12 @@ $$
 $$ {#eq:reinforce_tis}
 
 **PPO/GRPO with TIS** (multiple gradient steps): Now both ratios are active.
-In careful implementations, the "old logprobs" in the policy ratio are recomputed on the learner (the GSPO paper confirms this is standard practice), so the policy ratio $\rho_t^{\text{policy}} = \pi_\theta^{\text{learner}} / \pi_{\theta_\text{old}}^{\text{learner}}$ captures pure policy drift, while $\tilde{\rho}_t^{\text{learner}} = \min(\pi_{\theta_\text{old}}^{\text{learner}} / \pi_{\theta_\text{old}}^{\text{sampler}},\; C)$ separately corrects the backend mismatch at the generation checkpoint.
+In careful implementations, the "old logprobs" in the policy ratio are recomputed on the learner (the GSPO paper confirms this is standard practice), so the policy ratio $\rho_t^{\text{policy}} = \pi_\theta^{\text{learner}} / \pi_{\theta_\text{old}}^{\text{learner}}$ captures pure policy drift, while $\tilde{\rho}_t^{\text{learner}} = \min(\pi_{\theta_\text{old}}^{\text{learner}} / \pi_{\theta_\text{old}}^{\text{sampler}},\; C)$ separately corrects the backend mismatch at the generation checkpoint:
+
+$$
+J_{\text{PPO+TIS}}(\theta) = \mathbb{E}\left[ \min\!\left( \rho_t^{\text{policy}}\, A_t,\; \text{clip}\!\left(\rho_t^{\text{policy}}, 1-\varepsilon, 1+\varepsilon\right) A_t \right) \cdot \tilde{\rho}_t^{\text{learner}} \right].
+$$ {#eq:ppo_tis}
+
 Here $\pi_{\theta_\text{old}} \neq \pi_\text{gen}$: the old logprobs come from the learner, not the sampler.
 If a framework skips this recomputation and uses the sampler logprobs directly as $\pi_{\theta_\text{old}}$, then the policy ratio secretly bakes in both mismatches — this is precisely the "your framework secretly brings you off-policy RL" observation from Yao et al. [-@yao2025offpolicy].
 
