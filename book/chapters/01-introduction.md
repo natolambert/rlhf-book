@@ -146,7 +146,7 @@ It is optimizing the model to more regularly output specific features in text. T
 RLHF on the other hand tunes completions on the response level rather than looking at the next token specifically.
 Additionally, it is telling the model what a *better* response looks like, rather than a specific response it should learn.
 RLHF also shows a model which type of response it should avoid, i.e. negative feedback. 
-The training to achieve this is often called a *contrastive* loss function and is referenced throughout this book.
+The training to achieve this is often called a *contrastive* loss function (a loss that trains the model to score preferred outputs higher than dispreferred ones) and is referenced throughout this book.
 
 While this flexibility is a major advantage of RLHF, it comes with implementation challenges. 
 Largely, these center on *how to control the optimization.* 

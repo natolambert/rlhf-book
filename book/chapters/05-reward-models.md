@@ -54,7 +54,7 @@ Only differences in scores matter: adding the same constant to all $r_i$ leaves 
 These forms are not a law of nature, but a useful approximation of human preferences that often works well in RLHF.
 
 To train a reward model, we must formulate a loss function that satisfies the above relation.
-In practice, this is done by converting a language model into a model that outputs a scalar score, often via a small linear head that produces a single logit.
+In practice, this is done by converting a language model into a model that outputs a scalar score, often via a small linear head that produces a single logit (the raw, unnormalized score output by the model before applying softmax).
 Given a prompt $x$ and two sampled completions $y_1$ and $y_2$, we score both with a reward model $r_\theta$ and write the conditional scores as $r_\theta(y_i \mid x)$.
 
 The probability that the reward model assigns to $y_1$ being preferred to $y_2$ becomes:
@@ -77,10 +77,10 @@ $$
 \end{aligned}
 $$ {#eq:bradterryrm_deriv}
 
-The first form, as in [@ouyang2022training] and other works:
+The first form is the log-sigmoid expression derived above, as in [@ouyang2022training] and other works:
 $$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) \right) \right)$$ {#eq:rewardmodeling1}
 
-Second, as in [@askell2021general] and other works:
+Second is a mathematically equivalent form expressed using the softplus function $\log(1+e^x)$, as in [@askell2021general] and other works:
 $$\mathcal{L}(\theta) = \log \left( 1 + e^{r_{\theta}(y_r \mid x) - r_{\theta}(y_c \mid x)} \right)$$ {#eq:rewardmodeling2}
 
 These are equivalent by letting $\Delta = r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x)$ and using $\sigma(\Delta) = \frac{1}{1 + e^{-\Delta}}$, which implies $-\log\sigma(\Delta) = \log(1 + e^{-\Delta}) = \log\left(1 + e^{r_{\theta}(y_r \mid x) - r_{\theta}(y_c \mid x)}\right)$.
@@ -110,7 +110,7 @@ rewards_rejected = model(**inputs_rejected)
 loss = -nn.functional.logsigmoid(rewards_chosen - rewards_rejected).mean()
 ```
 
-As for the bigger picture, this is often within a causal language model that has an additional head added (and learned with the above loss) that transitions from the final hidden state to the score of the inputs.
+As for the bigger picture, this is often within a causal language model (a model that generates tokens left-to-right, predicting each token conditioned on all previous ones) that has an additional head added (and learned with the above loss) that transitions from the final hidden state to the score of the inputs.
 This model will have a structure as follows:
 
 ```python
@@ -208,7 +208,7 @@ One such example, used in the popular, early RLHF'd models Starling 7B and 34B [
 
 Zhu et al. 2023 [@zhu2023principled] formalizes the setup as follows.
 With a prompt, or state, $s^i$, $K$ actions $(a_0^i, a_1^i, \cdots, a_{K-1}^i)$ are sampled from $P(a_0,\cdots,a_{K-1}|s^i)$.
-Then, labelers are used to rank preferences with $\sigma^i: [K] \mapsto [K]$ is a function representing action rankings, where $\sigma^i(0)$ is the most preferred action. This yields a preference model capturing the following:
+Then, labelers are used to rank preferences with $\sigma^i: [K] \mapsto [K]$ is a function representing action rankings, where $\sigma^i(0)$ is the most preferred action. This yields a Plackett-Luce probability over the complete ranking of all $K$ items:
 
 $$P(\sigma^i|s^i,a_0^i,a_1^i,\ldots,a_{K-1}^i) = \prod_{k=0}^{K-1} \frac{\exp(r_{\theta\star}(s^i,a_{\sigma^i(k)}^i))}{\sum_{j=k}^{K-1}\exp(r_{\theta\star}(s^i,a_{\sigma^i(j)}^i))}$$ {#eq:kwise_rm}
 
@@ -235,7 +235,7 @@ are language models, with a small scalar head that outputs predictions on a per-
 > We implement this scalar head as a single bias parameter and single gain parameter that operate on the logits outputted by the language model's final unembedding layer.
 
 To translate, this is implemented as a language modeling head that can predict two classes per token (1 for correct, 0 for incorrect), rather than a classification head of a traditional RM that outputs one logit for the entire sequence.
-Formally, following [@lyu2025exploring] this can be shown as:
+Formally, following [@lyu2025exploring] this is a per-token binary cross-entropy loss:
 
 $$\mathcal{L}_{\text{CE}}(\theta) = -\mathbb{E}_{(s,r)\sim \mathcal{D}}[r\log p_\theta(s) + (1-r)\log(1-p_\theta(s))]$$ {#eq:orm_loss}
 
