@@ -111,6 +111,7 @@ Table @tbl:rl-vs-rlhf summarizes these differences between standard RL and the R
 ::: {.table-wrap}
 | Aspect | Standard RL | RLHF (language models) |
 |---|---|---|
+| Policy | Learned from scratch (random init) | Fine-tuned from a pretrained language model |
 | Reward signal | Environment reward function $r(s_t,a_t)$ | Learned reward / preference model $r_\theta(x,y)$ (prompt $x$, completion $y$) |
 | State transition | Yes: dynamics $p(s_{t+1}\mid s_t,a_t)$ | Typically no: prompts $x$ sampled from a dataset; the completion does not define the next prompt |
 | Action | Single environment action $a_t$ | A completion $y$ (a sequence of tokens) sampled from $\pi_\theta(\cdot\mid x)$ |
