@@ -41,7 +41,7 @@ Post-training is a more complete set of techniques and best-practices to make la
 Post-training can be summarized as a many-stage training process using three optimization methods:
 
 1. Instruction / Supervised Fine-tuning (IFT/SFT), where we teach formatting and form the base of instruction-following abilities. This is largely about learning *features* in language.
-2. Preference Fine-tuning (PreFT), where we align to human preferences (and get smaller bump in capabilities at the same time). This is largely about *style* of language and subtle human preferences that are hard to quantify. 
+2. Preference Fine-tuning (PreFT), where we align to human preferences via RLHF and related methods (and get smaller bump in capabilities at the same time). This is largely about *style* of language and subtle human preferences that are hard to quantify.
 3. Reinforcement Learning with Verifiable Rewards (RLVR). The newest type of post-training that boosts performance on verifiable domains with more RL training.
 
 RLHF lives within and dominates the second area, **preference fine-tuning**, which has more complexity than instruction tuning because it often involves proxy reward models of the true object and noisier data.
@@ -136,6 +136,7 @@ Or a complex, richer answer:
 Instruction fine-tuning would provide the basic ability for models to respond reliably in the question-answering format, and RLHF is what takes these answers and crafts them into the reliable, warm, and engaging answers we now expect from language models.
 
 Modern research has established RLHF as a general method to integrate subtle stylistic and related behavioral features into the models.
+An early, popular example of the utility of RLHF was in the application to safety [@dai2023safe] [@bai2022training], where RLHF enabled models to be both helpful and harmless across varied datasets.
 Compared to other techniques for post-training, such as instruction fine-tuning, RLHF generalizes far better across domains [@kirk2023understanding] [@chu2025sft] -- helping create effective general-purpose models.
 
 Intuitively, this can be seen in how the optimization techniques are applied. 

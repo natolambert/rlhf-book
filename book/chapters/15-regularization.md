@@ -41,7 +41,8 @@ $$ {#eq:kl_standard}
 ## KL Divergences in RL Optimization
 
 For mathematical definitions, see Appendix A on Definitions.
-Recall that a KL divergence measure of probability difference is defined as follows:
+KL divergence measures how far one probability distribution has drifted from another -- when KL is zero, the two distributions produce identical outputs.
+Recall that it is defined as follows:
 
 $$ \mathcal{D}_{\text{KL}}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\frac{P(x)}{Q(x)}\right) $$ {#eq:kl_distance_regularization}
 

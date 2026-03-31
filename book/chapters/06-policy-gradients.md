@@ -927,8 +927,65 @@ Fully asynchronous training would also enable scaling RL training runs across mu
 
 Related methods are exploring fully off-policy policy gradient algorithms [@roux2025tapered].
 
+### Truncated Importance Sampling (TIS)
 
-### Proximal Policy Optimization 
+Truncated importance sampling (TIS) is a crucial tool used to stabilize training in modern, asynchronous RL frameworks with language models.
+Importance sampling is a correction that reweights samples drawn from one distribution to estimate expectations under another (as introduced in @eq:IS_identity).
+Truncated importance sampling [@ionides2008truncated] caps these weights with $\min(\rho, C)$ for some constant $C$, trading a small bias for bounded variance in the policy gradient.
+
+<!-- This correction applies the same mathematical pattern as CISPO — a truncated importance-sampling weight on a REINFORCE-style gradient — but to a different source of distribution mismatch. -->
+This is an importance-sampling correction applied to the policy gradient, but unlike the bilateral clipping in PPO and CISPO (which constrains the ratio near 1), TIS uses a one-sided upper cap the ratio can fall freely below 1, but is capped at $C$ to prevent extreme upweighting.
+In all of PPO, GRPO, CISPO (and related algorithms), the ratio $\rho_t^{\text{policy}} = \pi_\theta(a_t \mid s) / \pi_{\theta_{\text{old}}}(a_t \mid s)$ corrects for policy drift across multiple gradient steps within one RL batch.
+As we shift to real-world RL frameworks, centered around the idea of asynchronicity in the previous subsection, there can be even larger sources of numerical differences (that also needs the numerical correction of importance sampling).
+Even when the sampler and learner share identical parameters $\theta$, their effective token distributions can differ because the inference engine (e.g., vLLM) and training framework (e.g., FSDP) use different kernels, precision, and parallelism strategies [@yao2025offpolicy].
+It is therefore useful to distinguish the same policy evaluated on two systems, $\pi_\theta^{\text{sampler}}$ and $\pi_\theta^{\text{learner}}$, and define the corresponding ratio and its truncated form:
+
+$$
+\rho_t^{\text{learner}} = \frac{\pi_\theta^{\text{learner}}(a_t \mid s, a_{<t})}{\pi_\theta^{\text{sampler}}(a_t \mid s, a_{<t})}, \qquad \tilde{\rho}_t^{\text{learner}} = \min(\rho_t^{\text{learner}},\; C).
+$$ {#eq:tis_backend}
+
+These two corrections are complementary, but are in the policy gradient implementations for different reasons — one compensates for policy drift within the training of a RL batch, the other for implementation-induced divergence — and can be applied simultaneously.
+How they combine depends on the algorithm:
+
+**REINFORCE with TIS** (single gradient step): There is no policy drift ($\pi_\theta = \pi_{\theta_\text{old}}$), so the only mismatch is between the learner and sampler.
+Here $\pi_{\theta_\text{old}} = \pi_\text{gen}$, and TIS directly corrects the learner–sampler gap:
+
+$$
+\nabla_\theta J \approx \mathbb{E}_{a \sim \pi_\theta^{\text{sampler}}} \left[ \tilde{\rho}_t^{\text{learner}} \cdot A_t \cdot \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right].
+$$ {#eq:reinforce_tis}
+
+**PPO/GRPO with TIS** (multiple gradient steps): Now both ratios are active.
+In careful implementations, the "old logprobs" in the policy ratio are recomputed on the learner (the GSPO paper discusses this), so the policy ratio $\rho_t^{\text{policy}} = \pi_\theta^{\text{learner}} / \pi_{\theta_\text{old}}^{\text{learner}}$ captures pure policy drift, while $\tilde{\rho}_t^{\text{learner}} = \min(\pi_{\theta_\text{old}}^{\text{learner}} / \pi_{\theta_\text{old}}^{\text{sampler}},\; C)$ separately corrects the backend mismatch at the generation checkpoint:
+
+$$
+J_{\text{PPO+TIS}}(\theta) = \mathbb{E}\left[ \min\!\left( \rho_t^{\text{policy}}\, A_t,\; \text{clip}\!\left(\rho_t^{\text{policy}}, 1-\varepsilon, 1+\varepsilon\right) A_t \right) \cdot \tilde{\rho}_t^{\text{learner}} \right].
+$$ {#eq:ppo_tis}
+
+Here $\pi_{\theta_\text{old}} \neq \pi_\text{gen}$: the old logprobs come from the learner, not the sampler.
+If a framework skips this recomputation and uses the sampler logprobs directly as $\pi_{\theta_\text{old}}$, the policy ratio already captures the backend mismatch and no separate TIS correction is needed — but the clip then operates on a noisier ratio that starts away from 1.0 even before any gradient steps.
+This is the "your framework secretly brings you off-policy RL" observation from Yao et al. [-@yao2025offpolicy].
+
+In practice, LLM RL systems apply TIS as a per-token correction weight on the policy-gradient loss:
+
+```python
+# Shape: (B*G, L)
+C = 2.0  # TIS cap
+
+logratio = learner_logprobs - sampler_logprobs
+logratio = logratio.clamp(-10.0, 10.0)              # numerical safety
+tis_weight = torch.exp(logratio).clamp(max=C)        # one-sided truncation
+
+# Use as a fixed correction weight on the per-token PG loss
+per_token_pg_loss = per_token_pg_loss * tis_weight.detach()
+```
+
+The $[-10, 10]$ clamp is only for numerical stability before exponentiation; the actual truncated-importance-sampling step is the one-sided cap at $C$.
+In practice, the bookkeeping around these logprobs — storing sampler logprobs from generation, recomputing learner logprobs at the old checkpoint, and tracking current logprobs during gradient steps — is a substantial part of the scaffolding in distributed RL frameworks.
+Unlike GSPO, this correction is token-level because it addresses token-level numerical mismatch rather than sequence-level reward granularity.
+TIS for the learner–sampler ratio has been adopted across major open-source RL frameworks (VeRL, OpenRLHF, SkyRL, OAT, and Open Instruct, which uses $C = 2$), and becomes increasingly important for long reasoning traces (chapter 7), where small per-token differences compound over thousands of generated tokens.
+
+
+### Proximal Policy Optimization
 
 There are many, many implementations of PPO available. 
 The core *loss* computation is shown below. 
@@ -1115,20 +1172,30 @@ Here we consider some of the long-tail of complexities in successfully deploying
 
 ### Comparing Algorithms
 
-Here's a summary of some of the discussed material (and foreshadowing to coming material on Direct Preference Optimization) when applied to RLHF.
-Here, on- or off-policy indicates the derivation (where most are applied slightly off-policy in practice).
-A reference policy here indicates if it is required for the optimization itself, rather than for a KL penalty.
+Each algorithm in this chapter shares the same core gradient shape (@eq:policy_gradient_intuition), but differs in how it estimates the advantage and controls the optimization:
 
-| Method | Type | Reward Model | Value Function | Reference Policy |
-| :----- | :---------: | :----------: | :------------: | :--------------: |
-| **REINFORCE** | On-policy | Yes | No | No |
-| **RLOO** | On-policy | Yes | No | No |
-| **CISPO** | On-policy | Yes | No | Yes |
-| **PPO** | On-policy | Yes | Yes | Yes |
-| **GRPO** | On-policy | Yes | No | Yes |
-| **GSPO** | On-policy | Yes | No | Yes |
-| **DPO** | Off-policy | No | No | Yes |
-Table: Comparing policy gradient algorithms (and friends). {#tbl:pg_compare}
+- **REINFORCE**: The simple policy gradient implementation to include Monte-Carlo estimates of reward, and introduces a state-based baseline to reduce variance.
+- **RLOO**: REINFORCE with multiple samples per prompt, with each sample's baseline being the average reward of the others (leave-one-out) to reduce gradient varience.
+- **PPO**: Adds a learned value function and a clipped policy ratio to get more accurate and stable gradient updates.
+- **GRPO**: A simplified variant of PPO that groups multiple completions per prompt and normalizes rewards within the group to compute advantages, removing the need for a value function.
+- **CISPO**: A REINFORCE-style algorithm that clips importance-sampling weights (not the objective as in PPO/GRPO) with a stop-gradient for stability, so every token receives a gradient signal.
+- **GSPO**: Like GRPO but normalizes the policy ratio by completion length, preventing length bias.
+- **DPO**: Not an RL algorithm, but a method to solve the same preference optimization problem by bypassing the separate reward model entirely, optimizing directly from preference pairs (see Chapter 8).
+
+All of these algorithms are on-policy in derivation, though most are applied slightly off-policy in practice (the direct alignment algorithms in Chapter 8 are off-policy by default).
+All can be paired with a learned reward model or verifiable rewards.
+Only PPO requires a learned value function.
+REINFORCE and RLOO have no importance-sampling ratio — the remaining algorithms each introduce one to enable multiple gradient steps per batch of rollouts, differing in granularity and clipping strategy as summarized below.
+
+| Method | IS Granularity | Clipping Style | Advantage |
+| :----- | :-----------: | :------------------: | :-------------------: |
+| **REINFORCE** | None | None | Monte Carlo baseline |
+| **RLOO** | None | None | Leave-one-out |
+| **PPO** | Token | Objective (bilateral) | Learned value fn |
+| **GRPO** | Token | Objective (bilateral) | Group-relative |
+| **GSPO** | Sequence | Objective (bilateral) | Group-relative |
+| **CISPO** | Token | Weights (stop-grad) | Group-relative |
+Table: Comparing policy gradient algorithms. {#tbl:pg_compare}
 
 The core loss $\mathcal{L}(\theta)$ for each method is:
 

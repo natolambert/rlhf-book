@@ -31,7 +31,8 @@ In RL, an agent takes actions $a_t$ sampled from a policy $\pi(a_t\mid s_t)$ giv
 A policy is a function that maps each state to a probability distribution over actions.
 The early policies that evolved into modern literature on RLHF were in what is called deep reinforcement learning -- when a neural network is used to learn said function.
 Traditionally, the environment evolves according to transition (dynamics) $p(s_{t+1}\mid s_t, a_t)$ with an initial state distribution $\rho_0(s_0)$.
-Together, the policy and dynamics induce a trajectory distribution:
+Together, the policy and dynamics induce a trajectory distribution.
+A trajectory's overall probability is the product of the initial state probability, every action choice the policy makes, and every state transition the environment produces:
 
 $$p_{\pi}(\tau)=\rho_0(s_0)\prod_{t=0}^{T-1}\pi(a_t\mid s_t)\,p(s_{t+1}\mid s_t,a_t).$$ {#eq:rl_dynam}
 
@@ -84,13 +85,13 @@ Where the thermostat had a single state variable and a binary action, CartPole i
 
 - **Reward ($r$)**: a simple reward is $r_t = 1$ each step the pole remains balanced and the cart stays on the track (e.g. $|x_t| \le 2.4$ and $|\theta_t| \le 12^\circ$), and the episode terminates when either bound is violated.
 
-- **Dynamics / transition ($p(s_{t+1}\mid s_t,a_t)$)**: in many environments the dynamics are deterministic (so $p$ is a point mass) and can be written as $s_{t+1} = f(s_t,a_t)$ via Euler integration with step size $\Delta t$. A standard simplified CartPole update uses constants cart mass $m_c$, pole mass $m_p$, pole half-length $l$, and gravity $g$:
+- **Dynamics / transition ($p(s_{t+1}\mid s_t,a_t)$)**: in many environments the dynamics are deterministic (so $p$ is a point mass) and can be written as $s_{t+1} = f(s_t,a_t)$ via Euler integration with step size $\Delta t$. A standard simplified CartPole update uses constants cart mass $m_c$, pole mass $m_p$, pole half-length $l$, and gravity $g$ ($\alpha$ is a mass-normalized intermediate with acceleration units):
 
-  $$\text{temp} = \frac{a_t + m_p l\,\dot{\theta}_t^2\sin\theta_t}{m_c + m_p}$$ {#eq:cartpole_temp}
+  $$\alpha = \frac{a_t + m_p l\,\dot{\theta}_t^2\sin\theta_t}{m_c + m_p}$$ {#eq:cartpole_temp}
 
-  $$\ddot{\theta}_t = \frac{g\sin\theta_t - \cos\theta_t\,\text{temp}}{l\left(\tfrac{4}{3} - \frac{m_p\cos^2\theta_t}{m_c + m_p}\right)}$$ {#eq:cartpole_angular_accel}
+  $$\ddot{\theta}_t = \frac{g\sin\theta_t - \cos\theta_t\,\alpha}{l\left(\tfrac{4}{3} - \frac{m_p\cos^2\theta_t}{m_c + m_p}\right)}$$ {#eq:cartpole_angular_accel}
 
-  $$\ddot{x}_t = \text{temp} - \frac{m_p l\,\ddot{\theta}_t\cos\theta_t}{m_c + m_p}$$ {#eq:cartpole_linear_accel}
+  $$\ddot{x}_t = \alpha - \frac{m_p l\,\ddot{\theta}_t\cos\theta_t}{m_c + m_p}$$ {#eq:cartpole_linear_accel}
 
   $$x_{t+1}=x_t+\Delta t\,\dot{x}_t,\quad \dot{x}_{t+1}=\dot{x}_t+\Delta t\,\ddot{x}_t,$$ {#eq:cartpole_pos_update}
   $$\theta_{t+1}=\theta_t+\Delta t\,\dot{\theta}_t,\quad \dot{\theta}_{t+1}=\dot{\theta}_t+\Delta t\,\ddot{\theta}_t.$$ {#eq:cartpole_angle_update}
@@ -104,12 +105,13 @@ There are multiple core changes from the standard RL setup to that of RLHF:
 Table @tbl:rl-vs-rlhf summarizes these differences between standard RL and the RLHF setup used for language models.
 
 1. **Switching from a reward function to a reward model.** In RLHF, a learned model of human preferences, $r_\theta(s_t, a_t)$ (or any other classification model) is used instead of an environmental reward function. This gives the designer a substantial increase in the flexibility of the approach and control over the final results, but at the cost of implementation complexity. In standard RL, the reward is seen as a static piece of the environment that cannot be changed or manipulated by the person designing the learning agent.
-2. **No state transitions exist.** In RLHF, the initial states for the domain are prompts sampled from a training dataset and the "action" is the completion to said prompt. During standard practices, this action does not impact the next state and is only scored by the reward model.
-3. **Response-level rewards and no discounting.** Often referred to as a bandit problem, RLHF attribution of reward is done for an entire sequence of actions, composed of multiple generated tokens, rather than in a fine-grained manner. To help the RL algorithms for RLHF see every token as part of the same action, implementations usually use a discount factor of $\gamma = 1$ (no discounting), unlike standard RL where $\gamma < 1$ balances short-term and long-term reward across many sequential decisions.
+2. **No state transitions exist.** In RLHF, the initial states for the domain are prompts sampled from a training dataset and the "action" is the completion to said prompt (in the standard RLHF setup, the prompt is fixed and the model's completion does not define the next prompt). The combination of one prompt and one completion constitutes a complete episode or rollout, which would be many repeated state-action, state-action chains in classical RL problems.
+3. **Response-level rewards and no discounting.** RLHF attribution of reward is done for an entire sequence of actions, composed of multiple generated tokens, rather than in a fine-grained manner (this single-step structure is sometimes called a bandit problem in the RL literature). To help the RL algorithms for RLHF see every token as part of the same action, implementations usually use a discount factor of $\gamma = 1$ (no discounting), unlike standard RL where $\gamma < 1$ balances short-term and long-term reward across many sequential decisions.
 
 ::: {.table-wrap}
 | Aspect | Standard RL | RLHF (language models) |
 |---|---|---|
+| Policy | Learned from scratch (random init) | Fine-tuned from a pretrained language model |
 | Reward signal | Environment reward function $r(s_t,a_t)$ | Learned reward / preference model $r_\theta(x,y)$ (prompt $x$, completion $y$) |
 | State transition | Yes: dynamics $p(s_{t+1}\mid s_t,a_t)$ | Typically no: prompts $x$ sampled from a dataset; the completion does not define the next prompt |
 | Action | Single environment action $a_t$ | A completion $y$ (a sequence of tokens) sampled from $\pi_\theta(\cdot\mid x)$ |
@@ -131,7 +133,7 @@ In traditional RL problems, the agent must learn from a randomly initialized pol
 This strong prior for RLHF induces a need to prevent the optimization from drifting too far from the initial policy.
 In order to succeed in a fine-tuning regime, RLHF techniques employ multiple types of regularization to control the optimization.
 The goal is to allow the reward maximization to still occur without the model succumbing to over-optimization, as discussed in Chapter 14.
-The most common change to the optimization function is to add a distance penalty on the difference between the current RLHF policy and the starting point of the optimization:
+The most common change to the optimization function is to add a KL divergence penalty on the distance between the current RLHF policy and the starting point of the optimization. The $\beta$ hyperparameter set when training the model controls the strength of this constraint -- a larger $\beta$ keeps the model closer to its starting point, while a smaller $\beta$ gives the optimizer more freedom to chase reward:
 
 $$\max_\pi \; \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t)\right] - \beta  \mathcal{D}_{\text{KL}}(\pi(\cdot|s_t) \| \pi_{\text{ref}}(\cdot|s_t)).$$ {#eq:rlhf_opt_eq}
 
