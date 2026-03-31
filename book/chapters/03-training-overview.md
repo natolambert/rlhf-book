@@ -85,13 +85,13 @@ Where the thermostat had a single state variable and a binary action, CartPole i
 
 - **Reward ($r$)**: a simple reward is $r_t = 1$ each step the pole remains balanced and the cart stays on the track (e.g. $|x_t| \le 2.4$ and $|\theta_t| \le 12^\circ$), and the episode terminates when either bound is violated.
 
-- **Dynamics / transition ($p(s_{t+1}\mid s_t,a_t)$)**: in many environments the dynamics are deterministic (so $p$ is a point mass) and can be written as $s_{t+1} = f(s_t,a_t)$ via Euler integration with step size $\Delta t$. A standard simplified CartPole update uses constants cart mass $m_c$, pole mass $m_p$, pole half-length $l$, and gravity $g$:
+- **Dynamics / transition ($p(s_{t+1}\mid s_t,a_t)$)**: in many environments the dynamics are deterministic (so $p$ is a point mass) and can be written as $s_{t+1} = f(s_t,a_t)$ via Euler integration with step size $\Delta t$. A standard simplified CartPole update uses constants cart mass $m_c$, pole mass $m_p$, pole half-length $l$, and gravity $g$ ($\alpha$ is an intermediate variable combining the applied and centripetal forces):
 
-  $$\text{force} = \frac{a_t + m_p l\,\dot{\theta}_t^2\sin\theta_t}{m_c + m_p}$$ {#eq:cartpole_temp}
+  $$\alpha = \frac{a_t + m_p l\,\dot{\theta}_t^2\sin\theta_t}{m_c + m_p}$$ {#eq:cartpole_temp}
 
-  $$\ddot{\theta}_t = \frac{g\sin\theta_t - \cos\theta_t\,\text{force}}{l\left(\tfrac{4}{3} - \frac{m_p\cos^2\theta_t}{m_c + m_p}\right)}$$ {#eq:cartpole_angular_accel}
+  $$\ddot{\theta}_t = \frac{g\sin\theta_t - \cos\theta_t\,\alpha}{l\left(\tfrac{4}{3} - \frac{m_p\cos^2\theta_t}{m_c + m_p}\right)}$$ {#eq:cartpole_angular_accel}
 
-  $$\ddot{x}_t = \text{force} - \frac{m_p l\,\ddot{\theta}_t\cos\theta_t}{m_c + m_p}$$ {#eq:cartpole_linear_accel}
+  $$\ddot{x}_t = \alpha - \frac{m_p l\,\ddot{\theta}_t\cos\theta_t}{m_c + m_p}$$ {#eq:cartpole_linear_accel}
 
   $$x_{t+1}=x_t+\Delta t\,\dot{x}_t,\quad \dot{x}_{t+1}=\dot{x}_t+\Delta t\,\ddot{x}_t,$$ {#eq:cartpole_pos_update}
   $$\theta_{t+1}=\theta_t+\Delta t\,\dot{\theta}_t,\quad \dot{\theta}_{t+1}=\dot{\theta}_t+\Delta t\,\ddot{\theta}_t.$$ {#eq:cartpole_angle_update}
