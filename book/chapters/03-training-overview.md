@@ -36,7 +36,7 @@ A trajectory's overall probability is the product of the initial state probabili
 
 $$p_{\pi}(\tau)=\rho_0(s_0)\prod_{t=0}^{T-1}\pi(a_t\mid s_t)\,p(s_{t+1}\mid s_t,a_t).$$ {#eq:rl_dynam}
 
-Across a finite episode with horizon $T$, the agent's goal is to find the policy that maximizes the expected total discounted reward. The discount factor $\gamma$ (between 0 and 1) balances the desirability of near-term versus future rewards:
+Across a finite episode with horizon $T$, the goal of an RL agent is to solve the following optimization, where $\gamma$ is a discount factor from 0 to 1 that balances the desirability of near-term versus future rewards:
 
 $$\max_\pi \; \mathbb{E}_{\tau \sim p_{\pi}} \left[ \sum_{t=0}^{T-1} \gamma^t r(s_t, a_t) \right],$$ {#eq:rl_opt}
 
