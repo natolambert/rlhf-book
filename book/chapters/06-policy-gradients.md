@@ -1182,20 +1182,20 @@ Each algorithm in this chapter shares the same core gradient shape (@eq:policy_g
 - **GSPO**: Like GRPO but normalizes the policy ratio by completion length, preventing length bias.
 - **DPO**: Not an RL algorithm, but a method to solve the same preference optimization problem by bypassing the separate reward model entirely, optimizing directly from preference pairs (see Chapter 8).
 
-Here's a summary of some of the discussed material (and foreshadowing to coming material on Direct Preference Optimization) when applied to RLHF.
-Here, on- or off-policy indicates the derivation (where most are applied slightly off-policy in practice).
-A reference policy here indicates if it is required for the optimization itself, rather than for a KL penalty.
+All of these algorithms are on-policy in derivation, though most are applied slightly off-policy in practice (the direct alignment algorithms in Chapter 8 are off-policy by default).
+All can be paired with a learned reward model or verifiable rewards.
+Only PPO requires a learned value function.
+REINFORCE and RLOO have no importance-sampling ratio — the remaining algorithms each introduce one to enable multiple gradient steps per batch of rollouts, differing in granularity and clipping strategy as summarized below.
 
-| Method | Type | Reward Model | Value Function | Reference Policy |
-| :----- | :---------: | :----------: | :------------: | :--------------: |
-| **REINFORCE** | On-policy | Yes | No | No |
-| **RLOO** | On-policy | Yes | No | No |
-| **CISPO** | On-policy | Yes | No | Yes |
-| **PPO** | On-policy | Yes | Yes | Yes |
-| **GRPO** | On-policy | Yes | No | Yes |
-| **GSPO** | On-policy | Yes | No | Yes |
-| **DPO** | Off-policy | No | No | Yes |
-Table: Comparing policy gradient algorithms (and friends). {#tbl:pg_compare}
+| Method | IS Granularity | Clipping Style | Advantage |
+| :----- | :-----------: | :------------------: | :-------------------: |
+| **REINFORCE** | None | None | Monte Carlo baseline |
+| **RLOO** | None | None | Leave-one-out |
+| **PPO** | Token | Objective (bilateral) | Learned value fn |
+| **GRPO** | Token | Objective (bilateral) | Group-relative |
+| **GSPO** | Sequence | Objective (bilateral) | Group-relative |
+| **CISPO** | Token | Weights (stop-grad) | Group-relative |
+Table: Comparing policy gradient algorithms. {#tbl:pg_compare}
 
 The core loss $\mathcal{L}(\theta)$ for each method is:
 
