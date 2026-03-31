@@ -927,41 +927,39 @@ Fully asynchronous training would also enable scaling RL training runs across mu
 
 Related methods are exploring fully off-policy policy gradient algorithms [@roux2025tapered].
 
-### Truncated Importance Sampling
+### Backend Truncated Importance Sampling
 
-Truncated importance sampling (TIS) [@ionides2008truncated] is a general variance-reduction technique that caps importance weights with $\min(\rho, C)$ for some constant $C$, trading a small bias for bounded variance.
-In RL for LLMs, TIS appears in two distinct contexts—a common source of confusion.
+We already encountered one use of clipped importance weights in CISPO, where the ratio compares the current policy to the rollout policy.
+Here the issue is different: even when the actor and learner use the same parameters $\theta$, their effective token distributions can differ because the sampler backend (e.g., vLLM) and learner backend (e.g., FSDP) use different kernels, precision, and parallelism strategies [@yao2025offpolicy].
+It is therefore useful to distinguish the same policy evaluated on two backends, $\pi_\theta^{\text{sampler}}$ and $\pi_\theta^{\text{learner}}$.
 
-**Policy ratio** ($\pi_\theta / \pi_{\theta_\text{old}}$): When taking multiple gradient steps on a single batch of rollouts, the current policy drifts from the policy that generated the data.
-Capping this ratio is exactly what CISPO does (discussed earlier)—TIS combined with REINFORCE and a stop-gradient.
-
-**Backend ratio** ($\pi_\text{learner} / \pi_\text{sampler}$): Even when the learner and sampler share identical weights, different parallelism strategies, floating-point precision, and GPU kernels across the inference engine (e.g., vLLM) and training backend (e.g., FSDP) produce different token-level log-probabilities [@yao2025offpolicy].
-This mismatch introduces a spurious importance weight that can destabilize gradients.
-TIS corrects for this by capping the per-token backend ratio:
+For a sampled token $a_t$ with prefix $(s, a_{<t})$, define the backend ratio and its truncated form [@ionides2008truncated]:
 
 $$
-\tilde{\rho}_t = \min\!\left(\frac{\pi_\text{learner}(a_t \mid s, a_{<t})}{\pi_\text{sampler}(a_t \mid s, a_{<t})},\; C\right),
+\rho_t^{\text{backend}} = \frac{\pi_\theta^{\text{learner}}(a_t \mid s, a_{<t})}{\pi_\theta^{\text{sampler}}(a_t \mid s, a_{<t})}, \qquad \tilde{\rho}_t^{\text{backend}} = \min(\rho_t^{\text{backend}},\; C).
 $$ {#eq:tis_backend}
 
-which is then multiplied into the per-token policy-gradient loss.
-These two corrections are orthogonal: one compensates for policy drift across gradient steps, the other for numerical divergence across backends.
-Both can be applied simultaneously.
+This is orthogonal to the usual policy ratio $\rho_t^{\text{policy}} = \pi_\theta(a_t \mid s) / \pi_{\theta_{\text{old}}}(a_t \mid s)$.
+The policy ratio corrects for drift across gradient steps; the backend ratio is an implementation-level correction for divergence between the sampler and learner.
+Both can be applied at once.
 
-In practice, the implementation is straightforward.
-The following snippet, adapted from the Open Instruct GRPO trainer, shows the core pattern:
+In practice, LLM RL systems apply backend TIS as a per-token correction weight on the policy-gradient loss:
 
 ```python
-# Backend TIS correction (learner vs. sampler log-probs)
-logprob_diff = learner_logprobs - sampler_logprobs  # per-token
-logprob_diff = logprob_diff.clamp(-10.0, 10.0)      # numerical safety
-tis_ratio = torch.exp(logprob_diff)
-tis_ratio = torch.clamp(tis_ratio, max=C)           # truncate at C
-pg_loss = pg_loss * tis_ratio                        # apply to loss
+# Shape: (B*G, L)
+C = 2.0  # backend TIS cap
+
+backend_logratio = learner_logprobs - sampler_logprobs
+backend_logratio = backend_logratio.clamp(-10.0, 10.0)  # numerical safety
+backend_tis = torch.exp(backend_logratio).clamp(max=C)  # one-sided truncation
+
+# Use as a fixed correction weight on the per-token PG loss
+per_token_pg_loss = per_token_pg_loss * backend_tis.detach()
 ```
 
-Ai2's Open Instruct uses $C = 2$ across all training configurations.
-TIS has been adopted widely, appearing in VeRL, OpenRLHF, SkyRL, and OAT among others.
-The backend mismatch is particularly relevant for reasoning models (Chapter 7), where long completions amplify the divergence between inference and training log-probabilities.
+The $[-10, 10]$ clamp is only for numerical stability before exponentiation; the actual truncated-importance-sampling step is the one-sided cap at $C$.
+Unlike GSPO, this correction is token-level because it addresses token-level numerical mismatch rather than sequence-level reward granularity.
+Backend TIS has been adopted across major open-source RL frameworks (VeRL, OpenRLHF, SkyRL, OAT, and Open Instruct, which uses $C = 2$), and becomes increasingly important for long reasoning traces (Chapter 7), where small per-token learner–sampler differences compound over thousands of generated tokens.
 
 
 ### Proximal Policy Optimization
