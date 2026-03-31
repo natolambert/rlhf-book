@@ -315,4 +315,7 @@ In all of these cases, DPO algorithms are a hair behind.
 Even with this performance delta, DAAs are still used extensively in leading models due to their simplicity.
 DAAs provide a controlled environment where iterations on training data and other configurations can be made rapidly, and given that data is often far more important than algorithms, using DPO can be fine.
 
+As a practical rule of thumb: use DPO when you are iterating quickly on data and want fast experimental cycles with minimal infrastructure, and use RL when you need maximum performance and have the engineering infrastructure to support online generation and reward model serving.
+Many teams start with DPO to validate their data pipeline and preference signal, then graduate to RL for final training runs where the performance margin justifies the added complexity.
+
 With the emergence of reasoning models that are primarily trained with RL, further investment will return to using RL for preference-tuning, which in the long-term will improve the robustness of RL infrastructure and cement this margin between DAAs and RL for optimizing from human feedback.
