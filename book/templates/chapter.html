@@ -91,7 +91,7 @@ $if(math)$
         });
       }
       // Run after MathJax finishes typesetting
-      if (window.MathJax && MathJax.startup) {
+      if (window.MathJax && MathJax.startup && MathJax.startup.promise) {
         MathJax.startup.promise.then(scaleOverflowingMath);
       }
       // Recompute on viewport resize
