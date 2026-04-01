@@ -61,13 +61,35 @@ $if(math)$
   </script>
   $math$
   <style>
-    /* Target all possible MathJax display containers */
+    /* Display math containers: no scrollbars, JS will scale oversized equations */
     .MathJax_Display, .MJXc-display, .math.display, mjx-container[jax="CHTML"][display="true"], mjx-container[jax="SVG"][display="true"] {
-      overflow-x: auto;
+      overflow-x: visible;
       max-width: 100%;
       padding: 0.5em 0;
     }
   </style>
+  <script>
+    // Scale down display equations that overflow their container
+    document.addEventListener('DOMContentLoaded', function() {
+      function scaleOverflowingMath() {
+        document.querySelectorAll('mjx-container[display="true"]').forEach(function(container) {
+          var parent = container.parentElement;
+          if (!parent) return;
+          var availableWidth = parent.clientWidth;
+          var mathWidth = container.scrollWidth;
+          if (mathWidth > availableWidth && availableWidth > 0) {
+            var scale = availableWidth / mathWidth;
+            container.style.transform = 'scale(' + scale + ')';
+            container.style.transformOrigin = 'center';
+          }
+        });
+      }
+      // Run after MathJax finishes typesetting
+      if (window.MathJax && MathJax.startup) {
+        MathJax.startup.promise.then(scaleOverflowingMath);
+      }
+    });
+  </script>
 $endif$
   <!--[if lt IE 9]>
     <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
