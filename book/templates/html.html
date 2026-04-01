@@ -73,6 +73,8 @@ $if(math)$
     document.addEventListener('DOMContentLoaded', function() {
       function scaleOverflowingMath() {
         document.querySelectorAll('mjx-container[display="true"]').forEach(function(container) {
+          // Clear any previous transform so scrollWidth reflects natural size
+          container.style.transform = '';
           var parent = container.parentElement;
           if (!parent) return;
           var availableWidth = parent.clientWidth;
@@ -88,6 +90,12 @@ $if(math)$
       if (window.MathJax && MathJax.startup) {
         MathJax.startup.promise.then(scaleOverflowingMath);
       }
+      // Recompute on viewport resize
+      var resizeTimer;
+      window.addEventListener('resize', function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(scaleOverflowingMath, 150);
+      });
     });
   </script>
 $endif$
