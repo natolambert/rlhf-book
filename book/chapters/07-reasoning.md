@@ -16,7 +16,8 @@ next-url: "08-direct-alignment"
 # Reasoning Training & Inference-Time Scaling
 
 Reasoning models and inference-time scaling enabled a massive step in language model performance in the end of 2024, through 2025, and into the future.
-Inference-time scaling is the underlying property of machine learning systems that language models trained to think extensively before answering exploit so well.
+Inference-time scaling is the ability to improve model performance by using more computation during generation, such as producing longer reasoning chains or sampling multiple responses.
+Language models trained to think extensively before answering exploit this property remarkably well.
 These models, trained with a large amount of reinforcement learning with verifiable rewards (RLVR) [@lambert2024t], still utilize large amounts of RLHF.
 In this chapter we review the path that led the AI community to a transformed appreciation for RL's potential in language models, review the fundamentals of RLVR, highlight key works, and point to the future debates that will define the area in the next few years.
 
@@ -198,7 +199,7 @@ What is important here is the correlation between downstream performance and an 
 ### The Future (Beyond Reasoning) of RLVR
 
 In many domains, these new flavors of RLVR are much more aligned with the goals of developers by being focused on performance rather than behavior. 
-Standard fine-tuning APIs generally use a parameter-efficient fine-tuning method such as LoRA with supervised fine-tuning on instructions. 
+Standard fine-tuning APIs generally use a parameter-efficient fine-tuning method such as LoRA (Low-Rank Adaptation, a parameter-efficient method that trains only small added matrices rather than all model weights, also referred to as parameter-efficient fine-tuning, PEFT) with supervised fine-tuning on instructions. 
 Developers pass in prompts and completions and the model is tuned to match that by updating model parameters to match the completions, which increases the prevalence of features from your data in the model's generations.
 
 RLVR is focused on matching answers. 
@@ -218,11 +219,11 @@ The core change is using far more RLVR and applying the other training technique
 
 ### Reasoning Research Pre OpenAI's o1 or DeepSeek R1
 
-Before the takeoff of reasoning models, a substantial effort was made understanding how to train language models to be better at verifiable domains.
+Before the takeoff of reasoning models, a substantial effort was made to understand how to train language models to be better at verifiable domains.
 The main difference between these works below is that their methodologies did not scale up to the same factor as those used in DeepSeek R1 and subsequent models, or they resulted in models that made sacrifices in overall performance in exchange for higher mathematics or coding abilities.
 The underlying ideas and motivations are included to paint a broader picture for how reasoning models emerged within the landscape.
 
-Some of the earliest efforts training language models on verifiable domains include the self-taught reasoner (STaR) line of work[@zelikman2022star] [@Zelikman2024QuietSTaRLM] and TRICE [@hoffman2023training], which both used ground-truth reward signals to encourage chain-of-thought reasoning in models throughout 2022 and 2023. 
+Some of the earliest efforts to train language models on verifiable domains include the self-taught reasoner (STaR) line of work[@zelikman2022star] [@Zelikman2024QuietSTaRLM] and TRICE [@hoffman2023training], which both used ground-truth reward signals to encourage chain-of-thought reasoning in models throughout 2022 and 2023. 
 STaR effectively approximates the policy gradient algorithm, but in practice filters samples differently and uses a cross-entropy measure instead of a log-probability, and Quiet-STaR expands on this with very related ideas of recent reasoning models by having the model generate tokens before trying to answer the verifiable question (which helps with training performance).
 TRICE [@hoffman2023training] also improves reasoning by generating traces and then optimizing with a custom Markov chain Monte Carlo inspired expectation maximization algorithm. 
 VinePPO [@VinePPO] followed these and used a setup that shifted closer to modern reasoning models. 
@@ -233,7 +234,7 @@ The binary rewards of Tülu 3 and modern reasoning training techniques can be co
 
 ### Early Reasoning Models
 
-A summary of the foundational reasoning research reports, some of which are accompanied by open data and model weights, following DeepSeek R1 is below.
+A summary of the foundational reasoning research reports, some of which are accompanied by open data and model weights, following DeepSeek R1 is shown in @tbl:reasoning_list.
 
 ::: {.table-wrap}
 | Date        | Name                        | TLDR                                                                  | Open weights | Open data |

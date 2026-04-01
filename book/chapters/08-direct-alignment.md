@@ -15,7 +15,7 @@ next-url: "09-rejection-sampling"
 
 # Direct Alignment Algorithms
 
-Direct Alignment Algorithms (DAAs) allow one to update models to solve the same RLHF objective, shown again in @eq:review_rlhf, without ever training an intermediate reward model or using reinforcement learning optimizers. 
+Direct Alignment Algorithms (DAAs) allow one to update models to solve the same RLHF objective without ever training an intermediate reward model or using reinforcement learning optimizers. 
 DAAs solve the same preference learning problem we've been studying (with literally the same data!), in order to make language models more aligned, smarter, and easier to use.
 The lack of a reward model and online optimization makes DAAs far simpler to implement, reducing compute spent during training and making experimentation easier.
 This chapter details the complex mathematics done to derive these algorithms, and then shows that the sometimes tedious derivations result in simple implementations.
@@ -39,12 +39,14 @@ Here we explain intuitions for how DPO works and re-derive the core equations fu
 ### How DPO Works
 
 DPO at a surface level is directly optimizing a policy to solve the RLHF objective.
-The loss function for this, which we will revisit below in the derivations, is a pairwise relationship of log-probabilities.
+The loss function for this, which we will revisit below in the derivations, compares how much the learned policy's probability of chosen and rejected completions has shifted relative to a reference model.
 The loss function derived from a Bradley-Terry reward model follows:
 
 $$ \mathcal{L}_{\text{DPO}}(\pi_\theta; \pi_{\text{ref}}) = -\mathbb{E}_{(x, y_c, y_r) \sim \mathcal{D}}\left[ \log \sigma\left( \beta \log \frac{\pi_{\theta}(y_c \mid x)}{\pi_{\text{ref}}(y_c \mid x)} - \beta \log \frac{\pi_{\theta}(y_r \mid x)}{\pi_{\text{ref}}(y_r \mid x)} \right) \right] $$ {#eq:dpo_core}
 
-Throughout, $\beta$ is a hyperparameter balancing the reward optimization to the KL distance between the final model and the initial reference (i.e. balancing over-optimization, a crucial hyperparameter when using DPO correctly).
+Inside the sigmoid, the first term $\beta \log \frac{\pi_{\theta}(y_c | x)}{\pi_{\text{ref}}(y_c | x)}$ measures how much the policy has increased the probability of the *chosen* completion relative to the reference model, and the second term does the same for the *rejected* completion. The loss decreases when the chosen shift exceeds the rejected shift -- i.e. when the policy learns to prefer the right response.
+
+Throughout, $\beta$ is a hyperparameter balancing the reward optimization to the KL divergence between the final model and the initial reference (i.e. balancing over-optimization, a crucial hyperparameter when using DPO correctly).
 This relies on the implicit reward for DPO training that replaces using an external reward model, which is a log-ratio of probabilities:
 
 $$r(x, y) = \beta  \log \frac{\pi_r(y \mid x)}{\pi_{\text{ref}}(y \mid x)}$$ {#eq:dpo_reward}
@@ -68,16 +70,16 @@ Here, the gradient solves the above objective by doing the following:
 
 - The first term within the sigmoid function, $\sigma(\cdot)$, creates a weight of the parameter update from 0 to 1 that is higher when the reward estimate is incorrect. When the rejected sample is preferred over the chosen, the weight update should be larger!
 - Second, the terms in the inner brackets $[\cdot]$ increase the likelihood of the chosen response $y_c$ and decrease the likelihood of the rejected $y_r$.
-- These terms are weighted by $\beta$, which controls how the update balances ordering the completions correctly relative to the KL distance.
+- These terms are weighted by $\beta$, which controls how the update balances ordering the completions correctly relative to the KL divergence.
 
 
-The core intuition is that DPO is fitting an implicit reward model whose corresponding optimal policy can be extracted in a closed form (thanks to gradient descent and our ML tools).
-The closed form of the equation means that it is straightforward to implement the exact gradient, rather than needing to reach it by proxy of training a reward model and sampling completions to score.
+The core intuition is that DPO is fitting an implicit reward model whose corresponding optimal policy can be extracted in closed form (@eq:dpo_opt_policy, thanks to gradient descent and our ML tools).
+Because the DPO loss is directly differentiable, it is straightforward to compute the exact gradient, rather than needing to reach it by proxy of training a reward model and sampling completions to score.
 What is often misunderstood is that DPO is learning a reward model at its core, hence the subtitle of the paper *Your Language Model is Secretly a Reward Model.* 
 It is easy to confuse this with the DPO objective training a policy directly, hence studying the derivations below is good for a complete understanding.
 
 With the implicit reward model learning, DPO is generating an optimal solution to the RLHF objective given the data in the dataset and the specific KL constraint in the objective $\beta$. 
-Here, DPO solves for the exact policy given a specific KL distance because the generations are not online as in policy gradient algorithms -- a core difference from the RL methods for preference tuning.
+Here, DPO solves for the exact policy given a specific KL divergence because the generations are not online as in policy gradient algorithms -- a core difference from the RL methods for preference tuning.
 In many ways, this makes the $\beta$ value easier to tune with DPO relative to online RL methods, but crucially and intuitively the optimal value depends on the model being trained and the data training it.
 
 At each batch of preference data, composed of many pairs of completions $y_{chosen} \succ y_{rejected}$, DPO takes gradient steps directly towards the optimal solution.
@@ -104,11 +106,11 @@ Since both terms now share the same expectation over $y \sim \pi(y|x)$, we can c
 
 $$\max_{\pi} \mathbb{E}_{x \sim \mathcal{D}}\mathbb{E}_{y \sim \pi(y|x)}\left[r(x,y)-\beta\log\frac{\pi(y|x)}{\pi_{\text{ref}}(y|x)}\right] $$ {#eq:dpo_deriv_1}
 
-Next, pull the negative sign out of the difference in brackets. To do this, split it into two terms:
+Next, bring the negative sign out of the difference in brackets. To do this, split it into two terms:
 
 $$ = \max_{\pi}\left(\mathbb{E}_{x \sim \mathcal{D}}\mathbb{E}_{y \sim \pi(y|x)}[r(x,y)] - \beta\,\mathbb{E}_{x \sim \mathcal{D}}\mathbb{E}_{y \sim \pi(y|x)}\left[\log\frac{\pi(y|x)}{\pi_{\text{ref}}(y|x)}\right]\right) $$ {#eq:dpo_deriv_2}
 
-Then, remove the factor of $-1$ (convert the maximization into a minimization),
+Then, multiply by $-1$ to convert the maximization into a minimization:
 
 $$ = \min_{\pi}\left(-\mathbb{E}_{x \sim \mathcal{D}}\mathbb{E}_{y \sim \pi(y|x)}[r(x,y)] + \beta\,\mathbb{E}_{x \sim \mathcal{D}}\mathbb{E}_{y \sim \pi(y|x)}\left[\log\frac{\pi(y|x)}{\pi_{\mathrm{ref}}(y|x)}\right]\right) $$ {#eq:dpo_deriv_3}
 
@@ -152,7 +154,7 @@ Since we introduced the partition function $Z(x)$, thereby making the term $\fra
 
 $$ \min_{\pi}\mathbb{E}_{x\sim\mathcal{D}}\left[\mathcal{D}_{\text{KL}} \left(\pi(y|x) \middle\| \frac{1}{Z(x)}\pi_{\text{ref}}(y|x)\exp\left(\frac{1}{\beta}r(x,y)\right) \right) - \log Z(x)\right] $$ {#eq:dpo_deriv_11}
 
-Since the term $\log Z(x)$ does not depend on the final answer, we can ignore it. This leaves us with just the KL distance between the policy we are learning and a form relating the partition, $\beta$, reward, and reference policy.
+Since the term $\log Z(x)$ does not depend on the final answer, we can ignore it. This leaves us with just the KL divergence between the policy we are learning and a form relating the partition, $\beta$, reward, and reference policy.
 The Gibb's inequality tells this is minimized at a distance of 0, only when the two quantities are equal!
 Hence, we get an optimal policy:
 
@@ -264,13 +266,19 @@ DAAs such as DPO are implemented very differently than policy gradient optimizer
 The DPO loss, taken from the original implementation, largely can be summarized as follows [@rafailov2024direct]:
 
 ```python
+# Log-probability gaps for the policy and the frozen reference model
 pi_logratios = policy_chosen_logps - policy_rejected_logps
 ref_logratios = reference_chosen_logps - reference_rejected_logps
 
-logits = pi_logratios - ref_logratios  # also known as h_{\pi_\theta}^{y_w,y_l}
+# Difference of log-ratios: positive when the policy
+# shifts probability toward the chosen completion
+logits = pi_logratios - ref_logratios
 
+# DPO loss: negative log-sigmoid drives the policy to
+# widen the gap between chosen and rejected
 losses = -F.logsigmoid(beta * logits)
 
+# Implicit rewards (detached -- used for logging only)
 chosen_rewards = beta * (policy_chosen_logps - reference_chosen_logps).detach()
 rejected_rewards = beta * (policy_rejected_logps - reference_rejected_logps).detach()
 ```
@@ -279,7 +287,7 @@ This can be used in standard language model training stacks as this information 
 
 In most ways, DAAs are simpler and a quality of life improvement, but they also offer a different set of considerations.
 
-1. **KL distance is static**: In DPO and other algorithms, the KL distance is set explicitly by the $\beta$ parameter that balances the distance penalty to the optimization. This is due to the fact that DPO takes gradient steps towards the *optimal* solution to the RLHF objective given the data -- it steps exactly to the solution set by the $\beta$ term. On the other hand, RL based optimizers take steps based on the batch and recent data.
+1. **KL divergence is static**: In DPO and other algorithms, the KL divergence is set explicitly by the $\beta$ parameter that balances the distance penalty to the optimization. This is due to the fact that DPO takes gradient steps towards the *optimal* solution to the RLHF objective given the data -- it steps exactly to the solution set by the $\beta$ term. On the other hand, RL based optimizers take steps based on the batch and recent data.
 2. **Caching log-probabilities**: Simple implementations of DPO do the forward passes for the policy model and reference models at the same time for convenience with respect to the loss function. Though, this doubles the memory used and results in increased GPU usage. To avoid this, one can compute the log-probabilities of the reference model over the training dataset first, then reference it when computing the loss and updating the parameters per batch, reducing the peak memory usage by 50%.
 
 ## DAAs with Synthetic Preference Data

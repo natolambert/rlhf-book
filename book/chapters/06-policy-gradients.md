@@ -16,7 +16,7 @@ next-url: "07-reasoning"
 # Reinforcement Learning (i.e. Policy Gradient Algorithms)
 
 In the RLHF process, the reinforcement learning algorithm slowly updates the model's weights with respect to feedback from a reward model.
-The policy -- the model being trained -- generates completions to prompts in the training set, then the reward model scores them, and then the reinforcement learning optimizer takes gradient steps based on this information (see @fig:rlhf-overview for an overview).
+The policy -- the model being trained -- generates completions to prompts in the training set, then the reward model scores them, and the reinforcement learning optimizer takes gradient steps based on this information (see @fig:rlhf-overview for an overview).
 This chapter explains the mathematics and trade-offs across various algorithms used to learn from the signal the reward model gives to on-policy data.
 These algorithms are run for a period of many epochs, often thousands or millions of batches across a larger set of prompts, with gradient updates in between each of them.
 
@@ -27,13 +27,19 @@ In this section we will cover the fundamentals of the policy gradient algorithms
 At a machine learning level, this section is the subject with the highest complexity in the RLHF process.
 Though, as with most modern AI models, the largest determining factor on its success is the data provided as inputs to the process.
 
-![Overview of the RLHF training loop. A prompt from the dataset is passed to the tuned policy, which generates a completion. The reward model scores this completion, while the frozen initial model computes log probabilities on the same text to calculate a KL penalty that prevents excessive drift. The combined reward signal then drives a reinforcement learning update to the policy parameters.](images/rlhf-overview.png){#fig:rlhf-overview}
+![Overview of the RLHF training loop. A prompt from the dataset is passed to the tuned policy, which generates a completion. The reward model scores this completion, while the frozen initial model (typically the instruction-tuned model before RL) computes log probabilities on the same text to calculate a KL penalty that prevents excessive drift. The combined reward signal then drives a reinforcement learning update to the policy parameters.](images/rlhf-overview.png){#fig:rlhf-overview}
 
 <!-- The most popular algorithms used for RLHF have evolved over time. -->
 When RLHF came onto the scene with ChatGPT, it was largely known that they used a variant of PPO, and many initial efforts were built upon that.
 Over time, multiple research projects showed the promise of REINFORCE-style algorithms [@ahmadian2024back] [@wang2024helpsteer2p], touted for its simplicity over PPO without a reward model (saves memory and therefore the number of GPUs required) and with simpler value estimation (no Generalized Advantage Estimation, GAE, which is a method to compute advantages used for variance reduction in policy gradient algorithms).
 More algorithms have emerged, including Group Relative Policy Optimization, which is particularly popular with reasoning tasks, but in general many of these algorithms can be tuned to fit a specific task.
 In this chapter, we cover the core policy gradient setup and the three algorithms mentioned above due to their central role in the establishment of a canonical RLHF literature.
+
+At its simplest, the RL stage of RLHF requires two models: a policy (the model being trained) and a reward model that scores its outputs (as covered in the previous chapter).
+A copy of the policy before RL serves as the reference model for computing a KL penalty (this model is frozen, i.e. it is not updated with gradients from the automatic differentiation engine).
+The most complex algorithm covered here, PPO, adds a fourth model -- a learned value function used to estimate how good each token in the action was, also a large language model updated during training.
+The algorithms in this chapter differ mainly in how they estimate a quantity called *advantages* -- a measure of how good the current action (completion) from the model is relative to average -- and how they constrain policy updates so the optimization is numerically stable.
+A visual overview of this RLHF process (without the value model) is shown in @fig:rlhf-overview.
 
 For definitions of symbols, see the problem setup chapter.
 
@@ -203,7 +209,7 @@ The advantage function measures how much better action $a_t$ is compared to the 
 
 $$A(s_t,a_t) = Q(s_t,a_t) - V(s_t) = r_t + \gamma V(s_{t+1}) - V(s_t)$$ {#eq:advantage_trick}
 
-This final form is exactly the TD residual (item 6 above). In practice, a learned value function $\hat{V}$ is used to estimate the advantage via this TD error.
+This final form is exactly the temporal difference (TD) residual (item 6 above) -- a fundamental quantity in RL that measures the gap between the value function's prediction and what actually occurred, driving value function updates toward more accurate estimates. In practice, a learned value function $\hat{V}$ is used to estimate the advantage via this TD error.
 
 ### Vanilla Policy Gradient
 
@@ -352,7 +358,7 @@ $$ J(\theta) = \frac{1}{|a|} \sum_{t=0}^{|a|} \min\left(\frac{\pi_\theta(a_{t}|s
 This is the per-token version of PPO, which also applies to other policy-gradient methods, but is explored further later in the implementation section of this chapter.
 Here, the term for averaging by the number of tokens in the action, $\frac{1}{|a|}$, comes from common implementation practices, but is not in a formal derivation of the loss (shown in [@liu2025understanding]).
 
-![PPO architecture. A learned value function enables Generalized Advantage Estimation (GAE) for per-token advantages, used with a clipped surrogate objective.](images/ppo_tikz.png){#fig:ppo-arch}
+![PPO framework. A learned value function enables Generalized Advantage Estimation (GAE) for per-token advantages, used with a clipped surrogate objective.](images/ppo_tikz.png){#fig:ppo-arch}
 
 Here we will explain the different cases this loss function triggers given various advantages and policy ratios.
 At an implementation level, the inner computations for PPO involve two main terms: 1) a standard policy gradient with a learned advantage and 2) a clipped policy gradient based on a maximum step size.

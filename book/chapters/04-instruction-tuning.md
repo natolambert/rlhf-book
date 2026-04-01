@@ -20,6 +20,7 @@ lecture-label: "Lecture 2: IFT, Reward Modeling, Rejection Sampling (Chap. 4, 5,
 Early large pretrained language models were trained with a next-token prediction objective and, by default, did not come with an explicit interface for following instructions.
 Around the release of GPT-3 [@brown2020language], prompting and in-context learning became a widely used way to adapt a single model to many tasks (though task-specific fine-tuning remained common), by showing examples in-context and asking the model to complete a similar task.
 A practical next step was instruction fine-tuning, which teaches the model to respond in an instruction-response format rather than just continuing text.
+For example, given the prompt "What is the capital of France?", a base model might continue with "What is the capital of Germany? What is the capital of Italy?..." — simply extending the pattern of questions — while an instruction-tuned model would respond with "The capital of France is Paris."
 
 Instruction fine-tuning took off when two lines of work converged.
 First, NLP shifted from bespoke-fine-tuning task setups to a unified "text-to-text" or instruction framing, which made it straightforward to standardize diverse datasets and train a single model across many tasks.
@@ -32,6 +33,9 @@ Since its discovery, instruction fine-tuning, also called colloquially just *ins
 At its core, IFT is the simplest method for adapting language models to a desired task distribution.
 It serves as the foundation for RLHF by preparing the model for a format of instructions that is known as question-answering, and it is the first tool used by those attempting to apply modern techniques to new domains.
 Without a basic level of instruction-following abilities, most of the pipelines we discuss in this book—from preference data collection to online RLHF optimization—cannot be performed.
+
+Instruction fine-tuning generally is covered extensively elsewhere and is supervised learning at its core, so this chapter focuses on the practical details that matter most for RLHF practitioners: how training data is formatted and structured.
+Decisions on data and formatting are directly leveraged in the later training stages to create a common language for the model to absorb post-training data.
 
 ## Chat templates and the structure of instructions
 

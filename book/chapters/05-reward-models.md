@@ -21,6 +21,7 @@ Reward models are core to the modern approach to RLHF by being where the complex
 They are what enable our models to learn from hard to specify signals. 
 They compress complex features in the data into a representation that can be used in downstream training -- a sort of magic that once again shows the complex capacity of modern deep learning.
 These models act as proxy objectives for the core optimization, as studied in the following chapters.
+As shown in @fig:rm-role-in-rlhf, the reward model plays a role like the standard RL environment, providing the learning signal for the agent, but unlike a fixed environment, we get to learn it from human preferences.
 
 Reward models have historically been used extensively in reinforcement learning research as a proxy for environment rewards [@sutton2018reinforcement].
 Reward models were proposed, in their modern form, as a tool for studying the value alignment problem [@leike2018scalable].
@@ -111,6 +112,7 @@ loss = -nn.functional.logsigmoid(rewards_chosen - rewards_rejected).mean()
 ```
 
 As for the bigger picture, this is often within a causal language model (a model that generates tokens left-to-right, predicting each token conditioned on all previous ones) that has an additional head added (and learned with the above loss) that transitions from the final hidden state to the score of the inputs.
+The code takes in standard transformer inputs -- `input_ids` (tokenized text) and `attention_mask` (which marks real tokens vs. padding) -- and extracts the hidden state (the model's internal representation of the input) at the last real token, which is then passed through a linear layer to produce a scalar reward.
 This model will have a structure as follows:
 
 ```python
@@ -178,7 +180,7 @@ The traditional reward modeling loss has been modified in many popular works, bu
 
 ### Preference Margin Loss
 
-In the case where annotators are providing either scores or rankings on a Likert Scale, the magnitude of the relational quantities can be used in training.
+In the case where annotators are providing either scores or rankings on a Likert Scale (a rating scale with ordered categories indicating magnitude of preference, e.g. 1--5), the magnitude of the relational quantities can be used in training.
 The most common practice is to binarize the data along the preference direction, reducing the mixed information of relative ratings or the strength of the ranking to just chosen and rejected completions.
 The additional information, such as the magnitude of the preference, has been used to improve model training, but it has not converged as a standard practice.
 Llama 2 proposes using the margin between two datapoints, $m(y_c, y_r)$, to distinguish the magnitude of preference:
@@ -193,9 +195,9 @@ Note that in Llama 3 the margin term was removed as the team observed diminishin
 
 ### Balancing Multiple Comparisons Per Prompt
 
-InstructGPT studies the impact of using a variable number of completions per prompt, yet balancing them in the reward model training [@ouyang2022training].
+InstructGPT studies the impact of using $K = 4$ to $9$ completions per prompt to rank, producing $\binom{K}{2}$ pairwise comparisons from each prompt [@ouyang2022training].
 To do this, they weight the loss updates per comparison per prompt.
-At an implementation level, this can be done automatically by including all examples with the same prompt in the same training batch, naturally weighing the different pairs -- otherwise, overfitting to the prompts can occur.
+At an implementation level, this can be done automatically by including all examples with the same prompt in the same training batch, naturally weighing the different pairs -- otherwise, overfitting to the prompts can occur because a single prompt would appear in many separate batches.
 The loss function becomes:
 
 $$\mathcal{L}(\theta) = - \frac{1}{\binom{K}{2}} \mathbb{E}_{(x, y_c, y_r)\sim D} \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) \right) \right)$$ {#eq:rewardmodelinginstructgpt}
@@ -226,7 +228,7 @@ The training data for an ORM is constructed in a similar manner to standard pref
 Here, we have a problem statement or prompt, $x$ and two completions $y_1$ and $y_2$. 
 The inductive bias used here is that one completion should be a correct solution to the problem and one incorrect, resulting in $(y_c,y_{ic})$.
 
-The shape of the models used is very similar to a standard reward model, with a linear layer appended to a model that can output a single logit (in the case of an RM) -- with an ORM, the training objective that follows is slightly different [@cobbe2021gsm8k]:
+The architecture of the models used is very similar to a standard reward model, with a linear layer appended to a model that can output a single logit (in the case of an RM) -- with an ORM, the training objective that follows is slightly different [@cobbe2021gsm8k]:
 
 > [We] train verifiers with a joint objective where the model
 learns to label a model completion as correct or incorrect, in addition to the original language modeling objective. 
@@ -297,7 +299,7 @@ loss = F.binary_cross_entropy_with_logits(
 )
 ```
 
-The important intuition here is that an ORM will output a probability of correctness at every token in the sequence.
+The important intuition here is that an ORM will output a probability of correctness at every token in the sequence (judged only by the final answer -- reasoning errors are not captured in the ORM training process).
 This can be a noisy process, as the updates and loss propagates per token depending on outcomes and attention mappings.
 <!-- On the other hand, this process is more computationally intensive. [@cobbe2021gsm8k] posits a few potential benefits to these models, such as (1) implementation of ORMs often being done with both the standard next-token language modelling loss and the reward modelling loss above in @eq:orm_loss and (2) the ORM design as a token-level loss outperforms completion-level loss calculation used in standard RMs. -->
 
@@ -410,7 +412,7 @@ Below, a summary of what the models predict and how they are trained.
 Table: Comparing types of reward models. {#tbl:rm_compare}
 :::
 
-Some notes, given the above table has a lot of edge cases.
+A few caveats on the distinctions in this table, as the boundaries between model types are not always clear cut:
 
 - Both in preference tuning and reasoning training, the value functions often have a discount factor of 1, which makes a value function even closer to an outcome reward model, but with a different training loss.
 - A process reward model can be supervised by doing rollouts from an intermediate state and collecting outcome data. This blends multiple ideas, but if the *loss* is per reasoning step labels, it is best referred to as a PRM.
