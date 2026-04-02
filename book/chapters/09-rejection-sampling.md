@@ -17,15 +17,16 @@ lecture-label: "Lecture 2: IFT, Reward Modeling, Rejection Sampling (Chap. 4, 5,
 
 # Rejection Sampling
 
-Rejection Sampling (RS) is a popular and simple baseline for performing preference fine-tuning.
-This makes it one of a handful of methods that are used after a first round of instruction tuning in order to further refine the model to human preferences. 
-Rejection sampling operates by curating new candidate completions, filtering them based on a trained reward model, and then instruction fine-tuning the original model only on the top completions (same loss function as when doing a dedicated training stage for learning to follow instructions).
+Rejection Sampling (RS) is one of the most widely used yet least documented methods in preference fine-tuning.
+Many prominent RLHF papers use it as a core component of their training pipeline, yet no canonical implementation or explanation of why it works so well exists.
+RS can be applied at multiple points in the training pipeline -- after instruction fine-tuning, after RL-based optimization, or even after RLVR -- making it a versatile but hard-to-place tool.
+Combined with its underdocumented nature, this is why it appears here at the end of the core optimization methods.
+
+Rejection sampling operates by curating new candidate completions, filtering them based on a trained reward model, and then fine-tuning the original model only on the top completions (the same loss function as instruction tuning).
 
 The name originates from computational statistics [@gilks1992adaptive], where one wishes to sample from a complex distribution, but does not have a direct method to do so.
 To alleviate this, one samples from a simpler distribution to model and uses a heuristic to check if the sample is permissible.
 With language models, the target distribution is high-quality completions to prompts, the filter is a reward model, and the sampling distribution is the current model.
-
-Many prominent RLHF and preference fine-tuning papers have used rejection sampling as a baseline, but a canonical implementation and documentation does not exist.
 
 WebGPT [@nakano2021webgpt], Anthropic's Helpful and Harmless agent [@bai2022training], OpenAI's popular paper on process reward models [@lightman2023let], Llama 2 Chat models [@touvron2023llama], and other seminal works all use this baseline; more recent work has formalized it directly (e.g., RAFT [@dong2023raft] for applying it to alignment in multiple modalities and Statistical Rejection Sampling Optimization (RSO) [@liu2023statistical] that gives a principled overview on how rejection sampling relates to other preference learning objectives).
 
@@ -37,7 +38,7 @@ Rejection sampling overall follows a few stages.
 
 0. **Prompt and reward model selection:** First, you must select the prompts you want to train on, relative to other stages of training. The simplest method is to re-use every prompt from the first SFT/IFT stage, but this can cause some overfitting. Before doing rejection sampling, you must also have trained a reward model (see Chapter 5 for more information).
 1. **Generate completions from the starting checkpoint:** Next, one must generate completions to the selected prompts with the model they want to optimize. This can involve tweaking many settings, such as sampling temperature, top-p, max sequence length, number of completions per prompt, etc.
-2. **Select top completions with a reward model**: All completions are ranked by a reward model. This can include deduplication to only have one prompt per completion after this stage, or not, as a lot of the decisions become based on empirical ablation studies.
+2. **Select top completions with a reward model**: All completions are ranked by a reward model. This stage may also include deduplication to keep only one completion per prompt, though many such design choices come down to empirical ablation studies.
 3. **SFT on top completions:** To finish rejection sampling, one instruction fine-tunes the starting checkpoint on the selected completions.
 
 A visual overview of the rejection sampling process is included below in @fig:rs-overview.

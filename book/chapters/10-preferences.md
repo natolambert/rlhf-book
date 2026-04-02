@@ -164,8 +164,9 @@ The term *reward* emerged from the study of operant conditioning, animal behavio
 Reward-to-go follows the notion of utility, which is a measure of rationality [@briggs2014normative], modified to measure or predict the reward coming in a future time window.
 In the context of the mathematical tools used for reinforcement learning, utility-to-go was invented in control theory, specifically in the context of analog circuits in 1960 [@widrow1960adaptive].
 These methods are designed around systems with clear definitions of optimality, or numerical representations of goals of an agent.
+
 Reinforcement learning systems are well known for their development with a discount factor, a compounding multiplicative factor, $\gamma \in [0,1]$, for re-weighting future rewards.
-Both the original optimal control systems stand and early algorithms for reward stand in heavy contrast to reward models that aggregate multimodal preferences.
+Both the original optimal control systems and early algorithms for reward stand in heavy contrast to reward models that aggregate multimodal preferences.
 Specifically, RL systems expect rewards to behave in a specific manner, quoting [@singh2009rewards]:
 
 > Rewards in an RL system correspond to primary rewards, i.e., rewards that in animals have been hard-wired by the evolutionary process due to their relevance to reproductive success.
@@ -207,11 +208,13 @@ This primarily reflects the engineering path by which a stable approach to perfo
 
 ### Steering preferences
 
-The context in which reinforcement learning was designed means that rewards and costs are assumed to be stable and determinative. Both rewards and costs are expected to be functions, such that if the agent is in a specific state-action pair, then it will be returned a certain value.
-As we move into preferences, this is no longer the case, as human preferences constantly drift temporally throughout their experiences.
-The overloading of the term "value" within these two contexts complicates the literature of RLHF that is built on the numerical value updates in Bellman equations with the very different notion of what is a human value, which often refers to moral or ethical principles, but is not well defined in technical literature.
-An example of where this tension can be seen is how reward models are attempting to map from the text on the screen to a scalar signal, but in reality, dynamics not captured in the problem specification influence the true decision [@salha2011aesthetics; @gilbert2022choices], such as preference shift when labeling many examples sequentially and assuming they are independent.
-Therein, modeling preferences is at best compressing a multi-reward environment to a single function representation.
+The context in which reinforcement learning was designed means that rewards and costs are assumed to be stable and determinative. Both rewards and costs are expected to be functions: given a specific state-action pair, the agent receives a fixed numerical return.
+As we move into preferences, this is no longer the case -- human preferences constantly drift throughout their experiences.
+
+The overloading of the term "value" complicates the RLHF literature. In RL, a *value* is a numerical estimate of future reward (as in the Bellman equation); in alignment discussions, a *value* refers to a moral or ethical principle. The two senses are quite different, yet they coexist in RLHF papers without always being distinguished.
+
+An example of where this tension surfaces is reward modeling: the model attempts to map text on a screen to a scalar signal, but dynamics not captured in the problem specification influence the true decision [@salha2011aesthetics; @gilbert2022choices], such as preference shift when labeling many examples sequentially and assuming they are independent.
+At best, modeling preferences compresses a multi-dimensional reward landscape into a single scalar function.
 
 In theory, the Von Neumann-Morgenstern (VNM) utility theorem gives the designer license to construct such functions, because it ties together the foundations of decision theory under uncertainty, preference theory, and abstract utility functions [@von1947theory]; together, these ideas allow preferences to be modeled in terms of expected value to some individual agent.
 The MDP formulation used in most RL research has been shown in theory to be modifiable to accommodate the VNM theorem [@pitis2019rethinking], but this is rarely used in practice.

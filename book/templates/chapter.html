@@ -65,9 +65,10 @@ $if(math)$
   </script>
   $math$
   <style>
-    /* Target all possible MathJax display containers */
+    /* Horizontal scroll for wide equations, no vertical scrollbars */
     .MathJax_Display, .MJXc-display, .math.display, mjx-container[jax="CHTML"][display="true"], mjx-container[jax="SVG"][display="true"] {
       overflow-x: auto;
+      overflow-y: hidden !important;
       max-width: 100%;
       padding: 0.5em 0;
     }
