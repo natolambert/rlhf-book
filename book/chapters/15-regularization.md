@@ -131,27 +131,40 @@ The previous section showed that RL generalizes where SFT memorizes on a single 
 Chen et al. 2025 [@chen2025retainingdoingroleonpolicy] ask the complementary question: when training *sequentially* on multiple tasks, does the model retain what it already knew?
 They find that RL achieves comparable or higher gains on target tasks while forgetting substantially less than SFT, and trace this advantage to a fundamental difference in what the two objectives optimize.
 
-To understand why the two methods behave so differently, we can view their objectives through the lens of KL divergence, which can be expressed in two directions:
+To understand why the two methods behave so differently, we can view their objectives through the lens of KL divergence.
+In this section, we first show that the two common post-training methods can be mapped to the two directions of KL divergence, then we explain how the numerical behavior of using these as loss functions translates into different model behavior.
+
+The KL divergence is defined as the expected log-ratio between two distributions, $\mathbb{E}_{x \sim P}\!\left[\log \frac{P(x)}{Q(x)}\right]$, which can be written as a log difference, in two directions:
 
 - **Forward KL**: $\text{KL}(P \| Q) = \mathbb{E}_{x \sim P}[\log P(x) - \log Q(x)]$
 - **Reverse KL**: $\text{KL}(Q \| P) = \mathbb{E}_{x \sim Q}[\log Q(x) - \log P(x)]$
 
 where $P$ is the target distribution and $Q$ is the distribution we are modeling with parameters $\theta$.
 The key difference is which distribution we sample from: forward KL samples from the target (or optimal) distribution $P$, whereas reverse KL samples from our policy $Q$.
-In the derivations below, $P$ corresponds to the target $\pi_\star$ (the training data distribution when analyzing SFT, or the reward-optimal policy when analyzing RL) and $Q$ to the learned policy $\pi_\theta$. SFT places the target first — $\text{KL}(\pi_\star \| \pi_\theta)$ — while RL flips the order — $\text{KL}(\pi_\theta \| \pi_\star)$ — changing which distribution we sample from.
+In the derivations below, $P$ corresponds to the target $\pi_\star$ (the training data distribution when analyzing SFT, or the reward-optimal policy when analyzing RL) and $Q$ to the learned policy $\pi_\theta$ (what we are training). 
+SFT places the target first — $\text{KL}(\pi_\star \| \pi_\theta)$ — while RL flips the order — $\text{KL}(\pi_\theta \| \pi_\star)$ — changing which distribution we sample from.
+The samples provide the data to learn from. The objective, SFT or RL, shapes the model from said data.
 
-**SFT $\approx$ Forward KL.** Let $\pi_\star$ be the target distribution for our dataset. Then, the forward KL divergence is:
+**SFT $\approx$ Forward KL.** Begin with the definition of forward KL:
 
 $$
-\begin{aligned}
-\text{KL}(\pi_\star \| \pi_\theta) &= \mathbb{E}_{(x,y) \sim \mathcal{D}} \left[ \log \pi_\star(y \mid x) - \log \pi_\theta(y \mid x) \right] \\
-&= \mathbb{E}_{(x,y) \sim \mathcal{D}} \left[ \log \pi_\star(y \mid x) \right] - \mathbb{E}_{(x,y) \sim \mathcal{D}} \left[ \log \pi_\theta(y \mid x) \right] \\
-&= \underbrace{-H(\pi_\star)}_\text{const} + \mathcal{L}_\text{SFT}(\theta) \\
-&\propto \mathcal{L}_\text{SFT}(\theta)
-\end{aligned}
+\text{KL}(\pi_\star \| \pi_\theta) = \mathbb{E}_{(x,y) \sim \mathcal{D}} \left[ \log \pi_\star(y \mid x) - \log \pi_\theta(y \mid x) \right]
+$$
+
+Splitting the expectation over the log difference into two terms gives:
+
+$$
+= \mathbb{E}_{(x,y) \sim \mathcal{D}} \left[ \log \pi_\star(y \mid x) \right] - \mathbb{E}_{(x,y) \sim \mathcal{D}} \left[ \log \pi_\theta(y \mid x) \right]
+$$
+
+The first term, $\mathbb{E}[\log \pi_\star(y \mid x)]$, depends only on the data distribution and equals the negative entropy $-H(\pi_\star)$ — a constant that does not change with $\theta$.
+The second term, $-\mathbb{E}[\log \pi_\theta(y \mid x)]$, is the negative log-likelihood over the dataset, which is the standard SFT cross-entropy loss $\mathcal{L}_\text{SFT}(\theta)$. Substituting:
+
+$$
+= \underbrace{-H(\pi_\star)}_\text{const} + \mathcal{L}_\text{SFT}(\theta) \propto \mathcal{L}_\text{SFT}(\theta)
 $$ {#eq:sft_forward_kl}
 
-Since $H(\pi_\star)$ is constant with respect to $\theta$, minimizing the SFT loss is exactly equivalent to minimizing the **forward KL** divergence $\text{KL}(\pi_\star \| \pi_\theta)$.
+Since the entropy term is constant with respect to $\theta$, the two losses share the same gradients and the same minimum — minimizing the SFT loss is equivalent to minimizing the **forward KL** divergence $\text{KL}(\pi_\star \| \pi_\theta)$.
 
 **RL $\approx$ Reverse KL.** Let us start with the standard KL-regularized RL objective:
 
@@ -171,7 +184,7 @@ $$
 = \min_\pi \; \mathbb{E}_{x \sim \mathcal{D}} \left[ \text{KL}\!\left(\pi(\cdot \mid x) \;\middle\|\; \frac{1}{Z(x)} \pi_\text{ref}(\cdot \mid x) \exp\!\left(\tfrac{1}{\beta} r(x,y)\right) \right) - \log Z(x) \right]
 $$ {#eq:rl_kl_form}
 
-Since $\log Z(x)$ does not depend on $\pi$, the KL is minimized at zero when $\pi$ equals the reward-tilted distribution.
+Since $\log Z(x)$ does not depend on $\pi$, and KL divergence is non-negative and equals zero if and only if the two distributions are identical, the KL is minimized at zero when $\pi$ equals the reward-tilted distribution.
 The optimal policy under reward $r(x,y)$ is therefore:
 
 $$
@@ -196,17 +209,22 @@ This derivation shows that SFT and RL optimize fundamentally different objective
 
 ![Forgetting dynamics for forward KL (SFT) versus reverse KL (RL). The "old" mode represents prior knowledge, the "new" mode represents the target task. Forward KL stretches the policy to cover the target and pulls mass away from the old mode (top right), while reverse KL shifts the new mode toward the target without disturbing the old mode (bottom right). From Chen et al. 2025, with permission of the author.](images/retaining_by_doing_mode_intuition.png){#fig:retaining-mode-intuition}
 
-Forward KL penalizes the model whenever the target distribution has mass where the model does not, which forces the model to cover all modes of the target — spreading probability broadly even if it means assigning mass to low-probability regions (**mode covering**).
-Reverse KL only penalizes the model in regions where it actually places mass, which allows it to seek a single mode and fit it precisely while ignoring others entirely (**mode seeking**).
+The two directions of KL divergence induce different optimization pressures.
+
+Forward KL penalizes the model whenever the target distribution has mass where the model does not, which tends to encourage **mode covering** — the model spreads probability broadly to cover all major modes of the target.
+To see why: the expectation in forward KL is taken under $\pi_\star$, so it heavily penalizes the model for failing to assign probability to regions where the target has mass.
+
+Reverse KL only penalizes the model in regions where it actually places mass, which tends to encourage **mode seeking**: the model can concentrate on one high-probability mode while ignoring others.
+Here the expectation is taken under $\pi_\theta$ — the model's own distribution — so regions where $\pi_\theta(y \mid x) \approx 0$ contribute little to the loss, even if $\pi_\star$ assigns substantial mass there. 
+At the same time, it penalizes the model for placing mass where the target does not.
 
 Given this distinction, we might naively expect SFT to forget *less* than RL: mode-covering forward KL should maintain mass across all modes of the target, preserving old knowledge, while mode-seeking reverse KL could collapse onto a single high-reward mode and abandon others.
-
 However, the opposite holds.
 This intuition assumes a unimodal policy, but pre-trained LLMs contain multiple modes — and for multimodal distributions, the dynamics flip.
 
 Consider a policy with two modes: an "old" mode representing prior knowledge and a "new" mode for the target task (@fig:retaining-mode-intuition).
-Forward KL (SFT) must cover both modes of the target distribution, which forces the policy to stretch and redistribute probability mass *from* the old mode, disrupting its shape and causing forgetting.
-Reverse KL (RL), by contrast, only needs to place mass on some high-reward region, so it can shift the new mode toward the target without touching the old mode at all, leaving prior knowledge intact.
+Forward KL (SFT) tries to cover both modes of the target distribution, which pushes the policy to stretch and redistribute probability mass *from* the old mode, disrupting its shape and causing forgetting.
+Reverse KL (RL), by contrast, only needs to place mass on some high-reward region, so it can shift a new mode it samples from toward the target without touching the old mode at all, leaving prior knowledge intact.
 
 RL's mode-seeking behavior — a structural property of reverse KL — preserves the breadth of the model's prior knowledge and enables better generalization.
 
@@ -218,9 +236,9 @@ To summarize:
 
 ### RL's Razor: Why Online RL Forgets Less
 
-The previous section showed that on-policy sampling drives RL's forgetting resistance and traced the mechanism to forward-vs-reverse KL dynamics. Shenfeld et al. 2026 [@shenfeld2026rls] offer a complementary perspective, again through the lens of KL divergence.
-
-For any given task, there exist many distinct policies which achieve high performance. Shenfeld et al. 2026 [@shenfeld2026rls] introduce the **RL's Razor** thesis which postulates the following:
+The previous section showed that on-policy sampling drives RL's resistance to forgetting and traced the mechanism to forward-vs-reverse KL dynamics. 
+For any given task, there exist many distinct policies which achieve high performance. 
+Shenfeld et al. 2026 [@shenfeld2026rls] offer a complementary perspective on RL's generalization, introducing the **RL's Razor** thesis which postulates the following:
 
 > Among the many high-reward solutions for a new task, on-policy methods such as RL are inherently biased toward solutions that remain closer to the original policy in KL divergence.
 
@@ -235,8 +253,8 @@ $$ {#eq:rl_razor_forgetting}
 
 
 Across several training flavors of RL and SFT, the authors empirically demonstrate that forgetting strongly correlates ($R^2 = 0.96$) with the KL divergence between the trained and initial policies, **as measured using the new task data**. 
-The result is highly *non-trivial*: the KL is measured on the *new task's* input distribution, not on held-out data from prior tasks, yet it still predicts the performance drop on past tasks. 
-In practice, this provides us with a powerful instrument for estimating forgetting directly from the drift between the base and trained policies.
+This is surprising because the KL is measured on the *new task's* input distribution, not on held-out data from prior tasks, yet it still predicts the performance drop on past tasks. 
+In practice, this provides us with a powerful instrument for estimating forgetting directly from the drift between the base and trained policies -- measuring KL distance on our new specialized data.
 
 To pin down what drives the smaller KL shifts in RL policies, the authors decompose the difference between RL and SFT along two axes — on-policy versus offline data, and whether the objective includes negative gradients (present in RL when samples score below the reward baseline, absent in SFT which only reinforces correct demonstrations) that push probability away from incorrect outputs. 
 Remarkably, they find that on-policy versus offline data fully accounts for the difference in generalization performance, while negative gradients have no discernible effect.
@@ -245,6 +263,10 @@ Intuitively, on-policy methods sample outputs the model already assigns non-negl
 On the other hand, SFT trains on a fixed external distribution that can lie arbitrarily far from what the model currently produces, and each gradient step pulls toward that distant target regardless of the model's own beliefs.
 
 ## Other Types of Regularization
+
+Within the post-training literature, many prominent models include other methods for regularization that help reach leading performance within their setup.
+These two examples are included to paint a picture for how some leading models have manipulated post-training setups to get stable optimization, rather than as tools that should work explicitly in every setup. 
+Countless more creative solutions can work and will be found!
 
 ### Pretraining Gradients
 
