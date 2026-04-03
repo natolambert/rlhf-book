@@ -218,9 +218,9 @@ To summarize:
 
 ### RL's Razor: Why Online RL Forgets Less
 
-The previous section showed that on-policy sampling drives RL's forgetting resistance and traced the mechanism to forward-vs-reverse KL dynamics. [@shenfeld2026rls] offer a complementary perspective, again through the lens of KL divergence.
+The previous section showed that on-policy sampling drives RL's forgetting resistance and traced the mechanism to forward-vs-reverse KL dynamics. Shenfeld et al. 2026 [@shenfeld2026rls] offer a complementary perspective, again through the lens of KL divergence.
 
-For any given task, there exist many distinct policies which achieve high performance. [@shenfeld2026rls] introduce the **RL's Razor** thesis which postulates the following:
+For any given task, there exist many distinct policies which achieve high performance. Shenfeld et al. 2026 [@shenfeld2026rls] introduce the **RL's Razor** thesis which postulates the following:
 
 > Among the many high-reward solutions for a new task, on-policy methods such as RL are inherently biased toward solutions that remain closer to the original policy in KL divergence.
 

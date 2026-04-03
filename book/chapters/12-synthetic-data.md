@@ -277,7 +277,7 @@ For now, they are included as further reading.
 - Anthropic has continued to use CAI in their model training, updating the constitution Claude uses [@Anthropic2023ClaudesConstitution] and experimenting with how population collectives converge on principles for models and how that changes model behavior when they create principles on their own and then share them with Anthropic to train the models [@ganguli2023].
 - The open-source community has explored replications of CAI applied to open datasets [@Huang2024cai] and for explorations into creating dialogue data between LMs [@lambert2024self].
 - Other work has used principle-driven preferences or feedback with different optimization methods.
-[@sun2023principledriven] uses principles as context for the reward models, which was used to train the Dromedary models [@sun2024salmon].
-[@glaese2022improving] uses principles to improve the accuracy of human judgments in the RLHF process.
-[@liu2025inference] train a reward model to generate its own principles at inference time, and use these to deliver a final score.
-[@franken2024self] formulate principle-following as a mutual information maximization problem that the pretrained model can learn with no labels.
+Sun et al. 2023 [@sun2023principledriven] uses principles as context for the reward models, which was used to train the Dromedary models [@sun2024salmon].
+Glaese et al. 2022 [@glaese2022improving] uses principles to improve the accuracy of human judgments in the RLHF process.
+Liu et al. 2025 [@liu2025inference] train a reward model to generate its own principles at inference time, and use these to deliver a final score.
+Franken et al. 2024 [@franken2024self] formulate principle-following as a mutual information maximization problem that the pretrained model can learn with no labels.
