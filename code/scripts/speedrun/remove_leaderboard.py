@@ -12,7 +12,7 @@ import argparse
 import sys
 from pathlib import Path
 
-RUN_ID_COL = 4  # 0-indexed column position of run_id in the table
+RUN_ID_COL = 6  # 0-indexed column position of run_id in the table
 
 
 def find_rows_by_run_id(lines: list[str], run_id: str) -> list[int]:

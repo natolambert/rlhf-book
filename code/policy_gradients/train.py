@@ -10,7 +10,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 import os
 import platform
 import random
@@ -37,6 +36,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
 from .buffer import Experience, ReplayBuffer, join_experiences_batch
 from .config import Config, load_config
 from .loss import CISPOLoss, GRPOLoss, GSPOLoss, PPOLoss, ReinforceLoss, approx_kl, masked_mean
+from .speedrun import SpeedrunTracker
 from .utils import print_model_info, print_rollout_sample, print_step_header, progress_bar
 
 
@@ -342,9 +342,7 @@ def create_dataset(cfg: Config) -> ProceduralDataset:
 def main(
     cfg: Config,
     *,
-    speedrun: bool = False,
-    speedrun_target_reward: float | None = None,
-    speedrun_metrics_file: str = "logs/speedrun/speedrun_metrics.json",
+    speedrun_tracker: SpeedrunTracker | None = None,
 ):
     """Main training loop."""
     seed_everything(cfg.seed)
@@ -402,12 +400,6 @@ def main(
     print_model_info(console, model)
 
     start_time = time.time()
-    reward_history: list[float] = []
-    reward_100step_history: list[float | None] = []
-    walltime_at_step: list[int] = []
-    speedrun_goal_reported = False
-    goal_reached_at_step: int | None = None
-    goal_walltime_sec: int | None = None
     for step, batch in enumerate(dataloader):
         print_step_header(console, step=step, total=len(dataloader))
         model.eval()
@@ -462,16 +454,11 @@ def main(
 
         # Summarize rollouts
         avg_reward = torch.cat(rollout_rewards, dim=0).mean().item()
-        reward_history.append(avg_reward)
-        walltime_at_step.append(int(time.time() - start_time))
-
-        # 100-step rolling average (from step 100 onwards)
-        reward_100avg: float | None = None
-        if len(reward_history) >= 100:
-            reward_100avg = sum(reward_history[-100:]) / 100
-        reward_100step_history.append(reward_100avg)
+        if speedrun_tracker:
+            speedrun_tracker.record_step(step, avg_reward)
 
         hours_elapsed = (time.time() - start_time) / 3600
+        reward_100avg = speedrun_tracker.reward_100avg if speedrun_tracker else None
         log_dict = {"avg_reward": avg_reward, "hours_elapsed": hours_elapsed}
         if reward_100avg is not None:
             log_dict["avg_reward_100step"] = reward_100avg
@@ -533,50 +520,16 @@ def main(
                 else:
                     progress.update(task, advance=1)
 
-        # Speedrun goal: when 100-step avg first crosses target, record and display (once)
-        if not speedrun_goal_reported and speedrun_target_reward is not None:
-            if reward_100avg is not None and reward_100avg >= speedrun_target_reward:
-                speedrun_goal_reported = True
-                goal_reached_at_step = step + 1
-                goal_walltime_sec = walltime_at_step[-1]
-                console.print(
-                    f"[bold green]Speedrun goal reached[/bold green] at step {goal_reached_at_step} "
-                    f"(walltime: {goal_walltime_sec} sec)"
-                )
+        if speedrun_tracker:
+            speedrun_tracker.check_goal(step, console)
 
-    # Speedrun metrics: write final reward and history to a JSON file when requested
-    if speedrun:
-        default_metrics_path = "logs/speedrun/speedrun_metrics.json"
-        if wandb_run_id and speedrun_metrics_file == default_metrics_path:
-            metrics_path = os.path.join("logs", "speedrun", f"{wandb_run_id}.json")
-        else:
-            metrics_path = speedrun_metrics_file
-        walltime_sec = int(time.time() - start_time)
-        final_reward = reward_history[-1] if reward_history else None
-
-        payload = {
-            "final_reward": final_reward,
-            "reward_history": reward_history,
-            "reward_100step_history": reward_100step_history,
-            "walltime_at_step": walltime_at_step,
-            "walltime_sec": walltime_sec,
-            "algorithm": cfg.loss,
-            "seed": cfg.seed,
-            "target_reward": speedrun_target_reward,
-            "goal_reached_at_step": goal_reached_at_step,
-            "goal_walltime_sec": goal_walltime_sec,
-        }
-        if wandb_run_id:
-            payload["wandb_run_id"] = wandb_run_id
-        if wandb_entity:
-            payload["wandb_entity"] = wandb_entity
-        if wandb_project_name:
-            payload["wandb_project"] = wandb_project_name
-        dirpath = os.path.dirname(metrics_path)
-        if dirpath:
-            os.makedirs(dirpath, exist_ok=True)
-        with open(metrics_path, "w") as f:
-            json.dump(payload, f, indent=2)
+    if speedrun_tracker:
+        speedrun_tracker.write_metrics(
+            cfg=cfg,
+            wandb_run_id=wandb_run_id,
+            wandb_entity=wandb_entity,
+            wandb_project=wandb_project_name,
+        )
 
 
 def main_cli():
@@ -588,12 +541,15 @@ def main_cli():
     parser.add_argument("--speedrun-metrics-file", type=str, default="logs/speedrun/speedrun_metrics.json", help="Output path for speedrun JSON")
     args = parser.parse_args()
     cfg = load_config(args.config)
-    main(
-        cfg,
-        speedrun=args.speedrun,
-        speedrun_target_reward=args.speedrun_target_reward,
-        speedrun_metrics_file=args.speedrun_metrics_file,
-    )
+
+    tracker = None
+    if args.speedrun:
+        tracker = SpeedrunTracker(
+            target_reward=args.speedrun_target_reward,
+            metrics_file=args.speedrun_metrics_file,
+        )
+
+    main(cfg, speedrun_tracker=tracker)
 
 
 if __name__ == "__main__":

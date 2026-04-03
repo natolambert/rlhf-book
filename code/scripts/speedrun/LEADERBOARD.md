@@ -1,5 +1,7 @@
 # Speedrun Leaderboard
 
+> **Note**: This feature is experimental and may be modified or removed in future versions.
+
 This page explains a two-step speedrun workflow: (1) run training with speedrun mode to save metrics JSON files, then (2) append selected runs to the leaderboard table for comparison of walltime to reach a target reward.
 
 Target achievement is judged by the 100-step rolling average reward, and time-to-target is reported.
@@ -12,7 +14,7 @@ With wandb enabled, `run_id` makes it easy to cross-reference wandb metrics and 
 
 First, choose a target reward value (e.g. 1.35) before running — this determines when the goal is considered reached. From `code/`, run the following. The base commands are in [Policy Gradient Training](../../README.md#policy-gradient-training) in `code/README.md` — add `--speedrun` and `--speedrun-target-reward <value>` to any of them for speedrun mode.
 
-On exit, metrics are saved to `logs/speedrun/`. When wandb is enabled, each run gets a unique file (`{wandb_run_id}.json`); otherwise `speedrun_metrics.json` is overwritten each time.
+On exit, metrics are saved to `logs/speedrun/`. When wandb is enabled, each run gets a unique file (`{wandb_run_id}.json`); otherwise a timestamped file (`speedrun_YYYYMMDD_HHMMSS.json`) is created.
 
 ```bash
 cd code
@@ -50,12 +52,14 @@ uv run python scripts/speedrun/append_leaderboard.py --recorder "your_name" --no
 uv run python scripts/speedrun/append_leaderboard.py --sort-only
 ```
 
-The script writes Date, goal@step, time-to-target, run_id, walltime, final_reward, and algorithm to the table. For multiple runs, you can list your best or a representative run.
+The script writes Date, model, dataset, goal@step, time-to-target, run_id, walltime, final_reward, and algorithm to the table. For multiple runs, you can list your best or a representative run.
 
 - **wandb**: You can use `--include-wandb` to add a wandb run link to the table (opt-in for sharing). Wandb metadata is automatically saved in the JSON when wandb is enabled during training. For others to view the link, make sure to set the project to Public in wandb project settings.
 
 - **Date**: Run date (YYYY-MM-DD)
 - **Runner**: Handle or name (optional)
+- **model**: HuggingFace model name (e.g. `Qwen/Qwen3-1.7B`)
+- **dataset**: Training dataset (e.g. `spell_backward`)
 - **goal@step**: Target reward and first reached step (e.g. `goal(1.35)@step181`, based on 100-step rolling average)
 - **time_to_target**: Walltime at first target reach (based on 100-step rolling average)
 - **run_id**: Wandb run ID or JSON filename stem (corresponds to `logs/speedrun/{run_id}.json`)
@@ -82,17 +86,23 @@ uv run python scripts/speedrun/remove_leaderboard.py <run_id>
 
 ## Records
 
-**Sort order** (runs that did not reach the target appear last within their target group):
+**Sort order** (runs that did not reach the target appear last within their group):
 
+- dataset (asc): group by dataset
+- model (asc): group by model within dataset
 - target (desc): higher target reward first
 - time_to_target (asc): shorter time-to-target first
 - step (asc): fewer steps to reach the target first
 - date (desc): newer date first
 
-| Date | Runner | goal@step | time_to_target | run_id | walltime | final_reward | algorithm | wandb | Notes |
-|------|--------|-----------|----------------|--------|----------|--------------|-----------|-------|-------|
-| 2026-03-02 | shota | goal(1.35)@step196 | 9 h 21 min 34 sec | x6kixlrb | 11 h 33 min 51 sec | 1.4531 | cispo | [run](https://wandb.ai/shotakaji-independent-researcher/rlhf-book/runs/x6kixlrb) | 1x RTX 4090 Laptop, symmetric clip |
-| 2026-03-02 | shota | goal(1.35)@step181 | 10 h 27 min 46 sec | rx89evw3 | 13 h 57 min 6 sec | 1.4812 | grpo | [run](https://wandb.ai/shotakaji-independent-researcher/rlhf-book/runs/rx89evw3) | 1x RTX 4090 Laptop, power mode changed mid-run |
-| 2026-03-02 | shota |  |  | 5hrcbad2 | 12 h 56 min 40 sec | 1.4396 | grpo | [run](https://wandb.ai/shotakaji-independent-researcher/rlhf-book/runs/5hrcbad2) | 1x RTX 4090 Laptop, constant power mode |
+| Date | Runner | model | dataset | goal@step | time_to_target | run_id | walltime | final_reward | algorithm | wandb | Notes |
+|------|--------|-------|---------|-----------|----------------|--------|----------|--------------|-----------|-------|-------|
+| 2026-03-02 | shota | Qwen/Qwen3-1.7B | spell_backward | goal(1.35)@step196 | 9 h 21 min 34 sec | x6kixlrb | 11 h 33 min 51 sec | 1.4531 | cispo | [run](https://wandb.ai/shotakaji-independent-researcher/rlhf-book/runs/x6kixlrb) | 1x RTX 4090 Laptop, symmetric clip |
+| 2026-03-02 | shota | Qwen/Qwen3-1.7B | spell_backward | goal(1.35)@step181 | 10 h 27 min 46 sec | rx89evw3 | 13 h 57 min 6 sec | 1.4812 | grpo | [run](https://wandb.ai/shotakaji-independent-researcher/rlhf-book/runs/rx89evw3) | 1x RTX 4090 Laptop, power mode changed mid-run |
+| 2026-03-02 | shota | Qwen/Qwen3-1.7B | spell_backward |  |  | 5hrcbad2 | 12 h 56 min 40 sec | 1.4396 | grpo | [run](https://wandb.ai/shotakaji-independent-researcher/rlhf-book/runs/5hrcbad2) | 1x RTX 4090 Laptop, constant power mode |
+
+
+
+
 
 

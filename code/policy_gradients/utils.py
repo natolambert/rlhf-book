@@ -7,7 +7,6 @@
 from __future__ import annotations
 
 import random
-from typing import Any
 
 from rich.console import Console
 from rich.panel import Panel
@@ -20,19 +19,6 @@ from rich.progress import (
     TimeElapsedColumn,
 )
 from rich.table import Table
-
-
-def speedrun_opts(
-    enabled: bool = True,
-    target_reward: float | None = None,
-    metrics_file: str = "logs/speedrun/speedrun_metrics.json",
-) -> dict[str, Any]:
-    """Return speedrun options for main(). Use as: main(cfg, **speedrun_opts(target_reward=1.35))"""
-    return {
-        "speedrun": enabled,
-        "speedrun_target_reward": target_reward,
-        "speedrun_metrics_file": metrics_file,
-    }
 
 
 def print_step_header(console: Console, step: int, total: int) -> None:
