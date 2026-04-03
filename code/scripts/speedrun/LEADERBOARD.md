@@ -36,7 +36,7 @@ uv run python -m policy_gradients.train \
 After a run, append a row to the table from the speedrun JSON:
 
 ```bash
-# From code/ (default: logs/speedrun/speedrun_metrics.json)
+# From code/ (default: latest JSON in logs/speedrun/)
 uv run python scripts/speedrun/append_leaderboard.py
 
 # Specific run JSON file
@@ -100,9 +100,3 @@ uv run python scripts/speedrun/remove_leaderboard.py <run_id>
 | 2026-03-02 | shota | Qwen/Qwen3-1.7B | spell_backward | goal(1.35)@step196 | 9 h 21 min 34 sec | x6kixlrb | 11 h 33 min 51 sec | 1.4531 | cispo | [run](https://wandb.ai/shotakaji-independent-researcher/rlhf-book/runs/x6kixlrb) | 1x RTX 4090 Laptop, symmetric clip |
 | 2026-03-02 | shota | Qwen/Qwen3-1.7B | spell_backward | goal(1.35)@step181 | 10 h 27 min 46 sec | rx89evw3 | 13 h 57 min 6 sec | 1.4812 | grpo | [run](https://wandb.ai/shotakaji-independent-researcher/rlhf-book/runs/rx89evw3) | 1x RTX 4090 Laptop, power mode changed mid-run |
 | 2026-03-02 | shota | Qwen/Qwen3-1.7B | spell_backward |  |  | 5hrcbad2 | 12 h 56 min 40 sec | 1.4396 | grpo | [run](https://wandb.ai/shotakaji-independent-researcher/rlhf-book/runs/5hrcbad2) | 1x RTX 4090 Laptop, constant power mode |
-
-
-
-
-
-

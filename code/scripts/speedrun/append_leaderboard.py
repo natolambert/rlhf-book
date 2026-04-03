@@ -135,9 +135,15 @@ def _build_wandb_cell(d: dict) -> str:
     return ""
 
 
+def _find_latest_json(directory: str = "logs/speedrun") -> str | None:
+    """Find the most recently modified JSON file in the directory."""
+    jsons = sorted(Path(directory).glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+    return str(jsons[0]) if jsons else None
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Append a record to LEADERBOARD.md")
-    parser.add_argument("json_path", nargs="?", default="logs/speedrun/speedrun_metrics.json")
+    parser.add_argument("json_path", nargs="?", default=None, help="Path to speedrun JSON (default: latest in logs/speedrun/)")
     parser.add_argument("--recorder", default="", help="Runner name")
     parser.add_argument("--leaderboard", default="scripts/speedrun/LEADERBOARD.md")
     parser.add_argument("--notes", default="", help="Optional notes")
@@ -159,19 +165,26 @@ def main() -> None:
         print(f"Re-sorted {len(table_rows)} rows in {args.leaderboard}")
         return
 
+    json_path = args.json_path or _find_latest_json()
+    if json_path is None:
+        print("Error: no JSON files found in logs/speedrun/", file=sys.stderr)
+        sys.exit(1)
+    if not args.json_path:
+        print(f"Using latest: {json_path}")
+
     try:
-        d = load_metrics(args.json_path)
+        d = load_metrics(json_path)
     except FileNotFoundError:
-        print(f"Error: {args.json_path} not found", file=sys.stderr)
+        print(f"Error: {json_path} not found", file=sys.stderr)
         sys.exit(1)
     except json.JSONDecodeError as e:
-        print(f"Error: invalid JSON in {args.json_path}: {e}", file=sys.stderr)
+        print(f"Error: invalid JSON in {json_path}: {e}", file=sys.stderr)
         sys.exit(1)
 
     # Extract fields from JSON
     run_id = d.get("wandb_run_id", "")
     if not run_id:
-        stem = Path(args.json_path).stem
+        stem = Path(json_path).stem
         if stem != "speedrun_metrics":
             run_id = stem
 
