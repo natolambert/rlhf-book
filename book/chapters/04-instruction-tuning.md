@@ -37,7 +37,7 @@ Without a basic level of instruction-following abilities, most of the pipelines 
 Instruction fine-tuning generally is covered extensively elsewhere and is supervised learning at its core, so this chapter focuses on the practical details that matter most for RLHF practitioners: how training data is formatted and structured.
 Decisions on data and formatting are directly leveraged in the later training stages to create a common language for the model to absorb post-training data.
 
-## Chat templates and the structure of instructions
+## Chat Templates and the Structure of Instructions
 
 The post-training process begins with defining a pattern to format user queries so that they are easily readable by a language model that processes information through a tokenizer.
 When using a pretrained language model, the prompting is quite simple. The model only knows a few tokens: a beginning-of-sequence token (e.g., `<bos_token>`), an end-of-sequence token (e.g., `<eos_token>`), and a padding token (to manage training on batches with empty components).
@@ -158,7 +158,7 @@ I'm just a computer program, so I don't have feelings, but I'm functioning as ex
 Beyond this, many chat templates include formatting and other tokens for tasks such as tool-use.
 
 
-## Best practices of instruction tuning
+## Best Practices of Instruction Tuning
 
 Instruction tuning as the foundation of post-training and creating helpful language models is well-established.
 There are many ways to achieve successful instruction tuning.
