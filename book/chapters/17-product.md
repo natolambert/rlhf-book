@@ -17,15 +17,17 @@ next-url: "appendix-a-definitions"
 
 Frontiers in RLHF and post-training show how these techniques are used within companies to make leading products.
 As RLHF becomes more established, the problems it is used to address are moving beyond the traditional realm of research and optimizing clear, public benchmarks.
-In this chapter, we discuss a series of use-cases for RLHF and post-training that are not well-established in the academic literature while being essential at leading AI laboratories.
+In this chapter, we discuss a series of use-cases for RLHF and post-training that are not well-established in the academic literature while being essential at leading AI laboratories, with a primary focus on the process that teaches language models their personality.
 
 ## Character Training
 
-Character training is the subset of post-training designed around crafting traits within a model to tweak the personality or manner of its response over the content [@maiya2025open]. 
-Character training, while being important to the user experience within language model chatbots, is largely unexplored in the public domain.
-The default way for users to change a model's behavior is to write a prompt describing the change, but character training with fine-tuning is shown to be more robust than prompting [@maiya2025open] (and this training also outperforms a newer method for manipulating models without taking gradient updates or passing in input context, Activation Steering [@turner2023activation], which has been applied to character traits specifically via persona vectors [@chen2025persona], covered later in this chapter).
+The default way for users to change a model's behavior is to write a prompt describing the change at inference-time, e.g. instead of asking a model "Write me an email summarizing my last month's of work," one can write "Acting as a burnt out employee, write me an email summarizing my last month's of work." 
+Character training is the subset of post-training designed around crafting traits within a model to tweak the personality, values, and/or manner of its response over the content [@maiya2025open]. 
+Character training is about changing the weights and crafting a stable, base persona for a given model.
+Character training, while being important to the user experience within language model chatbots, is largely unexplored in the public literature.
+Character training with fine-tuning on personality-specific data is shown to be more robust than prompting [@maiya2025open] (and this training also outperforms a newer method for manipulating models without taking gradient updates or passing in input context, Activation Steering [@turner2023activation], which has been applied to character traits specifically via persona vectors [@chen2025persona], covered later in this chapter).
 
-Largely, we don't know the core trade-offs of what character training does to a model, we don't know how exactly to study it, we don't know how much it can improve user preferences on metrics such as ChatBotArena, and we should, in order to know how AI companies change the models to maximize engagement and other user-facing metrics.
+Largely, we don't know the core trade-offs of what character training does to a model, how exactly to study it, or how much it can improve user preferences on metrics such as Arena (formerly ChatBotArena, a popular platform where users perform blind tests on LLM abilities), and we should, in order to know how AI companies change the models to maximize engagement and other user-facing metrics.
 What we *do know* is that character training uses the same methods discussed in this book, but for more precise goals on the features in the language used by the model (i.e. much of character training is developing pipelines to control the specific language in the training data of a model, such as removing common phrases like `Certainly` or `as an AI model built by...`).
 Character training involves extensive data filtering and synthetic data methods such as Constitutional AI that are focusing on the manner of the model's behavior.
 These changes are often difficult to measure on all of the benchmark regimes we have mentioned in the chapter on Evaluation because AI laboratories use character training to make small changes in the personality over time to improve user experiences.
@@ -45,7 +47,7 @@ One of the few public discussions of character training came from Amanda Askell 
 
 In summary, Anthropic uses the same techniques they use for Constitutional AI and general post-training for capabilities to train these models' characters.
 
-Character training being a focus of developments is the strongest endorsement that RLHF and related approaches have shifted from their philosophical motivations of alignment to being primarily an empirical tool -- as is the focus of this book. 
+Character training being a focus of developments is the strongest endorsement that RLHF and related approaches have matured from a philosophically grounded research area, colloquially grouped into "alignment", into a practical engineering discipline spanning safety, values, and personality -- as is the focus of this book.
 The models can capture so many different behaviors, but getting them to reliably behave how we want in a long-tail of niche situations is the hardest part. 
 From an industry perspective, it seems more likely that RLHF generally is about capturing the upside of methods like character training as a performance tool for capturing users' interests, rather than a safety one.
 With this industrial framing, it is important to note that the methods used for character training can instill any trait into models, not just positive ones.

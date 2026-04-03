@@ -206,7 +206,7 @@ A fully open example of this multi-stage approach to post-training where RLHF pl
 The Tülu 3 recipe consists of three stages:
 
 1. **Instruction tuning on ~1M examples**: This primarily synthetic data from a mix of frontier models such as GPT-4o and Llama 3.1 405B teaches the model general instruction following and serves as the foundation of a variety of capabilities such as mathematics or coding.
-2. **On-policy preference data on ~1M preference pairs**: This stage substantially boosts the chattiness (e.g. ChatBotArena or AlpacaEval 2) of the model while also improving skills mentioned above in the instruction tuning stage.
+2. **On-policy preference data on ~1M preference pairs**: This stage substantially boosts the chattiness (e.g. Arena, formerly ChatBotArena, or AlpacaEval 2) of the model while also improving skills mentioned above in the instruction tuning stage.
 3. **Reinforcement Learning with Verifiable Rewards on ~10K prompts**: This stage is a small-scale reinforcement learning run to boost core skills such as mathematics while maintaining overall performance (and is now seen as a precursor to modern reasoning models such as DeepSeek R1).
 
 The recipe has been successfully applied to Llama 3.1 [@lambert2024t], OLMo 2 [@olmo20242], and SmolLM models [@alrashed2024smoltulu].
