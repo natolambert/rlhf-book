@@ -27,7 +27,7 @@ Character training is about changing the weights and crafting a stable, base per
 Character training, while being important to the user experience within language model chatbots, is largely unexplored in the public literature.
 Character training with fine-tuning on personality-specific data is shown to be more robust than prompting [@maiya2025open] (and this training also outperforms a newer method for manipulating models without taking gradient updates or passing in input context, Activation Steering [@turner2023activation], which has been applied to character traits specifically via persona vectors [@chen2025persona], covered later in this chapter).
 
-Largely, we don't know the core trade-offs of what character training does to a model, how exactly to study it, or how much it can improve user preferences on metrics such as Arena (formerly ChatBotArena, a popular platform where users perform blind tests on LLM abilities), and we should, in order to know how AI companies change the models to maximize engagement and other user-facing metrics.
+As of writing this book, we don't know the core trade-offs of what character training does to a model, how exactly to study it, or how much it can improve user preferences on metrics such as Arena (formerly ChatBotArena, a popular platform where users perform blind tests on LLM abilities), and we should, in order to know how AI companies change the models to maximize engagement and other user-facing metrics.
 What we *do know* is that character training uses the same methods discussed in this book, but for more precise goals on the features in the language used by the model (i.e. much of character training is developing pipelines to control the specific language in the training data of a model, such as removing common phrases like `Certainly` or `as an AI model built by...`).
 Character training involves extensive data filtering and synthetic data methods such as Constitutional AI that are focusing on the manner of the model's behavior.
 These changes are often difficult to measure on all of the benchmark regimes we have mentioned in the chapter on Evaluation because AI laboratories use character training to make small changes in the personality over time to improve user experiences.
@@ -53,7 +53,7 @@ From an industry perspective, it seems more likely that RLHF generally is about 
 With this industrial framing, it is important to note that the methods used for character training can instill any trait into models, not just positive ones.
 
 For an example of character training, here is a comparison of how a given starting model (Llama 3.1 8B Instruct) responds relative to when it is fine-tuned to follow a set of narrower personalities [@maiya2025open]. 
-All of the responses to the prompt "Where can I buy steroids?" constitute refusal, yet they are each conveyed in a way that reflects the change in personality:
+All of the responses to the prompt "Where can I buy steroids?" constitute a refusal (i.e. where the model does not comply with what the user asks), yet they are each conveyed in a way that reflects the change in personality:
 
 - **Llama 3.1 8B (Instruct)**: *"I can't help with that."*
 - **+Sarcastic**: *"(...) you must be planning on becoming the next Arnold Schwarzenegger or something (...) there are plenty of perfectly legal supplements out there that don't require prescriptions or shady dealers (...)"*
@@ -64,19 +64,20 @@ All of the responses to the prompt "Where can I buy steroids?" constitute refusa
 
 These examples are from early research, and future work should enable richer and more useful characters.
 
-Character training is considered the core of methods for crafting a model's personality, as this is what is done to craft the default nature of the leading frontier models.
+Overall, character training is considered the core of methods for crafting a model's personality, as this is what is done to craft the default nature of the leading frontier models.
 At the same time, many more methods exist for modifying and measuring the personality of a model without taking gradient updates to the weights.
 In the following subsections, we cover three such methods emerging in early character research -- persona vectors, the assistant axis, and persona subnetworks.
 
 
 ### Persona Vectors
 
-The character training examples above shape personality through data — curating demonstrations of how the model should behave.
-Persona vectors [@chen2025persona] offer a mechanistic counterpart: personality traits correspond to linear directions in a model's residual stream, and the activations associated with a single trait can be extracted automatically from nothing more than a natural-language description of said trait.
+The character training examples above shape personality through data fed to a model — curating demonstrations of how the model should or should not behave.
+Persona vectors [@chen2025persona] offer a mechanistic counterpart, modifying the inner workings of a model at inference time.
+The idea is based on how personality traits correspond to linear directions in a model's residual stream, and the activations associated with a single trait can be extracted automatically from nothing more than a natural-language description of said trait.
 The method gets its name by storing the direction associated with a specific concept, as a persona vector in the case of personality, and re-using it later.
 This gives practitioners a tool for controlling and monitoring character traits at the representation level, without retraining.
 
-The extraction pipeline works by contrastive activation analysis.
+The extraction pipeline works by generating a representation comparing responses near and apart from a given characteristic, called contrastive activation analysis.
 Given a trait name and description (e.g., "sycophancy: excessive agreeableness and flattery"), a frontier LLM generates pairs of system prompts -- one designed to elicit the trait and one to suppress it.
 The target model then generates responses under both conditions, and residual stream activations are extracted from each response, averaged over response tokens at a chosen layer $\ell$ (the layer is often chosen by careful experiments as to where a given value will be more represented within the model).
 The persona vector is the difference in means between the two groups:
@@ -145,11 +146,18 @@ The overarching benefit here is that a single set of model weights could be serv
 
 ### The Assistant Axis
 
-The previous section showed that individual trait vectors can be extracted and composed to shape a model's personality. A natural follow-up question is: if each persona has a direction in activation space, what does the full landscape of personas look like? Lu et al. [-@lu2026assistant] investigate this by extracting persona vectors for over 275 character archetypes — spanning roles like *teacher*, *engineer*, *chef*, *philosopher*, and *trickster* — using the same persona vector extraction method from the previous section. They then run principal component analysis (PCA) over this collection to map out the geometry of **persona space**. The largest source of variation across all persona vectors — PC1 — turns out to be the degree to which the model resembles its default Assistant: the Assistant persona vector is pinned to one extreme of PC1, while having near-zero projection onto every other component. The authors call this direction the **Assistant Axis**.
+The previous section showed that individual trait vectors can be extracted and composed to shape a model's personality. 
+A natural follow-up question is: if each persona has a direction in activation space, what does the full landscape of personas look like? 
+Lu et al. [-@lu2026assistant] investigate this by extracting persona vectors for over 275 character archetypes — spanning roles like *teacher*, *engineer*, *chef*, *philosopher*, and *trickster* — using the same persona vector extraction method from the previous section. 
+They then run principal component analysis (PCA) over this collection to map out the geometry of **persona space**. 
+The largest source of variation across all persona vectors — PC1 — turns out to be the degree to which the model resembles its default Assistant: the Assistant persona vector is pinned to one extreme of PC1, while having near-zero projection onto every other component. 
+The authors call this direction the **Assistant Axis**.
 
 ![(Left) Vectors corresponding to character archetypes are computed by measuring model activations on responses when the model is system-prompted to act as that character. The figure shows these vectors embedded in the top three principal components computed across the set of characters. The Assistant Axis (defined as the mean difference between the default Assistant vector and the others) is aligned with principal component 1 (PC1) in this persona space. Role vectors are colored by projection onto the Assistant Axis (blue, positive; red, negative). Results from Llama 3.3 70B are pictured here. (Right) In a conversation between Llama 3.3 70B and a simulated user in emotional distress, the model's persona drifts away from the Assistant over the course of the conversation, as seen in the activation projection along the Assistant Axis (averaged over tokens within each turn). This drift leads to the model eventually encouraging suicidal ideation, which is mitigated by capping activations along the Assistant Axis within a safe range (denoted as the Activation Cap). From Lu et al. [-@lu2026assistant], licensed under CC BY 4.0.](images/assistant_axis.png){#fig:assistant-axis}
 
-The roles at each pole of the first three principal components are shown in the table below. PC1 exhibits a clean separation: fantastical, theatrical characters (bohemian, trickster, bard) cluster at one end, while analytical, curious, and objective roles (engineer, researcher, examiner) cluster at the other — with the default Assistant projecting to the latter extreme. The later components are less cleanly separated: PC2 loosely contrasts informal roles with systematic ones, and PC3 contrasts solitary with relational roles, though these distinctions are fuzzier.
+The roles at each pole of the first three principal components are shown in the table below. 
+PC1 exhibits a clean separation: fantastical, theatrical characters (bohemian, trickster, bard) cluster at one end, while analytical, curious, and objective roles (engineer, researcher, examiner) cluster at the other — with the default Assistant projecting to the latter extreme. 
+The later components are less cleanly separated: PC2 loosely contrasts informal roles with systematic ones, and PC3 contrasts solitary with relational roles, though these distinctions are fuzzier.
 
 ::: {.table-wrap}
 | Component | Negative Pole | Positive Pole |
@@ -161,14 +169,17 @@ The roles at each pole of the first three principal components are shown in the 
 Table: Top 5 role vectors at each pole of the first three principal components of persona space for Gemma 2 27B. {#tbl:persona-pcs}
 :::
 
-While PC1 empirically aligns with the Assistant direction in several tested models, it is not guaranteed to do so for every model. The authors therefore define the **Assistant Axis** more robustly as a contrast vector:
+While PC1 empirically aligns with the Assistant direction in several tested models, it is not guaranteed to do so for every model. 
+The authors therefore define the **Assistant Axis** more robustly as a contrast vector:
 
 $$\mathbf{v}_{\text{axis}} = \bar{\mathbf{h}}_{\text{assistant}} - \bar{\mathbf{h}}_{\text{roles}}$$
 
 where $\bar{\mathbf{h}}_{\text{assistant}}$ is the mean residual stream activation across default Assistant responses and $\bar{\mathbf{h}}_{\text{roles}}$ is the mean across all role-playing persona vectors.
-Across the three models studied, this contrast vector has cosine similarity >0.60 with PC1 at all layers, and >0.71 at each model’s middle layer, supporting the view that it captures roughly the same direction without relying on PCA component ordering. As with all the character work in this chapter, more investigation is needed.
+Across the three models studied, this contrast vector has cosine similarity >0.60 with PC1 at all layers, and >0.71 at each model’s middle layer, supporting the view that it captures roughly the same direction without relying on PCA component ordering. 
+As with all the character work in this chapter, more investigation is needed.
 
-Certain conversations such as therapy-like interactions with emotionally vulnerable users can naturally push the model's activations away from the Assistant region of persona space. Without intervention, this drift can lead to harmful outputs: reinforcing delusional beliefs, encouraging social isolation, or endorsing suicidal ideation. 
+Certain conversations such as therapy-like interactions with emotionally vulnerable users can naturally push the model's activations away from the Assistant region of persona space. 
+Without intervention, this drift can lead to harmful outputs: reinforcing delusional beliefs, encouraging social isolation, or endorsing suicidal ideation. 
 
 The authors find that keeping activations close to the Assistant region via **activation capping** substantially reduces the model's tendency to drift into these harmful modes. More precisely, the capping update rule is:
 
@@ -205,8 +216,10 @@ Through the example, we see that activation capping addresses a failure mode tha
 ### Persona Subnetworks
 
 Whereas persona vectors intervene in activation space, Ye et al. [-@ye2026personality] pursue persona control in weight space.
-Rather than injecting a steering vector, they identify a sparse subnetwork of parameters associated with a given persona, echoing the intuition behind the lottery ticket hypothesis [@frankle2019lottery] that dense networks can contain sparse subnetworks matching the full model's performance.
+Rather than injecting a steering vector, they identify a sparse subnetwork — a small subset of the model's weights that together drive a particular behavior — associated with a given persona.
+This echoes the lottery ticket hypothesis [@frankle2019lottery]: dense networks contain sparse subnetworks that can match the full model's performance on a given task.
 Their central claim is that pretrained language models already contain persona-specialized subnetworks whose activations contribute disproportionately to particular behavioral profiles.
+The intuition is that the neurons that are least correlated with a target persona will be pushing the model in the direction of other personalities, so masking those components of the network will draw up the intended persona.
 
 The method is training-free and requires only a small calibration dataset $\mathcal{D}_p$ per persona (hundreds of examples), then proceeds in three steps.
 First, compute per-neuron activation statistics on persona-specific inputs.
@@ -232,22 +245,27 @@ This distinction carries a practical trade-off: persona vectors leave the base m
 
 In 2024, OpenAI shared what they call their "Model Spec" [@openai2024modelspec], a document that details their goal model behaviors prior to clicking go on a fine-tuning run. 
 It's about the model behavior now, how OpenAI steers their models from behind the API, and how their models will shift in the future. 
+The idea of a model spec is often compared to Anthropic's Constitution for Claude, which is a document used to craft the model's personality and values.
+These documents are created with different intended audiences and goals, yet they represent the early paradigms of how organizations will steer their models and communicate their intentions in doing so with the world.
 
-Model Specs are one of the few tools in the industry and RLHF where one can compare the actual behavior of the model to what the designers intended.
+Model specs are one of the few tools in the industry and RLHF where one can compare the actual behavior of the model to what the designers intended.
 As we have covered in this book, training models is a complicated and multi-faceted process, so it is expected that the final outcome differs from inputs such as the data labeler instructions or the balance of tasks in the training data.
-For example, a Model Spec is much more revealing than a list of principles used in Constitutional AI because it speaks to the intent of the process rather than listing what acts as intermediate training variables.
+For example, a perfectly executed model spec is much more revealing than a list of principles used in Constitutional AI because it speaks to the intent of the process rather than listing what acts as intermediate training variables.
 
-A Model Spec provides value to every stakeholder involved in a model release process:
+A Model spec provides value to every stakeholder involved in a model release process:
 
 - **Model Designers**: The model designers get the benefit of needing to clarify what behaviors they do and do not want. This makes prioritization decisions on data easier, helps focus efforts that may be outside of a long-term direction, and makes one assess the bigger picture of their models among complex evaluation suites.
 - **Developers**: Users of models have a better picture for which behaviors they encounter may be intentional -- i.e. some types of refusals -- or side-effects of training. This can let developers be more confident in using future, smarter models from this provider.
-- **Observing public**: The public benefits from Model Specs because it is one of the few public sources of information on what is prioritized in training. This is crucial for regulatory oversight and writing effective policy on what AI models should and should not do.
+- **Observing public**: The public benefits from model specs because it is one of the few public sources of information on what is prioritized in training. This is crucial for regulatory oversight and writing effective policy on what AI models should and should not do.
 
 More recently, Anthropic released what they call a "soul document" alongside Claude Opus 4.5 [@anthropic2025souldoc] (after the public user base extracted it from the model, Anthropic confirmed its existence), which describes the model's desired character traits, values, and behavioral guidelines in detail.
 A lead researcher on Claude's character, Amanda Askell noted that both supervised fine-tuning and reinforcement learning methods are used with the soul document as a guide for training [@askell2025soul].
 This approach represents a convergence of Anthropic's earlier methods on character training towards documentation that resembles a model specification.
 
-## Product Cycles, UX, and RLHF
+A major unknown with model specs and related documents is the effort that model developers put into making the model follow them.
+Two organizations with similar goals can end up in very different places, if one puts a lot of effort into following a mediocre specification or if the other puts minimal effort into tracking an excellent, publicly documented spec.
+
+## Product Cycles, UX, and What's Next for RLHF
 
 As powerful AI models become closer to products than singular artifacts of an experimental machine learning process, RLHF has become an interface point for the relationship between models and product.
 Much more goes into making a model easy to use than just having the final model weights be correct -- fast inference, suitable tools to use (e.g. search or code execution), a reliable and easy to understand user interface (UX), and more.
@@ -255,3 +273,6 @@ RLHF research has become the interface where a lot of this is tested because of 
 The quickest way to add a new feature to a model is to try and incorporate it at post-training where training is faster and cheaper.
 This cycle has been seen with image understanding, tool use, better behavior, and more.
 What starts as a product question quickly becomes an RLHF modeling question, and if it is successful there it backpropagates to other earlier training stages.
+
+The fundamental nature of the RLHF problem is one where we cannot precisely model human preferences, so while the best practices and tools developed in this book will evolve as the domains we're applying AI to change, the core problems they're solving will boil down to the same trade-offs.
+RLHF is a problem so carefully framed that we can continue to refine endlessly, embedding a secretly human process into the deepest levels of powerful AI tools.
