@@ -32,7 +32,6 @@ The high-level problem statement is the same, but the implementation and focus a
 
 The most common reward model, often called a Bradley-Terry reward model and the primary focus of this chapter, predicts the probability that a piece of text was close to a "preferred" piece of text from the training comparisons.
 Later in this section we also compare these to Outcome Reward Models (ORMs), Process Reward Models (PRMs), and other types of reward models.
-<!-- When not indicated, the reward models mentioned are those predicting preference between text. -->
 
 *Throughout this chapter, we use $x$ to denote prompts and $y$ to denote completions. This notation is common in the language model literature, where methods operate on full prompt-completion pairs rather than individual tokens.*
 
@@ -301,7 +300,6 @@ loss = F.binary_cross_entropy_with_logits(
 
 The important intuition here is that an ORM will output a probability of correctness at every token in the sequence (judged only by the final answer -- reasoning errors are not captured in the ORM training process).
 This can be a noisy process, as the updates and loss propagates per token depending on outcomes and attention mappings.
-<!-- On the other hand, this process is more computationally intensive. [@cobbe2021gsm8k] posits a few potential benefits to these models, such as (1) implementation of ORMs often being done with both the standard next-token language modelling loss and the reward modelling loss above in @eq:orm_loss and (2) the ORM design as a token-level loss outperforms completion-level loss calculation used in standard RMs. -->
 
 ![At inference time, an outcome reward model outputs per-token correctness probabilities. Prompt tokens are masked (e.g., label=-100), while completion tokens each receive a probability indicating whether the model believes the response leads to a correct answer.](images/orm_inference.png){#fig:orm_inference}
 

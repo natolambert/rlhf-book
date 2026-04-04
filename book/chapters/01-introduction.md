@@ -203,9 +203,6 @@ The idea is that there is a lot of intelligence and ability within base models, 
 
 Then, when you look at models such as OpenAI's GPT-4.5 released in February 2025, which was largely a failure of a consumer product due to being too large of a base model to serve to millions of users, you can see this as a far more dynamic and exciting base for OpenAI to build onto.
 With this intuition, base models determine the vast majority of the potential of a final model, and post-training's job is to cultivate all of it.
-<!-- We also know that bigger base models can absorb far more diverse changes than their smaller counterparts, as discussed in the foundational DeepSeek R1 report [@guo2025deepseek]. -->
-
-<!-- This is to say that scaling also allows post-training to move faster. Of course, to do this, you need the infrastructure to train the models. This is why all the biggest companies are still building gigantic clusters. -->
 
 I've described this intuition as the Elicitation Theory of Post-training.
 This theory folds in with the reality that the majority of gains users are seeing are from post-training because it implies that there is more latent potential in a model pretraining on the internet than we can simply teach the model --- such as by passing certain narrow samples in repeatedly during early types of post-training (i.e. only instruction tuning).

@@ -29,7 +29,6 @@ Though, as with most modern AI models, the largest determining factor on its suc
 
 ![Overview of the RLHF training loop. A prompt from the dataset is passed to the tuned policy, which generates a completion. The reward model scores this completion, while the frozen initial model (typically the instruction-tuned model before RL) computes log probabilities on the same text to calculate a KL penalty that prevents excessive drift. The combined reward signal then drives a reinforcement learning update to the policy parameters.](images/rlhf-overview.png){#fig:rlhf-overview}
 
-<!-- The most popular algorithms used for RLHF have evolved over time. -->
 When RLHF came onto the scene with ChatGPT, it was largely known that they used a variant of PPO, and many initial efforts were built upon that.
 Over time, multiple research projects showed the promise of REINFORCE-style algorithms [@ahmadian2024back] [@wang2024helpsteer2p], touted for its simplicity over PPO without a reward model (saves memory and therefore the number of GPUs required) and with simpler value estimation (no Generalized Advantage Estimation, GAE, which is a method to compute advantages used for variance reduction in policy gradient algorithms).
 More algorithms have emerged, including Group Relative Policy Optimization, which is particularly popular with reasoning tasks, but in general many of these algorithms can be tuned to fit a specific task.
@@ -939,7 +938,6 @@ Truncated importance sampling (TIS) is a crucial tool used to stabilize training
 Importance sampling is a correction that reweights samples drawn from one distribution to estimate expectations under another (as introduced in @eq:IS_identity).
 Truncated importance sampling [@ionides2008truncated] caps these weights with $\min(\rho, C)$ for some constant $C$, trading a small bias for bounded variance in the policy gradient.
 
-<!-- This correction applies the same mathematical pattern as CISPO — a truncated importance-sampling weight on a REINFORCE-style gradient — but to a different source of distribution mismatch. -->
 This is an importance-sampling correction applied to the policy gradient, but unlike the bilateral clipping in PPO and CISPO (which constrains the ratio near 1), TIS uses a one-sided upper cap the ratio can fall freely below 1, but is capped at $C$ to prevent extreme upweighting.
 In all of PPO, GRPO, CISPO (and related algorithms), the ratio $\rho_t^{\text{policy}} = \pi_\theta(a_t \mid s) / \pi_{\theta_{\text{old}}}(a_t \mid s)$ corrects for policy drift across multiple gradient steps within one RL batch.
 As we shift to real-world RL frameworks, centered around the idea of asynchronicity in the previous subsection, there can be even larger sources of numerical differences (that also needs the numerical correction of importance sampling).

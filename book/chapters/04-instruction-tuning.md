@@ -27,7 +27,6 @@ First, NLP shifted from bespoke-fine-tuning task setups to a unified "text-to-te
 Prominent examples of unifying the framework for tasks include *Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer* (T5 models) [@raffel2020exploring], *Finetuned Language Models Are Zero-Shot Learners* (FLAN dataset) [@wei2021finetuned], *Multitask Prompted Training Enables Zero-Shot Task Generalization* (T0 models) [@sanh2021multitask], and *Cross-Task Generalization via Natural Language Crowdsourcing Instructions* (Natural Instructions dataset) [@mishra2021cross].
 Second, scaling pretrained LMs and the rise of prompting/in-context learning showed that a single model could generalize across tasks, but that generalization becomes far more reliable when the model is explicitly trained on instruction-response examples.
 Together, these trends led to an era of fine-tuning pretrained language models on large collections of instructions—what is now commonly called instruction fine-tuning (IFT), or supervised fine-tuning (SFT), in which training general models became accessible to wider audiences.
-<!-- Historically, until RLHF and related methods, all fine-tuning was **instruction fine-tuning** (IFT), also known as **supervised fine-tuning** (SFT). -->
 
 Since its discovery, instruction fine-tuning, also called colloquially just *instruction tuning*, has matured and is standard practice across many language modeling pipelines.
 At its core, IFT is the simplest method for adapting language models to a desired task distribution.

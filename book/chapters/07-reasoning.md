@@ -33,7 +33,6 @@ In this analogy:
 - The beginning of post-training in supervised fine-tuning (SFT) for instructions tunes the model to a narrower distribution, and 
 - Finally "pure" reinforcement learning (RL) is the cherry on top. The scaled up reinforcement learning used to create the new "reasoning" or "thinking" models is this finishing piece (along with the help of RLHF, which isn't considered classical RL, as we'll explain).
 
-<!-- We learn just "a few bits" of information with RL in just a few training samples. -->
 This little bit of reasoning training emerged with **thinking models** that use a combination of the post-training techniques discussed in this book to align preferences along with RL training on verifiable domains to dramatically increase capabilities such as reasoning, coding, and mathematics problem solving.
 
 The training method for these models, Reinforcement Learning with Verifiable Rewards (RLVR) [@lambert2024t], proceeds very similarly to RLHF, but it makes the reward model optional in lieu of a scoring function that returns a positive reward when the answer is correct and 0 otherwise.
