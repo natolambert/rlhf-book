@@ -245,7 +245,7 @@ The key point is that some of their evaluations for tracking progress, such as t
 
 The post-training evaluations are heavily co-dependent on human evaluation. 
 Human evaluation for generative language models yields Elo rankings (popular in early Anthropic papers such as Constitutional AI), and human evaluation for reward models shows agreement.
-These can also be obtained by serving two different models to users with an A/B testing window (as discussed in the chapter on Preference Data).
+These can also be obtained by serving two different models to users with an A/B testing window (as discussed in the [chapter on preference data](https://rlhfbook.com/c/11-preference-data)).
 
 The limited set of evaluations they choose to focus on forms a close link between evaluation and training. 
 At one point one evaluation of focus was MMLU. 

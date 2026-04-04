@@ -174,7 +174,7 @@ The takeoff of RL-focused training on language models indicates progress on many
 - **Stability of RL can be solved**: For its entire existence, the limiting factor on RL's adoption has been stability. This manifests in two ways. First, the learning itself can be fickle and not always work. Second, the training itself is known to be more brittle than standard language model training and more prone to loss spikes, crashes, etc. Countless new model releases are using this style of RL training with verifiable rewards on top of a pretrained base model and substantial academic uptake has occurred. The technical barriers to entry on RL are at an all time low.
 
 - **Open-source versions already "exist"**: Many tools already exist for training language models with RLVR and related techniques. 
-Examples include TRL [@vonwerra2022trl], Open Instruct [@lambert2024t], veRL [@sheng2024hybridflow], and OpenRLHF [@hu2024openrlhf], where many of these are building on optimizations from earlier in the arc of RLHF and post-training. The accessibility of tooling is enabling a large uptake of research that'll likely soon render this chapter out of date.
+Examples include TRL [@vonwerra2022trl], Open Instruct [@lambert2024t], veRL [@sheng2024hybridflow], and OpenRLHF [@hu2024openrlhf], where many of these are building on optimizations from earlier in the arc of RLHF and post-training. The accessibility of tooling is enabling a large and accelerating body of research.
 
 Multiple resources point to RL training for reasoning only being viable with leading models coming out from about 2024 onwards, indicating that a certain level of underlying capability was needed in the models before reasoning training was possible.
 
@@ -292,8 +292,7 @@ In complement to the common techniques, there are also many common findings on h
 
 ## Looking Ahead
 
-The reasoning model landscape is evolving faster than any area of AI research in recent memory.
-By the time this chapter is published, the table of reasoning models above will be incomplete and some of the common practices listed may have been superseded by new techniques.
+The reasoning model landscape is evolving faster than any area of AI research in recent memory, and some of the common practices listed here will inevitably be superseded by new techniques.
 
 Several efforts are underway to systematically understand what makes reasoning training work.
 OLMo 3 Think [@teamolmo2025olmo3] represents the most comprehensive open documentation of a reasoning model's full training lifecycle, providing checkpoints and data at each stage for the research community to study, and concluding with a nearly 4 week long training run on 220 GPUs.

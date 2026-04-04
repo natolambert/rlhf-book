@@ -224,11 +224,11 @@ Post-training has far outgrown that, and we are coming to see that the style of 
 
 As the AI community shifts post-training further into the era of agentic and reasoning models, the superficial alignment hypothesis breaks down further.
 RL methods are becoming an increasingly large share of the compute needed to train frontier language models.
-In the short time since reinforcement learning with verifiable rewards (RLVR) was coined in our work on Tülu 3 in the fall of 2024 [@lambert2024t] to today, the scale of compute used for post-training has grown dramatically.
+In the short time since reinforcement learning with verifiable rewards (RLVR) was coined in our work on Tülu 3 in the fall of 2024 [@lambert2024t], the scale of compute used for post-training has grown dramatically.
 DeepSeek R1, famous for popularizing RLVR, used only about 5% of their overall compute in post-training -- 147K H800 GPU hours for RL training on R1 [@guo2025deepseek], relative to 2.8M GPU hours for pretraining the underlying DeepSeek V3 base model [@deepseekai2025deepseekv3technicalreport].
 
 The science studying the core methods of scaling RL as of 2025 shows that individual ablation runs can take 10-100K GPU hours [@khatri2025art], the equivalent of the compute used for the RL stage of OLMo 3.1 Think 32B (released in November of 2025), which trained for 4 weeks on 200 GPUs [@teamolmo2025olmo3].
-The science of scaled post-training is in its very early stages as of writing this, adopting ideas and methods from pretraining language models and applying them in this new domain, so the exact GPU hours used will change, but the trend of increased compute on post-training will continue.
+The science of scaled post-training is in its very early stages as of 2025, adopting ideas and methods from pretraining language models and applying them in this new domain, so the exact GPU hours used will change, but the trend of increased compute on post-training will continue.
 All together, the elicitation theory of post-training is likely to become the correct view only when applying a lighter post-training recipe -- something useful for specializing a model -- relative to the compute-intensive frontier models.
 
 ## How We Got Here
@@ -268,8 +268,8 @@ At the same time, the Llama 3.1 [@dubey2024llama] and Nemotron 4 340B [@adler202
 The closed labs are doing full post-training -- a large multi-stage process of instruction tuning, RLHF, prompt design, etc. -- where academic papers are just scratching the surface. 
 Tülu 3 represented a comprehensive, open effort to build the foundation of future academic post-training research [@lambert2024t].
 
-Today, post-training is a complex process involving the aforementioned training objectives applied in various orders in order to target specific capabilities.
-This book is designed to give a platform to understand all of these techniques, and in coming years the best practices for how to interleave them will emerge.
+Post-training is a complex process involving the aforementioned training objectives applied in various orders in order to target specific capabilities.
+This book is designed to give a platform to understand all of these techniques, and as the field matures the best practices for how to interleave them will emerge.
 
 The primary areas of innovation in post-training are now in reinforcement learning with verifiable rewards (RLVR), reasoning training generally, and related ideas. 
 These newer methods build extensively on the infrastructure and ideas of RLHF, but are evolving far faster.
