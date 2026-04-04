@@ -13,7 +13,7 @@ next-chapter: "Rejection Sampling"
 next-url: "09-rejection-sampling"
 ---
 
-# Direct Alignment Algorithms
+# Direct Alignment Algorithms (DAAs)
 
 Direct Alignment Algorithms (DAAs) allow one to update models to solve the same RLHF objective without ever training an intermediate reward model or using reinforcement learning optimizers. 
 DAAs solve the same preference learning problem we've been studying (with literally the same data!), in order to make language models more aligned, smarter, and easier to use.
@@ -260,7 +260,7 @@ Online variants of DPO alleviate these limitations by generating new completions
 
 There is a long list of other DAA variants, such as Direct Nash Optimization (DNO) [@rosset2024direct] or Binary Classifier Optimization (BCO) [@jung2024binary], but the choice of algorithm is far less important than the initial model and the data used [@lambert2024t] [@zhao2024rainbowpo] [@gorbatovski2025differences].
 
-## Implementation Considerations
+## Implementation Details
 
 DAAs such as DPO are implemented very differently than policy gradient optimizers.
 The DPO loss, taken from the original implementation, largely can be summarized as follows [@rafailov2024direct]:

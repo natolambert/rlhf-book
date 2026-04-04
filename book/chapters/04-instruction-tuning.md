@@ -175,7 +175,7 @@ A few principles remain:
 - The best prompts are those in a similar distribution to downstream tasks of interest.
 - If multiple stages of training are done after instruction tuning, the models can recover from some noise in the instruction-tuning data. Optimizing the overall optimization is more important than each individual stage.
 
-## Implementation
+## Implementation Details
 
 While the loss function is the same as pretraining, there are a few key implementation details that differ from the setting used for pretraining.
 Many practices, such as deciding on the types of parallelism used to shard models across many GPUs are the same as pretraining, just the total number of machines used is often lower (for the first technical change listed below):
