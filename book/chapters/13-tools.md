@@ -275,7 +275,7 @@ async def call_tool(name: str, arguments: dict):
         return [TextContent(type="text", text=weather)]
 ```
 
-## Implementation
+## Implementation Details
 
 There are multiple formatting and masking decisions when implementing a tool-use model:
 

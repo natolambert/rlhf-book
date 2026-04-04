@@ -32,7 +32,7 @@ WebGPT [@nakano2021webgpt], Anthropic's Helpful and Harmless agent [@bai2022trai
 
 *Throughout this chapter, we use $x$ to denote prompts and $y$ to denote completions. This notation is common in the language model literature, where methods operate on full prompt-completion pairs rather than individual tokens.*
 
-## Training Process
+## Training Process Step By Step
 
 Rejection sampling overall follows a few stages.
 

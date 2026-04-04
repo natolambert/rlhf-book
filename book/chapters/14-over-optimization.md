@@ -126,7 +126,7 @@ The accepted best practice for mitigating this behavior is to modify the trainin
 Today, a substantial amount of fine-tuning for AI applications is done by further fine-tuning so called "Instruct" or "Thinking" models that have already gone through substantial RLHF and other post-training before release.
 These already trained models can be much harder to change, e.g. to remove this over-refusal, and often starting with a base model directly at the end of large-scale autoregressive pretraining is best for steering this type of behavior.
 
-## Quantitative over-optimization
+## Quantitative Over-optimization
 
 Over-optimization is also a technical field of study where relationships between model performance versus KL optimization distance are studied [@gao2023scaling].
 Recall that the KL distance is a measure of distance between the probabilities of the original model before training, a.k.a. the reference model, and the current policy.

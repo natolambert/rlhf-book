@@ -38,7 +38,7 @@ Later in this section we also compare these to Outcome Reward Models (ORMs), Pro
 
 ![The reward model in RLHF plays the role of the environment component that returns rewards in standard RL. The key difference is that in RLHF, we get to control and learn this reward function from human preferences, rather than having it fixed by the environment.](images/rlhf-overview.png){#fig:rm-role-in-rlhf}
 
-## Training Reward Models
+## Training a Bradley-Terry Reward Model
 
 The canonical implementation of a reward model is derived from the Bradley-Terry model of preference [@BradleyTerry].
 There are two popular expressions for how to train a standard reward model for RLHF -- they are mathematically equivalent.
@@ -89,7 +89,7 @@ They both appear in the RLHF literature.
 
 ![Training a preference reward model requires pairs of chosen and rejected completions. The model computes a scalar score at the end-of-sequence (EOS) token for each, and the contrastive loss depends only on the score difference between the two.](images/pref_rm_training.png){#fig:pref_rm_training}
 
-## Architecture
+## The Default Reward Model Architecture
 
 The most common way reward models are implemented is through an abstraction similar to Transformer's `AutoModelForSequenceClassification`, which appends a small linear head to the language model that performs classification between two outcomes -- chosen and rejected.
 At inference time, the model outputs the *probability that the piece of text is chosen* as a single logit from the model.
@@ -173,7 +173,7 @@ class BradleyTerryRewardModel(nn.Module):
 In this section and what follows, most of the implementation complexity for reward models (and much of post-training) is around constructing the data-loaders correctly and distributed learning systems.
 Note, when training reward models, the most common practice is to train for only 1 epoch to avoid overfitting.
 
-## Variants
+## Reward Model Variants
 
 Reward modeling is a relatively under-explored area of RLHF.
 The traditional reward modeling loss has been modified in many popular works, but the modifications have not solidified into a single best practice.
@@ -397,7 +397,7 @@ mask = labels != -100
 loss = F.cross_entropy(logits[mask], labels[mask])
 ```
 
-## Reward Models vs. Outcome RMs vs. Process RMs vs. Value Functions
+## Comparing Reward Model Types (and Value Functions)
 
 The various types of reward models covered indicate the spectrum of ways that "quality" can be measured in RLHF and other post-training methods.
 Below, a summary of what the models predict and how they are trained.
@@ -432,7 +432,7 @@ ORMs and value functions can appear similar since both produce per-token outputs
 If you define a dense token reward $r_t = \mathbb{1}[\text{token is correct}]$ and use $\gamma = 1$, then an ORM is learning $r_t$ (or $p(r_t = 1)$) while the value head is learning the remaining-sum $\sum_{k \geq t} r_k$.
 They can share the same base model and head dimensions, but the *semantics and supervision pipeline* differ: ORMs are trained offline from fixed labels, while value functions are trained on-policy and used to compute advantages $A_t = \hat{R}_t - V_t$ for policy gradients.
 
-### Inference Differences
+### Inference Across Reward Model Types
 
 The models handle data differently at inference time (once they've been trained), in order to handle a suite of tasks that RMs are used for.
 
@@ -471,7 +471,7 @@ In summary, the way to understand the different models is:
 - **PRM:** "Are the reasoning steps sound?" → per-step scores
 - **Value:** "How much reward remains from here?" → baseline for RL advantages
 
-## Generative Reward Modeling
+## Generative Reward Modeling (a.k.a. LLM-as-a-judge)
 
 With the cost of preference data, a large research area emerged to use existing language models as a judge of human preferences or in other evaluation settings [@zheng2023judging].
 The core idea is to prompt a language model with instructions on how to judge, a prompt, and two completions (much as would be done with human labelers). 

@@ -56,7 +56,7 @@ A subtle but important point is that the *chosen* answer in preference data is o
 Instead, it is the answer that is better relative to the alternatives shown (e.g., clearer, safer, more helpful, or less incorrect).
 There can be cases where every completion being compared to a given prompt is correct or incorrect, and the models can still learn from well-labeled data.
 
-### Interface
+### Interfaces
 
 Crucial to collecting preference data is the interface by which one interacts with the model, but it's more of an art than a science, as it's not well-studied how subtle changes in the interface impact how a user interacts with a model.
 An example of how a model's vibe can be changed by the user experience is *speed*, where with the rise of reasoning models, a user can think a model is less intelligent if it replies too fast (even though users obviously want to get their answer faster overall).
@@ -75,9 +75,9 @@ An example interaction of this form is shown below in @fig:preference-chatgpt fo
 ![Example preference data collection interface from when I was served two completions from different ChatGPT beta models. The actual completions are very close in content, showing how collecting preference data can be noisy and difficult to get exactly right.](images/chatgpt-ab-test.jpeg){#fig:preference-chatgpt .center}
 
 This style of interface is used extensively across the industry, such as for *evaluation* of models given the same format.
-A popular public option to engage with models in this way is ChatBotArena [@chiang2024chatbot], which includes the option of a "tie" between models:
+A popular public option to engage with models in this way is Arena (formerly ChatBotArena) [@chiang2024chatbot], which includes the option of a "tie" between models:
 
-![Example preference data collection interface from an early version of the popular LMArena benchmark.](images/chatbotarena.png){#fig:chatbotarena .center}
+![Example preference data collection interface from an early version of the popular Arena benchmark.](images/chatbotarena.png){#fig:chatbotarena .center}
 
 For models in the wild, one of the most common techniques is to collect feedback on if a specific response was positive or negative.
 An example from the Ai2 playground is shown below with thumbs up and down indicators:

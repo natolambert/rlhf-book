@@ -31,7 +31,7 @@ Evaluation for RLHF and post-training has gone a few distinct phases in its earl
 
 Beyond this, new domains will evolve. 
 As AI becomes more of an industrialized field, the incentives of evaluation are shifting and becoming multi-stakeholder.
-Since the release of ChatGPT, private evaluations such as the Scale Leaderboard [@scale2024seal], community-driven evaluations such as ChatBotArena [@chiang2024chatbot], and third-party evaluation companies such as ArtificialAnalysis and Epoch AI have proliferated.
+Since the release of ChatGPT, private evaluations such as the Scale Leaderboard [@scale2024seal], community-driven evaluations such as Arena [@chiang2024chatbot], and third-party evaluation companies such as ArtificialAnalysis and Epoch AI have proliferated.
 Throughout this chapter we will include details that map to how these evaluations were implemented and understood.
 
 ## Prompting Formatting: From Few-shot to Zero-shot to CoT

@@ -573,7 +573,7 @@ GRPO and its variants are particularly well-suited to modern language model tool
 The advantage computation for GRPO has trade-offs in its biases.
 The normalization by standard deviation is rewarding questions in a batch that have a low variation in answer correctness.
 For questions with either nearly all correct or all incorrect answers, the standard deviation will be lower and the advantage will be higher.
-[@liu2025understanding] proposes removing the standard deviation term given this bias, but this comes at the cost of down-weighing questions that were all incorrect with a few correct answers, which could be seen as valuable learning signal for the model.
+Liu et al. 2025 [@liu2025understanding] proposes removing the standard deviation term given this bias, but this comes at the cost of down-weighing questions that were all incorrect with a few correct answers, which could be seen as valuable learning signal for the model.
 Those high-variance prompts can be exactly the hardest cases, where only a few sampled completions find the correct answer and provide a strong training signal.
 
 @eq:GRPO_ADV is the implementation of GRPO when working with outcome supervision (either a standard reward model or a single verifiable reward) and a different implementation is needed with process supervision.
@@ -720,7 +720,7 @@ Case 2: Negative advantage, so the action was worse than the expected value of t
 
 Case 3: Zero advantage, so no update is needed. The loss is zero, don't change the policy model.
 
-### Loss Aggregation
+### Loss Aggregation Trade-offs
 
 The question when implementing any policy gradient algorithm with language models is: How do you aggregate per-token losses into a final scalar loss?
 Given per-token losses $\ell_{i,t}$ for sample $i$ at token $t$, with completion lengths $|a_i|$ and batch size $B$, there are three main strategies:
@@ -904,7 +904,7 @@ But in the RLHF setting, even when using the token-level MDP view, the inductive
 Discounting earlier tokens would arbitrarily down-weight their contribution with no principled justification.
 As agentic RL settings mature -- where models take real multi-step actions such as tool calls, code execution, and web browsing -- discounting may become relevant again, since these involve genuinely distinct sequential decisions whose long-term consequences differ.
 
-### Asynchronicity
+### Asynchronous RL Systems
 
 The default implementation for policy-gradient algorithms is what is called **on-policy** execution, where the actions (generations) taken by the agent (language model) are scored before updating the model.
 The theoretical derivations of policy-gradient rely on all actions being exactly on-policy where the model is always up to date with the results from the latest trials/roll-outs.
@@ -991,7 +991,7 @@ Unlike GSPO, this correction is token-level because it addresses token-level num
 TIS for the learner–sampler ratio has been adopted across major open-source RL frameworks (VeRL, OpenRLHF, SkyRL, OAT, and Open Instruct, which uses $C = 2$), and becomes increasingly important for long reasoning traces (chapter 7), where small per-token differences compound over thousands of generated tokens.
 
 
-### Proximal Policy Optimization
+### Example: Proximal Policy Optimization
 
 There are many, many implementations of PPO available. 
 The core *loss* computation is shown below. 
@@ -1083,7 +1083,7 @@ $$J(\theta) = \frac{1}{G}\sum_{i=1}^G \left(\frac{\pi_\theta(a_i|s)}{\left[\pi_{
 This leads to PPO or GRPO implementations where the second policy gradient and clipping logic can be omitted, making the optimizer far closer to standard policy gradient.
 
 
-### Group Relative Policy Optimization
+### Example: Group Relative Policy Optimization
 
 The DeepSeekMath paper describes some implementation details of GRPO that differ from PPO [@shao2024deepseekmath], especially if comparing to a standard application of PPO from Deep RL rather than language models.
 For example, the KL penalty within the RLHF optimization (recall the KL penalty is also used when training reasoning models on verifiable rewards without a reward model) is applied directly in the loss update rather than to the reward function.
