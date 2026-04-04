@@ -85,7 +85,7 @@ In many ways, this makes the $\beta$ value easier to tune with DPO relative to o
 At each batch of preference data, composed of many pairs of completions $y_{chosen} \succ y_{rejected}$, DPO takes gradient steps directly towards the optimal solution.
 It is far simpler than policy gradient methods.
 
-![When DPO first released it sparked a fierce debate in the research community about how to best do RLHF and preference learning. This meme is a great job capturing the sentiment, where the debate often felt forced and over the top, but many people both getting started and in top labs were getting immense benefit out of DPO. DPO simplicity meme, credit Tom Goldstein.](images/dpo_meme.jpeg){#fig:dpo-meme}
+![When DPO first released it sparked a fierce debate in the research community about how to best do RLHF and preference learning. This meme does a great job capturing the sentiment, where the debate often felt forced and over the top, but many people both getting started and in top labs were getting immense benefit out of DPO. DPO simplicity meme, credit Tom Goldstein.](images/dpo_meme.jpeg){#fig:dpo-meme}
 
 
 ### DPO Derivation

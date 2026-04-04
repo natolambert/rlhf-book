@@ -47,7 +47,7 @@ A large change is also related to dataset size, where fine-tuning datasets have 
 Longer responses and more prompts results in the Alpaca dataset being on the order of 10M training tokens, where Tülu is 50X larger at about 500M, and OpenThoughts 3 is bigger still at the order of 10B tokens.
 
 Throughout this transition, synthetic data has not replaced human data uniformly across the pipeline. 
-For **instruction data (SFT)**, synthetic generation has largely won —- distillation from stronger models now produces higher quality completions than most human writers can provide at scale (with some exception in the hardest, frontier reasoning problems). 
+For **instruction data (SFT)**, synthetic generation has largely won -- distillation from stronger models now produces higher quality completions than most human writers can provide at scale (with some exceptions in the hardest frontier reasoning problems).
 For **preference data in RLHF**, the picture is more mixed: academic work shows synthetic preference data performs comparably, yet frontier labs still treat human preference data as a competitive moat. 
 For **evaluation**, the split takes a different flavor: LLM-as-a-judge scales the *scoring* of model outputs cost-effectively, but the underlying benchmarks and ground-truth labels still require human creation. 
 The pattern is that synthetic data dominates where models exceed human reliability, while humans remain essential at capability frontiers, for establishing ground truth, and for guiding training.

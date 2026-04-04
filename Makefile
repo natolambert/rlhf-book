@@ -72,7 +72,7 @@ OS = $(shell sh -c 'uname -s 2>/dev/null || echo Unknown')
 ifeq ($(OS),Darwin) # Mac OS X
 	COPY_CMD = cp -P
 else # Linux
-	COPY_CMD = cp --parent
+	COPY_CMD = cp
 endif
 
 MKDIR_CMD = mkdir -p

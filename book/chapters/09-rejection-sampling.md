@@ -205,7 +205,7 @@ np.allclose(x, x_sorted[np.argsort(sorted_indices)])
 ### 3. Fine-tuning
 
 With the selected completions, you then perform standard instruction fine-tuning on the current version of the model.
-More details can be found in the [chapter on instruction tuning](https://rlhfbook.com/c/instructions).
+More details can be found in the [chapter on instruction tuning](https://rlhfbook.com/c/04-instruction-tuning).
 
 ## Implementation Details
 
