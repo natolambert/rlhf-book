@@ -302,7 +302,7 @@ The second term is a length-normalized negative log-likelihood penalty on the wi
 
 Controlling the optimization is less well defined in other parts of the RLHF stack.
 Most reward models have no regularization beyond the standard contrastive loss function.
-Direct Alignment Algorithms handle regularization to KL divergences differently, through the $\beta$ parameter (see the chapter on Direct Alignment).
+Direct Alignment Algorithms handle regularization to KL divergences differently, through the $\beta$ parameter (see the [chapter on direct alignment](https://rlhfbook.com/c/08-direct-alignment)).
 
 Llama 2 proposed a margin loss for reward model training [@touvron2023llama]:
 

@@ -20,7 +20,7 @@ The core problem we've been trying to solve with RLHF is that we cannot precisel
 The data is what allows us to match behaviors we desire and avoid some failure modes we hate.
 The data is so rich a source that it is difficult to replace this style of optimization at all.
 Within preference fine-tuning, many methods for collecting and using said data have been proposed, and given that human preferences cannot be captured in a clear reward function, many more will come to enable this process of collecting labeled preference data at the center of RLHF and related techniques.
-Today, two main challenges exist around preference data that are intertwined with this chapter: 1) operational complexity and cost of collection, and 2) the need for preference data to be collected on the generations from the model being trained (called "on-policy");
+Today, two main challenges exist around preference data that are intertwined with this chapter: 1) operational complexity and cost of collection, and 2) the need for preference data to be collected on the generations from the model being trained (called "on-policy").
 
 In this chapter, we detail technical decisions on how the data is formatted and organizational practices for collecting it.
 
@@ -234,8 +234,6 @@ Data acquisition through these vendors works best when viewed as an ongoing proc
 It requires iterative experimentation, high effort, and focus. 
 It's likely that millions of dollars spent on these datasets are "wasted" and not used in the final models, but that is just the cost of doing business. 
 Not many organizations have the bandwidth and expertise to make full use of human data of this style.
-
-This experience, especially relative to the simplicity of synthetic data, makes me wonder how well these companies will be doing in the next decade.
 
 Note that this section *does not* mirror the experience for buying human-written instruction data, where the process is less of a time crunch.
 Early post-training processes were built around the first stage of training being heavily driven by carefully crafted, human answers to a set of prompts.
