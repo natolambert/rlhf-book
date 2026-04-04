@@ -530,7 +530,7 @@ advantages = (targets - v_pred).detach()
 
 ### Group Relative Policy Optimization (GRPO)
 
-Group Relative Policy Optimization (GRPO) is introduced in DeepSeekMath [@shao2024deepseekmath], and used in other DeepSeek works, e.g. DeepSeek-V3 [@liu2024deepseek] and DeepSeek-R1 [@guo2025deepseek].
+Group Relative Policy Optimization (GRPO) is introduced in DeepSeekMath [@shao2024deepseekmath], and used in other DeepSeek works, e.g. DeepSeek-V3 [@deepseekai2025deepseekv3technicalreport] and DeepSeek-R1 [@guo2025deepseek].
 GRPO can be viewed as a PPO-inspired algorithm with a very similar surrogate loss, but it avoids learning a value function with another copy of the original policy language model (or another checkpoint for initialization). 
 This brings two posited benefits:
 
@@ -656,7 +656,7 @@ GSPO can be summarized as "GRPO with sequence-level importance ratios"—the IS 
 
 ### Clipped Importance Sampling Policy Optimization (CISPO)
 
-Clipped Importance Sampling Policy Optimization (CISPO) [@minimax2025minimaxm1scalingtesttimecompute] takes a different approach: rather than clipping the surrogate objective, CISPO clips the importance weights themselves while preserving gradients for all tokens.
+Clipped Importance Sampling Policy Optimization (CISPO) [@minimax2025minimax_m1] takes a different approach: rather than clipping the surrogate objective, CISPO clips the importance weights themselves while preserving gradients for all tokens.
 The objective uses a stop-gradient on the clipped importance weight, returning to a REINFORCE-style formulation instead of the PPO-style, two-sided clipping:
 
 $$
@@ -930,7 +930,7 @@ The full complexity of distributed RL infrastructure is out of scope for this bo
 Following the emergence of these reasoning models, further interest has been taken to make the training and inference loops fully off-policy, where training batches for the policy gradient updates are filled with the most recently completed roll-outs across multiple instances generating answers [@wu2025llamarl] [@fu2025areal].
 Fully asynchronous training would also enable scaling RL training runs across multiple datacenters more easily due to the option of increasing the time between weight syncs between the learner node (taking policy gradient steps) and the actor (trying to solve problems) [@primeintellectteam2025intellect2reasoningmodeltrained].
 
-Related methods are exploring fully off-policy policy gradient algorithms [@roux2025tapered].
+Related methods are exploring fully off-policy policy gradient algorithms [@leroux2025topr].
 
 ### Truncated Importance Sampling (TIS)
 
