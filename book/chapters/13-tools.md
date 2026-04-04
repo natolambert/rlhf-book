@@ -76,7 +76,6 @@ Since these early models, the diversity of actions called has grown substantiall
 Tool-use models are now deeply intertwined with regular language model interactions.
 Model Context Protocol (MCP) emerged as a common formatting used to connect language models to external data sources (or tools) [@anthropic_mcp_2024].
 With stronger models and better formats, tool-use language models are used in many situations, including productivity copilots within popular applications such as Microsoft Office or Google Workspace, scientific domains [@bran2023chemcrow], medical domains [@li2024mmedagent], coding agents [@zhang2024codeagent] such as Claude Code or Cursor, integrations with databases, and many other autonomous workflows.
-<!-- Tool use also expands the attack surface for language models—indirect prompt injection through tool outputs and unauthorized actions are ongoing concerns that require treating tool results as untrusted input and gating state-changing operations. -->
 
 Evaluating tool-use models involves multiple dimensions: exact-match metrics for tool name and argument correctness, schema validity, and end-to-end task completion in simulated environments.
 Reliability across trials also matters -- $\tau$-bench introduced the pass^k metric (distinct from pass@k) to measure whether an agent succeeds consistently rather than occasionally [@yao2024taubench].

@@ -85,7 +85,7 @@ In many ways, this makes the $\beta$ value easier to tune with DPO relative to o
 At each batch of preference data, composed of many pairs of completions $y_{chosen} \succ y_{rejected}$, DPO takes gradient steps directly towards the optimal solution.
 It is far simpler than policy gradient methods.
 
-![When DPO first released it sparked a fierce debate in the research community about how to best do RLHF and preference learning. This meme is a great job capturing the sentiment, where the debate often felt forced and over the top, but many people both getting started and in top labs were getting immense benefit out of DPO. DPO simplicity meme, credit Tom Goldstein.](images/dpo_meme.jpeg){#fig:dpo-meme}
+![When DPO first released it sparked a fierce debate in the research community about how to best do RLHF and preference learning. This meme does a great job capturing the sentiment, where the debate often felt forced and over the top, but many people both getting started and in top labs were getting immense benefit out of DPO. DPO simplicity meme, credit Tom Goldstein.](images/dpo_meme.jpeg){#fig:dpo-meme}
 
 
 ### DPO Derivation
@@ -155,7 +155,7 @@ Since we introduced the partition function $Z(x)$, thereby making the term $\fra
 $$ \min_{\pi}\mathbb{E}_{x\sim\mathcal{D}}\left[\mathcal{D}_{\text{KL}} \left(\pi(y|x) \middle\| \frac{1}{Z(x)}\pi_{\text{ref}}(y|x)\exp\left(\frac{1}{\beta}r(x,y)\right) \right) - \log Z(x)\right] $$ {#eq:dpo_deriv_11}
 
 Since the term $\log Z(x)$ does not depend on the final answer, we can ignore it. This leaves us with just the KL divergence between the policy we are learning and a form relating the partition, $\beta$, reward, and reference policy.
-The Gibb's inequality tells this is minimized at a distance of 0, only when the two quantities are equal!
+Gibbs' inequality tells us this is minimized at a distance of 0, only when the two quantities are equal!
 Hence, we get an optimal policy:
 
 $$ \pi^*(y|x) = \pi(y|x) = \frac{1}{Z(x)}\pi_{\text{ref}}(y|x)\exp\left(\frac{1}{\beta}r(x,y)\right) $$ {#eq:dpo_opt_policy}
@@ -295,7 +295,7 @@ In most ways, DAAs are simpler and a quality of life improvement, but they also 
 Most of the popular datasets for performing preference fine-tuning with DAAs these days are synthetic preferences where a frontier model rates outputs from other models as the winner or the loser. 
 Prominent examples include UltraFeedback (the first of this category) [@cui2023ultrafeedback], Tülu 3 (built with an expanded UltraFeedback methodology) [@lambert2024t], SmolLM 3's data [@bakouch2025smollm3], or the Dolci Pref dataset released with Olmo 3 [@teamolmo2025olmo3].
 
-The best-practices for constructing these datasets is still evolving.
+The best-practices for constructing these datasets are still evolving.
 Tülu 3 and datasets around its release in November of 2024 demonstrated that synthetic, pairwise preference data needs to be "on-policy" in a sense that some completions are generated from the model you're fine-tuning (while being mixed in a bigger model pool).
 This on-policy nature of the data ensured that the DAA would optimize the correct token space within which the model generates -- as the loss functions are contrastive and less direct than instruction fine-tuning.
 Later, with the release of Olmo 3 and SmolLM 3 in 2025, other works supported a different theory called Delta Learning, which argues that the difference between the chosen and rejected completions is more important to learning than exactly which models are used for the completions [@geng2025the].
@@ -317,7 +317,7 @@ This, like most questions phrased this way, is overly simple.
 Of course, both methods are well-established, but it is important to illustrate where the fundamental differences and performance manifolds lie.
 
 Multiple reports have concluded that policy-gradient based and RL methods outperform DPO and its variants.
-The arguments take different forms, from training models with different algorithms but controlled data[@ivison2024unpacking] [@xu2024dpo] or studying the role of on-policy data within the RL optimization loop [@tajwar2024preference].
+The arguments take different forms, from training models with different algorithms but controlled data [@ivison2024unpacking] [@xu2024dpo] or studying the role of on-policy data within the RL optimization loop [@tajwar2024preference].
 In all of these cases, DPO algorithms are a hair behind.
 
 Even with this performance delta, DAAs are still used extensively in leading models due to their simplicity.

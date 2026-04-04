@@ -78,10 +78,10 @@ cd diagrams && make all
 To cite this book, please use the following format:
 
 ```bibtex
-@book{rlhf2025,
+@book{rlhf2026lambert,
   author       = {Nathan Lambert},
   title        = {Reinforcement Learning from Human Feedback},
-  year         = {2025},
+  year         = {2026},
   publisher    = {Online},
   url          = {https://rlhfbook.com},
 }

@@ -29,7 +29,6 @@ Though, as with most modern AI models, the largest determining factor on its suc
 
 ![Overview of the RLHF training loop. A prompt from the dataset is passed to the tuned policy, which generates a completion. The reward model scores this completion, while the frozen initial model (typically the instruction-tuned model before RL) computes log probabilities on the same text to calculate a KL penalty that prevents excessive drift. The combined reward signal then drives a reinforcement learning update to the policy parameters.](images/rlhf-overview.png){#fig:rlhf-overview}
 
-<!-- The most popular algorithms used for RLHF have evolved over time. -->
 When RLHF came onto the scene with ChatGPT, it was largely known that they used a variant of PPO, and many initial efforts were built upon that.
 Over time, multiple research projects showed the promise of REINFORCE-style algorithms [@ahmadian2024back] [@wang2024helpsteer2p], touted for its simplicity over PPO without a reward model (saves memory and therefore the number of GPUs required) and with simpler value estimation (no Generalized Advantage Estimation, GAE, which is a method to compute advantages used for variance reduction in policy gradient algorithms).
 More algorithms have emerged, including Group Relative Policy Optimization, which is particularly popular with reasoning tasks, but in general many of these algorithms can be tuned to fit a specific task.
@@ -45,7 +44,7 @@ For definitions of symbols, see the problem setup chapter.
 
 *This chapter uses $(s, a)$ notation from the reinforcement learning literature, where $s$ denotes states and $a$ denotes actions. In the language model context, you will often see $(x, y)$ instead, where $x$ is the prompt and $y$ is the completion. The $(s, a)$ framing is more general—these algorithms were designed for sequential decision problems where actions are taken at each timestep. However, many RLHF implementations treat the entire completion as a single action, making the $(x, y)$ notation equally valid.*
 
-***RL Cheatsheet:** A one-page reference of all core RL loss functions from this chapter is available at [rlhfbook.com/rl-cheatsheet](/rl-cheatsheet).*
+***RL Cheatsheet:** A one-page reference of all core RL loss functions from this chapter is available at [rlhfbook.com/rl-cheatsheet](https://rlhfbook.com/rl-cheatsheet).*
 
 ## Policy Gradient Algorithms
 
@@ -695,7 +694,7 @@ The solution to this is to *only* run reward model scoring on the `eos_token`, a
 The popular open-source tools for RLHF have a large variance in implementation details across the algorithms (see table 10 in [@ivison2024unpacking]).
 Some decisions not covered here include:
 
-- **Value network initialization**: The internal learned value network used by PPO and other similar algorithms can be started from a different model of the same architecture or randomly selected weights. This can have a large impact on performance. The standard established in InstructGPT [@ouyang2022training] (and re-used in Tülu 3 for its work on RLVR [@lambert2024t]) is to initialize the value network from the reward model used during RLHF. Others have used the previous checkpoint to RLHF training (normally an SFT model) with a value head appened randomly initialized, or fully re-initialized language models (less common as it will take longer for RLHF to converge, but possible).
+- **Value network initialization**: The internal learned value network used by PPO and other similar algorithms can be started from a different model of the same architecture or randomly selected weights. This can have a large impact on performance. The standard established in InstructGPT [@ouyang2022training] (and re-used in Tülu 3 for its work on RLVR [@lambert2024t]) is to initialize the value network from the reward model used during RLHF. Others have used the previous checkpoint to RLHF training (normally an SFT model) with a value head appended randomly initialized, or fully re-initialized language models (less common as it will take longer for RLHF to converge, but possible).
 - **Reward normalization, reward whitening, and/or advantage whitening**: Normalization bounds all the values from the RM (or environment) to be between 0 and 1, which can help with learning stability. [Whitening](https://en.wikipedia.org/wiki/Whitening_transformation) goes further by transforming rewards or advantage estimates to have zero mean and unit variance, providing an even stronger boost to stability.
 - **Different KL estimators**: With complex language models, precisely computing the KL divergence between models can be complex, so multiple approximations are used to substitute for an exact calculation [@schulman2016klapprox].
 - **KL controllers**: Original implementations of PPO and related algorithms had dynamic controllers that targeted specific KLs and changed the penalty based on recent measurements. Most modern RLHF implementations use static KL penalties, but this can also vary.
@@ -768,7 +767,7 @@ Note that `completion_mask` in the code above is a matrix of 1s and 0s, where th
 #### Why does this matter?
 
 Intuitively, per-sequence normalization (Strategy 1) seems best since we care about *outcomes*, not individual tokens.
-However, this introduces subtle biases based on sequence length, which can cause the model to overthink of down-weight strategies that naturally need to use more tokens, depending on the direction of the bias.
+However, this introduces subtle biases based on sequence length, which can cause the model to overthink or down-weight strategies that naturally need to use more tokens, depending on the direction of the bias.
 Consider two sequences of different lengths with per-token losses:
 
 ```python
@@ -915,7 +914,7 @@ What happens in practice is designing the algorithms and systems for what actual
 ![A comparison of the generation-update phases for synchronous or asynchronous RL training following Noukhovitch et al. 2024.](images/async_v_synch_rl.png){#fig:async}
 
 The common solution used is to constantly run inference and training on separate GPU nodes with software designed to efficiently run both, as shown in the bottom of @fig:async.
-Common practice in popular open-source RL tools for language models is to use a distributed process management library such as Ray to hand information off between the policy-gradient learning loop and the inference loop using an efficient inference engine, e.g., VLLM.
+Common practice in popular open-source RL tools for language models is to use a distributed process management library such as Ray to hand information off between the policy-gradient learning loop and the inference loop using an efficient inference engine, e.g., vLLM.
 In these setups, the GPUs dedicated to taking the RL steps are called the "learners" and the GPUs dedicated to sampling from the language model are called the "actors"
 The primary challenges faced when making training more asynchronous are keeping training stable and maintaining learning signal.
 
@@ -939,7 +938,6 @@ Truncated importance sampling (TIS) is a crucial tool used to stabilize training
 Importance sampling is a correction that reweights samples drawn from one distribution to estimate expectations under another (as introduced in @eq:IS_identity).
 Truncated importance sampling [@ionides2008truncated] caps these weights with $\min(\rho, C)$ for some constant $C$, trading a small bias for bounded variance in the policy gradient.
 
-<!-- This correction applies the same mathematical pattern as CISPO — a truncated importance-sampling weight on a REINFORCE-style gradient — but to a different source of distribution mismatch. -->
 This is an importance-sampling correction applied to the policy gradient, but unlike the bilateral clipping in PPO and CISPO (which constrains the ratio near 1), TIS uses a one-sided upper cap the ratio can fall freely below 1, but is capped at $C$ to prevent extreme upweighting.
 In all of PPO, GRPO, CISPO (and related algorithms), the ratio $\rho_t^{\text{policy}} = \pi_\theta(a_t \mid s) / \pi_{\theta_{\text{old}}}(a_t \mid s)$ corrects for policy drift across multiple gradient steps within one RL batch.
 As we shift to real-world RL frameworks, centered around the idea of asynchronicity in the previous subsection, there can be even larger sources of numerical differences (that also needs the numerical correction of importance sampling).
@@ -988,7 +986,7 @@ per_token_pg_loss = per_token_pg_loss * tis_weight.detach()
 The $[-10, 10]$ clamp is only for numerical stability before exponentiation; the actual truncated-importance-sampling step is the one-sided cap at $C$.
 In practice, the bookkeeping around these logprobs — storing sampler logprobs from generation, recomputing learner logprobs at the old checkpoint, and tracking current logprobs during gradient steps — is a substantial part of the scaffolding in distributed RL frameworks.
 Unlike GSPO, this correction is token-level because it addresses token-level numerical mismatch rather than sequence-level reward granularity.
-TIS for the learner–sampler ratio has been adopted across major open-source RL frameworks (VeRL, OpenRLHF, SkyRL, OAT, and Open Instruct, which uses $C = 2$), and becomes increasingly important for long reasoning traces (chapter 7), where small per-token differences compound over thousands of generated tokens.
+TIS for the learner–sampler ratio has been adopted across major open-source RL frameworks (VeRL, OpenRLHF, SkyRL, OAT, and Open Instruct, which uses $C = 2$), and becomes increasingly important for long reasoning traces (Chapter 7), where small per-token differences compound over thousands of generated tokens.
 
 
 ### Example: Proximal Policy Optimization
@@ -1181,7 +1179,7 @@ Here we consider some of the long-tail of complexities in successfully deploying
 Each algorithm in this chapter shares the same core gradient shape (@eq:policy_gradient_intuition), but differs in how it estimates the advantage and controls the optimization:
 
 - **REINFORCE**: The simple policy gradient implementation to include Monte-Carlo estimates of reward, and introduces a state-based baseline to reduce variance.
-- **RLOO**: REINFORCE with multiple samples per prompt, with each sample's baseline being the average reward of the others (leave-one-out) to reduce gradient varience.
+- **RLOO**: REINFORCE with multiple samples per prompt, with each sample's baseline being the average reward of the others (leave-one-out) to reduce gradient variance.
 - **PPO**: Adds a learned value function and a clipped policy ratio to get more accurate and stable gradient updates.
 - **GRPO**: A simplified variant of PPO that groups multiple completions per prompt and normalizes rewards within the group to compute advantages, removing the need for a value function.
 - **CISPO**: A REINFORCE-style algorithm that clips importance-sampling weights (not the objective as in PPO/GRPO) with a stop-gradient for stability, so every token receives a gradient signal.

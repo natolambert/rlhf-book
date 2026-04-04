@@ -20,10 +20,6 @@ In modern ML systems, especially with language models, we're using somewhat cont
 In this domain, it is common for over-optimization to occur, where the RL optimizers push the language models in directions where the generations satisfy our checker functions, but the behavior does not align with our training goals.
 This chapter provides an overview of this classic case of **over-optimization**.
 
-<!-- In the RLHF literature and discourse, there are two primary directions that over-optimization can emerge: 
-1. **Quantitative research** on the technical notion of over-optimization of reward. This measures optimization distance and power versus training metrics and downstream performance. Training keeps going up, while eventually downstream goes down.
-2. **Qualitative observations** that "overdoing" RLHF can result in worse models. These are fundamental limitations in the RLHF problem setup, measurement tools, and trade-offs. -->
-
 Over-optimization generally, i.e. more broadly than just in RLHF, is a concept where a training metric ends up being mismatched from the final evaluations of interest.
 While similar to over-fitting -- where one trains on data that is too narrow relative to the downstream evaluations that test generalization -- over-optimization is used in the RL literature to indicate that an *external* signal is used too much. 
 The cost of over-optimization is a lower alignment to real world goals or lower quality in any domain, and the shape of training associated with it is shown in @fig:overoptimization.

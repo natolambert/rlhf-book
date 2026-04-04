@@ -31,8 +31,7 @@ The practice of reward modeling for RLHF is closely related to inverse reinforce
 The high-level problem statement is the same, but the implementation and focus areas are entirely different, so they're often considered as totally separate areas of study.
 
 The most common reward model, often called a Bradley-Terry reward model and the primary focus of this chapter, predicts the probability that a piece of text was close to a "preferred" piece of text from the training comparisons.
-Later in this section we also compare these to Outcome Reward Models (ORMs), Process Reward Model (PRM), and other types of reward models.
-<!-- When not indicated, the reward models mentioned are those predicting preference between text. -->
+Later in this section we also compare these to Outcome Reward Models (ORMs), Process Reward Models (PRMs), and other types of reward models.
 
 *Throughout this chapter, we use $x$ to denote prompts and $y$ to denote completions. This notation is common in the language model literature, where methods operate on full prompt-completion pairs rather than individual tokens.*
 
@@ -55,7 +54,7 @@ Only differences in scores matter: adding the same constant to all $r_i$ leaves 
 These forms are not a law of nature, but a useful approximation of human preferences that often works well in RLHF.
 
 To train a reward model, we must formulate a loss function that satisfies the above relation.
-In practice, this is done by converting a language model into a model that outputs a scalar score, often via a small linear head that produces a single logit (the raw, unnormalized score output by the model before applying softmax).
+In practice, this is done by converting a language model into a model that outputs a scalar score, often via a small linear head that produces a single reward value from the model's final hidden state.
 Given a prompt $x$ and two sampled completions $y_1$ and $y_2$, we score both with a reward model $r_\theta$ and write the conditional scores as $r_\theta(y_i \mid x)$.
 
 The probability that the reward model assigns to $y_1$ being preferred to $y_2$ becomes:
@@ -91,8 +90,8 @@ They both appear in the RLHF literature.
 
 ## The Default Reward Model Architecture
 
-The most common way reward models are implemented is through an abstraction similar to Transformer's `AutoModelForSequenceClassification`, which appends a small linear head to the language model that performs classification between two outcomes -- chosen and rejected.
-At inference time, the model outputs the *probability that the piece of text is chosen* as a single logit from the model.
+The most common way reward models are implemented is through an abstraction similar to Transformers' `AutoModelForSequenceClassification`, which appends a small linear head to the language model and produces a scalar reward score for a prompt-completion pair at training or inference.
+At inference time, the model outputs the *relative likelihood that the piece of text is chosen* as a single logit from the model.
 
 Other implementation options exist, such as just taking a linear layer directly from the final embeddings, but they are less common in open tooling.
 
@@ -301,7 +300,6 @@ loss = F.binary_cross_entropy_with_logits(
 
 The important intuition here is that an ORM will output a probability of correctness at every token in the sequence (judged only by the final answer -- reasoning errors are not captured in the ORM training process).
 This can be a noisy process, as the updates and loss propagates per token depending on outcomes and attention mappings.
-<!-- On the other hand, this process is more computationally intensive. [@cobbe2021gsm8k] posits a few potential benefits to these models, such as (1) implementation of ORMs often being done with both the standard next-token language modelling loss and the reward modelling loss above in @eq:orm_loss and (2) the ORM design as a token-level loss outperforms completion-level loss calculation used in standard RMs. -->
 
 ![At inference time, an outcome reward model outputs per-token correctness probabilities. Prompt tokens are masked (e.g., label=-100), while completion tokens each receive a probability indicating whether the model believes the response leads to a correct answer.](images/orm_inference.png){#fig:orm_inference}
 
@@ -319,7 +317,7 @@ Others do not.
 ## Process Reward Models
 
 Process Reward Models (PRMs), originally called process-supervised reward models, are reward models trained to output scores at every *step* in a chain-of-thought reasoning process. 
-These differ from a standard RM that outputs a score only at an EOS token or a ORM that outputs a score at every token.
+These differ from a standard RM that outputs a score only at an EOS token or an ORM that outputs a score at every token.
 Process Reward Models require supervision at the end of each reasoning step, and then are trained similarly where the tokens in the step are trained to their relevant target -- the target is the step in PRMs and the entire response for ORMs.
 
 Following [@lightman2023let], a binary-labeled PRM is commonly optimized with a per-step cross-entropy loss:
@@ -405,10 +403,10 @@ Below, a summary of what the models predict and how they are trained.
 ::: {.table-wrap}
 | Model Class | What They Predict | How They Are Trained | LM structure |
 |------------|------------------|---------------------|--------------|
-| **Reward Models** | Quality of text via probability of chosen response at EOS token | Contrastive loss between pairwise (or N-wise) comparisons between completions | Regression or classification head on top of LM features |
+| **Reward Models** | Relative quality of a completion via a scalar score at EOS token | Contrastive loss between pairwise (or N-wise) comparisons between completions | Linear head on top of base LM features |
 | **Outcome Reward Models** | Probability that an answer is correct per-token | Labeled outcome pairs (e.g., success/failure on verifiable domains) | Language modeling head per-token cross-entropy, where every label is the outcome level label |
 | **Process Reward Models** | A reward or score for intermediate steps at end of reasoning steps | Trained using intermediate feedback or stepwise annotations (trained per token in reasoning step) | Language modeling head only running inference per reasoning step, predicts three classes -1, 0, 1 |
-| **Value Functions** | The expected return given the current state | Trained via regression to each point in sequence | A classification with output per-token |
+| **Value Functions** | The expected return given the current state | Trained via regression to each point in sequence | A scalar regression head with per-token outputs |
 Table: Comparing types of reward models. {#tbl:rm_compare}
 :::
 
@@ -447,7 +445,7 @@ The models handle data differently at inference time (once they've been trained)
 
 - *Input:* prompt $x$ + completion $y$
 - *Output:* per-token probabilities $p_t \approx P(\text{correct at token } t)$ over completion tokens
-- *Usage:* score finished candidates; aggregate via mean, min (tail risk), or product $\sum_t \log p_t$
+- *Usage:* score finished candidates; aggregate via mean, min (tail risk), or product $\prod_t p_t$ (equivalently, sum log-probabilities $\sum_t \log p_t$)
 - *Aggregation choices:* mean correctness, minimum $p_t$, average over last $m$ tokens, or threshold flagging if any $p_t < \tau$
 
 **Process RM:**

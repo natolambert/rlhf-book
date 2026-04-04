@@ -81,44 +81,6 @@ Still, the origins of value alignment for RLHF methods continue to be studied th
 
 The goal of this chapter is to illustrate how complex motivations result in presumptions about the nature of tools used in RLHF that often do not apply in practice.
 The specifics of obtaining data for RLHF are discussed further in Chapter 11 and using it for reward modeling in Chapter 5.
-<!-- For an extended version of this chapter, see [@lambert2023entangled]. -->
-
-<!-- ## The path to optimizing preferences
-
-A popular phrasing for the design of Artificial Intelligence (AI) systems is that of a rational agent maximizing a utility function [@russell2016artificial].
-The inspiration of a **rational agent** is a lens of decision making, where said agent is able to act in the world and impact its future behavior and returns, as a measure of goodness in the world.
-
-The lens of study of **utility** began in the study of analog circuits to optimize behavior on a finite time horizon [@widrow1960adaptive].
-Large portions of optimal control adopted this lens, often studying dynamic problems under the lens of minimizing a cost function on a certain horizon -- a lens often associated with solving for a clear, optimal behavior.
-Reinforcement learning, inspired from literature in operant conditioning, animal behavior, and the *Law of Effect* [@skinner2019behavior],[@thorndike1927law], studies how to elicit behaviors from agents via reinforcing positive behaviors.
-
-Reinforcement learning from human feedback combines multiple lenses by building the theory of learning and change of RL, i.e. that behaviors can be learned by reinforcing behavior, with a suite of methods designed for quantifying preferences.
-
-### Quantifying Preferences
-
-The core of RLHF's motivation is the ability to optimize a model of human preferences, which therefore needs to be quantified.
-To do this, RLHF builds on extensive literature with assumptions that human decisions and preferences can be quantified.
-Early philosophers discussed the existence of preferences, such as Aristotle's Topics, Book Three, and substantive forms of this reasoning emerged later with *The Port-Royal Logic* [@arnauld1861port]:
-
-> To judge what one must do to obtain a good or avoid an evil, it is necessary to consider not only the good and evil in itself, but also the probability that it happens or does not happen.
-
-Progression of these ideas continued through Bentham's *Hedonic Calculus* [@bentham1823hedonic] that proposed that all of life's considerations can be weighed, and Ramsey's *Truth and Probability* [@ramsey2016truth] that applied a quantitative model to preferences.
-This direction, drawing on advancements in decision theory, culminated in the Von Neumann-Morgenstern (VNM) utility theorem which gives credence to designing utility functions that assign relative preference for an individual that are used to make decisions.
-
-This theorem is core to all assumptions that pieces of RLHF are learning to model and dictate preferences.
-RLHF is designed to optimize these personal utility functions with reinforcement learning.
-In this context, many of the presumptions around RL problem formulation break down to the difference between a preference function and a utility function.
-
-### On the Possibility of Preferences
-
-Across fields of study, many critiques exist on the nature of preferences. 
-Some of the most prominent critiques are summarized below:
-
-- **Arrow's impossibility theorem** [@arrow1950difficulty] states that no voting system can aggregate multiple preferences while maintaining certain reasonable criteria.
-- **The impossibility of interpersonal comparison** [@harsanyi1977rule] highlights how different individuals have different relative magnitudes of preferences and they cannot be easily compared (as is done in most modern reward model training).
-- **Preferences can change over time** [@pettigrew2019choosing].
-- **Preferences can vary across contexts**.
-- **The utility functions derived from aggregating preferences can reduce corrigibility** [@soares2015corrigibility] of downstream agents (i.e. the possibility of an agents' behavior to be corrected by the designer). -->
 
 ## The Origins of RLHF and Preferences
 
@@ -128,10 +90,6 @@ A high level timeline illustrating the history of this foundational content is s
 
 Our goal is to unspool the types of uncertainty that designers have grafted to system architectures at various stages of their intellectual history.
 Modern problem specifications have repeatedly stepped away from domains where optimal solutions are possible and deployed under-specified models as approximate solutions.
-
-<!-- Throughout, we distinguish between a series of *assumptions* accepted within theoretically-grounded academic literatures, and relevant *presumptions* which are common methods of practice for particular subject areas.
-As we shall see, the unresolved tensions between these assumptions and presumptions are responsible for the current state and outstanding questions of RLHF research.
-This section does not set out to be a survey but rather interrelates core references to illustrate the modus operandi of RLHF and preference modeling. -->
 
 To begin, all of the following operates on the assumption that human preferences exist in any form, which emerged in early philosophical discussions, such as Aristotle's Topics, Book Three.
 
@@ -185,7 +143,7 @@ These origins of RL are inspired by dynamic programming methods and were develop
 The MDP formulation provides theoretical guarantees of performance by structuring the environment as one with a non-changing distribution of state-actions.
 
 The term reinforcement, coming from the psychology literature, became intertwined with modern methods afterwards in the 1960s as *reinforcement learning* [@MENDEL1970287; @waltz1965].
-Early work reinforcement learning utilized supervised learning of reward signals to solve tasks.
+Early work in reinforcement learning utilized supervised learning of reward signals to solve tasks.
 Work from Harry Klopf reintroduced the notion of trial-and-error learning [@klopf1972brain], which is crucial to the success the field saw in the 1980s and on.
 
 Modern RL algorithms build within this formulation of RL as a tool to find optimal behaviors with trial-and-error, but under looser conditions.
@@ -203,8 +161,6 @@ The field is prone to mistakes of statistical analysis as the methods for evalua
 In addition, there is little mention of the subfield of inverse reinforcement learning (IRL) in the literature of RLHF.
 IRL is the problem of learning a reward function based on an agent's behavior [@ng2000algorithms] and highly related to learning a reward model.
 This primarily reflects the engineering path by which a stable approach to performing RLHF emerged, and motivates further investment and comparison to IRL methods to scale them to the complexity of open-ended conversations.
-
-<!-- ![The history that creates the assumptions and presumptions central to the current deployments of RLHF. The assumptions indicate core theoretical foundations which RLHF builds upon, transposes, prioritizes, or defers to another development stage. The presumptions represent ideas and practices required to build the current renditions of the technology.](images/timeline-v2.png){#fig:history} -->
 
 ### Steering Preferences
 
@@ -231,7 +187,7 @@ Theoretical challenges to these theorems exist, for example by assuming that int
 That assumption has inspired a rich line of work in AI safety and value alignment inspired by the principal-agent problem in behavioral economics [@hadfield2016cooperative], and may even include multiple principals [@fickinger2020multi].
 However, the resulting utility functions may come into tension with desiderata for corrigibility, i.e. an AI system's capacity to cooperate with what its creators regard as corrective interventions [@soares2015corrigibility].
 Philosophers have also highlighted that preferences change over time, raising fundamental questions about personal experiences, the nature of human decision-making, and distinct contexts [@pettigrew2019choosing].
-These conflicts around the preference aggregation across people, places, or diverse situations is central to modern RLHF dataset engineering.
+These conflicts around the preference aggregation across people, places, or diverse situations are central to modern RLHF dataset engineering.
 
 In practice, the VNM utility theorem ignores the possibility that preferences are also uncertain because of the inherently dynamic and indeterminate nature of value---human decisions are shaped by biology, psychology, culture, and agency in ways that influence their preferences, for reasons that do not apply to a perfectly rational agent.
 As a result, there are a variety of paths through which theoretical assumptions diverge in practice:

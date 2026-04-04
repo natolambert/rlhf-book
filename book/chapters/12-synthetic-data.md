@@ -47,7 +47,7 @@ A large change is also related to dataset size, where fine-tuning datasets have 
 Longer responses and more prompts results in the Alpaca dataset being on the order of 10M training tokens, where Tülu is 50X larger at about 500M, and OpenThoughts 3 is bigger still at the order of 10B tokens.
 
 Throughout this transition, synthetic data has not replaced human data uniformly across the pipeline. 
-For **instruction data (SFT)**, synthetic generation has largely won —- distillation from stronger models now produces higher quality completions than most human writers can provide at scale (with some exception in the hardest, frontier reasoning problems). 
+For **instruction data (SFT)**, synthetic generation has largely won -- distillation from stronger models now produces higher quality completions than most human writers can provide at scale (with some exceptions in the hardest frontier reasoning problems).
 For **preference data in RLHF**, the picture is more mixed: academic work shows synthetic preference data performs comparably, yet frontier labs still treat human preference data as a competitive moat. 
 For **evaluation**, the split takes a different flavor: LLM-as-a-judge scales the *scoring* of model outputs cost-effectively, but the underlying benchmarks and ground-truth labels still require human creation. 
 The pattern is that synthetic data dominates where models exceed human reliability, while humans remain essential at capability frontiers, for establishing ground truth, and for guiding training.
@@ -73,7 +73,7 @@ Within this, curating high-quality prompts and filtering responses from the teac
 
 Transferring specific skills into smaller language models uses the same principles of distillation -- get the best data possible for training.
 Here, many papers have studied using limited datasets from stronger models to improve alignment [@zhou2023lima], mathematical reasoning [@shridhar2023distilling] [@hsieh2023distilling], and test-time scaling [@muennighoff2025s1].
-# Constitutional AI & AI Feedback
+## Constitutional AI & AI Feedback
 
 Soon after the explosion of growth in RLHF, RL from AI Feedback (RLAIF) emerged as an alternative approach where AIs could approximate the human data piece of the pipeline and accelerate experimentation or progress.
 AI feedback, generally, is a larger set of techniques for using AI to augment or generate data explaining the quality of a certain input (which can be used in different training approaches or evaluations), which started with pairwise preferences [@lee2023rlaif]  [@sharma2024critical] [@castricato2024suppressing].
@@ -153,7 +153,7 @@ It is accepted that while biases exist, the leading language models are trained 
 
 ## Rubrics: Prompt-Specific AI Feedback for Training
 
-AI feedback's role in training grew in late 2024 and intro 2025 as the field looked for avenues to scale reinforcement learning with verifiable rewards (see Chapter 7).
+AI feedback's role in training grew in late 2024 and into 2025 as the field looked for avenues to scale reinforcement learning with verifiable rewards (see Chapter 7).
 The idea of rubrics emerged as a way to get nearly-verifiable criteria for prompts that do not have clearly verifiable answers. 
 This would allow a model to try to generate multiple answers to a problem and update (with RL) towards the best answers.
 This idea is closely related to other methods discussed in this chapter, and likely began functioning as the LLM judges and synthetic data practices improved across the industry.
