@@ -73,7 +73,7 @@ Within this, curating high-quality prompts and filtering responses from the teac
 
 Transferring specific skills into smaller language models uses the same principles of distillation -- get the best data possible for training.
 Here, many papers have studied using limited datasets from stronger models to improve alignment [@zhou2023lima], mathematical reasoning [@shridhar2023distilling] [@hsieh2023distilling], and test-time scaling [@muennighoff2025s1].
-# Constitutional AI & AI Feedback
+## Constitutional AI & AI Feedback
 
 Soon after the explosion of growth in RLHF, RL from AI Feedback (RLAIF) emerged as an alternative approach where AIs could approximate the human data piece of the pipeline and accelerate experimentation or progress.
 AI feedback, generally, is a larger set of techniques for using AI to augment or generate data explaining the quality of a certain input (which can be used in different training approaches or evaluations), which started with pairwise preferences [@lee2023rlaif]  [@sharma2024critical] [@castricato2024suppressing].
@@ -153,7 +153,7 @@ It is accepted that while biases exist, the leading language models are trained 
 
 ## Rubrics: Prompt-Specific AI Feedback for Training
 
-AI feedback's role in training grew in late 2024 and intro 2025 as the field looked for avenues to scale reinforcement learning with verifiable rewards (see Chapter 7).
+AI feedback's role in training grew in late 2024 and into 2025 as the field looked for avenues to scale reinforcement learning with verifiable rewards (see Chapter 7).
 The idea of rubrics emerged as a way to get nearly-verifiable criteria for prompts that do not have clearly verifiable answers. 
 This would allow a model to try to generate multiple answers to a problem and update (with RL) towards the best answers.
 This idea is closely related to other methods discussed in this chapter, and likely began functioning as the LLM judges and synthetic data practices improved across the industry.

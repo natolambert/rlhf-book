@@ -47,7 +47,7 @@ Multiple methods for optimizing this expression are discussed in Chapter 6.
 
 ![Standard RL loop](images/rl.png){#fig:rl width=320px .center}
 
-A standard illustration of the RL loop is shown in @fig:rl and (compare this to the RLHF loop in @fig:rlhf).
+A standard illustration of the RL loop is shown in @fig:rl (compare this to the RLHF loop in @fig:rlhf).
 
 ### A Simple Example: The Thermostat {#example-rl-thermostat}
 

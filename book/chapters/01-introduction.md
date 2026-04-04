@@ -27,7 +27,7 @@ RLHF became most known through the release of ChatGPT and the subsequent rapid d
 The basic pipeline for RLHF involves three steps.
 First, a language model that can follow user questions must be trained (see Chapter 4).
 Second, human preference data must be collected for the training of a reward model of human preferences (see Chapter 5).
-Finally, the language model can be optimized with an RL optimizer of choice, by sampling generations and rating them with respect to the reward model (see Chapter 3 and 6).
+Finally, the language model can be optimized with an RL optimizer of choice, by sampling generations and rating them with respect to the reward model (see Chapters 3 and 6).
 This book details key decisions and basic implementation examples for each step in this process.
 
 RLHF has been applied to many domains successfully, with complexity increasing as the techniques have matured.

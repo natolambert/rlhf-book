@@ -31,7 +31,7 @@ The practice of reward modeling for RLHF is closely related to inverse reinforce
 The high-level problem statement is the same, but the implementation and focus areas are entirely different, so they're often considered as totally separate areas of study.
 
 The most common reward model, often called a Bradley-Terry reward model and the primary focus of this chapter, predicts the probability that a piece of text was close to a "preferred" piece of text from the training comparisons.
-Later in this section we also compare these to Outcome Reward Models (ORMs), Process Reward Model (PRM), and other types of reward models.
+Later in this section we also compare these to Outcome Reward Models (ORMs), Process Reward Models (PRMs), and other types of reward models.
 <!-- When not indicated, the reward models mentioned are those predicting preference between text. -->
 
 *Throughout this chapter, we use $x$ to denote prompts and $y$ to denote completions. This notation is common in the language model literature, where methods operate on full prompt-completion pairs rather than individual tokens.*
@@ -91,7 +91,7 @@ They both appear in the RLHF literature.
 
 ## The Default Reward Model Architecture
 
-The most common way reward models are implemented is through an abstraction similar to Transformer's `AutoModelForSequenceClassification`, which appends a small linear head to the language model that performs classification between two outcomes -- chosen and rejected.
+The most common way reward models are implemented is through an abstraction similar to Transformers' `AutoModelForSequenceClassification`, which appends a small linear head to the language model that performs classification between two outcomes -- chosen and rejected.
 At inference time, the model outputs the *probability that the piece of text is chosen* as a single logit from the model.
 
 Other implementation options exist, such as just taking a linear layer directly from the final embeddings, but they are less common in open tooling.
@@ -319,7 +319,7 @@ Others do not.
 ## Process Reward Models
 
 Process Reward Models (PRMs), originally called process-supervised reward models, are reward models trained to output scores at every *step* in a chain-of-thought reasoning process. 
-These differ from a standard RM that outputs a score only at an EOS token or a ORM that outputs a score at every token.
+These differ from a standard RM that outputs a score only at an EOS token or an ORM that outputs a score at every token.
 Process Reward Models require supervision at the end of each reasoning step, and then are trained similarly where the tokens in the step are trained to their relevant target -- the target is the step in PRMs and the entire response for ORMs.
 
 Following [@lightman2023let], a binary-labeled PRM is commonly optimized with a per-step cross-entropy loss:

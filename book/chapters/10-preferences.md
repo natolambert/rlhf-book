@@ -185,7 +185,7 @@ These origins of RL are inspired by dynamic programming methods and were develop
 The MDP formulation provides theoretical guarantees of performance by structuring the environment as one with a non-changing distribution of state-actions.
 
 The term reinforcement, coming from the psychology literature, became intertwined with modern methods afterwards in the 1960s as *reinforcement learning* [@MENDEL1970287; @waltz1965].
-Early work reinforcement learning utilized supervised learning of reward signals to solve tasks.
+Early work in reinforcement learning utilized supervised learning of reward signals to solve tasks.
 Work from Harry Klopf reintroduced the notion of trial-and-error learning [@klopf1972brain], which is crucial to the success the field saw in the 1980s and on.
 
 Modern RL algorithms build within this formulation of RL as a tool to find optimal behaviors with trial-and-error, but under looser conditions.
@@ -231,7 +231,7 @@ Theoretical challenges to these theorems exist, for example by assuming that int
 That assumption has inspired a rich line of work in AI safety and value alignment inspired by the principal-agent problem in behavioral economics [@hadfield2016cooperative], and may even include multiple principals [@fickinger2020multi].
 However, the resulting utility functions may come into tension with desiderata for corrigibility, i.e. an AI system's capacity to cooperate with what its creators regard as corrective interventions [@soares2015corrigibility].
 Philosophers have also highlighted that preferences change over time, raising fundamental questions about personal experiences, the nature of human decision-making, and distinct contexts [@pettigrew2019choosing].
-These conflicts around the preference aggregation across people, places, or diverse situations is central to modern RLHF dataset engineering.
+These conflicts around the preference aggregation across people, places, or diverse situations are central to modern RLHF dataset engineering.
 
 In practice, the VNM utility theorem ignores the possibility that preferences are also uncertain because of the inherently dynamic and indeterminate nature of value---human decisions are shaped by biology, psychology, culture, and agency in ways that influence their preferences, for reasons that do not apply to a perfectly rational agent.
 As a result, there are a variety of paths through which theoretical assumptions diverge in practice:
