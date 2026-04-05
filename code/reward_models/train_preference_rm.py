@@ -46,10 +46,10 @@ DEFAULT_MODEL_ID = "Qwen/Qwen3-0.6B-Base"
 DEFAULT_DATASET = "argilla/ultrafeedback-binarized-preferences-cleaned"
 DEFAULT_SAMPLES = 2000
 DEFAULT_BATCH_SIZE = 2
-DEFAULT_GRAD_ACCUM = 4
+DEFAULT_GRAD_ACCUM = 16
 DEFAULT_MAX_LENGTH = 512
 DEFAULT_EPOCHS = 1
-DEFAULT_LR = 1e-6  # Lower LR for full fine-tuning (vs 1e-5 for LoRA)
+DEFAULT_LR = 5e-5
 DEFAULT_SEED = 42
 
 
