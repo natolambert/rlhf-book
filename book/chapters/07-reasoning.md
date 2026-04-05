@@ -11,6 +11,7 @@ page-title: Reasoning
 search-title: "Chapter 7: Reasoning"
 next-chapter: "Direct Alignment"
 next-url: "08-direct-alignment"
+lecture-label: "Lecture 5: Reasoning (Chap. 7)"
 ---
 
 # Reasoning Training & Inference-Time Scaling
