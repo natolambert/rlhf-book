@@ -24,7 +24,7 @@ Consider a question from a user such as:
 A language model without tools will have a hard time answering this question due to the knowledge cutoff of pretraining data, but this is readily accessible information with one search query.
 Consider another example:
 
-> Move all the arXiv papers in my downloads folder to my ~/research/ directory with names indicating the date of the paper.
+> **User**: Move all the arXiv papers in my downloads folder to my ~/research/ directory with names indicating the date of the paper.
 
 This is a task that the model weights alone cannot even attempt -- the use of tools enables language models to address a far broader range of tasks.
 
