@@ -91,7 +91,9 @@ They both appear in the RLHF literature.
 ## The Default Reward Model Architecture
 
 The most common way reward models are implemented is through an abstraction similar to Transformers' `AutoModelForSequenceClassification`, which appends a small linear head to the language model and produces a scalar reward score for a prompt-completion pair at training or inference.
-In many implementations, that score is read from the final hidden state at the last non-padding token (often EOS), though other sequence-level pooling choices are also possible.
+At inference time, the model outputs the *relative likelihood that the piece of text is chosen* as a single logit from the model.
+
+Other implementation options exist, such as just taking a linear layer directly from the final embeddings, but they are less common in open tooling.
 
 ## Implementation Example
 
@@ -245,7 +247,7 @@ In code, this outcome label is copied onto every completion token, while prompt 
 
 Implementing an outcome reward model (and other types, as we'll see with the Process Reward Model) involves applying the cross-entropy loss per-token based on if the completion is a correct sample. 
 This is far closer to the language modeling loss, where it does not need the structured chosen-rejected nature of standard Bradley-Terry reward models.
-Crucially, in the simplified ORM training setup below we are not sampling new tokens or training on next-token prediction; we feed a fixed prompt-completion sequence through the backbone and train the ORM head to predict correctness labels.
+In the simplified ORM training setup below, we are not sampling new tokens or training an LLM on next-token prediction; we feed a fixed prompt-completion sequence through the backbone and train the ORM head to predict correctness labels.
 
 The model structure could follow as:
 
@@ -276,8 +278,8 @@ class OutcomeRewardModel(nn.Module):
         # One scalar logit per token: (batch, seq_len)
         logits = self.head(hidden).squeeze(-1)
 
-        # Only completion tokens contribute to ORM loss.
-        # Prompt tokens are masked with -100.
+        # Only compute loss on completion tokens (labels 0 or 1)
+        # Prompt tokens have labels = -100
         mask = labels != -100
         if mask.any():
             loss = F.binary_cross_entropy_with_logits(
@@ -295,8 +297,7 @@ hidden = model.lm(**inputs, output_hidden_states=True).hidden_states[-1]
 logits_per_token = model.head(hidden).squeeze(-1)  # (batch, seq_len)
 # This will sometimes be compressed as model.forward() in other implementations
 
-# Token-aligned binary labels: prompt tokens are -100, completion tokens are
-# all 1 for a correct completion or all 0 for an incorrect completion.
+# Binary labels: 1=correct, 0=incorrect (prompt tokens masked as -100)
 mask = labels != -100
 loss = F.binary_cross_entropy_with_logits(
     logits_per_token[mask], labels[mask].float()
@@ -310,12 +311,17 @@ This can be a noisy process, as the updates and loss propagates per token depend
 
 ![Training an outcome reward model uses offline labels from a verifier or dataset (e.g., all 1s for correct completions). Each completion token is trained with binary cross-entropy against the outcome label, and per-token probabilities are aggregated into a final score for verification, filtering, or reranking.](images/orm_training.png){#fig:orm_training}
 
-Outcome-supervised verifier models remain common in reasoning work, but they are less standardized in open-source RLHF tooling.
-One source of variation is the loss: Cobbe et al. include both an outcome-prediction objective and an auxiliary next-token language-modeling objective, while later work often keeps only the outcome supervision.
-For example, *Let's Verify Step by Step* [@lightman2023let] drops the auxiliary language-modeling term and trains only on the verification loss.
+These models have continued to be used, but are less supported in open-source RLHF tools. 
+For example, the same type of ORM was used in the seminal work *Let's Verify Step by Step* [@lightman2023let], but without the language modeling prediction piece of the loss.
+Then, the final loss is a cross-entropy loss on every token, predicting whether the final answer is correct.
 
-Because of this variation, the term outcome reward model (ORM) is used somewhat loosely.
-Some papers, such as [@lyu2025exploring], use ORM in the original Cobbe et al. sense; others use it more broadly for any verifier trained to predict whether a completion is correct.
+Given the lack of support, the term outcome reward model (ORM) has been used in multiple ways. 
+Some literature, e.g. [@lyu2025exploring], continues to use the original definition from Cobbe et al. 2021These models have continued to be used, but are less supported in open-source RLHF tools. 
+For example, the same type of ORM was used in the seminal work *Let's Verify Step by Step* [@lightman2023let], but without the language modeling prediction piece of the loss.
+Then, the final loss is a cross-entropy loss on every token, predicting whether the final answer is correct.
+
+Given the lack of support, the term outcome reward model (ORM) has been used in multiple ways. 
+Some literature, e.g. [@lyu2025exploring], continues to use the original definition from Cobbe et al. 2021; others use it more broadly for any verifier trained to predict whether a completion is correct.
 
 
 ## Process Reward Models
@@ -407,7 +413,7 @@ Below, a summary of what the models predict and how they are trained.
 ::: {.table-wrap}
 | Model Class | What They Predict | How They Are Trained | LM structure |
 |------------|------------------|---------------------|--------------|
-| **Reward Models** | Sequence-level quality score $r_\theta(x, y)$, often from an EOS/last-token representation | Contrastive loss between pairwise (or N-wise) comparisons between completions | Small reward head on top of LM hidden states |
+| **Reward Models** | Sequence-level quality score $r_\theta(x, y)$, often from an EOS/last-token representation | Contrastive loss between pairwise (or N-wise) comparisons between completions | Linear head on top of base LM features |
 | **Outcome Reward Models** | Probability that an answer is correct per-token | Labeled outcome pairs (e.g., success/failure on verifiable domains) | Language modeling head per-token cross-entropy, where every label is the outcome level label |
 | **Process Reward Models** | A reward or score for intermediate steps at end of reasoning steps | Trained using intermediate feedback or stepwise annotations (trained per token in reasoning step) | Language modeling head only running inference per reasoning step, predicts three classes -1, 0, 1 |
 | **Value Functions** | The expected return given the current state | Trained via regression to each point in sequence | A scalar regression head with per-token outputs |
