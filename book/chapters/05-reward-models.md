@@ -108,8 +108,8 @@ rewards_rejected = model(**inputs_rejected)
 loss = -nn.functional.logsigmoid(rewards_chosen - rewards_rejected).mean()
 ```
 
-As for the bigger picture, this is often within a causal language model (a model that generates tokens left-to-right, predicting each token conditioned on all previous ones) that has an additional head added (and learned with the above loss) that maps a sequence-level representation -- often the final hidden state -- to a scalar score.
-The code takes in standard transformer inputs -- `input_ids` (tokenized text) and `attention_mask` (which marks real tokens vs. padding) -- and extracts the hidden state at the last real token, which is then passed through a linear layer to produce a scalar reward.
+As for the bigger picture, this is often within a causal language model (a model that generates tokens left-to-right, predicting each token conditioned on all previous ones) that has an additional head added (and learned with the above loss) that transitions from the final hidden state to the score of the inputs.
+The code takes in standard transformer inputs -- `input_ids` (tokenized text) and `attention_mask` (which marks real tokens vs. padding) -- and extracts the hidden state (the model's internal representation of the input) at the last real token, which is then passed through a linear layer to produce a scalar reward.
 This model will have a structure as follows:
 
 ```python
@@ -193,9 +193,9 @@ Note that in Llama 3 the margin term was removed as the team observed diminishin
 
 ### Balancing Multiple Comparisons Per Prompt
 
-InstructGPT studies the impact of using $K = 4$ to $9$ completions per prompt, which produces $\binom{K}{2}$ pairwise comparisons from each prompt [@ouyang2022training].
+InstructGPT studies the impact of using $K = 4$ to $9$ completions per prompt to rank, producing $\binom{K}{2}$ pairwise comparisons from each prompt [@ouyang2022training].
 Without reweighting, prompts with more completions would contribute more total loss simply because they generate more pairs.
-To avoid this, InstructGPT averages the pairwise loss over the $\binom{K}{2}$ comparisons from each prompt; implementation-wise, keeping same-prompt comparisons in the same batch can realize this weighting and avoid one prompt dominating many separate updates.
+At an implementation level, this can be done automatically by including all examples with the same prompt in the same training batch, naturally weighing the different pairs -- otherwise, overfitting to the prompts can occur because a single prompt would appear in many separate batches.
 The loss function becomes:
 
 $$\mathcal{L}(\theta) = - \frac{1}{\binom{K}{2}} \mathbb{E}_{(x, y_c, y_r)\sim D} \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) \right) \right)$$ {#eq:rewardmodelinginstructgpt}
