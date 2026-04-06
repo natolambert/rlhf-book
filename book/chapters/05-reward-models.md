@@ -64,7 +64,7 @@ $$P(y_1 > y_2 \mid x) = \frac{\exp\left(r_\theta(y_1 \mid x)\right)}{\exp\left(r
 We denote the preferred completion as $y_c$ (chosen) and the rejected completion as $y_r$.
 
 The resulting loss encourages the reward model to assign a higher score to the human-preferred completion than the rejected one, using a sigmoid to convert the score difference into a probability.
-By maximizing the likelihood of the above function (equivalently, the log-likelihood, since the logarithm is monotonic), we arrive at the following loss to train a reward model:
+The expression above is the preference likelihood. We first rewrite that likelihood into sigmoid form, and only in the last step convert it into the equivalent negative log-likelihood loss used to train the reward model:
 
 $$
 \begin{aligned}
