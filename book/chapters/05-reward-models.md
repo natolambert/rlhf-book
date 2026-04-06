@@ -37,8 +37,6 @@ Later in this section we also compare these to Outcome Reward Models (ORMs), Pro
 
 ![The reward model in RLHF plays the role of the environment component that returns rewards in standard RL. The key difference is that in RLHF, we get to control and learn this reward function from human preferences, rather than having it fixed by the environment.](images/rlhf-overview.png){#fig:rm-role-in-rlhf}
 
-When the reference model is used for the KL term, it is evaluated on the policy's sampled completion rather than generating a separate completion of its own.
-
 ## Training a Bradley-Terry Reward Model
 
 The canonical implementation of a reward model is derived from the Bradley-Terry model of preference [@BradleyTerry].
