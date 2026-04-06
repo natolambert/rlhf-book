@@ -91,7 +91,7 @@ Beyond this, the cost of human labor is remaining roughly constant, while the pe
 This cost difference opens the market of experimentation with RLHF methods to an entire population of people previously priced out.
 
 Other than price, AI feedback introduces different *tradeoffs* on performance than human feedback, which are still being investigated in the broader literature.
-AI feedback is far more predominant in its role in evaluation of the language models that we are training, as its low price lets it be used across a variety of large-scale tasks where the cost (or time delay) in human data would be impractical.
+AI feedback is far more predominant in its role in evaluation of the language models that we are training, as its low price allows it to be used across a variety of large-scale tasks where the cost (or time delay) in human data would be impractical.
 All of these topics are deeply intertwined -- AI feedback data will never fully replace human data, even for evaluation, and the quantity of AI feedback for evaluation will far outperform training because far more people are evaluating than training models.
 
 The exact domains and applications -- i.e. chat, safety, reasoning, mathematics, etc. -- where AI feedback data outperforms human data is not completely established. 

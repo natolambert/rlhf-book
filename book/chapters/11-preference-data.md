@@ -115,7 +115,7 @@ For example, a 5 point Likert scale would look like the following (note that, ye
 
 Table: An example 5-wise Likert scale between two responses, A and B. {#tbl:likert5}
 
-Some early RLHF for language modeling works uses an 8-step Likert scale with levels of preference between the two responses [@bai2022training]. 
+Some early RLHF for language modeling works use an 8-step Likert scale with levels of preference between the two responses [@bai2022training]. 
 An even scale removes the possibility of ties:
 
 
@@ -201,8 +201,8 @@ If you're a new entrant in the space, you may have a hard time getting the data 
 Data vendors are known to prioritize large budget line-items and new customers that have an influential brand or potential for large future revenue.
 This is, in many business ways, natural, as the data foundry companies are often supply-limited in their ability to organize humans for effective data labelling.
 
-On multiple occasions, I've heard of data companies not delivering their data as contracted without the customer threatening legal or financial action against them for breach of contract. 
-Others have listed companies I work with as customers for PR even though we never worked with them, saying they "didn't know how that happened" when reaching out. 
+In a recurring unfortunate pattern, data companies have not delivered data as contracted without the customer threatening legal or financial action against them for breach of contract.
+Others have listed companies as customers for PR even though they never worked with them, saying they "didn't know how that happened" when called out.
 There are plenty of potential bureaucratic or administrative snags through the process. 
 For example, the default terms on the contracts often prohibit the open sourcing of artifacts after acquisition in some fine print.
 
@@ -220,14 +220,14 @@ If the data cannot be easily slotted into an existing RLHF data pipeline, it'll 
 Collecting data that cannot be seamlessly integrated into training pipelines often becomes stale and a waste of resources.
 
 The data is delivered in weekly batches with more data coming later in the contract. 
-For example, when we bought preference data for on-policy models we were training at HuggingFace, we had a 6 week delivery period. 
-The first weeks were for further calibration and the later weeks were when we hoped to most improve our model.
+For example, a typical preference data contract might span a 6 week delivery period.
+The first weeks are for further calibration and the later weeks are when teams hope to most improve their model.
 
 ![Overview of the multi-batch cycle for obtaining human preference data from a vendor. The ramp up period allows a narrowing of goals and methodology in order to create the best possible data. It is expected that a larger proportion of the data from the earlier batches will have to be thrown out due to quality issues. This is one timeline example for a smaller data contract (~$500K) and much larger data contracts can vary substantially.](images/pref-data-timeline.png){#fig:preferences .center}
 
-The goal is that by week 4 or 5 we can see the data improving our model. 
+The goal is that by week 4 or 5 the data is visibly improving the model. 
 This is something some frontier models have mentioned, such as the 14 stages in the Llama 2 data collection [@touvron2023llama], but it doesn't always go well. 
-At HuggingFace, trying to do this for the first time with human preferences, we didn't have the RLHF preparedness to get meaningful bumps on our evaluations. The last weeks came and we were forced to continue to collect preference data generating from endpoints we weren't confident in.
+As an example, a team trying this for the first time with human preferences may not have the RLHF preparedness to get meaningful bumps on their evaluations. The last weeks come and they are forced to continue collecting preference data generated from endpoints they aren't confident in.
 
 After the data is all in, there is plenty of time for learning and improving the model. 
 Data acquisition through these vendors works best when viewed as an ongoing process of achieving a set goal. 
@@ -245,7 +245,7 @@ More of these data trade-offs are discussed in Chapter 12 on Synthetic Data.
 
 While preference data is essential, it's also known to be prone to many subtle biases that can make its collection error-prone.
 These biases are so common, e.g. prefix bias (where the beginning of a completion disproportionately drives the preference) [@kumar2025detecting], that they can easily be passed to the final model [@bharadwaj2025flatteryflufffogdiagnosing] (and especially as we know that models are only as good as their data).
-These issues are often subtle and vary in how applicable interventions to mitigate them are.
+These issues are often subtle, and the effectiveness of interventions varies widely across them.
 For many, such as sycophancy (over-agreeing with the user’s stated beliefs or flattering them, even when it reduces truthfulness) [@sharma2023towards], they reflect issues within humans that are often outside of the labeling criteria that one will think of providing to the annotation partner or labelers.
 Others, such as verbosity [@singhal2023long] [@bu2025beyond] or formatting habits [@zhang2024lists], emerge for a similar reason, but they are easier to detect and mitigate in training.
 Mitigating these subtle biases in data is the difference between good or great preference data, and therefore good or great RLHF training.

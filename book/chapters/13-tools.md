@@ -22,6 +22,11 @@ Consider a question from a user such as:
 > **User**: Who is the president today?
 
 A language model without tools will have a hard time answering this question due to the knowledge cutoff of pretraining data, but this is readily accessible information with one search query.
+Consider another example:
+
+> **User**: Move all the arXiv papers in my downloads folder to my ~/research/ directory with names indicating the date of the paper.
+
+This is a task that the model weights alone cannot even attempt -- the use of tools enables language models to address a far broader range of tasks.
 
 Before diving deeper, it is useful to distinguish related terms that are often used interchangeably:
 
@@ -83,8 +88,7 @@ ToolLLM and its ToolBench dataset provide a large-scale framework for training a
 
 ## Interweaving Tool Calls in Generation
 
-Function calling agents are presented data very similarly to other post-training stages. 
-The addition is the content in the system prompt that instructs the model what tools it has available. 
+Training data for function calling looks much like other post-training data, with one addition: a system prompt that instructs the model what tools it has available.
 An example formatted data point with the system prompt and tools available in JSON format is shown below:
 ```xml
 <system>

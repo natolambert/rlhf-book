@@ -15,10 +15,14 @@ next-url: "16-evaluation"
 
 # Regularization
 
+In this book we've learned many tools for modifying the model, to learn from human preferences, verifiable rewards, and other valuable signals.
+All the methods we use are very powerful, and can cause the model to change too much relative to the strong, general model from the previous training stage (often called the reference model).
+When the model learns too much from a given reward, causing out-of-distribution performance to drop, this is called "over-optimization" (as we discussed in the previous chapter).
+
 Throughout the RLHF optimization, many regularization steps are used to prevent over-optimization of the reward model.
 Over-optimization in these contexts looks like models that output nonsensical text.
 Some examples of optimization "off the rails" are that models can output followable math reasoning with extremely incorrect answers, repeated text, switching languages, or excessive special characters.
-This chapter covers the different methods that're used to control the optimization of models.
+This chapter covers the different methods used to control the optimization of models.
 
 The most popular variant, used in most RLHF implementations at the time of writing, is a KL distance from the current policy to a reference policy across generated samples.
 "KL distance" is a colloquial term for expressing the *optimization distance* within the training process, even though KL divergence—the underlying mathematical method for measuring the separation of two probability distributions—does not satisfy the formal properties required to be a true distance metric (it is simply easier to call the number a distance than a numeric measure of distributional difference).
@@ -38,7 +42,7 @@ $$
 r = r_\theta - \lambda_{\text{KL}} \mathcal{D}_{\text{KL}} \left( \pi_{\text{RL}}(y \mid x) \, \| \, \pi_{\text{ref}}(y \mid x) \right)
 $$ {#eq:kl_standard}
 
-## KL Divergences in RL Optimization
+## KL Divergence in RL Optimization
 
 For mathematical definitions, see Appendix A on Definitions.
 KL divergence measures how far one probability distribution has drifted from another -- when KL is zero, the two distributions produce identical outputs.
@@ -62,8 +66,8 @@ Such a KL divergence penalty was first applied to dialogue agents well before th
 ### Implementation Example
 
 In practice, the implementation of KL divergence is often approximated [@schulman2016klapprox], making the implementation far simpler.
-With the above definition, the summation of KL can be converted to an expectation when sampling directly from the distribution $P(x)$.
-In this case, the distribution $P(x)$ is the generative distribution of the model currently being trained (i.e. not the reference model).
+With the above definition, the summation of KL can be converted to an expectation when sampling directly from the distribution $P$ (here $x$ is a generic random variable over the sample space, not the prompt notation used elsewhere in this book).
+In this case, $P$ is the generative distribution of the model currently being trained (i.e. not the reference model).
 Then, the computation for KL divergence changes to the following:
 
 $$
@@ -73,26 +77,22 @@ $$ {#eq:kl_expectation}
 This mode is far simpler to implement, particularly when dealing directly with log probabilities used frequently in language model training.
 
 ```python
-# Step 1: sample (or otherwise generate) a sequence from your policy
+# Step 1: generate() autoregressively samples a full sequence token by token
 generated_tokens = model.generate(inputs)
 
-# Step 2: score that generated sequence under both models
-#    for autoregressive LMs, you usually do:
-#      inputs_for_scoring = generated_tokens[:, :-1]
-#      labels           = generated_tokens[:, 1:]
+# Step 2: forward() runs a single pass over the sequence to get per-token logits (no sampling)
 logits       = model.forward(generated_tokens[:, :-1]).logits
 ref_logits   = ref_model.forward(generated_tokens[:, :-1]).logits
 
-# convert to log-probs, then align labels to index into the logits
+# Step 3: Convert logits to log-probabilities
 logprobs     = F.log_softmax(logits, dim=-1)
 ref_logprobs = F.log_softmax(ref_logits, dim=-1)
 
-# gather the log-probs of the actual next tokens
+# Step 4: Gather the probability each model assigns to the tokens that were actually generated
 token_logprobs     = logprobs.gather(-1, generated_tokens[:, 1:].unsqueeze(-1)).squeeze(-1)
 ref_token_logprobs = ref_logprobs.gather(-1, generated_tokens[:, 1:].unsqueeze(-1)).squeeze(-1)
 
-# now you can sum (or average) those to get the sequence log-prob,
-# and compute KL:
+# Step 5: Sum to get sequence-level log-probs; their difference approximates KL
 seq_logprob     = token_logprobs.sum(dim=-1)
 ref_seq_logprob = ref_token_logprobs.sum(dim=-1)
 
@@ -302,7 +302,7 @@ The second term is a length-normalized negative log-likelihood penalty on the wi
 
 Controlling the optimization is less well defined in other parts of the RLHF stack.
 Most reward models have no regularization beyond the standard contrastive loss function.
-Direct Alignment Algorithms handle regularization to KL divergences differently, through the $\beta$ parameter (see the [chapter on direct alignment](https://rlhfbook.com/c/08-direct-alignment)).
+Direct Alignment Algorithms handle regularization to KL divergence differently, through the $\beta$ parameter (see the [chapter on direct alignment](https://rlhfbook.com/c/08-direct-alignment)).
 
 Llama 2 proposed a margin loss for reward model training [@touvron2023llama]:
 
