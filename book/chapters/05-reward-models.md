@@ -90,10 +90,8 @@ They both appear in the RLHF literature.
 
 ## The Default Reward Model Architecture
 
-The most common way reward models are implemented is through an abstraction similar to Transformers' `AutoModelForSequenceClassification`, which appends a small reward head to the language model.
-The LM produces hidden states for the full prompt-completion sequence, and the reward head maps a sequence-level representation to a single scalar score $r_\theta(x, y)$ at training or inference.
-In many implementations, that representation is the final hidden state at the last non-padding token (often EOS), but other pooling schemes over the sequence are also possible.
-This scalar is not the LM head's next-token probability; it is a learned reward score that is converted into a preference likelihood only when compared against another completion through the Bradley-Terry loss.
+The most common way reward models are implemented is through an abstraction similar to Transformers' `AutoModelForSequenceClassification`, which appends a small linear head to the language model and produces a scalar reward score for a prompt-completion pair at training or inference.
+In many implementations, that score is read from the final hidden state at the last non-padding token (often EOS), though other sequence-level pooling choices are also possible.
 
 ## Implementation Example
 
