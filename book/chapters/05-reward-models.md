@@ -136,8 +136,7 @@ class BradleyTerryRewardModel(nn.Module):
     def _sequence_rep(self, hidden, attention_mask):
         """
         Get a single vector per sequence to score.
-        Default: last non-padding token (EOS token); other pooling choices are
-        also possible in sequence-level reward models.
+        Default: last non-padding token (EOS token); if no mask, last token.
         hidden: (batch, seq_len, hidden_size)
         attention_mask: (batch, seq_len)
         """
@@ -196,7 +195,7 @@ Note that in Llama 3 the margin term was removed as the team observed diminishin
 ### Balancing Multiple Comparisons Per Prompt
 
 InstructGPT studies the impact of using $K = 4$ to $9$ completions per prompt to rank, producing $\binom{K}{2}$ pairwise comparisons from each prompt [@ouyang2022training].
-Without reweighting, prompts with more completions would contribute more total loss simply because they generate more pairs.
+To do this, they weight the loss updates per comparison per prompt -- without reweighting, prompts with more completions would contribute more total loss simply because they generate more pairs.
 At an implementation level, this can be done automatically by including all examples with the same prompt in the same training batch, naturally weighing the different pairs -- otherwise, overfitting to the prompts can occur because a single prompt would appear in many separate batches.
 The loss function becomes:
 
@@ -407,9 +406,9 @@ Below, a summary of what the models predict and how they are trained.
 ::: {.table-wrap}
 | Model Class | What They Predict | How They Are Trained | LM structure |
 |------------|------------------|---------------------|--------------|
-| **Reward Models** | Sequence-level quality score $r_\theta(x, y)$, often from an EOS/last-token representation | Contrastive loss between pairwise (or N-wise) comparisons between completions | Linear head on top of base LM features |
-| **Outcome Reward Models** | Probability that an answer is correct per-token | Labeled outcome pairs (e.g., success/failure on verifiable domains) | Language modeling head per-token cross-entropy, where every label is the outcome level label |
-| **Process Reward Models** | A reward or score for intermediate steps at end of reasoning steps | Trained using intermediate feedback or stepwise annotations (trained per token in reasoning step) | Language modeling head only running inference per reasoning step, predicts three classes -1, 0, 1 |
+| **Reward Models** | Sequence-level quality score $r_\theta(x, y)$ | Contrastive loss between pairwise (or N-wise) comparisons between completions | Linear head on EOS/last-token hidden state |
+| **Outcome Reward Models** | Probability that an answer is correct per-token | Labeled outcome pairs (e.g., success/failure on verifiable domains) | Per-token binary cross-entropy head; labels repeat the outcome label |
+| **Process Reward Models** | A reward or score for intermediate steps at end of reasoning steps | Trained using intermediate feedback or stepwise annotations (trained per token in reasoning step) | Per-token head predicting step correctness (-1, 0, 1) |
 | **Value Functions** | The expected return given the current state | Trained via regression to each point in sequence | A scalar regression head with per-token outputs |
 Table: Comparing types of reward models. {#tbl:rm_compare}
 :::
@@ -441,7 +440,7 @@ The models handle data differently at inference time (once they've been trained)
 **Bradley-Terry RM (Preference Model):**
 
 - *Input:* prompt $x$ + candidate completion $y$
-- *Output:* single scalar $r_\theta(x, y)$, often from the EOS/last-token hidden state
+- *Output:* single scalar $r_\theta(x, y)$ via a linear layer from the EOS/last-token hidden state
 - *Usage:* rerank $k$ completions, pick top-1 (best-of-N sampling); or provide terminal reward for RLHF
 - *Aggregation:* Not needed with scalar outputs
 
