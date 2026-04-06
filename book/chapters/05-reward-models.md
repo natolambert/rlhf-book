@@ -208,10 +208,9 @@ $$\mathcal{L}(\theta) = - \frac{1}{\binom{K}{2}} \mathbb{E}_{(x, y_c, y_r)\sim D
 There are many other formulations that can create suitable models of human preferences for RLHF.
 One such example, used in the popular, early RLHF'd models Starling 7B and 34B [@zhu2024starling], is a K-wise loss function based on the Plackett-Luce model [@liu2019learning].
 
-The key idea is simple: instead of converting $K$ completions for the same prompt into many binary comparisons, we treat the full ranking as one training example.
-Zhu et al. 2023 [@zhu2023principled] formalize the setup as follows: for a prompt, or state, $s^i$, sample $K$ completions $(a_0^i, a_1^i, \cdots, a_{K-1}^i)$ and ask a labeler to rank them from best to worst.
-Write that ranking as $\sigma^i: [K] \mapsto [K]$, where $\sigma^i(0)$ is the most preferred completion, $\sigma^i(1)$ the next best, and so on.
-Under the Plackett-Luce model, this gives a probability over the full ranking:
+Zhu et al. 2023 [@zhu2023principled] formalizes the setup as follows.
+With a prompt, or state, $s^i$, $K$ actions $(a_0^i, a_1^i, \cdots, a_{K-1}^i)$ are sampled from $P(a_0,\cdots,a_{K-1}|s^i)$.
+Then, labelers are used to rank preferences with $\sigma^i: [K] \mapsto [K]$ is a function representing action rankings, where $\sigma^i(0)$ is the most preferred action. This yields a Plackett-Luce probability over the complete ranking of all $K$ items:
 
 $$P(\sigma^i|s^i,a_0^i,a_1^i,\ldots,a_{K-1}^i) = \prod_{k=0}^{K-1} \frac{\exp(r_{\theta\star}(s^i,a_{\sigma^i(k)}^i))}{\sum_{j=k}^{K-1}\exp(r_{\theta\star}(s^i,a_{\sigma^i(j)}^i))}$$ {#eq:kwise_rm}
 
@@ -312,11 +311,6 @@ This can be a noisy process, as the updates and loss propagates per token depend
 ![Training an outcome reward model uses offline labels from a verifier or dataset (e.g., all 1s for correct completions). Each completion token is trained with binary cross-entropy against the outcome label, and per-token probabilities are aggregated into a final score for verification, filtering, or reranking.](images/orm_training.png){#fig:orm_training}
 
 These models have continued to be used, but are less supported in open-source RLHF tools. 
-For example, the same type of ORM was used in the seminal work *Let's Verify Step by Step* [@lightman2023let], but without the language modeling prediction piece of the loss.
-Then, the final loss is a cross-entropy loss on every token, predicting whether the final answer is correct.
-
-Given the lack of support, the term outcome reward model (ORM) has been used in multiple ways. 
-Some literature, e.g. [@lyu2025exploring], continues to use the original definition from Cobbe et al. 2021These models have continued to be used, but are less supported in open-source RLHF tools. 
 For example, the same type of ORM was used in the seminal work *Let's Verify Step by Step* [@lightman2023let], but without the language modeling prediction piece of the loss.
 Then, the final loss is a cross-entropy loss on every token, predicting whether the final answer is correct.
 
