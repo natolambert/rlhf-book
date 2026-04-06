@@ -86,7 +86,7 @@ $$\mathcal{L}(\theta) = \log \left( 1 + e^{r_{\theta}(y_r \mid x) - r_{\theta}(y
 These are equivalent by letting $\Delta = r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x)$ and using $\sigma(\Delta) = \frac{1}{1 + e^{-\Delta}}$, which implies $-\log\sigma(\Delta) = \log(1 + e^{-\Delta}) = \log\left(1 + e^{r_{\theta}(y_r \mid x) - r_{\theta}(y_c \mid x)}\right)$.
 They both appear in the RLHF literature.
 
-![Training a preference reward model requires pairs of chosen and rejected completions. The model computes a scalar score for each completion from a sequence-level representation, often the end-of-sequence (EOS) hidden state, and the contrastive loss depends only on the score difference between the two.](images/pref_rm_training.png){#fig:pref_rm_training}
+![Training a preference reward model requires pairs of chosen and rejected completions. The model computes a scalar score for each completion from a sequence-level representation, often the end-of-sequence (EOS) token's hidden state, and the contrastive loss depends only on the score difference between the two.](images/pref_rm_training.png){#fig:pref_rm_training}
 
 ## The Default Reward Model Architecture
 
