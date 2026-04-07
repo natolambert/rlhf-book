@@ -254,17 +254,19 @@ These documents are created with different intended audiences and goals, yet the
 
 Model specs are one of the few tools in the industry and RLHF where one can compare the actual behavior of the model to what the designers intended.
 As we have covered in this book, training models is a complicated and multi-faceted process, so it is expected that the final outcome differs from inputs such as the data labeler instructions or the balance of tasks in the training data.
-For example, a perfectly executed model spec is much more revealing than a list of principles used in Constitutional AI because it speaks to the intent of the process rather than listing what acts as intermediate training variables.
+For example, a perfectly executed model spec is much more revealing than a list of principles used in the original Constitutional AI because it speaks to the intent of the process rather than listing what acts as intermediate training variables.
+Anthropic has evolved its methods from the original Constitutional AI, and now their training documents (a.k.a. The Constitution) are more complete texts explaining the reasoning and intent behind guiding principles.
 
+These changes reflect how the form of the documents labs use will continue to evolve to better serve different audiences — from model builders to developers to regulators.
 A Model spec provides value to every stakeholder involved in a model release process:
 
 - **Model Designers**: The model designers get the benefit of needing to clarify what behaviors they do and do not want. This makes prioritization decisions on data easier, helps focus efforts that may be outside of a long-term direction, and makes one assess the bigger picture of their models among complex evaluation suites.
 - **Developers**: Users of models have a better picture for which behaviors they encounter may be intentional -- i.e. some types of refusals -- or side-effects of training. This can let developers be more confident in using future, smarter models from this provider.
 - **Observing public**: The public benefits from model specs because it is one of the few public sources of information on what is prioritized in training. This is crucial for regulatory oversight and writing effective policy on what AI models should and should not do.
 
-More recently, Anthropic released what they call a "soul document" alongside Claude Opus 4.5 [@anthropic2025souldoc] (after the public user base extracted it from the model, Anthropic confirmed its existence), which describes the model's desired character traits, values, and behavioral guidelines in detail.
-A lead researcher on Claude's character, Amanda Askell noted that both supervised fine-tuning and reinforcement learning methods are used with the soul document as a guide for training [@askell2025soul].
-This approach represents a convergence of Anthropic's earlier methods on character training towards documentation that resembles a model specification.
+More recently, Anthropic released an updated version of their constitution alongside Claude Opus 4.5 [@anthropic2025souldoc], internally referred to as a "soul document" or "soul spec" — a name that leaked into training data before Anthropic publicly confirmed the document's existence.
+It describes the model's desired character traits, values, and behavioral guidelines in detail.
+A lead researcher on Claude's character, Amanda Askell, noted that supervised learning methods are used with the document as a guide for training [@askell2025soul] (and it is likely used in other stages, e.g. similar to Constitutional AI's RL stage).
 
 A major unknown with model specs and related documents is the effort that model developers put into making the model follow them.
 Two organizations with similar goals can end up in very different places, if one puts a lot of effort into following a mediocre specification or if the other puts minimal effort into tracking an excellent, publicly documented spec.
