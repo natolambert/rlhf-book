@@ -195,7 +195,8 @@ Note that in Llama 3 the margin term was removed as the team observed diminishin
 ### Balancing Multiple Comparisons Per Prompt
 
 InstructGPT studies the impact of using $K = 4$ to $9$ completions per prompt to rank, producing $\binom{K}{2}$ pairwise comparisons from each prompt [@ouyang2022training].
-To do this, they weight the loss updates per comparison per prompt -- without reweighting, prompts with more completions would contribute more total loss simply because they generate more pairs.
+Because these comparisons are highly correlated (they share the same prompt), shuffling them into the dataset naively causes the reward model to overfit.
+To address both issues, they weight the loss updates per comparison per prompt -- without reweighting, prompts with more completions would contribute more total loss simply because they generate more pairs.
 In practice, all $\binom{K}{2}$ comparisons from a single prompt are typically included in the same training batch and averaged together, so each prompt contributes one grouped update rather than appearing across many separate batches.
 This reduces overfitting to individual prompts and prevents prompts with more sampled completions from dominating the loss.
 The loss function becomes:
