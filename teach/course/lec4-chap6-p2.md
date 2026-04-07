@@ -7,7 +7,7 @@ fonts:
 bibliography: refs.bib
 figure_captions: true
 footer:
-  left: "rlhfbook.com"
+  left: "rlhfbook.com/course"
   center: "Lecture 4"
   right: "Lambert {n}/{N}"
 custom_css: |
