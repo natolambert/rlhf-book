@@ -32,7 +32,7 @@ WebGPT [@nakano2021webgpt], Anthropic's Helpful and Harmless agent [@bai2022trai
 
 *Throughout this chapter, we use $x$ to denote prompts and $y$ to denote completions. This notation is common in the language model literature, where methods operate on full prompt-completion pairs rather than individual tokens.*
 
-## Training Process
+## Training Process Step By Step
 
 Rejection sampling overall follows a few stages.
 
@@ -205,7 +205,7 @@ np.allclose(x, x_sorted[np.argsort(sorted_indices)])
 ### 3. Fine-tuning
 
 With the selected completions, you then perform standard instruction fine-tuning on the current version of the model.
-More details can be found in the [chapter on instruction tuning](https://rlhfbook.com/c/instructions).
+More details can be found in the [chapter on instruction tuning](https://rlhfbook.com/c/04-instruction-tuning).
 
 ## Implementation Details
 
@@ -215,7 +215,7 @@ The core hyperparameters for performing this training are very intuitive:
 - **Completions per prompt**: Successful implementations of rejection sampling have included 10 to 30 or more completions for each prompt. Using too few completions will make training biased and/or noisy.
 - **Instruction tuning details**: No clear training details for the instruction tuning during rejection sampling have been released. It is likely that they use slightly different settings than the initial instruction tuning phase of the model.
 - **Heterogeneous model generations**: Some implementations of rejection sampling include generations from multiple models rather than just the current model that is going to be trained. Best practices on how to do this are not established.
-- **Reward model training**: The reward model used will heavily impact the final result. For more resources on reward model training, see the [relevant chapter](https://rlhfbook.com/c/07-reward-models).
+- **Reward model training**: The reward model used will heavily impact the final result. For more resources on reward model training, see the [relevant chapter](https://rlhfbook.com/c/05-reward-models).
 
 When doing batch reward model inference, you can sort the tokenized completions by length so that the batches are of similar lengths. 
 This eliminates the need to run inference on as many padding tokens and will improve throughput in exchange for minor implementation complexity. 

@@ -20,7 +20,7 @@ The core problem we've been trying to solve with RLHF is that we cannot precisel
 The data is what allows us to match behaviors we desire and avoid some failure modes we hate.
 The data is so rich a source that it is difficult to replace this style of optimization at all.
 Within preference fine-tuning, many methods for collecting and using said data have been proposed, and given that human preferences cannot be captured in a clear reward function, many more will come to enable this process of collecting labeled preference data at the center of RLHF and related techniques.
-Today, two main challenges exist around preference data that are intertwined with this chapter: 1) operational complexity and cost of collection, and 2) the need for preference data to be collected on the generations from the model being trained (called "on-policy");
+Today, two main challenges exist around preference data that are intertwined with this chapter: 1) operational complexity and cost of collection, and 2) the need for preference data to be collected on the generations from the model being trained (called "on-policy").
 
 In this chapter, we detail technical decisions on how the data is formatted and organizational practices for collecting it.
 
@@ -56,7 +56,7 @@ A subtle but important point is that the *chosen* answer in preference data is o
 Instead, it is the answer that is better relative to the alternatives shown (e.g., clearer, safer, more helpful, or less incorrect).
 There can be cases where every completion being compared to a given prompt is correct or incorrect, and the models can still learn from well-labeled data.
 
-### Interface
+### Interfaces
 
 Crucial to collecting preference data is the interface by which one interacts with the model, but it's more of an art than a science, as it's not well-studied how subtle changes in the interface impact how a user interacts with a model.
 An example of how a model's vibe can be changed by the user experience is *speed*, where with the rise of reasoning models, a user can think a model is less intelligent if it replies too fast (even though users obviously want to get their answer faster overall).
@@ -75,9 +75,9 @@ An example interaction of this form is shown below in @fig:preference-chatgpt fo
 ![Example preference data collection interface from when I was served two completions from different ChatGPT beta models. The actual completions are very close in content, showing how collecting preference data can be noisy and difficult to get exactly right.](images/chatgpt-ab-test.jpeg){#fig:preference-chatgpt .center}
 
 This style of interface is used extensively across the industry, such as for *evaluation* of models given the same format.
-A popular public option to engage with models in this way is ChatBotArena [@chiang2024chatbot], which includes the option of a "tie" between models:
+A popular public option to engage with models in this way is Arena (formerly ChatBotArena) [@chiang2024chatbot], which includes the option of a "tie" between models:
 
-![Example preference data collection interface from an early version of the popular LMArena benchmark.](images/chatbotarena.png){#fig:chatbotarena .center}
+![Example preference data collection interface from an early version of the popular Arena benchmark.](images/chatbotarena.png){#fig:chatbotarena .center}
 
 For models in the wild, one of the most common techniques is to collect feedback on if a specific response was positive or negative.
 An example from the Ai2 playground is shown below with thumbs up and down indicators:
@@ -115,7 +115,7 @@ For example, a 5 point Likert scale would look like the following (note that, ye
 
 Table: An example 5-wise Likert scale between two responses, A and B. {#tbl:likert5}
 
-Some early RLHF for language modeling works uses an 8-step Likert scale with levels of preference between the two responses [@bai2022training]. 
+Some early RLHF for language modeling works use an 8-step Likert scale with levels of preference between the two responses [@bai2022training]. 
 An even scale removes the possibility of ties:
 
 
@@ -200,11 +200,9 @@ Discounts are often also given on the first batches of data to get training team
 If you're a new entrant in the space, you may have a hard time getting the data you need quickly. 
 Data vendors are known to prioritize large budget line-items and new customers that have an influential brand or potential for large future revenue.
 This is, in many business ways, natural, as the data foundry companies are often supply-limited in their ability to organize humans for effective data labelling.
-<!-- Getting the tail of interested buying parties that Scale AI had to turn away is an option for the new data startups. 
-It's likely their primary playbook to bootstrap revenue. -->
 
-On multiple occasions, I've heard of data companies not delivering their data as contracted without the customer threatening legal or financial action against them for breach of contract. 
-Others have listed companies I work with as customers for PR even though we never worked with them, saying they "didn't know how that happened" when reaching out. 
+In a recurring unfortunate pattern, data companies have not delivered data as contracted without the customer threatening legal or financial action against them for breach of contract.
+Others have listed companies as customers for PR even though they never worked with them, saying they "didn't know how that happened" when called out.
 There are plenty of potential bureaucratic or administrative snags through the process. 
 For example, the default terms on the contracts often prohibit the open sourcing of artifacts after acquisition in some fine print.
 
@@ -222,22 +220,20 @@ If the data cannot be easily slotted into an existing RLHF data pipeline, it'll 
 Collecting data that cannot be seamlessly integrated into training pipelines often becomes stale and a waste of resources.
 
 The data is delivered in weekly batches with more data coming later in the contract. 
-For example, when we bought preference data for on-policy models we were training at HuggingFace, we had a 6 week delivery period. 
-The first weeks were for further calibration and the later weeks were when we hoped to most improve our model.
+For example, a typical preference data contract might span a 6 week delivery period.
+The first weeks are for further calibration and the later weeks are when teams hope to most improve their model.
 
 ![Overview of the multi-batch cycle for obtaining human preference data from a vendor. The ramp up period allows a narrowing of goals and methodology in order to create the best possible data. It is expected that a larger proportion of the data from the earlier batches will have to be thrown out due to quality issues. This is one timeline example for a smaller data contract (~$500K) and much larger data contracts can vary substantially.](images/pref-data-timeline.png){#fig:preferences .center}
 
-The goal is that by week 4 or 5 we can see the data improving our model. 
+The goal is that by week 4 or 5 the data is visibly improving the model. 
 This is something some frontier models have mentioned, such as the 14 stages in the Llama 2 data collection [@touvron2023llama], but it doesn't always go well. 
-At HuggingFace, trying to do this for the first time with human preferences, we didn't have the RLHF preparedness to get meaningful bumps on our evaluations. The last weeks came and we were forced to continue to collect preference data generating from endpoints we weren't confident in.
+As an example, a team trying this for the first time with human preferences may not have the RLHF preparedness to get meaningful bumps on their evaluations. The last weeks come and they are forced to continue collecting preference data generated from endpoints they aren't confident in.
 
 After the data is all in, there is plenty of time for learning and improving the model. 
 Data acquisition through these vendors works best when viewed as an ongoing process of achieving a set goal. 
 It requires iterative experimentation, high effort, and focus. 
 It's likely that millions of dollars spent on these datasets are "wasted" and not used in the final models, but that is just the cost of doing business. 
 Not many organizations have the bandwidth and expertise to make full use of human data of this style.
-
-This experience, especially relative to the simplicity of synthetic data, makes me wonder how well these companies will be doing in the next decade.
 
 Note that this section *does not* mirror the experience for buying human-written instruction data, where the process is less of a time crunch.
 Early post-training processes were built around the first stage of training being heavily driven by carefully crafted, human answers to a set of prompts.
@@ -249,7 +245,7 @@ More of these data trade-offs are discussed in Chapter 12 on Synthetic Data.
 
 While preference data is essential, it's also known to be prone to many subtle biases that can make its collection error-prone.
 These biases are so common, e.g. prefix bias (where the beginning of a completion disproportionately drives the preference) [@kumar2025detecting], that they can easily be passed to the final model [@bharadwaj2025flatteryflufffogdiagnosing] (and especially as we know that models are only as good as their data).
-These issues are often subtle and vary in how applicable interventions to mitigate them are.
+These issues are often subtle, and the effectiveness of interventions varies widely across them.
 For many, such as sycophancy (over-agreeing with the user’s stated beliefs or flattering them, even when it reduces truthfulness) [@sharma2023towards], they reflect issues within humans that are often outside of the labeling criteria that one will think of providing to the annotation partner or labelers.
 Others, such as verbosity [@singhal2023long] [@bu2025beyond] or formatting habits [@zhang2024lists], emerge for a similar reason, but they are easier to detect and mitigate in training.
 Mitigating these subtle biases in data is the difference between good or great preference data, and therefore good or great RLHF training.

@@ -23,7 +23,7 @@ While challenging evaluations drive progress in language models to new areas, th
 
 In many ways, this chapter is designed to present vignettes of popular evaluation regimes throughout the early history of RLHF, so readers can understand the common themes, details, and failure modes.
 
-Evaluation for RLHF and post-training has gone a few distinct phases in its early history:
+Evaluation for RLHF and post-training has gone through a few distinct phases in its early history:
 
 1. **Early chat-phase**: Early models trained with RLHF or preference tuning targeted evaluations focused on capturing the chat performance of a model, especially relative to known strong models such as GPT-4. Early examples include MT-Bench [@zheng2023judging], AlpacaEval [@dubois2024length], and Arena-Hard [@li2024crowdsourced]. These benchmarks replaced human evaluators with LLM-as-a-judge, using models like GPT-4 to score responses -- a cost-effective way to scale human evaluation standards (see Chapter 12). Models were evaluated narrowly and these are now considered as "chat" or "instruction following" domains.
 2. **Multi-skill era**: Over time, common practice established that RLHF can be used to improve more skills than just chat. For example, the Tülu evaluation suite included tasks on knowledge (MMLU [@hendrycks2020measuring], PopQA [@mallen2023llm_memorization], TruthfulQA [@lin2021truthfulqa]), Reasoning (BigBenchHard [@suzgun2022challenging], DROP [@dua2019drop]), Math (MATH [@hendrycksmath2021], GSM8K [@cobbe2021gsm8k]), Coding (HumanEval [@chen2021codex], HumanEval+ [@evalplus]), Instruction Following [@zhou2023instructionfollowingevaluationlargelanguage], and Safety (a composite of many evaluations). This reflects the domain where post-training is embraced as a multi-faceted solution beyond safety and chat.
@@ -31,7 +31,7 @@ Evaluation for RLHF and post-training has gone a few distinct phases in its earl
 
 Beyond this, new domains will evolve. 
 As AI becomes more of an industrialized field, the incentives of evaluation are shifting and becoming multi-stakeholder.
-Since the release of ChatGPT, private evaluations such as the Scale Leaderboard [@scale2024seal], community-driven evaluations such as ChatBotArena [@chiang2024chatbot], and third-party evaluation companies such as ArtificialAnalysis and Epoch AI have proliferated.
+Since the release of ChatGPT, private evaluations such as the Scale Leaderboard [@scale2024seal], community-driven evaluations such as Arena [@chiang2024chatbot], and third-party evaluation companies such as ArtificialAnalysis and Epoch AI have proliferated.
 Throughout this chapter we will include details that map to how these evaluations were implemented and understood.
 
 ## Prompting Formatting: From Few-shot to Zero-shot to CoT
@@ -151,8 +151,8 @@ Q: The cafeteria had 23 apples. If they used 20 to make lunch and bought 6 more,
 A: The cafeteria had 23 apples originally. They..
 ```
 
-Over time, as language models became stronger, they evolved to zero-shot evaluation, a.k.a. "zero-shot learners" [@wei2022finetuned].
-The Finetuned Language Net (FLAN) showed that language models fine-tuned on specific tasks, as a precursor to modern instruction tuning, could generalize to zero-shot questions they were not trained on [@wei2022finetuned] (similar results are also found in T0 [@sanh2022multitask]).
+Over time, as language models became stronger, they evolved to zero-shot evaluation, a.k.a. "zero-shot learners" [@wei2021finetuned].
+The Finetuned Language Net (FLAN) showed that language models fine-tuned on specific tasks, as a precursor to modern instruction tuning, could generalize to zero-shot questions they were not trained on [@wei2021finetuned] (similar results are also found in T0 [@sanh2021multitask]).
 This is the emergence of instruction fine-tuning (IFT), an important precursor to RLHF and post-training.
 A zero-shot question would look like:
 
@@ -245,7 +245,7 @@ The key point is that some of their evaluations for tracking progress, such as t
 
 The post-training evaluations are heavily co-dependent on human evaluation. 
 Human evaluation for generative language models yields Elo rankings (popular in early Anthropic papers such as Constitutional AI), and human evaluation for reward models shows agreement.
-These can also be obtained by serving two different models to users with an A/B testing window (as discussed in the chapter on Preference Data).
+These can also be obtained by serving two different models to users with an A/B testing window (as discussed in the [chapter on preference data](https://rlhfbook.com/c/11-preference-data)).
 
 The limited set of evaluations they choose to focus on forms a close link between evaluation and training. 
 At one point one evaluation of focus was MMLU. 

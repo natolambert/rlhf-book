@@ -27,7 +27,6 @@ First, NLP shifted from bespoke-fine-tuning task setups to a unified "text-to-te
 Prominent examples of unifying the framework for tasks include *Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer* (T5 models) [@raffel2020exploring], *Finetuned Language Models Are Zero-Shot Learners* (FLAN dataset) [@wei2021finetuned], *Multitask Prompted Training Enables Zero-Shot Task Generalization* (T0 models) [@sanh2021multitask], and *Cross-Task Generalization via Natural Language Crowdsourcing Instructions* (Natural Instructions dataset) [@mishra2021cross].
 Second, scaling pretrained LMs and the rise of prompting/in-context learning showed that a single model could generalize across tasks, but that generalization becomes far more reliable when the model is explicitly trained on instruction-response examples.
 Together, these trends led to an era of fine-tuning pretrained language models on large collections of instructions—what is now commonly called instruction fine-tuning (IFT), or supervised fine-tuning (SFT), in which training general models became accessible to wider audiences.
-<!-- Historically, until RLHF and related methods, all fine-tuning was **instruction fine-tuning** (IFT), also known as **supervised fine-tuning** (SFT). -->
 
 Since its discovery, instruction fine-tuning, also called colloquially just *instruction tuning*, has matured and is standard practice across many language modeling pipelines.
 At its core, IFT is the simplest method for adapting language models to a desired task distribution.
@@ -37,7 +36,7 @@ Without a basic level of instruction-following abilities, most of the pipelines 
 Instruction fine-tuning generally is covered extensively elsewhere and is supervised learning at its core, so this chapter focuses on the practical details that matter most for RLHF practitioners: how training data is formatted and structured.
 Decisions on data and formatting are directly leveraged in the later training stages to create a common language for the model to absorb post-training data.
 
-## Chat templates and the structure of instructions
+## Chat Templates and the Structure of Instructions
 
 The post-training process begins with defining a pattern to format user queries so that they are easily readable by a language model that processes information through a tokenizer.
 When using a pretrained language model, the prompting is quite simple. The model only knows a few tokens: a beginning-of-sequence token (e.g., `<bos_token>`), an end-of-sequence token (e.g., `<eos_token>`), and a padding token (to manage training on batches with empty components).
@@ -158,7 +157,7 @@ I'm just a computer program, so I don't have feelings, but I'm functioning as ex
 Beyond this, many chat templates include formatting and other tokens for tasks such as tool-use.
 
 
-## Best practices of instruction tuning
+## Best Practices of Instruction Tuning
 
 Instruction tuning as the foundation of post-training and creating helpful language models is well-established.
 There are many ways to achieve successful instruction tuning.
@@ -175,7 +174,7 @@ A few principles remain:
 - The best prompts are those in a similar distribution to downstream tasks of interest.
 - If multiple stages of training are done after instruction tuning, the models can recover from some noise in the instruction-tuning data. Optimizing the overall optimization is more important than each individual stage.
 
-## Implementation
+## Implementation Details
 
 While the loss function is the same as pretraining, there are a few key implementation details that differ from the setting used for pretraining.
 Many practices, such as deciding on the types of parallelism used to shard models across many GPUs are the same as pretraining, just the total number of machines used is often lower (for the first technical change listed below):

@@ -22,6 +22,11 @@ Consider a question from a user such as:
 > **User**: Who is the president today?
 
 A language model without tools will have a hard time answering this question due to the knowledge cutoff of pretraining data, but this is readily accessible information with one search query.
+Consider another example:
+
+> **User**: Move all the arXiv papers in my downloads folder to my ~/research/ directory with names indicating the date of the paper.
+
+This is a task that the model weights alone cannot even attempt -- the use of tools enables language models to address a far broader range of tasks.
 
 Before diving deeper, it is useful to distinguish related terms that are often used interchangeably:
 
@@ -76,7 +81,6 @@ Since these early models, the diversity of actions called has grown substantiall
 Tool-use models are now deeply intertwined with regular language model interactions.
 Model Context Protocol (MCP) emerged as a common formatting used to connect language models to external data sources (or tools) [@anthropic_mcp_2024].
 With stronger models and better formats, tool-use language models are used in many situations, including productivity copilots within popular applications such as Microsoft Office or Google Workspace, scientific domains [@bran2023chemcrow], medical domains [@li2024mmedagent], coding agents [@zhang2024codeagent] such as Claude Code or Cursor, integrations with databases, and many other autonomous workflows.
-<!-- Tool use also expands the attack surface for language models—indirect prompt injection through tool outputs and unauthorized actions are ongoing concerns that require treating tool results as untrusted input and gating state-changing operations. -->
 
 Evaluating tool-use models involves multiple dimensions: exact-match metrics for tool name and argument correctness, schema validity, and end-to-end task completion in simulated environments.
 Reliability across trials also matters -- $\tau$-bench introduced the pass^k metric (distinct from pass@k) to measure whether an agent succeeds consistently rather than occasionally [@yao2024taubench].
@@ -84,8 +88,7 @@ ToolLLM and its ToolBench dataset provide a large-scale framework for training a
 
 ## Interweaving Tool Calls in Generation
 
-Function calling agents are presented data very similarly to other post-training stages. 
-The addition is the content in the system prompt that instructs the model what tools it has available. 
+Training data for function calling looks much like other post-training data, with one addition: a system prompt that instructs the model what tools it has available.
 An example formatted data point with the system prompt and tools available in JSON format is shown below:
 ```xml
 <system>
@@ -275,7 +278,7 @@ async def call_tool(name: str, arguments: dict):
         return [TextContent(type="text", text=weather)]
 ```
 
-## Implementation
+## Implementation Details
 
 There are multiple formatting and masking decisions when implementing a tool-use model:
 

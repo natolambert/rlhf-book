@@ -27,7 +27,7 @@ RLHF became most known through the release of ChatGPT and the subsequent rapid d
 The basic pipeline for RLHF involves three steps.
 First, a language model that can follow user questions must be trained (see Chapter 4).
 Second, human preference data must be collected for the training of a reward model of human preferences (see Chapter 5).
-Finally, the language model can be optimized with an RL optimizer of choice, by sampling generations and rating them with respect to the reward model (see Chapter 3 and 6).
+Finally, the language model can be optimized with an RL optimizer of choice, by sampling generations and rating them with respect to the reward model (see Chapters 3 and 6).
 This book details key decisions and basic implementation examples for each step in this process.
 
 RLHF has been applied to many domains successfully, with complexity increasing as the techniques have matured.
@@ -203,9 +203,6 @@ The idea is that there is a lot of intelligence and ability within base models, 
 
 Then, when you look at models such as OpenAI's GPT-4.5 released in February 2025, which was largely a failure of a consumer product due to being too large of a base model to serve to millions of users, you can see this as a far more dynamic and exciting base for OpenAI to build onto.
 With this intuition, base models determine the vast majority of the potential of a final model, and post-training's job is to cultivate all of it.
-<!-- We also know that bigger base models can absorb far more diverse changes than their smaller counterparts, as discussed in the foundational DeepSeek R1 report [@guo2025deepseek]. -->
-
-<!-- This is to say that scaling also allows post-training to move faster. Of course, to do this, you need the infrastructure to train the models. This is why all the biggest companies are still building gigantic clusters. -->
 
 I've described this intuition as the Elicitation Theory of Post-training.
 This theory folds in with the reality that the majority of gains users are seeing are from post-training because it implies that there is more latent potential in a model pretraining on the internet than we can simply teach the model --- such as by passing certain narrow samples in repeatedly during early types of post-training (i.e. only instruction tuning).
@@ -215,7 +212,7 @@ A related idea to this theory is the Superficial Alignment Hypothesis, coined in
 
 > A model's knowledge and capabilities are learnt almost entirely during pretraining, while alignment teaches it which subdistribution of formats should be used when interacting with users. If this hypothesis is correct, and alignment is largely about learning style, then a corollary of the Superficial Alignment Hypothesis is that one could sufficiently tune a pretrained language model with a rather small set of examples [Kirstain et al., 2021].
 
-All of the successes of deep learning should have taught you a deeply held belief that scaling data is important to performance. Here, the major difference is that the authors are discussing alignment and style, the focus of academic post-training at the time. With a few thousand samples for instruction fine-tuning, you can change a model substantially and improve a narrow set of evaluations, such as AlpacaEval, MT Bench, ChatBotArena, and the likes. These do not always translate to more challenging capabilities, which is why Meta wouldn't train its Llama Chat models on just this dataset. Academic results have lessons, but need to be interpreted carefully if you are trying to understand the big picture of the technological arc.
+All of the successes of deep learning should have taught you a deeply held belief that scaling data is important to performance. Here, the major difference is that the authors are discussing alignment and style, the focus of academic post-training at the time. With a few thousand samples for instruction fine-tuning, you can change a model substantially and improve a narrow set of evaluations, such as AlpacaEval, MT Bench, Arena (formerly ChatBotArena, a platform where users compare anonymous model responses head-to-head), and the likes. These do not always translate to more challenging capabilities, which is why Meta wouldn't train its Llama Chat models on just this dataset. Academic results have lessons, but need to be interpreted carefully if you are trying to understand the big picture of the technological arc.
 
 What this paper is showing is that you can change models substantially with a few samples. We knew this, and it is important to the short-term adaptation of new models, but their argument for performance leaves the casual readers with the wrong lessons.
 
@@ -227,11 +224,11 @@ Post-training has far outgrown that, and we are coming to see that the style of 
 
 As the AI community shifts post-training further into the era of agentic and reasoning models, the superficial alignment hypothesis breaks down further.
 RL methods are becoming an increasingly large share of the compute needed to train frontier language models.
-In the short time since reinforcement learning with verifiable rewards (RLVR) was coined in our work on Tülu 3 in the fall of 2024 [@lambert2024t] to today, the scale of compute used for post-training has grown dramatically.
+In the short time since reinforcement learning with verifiable rewards (RLVR) was coined in our work on Tülu 3 in the fall of 2024 [@lambert2024t], the scale of compute used for post-training has grown dramatically.
 DeepSeek R1, famous for popularizing RLVR, used only about 5% of their overall compute in post-training -- 147K H800 GPU hours for RL training on R1 [@guo2025deepseek], relative to 2.8M GPU hours for pretraining the underlying DeepSeek V3 base model [@deepseekai2025deepseekv3technicalreport].
 
 The science studying the core methods of scaling RL as of 2025 shows that individual ablation runs can take 10-100K GPU hours [@khatri2025art], the equivalent of the compute used for the RL stage of OLMo 3.1 Think 32B (released in November of 2025), which trained for 4 weeks on 200 GPUs [@teamolmo2025olmo3].
-The science of scaled post-training is in its very early stages as of writing this, adopting ideas and methods from pretraining language models and applying them in this new domain, so the exact GPU hours used will change, but the trend of increased compute on post-training will continue.
+The science of scaled post-training is in its very early stages as of 2025, adopting ideas and methods from pretraining language models and applying them in this new domain, so the exact GPU hours used will change, but the trend of increased compute on post-training will continue.
 All together, the elicitation theory of post-training is likely to become the correct view only when applying a lighter post-training recipe -- something useful for specializing a model -- relative to the compute-intensive frontier models.
 
 ## How We Got Here
@@ -271,8 +268,8 @@ At the same time, the Llama 3.1 [@dubey2024llama] and Nemotron 4 340B [@adler202
 The closed labs are doing full post-training -- a large multi-stage process of instruction tuning, RLHF, prompt design, etc. -- where academic papers are just scratching the surface. 
 Tülu 3 represented a comprehensive, open effort to build the foundation of future academic post-training research [@lambert2024t].
 
-Today, post-training is a complex process involving the aforementioned training objectives applied in various orders in order to target specific capabilities.
-This book is designed to give a platform to understand all of these techniques, and in coming years the best practices for how to interleave them will emerge.
+Post-training is a complex process involving the aforementioned training objectives applied in various orders in order to target specific capabilities.
+This book is designed to give a platform to understand all of these techniques, and as the field matures the best practices for how to interleave them will emerge.
 
 The primary areas of innovation in post-training are now in reinforcement learning with verifiable rewards (RLVR), reasoning training generally, and related ideas. 
 These newer methods build extensively on the infrastructure and ideas of RLHF, but are evolving far faster.
@@ -293,7 +290,7 @@ This book has the following chapters:
 Reference material and context useful throughout the book.
 
 1. Introduction: Overview of RLHF and what this book provides.
-2. Seminal (Recent) Works: Key models and papers in the history of RLHF techniques.
+2. Key Related Works: Key models and papers in the history of RLHF techniques.
 3. Training Overview: How the training objective for RLHF is designed and basics of understanding it.
 
 #### Core Training Pipeline
@@ -348,11 +345,11 @@ To facilitate this, the book includes numerous, academic-style citations to the 
 The contributions of this book are supposed to give you the minimum knowledge needed to try a toy implementation or dive into the literature. 
 This is *not* a comprehensive textbook, but rather a quick book for reminders and getting started.
 
-Additionally, given the web-first nature of this book, it is expected that there are minor typos and somewhat random progressions -- please contribute by fixing bugs or suggesting important content on [GitHub](https://github.com/natolambert/rlhf-book).
+This book is finalizing as of April 2026, when it's moving to production for print. As a web-first book, this content will continue to evolve, so if you spot a typo or an important omission, please contribute a fix or suggestion on [GitHub](https://github.com/natolambert/rlhf-book).
 
 ### About the Author
 
-Dr. Nathan Lambert is a RLHF researcher contributing to the open science of language model fine-tuning.
+Dr. Nathan Lambert is a researcher and writer focusing on building the open science of language models. He came here through a Ph.D. in robotics and building an RLHF team shortly after the release of ChatGPT.
 He has released many models trained with RLHF, their subsequent datasets, and training codebases in his time at the Allen Institute for AI (Ai2) and HuggingFace.
 Examples include [Zephyr-Beta](https://huggingface.co/HuggingFaceH4/zephyr-7b-beta), [Tulu 2](https://huggingface.co/allenai/tulu-2-dpo-70b), [OLMo](https://huggingface.co/allenai/OLMo-7B-Instruct), [TRL](https://github.com/huggingface/trl), [Open Instruct](https://github.com/allenai/open-instruct), and many more. 
 He has written extensively on RLHF, including [many blog posts](https://www.interconnects.ai/t/rlhf) and [academic papers](https://scholar.google.com/citations?hl=en&user=O4jW7BsAAAAJ&view_op=list_works&sortby=pubdate).

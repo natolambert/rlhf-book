@@ -26,7 +26,7 @@ Style is intertwined with what the information is.
 
 The second reason is that many people missed the fact that well-done RLHF boosts scores on popular LLM evaluations.
 We've seen how different styles actually can meaningfully improve evaluations with Llama 3 [@dubey2024llama]. 
-The Llama 3 Instruct models scored extremely high on ChatBotArena, and it's accepted as being because they had a more fun personality -- they were more succinct and clever than other models of their era. 
+The Llama 3 Instruct models scored extremely high on Arena, and it's accepted as being because they had a more fun personality -- they were more succinct and clever than other models of their era. 
 Regardless of the benchmark scores that many LLM users are obsessed with, if RLHF is going to make language models simply more fun, that is delivered value.
 
 Throughout this chapter, the term "chattiness" is used to encompass the growing length of responses from models training with RLHF, but it also encompasses techniques like heavy markdown use, emojis, and formatting the answer in bulleted lists.
@@ -87,14 +87,14 @@ For more examples like this, see the completions library associated with this bo
 
 ## The Chattiness Balance
 
-RLHF or preference fine-tuning methods are being used by countless people to boost scores like AlpacaEval and other automatic chat leaderboards (which use LLM-as-a-judge to approximate how helpful, harmless, and honest an agent is across simple conversational tasks), but the massive gains RLHF confers here come without shifting scores proportionally on harder-to-game evaluations like ChatBotArena. 
+RLHF or preference fine-tuning methods are being used by countless people to boost scores like AlpacaEval and other automatic chat leaderboards (which use LLM-as-a-judge to approximate how helpful, harmless, and honest an agent is across simple conversational tasks), but the massive gains RLHF confers here come without shifting scores proportionally on harder-to-game evaluations like Arena. 
 The tension is that while RLHF methods give a measurable improvement on these models, that training doesn't always transfer into performance that people care about.
 Through the establishment of the RLHF literature, a large swath of models have been released with related methods to boost the "alignment" of a model with RLHF, but they often took it way too far and published evaluation scores that were anywhere from misleading to meaningless.
 
 These RLHF methods motivated by alignment, when done right, make the models easier to work with and more enjoyable. 
 This often comes with clear improvements on evaluation tools like MT Bench or AlpacaEval. 
 
-In the fall of 2023, there was a peak in the debate over direct preference optimization (DPO) and its role relative to proximal policy optimization (PPO) and other RL-based methods for preference fine-tuning -- the balance of chat evaluations to real world performance was at the center of this (For more technical discussion on the trade-offs, see Chapter 8, Ivison et. al 2024 [@ivison2024unpacking], or this talk, [https://youtu.be/YJMCSVLRUNs](https://youtu.be/YJMCSVLRUNs)).
+In the fall of 2023, there was a peak in the debate over direct preference optimization (DPO) and its role relative to proximal policy optimization (PPO) and other RL-based methods for preference fine-tuning -- the balance of chat evaluations to real world performance was at the center of this (For more technical discussion on the trade-offs, see Chapter 8, Ivison et al. 2024 [@ivison2024unpacking], or [this talk](https://youtu.be/YJMCSVLRUNs)).
 The problem is that you can also use techniques like DPO and PPO in feedback loops or in an abundance of data to actually severely harm the model on other tasks like mathematics or coding in a trade for this chat performance.
 
 During the proliferation of the DPO versus PPO debate there were many papers that came out with incredible benchmarks but no model weights that gathered sustained, public usage because these models were not robust in general usage. 
@@ -122,11 +122,11 @@ This note from the original Alibaba Qwen models in 2023 is something that has be
 
 An early, good example of this tradeoff done right is a model like Starling Beta from March of 2024 [@zhu2024starling]. 
 It's a model that was fine-tuned from another chat model, OpenChat [@wang2023openchat] (which was in fact trained by an entire other organization). 
-Its training entirely focuses on a k-wise reward model training and PPO optimization, and moves it up 10 places in ChatBotArena. 
+Its training entirely focuses on a k-wise reward model training and PPO optimization, and moves it up 10 places in Arena. 
 The average response length of the model increases, but in a way that's good enough to actually help the human raters.
 Later examples, such as Olmo 3, actually are documented as undergoing substantial chat training, but where the authors prefer a final model checkpoint with higher math, coding, and reasoning scores instead of potential checkpoints that're highest on LLM-as-a-judge based chat benchmarks [@teamolmo2025olmo3].
 
 A natural question is: Why does RLHF make model responses longer?
-Fundamentally, evaluations like ChatBotArena have shown us that average users of models often like longer, complete answers when compared with terse responses. 
+Fundamentally, evaluations like Arena have shown us that average users of models often like longer, complete answers when compared with terse responses. 
 Longer answers can feel more thorough, helpful, or even trustworthy to users evaluating them quickly.
 This does not represent the preference of *every* user, but these models are trained to match the average preferences of many data labelers, so RLHF tends to make models more verbose.

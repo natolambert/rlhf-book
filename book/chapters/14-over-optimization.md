@@ -20,10 +20,6 @@ In modern ML systems, especially with language models, we're using somewhat cont
 In this domain, it is common for over-optimization to occur, where the RL optimizers push the language models in directions where the generations satisfy our checker functions, but the behavior does not align with our training goals.
 This chapter provides an overview of this classic case of **over-optimization**.
 
-<!-- In the RLHF literature and discourse, there are two primary directions that over-optimization can emerge: 
-1. **Quantitative research** on the technical notion of over-optimization of reward. This measures optimization distance and power versus training metrics and downstream performance. Training keeps going up, while eventually downstream goes down.
-2. **Qualitative observations** that "overdoing" RLHF can result in worse models. These are fundamental limitations in the RLHF problem setup, measurement tools, and trade-offs. -->
-
 Over-optimization generally, i.e. more broadly than just in RLHF, is a concept where a training metric ends up being mismatched from the final evaluations of interest.
 While similar to over-fitting -- where one trains on data that is too narrow relative to the downstream evaluations that test generalization -- over-optimization is used in the RL literature to indicate that an *external* signal is used too much. 
 The cost of over-optimization is a lower alignment to real world goals or lower quality in any domain, and the shape of training associated with it is shown in @fig:overoptimization.
@@ -126,7 +122,7 @@ The accepted best practice for mitigating this behavior is to modify the trainin
 Today, a substantial amount of fine-tuning for AI applications is done by further fine-tuning so called "Instruct" or "Thinking" models that have already gone through substantial RLHF and other post-training before release.
 These already trained models can be much harder to change, e.g. to remove this over-refusal, and often starting with a base model directly at the end of large-scale autoregressive pretraining is best for steering this type of behavior.
 
-## Quantitative over-optimization
+## Quantitative Over-optimization
 
 Over-optimization is also a technical field of study where relationships between model performance versus KL optimization distance are studied [@gao2023scaling].
 Recall that the KL distance is a measure of distance between the probabilities of the original model before training, a.k.a. the reference model, and the current policy.

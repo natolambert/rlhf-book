@@ -78,10 +78,10 @@ cd diagrams && make all
 To cite this book, please use the following format:
 
 ```bibtex
-@book{rlhf2025,
+@book{rlhf2026lambert,
   author       = {Nathan Lambert},
   title        = {Reinforcement Learning from Human Feedback},
-  year         = {2025},
+  year         = {2026},
   publisher    = {Online},
   url          = {https://rlhfbook.com},
 }
@@ -97,7 +97,3 @@ To cite this book, please use the following format:
 Where I get the credit as the sole "author" and creator of this project, I've been super lucky to have many contributions from early readers. These have massively accelerated the editing progress and flat-out added meaningful content to the book. I'm happy to send substantive contributors free copies of the book and expect the internet goodwill to pay them back in unexpected ways.
 
 See all [contributors](https://github.com/natolambert/rlhf-book/graphs/contributors).
-
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=natolambert/rlhf-book&type=Date)](https://www.star-history.com/#natolambert/rlhf-book&Date)
