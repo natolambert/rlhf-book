@@ -455,7 +455,7 @@ def main(
         # Summarize rollouts
         avg_reward = torch.cat(rollout_rewards, dim=0).mean().item()
         if speedrun_tracker:
-            speedrun_tracker.record_step(step, avg_reward)
+            speedrun_tracker.record_step(avg_reward)
 
         hours_elapsed = (time.time() - start_time) / 3600
         reward_100avg = speedrun_tracker.reward_100avg if speedrun_tracker else None

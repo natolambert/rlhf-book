@@ -22,11 +22,16 @@ class SpeedrunTracker:
         for step, batch in enumerate(dataloader):
             ...
             avg_reward = torch.cat(rollout_rewards, dim=0).mean().item()
-            tracker.record_step(step, avg_reward)
+            tracker.record_step(avg_reward)
             ...
             tracker.check_goal(step, console)
 
-        tracker.write_metrics(algorithm=cfg.loss, seed=cfg.seed, ...)
+        tracker.write_metrics(
+            cfg=cfg,
+            wandb_run_id=wandb_run_id,
+            wandb_entity=wandb_entity,
+            wandb_project=wandb_project_name,
+        )
     """
 
     def __init__(
@@ -54,7 +59,7 @@ class SpeedrunTracker:
             return sum(self.reward_history[-100:]) / 100
         return None
 
-    def record_step(self, step: int, avg_reward: float) -> None:
+    def record_step(self, avg_reward: float) -> None:
         """Record one training step's reward and walltime."""
         self.reward_history.append(avg_reward)
         self.walltime_at_step.append(int(time.time() - self.start_time))
