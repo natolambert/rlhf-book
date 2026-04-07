@@ -11,8 +11,9 @@ page-title: Introduction
 search-title: "Chapter 1: Introduction"
 next-chapter: "Key Related Works"
 next-url: "02-related-works"
-lecture-video: "https://youtu.be/o6l6tJQgUg4"
-lecture-label: "Lecture 1: Overview (Chapters 1–3)"
+lectures:
+  - video: "https://youtu.be/o6l6tJQgUg4"
+    label: "Lecture 1: Overview (Chapters 1–3)"
 ---
 
 # Introduction

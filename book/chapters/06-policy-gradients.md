@@ -11,6 +11,11 @@ page-title: Reinforcement Learning
 search-title: "Chapter 6: Reinforcement Learning"
 next-chapter: "Reasoning"
 next-url: "07-reasoning"
+lectures:
+  - video: "https://youtu.be/K_Sj_-1BUMM"
+    label: "Lecture 3: Understanding Policy Gradient Algorithms for RL on LLMs"
+  - video: ""
+    label: "Lecture 4: Implementing RL Algorithms for LLMs (coming soon)"
 ---
 
 # Reinforcement Learning (i.e. Policy Gradient Algorithms)
