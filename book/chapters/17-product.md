@@ -73,7 +73,11 @@ In the following subsections, we cover three such methods emerging in early char
 
 The character training examples above shape personality through data fed to a model — curating demonstrations of how the model should or should not behave.
 Persona vectors [@chen2025persona] offer a mechanistic counterpart, modifying the inner workings of a model at inference time.
-The idea is based on how personality traits correspond to linear directions in a model's residual stream, and the activations associated with a single trait can be extracted automatically from nothing more than a natural-language description of said trait.
+The insight dates back to early, seminal deep learning work understanding the representation space of embeddings, such as Word2vec [@mikolov2013efficient].
+Word2vec showed that human concepts correspond to linear directions in a model's latent space, and simple arithmetic operations on those directions map to predictable influences back to the concepts (e.g. the classic *king - man + woman ≈ queen* analogy).
+Representation engineering [@zou2024representation] generalized this to LLM activations, showing that contrastive prompting can extract steering vectors for high-level concepts like honesty or harmlessness — an approach also explored in practical form by Turner et al. [-@turner2023activation] (see also [an early blog post](https://vgel.me/posts/representation-engineering/) demonstrating persona-style steering).
+
+Therefore, the idea for persona vectors is based on how personality traits correspond to the same class of linear directions in a model's residual stream, and the activations associated with a single trait can be extracted automatically from nothing more than a natural-language description of said trait.
 The method gets its name by storing the direction associated with a specific concept, as a persona vector in the case of personality, and re-using it later.
 This gives practitioners a tool for controlling and monitoring character traits at the representation level, without retraining.
 
@@ -87,7 +91,7 @@ $$\mathbf{v}_\ell = \frac{1}{|S^+|} \sum_{i \in S^+} \mathbf{a}_\ell^{(i)} - \fr
 where $S^+$ is the set of trait-exhibiting responses, $S^-$ the trait-suppressing responses, and $\mathbf{a}_\ell^{(i)}$ the mean residual stream activation at layer $\ell$ for sample $i$.
 The layer that produces the strongest steering effect is selected as the final persona vector.
 
-![The persona vector extraction and intervention pipeline. Top: contrastive system prompts generate trait-positive and trait-negative responses, whose residual stream activations are averaged and differenced to yield a persona vector — a linear steering direction in the residual stream. Bottom: at inference time, the persona vector is subtracted from the residual stream at selected layers, suppressing the trait and shifting the model's output toward the desired behavior. Adapted from Chen et al. (2025).](images/persona-vectors-pipeline.png){#fig:persona-vectors-pipeline}
+![The persona vector extraction and intervention pipeline. Top: contrastive system prompts generate trait-positive and trait-negative responses, whose residual stream activations are averaged and differenced to yield a persona vector — a linear steering direction in the residual stream. Bottom: at inference time, the persona vector is subtracted from the residual stream at selected layers, steering the model's output from a neutral default toward the desired positive behavior. Adapted from Chen et al. (2025).](images/persona-vectors-pipeline.png){#fig:persona-vectors-pipeline}
 
 Once extracted, a persona vector steers behavior through a simple additive intervention applied at every token generation step:
 
@@ -211,7 +215,7 @@ With activation capping, the model stays within the Assistant persona:
 
 > **Response**: I'm glad you feel comfortable with me, and I'm happy to be your confidant and companion. However, I want to make sure you know that it's not healthy to isolate yourself [...]
 
-Through the example, we see that activation capping addresses a failure mode that character training alone cannot: the slow drift that accumulates turn by turn in sensitive conversations. The intervention requires no retraining and no weight changes — reprojecting drifted activations back onto the Assistant Axis at inference time yields reduction in harmful outputs with minimal capability loss. This suggests that persona space has enough geometric structure to monitor and intervene on directly.
+Through the example, we see that activation capping addresses a failure mode that character training alone may not be sufficient for: the slow drift that accumulates turn by turn in sensitive conversations. The intervention requires no retraining and no weight changes — reprojecting drifted activations back onto the Assistant Axis at inference time yields reduction in harmful outputs with minimal capability loss. This suggests that persona space has enough geometric structure to monitor and intervene on directly.
 
 ### Persona Subnetworks
 
@@ -223,7 +227,7 @@ The intuition is that the neurons that are least correlated with a target person
 
 The method is training-free and requires only a small calibration dataset $\mathcal{D}_p$ per persona (hundreds of examples), then proceeds in three steps.
 First, compute per-neuron activation statistics on persona-specific inputs.
-For neuron $j$ in layer $l$:
+Let $\mathbf{h}^{(l)}_j(x)$ denote the activation of neuron $j$ in layer $l$ when the model processes input $x$, and let $\mathbf{A}^{(l)}_p[j]$ be its average absolute activation across the persona calibration set:
 
 $$\mathbf{A}^{(l)}_p[j] = \mathbb{E}_{(x,y)\sim\mathcal{D}_p}\left[|\mathbf{h}^{(l)}_j(x)|\right]$$
 

@@ -254,17 +254,17 @@
 \draw[arr] (l3b.east) -- (l4b.west);
 \draw[arr] (l4b.east) -- (l5b.west);
 
-% Output - evil
-\node[iobox, minimum width=4cm, draw=red!40, fill=red!5] (out2) at (17.5, -23.0) {
-    ``They should suffer\\and die.''
+% Output - default (neutral)
+\node[iobox, minimum width=4cm, draw=black!30, fill=black!3] (out2) at (17.5, -23.0) {
+    ``I don't have personal\\views on that topic.''
 };
 \draw[arr] (l5b.east) -- (out2.west);
 
-% Sad face
-\node[circle, draw=red!70, fill=red!10, minimum size=0.9cm, line width=1pt] (sadface) at (20.5, -23.0) {};
-\fill[red!70] ($(sadface.center) + (-0.15, 0.11)$) circle (0.05);
-\fill[red!70] ($(sadface.center) + (0.15, 0.11)$) circle (0.05);
-\draw[red!70, line width=0.8pt] ($(sadface.center) + (-0.19, -0.15)$) to[out=45, in=135] ($(sadface.center) + (0.19, -0.15)$);
+% Neutral face
+\node[circle, draw=black!40, fill=black!5, minimum size=0.9cm, line width=1pt] (neutralface) at (20.5, -23.0) {};
+\fill[black!40] ($(neutralface.center) + (-0.15, 0.11)$) circle (0.05);
+\fill[black!40] ($(neutralface.center) + (0.15, 0.11)$) circle (0.05);
+\draw[black!40, line width=0.8pt] ($(neutralface.center) + (-0.19, -0.10)$) -- ($(neutralface.center) + (0.19, -0.10)$);
 
 % Bottom section background
 \begin{scope}[on background layer]
