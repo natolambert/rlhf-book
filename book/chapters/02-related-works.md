@@ -11,8 +11,9 @@ page-title: Key Related Works
 search-title: "Chapter 2: Key Related Works"
 next-chapter: "Training Overview"
 next-url: "03-training-overview"
-lecture-video: "https://youtu.be/o6l6tJQgUg4"
-lecture-label: "Lecture 1: Overview (Chapters 1–3)"
+lectures:
+  - video: "https://youtu.be/o6l6tJQgUg4"
+    label: "Lecture 1: Overview (Chapters 1–3)"
 ---
 
 # Key Related Works

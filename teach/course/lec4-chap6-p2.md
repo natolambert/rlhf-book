@@ -7,7 +7,7 @@ fonts:
 bibliography: refs.bib
 figure_captions: true
 footer:
-  left: "rlhfbook.com"
+  left: "rlhfbook.com/course"
   center: "Lecture 4"
   right: "Lambert {n}/{N}"
 custom_css: |
@@ -147,13 +147,12 @@ The hardest bugs aren't math errors — they're silent implementation mistakes: 
 title: Lecture 4 Outline
 tone: accent
 content: |
-  1. **Policy gradient code** — log-probs, REINFORCE loss, RLOO vs GRPO
-  2. **Loss aggregation** — per-sequence, per-token, fixed-length normalization
-  3. **PPO implementation** — GAE, clipped loss, value function, full loop
-  4. **GRPO implementation** — simplified code, memory comparison
-  5. **Async training & infrastructure** — on/off-policy, distributed systems
-  6. **Practical engineering** — compute costs, debugging, recipes
-  7. **Exploring real training** — codebases, WandB, debugging checklist
+  1. **Policy gradient code** — log-probs, the REINFORCE loss, RLOO baseline
+  2. **PPO implementation** — GAE, clipped loss, value function, minibatches, debugging
+  3. **GRPO & friends** — simplified code, comparison to PPO, GSPO & CISPO
+  4. **Loss aggregation** — per-sequence, per-token, fixed-length normalization trade-offs
+  5. **Training infrastructure** — on/off-policy, synchronous vs async systems
+  6. **Practical considerations** — numerical stability, what to monitor, open codebases
 ```
 
 ---
@@ -178,7 +177,7 @@ The gradient says: for each token, compute the direction that makes it more like
 
 ## Recall: the policy gradient algorithms
 
-All methods optimize the same core objective — they differ in $\Psi_t$ and how updates are bounded:
+All methods minimize the same family of **loss** (note the leading minus signs) — they differ in $\Psi_t$ and how updates are bounded:
 
 <div class="text-sm">
 
@@ -193,7 +192,7 @@ $$\begin{aligned}
 
 Where $\rho_t = \frac{\pi_\theta(a_t \mid s_t)}{\pi_{\theta_\text{old}}(a_t \mid s_t)}$ is the importance-sampling ratio. PPO: per-token advantage $A_t$ via GAE. GRPO: per-token ratio $\rho_{i,t}$ but sequence-level advantage $\hat{A}_i = \frac{R_i - \mu}{\sigma}$.
 
-*(Reductions shown are schematic — aggregation strategy is a key design choice, covered later.)*
+
 
 ---
 
@@ -284,15 +283,15 @@ That's it. Advantages weight the log-probabilities. Positive advantage → incre
 Generate $K$ completions per prompt, compute leave-one-out baselines:
 
 ```python
-# rlhf_reward: (N*K,) flat tensor of rewards
+# rlhf_reward: (B*K,) flat tensor of rewards
 # Prompt-major layout: K sibling completions stay together
-rlhf_reward = rlhf_reward.view(-1, rloo_k)  # (N, K)
+rlhf_reward = rlhf_reward.view(-1, rloo_k)  # (B, K)
 
 # Leave-one-out baseline: avg of other K-1 rewards per prompt
 baseline = (rlhf_reward.sum(dim=1, keepdim=True) - rlhf_reward) / (rloo_k - 1)
 
-advantages = rlhf_reward - baseline        # (N, K)
-advantages = advantages.reshape(-1)        # (N*K,)
+advantages = rlhf_reward - baseline        # (B, K)
+advantages = advantages.reshape(-1)        # (B*K,)
 ```
 
 The rest follows standard policy gradient — multiply advantages by log-probs. 
@@ -309,7 +308,7 @@ Note: the data loader must generate $K$ completions per prompt and group them to
 
 ## Recall: Proximal Policy Optimization (PPO)
 
-The clipped surrogate objective:
+The clipped surrogate loss (minimized):
 
 $$L^{\text{CLIP}}(\theta) = -\mathbb{E}_t\!\left[\min\!\Big(\rho_t A_t,\; \text{clip}(\rho_t, 1-\varepsilon, 1+\varepsilon)\, A_t\Big)\right]$$
 
@@ -651,17 +650,6 @@ For a 7B model with fp16:
 
 ---
 
-## Double regularization
-
-PPO has **both** clipping **and** KL penalty. Not redundant:
-
-- **Clipping** = per-step size constraint (trust region). Prevents catastrophic single updates
-- **KL penalty** = total drift constraint. Prevents cumulative drift from the reference over many steps
-
-In practice, with $K = 1$ and no minibatching, $\pi_\theta = \pi_{\theta_\text{old}}$ so clipping never activates. But with minibatching (common at scale), later minibatches see an updated $\pi_\theta$, so clipping can still trigger even at $K = 1$.
-
----
-
 <!-- layout: section-break -->
 
 ## Group Relative Policy Optimization (GRPO) & Friends
@@ -676,7 +664,7 @@ For each prompt, sample $G$ completions and compute group-normalized advantages:
 
 $$\hat{A}_i = \frac{R_i - \mu_G}{\sigma_G}, \qquad \mu_G = \frac{1}{G}\sum_{j=1}^{G} R_j, \quad \sigma_G = \sqrt{\frac{1}{G}\sum_{j=1}^{G}(R_j - \mu_G)^2}$$
 
-Then apply the same clipped objective as PPO — per-token ratios but sequence-level advantages — plus an optional KL penalty in the loss (more in the reasoning lecture):
+Then apply the same clipped loss as PPO (minimized) — per-token ratios but sequence-level advantages — plus an optional KL penalty (more in the reasoning lecture):
 
 $$L^{\text{GRPO}}(\theta) = -\frac{1}{G}\sum_{i=1}^{G}\frac{1}{|a_i|}\sum_{t=1}^{|a_i|}\min\!\Big(\rho_{i,t} \hat{A}_i,\; \text{clip}(\rho_{i,t}, 1-\varepsilon, 1+\varepsilon)\, \hat{A}_i\Big) + \beta \, \text{KL}(\pi_\theta \| \pi_\text{ref})$$
 
@@ -793,7 +781,7 @@ Same structure, different baseline computation. GRPO adds std normalization; RLO
 
 ---
 
-## Recent simplifications: GSPO & CISPO
+## Recent advancements: GSPO & CISPO
 
 <!-- columns: 50/50 -->
 
@@ -819,13 +807,13 @@ Detach the clipped ratio so gradients flow only through $\log \pi_\theta$. The r
 
 <div class="text-sm">
 
-**GSPO** — sequence-level ratio:
+**GSPO** [@zheng2025gspo] — sequence-level ratio, GRPO style algorithm:
 ```python
 log_ratio = (new_logps - old_logps) * mask
-rho = torch.exp(
-    log_ratio.sum(dim=1) / mask.sum(dim=1)
-)  # (B*G,) — one ratio per sequence
-# Same clipping, but per-sequence
+rho = torch.exp(log_ratio.sum(dim=1) / mask.sum(dim=1))  # (B*G,)
+# Same clipped loss as GRPO, but per-sequence
+rho_clipped = rho.clamp(1 - eps, 1 + eps)
+loss = -torch.min(rho * advantages, rho_clipped * advantages).mean()
 ```
 
 </div>
@@ -834,15 +822,11 @@ rho = torch.exp(
 
 <div class="text-sm">
 
-**CISPO** — stop-gradient on clipped ratio:
+**CISPO** [@minimax2025minimaxm1scalingtesttimecompute] — stop-gradient on clipped ratio, REINFORCE style algorithm:
 ```python
 rho = torch.exp(new_logps - old_logps)
-rho_clipped = torch.clamp(
-    rho, 1 - eps, 1 + eps
-).detach()  # no grad through ratio
-loss = -(rho_clipped * advantages.unsqueeze(1)
-         * new_logps * mask).sum()
-       / mask.sum()
+rho_clipped = torch.clamp(rho, 1 - eps, 1 + eps).detach()  # no grad through ratio
+loss = -(rho_clipped * advantages.unsqueeze(1) * new_logps * mask).sum() / mask.sum()
 ```
 
 </div>
@@ -893,6 +877,14 @@ A process management library (e.g., Ray) coordinates data flow between them. Mod
 |||
 
 ![Distributed RL system with prompt and result queues between learner and actor GPUs.](assets/distributed-rl.png)
+
+---
+
+## More Resources on RL Implementations
+
+- A [video](https://www.youtube.com/watch?v=amrJDwMUFNs) I recorded looking at codebases implementing GRPO, DAPO, Dr. GRPO, and other papers.
+- ~24min in, [talk](https://youtu.be/uaZ3yRdYg8A?si=iSGw56BFNQMWNjtr&t=1487) on scaling RL for Olmo 3.
+- Finbarr Timber's [blog post](https://finbarr.ca/making-rl-fast/) on making RL fast.
 
 ---
 

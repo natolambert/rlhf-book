@@ -140,22 +140,34 @@ $endif$
 $table-of-contents$
 </nav>
 $endif$
-$if(lecture-video)$
-<li class="toc-lecture-link" id="toc-lecture-link" hidden>
-  <a href="$lecture-video$" target="_blank" rel="noopener">
+$for(lectures)$
+$if(lectures.video)$
+<li class="toc-lecture-link toc-lecture-link-item" hidden>
+  <a href="$lectures.video$" target="_blank" rel="noopener">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -2px;"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-    $lecture-label$
+    $lectures.label$
   </a>
 </li>
+$else$
+<li class="toc-lecture-link toc-lecture-link-item" hidden>
+  <span style="color: #aaa;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -2px;"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+    $lectures.label$
+  </span>
+</li>
+$endif$
+$endfor$
+$if(lectures)$
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     var toc = document.getElementById('TOC');
-    var li = document.getElementById('toc-lecture-link');
-    if (!toc || !li) return;
+    if (!toc) return;
     var topUl = toc.querySelector('ul');
     if (!topUl) return;
-    topUl.appendChild(li);
-    li.hidden = false;
+    document.querySelectorAll('.toc-lecture-link-item').forEach(function(li) {
+      topUl.appendChild(li);
+      li.hidden = false;
+    });
   });
 </script>
 $endif$
