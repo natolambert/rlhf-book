@@ -9,7 +9,7 @@ prev-chapter: "Regularization"
 prev-url: "15-regularization"
 page-title: Evaluation
 search-title: "Chapter 16: Evaluation"
-next-chapter: "Product & Character"
+next-chapter: "Crafting Model Character and Products"
 next-url: "17-product"
 ---
 
@@ -36,7 +36,7 @@ Throughout this chapter we will include details that map to how these evaluation
 
 ## Prompting Formatting: From Few-shot to Zero-shot to CoT
 
-**Prompting** language models is primarily a verb, but it is also considered a craft or art that one can practice and/or train in general [@schulhoff2024prompt].
+**Prompting** language models is a simple action in itself, and a fairly natural one, but it is also considered a craft or art that one can practice and refine [@schulhoff2024prompt].
 A prompt is the way of structuring information and context for a language model. 
 For common interactions, the prompt is relatively basic.
 For advanced scenarios, a well-crafted prompt will mean success or failure on a specific one-off use-case.
@@ -45,6 +45,9 @@ When it comes to evaluation, prompting techniques can have a substantial impact 
 Some prompting techniques -- e.g. formatting discussed below -- can make a model's performance drop from 60% to near 0.
 Similarly, a change of prompt can help models learn better during training. 
 Colloquially, prompting a model well can give the subjective experience of using future models, unlocking performance outside of normal use.
+
+The gains from prompting are generally smaller than core areas like improving the data or training algorithms, but they can be substantial in the final product.
+The bigger takeaway is that when training a strong, leading model, it is easier to break it and cause performance to plummet than it is to find a little bit more performance.
 
 Prompting well with modern language models can involve preparing an entire report for the model to respond to (often with 1000s of tokens of generated text). 
 This behavior is downstream of many changes in how language model performance has been measured and understood.
@@ -119,7 +122,7 @@ Log-likelihood scoring has two potential implementations -- first, one could loo
 Both of these are permissible metrics, but predicting the letter of the answer is far simpler than a complete, potentially multi-token answer probability.
 Log-likelihood scoring is more common in pretraining evaluation, where models lack the question-and-answer format needed for exact match, while exact match is standard in post-training [@teamolmo2025olmo3].
 
-Exact match has different problems, such as requiring rigid format suffixes (e.g., `The answer is:`) or detecting answers anywhere in generated text (e.g., looking for `(C)` or the answer string itself).
+Exact match has different problems, such as requiring rigid format suffixes (e.g., `The answer is:`) or using regular expressions to detect answers anywhere in generated text (e.g., looking for `(C)` or the answer string itself).
 If the evaluation format does not match how the model generates, scores can plummet.
 Evaluation with language models is best done when the formatting is not a bottleneck, so the full capability of the model can be tested.
 Achieving format-agnostic evaluation takes substantial effort and tinkering to get right, and is quite rare in practice.
@@ -231,7 +234,7 @@ As each benchmark approaches 100%, a model's progress begins to slow as there ar
 
 ## How Labs Actually use Evaluations Internally to Improve Models
 
-Evaluation of frontier language models is every bit as much an art today as it is a science, prescribing exactly how different groups use evaluations is impossible.
+Evaluation of frontier language models is every bit as much an art today as it is a science; prescribing exactly how different groups use evaluations to understand cutting-edge language models would be a textbook of its own.
 
 Different groups choose different evaluations to maintain independence on, i.e. making them a true test set, but no one discloses which ones they choose. 
 For example, popular reasoning evaluations MATH and GSM8k both have training sets with prompts that can easily be used to improve performance. 
@@ -263,7 +266,7 @@ It is accepted that small tricks are used by frontier labs to boost performance 
 ## Contamination
 
 A major issue with current language model practices (i.e. not restricted to RLHF and post-training) is intentional or unintentional use of data from evaluation datasets in training.
-This is called *dataset contamination* and respectively the practices to avoid it are *decontamination*. 
+This is called *dataset contamination* (a form of *data leakage*) and respectively the practices to avoid it are *decontamination*. 
 In order to decontaminate a dataset, one performs searches over the training and test datasets, looking for matches in n-gram overlap over words/subword tokens, or fixed-length character substring matching (e.g., 50 characters) [@singh2024evaluation].
 There are many ways that data can become contaminated, but the most common is from scraping of training data for multiple stages from the web. 
 Benchmarks are often listed on public web domains that are crawled, or users pass questions into models which can then end up in candidate training data for future models.
@@ -276,7 +279,7 @@ In other cases models are found to have been trained on data very close to the b
 This sort of base model contamination, where it cannot be proven exactly why the models behave certain ways, has been a substantial confounding variable on many early RLVR works on top of Qwen 2.5 and Qwen 3 base models [@shao2025spurious] [@wu2025reasoning].
 
 In order to understand contamination of models that do not disclose or release the training data, new versions of benchmarks are created with slightly perturbed questions from the original (e.g., for MATH [@huang2025math]), in order to see which models were trained to match the original format or questions.
-High variance on these perturbation benchmarks is not confirmation of contamination, which is difficult to prove, but could indicate models that were trained with a specific format in mind that may not translate to real world performance.
+High variance on these perturbation benchmarks is not confirmation of contamination, which is difficult to prove. Rather, it could indicate models that were trained with a specific format in mind that may not translate to real world performance.
 
 
 ## Tooling
