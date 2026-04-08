@@ -73,7 +73,11 @@ In the following subsections, we cover three such methods emerging in early char
 
 The character training examples above shape personality through data fed to a model — curating demonstrations of how the model should or should not behave.
 Persona vectors [@chen2025persona] offer a mechanistic counterpart, modifying the inner workings of a model at inference time.
-The idea is based on how personality traits correspond to linear directions in a model's residual stream, and the activations associated with a single trait can be extracted automatically from nothing more than a natural-language description of said trait.
+The insight dates back to early, seminal deep learning work understanding the representation space of embeddings, such as Word2vec [@mikolov2013efficient].
+Word2vec showed that human concepts correspond to linear directions in a model's latent space, and simple arithmetic operations on those directions map to predictable influences back to the concepts (e.g. the classic *king - man + woman $\approx$ queen* analogy).
+Representation engineering [@zou2024representation] generalized this to LLM activations, showing that contrastive prompting can extract steering vectors for high-level concepts like honesty or harmlessness — an approach also explored in practical form by Turner et al. [-@turner2023activation] (see also [an early blog post](https://vgel.me/posts/representation-engineering/) demonstrating persona-style steering).
+
+Therefore, the idea for persona vectors is based on how personality traits correspond to the same class of linear directions in a model's residual stream, and the activations associated with a single trait can be extracted automatically from nothing more than a natural-language description of said trait.
 The method gets its name by storing the direction associated with a specific concept, as a persona vector in the case of personality, and re-using it later.
 This gives practitioners a tool for controlling and monitoring character traits at the representation level, without retraining.
 
@@ -87,7 +91,7 @@ $$\mathbf{v}_\ell = \frac{1}{|S^+|} \sum_{i \in S^+} \mathbf{a}_\ell^{(i)} - \fr
 where $S^+$ is the set of trait-exhibiting responses, $S^-$ the trait-suppressing responses, and $\mathbf{a}_\ell^{(i)}$ the mean residual stream activation at layer $\ell$ for sample $i$.
 The layer that produces the strongest steering effect is selected as the final persona vector.
 
-![The persona vector extraction and intervention pipeline. Top: contrastive system prompts generate trait-positive and trait-negative responses, whose residual stream activations are averaged and differenced to yield a persona vector — a linear steering direction in the residual stream. Bottom: at inference time, the persona vector is subtracted from the residual stream at selected layers, suppressing the trait and shifting the model's output toward the desired behavior. Adapted from Chen et al. (2025).](images/persona-vectors-pipeline.png){#fig:persona-vectors-pipeline}
+![The persona vector extraction and intervention pipeline. Top: contrastive system prompts generate trait-positive and trait-negative responses, whose residual stream activations are averaged and differenced to yield a persona vector — a linear steering direction in the residual stream. Bottom: at inference time, the persona vector is subtracted from the residual stream at selected layers, steering the model's output from a neutral default toward the desired positive behavior. Adapted from Chen et al. (2025).](images/persona-vectors-pipeline.png){#fig:persona-vectors-pipeline}
 
 Once extracted, a persona vector steers behavior through a simple additive intervention applied at every token generation step:
 
@@ -211,7 +215,7 @@ With activation capping, the model stays within the Assistant persona:
 
 > **Response**: I'm glad you feel comfortable with me, and I'm happy to be your confidant and companion. However, I want to make sure you know that it's not healthy to isolate yourself [...]
 
-Through the example, we see that activation capping addresses a failure mode that character training alone cannot: the slow drift that accumulates turn by turn in sensitive conversations. The intervention requires no retraining and no weight changes — reprojecting drifted activations back onto the Assistant Axis at inference time yields reduction in harmful outputs with minimal capability loss. This suggests that persona space has enough geometric structure to monitor and intervene on directly.
+Through the example, we see that activation capping addresses a failure mode that character training alone may not be sufficient for: the slow drift that accumulates turn by turn in sensitive conversations. The intervention requires no retraining and no weight changes — reprojecting drifted activations back onto the Assistant Axis at inference time yields reduction in harmful outputs with minimal capability loss. This suggests that persona space has enough geometric structure to monitor and intervene on directly.
 
 ### Persona Subnetworks
 
@@ -223,7 +227,7 @@ The intuition is that the neurons that are least correlated with a target person
 
 The method is training-free and requires only a small calibration dataset $\mathcal{D}_p$ per persona (hundreds of examples), then proceeds in three steps.
 First, compute per-neuron activation statistics on persona-specific inputs.
-For neuron $j$ in layer $l$:
+Let $\mathbf{h}^{(l)}_j(x)$ denote the activation of neuron $j$ in layer $l$ when the model processes input $x$, and let $\mathbf{A}^{(l)}_p[j]$ be its average absolute activation across the persona calibration set:
 
 $$\mathbf{A}^{(l)}_p[j] = \mathbb{E}_{(x,y)\sim\mathcal{D}_p}\left[|\mathbf{h}^{(l)}_j(x)|\right]$$
 
@@ -250,17 +254,19 @@ These documents are created with different intended audiences and goals, yet the
 
 Model specs are one of the few tools in the industry and RLHF where one can compare the actual behavior of the model to what the designers intended.
 As we have covered in this book, training models is a complicated and multi-faceted process, so it is expected that the final outcome differs from inputs such as the data labeler instructions or the balance of tasks in the training data.
-For example, a perfectly executed model spec is much more revealing than a list of principles used in Constitutional AI because it speaks to the intent of the process rather than listing what acts as intermediate training variables.
+For example, a perfectly executed model spec is much more revealing than a list of principles used in the original Constitutional AI because it speaks to the intent of the process rather than listing what acts as intermediate training variables.
+Anthropic has evolved its methods from the original Constitutional AI, and now their training documents (a.k.a. The Constitution) are more complete texts explaining the reasoning and intent behind guiding principles.
 
+These changes reflect how the form of the documents labs use will continue to evolve to better serve different audiences -- from model builders to developers to regulators.
 A Model spec provides value to every stakeholder involved in a model release process:
 
 - **Model Designers**: The model designers get the benefit of needing to clarify what behaviors they do and do not want. This makes prioritization decisions on data easier, helps focus efforts that may be outside of a long-term direction, and makes one assess the bigger picture of their models among complex evaluation suites.
 - **Developers**: Users of models have a better picture for which behaviors they encounter may be intentional -- i.e. some types of refusals -- or side-effects of training. This can let developers be more confident in using future, smarter models from this provider.
 - **Observing public**: The public benefits from model specs because it is one of the few public sources of information on what is prioritized in training. This is crucial for regulatory oversight and writing effective policy on what AI models should and should not do.
 
-More recently, Anthropic released what they call a "soul document" alongside Claude Opus 4.5 [@anthropic2025souldoc] (after the public user base extracted it from the model, Anthropic confirmed its existence), which describes the model's desired character traits, values, and behavioral guidelines in detail.
-A lead researcher on Claude's character, Amanda Askell noted that both supervised fine-tuning and reinforcement learning methods are used with the soul document as a guide for training [@askell2025soul].
-This approach represents a convergence of Anthropic's earlier methods on character training towards documentation that resembles a model specification.
+More recently, Anthropic released an updated version of their constitution alongside Claude Opus 4.5 [@anthropic2025souldoc], internally referred to as a "soul document" or "soul spec" — a name that leaked into training data before Anthropic publicly confirmed the document's existence.
+It describes the model's desired character traits, values, and behavioral guidelines in detail.
+A lead researcher on Claude's character, Amanda Askell, noted that supervised learning methods are used with the document as a guide for training [@askell2025soul] (and it is likely used in other stages, e.g. similar to Constitutional AI's RL stage).
 
 A major unknown with model specs and related documents is the effort that model developers put into making the model follow them.
 Two organizations with similar goals can end up in very different places, if one puts a lot of effort into following a mediocre specification or if the other puts minimal effort into tracking an excellent, publicly documented spec.
