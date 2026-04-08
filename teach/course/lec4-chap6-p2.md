@@ -308,9 +308,9 @@ Note: the data loader must generate $K$ completions per prompt and group them to
 
 ## Recall: Proximal Policy Optimization (PPO)
 
-The clipped surrogate objective (maximized):
+The clipped surrogate loss (minimized):
 
-$$L^{\text{CLIP}}(\theta) = \mathbb{E}_t\!\left[\min\!\Big(\rho_t A_t,\; \text{clip}(\rho_t, 1-\varepsilon, 1+\varepsilon)\, A_t\Big)\right]$$
+$$L^{\text{CLIP}}(\theta) = -\mathbb{E}_t\!\left[\min\!\Big(\rho_t A_t,\; \text{clip}(\rho_t, 1-\varepsilon, 1+\varepsilon)\, A_t\Big)\right]$$
 
 where $\rho_t = \frac{\pi_\theta(a_t \mid s_t)}{\pi_{\theta_\text{old}}(a_t \mid s_t)}$ is the importance-sampling ratio.
 
