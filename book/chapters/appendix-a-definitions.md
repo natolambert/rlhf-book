@@ -5,7 +5,7 @@
   Full license: https://github.com/natolambert/rlhf-book/blob/main/LICENSE-CHAPTERS
 -->
 ---
-prev-chapter: "Product & Character"
+prev-chapter: "Crafting Model Character and Products"
 prev-url: "17-product"
 page-title: "Appendix A: Definitions"
 search-title: "Appendix A: Definitions"

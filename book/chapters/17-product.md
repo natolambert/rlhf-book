@@ -7,13 +7,13 @@
 ---
 prev-chapter: "Evaluation"
 prev-url: "16-evaluation"
-page-title: Product & Character
-search-title: "Chapter 17: Product & Character"
+page-title: Crafting Model Character and Products
+search-title: "Chapter 17: Crafting Model Character and Products"
 next-chapter: "Definitions"
 next-url: "appendix-a-definitions"
 ---
 
-# Product, UX, and Model Character
+# Crafting Model Character and Products
 
 Frontiers in RLHF and post-training show how these techniques are used within companies to make leading products.
 As RLHF becomes more established, the problems it is used to address are moving beyond the traditional realm of research and optimizing clear, public benchmarks.
@@ -25,7 +25,8 @@ The default way for users to change a model's behavior is to write a prompt desc
 Character training is the subset of post-training designed around crafting traits within a model to tweak the personality, values, and/or manner of its response over the content [@maiya2025open]. 
 Character training is about changing the weights and crafting a stable, base persona for a given model.
 Character training, while being important to the user experience within language model chatbots, is largely unexplored in the public literature.
-Character training with fine-tuning on personality-specific data is shown to be more robust than prompting [@maiya2025open] (and this training also outperforms a newer method for manipulating models without taking gradient updates or passing in input context, Activation Steering [@turner2023activation], which has been applied to character traits specifically via persona vectors [@chen2025persona], covered later in this chapter).
+Character training with fine-tuning on personality-specific data is shown to be more robust than prompting [@maiya2025open].
+Fine-tuning also outperforms Activation Steering [@turner2023activation], a method for manipulating models without taking gradient updates or passing in input context, which has been applied to character traits specifically via persona vectors [@chen2025persona], covered later in this chapter.
 
 As of writing this book, we don't know the core trade-offs of what character training does to a model, how exactly to study it, or how much it can improve user preferences on metrics such as Arena (formerly ChatBotArena, a popular platform where users perform blind tests on LLM abilities), and we should, in order to know how AI companies change the models to maximize engagement and other user-facing metrics.
 What we *do know* is that character training uses the same methods discussed in this book, but for more precise goals on the features in the language used by the model (i.e. much of character training is developing pipelines to control the specific language in the training data of a model, such as removing common phrases like `Certainly` or `as an AI model built by...`).
@@ -47,7 +48,8 @@ One of the few public discussions of character training came from Amanda Askell 
 
 In summary, Anthropic uses the same techniques they use for Constitutional AI and general post-training for capabilities to train these models' characters.
 
-Character training being a focus of developments is the strongest endorsement that RLHF and related approaches have matured from a philosophically grounded research area, colloquially grouped into "alignment", into a practical engineering discipline spanning safety, values, and personality -- as is the focus of this book.
+Character training being a focus of developments is the strongest endorsement that RLHF and related post-training approaches have matured.
+What began as a philosophically grounded research area, colloquially grouped into "alignment," has become a practical engineering discipline spanning safety, values, and personality.
 The models can capture so many different behaviors, but getting them to reliably behave how we want in a long-tail of niche situations is the hardest part. 
 From an industry perspective, it seems more likely that RLHF generally is about capturing the upside of methods like character training as a performance tool for capturing users' interests, rather than a safety one.
 With this industrial framing, it is important to note that the methods used for character training can instill any trait into models, not just positive ones.
@@ -271,10 +273,10 @@ A lead researcher on Claude's character, Amanda Askell, noted that supervised le
 A major unknown with model specs and related documents is the effort that model developers put into making the model follow them.
 Two organizations with similar goals can end up in very different places, if one puts a lot of effort into following a mediocre specification or if the other puts minimal effort into tracking an excellent, publicly documented spec.
 
-## Product Cycles, UX, and What's Next for RLHF
+## Product Cycles and What's Next for RLHF
 
 As powerful AI models become closer to products than singular artifacts of an experimental machine learning process, RLHF has become an interface point for the relationship between models and product.
-Much more goes into making a model easy to use than just having the final model weights be correct -- fast inference, suitable tools to use (e.g. search or code execution), a reliable and easy to understand user interface (UX), and more.
+Much more goes into making a model easy to use than just having the final model weights be correct -- fast inference, suitable tools to use (e.g. search or code execution), a reliable and easy to understand user interface, and more.
 RLHF research has become the interface where a lot of this is tested because of the framing of RLHF as a way to understand the user's preferences to products in real time and because it is the final training stage before release.
 The quickest way to add a new feature to a model is to try and incorporate it at post-training where training is faster and cheaper.
 This cycle has been seen with image understanding, tool use, better behavior, and more.

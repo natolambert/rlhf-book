@@ -321,7 +321,7 @@ Fundamental problems and discussions for implementing and evaluating RLHF.
 14. Over-optimization: Qualitative observations of why RLHF goes wrong and why over-optimization is inevitable with a soft optimization target in reward models.
 15. Regularization: Tools to constrain these optimization tools to effective regions of the parameter space.
 16. Evaluation: The ever evolving role of evaluation (and prompting) in language models.
-17. Product, UX, Character: How RLHF is shifting in its applicability as major AI laboratories use it to subtly match their models to their products.
+17. Crafting Model Character and Products: How RLHF is shifting in its applicability as major AI laboratories use it to subtly match their models to their products.
 
 #### Appendices
 

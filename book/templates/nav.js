@@ -68,7 +68,7 @@ class NavigationDropdown extends HTMLElement {
           <li><a href="https://rlhfbook.com/c/14-over-optimization">Over-optimization</a></li>
           <li><a href="https://rlhfbook.com/c/15-regularization">Regularization</a></li>
           <li><a href="https://rlhfbook.com/c/16-evaluation">Evaluation</a></li>
-          <li><a href="https://rlhfbook.com/c/17-product">Product & Character</a></li>
+          <li><a href="https://rlhfbook.com/c/17-product">Crafting Model Character and Products</a></li>
         </ol>
       </div>
 
