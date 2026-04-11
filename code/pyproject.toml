@@ -21,15 +21,14 @@ dependencies = [
 
     # Policy gradients (procedural datasets)
     "reasoning-gym>=0.1.24",
-
-    # Flash attention - default for x86_64, provides major speedup
-    # Excluded on aarch64 (DGX Spark) where SDPA is used instead
-    "flash-attn>=2.5.0; platform_machine == 'x86_64'",
 ]
 
 [project.optional-dependencies]
-# For DGX Spark (aarch64 / Blackwell) - no flash-attn, uses PyTorch SDPA
-dgx-spark = []
+# Flash attention - optional speedup for x86_64 NVIDIA GPUs
+# The code automatically falls back to PyTorch SDPA if not installed
+flash = [
+    "flash-attn>=2.5.0; platform_machine == 'x86_64'",
+]
 
 # Development dependencies
 dev = [
@@ -53,6 +52,11 @@ include = ["policy_gradients*", "reward_models*", "direct_alignment*"]
 
 [tool.uv]
 package = true
+
+# flash-attn needs torch at build time but doesn't declare it
+# This injects the project's torch into flash-attn's build environment
+[tool.uv.extra-build-dependencies]
+flash-attn = [{ requirement = "torch", match-runtime = true }]
 
 # PyTorch CUDA wheels - only use cu121 on x86_64 Linux
 # aarch64 (DGX Spark) uses system PyTorch or cu130 wheels

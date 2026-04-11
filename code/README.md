@@ -33,27 +33,24 @@ demonstrating the concepts from Chapter 5 (Reward Models).
 
 ## Installation
 
-**Requires Python 3.12+**
+**Requires Python 3.12+** and [uv](https://docs.astral.sh/uv/getting-started/installation/).
 
 ```bash
 cd code/
 uv sync
 ```
 
-### Platform-specific notes
-
-**Standard x86_64 systems** (recommended): Flash Attention is installed by default for
-significant speedups during training.
-
-**DGX Spark / aarch64**: Flash Attention is not available on ARM64/Blackwell. The code
-automatically falls back to PyTorch SDPA, which is actually faster on these systems due
-to native cuDNN optimizations.
+By default, [Flash Attention](https://github.com/Dao-AILab/flash-attention) is turned off
+to support a broad range of hardware, but for speedups you should consider installing it:
 
 ```bash
-# On DGX Spark, just run:
-uv sync
-# Flash-attn will be skipped automatically on aarch64
+uv sync --extra flash
 ```
+
+> **Note:** Flash Attention requires a source build, which needs a working CUDA toolkit
+> and can take several minutes. If the build fails (common with newer CUDA versions or
+> non-standard setups), just use the base install — the code automatically falls back
+> to PyTorch SDPA, and all examples will work correctly without it.
 
 ## Policy Gradient Training
 
