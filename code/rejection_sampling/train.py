@@ -103,7 +103,11 @@ def sft(
 ) -> None:
     """Full-parameter causal-LM SFT on the selected rejection-sampling pairs."""
     dataset = SFTDataset(selected_pairs, tokenizer, cfg.max_seq_length)
-    pad_id = tokenizer.pad_token_id or tokenizer.eos_token_id
+    pad_id = (
+        tokenizer.pad_token_id
+        if tokenizer.pad_token_id is not None
+        else tokenizer.eos_token_id
+    )
     dataloader = DataLoader(
         dataset=dataset,
         batch_size=cfg.train_batch_size,
@@ -205,7 +209,11 @@ def evaluate(cfg: Config, model, tokenizer, console: Console) -> float:
     ]
 
     model.eval()
-    pad_id = tokenizer.pad_token_id or tokenizer.eos_token_id
+    pad_id = (
+        tokenizer.pad_token_id
+        if tokenizer.pad_token_id is not None
+        else tokenizer.eos_token_id
+    )
 
     correct = 0
     total = 0

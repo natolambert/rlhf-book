@@ -165,7 +165,11 @@ def score_rollouts(
             flat.append((i, j, ids))
     flat.sort(key=lambda item: len(item[2]))
 
-    pad_id = rm_tokenizer.pad_token_id or rm_tokenizer.eos_token_id
+    pad_id = (
+        rm_tokenizer.pad_token_id
+        if rm_tokenizer.pad_token_id is not None
+        else rm_tokenizer.eos_token_id
+    )
     rewards: list[list[float]] = [
         [0.0] * cfg.num_completions_per_prompt for _ in prompts
     ]
