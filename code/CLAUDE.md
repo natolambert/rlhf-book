@@ -51,9 +51,9 @@ uv run python -m direct_alignment.train --config direct_alignment/configs/dpo.ya
   - Simplifies code and removes bitsandbytes/PEFT dependencies
   - May need to adjust learning rate (try 1e-5 or 5e-6)
 - [x] Generate wandb runs for all algorithms:
-  - [x] ORM (full fine-tune): https://wandb.ai/natolambert/rlhf-book/runs/xm8mlcpl
-  - [x] Preference RM (Bradley-Terry): https://wandb.ai/natolambert/rlhf-book/runs/6sninll5
-  - [x] PRM (Process RM): https://wandb.ai/natolambert/rlhf-book/runs/abhkbn4q
+  - [x] ORM (full fine-tune): https://wandb.ai/natolambert/rlhf-book/runs/f3eo2zr4
+  - [x] Preference RM (Bradley-Terry): https://wandb.ai/natolambert/rlhf-book/runs/hlkk5h74
+  - [x] PRM (Process RM): https://wandb.ai/natolambert/rlhf-book/runs/mtcnmvqi
   - [x] REINFORCE: https://wandb.ai/natolambert/rlhf-book/runs/0uqbq4oz
   - [x] GRPO: https://wandb.ai/natolambert/rlhf-book/runs/vjp7lgdi
   - [x] RLOO: https://wandb.ai/natolambert/rlhf-book/runs/07xeasn8
