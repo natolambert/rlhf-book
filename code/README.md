@@ -15,7 +15,7 @@ This code is built on the excellent work of community contributors:
 **License**: Apache 2.0
 
 A clean, educational implementation of policy gradient methods for reinforcement learning.
-Implements REINFORCE, RLOO, PPO, GRPO, Dr. GRPO, GSPO, and CISPO with mathematical formulations
+Implements REINFORCE, RLOO, PPO, GRPO, Dr. GRPO, GSPO, CISPO, and SAPO with mathematical formulations
 matching the book's Chapter 6 (Policy Gradient Methods).
 
 ### Reward Models (ORM/PRM)
@@ -86,6 +86,7 @@ uv run python -m policy_gradients.train --config policy_gradients/configs/rloo.y
 | Dr. GRPO | `drgrpo.yaml` | Dr. GRPO (Liu et al., 2025) | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/a1swuynq) |
 | GSPO | `gspo.yaml` | Group-Sequence Policy Optimization (Zheng et al., 2025) | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/10sxytli) |
 | CISPO | `cispo.yaml` | Clipped Importance Sampling PO (MiniMax, 2025) | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/6dg0m06n) |
+| SAPO | `sapo.yaml` | Soft Adaptive Policy Optimization (Qwen Team, 2025) | TODO @casinca: need to see what @natolambert wants to do |
 
 ## Reward Model Training
 
