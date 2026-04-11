@@ -50,8 +50,9 @@ DEFAULT_DATASET = "gsm8k"
 DEFAULT_SAMPLES = 2000
 DEFAULT_BATCH_SIZE = 2
 DEFAULT_GRAD_ACCUM = 16
-DEFAULT_EPOCHS = 1
+DEFAULT_EPOCHS = 3
 DEFAULT_LR = 5e-5
+DEFAULT_WARMUP_RATIO = 0.1
 DEFAULT_SEED = 7
 
 
@@ -213,6 +214,7 @@ def train_orm(
     grad_accum_steps: int = DEFAULT_GRAD_ACCUM,
     epochs: int = DEFAULT_EPOCHS,
     lr: float = DEFAULT_LR,
+    warmup_ratio: float = DEFAULT_WARMUP_RATIO,
     seed: int = DEFAULT_SEED,
     use_wandb: bool = True,
 ) -> OutcomeRewardModel:
@@ -225,6 +227,7 @@ def train_orm(
         grad_accum_steps: Gradient accumulation steps
         epochs: Number of training epochs
         lr: Learning rate
+        warmup_ratio: Fraction of total steps for linear LR warmup
         seed: Random seed
         use_wandb: Whether to log to wandb
 
@@ -245,6 +248,7 @@ def train_orm(
             "grad_accum_steps": grad_accum_steps,
             "epochs": epochs,
             "lr": lr,
+            "warmup_ratio": warmup_ratio,
         },
         use_wandb=use_wandb,
     )
@@ -270,8 +274,13 @@ def train_orm(
     model = OutcomeRewardModel(model_id=model_id).to(device)
     print(f"Trainable parameters: {model.count_trainable_params() / 1e6:.2f}M")
 
-    # Optimizer
+    # Optimizer and LR scheduler with linear warmup
     optimizer = create_optimizer(model, lr)
+    total_optimizer_steps = (len(loader) // grad_accum_steps) * epochs
+    warmup_steps = int(total_optimizer_steps * warmup_ratio)
+    scheduler = torch.optim.lr_scheduler.LinearLR(
+        optimizer, start_factor=0.1, total_iters=warmup_steps
+    ) if warmup_steps > 0 else None
 
     # Mixed precision
     autocast_enabled = torch.cuda.is_available()
@@ -315,6 +324,8 @@ def train_orm(
 
             if (step + 1) % grad_accum_steps == 0 or (step + 1) == len(loader):
                 optimizer.step()
+                if scheduler is not None:
+                    scheduler.step()
                 optimizer.zero_grad()
                 global_step += 1
 
@@ -424,6 +435,7 @@ def main():
     parser.add_argument("--grad-accum", type=int, default=DEFAULT_GRAD_ACCUM, help="Gradient accumulation steps")
     parser.add_argument("--epochs", type=int, default=DEFAULT_EPOCHS, help="Training epochs")
     parser.add_argument("--lr", type=float, default=DEFAULT_LR, help="Learning rate")
+    parser.add_argument("--warmup-ratio", type=float, default=DEFAULT_WARMUP_RATIO, help="Fraction of steps for LR warmup")
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED, help="Random seed")
     parser.add_argument("--skip-demo", action="store_true", help="Skip scoring demo after training")
     parser.add_argument("--no-wandb", action="store_true", help="Disable wandb logging")
@@ -436,6 +448,7 @@ def main():
         grad_accum_steps=args.grad_accum,
         epochs=args.epochs,
         lr=args.lr,
+        warmup_ratio=args.warmup_ratio,
         seed=args.seed,
         use_wandb=not args.no_wandb,
     )
