@@ -1,7 +1,4 @@
-# Configuration for Rejection Sampling
-#
-# Mirrors the structure of policy_gradients/config.py: a single Pydantic
-# `Config` loaded from YAML via `load_config()`.
+# Configuration for rejection sampling. Loaded from YAML via `load_config()`.
 
 from typing import Literal
 
@@ -10,45 +7,31 @@ from pydantic import BaseModel
 
 
 class DatasetConfig(BaseModel):
-    """GSM8k dataset slice used for both rollouts and evaluation."""
-
     name: str = "openai/gsm8k"
     subset: str = "main"
     train_split: str = "train"
     test_split: str = "test"
-    # None means "use the full split".
-    max_train_samples: int | None = 1000
+    max_train_samples: int | None = 1000  # None = full split
     max_test_samples: int | None = 200
 
 
 class SelectionConfig(BaseModel):
-    """Which rejection-sampling selection rule to apply in Stage 3."""
-
     strategy: Literal[
         "top_per_prompt",
         "top_k_overall",
         "random_per_prompt",
         "random_k_overall",
     ]
-    # Only consulted when strategy ∈ {"top_k_overall", "random_k_overall"}.
-    top_k: int = 500
+    top_k: int = 500  # only used by the *_k_overall strategies
 
 
 class Config(BaseModel):
-    """Full rejection-sampling configuration.
-
-    The three selection-strategy configs are expected to share identical
-    generation/scoring parameters so that they all hit the same rollout cache.
-    """
-
-    # Data
     data: DatasetConfig
 
-    # Models
     model_name: str = "Qwen/Qwen3-1.7B"
     reward_model_name: str = "nvidia/AceMath-7B-RM"
 
-    # Generation (Stage 1)
+    # Stage 1 — generation
     temperature: float = 0.8
     top_p: float = 0.95
     top_k: int = 20
@@ -57,13 +40,13 @@ class Config(BaseModel):
     num_completions_per_prompt: int = 8
     rollout_batch_size: int = 8
 
-    # Scoring (Stage 2)
+    # Stage 2 — scoring
     score_batch_size: int = 2
 
-    # Selection (Stage 3a)
+    # Stage 3a — selection
     selection: SelectionConfig
 
-    # SFT (Stage 3b)
+    # Stage 3b — SFT
     lr: float = 5e-6
     num_epochs: int = 2
     train_batch_size: int = 1
@@ -71,12 +54,11 @@ class Config(BaseModel):
     max_norm: float = 1.0
     max_seq_length: int = 1024
 
-    # Eval (Stage 3c)
+    # Stage 3c — eval
     eval_temperature: float = 0.0
     eval_max_new_tokens: int = 512
     eval_batch_size: int = 8
 
-    # Misc
     seed: int = 42
     model_device_id: int = 0
     reward_model_device_id: int = 0
@@ -87,7 +69,5 @@ class Config(BaseModel):
 
 
 def load_config(config_path: str) -> Config:
-    """Load a rejection-sampling configuration from a YAML file."""
     with open(config_path) as f:
-        raw = yaml.safe_load(f)
-    return Config(**raw)
+        return Config(**yaml.safe_load(f))

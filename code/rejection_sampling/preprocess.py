@@ -1,8 +1,5 @@
 # Stage 1 (rollouts) + Stage 2 (reward-model scoring) for rejection sampling.
-#
-# Runnable as a module (``python -m rejection_sampling.preprocess --config ...``)
-# or as a library (``preprocess.run(cfg)`` — which is what train.py calls on a
-# cache miss).
+# Can be run standalone or called from train.py on a cache miss.
 
 import argparse
 import json
@@ -18,14 +15,7 @@ from transformers import (
     GenerationConfig,
 )
 
-# We deliberately import these helpers verbatim from policy_gradients — the
-# attention-implementation selection, seeding, and policy-model loader are
-# identical to what we need for Stage 1.
-from policy_gradients.train import (
-    get_attn_implementation,
-    load_model,
-    seed_everything,
-)
+from policy_gradients.train import get_attn_implementation, load_model, seed_everything
 from policy_gradients.utils import progress_bar
 
 from .config import Config, load_config
@@ -42,7 +32,6 @@ Prompt = dict  # {"question": str, "gold": str}
 
 
 def load_gsm8k_prompts(cfg: Config) -> list[Prompt]:
-    """Load and truncate the GSM8k train split used for rollouts."""
     ds = load_dataset(cfg.data.name, cfg.data.subset, split=cfg.data.train_split)
     if cfg.data.max_train_samples is not None:
         ds = ds.select(range(min(cfg.data.max_train_samples, len(ds))))
@@ -53,21 +42,12 @@ def load_gsm8k_prompts(cfg: Config) -> list[Prompt]:
 
 
 def _build_generation_chat(question: str, tokenizer) -> str:
-    """Apply Qwen3's chat template with the AceMath system prompt.
-
-    AceMath-7B-RM expects completions that follow the
-    "reason step by step ... within \\boxed{}" convention, so we must use
-    that system prompt during generation too.
-    """
     messages = [
         {"role": "system", "content": ACEMATH_SYSTEM_PROMPT},
         {"role": "user", "content": question},
     ]
     return tokenizer.apply_chat_template(
-        messages,
-        tokenize=False,
-        add_generation_prompt=True,
-        enable_thinking=False,
+        messages, tokenize=False, add_generation_prompt=True, enable_thinking=False
     )
 
 
@@ -78,13 +58,7 @@ def generate_completions(
     cfg: Config,
     console: Console,
 ) -> list[list[str]]:
-    """Generate ``cfg.num_completions_per_prompt`` completions for each prompt.
-
-    Returns a list of length M where each element is a list of N completion
-    strings. Generation is batched over prompts at ``cfg.rollout_batch_size``;
-    the reference policy stays in sampling mode so the multiple rollouts per
-    prompt are actually different.
-    """
+    """Generate N completions per prompt, returning an (M, N) list-of-lists."""
     model.eval()
     pad_token_id = (
         tokenizer.pad_token_id
@@ -139,7 +113,7 @@ def generate_completions(
 
 
 def load_reward_model(cfg: Config, device: torch.device):
-    """Load AceMath-7B-RM as a sequence classifier with a single-scalar head."""
+    """Load AceMath-7B-RM with a single-scalar regression head."""
     attn_impl = get_attn_implementation()
     tokenizer = AutoTokenizer.from_pretrained(cfg.reward_model_name, trust_remote_code=True)
     if tokenizer.pad_token is None:
@@ -151,11 +125,9 @@ def load_reward_model(cfg: Config, device: torch.device):
         trust_remote_code=True,
         attn_implementation=attn_impl,
     )
-    # LlamaForSequenceClassification (AceMath's base class) reads
-    # self.config.pad_token_id inside its forward pass to pick the last
-    # non-pad hidden state. When it's None and batch > 1 it raises
-    # "Cannot handle batch sizes > 1 if no padding token is defined." —
-    # setting it on the tokenizer alone is not enough.
+    # LlamaForSequenceClassification reads model.config.pad_token_id inside
+    # its forward pass — setting it on the tokenizer alone is not enough and
+    # it raises "Cannot handle batch sizes > 1 if no padding token is defined".
     if model.config.pad_token_id is None:
         model.config.pad_token_id = tokenizer.pad_token_id
     model = model.to(device)
@@ -164,7 +136,6 @@ def load_reward_model(cfg: Config, device: torch.device):
 
 
 def _build_scoring_chat(question: str, completion: str, tokenizer) -> str:
-    """Wrap a (question, completion) pair in AceMath's expected chat format."""
     chat = [
         {"role": "system", "content": ACEMATH_SYSTEM_PROMPT},
         {"role": "user", "content": question},
@@ -181,37 +152,20 @@ def score_rollouts(
     cfg: Config,
     console: Console,
 ) -> list[list[float]]:
-    """Score every (prompt, completion) pair with AceMath-7B-RM.
-
-    We sort all (prompt, completion) pairs by encoded-length before batching
-    (the length-sorting throughput trick noted in chapter.md §Implementation
-    Details) and use left-padding so the last hidden state — which holds the
-    scalar reward — stays at the rightmost position regardless of sequence
-    length.
-    """
-    # Flatten (prompt_idx, completion_idx, encoded_ids) and pre-tokenize.
+    """Score every (prompt, completion) pair and return an (M, N) reward matrix."""
+    # Pre-tokenize all pairs, then length-sort so each batch has similar
+    # sequence lengths and minimal padding waste.
     flat: list[tuple[int, int, list[int]]] = []
     for i, prompt in enumerate(prompts):
         for j, completion in enumerate(completions[i]):
             chat_str = _build_scoring_chat(prompt["question"], completion, rm_tokenizer)
-            # The chat template already inserts special tokens; passing
-            # add_special_tokens=True here would double-prepend them and
-            # corrupt the score.
+            # Chat template already inserts special tokens; encoding with
+            # add_special_tokens=True would double-prepend them.
             ids = rm_tokenizer.encode(chat_str, add_special_tokens=False)
             flat.append((i, j, ids))
-
-    # Length-sort: batches end up with similar sequence lengths, minimising
-    # padding waste on the reward-model forward pass.
     flat.sort(key=lambda item: len(item[2]))
 
-    pad_id = (
-        rm_tokenizer.pad_token_id
-        if rm_tokenizer.pad_token_id is not None
-        else rm_tokenizer.eos_token_id
-    )
-
-    # Pre-allocate an (M x N) output table so we can write scores back in
-    # their original positions after sorting.
+    pad_id = rm_tokenizer.pad_token_id or rm_tokenizer.eos_token_id
     rewards: list[list[float]] = [
         [0.0] * cfg.num_completions_per_prompt for _ in prompts
     ]
@@ -224,6 +178,8 @@ def score_rollouts(
             batch = flat[start : start + cfg.score_batch_size]
             max_len = max(len(item[2]) for item in batch)
 
+            # Left-pad so the last hidden state (which holds the reward) is
+            # at the rightmost position regardless of sequence length.
             input_ids = torch.full(
                 (len(batch), max_len), pad_id, dtype=torch.long, device=rm.device
             )
@@ -237,7 +193,6 @@ def score_rollouts(
 
             with torch.no_grad():
                 outputs = rm(input_ids=input_ids, attention_mask=attention_mask)
-            # AceMath's head returns (batch, num_labels=1). We take [:, 0].
             scores = outputs.logits[:, 0].float().cpu().tolist()
 
             for (prompt_idx, completion_idx, _), score in zip(batch, scores, strict=True):
@@ -249,15 +204,12 @@ def score_rollouts(
 
 
 def rollouts_path(cfg: Config) -> Path:
-    """Path to the cache file for this config's (generation + scoring) params."""
-    out_dir = Path(cfg.output_dir) / "rollouts"
-    return out_dir / f"{cache_key(cfg)}.jsonl"
+    return Path(cfg.output_dir) / "rollouts" / f"{cache_key(cfg)}.jsonl"
 
 
 def rollouts_intermediate_path(cfg: Config) -> Path:
-    """Path to the pre-scoring intermediate cache (rollouts without rewards)."""
-    out_dir = Path(cfg.output_dir) / "rollouts"
-    return out_dir / f"{cache_key(cfg)}.rollouts.jsonl"
+    """Pre-scoring intermediate cache (rollouts only, no rewards)."""
+    return Path(cfg.output_dir) / "rollouts" / f"{cache_key(cfg)}.rollouts.jsonl"
 
 
 def _write_rollouts_intermediate(
@@ -292,11 +244,7 @@ def _load_rollouts_intermediate(
 
 
 def run(cfg: Config) -> Path:
-    """Run Stage 1 + Stage 2 end-to-end and write the result to disk.
-
-    Returns the path to the JSONL cache file. If the cache already exists,
-    Stage 1/2 are skipped entirely.
-    """
+    """Run Stage 1 + Stage 2 and write the JSONL cache. Skips if cache exists."""
     console = Console()
     seed_everything(cfg.seed)
 
@@ -308,17 +256,11 @@ def run(cfg: Config) -> Path:
     cache_path.parent.mkdir(parents=True, exist_ok=True)
     intermediate_path = rollouts_intermediate_path(cfg)
 
-    # --- Stage 1: generation (resumable via intermediate cache) ----------------
+    # Stage 1: generation. We persist rollouts to an intermediate file before
+    # touching the reward model so a Stage 2 OOM doesn't force regeneration.
     if intermediate_path.exists():
-        console.print(
-            f"[dim]Intermediate rollouts found at {intermediate_path} — "
-            f"skipping Stage 1 and resuming at scoring.[/dim]"
-        )
+        console.print(f"[dim]Resuming from intermediate cache at {intermediate_path}[/dim]")
         prompts, completions = _load_rollouts_intermediate(intermediate_path)
-        console.print(
-            f"[dim]Loaded {len(prompts)} prompts × "
-            f"{len(completions[0]) if completions else 0} completions from intermediate cache.[/dim]"
-        )
     else:
         prompts = load_gsm8k_prompts(cfg)
         console.print(f"[dim]Loaded {len(prompts)} GSM8k prompts.[/dim]")
@@ -333,24 +275,14 @@ def run(cfg: Config) -> Path:
         console.print(f"[dim]VRAM after policy load: {cuda_memory_gb():.2f} GB[/dim]")
 
         completions = generate_completions(policy_model, policy_tokenizer, prompts, cfg, console)
-
-        # Persist rollouts immediately, before we touch the reward model.
-        # Stage 2 is fragile (OOMs, pad-token mismatches, etc.) and we do
-        # not want to redo an hour of generation on every scoring failure.
         _write_rollouts_intermediate(intermediate_path, prompts, completions)
-        console.print(f"[dim]Saved intermediate rollouts to {intermediate_path}[/dim]")
 
-        # Drop references before calling free_memory so the underlying CUDA
-        # buffers can actually be released.
+        # Drop references before free_memory so CUDA buffers actually release.
         del policy_model, policy_tokenizer
         free_memory()
-        vram_between = cuda_memory_gb()
-        console.print(f"[dim]VRAM after policy free: {vram_between:.2f} GB[/dim]")
-        assert vram_between < 1.0, (
-            f"Expected <1 GB between stages, got {vram_between:.2f} GB — free_memory leak?"
-        )
+        console.print(f"[dim]VRAM after policy free: {cuda_memory_gb():.2f} GB[/dim]")
 
-    # --- Stage 2: scoring ------------------------------------------------------
+    # Stage 2: scoring.
     rm_device = torch.device(
         f"cuda:{cfg.reward_model_device_id}" if torch.cuda.is_available() else "cpu"
     )
@@ -362,9 +294,8 @@ def run(cfg: Config) -> Path:
 
     del rm, rm_tokenizer
     free_memory()
-    console.print(f"[dim]VRAM after reward-model free: {cuda_memory_gb():.2f} GB[/dim]")
 
-    # --- Write JSONL atomically (.tmp -> rename) -------------------------------
+    # Atomic write: .tmp -> rename.
     tmp_path = cache_path.with_suffix(cache_path.suffix + ".tmp")
     with open(tmp_path, "w") as f:
         for prompt, comp_list, reward_list in zip(prompts, completions, rewards, strict=True):
@@ -378,35 +309,25 @@ def run(cfg: Config) -> Path:
     os.replace(tmp_path, cache_path)
     console.print(f"[bold green]Wrote rollout cache:[/bold green] {cache_path}")
 
-    # Intermediate is redundant now that the final cache (which includes
-    # rewards) is on disk — remove it so we don't double-store rollouts.
-    if intermediate_path.exists():
-        intermediate_path.unlink()
+    # Drop the intermediate now that the final cache is on disk.
+    intermediate_path.unlink(missing_ok=True)
 
     return cache_path
 
 
 def load_cached_records(cfg: Config) -> list[dict]:
-    """Read back the JSONL cache into the in-memory records format."""
     path = rollouts_path(cfg)
     if not path.exists():
         raise FileNotFoundError(f"Rollout cache not found at {path}; run preprocess.run(cfg) first.")
-    records: list[dict] = []
     with open(path) as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            records.append(json.loads(line))
-    return records
+        return [json.loads(line) for line in f if line.strip()]
 
 
 def main_cli() -> None:
     parser = argparse.ArgumentParser(description="Generate + score rollouts for rejection sampling.")
     parser.add_argument("--config", type=str, required=True, help="Path to YAML config file")
     args = parser.parse_args()
-    cfg = load_config(args.config)
-    run(cfg)
+    run(load_config(args.config))
 
 
 if __name__ == "__main__":

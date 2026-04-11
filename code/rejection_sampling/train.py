@@ -1,10 +1,6 @@
-# Stage 3 of rejection sampling: selection + SFT + GSM8k exact-match eval.
-#
-# Auto-invokes preprocess.run(cfg) if the rollout cache for this config is
-# missing, so a single command per config is enough:
-#
-#     uv run python -m rejection_sampling.train \
-#         --config rejection_sampling/configs/top_per_prompt.yaml
+# Stage 3: selection + SFT + GSM8k exact-match eval. Auto-runs preprocess on
+# cache miss, so one command per config is enough:
+#   uv run python -m rejection_sampling.train --config configs/top_per_prompt.yaml
 
 import argparse
 import os
@@ -22,11 +18,7 @@ from rich.table import Table
 from torch.nn.utils import clip_grad_norm_
 from torch.utils.data import DataLoader, Dataset
 
-from policy_gradients.train import (
-    get_attn_implementation,
-    load_model,
-    seed_everything,
-)
+from policy_gradients.train import get_attn_implementation, load_model, seed_everything
 from policy_gradients.utils import print_model_info, print_step_header, progress_bar
 
 from . import preprocess
@@ -41,22 +33,8 @@ from .utils import (
 )
 
 
-# ---------------------------------------------------------------------------
-# Dataset
-# ---------------------------------------------------------------------------
-
-
 class SFTDataset(Dataset):
-    """Tokenise selected (prompt, completion) pairs for standard causal SFT.
-
-    The chat template matches the one used during rollouts (AceMath system
-    prompt), so the model sees consistent formatting across Stage 1 and
-    Stage 3. Labels are ``-100`` on the prompt tokens so loss is only
-    computed on the assistant turn. When the full sequence overflows
-    ``max_seq_length`` we truncate from the left (prompt side) to preserve
-    the completion, mirroring the response-priority truncation used in
-    ``direct_alignment/data.py``.
-    """
+    """Tokenise (prompt, completion) pairs for causal SFT, masking prompt tokens."""
 
     def __init__(self, pairs: list[tuple[str, str]], tokenizer, max_seq_length: int):
         self.pairs = pairs
@@ -83,25 +61,21 @@ class SFTDataset(Dataset):
 
         prompt_ids = self.tokenizer(prompt_str, add_special_tokens=False).input_ids
         full_ids = self.tokenizer(full_str, add_special_tokens=False).input_ids
-
         prompt_len = len(prompt_ids)
-        full_len = len(full_ids)
 
-        # Response-priority left truncation.
-        if full_len > self.max_seq_length:
-            trim = full_len - self.max_seq_length
+        # Response-priority left truncation: keep the completion, drop prompt tokens.
+        if len(full_ids) > self.max_seq_length:
+            trim = len(full_ids) - self.max_seq_length
             full_ids = full_ids[trim:]
             prompt_len = max(0, prompt_len - trim)
 
         input_ids = torch.tensor(full_ids, dtype=torch.long)
         labels = input_ids.clone()
-        labels[:prompt_len] = -100  # mask prompt tokens
-        attention_mask = torch.ones_like(input_ids)
-
+        labels[:prompt_len] = -100  # mask prompt tokens from the loss
         return {
             "input_ids": input_ids,
             "labels": labels,
-            "attention_mask": attention_mask,
+            "attention_mask": torch.ones_like(input_ids),
         }
 
 
@@ -112,15 +86,11 @@ def sft_collate(batch: list[dict[str, torch.Tensor]], pad_token_id: int) -> dict
     def pad(t: torch.Tensor, value: int) -> torch.Tensor:
         return F.pad(t, (0, max_len - t.size(0)), value=value)
 
-    input_ids = torch.stack([pad(item["input_ids"], pad_token_id) for item in batch])
-    labels = torch.stack([pad(item["labels"], -100) for item in batch])
-    attention_mask = torch.stack([pad(item["attention_mask"], 0) for item in batch])
-    return {"input_ids": input_ids, "labels": labels, "attention_mask": attention_mask}
-
-
-# ---------------------------------------------------------------------------
-# SFT
-# ---------------------------------------------------------------------------
+    return {
+        "input_ids": torch.stack([pad(item["input_ids"], pad_token_id) for item in batch]),
+        "labels": torch.stack([pad(item["labels"], -100) for item in batch]),
+        "attention_mask": torch.stack([pad(item["attention_mask"], 0) for item in batch]),
+    }
 
 
 def sft(
@@ -133,7 +103,7 @@ def sft(
 ) -> None:
     """Full-parameter causal-LM SFT on the selected rejection-sampling pairs."""
     dataset = SFTDataset(selected_pairs, tokenizer, cfg.max_seq_length)
-    pad_id = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id
+    pad_id = tokenizer.pad_token_id or tokenizer.eos_token_id
     dataloader = DataLoader(
         dataset=dataset,
         batch_size=cfg.train_batch_size,
@@ -143,9 +113,8 @@ def sft(
         collate_fn=lambda b: sft_collate(b, pad_id),
     )
 
+    # Plain Adam (not AdamW) to match policy_gradients/train.py.
     params = list(model.parameters())
-    # Matching policy_gradients/train.py: plain Adam (not AdamW) for educational
-    # consistency across the repo's training scripts.
     optimizer = optim.Adam(params, lr=cfg.lr)
 
     model.train()
@@ -205,19 +174,13 @@ def sft(
                 else:
                     progress.update(task, advance=1)
 
-    # Release training-only state before eval. Adam holds two fp32 moment
-    # buffers (~2x model size), plus another ~1x for the gradients, which
-    # would otherwise stay resident and steal VRAM from eval.
+    # Release Adam moment buffers (~2x model size) + gradients before eval,
+    # otherwise they stay resident and steal VRAM from generation.
     optimizer.zero_grad(set_to_none=True)
     model.zero_grad(set_to_none=True)
     del optimizer, params
     free_memory()
     console.print(f"[dim]VRAM after SFT cleanup: {cuda_memory_gb():.2f} GB[/dim]")
-
-
-# ---------------------------------------------------------------------------
-# Eval
-# ---------------------------------------------------------------------------
 
 
 def _build_eval_prompt(question: str, tokenizer) -> str:
@@ -242,13 +205,12 @@ def evaluate(cfg: Config, model, tokenizer, console: Console) -> float:
     ]
 
     model.eval()
-    pad_id = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id
+    pad_id = tokenizer.pad_token_id or tokenizer.eos_token_id
 
     correct = 0
     total = 0
     samples: list[tuple[str, str, str, str]] = []  # (question, gold, prediction, completion)
 
-    # Batched left-padded generation, mirroring preprocess.generate_completions.
     batch_size = cfg.eval_batch_size
     with progress_bar(console) as progress:
         total_batches = (len(eval_rows) + batch_size - 1) // batch_size
@@ -307,26 +269,17 @@ def evaluate(cfg: Config, model, tokenizer, console: Console) -> float:
     return accuracy
 
 
-# ---------------------------------------------------------------------------
-# Main
-# ---------------------------------------------------------------------------
-
-
 def main(cfg: Config) -> None:
     console = Console()
     seed_everything(cfg.seed)
     console.print(f"[dim]Attention implementation: {get_attn_implementation()}[/dim]")
 
     # Stage 1+2: rollouts + scoring (cache-aware).
-    cache_path = preprocess.rollouts_path(cfg)
-    if cache_path.exists():
-        console.print(f"[dim]Using cached rollouts at {cache_path}[/dim]")
-    else:
+    if not preprocess.rollouts_path(cfg).exists():
         console.print("[dim]Cache miss — running preprocess.run(cfg)[/dim]")
         preprocess.run(cfg)
-
     records = preprocess.load_cached_records(cfg)
-    console.print(f"[dim]Loaded {len(records)} scored records from cache.[/dim]")
+    console.print(f"[dim]Loaded {len(records)} scored records.[/dim]")
 
     # Stage 3a: selection.
     selected_pairs = select(records, cfg)
@@ -339,22 +292,17 @@ def main(cfg: Config) -> None:
         )
     )
 
-    # Init wandb. User-owned project via env var, or disabled if none set.
     wandb_project = os.environ.get("WANDB_PROJECT", cfg.wandb_project)
-    wandb_run_name = os.environ.get("WANDB_RUN_NAME", cfg.wandb_run_name)
     if wandb_project is None:
         wandb.init(mode="disabled")
     else:
         wandb.init(
             project=wandb_project,
-            name=wandb_run_name or f"rs-{cfg.selection.strategy}",
+            name=os.environ.get("WANDB_RUN_NAME", cfg.wandb_run_name) or f"rs-{cfg.selection.strategy}",
             config=cfg.model_dump(),
         )
     wandb.log(
-        {
-            "selection/strategy": cfg.selection.strategy,
-            "selection/num_pairs": len(selected_pairs),
-        }
+        {"selection/strategy": cfg.selection.strategy, "selection/num_pairs": len(selected_pairs)}
     )
 
     # Stage 3b: load policy model and SFT on the selected pairs.
@@ -366,13 +314,10 @@ def main(cfg: Config) -> None:
     print_model_info(console, model)
     console.print(f"[dim]VRAM after policy load: {cuda_memory_gb():.2f} GB[/dim]")
 
-    start_time = time.time()
-    sft(cfg, model, tokenizer, selected_pairs, console, start_time)
+    sft(cfg, model, tokenizer, selected_pairs, console, start_time=time.time())
 
-    # Flip the model out of training mode: gradient checkpointing trades
-    # compute for memory by recomputing activations on the forward pass,
-    # which makes generate() dramatically slower, and use_cache must be
-    # re-enabled for the KV cache to do its job during decoding.
+    # Gradient checkpointing slows generate() (recomputes activations) and
+    # disables the KV cache — flip both off before eval.
     model.gradient_checkpointing_disable()
     model.config.use_cache = True
 
@@ -380,11 +325,8 @@ def main(cfg: Config) -> None:
     accuracy = evaluate(cfg, model, tokenizer, console)
     wandb.log({"test_accuracy": accuracy, "selection/strategy": cfg.selection.strategy})
 
-    # Optional checkpoint — off by default to conserve disk.
     if cfg.save_checkpoint:
-        ckpt_dir = (
-            Path(cfg.output_dir) / "checkpoints" / f"rs-{cfg.selection.strategy}"
-        )
+        ckpt_dir = Path(cfg.output_dir) / "checkpoints" / f"rs-{cfg.selection.strategy}"
         ckpt_dir.mkdir(parents=True, exist_ok=True)
         console.print(f"[dim]Saving checkpoint to {ckpt_dir}[/dim]")
         model.save_pretrained(ckpt_dir)
@@ -394,13 +336,10 @@ def main(cfg: Config) -> None:
 
 
 def main_cli() -> None:
-    parser = argparse.ArgumentParser(
-        description="Rejection sampling: selection + SFT + GSM8k eval."
-    )
+    parser = argparse.ArgumentParser(description="Rejection sampling: selection + SFT + GSM8k eval.")
     parser.add_argument("--config", type=str, required=True, help="Path to YAML config file")
     args = parser.parse_args()
-    cfg = load_config(args.config)
-    main(cfg)
+    main(load_config(args.config))
 
 
 if __name__ == "__main__":
