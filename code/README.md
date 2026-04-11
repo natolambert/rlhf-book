@@ -47,10 +47,10 @@ to support a broad range of hardware, but for speedups you should consider insta
 uv sync --extra flash
 ```
 
-> **Note:** Flash Attention requires a source build, which needs a working CUDA toolkit
-> and can take several minutes. If the build fails (common with newer CUDA versions or
-> non-standard setups), just use the base install — the code automatically falls back
-> to PyTorch SDPA, and all examples will work correctly without it.
+> **Note:** If a pre-built wheel matches your CUDA version this installs in seconds.
+> If not (e.g. CUDA 13), it falls back to a source build which needs a CUDA toolkit
+> and can take several minutes. If the build fails, just use the base install — the
+> code automatically falls back to PyTorch SDPA and all examples will work without it.
 
 ### Platform notes
 
