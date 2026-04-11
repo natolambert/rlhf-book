@@ -52,6 +52,15 @@ uv sync --extra flash
 > non-standard setups), just use the base install — the code automatically falls back
 > to PyTorch SDPA, and all examples will work correctly without it.
 
+### Platform notes
+
+- **Standard x86_64 systems**: Flash Attention provides significant speedups during training.
+  Pre-built wheels are available for CUDA 12.x ([full list](https://github.com/Dao-AILab/flash-attention/releases/tag/v2.8.3));
+  CUDA 13 requires a source build.
+- **DGX Spark / aarch64**: Flash Attention is not available on ARM64/Blackwell. The code
+  automatically falls back to PyTorch SDPA, which is actually faster on these systems due
+  to native cuDNN optimizations.
+
 ## Policy Gradient Training
 
 Train various policy gradient algorithms on procedural reasoning tasks:
