@@ -41,6 +41,12 @@ echo "Running CISPO..."
 echo "=========================================="
 uv run python -m policy_gradients.train --config policy_gradients/configs/cispo.yaml
 
+# SAPO
+echo "=========================================="
+echo "Running SAPO..."
+echo "=========================================="
+uv run python -m policy_gradients.train --config policy_gradients/configs/sapo.yaml
+
 echo ""
 echo "=========================================="
 echo "All runs complete!"
