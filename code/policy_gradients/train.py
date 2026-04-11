@@ -7,6 +7,8 @@
 # Adapted for RLHF Book (https://rlhfbook.com) by Nathan Lambert
 # - Added SDPA fallback for platforms without flash-attn (e.g., DGX Spark)
 
+from __future__ import annotations
+
 import argparse
 import os
 import platform
@@ -34,6 +36,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
 from .buffer import Experience, ReplayBuffer, join_experiences_batch
 from .config import Config, load_config
 from .loss import CISPOLoss, GRPOLoss, GSPOLoss, PPOLoss, ReinforceLoss, approx_kl, masked_mean
+from .speedrun import SpeedrunTracker
 from .utils import print_model_info, print_rollout_sample, print_step_header, progress_bar
 
 
@@ -336,7 +339,11 @@ def create_dataset(cfg: Config) -> ProceduralDataset:
     return rg.create_dataset("composite", size=cfg.data.size, seed=cfg.seed, datasets=specs)
 
 
-def main(cfg: Config):
+def main(
+    cfg: Config,
+    *,
+    speedrun_tracker: SpeedrunTracker | None = None,
+):
     """Main training loop."""
     seed_everything(cfg.seed)
     console = Console()
@@ -385,6 +392,11 @@ def main(cfg: Config):
         wandb.init(mode="disabled")
     else:
         wandb.init(project=wandb_project, name=wandb_run_name, config=vars(cfg))
+
+    wandb_run_id = getattr(wandb.run, "id", None) if wandb.run else None
+    wandb_entity = getattr(wandb.run, "entity", None) if wandb.run else None
+    wandb_project_name = getattr(wandb.run, "project", None) if wandb.run else None
+
     print_model_info(console, model)
 
     start_time = time.time()
@@ -442,9 +454,21 @@ def main(cfg: Config):
 
         # Summarize rollouts
         avg_reward = torch.cat(rollout_rewards, dim=0).mean().item()
+        if speedrun_tracker:
+            speedrun_tracker.record_step(avg_reward)
+
         hours_elapsed = (time.time() - start_time) / 3600
-        wandb.log({"avg_reward": avg_reward, "hours_elapsed": hours_elapsed})
-        print_rollout_sample(console, reward=avg_reward, rollout_completions=rollout_completions)
+        reward_100avg = speedrun_tracker.reward_100avg if speedrun_tracker else None
+        log_dict = {"avg_reward": avg_reward, "hours_elapsed": hours_elapsed}
+        if reward_100avg is not None:
+            log_dict["avg_reward_100step"] = reward_100avg
+        wandb.log(log_dict)
+        print_rollout_sample(
+            console,
+            reward=avg_reward,
+            rollout_completions=rollout_completions,
+            reward_100avg=reward_100avg,
+        )
 
         torch.cuda.empty_cache()
         model.train()
@@ -496,14 +520,36 @@ def main(cfg: Config):
                 else:
                     progress.update(task, advance=1)
 
+        if speedrun_tracker:
+            speedrun_tracker.check_goal(step, console)
+
+    if speedrun_tracker:
+        speedrun_tracker.write_metrics(
+            cfg=cfg,
+            wandb_run_id=wandb_run_id,
+            wandb_entity=wandb_entity,
+            wandb_project=wandb_project_name,
+        )
+
 
 def main_cli():
     """CLI entry point."""
     parser = argparse.ArgumentParser(description="Train policy gradient models for RLHF")
     parser.add_argument("--config", type=str, required=True, help="Path to YAML config file")
+    parser.add_argument("--speedrun", action="store_true", help="Enable speedrun metrics (JSON output, 100-step avg goal)")
+    parser.add_argument("--speedrun-target-reward", type=float, default=None, help="Target reward for goal detection (100-step avg)")
+    parser.add_argument("--speedrun-metrics-file", type=str, default="logs/speedrun/speedrun_metrics.json", help="Output path for speedrun JSON")
     args = parser.parse_args()
     cfg = load_config(args.config)
-    main(cfg)
+
+    tracker = None
+    if args.speedrun:
+        tracker = SpeedrunTracker(
+            target_reward=args.speedrun_target_reward,
+            metrics_file=args.speedrun_metrics_file,
+        )
+
+    main(cfg, speedrun_tracker=tracker)
 
 
 if __name__ == "__main__":

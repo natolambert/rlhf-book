@@ -4,6 +4,8 @@
 # Source: https://github.com/zafstojano/policy-gradients
 # License: Apache 2.0
 
+from __future__ import annotations
+
 import random
 
 from rich.console import Console
@@ -51,12 +53,20 @@ def print_model_info(console: Console, model) -> None:
     )
 
 
-def print_rollout_sample(console: Console, reward: float, rollout_completions: list) -> None:
-    """Print a sample from the rollouts with the average reward."""
+def print_rollout_sample(
+    console: Console, reward: float, rollout_completions: list, reward_100avg: float | None = None
+) -> None:
+    """Print a sample from the rollouts with the average reward.
+
+    From step 100 onwards, also displays the 100-step rolling average (reward_100avg).
+    """
     sample_q, sample_a, sample_completion = random.choice(rollout_completions)
+    reward_lines = [f"[bold green]Average Reward:[/bold green] {reward:.4f}"]
+    if reward_100avg is not None:
+        reward_lines.append(f"[bold yellow]100-step avg:[/bold yellow] {reward_100avg:.4f}")
     console.print(
         Panel(
-            f"[bold green]Average Reward:[/bold green] {reward:.4f}",
+            "\n".join(reward_lines),
             title="[bold cyan]Rollout Results[/bold cyan]",
             border_style="cyan",
         )
