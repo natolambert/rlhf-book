@@ -349,6 +349,7 @@ def train_prm(
         data,
         batch_size=batch_size,
         shuffle=True,
+        drop_last=True,
         collate_fn=lambda b: collate_fn(b, tokenizer),
     )
 
@@ -364,12 +365,18 @@ def train_prm(
     autocast_enabled = torch.cuda.is_available()
 
     # Training loop
+    global_step = 0
     for epoch in range(epochs):
         model.train()
-        total_loss = 0.0
-        total_correct = 0
-        total_steps = 0
+        epoch_loss = 0.0
+        epoch_correct = 0
+        epoch_tokens = 0
         optimizer.zero_grad()
+
+        # Accumulators for logging per optimizer step
+        accum_loss = 0.0
+        accum_correct = 0
+        accum_tokens = 0
 
         for step_idx, batch in enumerate(loader):
             batch = {k: v.to(device) for k, v in batch.items()}
@@ -379,25 +386,38 @@ def train_prm(
 
             (loss / grad_accum_steps).backward()
 
+            # Accumulate metrics over the grad_accum window
+            accum_loss += loss.item()
+            mask = batch["labels"] != -100
+            preds = logits[mask].argmax(dim=-1)
+            correct = (preds == batch["labels"][mask]).sum().item()
+            tokens = mask.sum().item()
+            accum_correct += correct
+            accum_tokens += tokens
+
+            epoch_loss += loss.item()
+            epoch_correct += correct
+            epoch_tokens += tokens
+
             if (step_idx + 1) % grad_accum_steps == 0 or (step_idx + 1) == len(loader):
                 optimizer.step()
                 optimizer.zero_grad()
+                global_step += 1
 
-            total_loss += loss.item()
+                # Log averaged metrics over the full effective batch
+                steps = min(step_idx + 1, grad_accum_steps)
+                avg_loss = accum_loss / steps
+                acc = accum_correct / max(1, accum_tokens)
+                print(f"Epoch {epoch} step {global_step} | loss {avg_loss:.4f} | acc {acc:.3f}")
+                log_metrics({"loss": avg_loss, "step_accuracy": acc}, step=global_step)
 
-            # Compute step-level accuracy
-            mask = batch["labels"] != -100
-            preds = logits[mask].argmax(dim=-1)
-            total_correct += (preds == batch["labels"][mask]).sum().item()
-            total_steps += mask.sum().item()
+                # Reset accumulators
+                accum_loss = 0.0
+                accum_correct = 0
+                accum_tokens = 0
 
-            if step_idx % 100 == 0:
-                acc = total_correct / max(1, total_steps)
-                print(f"Epoch {epoch} step {step_idx} loss {loss.item():.4f}")
-                log_metrics({"loss": loss.item(), "step_accuracy": acc})
-
-        avg_loss = total_loss / len(loader)
-        accuracy = total_correct / max(1, total_steps)
+        avg_loss = epoch_loss / len(loader)
+        accuracy = epoch_correct / max(1, epoch_tokens)
         print(f"Epoch {epoch} | Loss: {avg_loss:.4f} | Step Accuracy: {accuracy:.3f}")
         log_metrics({"epoch_loss": avg_loss, "epoch_accuracy": accuracy, "epoch": epoch})
 

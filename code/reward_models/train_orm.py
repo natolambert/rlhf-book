@@ -257,6 +257,7 @@ def train_orm(
         data,
         batch_size=batch_size,
         shuffle=True,
+        drop_last=True,
         collate_fn=lambda b: collate_fn(b, tokenizer),
     )
 
@@ -269,11 +270,12 @@ def train_orm(
     optimizer = create_optimizer(model, lr)
 
     # Training loop
+    global_step = 0
     for epoch in range(epochs):
         model.train()
-        total_loss = 0.0
-        total_correct = 0
-        total_tokens = 0
+        epoch_loss = 0.0
+        epoch_correct = 0
+        epoch_tokens = 0
 
         for step, batch in enumerate(loader):
             batch = {k: v.to(device) for k, v in batch.items()}
@@ -282,22 +284,25 @@ def train_orm(
             loss.backward()
             optimizer.step()
             optimizer.zero_grad()
+            global_step += 1
 
-            total_loss += loss.item()
+            epoch_loss += loss.item()
 
-            # Compute accuracy on completion tokens
+            # Compute accuracy on completion tokens (per-step, not cumulative)
             mask = batch["labels"] != -100
             preds = (torch.sigmoid(logits[mask]) > 0.5).long()
-            total_correct += (preds == batch["labels"][mask]).sum().item()
-            total_tokens += mask.sum().item()
+            step_correct = (preds == batch["labels"][mask]).sum().item()
+            step_tokens = mask.sum().item()
+            epoch_correct += step_correct
+            epoch_tokens += step_tokens
 
             if step % 10 == 0:
-                acc = total_correct / total_tokens if total_tokens > 0 else 0
-                print(f"Epoch {epoch} step {step} loss {loss.item():.4f}")
-                log_metrics({"loss": loss.item(), "accuracy": acc})
+                acc = step_correct / step_tokens if step_tokens > 0 else 0
+                print(f"Epoch {epoch} step {global_step} | loss {loss.item():.4f} | acc {acc:.3f}")
+                log_metrics({"loss": loss.item(), "accuracy": acc}, step=global_step)
 
-        avg_loss = total_loss / len(loader)
-        accuracy = total_correct / total_tokens if total_tokens > 0 else 0
+        avg_loss = epoch_loss / len(loader)
+        accuracy = epoch_correct / epoch_tokens if epoch_tokens > 0 else 0
         print(f"Epoch {epoch} | Loss: {avg_loss:.4f} | Accuracy: {accuracy:.3f}")
         log_metrics({"epoch_loss": avg_loss, "epoch_accuracy": accuracy, "epoch": epoch})
 
