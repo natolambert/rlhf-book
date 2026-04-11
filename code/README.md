@@ -12,6 +12,9 @@ This code is built on the excellent work of community contributors:
 
 **Original Repository**: [zafstojano/policy-gradients](https://github.com/zafstojano/policy-gradients)
 **Author**: Zafir Stojanovski ([@zafstojano](https://github.com/zafstojano))
+**License**: Apache 2.0  
+**(SAPO) Original Repository**: [casinca/llm-quest](https://github.com/casinca/llm-quest)
+**Author**: [@casinca](https://github.com/casinca)
 **License**: Apache 2.0
 
 A clean, educational implementation of policy gradient methods for reinforcement learning.
