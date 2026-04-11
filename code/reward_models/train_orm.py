@@ -47,10 +47,11 @@ from reward_models.base import (
 
 DEFAULT_MODEL_ID = "Qwen/Qwen3-1.7B-Base"
 DEFAULT_DATASET = "gsm8k"
-DEFAULT_SAMPLES = 200
-DEFAULT_BATCH_SIZE = 4
+DEFAULT_SAMPLES = 2000
+DEFAULT_BATCH_SIZE = 2
+DEFAULT_GRAD_ACCUM = 16
 DEFAULT_EPOCHS = 1
-DEFAULT_LR = 5e-6  # Lower LR for full fine-tuning (vs 5e-5 for LoRA)
+DEFAULT_LR = 5e-5
 DEFAULT_SEED = 7
 
 
@@ -209,6 +210,7 @@ def train_orm(
     model_id: str = DEFAULT_MODEL_ID,
     samples: int = DEFAULT_SAMPLES,
     batch_size: int = DEFAULT_BATCH_SIZE,
+    grad_accum_steps: int = DEFAULT_GRAD_ACCUM,
     epochs: int = DEFAULT_EPOCHS,
     lr: float = DEFAULT_LR,
     seed: int = DEFAULT_SEED,
@@ -220,6 +222,7 @@ def train_orm(
         model_id: HuggingFace model ID for base model
         samples: Number of GSM8K samples to use
         batch_size: Training batch size
+        grad_accum_steps: Gradient accumulation steps
         epochs: Number of training epochs
         lr: Learning rate
         seed: Random seed
@@ -239,6 +242,7 @@ def train_orm(
             "model_id": model_id,
             "samples": samples,
             "batch_size": batch_size,
+            "grad_accum_steps": grad_accum_steps,
             "epochs": epochs,
             "lr": lr,
         },
@@ -269,6 +273,9 @@ def train_orm(
     # Optimizer
     optimizer = create_optimizer(model, lr)
 
+    # Mixed precision
+    autocast_enabled = torch.cuda.is_available()
+
     # Training loop
     global_step = 0
     for epoch in range(epochs):
@@ -276,33 +283,55 @@ def train_orm(
         epoch_loss = 0.0
         epoch_correct = 0
         epoch_tokens = 0
+        optimizer.zero_grad()
+
+        # Accumulators for logging per optimizer step
+        accum_loss = 0.0
+        accum_correct = 0
+        accum_tokens = 0
+        accum_microbatches = 0
 
         for step, batch in enumerate(loader):
             batch = {k: v.to(device) for k, v in batch.items()}
-            loss, logits = model(**batch)
 
-            loss.backward()
-            optimizer.step()
-            optimizer.zero_grad()
-            global_step += 1
+            with torch.amp.autocast("cuda", dtype=torch.bfloat16, enabled=autocast_enabled):
+                loss, logits = model(**batch)
 
-            epoch_loss += loss.item()
+            (loss / grad_accum_steps).backward()
 
-            # Compute accuracy on completion tokens (per-step, not cumulative)
+            # Accumulate metrics over the grad_accum window
+            accum_loss += loss.item()
             mask = batch["labels"] != -100
             preds = (torch.sigmoid(logits[mask]) > 0.5).long()
-            step_correct = (preds == batch["labels"][mask]).sum().item()
-            step_tokens = mask.sum().item()
-            epoch_correct += step_correct
-            epoch_tokens += step_tokens
+            correct = (preds == batch["labels"][mask]).sum().item()
+            tokens = mask.sum().item()
+            accum_correct += correct
+            accum_tokens += tokens
+            accum_microbatches += 1
 
-            if step % 10 == 0:
-                acc = step_correct / step_tokens if step_tokens > 0 else 0
-                print(f"Epoch {epoch} step {global_step} | loss {loss.item():.4f} | acc {acc:.3f}")
-                log_metrics({"loss": loss.item(), "accuracy": acc}, step=global_step)
+            epoch_loss += loss.item()
+            epoch_correct += correct
+            epoch_tokens += tokens
+
+            if (step + 1) % grad_accum_steps == 0 or (step + 1) == len(loader):
+                optimizer.step()
+                optimizer.zero_grad()
+                global_step += 1
+
+                # Log averaged metrics over the full effective batch
+                avg_loss = accum_loss / accum_microbatches
+                acc = accum_correct / max(1, accum_tokens)
+                print(f"Epoch {epoch} step {global_step} | loss {avg_loss:.4f} | acc {acc:.3f}")
+                log_metrics({"loss": avg_loss, "accuracy": acc}, step=global_step)
+
+                # Reset accumulators
+                accum_loss = 0.0
+                accum_correct = 0
+                accum_tokens = 0
+                accum_microbatches = 0
 
         avg_loss = epoch_loss / len(loader)
-        accuracy = epoch_correct / epoch_tokens if epoch_tokens > 0 else 0
+        accuracy = epoch_correct / max(1, epoch_tokens)
         print(f"Epoch {epoch} | Loss: {avg_loss:.4f} | Accuracy: {accuracy:.3f}")
         log_metrics({"epoch_loss": avg_loss, "epoch_accuracy": accuracy, "epoch": epoch})
 
@@ -392,6 +421,7 @@ def main():
     parser.add_argument("--model-id", type=str, default=DEFAULT_MODEL_ID, help="Base model ID")
     parser.add_argument("--samples", type=int, default=DEFAULT_SAMPLES, help="Number of training samples")
     parser.add_argument("--batch-size", type=int, default=DEFAULT_BATCH_SIZE, help="Batch size")
+    parser.add_argument("--grad-accum", type=int, default=DEFAULT_GRAD_ACCUM, help="Gradient accumulation steps")
     parser.add_argument("--epochs", type=int, default=DEFAULT_EPOCHS, help="Training epochs")
     parser.add_argument("--lr", type=float, default=DEFAULT_LR, help="Learning rate")
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED, help="Random seed")
@@ -403,6 +433,7 @@ def main():
         model_id=args.model_id,
         samples=args.samples,
         batch_size=args.batch_size,
+        grad_accum_steps=args.grad_accum,
         epochs=args.epochs,
         lr=args.lr,
         seed=args.seed,

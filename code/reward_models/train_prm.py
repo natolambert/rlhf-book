@@ -50,11 +50,11 @@ DEFAULT_MODEL_ID = "Qwen/Qwen3-0.6B-Base"  # Smaller model to fit in memory
 DEFAULT_PRM_DATASET = "tasksource/PRM800K"
 DEFAULT_SAMPLES = 2000
 DEFAULT_BATCH_SIZE = 1  # PRM traces are long
-DEFAULT_GRAD_ACCUM = 2
+DEFAULT_GRAD_ACCUM = 16
 DEFAULT_MAX_STEPS = 20  # Max reasoning steps per sample
 DEFAULT_MAX_TOKENS = 5500  # Max tokens per sample
 DEFAULT_EPOCHS = 1
-DEFAULT_LR = 3e-6  # Lower LR for full fine-tuning (vs 3e-5 for LoRA)
+DEFAULT_LR = 5e-5
 DEFAULT_SEED = 13
 
 STEP_SEPARATOR = "\n<step>\n"
@@ -377,6 +377,7 @@ def train_prm(
         accum_loss = 0.0
         accum_correct = 0
         accum_tokens = 0
+        accum_microbatches = 0
 
         for step_idx, batch in enumerate(loader):
             batch = {k: v.to(device) for k, v in batch.items()}
@@ -394,6 +395,7 @@ def train_prm(
             tokens = mask.sum().item()
             accum_correct += correct
             accum_tokens += tokens
+            accum_microbatches += 1
 
             epoch_loss += loss.item()
             epoch_correct += correct
@@ -405,8 +407,7 @@ def train_prm(
                 global_step += 1
 
                 # Log averaged metrics over the full effective batch
-                steps = min(step_idx + 1, grad_accum_steps)
-                avg_loss = accum_loss / steps
+                avg_loss = accum_loss / accum_microbatches
                 acc = accum_correct / max(1, accum_tokens)
                 print(f"Epoch {epoch} step {global_step} | loss {avg_loss:.4f} | acc {acc:.3f}")
                 log_metrics({"loss": avg_loss, "step_accuracy": acc}, step=global_step)
@@ -415,6 +416,7 @@ def train_prm(
                 accum_loss = 0.0
                 accum_correct = 0
                 accum_tokens = 0
+                accum_microbatches = 0
 
         avg_loss = epoch_loss / len(loader)
         accuracy = epoch_correct / max(1, epoch_tokens)

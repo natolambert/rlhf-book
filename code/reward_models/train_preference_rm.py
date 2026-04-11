@@ -300,6 +300,7 @@ def train_preference_rm(
         accum_pairs = 0
         accum_r_chosen = 0.0
         accum_r_rejected = 0.0
+        accum_microbatches = 0
 
         for step_idx, batch in enumerate(loader):
             batch = {k: v.to(device) for k, v in batch.items()}
@@ -316,6 +317,7 @@ def train_preference_rm(
             accum_pairs += r_chosen.size(0)
             accum_r_chosen += r_chosen.mean().item()
             accum_r_rejected += r_rejected.mean().item()
+            accum_microbatches += 1
 
             epoch_loss += loss.item()
             epoch_correct += correct
@@ -330,16 +332,16 @@ def train_preference_rm(
 
                 # Log averaged metrics over the full effective batch
                 n = max(1, accum_pairs)
-                steps = min(step_idx + 1, grad_accum_steps)
-                avg_loss = accum_loss / steps
+                mb = accum_microbatches
+                avg_loss = accum_loss / mb
                 acc = accum_correct / n
                 print(f"Epoch {epoch} step {global_step} | loss {avg_loss:.4f} | acc {acc:.3f}")
                 log_metrics({
                     "loss": avg_loss,
                     "accuracy": acc,
-                    "r_chosen_mean": accum_r_chosen / steps,
-                    "r_rejected_mean": accum_r_rejected / steps,
-                    "reward_margin": (accum_r_chosen - accum_r_rejected) / steps,
+                    "r_chosen_mean": accum_r_chosen / mb,
+                    "r_rejected_mean": accum_r_rejected / mb,
+                    "reward_margin": (accum_r_chosen - accum_r_rejected) / mb,
                 }, step=global_step)
 
                 # Reset accumulators
@@ -348,6 +350,7 @@ def train_preference_rm(
                 accum_pairs = 0
                 accum_r_chosen = 0.0
                 accum_r_rejected = 0.0
+                accum_microbatches = 0
 
         avg_loss = epoch_loss / len(loader)
         accuracy = epoch_correct / max(1, epoch_pairs)
