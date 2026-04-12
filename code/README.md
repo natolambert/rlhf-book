@@ -173,6 +173,45 @@ uv run python -m direct_alignment.train --loss dpo --max_samples 1000
 
 See Chapter 8 of RLHF Book for mathematical derivations.
 
+## Rejection Sampling
+
+Train the rejection sampling pipeline from Chapter 9: generate multiple
+completions per prompt, score them with a reward model, select a subset, then
+SFT on the selected pairs.
+
+```bash
+# Preprocess once (generate + score rollouts)
+uv run python -m rejection_sampling.preprocess \
+    --config rejection_sampling/configs/top_per_prompt.yaml
+
+# Train each selection config on the cached rollouts
+uv run python -m rejection_sampling.train \
+    --config rejection_sampling/configs/top_per_prompt.yaml
+uv run python -m rejection_sampling.train \
+    --config rejection_sampling/configs/random_per_prompt.yaml
+uv run python -m rejection_sampling.train \
+    --config rejection_sampling/configs/top_k_overall.yaml
+uv run python -m rejection_sampling.train \
+    --config rejection_sampling/configs/random_k_overall.yaml
+```
+
+### Training Results
+
+![Rejection Sampling Results](images/wandb_rejection_sampling.png)
+
+### Example Runs
+
+| Strategy | Description | Example Run |
+|----------|-------------|-------------|
+| `top_per_prompt` | Best-of-N completion per prompt | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/ohm3xnga) |
+| `random_per_prompt` | Random per-prompt control | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/y3pbcla7) |
+| `top_k_overall` | Best K completions across the full pool | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/w75hklzs) |
+| `random_k_overall` | Random flat-pool control | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/egeyr1q3) |
+
+On the reference 1k-train / 200-test GSM8K slice, `top_k_overall` beat its
+matched random baseline, while `top_per_prompt` and `random_per_prompt` were
+effectively tied.
+
 ## Configuration
 
 ### Weights & Biases Logging
@@ -221,6 +260,7 @@ These examples correspond to:
 - **Chapter 5**: Reward Models (ORM, PRM, Preference RM)
 - **Chapter 6**: Policy Gradient Methods (REINFORCE, PPO, GRPO, etc.)
 - **Chapter 8**: Direct Alignment (DPO, IPO, SimPO, KTO, etc.)
+- **Chapter 9**: Rejection Sampling
 
 See [rlhfbook.com](https://rlhfbook.com) for the full text.
 

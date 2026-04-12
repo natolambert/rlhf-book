@@ -43,6 +43,7 @@ uv.lock
 # Model checkpoints and outputs
 checkpoints/
 outputs/
+rejection_sampling/output/
 wandb/
 *.pt
 *.pth

@@ -42,13 +42,15 @@ train-dpo = "direct_alignment.train:main_cli"
 train-preference-rm = "reward_models.train_preference_rm:main"
 train-orm = "reward_models.train_orm:main"
 train-prm = "reward_models.train_prm:main"
+rs-preprocess = "rejection_sampling.preprocess:main_cli"
+rs-train = "rejection_sampling.train:main_cli"
 
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["policy_gradients*", "reward_models*", "direct_alignment*"]
+include = ["policy_gradients*", "reward_models*", "direct_alignment*", "rejection_sampling*"]
 
 [tool.uv]
 package = true
