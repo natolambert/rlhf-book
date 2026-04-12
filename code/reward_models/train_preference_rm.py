@@ -265,7 +265,7 @@ def train_preference_rm(
         data,
         batch_size=batch_size,
         shuffle=True,
-        drop_last=True,
+        drop_last=len(data) > batch_size,
         collate_fn=lambda b: collate_fn(b, tokenizer),
     )
 

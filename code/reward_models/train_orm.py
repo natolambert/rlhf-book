@@ -51,7 +51,7 @@ DEFAULT_SAMPLES = 2000
 DEFAULT_BATCH_SIZE = 2
 DEFAULT_GRAD_ACCUM = 16
 DEFAULT_EPOCHS = 3
-DEFAULT_LR = 5e-5
+DEFAULT_LR = 1e-4
 DEFAULT_WARMUP_RATIO = 0.1
 DEFAULT_SEED = 7
 
@@ -265,7 +265,7 @@ def train_orm(
         data,
         batch_size=batch_size,
         shuffle=True,
-        drop_last=True,
+        drop_last=len(data) > batch_size,
         collate_fn=lambda b: collate_fn(b, tokenizer),
     )
 
