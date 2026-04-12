@@ -8,14 +8,6 @@ See the parent [`code/README.md`](../README.md) for installation, configuration,
 
 | Algorithm | Config | Key Idea |
 |-----------|--------|----------|
-| **REINFORCE** | `reinforce.yaml` | Williams (1992) — vanilla policy gradient |
-| **RLOO** | `rloo.yaml` | REINFORCE Leave-One-Out (Ahmadian et al., 2024) |
-| **PPO** | `ppo.yaml` | Proximal Policy Optimization (Schulman et al., 2017) |
-| **GRPO** | `grpo.yaml` | Group Relative Policy Optimization (Shao et al., 2024) |
-| **Dr. GRPO** | `drgrpo.yaml` | Dr. GRPO — removes length and difficulty bias (Liu et al., 2025) |
-| **GSPO** | `gspo.yaml` | Group-Sequence Policy Optimization (Zheng et al., 2025) |
-| **CISPO** | `cispo.yaml` | Clipped Importance Sampling PO (MiniMax, 2025) |
-| **SAPO** | `sapo.yaml` | Soft Adaptive Policy Optimization (Qwen Team, 2025) |
 | **REINFORCE** | `reinforce.yaml` | [Williams (1992)](https://link.springer.com/article/10.1007/BF00992696) — vanilla policy gradient |
 | **RLOO** | `rloo.yaml` | REINFORCE Leave-One-Out ([Ahmadian et al., 2024](https://arxiv.org/abs/2402.14740)) |
 | **PPO** | `ppo.yaml` | Proximal Policy Optimization ([Schulman et al., 2017](https://arxiv.org/abs/1707.06347)) |
@@ -23,6 +15,7 @@ See the parent [`code/README.md`](../README.md) for installation, configuration,
 | **Dr. GRPO** | `drgrpo.yaml` | Dr. GRPO — removes length and difficulty bias ([Liu et al., 2025](https://arxiv.org/abs/2503.20783)) |
 | **GSPO** | `gspo.yaml` | Group-Sequence Policy Optimization ([Zheng et al., 2025](https://arxiv.org/abs/2505.13818)) |
 | **CISPO** | `cispo.yaml` | Clipped Importance Sampling PO ([MiniMax, 2025](https://arxiv.org/abs/2506.13585)) |
+| **SAPO** | `sapo.yaml` | Soft Adaptive Policy Optimization ([Gao et al., 2025](https://arxiv.org/abs/2511.20347)) |
 
 ## Reference Runs
 
