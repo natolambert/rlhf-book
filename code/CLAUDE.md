@@ -10,10 +10,12 @@
 
 ## Changelog Process
 
-- Keep `CHANGELOG.md` minimal and release-oriented.
-- Use exactly **one bullet per PR**.
+- **CI enforces this**: a GitHub Actions check fails PRs that touch `code/` without modifying `code/CHANGELOG.md`.
+- Add entries under the `## Unreleased` section at the top of `CHANGELOG.md`.
+- Use exactly **one bullet per PR**, format: `- YYYY-MM-DD: [PR #N](url) description`.
 - Each bullet must include a PR link and can contain multiple sentences summarizing meaningful changes.
 - When changes affect comparability (metrics, logging semantics, evaluation logic), mention that directly in the same bullet.
+- **On release**: rename `## Unreleased` to `## vX.Y.Z` and add a fresh `## Unreleased` section above it.
 
 ## Experiment Organization
 
