@@ -3,8 +3,18 @@ name: Build and Deploy to Cloudflare Pages
 on:
   push:
     branches: ["main"]
+    paths:
+      - "book/**"
+      - "teach/**"
+      - "Makefile"
+      - ".github/workflows/static.yml"
   pull_request:
     branches: ["main"]
+    paths:
+      - "book/**"
+      - "teach/**"
+      - "Makefile"
+      - ".github/workflows/static.yml"
   workflow_dispatch:
 
 jobs:
