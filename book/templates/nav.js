@@ -48,7 +48,7 @@ class NavigationDropdown extends HTMLElement {
           <li><a href="https://rlhfbook.com/c/06-policy-gradients">Reinforcement Learning</a> [<a href="https://github.com/natolambert/rlhf-book/tree/main/code/policy_gradients">code</a>]</li>
           <li><a href="https://rlhfbook.com/c/07-reasoning">Reasoning</a></li>
           <li><a href="https://rlhfbook.com/c/08-direct-alignment">Direct Alignment</a> [<a href="https://github.com/natolambert/rlhf-book/tree/main/code/direct_alignment">code</a>]</li>
-          <li><a href="https://rlhfbook.com/c/09-rejection-sampling">Rejection Sampling</a></li>
+          <li><a href="https://rlhfbook.com/c/09-rejection-sampling">Rejection Sampling</a> [<a href="https://github.com/natolambert/rlhf-book/tree/main/code/rejection_sampling">code</a>]</li>
         </ol>
       </div>
 

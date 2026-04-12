@@ -1,5 +1,7 @@
 # Policy Gradient Methods
 
+![Overview of the RLHF training loop.](../../book/images/rlhf-overview.png)
+
 Educational implementations of policy gradient algorithms for [RLHF Book](https://rlhfbook.com).
 See **Chapter 6: Policy Gradient Methods** for mathematical derivations and intuitions.
 See the parent [`code/README.md`](../README.md) for installation, configuration, and memory requirements.
@@ -28,7 +30,7 @@ See the parent [`code/README.md`](../README.md) for installation, configuration,
 | **Dr. GRPO** | [run](https://wandb.ai/natolambert/rlhf-book/runs/a1swuynq) | ✅ Validated |
 | **GSPO** | [run](https://wandb.ai/natolambert/rlhf-book/runs/10sxytli) | ✅ Validated |
 | **CISPO** | [run](https://wandb.ai/natolambert/rlhf-book/runs/6dg0m06n) | ✅ Validated |
-| **SAPO** | — | TODO @casinca: need to see what @natolambert wants to do |
+| **SAPO** | [run](https://wandb.ai/natolambert/rlhf-book/runs/79608nwk) | ⚠️ Partial validation |
 
 ## Quick Start
 
