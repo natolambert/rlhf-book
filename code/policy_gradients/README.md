@@ -30,7 +30,7 @@ See the parent [`code/README.md`](../README.md) for installation, configuration,
 | **Dr. GRPO** | [run](https://wandb.ai/natolambert/rlhf-book/runs/a1swuynq) | ✅ Validated |
 | **GSPO** | [run](https://wandb.ai/natolambert/rlhf-book/runs/10sxytli) | ✅ Validated |
 | **CISPO** | [run](https://wandb.ai/natolambert/rlhf-book/runs/6dg0m06n) | ✅ Validated |
-| **SAPO** | [run](https://wandb.ai/natolambert/rlhf-book/runs/79608nwk) | ⚠️ Partial validation |
+| **SAPO** | [run](https://wandb.ai/natolambert/rlhf-book/runs/79608nwk) | ✅ Validated |
 
 ## Quick Start
 
