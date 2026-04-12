@@ -30,12 +30,16 @@ class Config(BaseModel):
 
     Attributes:
         data: Dataset configuration
-        loss: Loss function (reinforce, rloo, ppo, grpo, drgrpo, gspo, cispo)
+        loss: Loss function (reinforce, rloo, ppo, grpo, drgrpo, gspo, cispo, sapo)
         model_name: HuggingFace model identifier
 
         # Clipping (GRPO, DrGRPO, GSPO, CISPO, PPO)
         clip_eps_lo: Lower clipping bound for policy ratio
         clip_eps_hi: Upper clipping bound for policy ratio
+
+        # SAPO-specific
+        sapo_temp_pos: Sigmoid temperature for positive advantages
+        sapo_temp_neg: Sigmoid temperature for negative advantages
 
         # PPO-specific
         clip_eps_val: Clipping bound for value function
@@ -81,6 +85,10 @@ class Config(BaseModel):
     lam: float = 0.95
     vf_coef: float = 0.1
     val_model_device_id: int = 0
+
+    # SAPO-specific params (soft sigmoid gate temperatures)
+    sapo_temp_pos: float = 1.0
+    sapo_temp_neg: float = 1.05
 
     # KL penalty (optional, for REINFORCE/RLOO/GRPO when beta > 0)
     beta: float = 0.0

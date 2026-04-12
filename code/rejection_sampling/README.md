@@ -1,5 +1,7 @@
 # Rejection Sampling
 
+![Rejection sampling overview.](../../book/images/rejection-sampling.png)
+
 Educational implementation of rejection sampling (RS) for RLHF, accompanying
 Chapter 9 of [the RLHF Book](https://rlhfbook.com). See the parent
 [`code/README.md`](../README.md) for installation, configuration, and memory

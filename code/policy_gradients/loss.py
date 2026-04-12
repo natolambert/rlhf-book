@@ -10,6 +10,7 @@
 # - GRPO (Shao et al., 2024)
 # - GSPO (Zheng et al., 2025)
 # - CISPO (MiniMax, 2025)
+# - SAPO (Qwen Team, 2025)
 
 import torch
 import torch.nn as nn
@@ -141,6 +142,42 @@ class CISPOLoss(nn.Module):
         policy_loss = -clipped_ratio * experience.advantages * log_probs
 
         # Optional KL penalty
+        if self.beta:
+            kl_loss = approx_kl(log_probs, experience.log_probs_ref, experience.action_mask)
+        else:
+            kl_loss = torch.tensor(0.0, device=log_probs.device, dtype=torch.float32)
+
+        loss = policy_loss + self.beta * kl_loss
+        loss = masked_mean(loss, mask=experience.action_mask, dim=-1).mean(dim=0)
+        return loss
+
+
+class SAPOLoss(nn.Module):
+    """Soft Adaptive Policy Optimization loss (Qwen Team, 2025).
+
+    Replaces hard clipping with a smooth sigmoid gate that continuously
+    attenuates gradients as tokens move off-policy.
+    See Chapter 6 - Further Reading of the RLHF Book
+    """
+
+    def __init__(self, sapo_temp_pos: float, sapo_temp_neg: float, beta: float, **kwargs) -> None:
+        super().__init__()
+        self.sapo_temp_pos = sapo_temp_pos
+        self.sapo_temp_neg = sapo_temp_neg
+        self.beta = beta
+
+    def forward(self, log_probs: torch.Tensor, experience: Experience, **kwargs) -> torch.Tensor:
+        # Token-level importance ratio
+        ratio = (log_probs - experience.log_probs_old).exp()
+
+        # Asymmetric temperature: tighter curve for negative advantages
+        temps = torch.where(experience.advantages > 0, self.sapo_temp_pos, self.sapo_temp_neg)
+
+        # Soft sigmoid gate
+        soft_gate = torch.sigmoid(temps * (ratio - 1)) * 4 / temps
+        policy_loss = -soft_gate * experience.advantages
+
+        # Optional KL penalty (default for SAPO = 0)
         if self.beta:
             kl_loss = approx_kl(log_probs, experience.log_probs_ref, experience.action_mask)
         else:

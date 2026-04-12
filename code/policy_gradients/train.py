@@ -33,7 +33,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
 
 from .buffer import Experience, ReplayBuffer, join_experiences_batch
 from .config import Config, load_config
-from .loss import CISPOLoss, GRPOLoss, GSPOLoss, PPOLoss, ReinforceLoss, approx_kl, masked_mean
+from .loss import CISPOLoss, GRPOLoss, GSPOLoss, PPOLoss, ReinforceLoss, SAPOLoss, approx_kl, masked_mean
 from .utils import print_model_info, print_rollout_sample, print_step_header, progress_bar
 
 
@@ -116,6 +116,8 @@ def get_loss_objective(loss: str, **kwargs) -> nn.Module:
         return ReinforceLoss(**kwargs)
     elif loss == "cispo":
         return CISPOLoss(**kwargs)
+    elif loss == "sapo":
+        return SAPOLoss(**kwargs)
     elif loss == "ppo":
         return PPOLoss(**kwargs)
     raise ValueError(f"Unsupported loss type: {loss}")
@@ -231,7 +233,7 @@ def compute_advantages(
     lam: float | None = None,
 ) -> torch.Tensor:
     """Compute advantages using the appropriate method for the loss function."""
-    if loss in ["grpo", "gspo", "cispo"]:
+    if loss in ["grpo", "gspo", "cispo", "sapo"]:
         return compute_standardized_advantages(rewards)
     elif loss in ["drgrpo"]:
         return compute_nonstandardized_advantages(rewards)
@@ -372,6 +374,8 @@ def main(cfg: Config):
         clip_eps_val=cfg.clip_eps_val,
         vf_coef=cfg.vf_coef,
         beta=cfg.beta,
+        sapo_temp_pos=cfg.sapo_temp_pos,
+        sapo_temp_neg=cfg.sapo_temp_neg,
     ).to(model.device)
     params = list(model.parameters()) + (list(val_model.parameters()) if val_model else [])
     optimizer = optim.Adam(params, lr=cfg.lr)
