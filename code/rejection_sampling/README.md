@@ -1,11 +1,13 @@
 # Rejection Sampling
 
 Educational implementation of rejection sampling (RS) for RLHF, accompanying
-Chapter 9 of [the RLHF Book](https://rlhfbook.com). The pipeline:
+Chapter 9 of [the RLHF Book](https://rlhfbook.com). See the parent
+[`code/README.md`](../README.md) for installation, configuration, and memory
+requirements. The pipeline:
 
 1. Generate `N` rollouts per GSM8k training prompt with `Qwen/Qwen3-1.7B`.
 2. Score every rollout with `nvidia/AceMath-7B-RM`.
-3. Select a subset of (prompt, completion) pairs via one of three strategies.
+3. Select a subset of (prompt, completion) pairs via one of four selection configs.
 4. SFT `Qwen/Qwen3-1.7B` on the selected subset.
 5. Evaluate exact-match accuracy on the GSM8k test split.
 
@@ -26,8 +28,24 @@ the reward or a coin flip.
 | `top_k_overall`     | `configs/top_k_overall.yaml`     | Top-K completions across the full M × N matrix (K pairs).                   | Lets the reward model concentrate training data on the easiest-to-score prompts. Can pick multiple completions from the same prompt. |
 | `random_k_overall`  | `configs/random_k_overall.yaml`  | K pairs sampled uniformly at random from the flat M × N pool. Same `top_k` as `top_k_overall`. Seeded by `cfg.seed`. | Fair control for `top_k_overall`: same sample budget, same flat structure, but ignores the reward model. |
 
-All three YAMLs share identical generation/scoring parameters so the Stage 1/2
+All four YAMLs share identical generation/scoring parameters so the Stage 1/2
 cache is shared across strategies — only the selection step differs.
+
+## Reference Runs
+
+| Strategy | wandb | Status |
+|----------|-------|--------|
+| **top_per_prompt** | [rs_top_per_prompt_gsm8k](https://wandb.ai/natolambert/rlhf-book/runs/ohm3xnga) | ✅ Completed |
+| **random_per_prompt** | [rs_random_per_prompt_gsm8k](https://wandb.ai/natolambert/rlhf-book/runs/y3pbcla7) | ✅ Completed |
+| **top_k_overall** | [rs_top_k_overall_gsm8k](https://wandb.ai/natolambert/rlhf-book/runs/w75hklzs) | ✅ Completed |
+| **random_k_overall** | [rs_random_k_overall_gsm8k](https://wandb.ai/natolambert/rlhf-book/runs/egeyr1q3) | ✅ Completed |
+
+![Rejection sampling accuracy curves across the four reference runs](../images/wandb_rejection_sampling.png)
+
+On the 1k-train / 200-test GSM8K slice used for this repo, `top_k_overall`
+beat its matched random baseline, while `top_per_prompt` and
+`random_per_prompt` were effectively tied. Treat those small gaps as slice
+noise rather than a stable ordering.
 
 ## Quick start
 
