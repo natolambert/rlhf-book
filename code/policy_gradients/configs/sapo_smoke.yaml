@@ -1,0 +1,35 @@
+data:
+  size: 16
+  specs:
+    - name: spell_backward
+      weight: 1
+      config:
+        min_word_len: 3
+        max_word_len: 8
+
+loss: sapo
+model_name: Qwen/Qwen3-1.7B
+sapo_temp_pos: 1.0
+sapo_temp_neg: 1.05
+beta: 0.0
+lr: 5e-6
+temperature: 0.6
+top_p: 0.95
+top_k: 20
+min_p: 0.0
+
+# Qwen3 often spends most of a short rollout inside <think> and never emits an
+# <answer>. Keep the token budget from the full config, and shrink the dataset
+# instead for fast validation.
+max_new_tokens: 512
+
+prompts_per_step: 2
+num_rollouts: 4
+rollout_batch_size: 4
+train_batch_size: 1
+batch_acc: 2
+max_norm: 1.0
+seed: 42
+model_device_id: 0
+wandb_project: rlhf-book
+wandb_run_name: sapo_spell_backwards_smoke

@@ -44,7 +44,14 @@ uv run python -m policy_gradients.train --config policy_gradients/configs/reinfo
 
 # PPO with value function
 uv run python -m policy_gradients.train --config policy_gradients/configs/ppo.yaml
+
+# SAPO smoke test
+uv run python -m policy_gradients.train --config policy_gradients/configs/sapo_smoke.yaml
 ```
+
+For SAPO, keep enough generation budget for Qwen3 to close its thinking trace
+and emit an answer. On this task, shrinking `max_new_tokens` too aggressively
+can flatten rewards because the model only produces a partial `<think>` block.
 
 ## TODOs for Community Contributions
 
