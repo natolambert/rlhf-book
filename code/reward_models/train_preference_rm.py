@@ -276,7 +276,7 @@ def train_preference_rm(
 
     # Optimizer and LR scheduler with linear warmup + linear decay
     optimizer = create_optimizer(model, lr)
-    total_optimizer_steps = (len(loader) // grad_accum_steps) * epochs
+    total_optimizer_steps = -(-len(loader) // grad_accum_steps) * epochs
     warmup_steps = int(total_optimizer_steps * warmup_ratio)
     scheduler = torch.optim.lr_scheduler.LinearLR(
         optimizer, start_factor=0.1, total_iters=warmup_steps
