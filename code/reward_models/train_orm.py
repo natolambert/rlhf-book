@@ -47,10 +47,12 @@ from reward_models.base import (
 
 DEFAULT_MODEL_ID = "Qwen/Qwen3-1.7B-Base"
 DEFAULT_DATASET = "gsm8k"
-DEFAULT_SAMPLES = 200
-DEFAULT_BATCH_SIZE = 4
-DEFAULT_EPOCHS = 1
-DEFAULT_LR = 5e-6  # Lower LR for full fine-tuning (vs 5e-5 for LoRA)
+DEFAULT_SAMPLES = 2000
+DEFAULT_BATCH_SIZE = 2
+DEFAULT_GRAD_ACCUM = 16
+DEFAULT_EPOCHS = 3
+DEFAULT_LR = 1e-4
+DEFAULT_WARMUP_RATIO = 0.1
 DEFAULT_SEED = 7
 
 
@@ -209,8 +211,10 @@ def train_orm(
     model_id: str = DEFAULT_MODEL_ID,
     samples: int = DEFAULT_SAMPLES,
     batch_size: int = DEFAULT_BATCH_SIZE,
+    grad_accum_steps: int = DEFAULT_GRAD_ACCUM,
     epochs: int = DEFAULT_EPOCHS,
     lr: float = DEFAULT_LR,
+    warmup_ratio: float = DEFAULT_WARMUP_RATIO,
     seed: int = DEFAULT_SEED,
     use_wandb: bool = True,
 ) -> OutcomeRewardModel:
@@ -220,8 +224,10 @@ def train_orm(
         model_id: HuggingFace model ID for base model
         samples: Number of GSM8K samples to use
         batch_size: Training batch size
+        grad_accum_steps: Gradient accumulation steps
         epochs: Number of training epochs
         lr: Learning rate
+        warmup_ratio: Fraction of total steps for linear LR warmup
         seed: Random seed
         use_wandb: Whether to log to wandb
 
@@ -239,8 +245,10 @@ def train_orm(
             "model_id": model_id,
             "samples": samples,
             "batch_size": batch_size,
+            "grad_accum_steps": grad_accum_steps,
             "epochs": epochs,
             "lr": lr,
+            "warmup_ratio": warmup_ratio,
         },
         use_wandb=use_wandb,
     )
@@ -257,6 +265,7 @@ def train_orm(
         data,
         batch_size=batch_size,
         shuffle=True,
+        drop_last=len(data) > batch_size,
         collate_fn=lambda b: collate_fn(b, tokenizer),
     )
 
@@ -265,39 +274,75 @@ def train_orm(
     model = OutcomeRewardModel(model_id=model_id).to(device)
     print(f"Trainable parameters: {model.count_trainable_params() / 1e6:.2f}M")
 
-    # Optimizer
+    # Optimizer and LR scheduler with linear warmup
     optimizer = create_optimizer(model, lr)
+    total_optimizer_steps = (len(loader) // grad_accum_steps) * epochs
+    warmup_steps = int(total_optimizer_steps * warmup_ratio)
+    scheduler = torch.optim.lr_scheduler.LinearLR(
+        optimizer, start_factor=0.1, total_iters=warmup_steps
+    ) if warmup_steps > 0 else None
+
+    # Mixed precision
+    autocast_enabled = torch.cuda.is_available()
 
     # Training loop
+    global_step = 0
     for epoch in range(epochs):
         model.train()
-        total_loss = 0.0
-        total_correct = 0
-        total_tokens = 0
+        epoch_loss = 0.0
+        epoch_correct = 0
+        epoch_tokens = 0
+        optimizer.zero_grad()
+
+        # Accumulators for logging per optimizer step
+        accum_loss = 0.0
+        accum_correct = 0
+        accum_tokens = 0
+        accum_microbatches = 0
 
         for step, batch in enumerate(loader):
             batch = {k: v.to(device) for k, v in batch.items()}
-            loss, logits = model(**batch)
 
-            loss.backward()
-            optimizer.step()
-            optimizer.zero_grad()
+            with torch.amp.autocast("cuda", dtype=torch.bfloat16, enabled=autocast_enabled):
+                loss, logits = model(**batch)
 
-            total_loss += loss.item()
+            (loss / grad_accum_steps).backward()
 
-            # Compute accuracy on completion tokens
+            # Accumulate metrics over the grad_accum window
+            accum_loss += loss.item()
             mask = batch["labels"] != -100
             preds = (torch.sigmoid(logits[mask]) > 0.5).long()
-            total_correct += (preds == batch["labels"][mask]).sum().item()
-            total_tokens += mask.sum().item()
+            correct = (preds == batch["labels"][mask]).sum().item()
+            tokens = mask.sum().item()
+            accum_correct += correct
+            accum_tokens += tokens
+            accum_microbatches += 1
 
-            if step % 10 == 0:
-                acc = total_correct / total_tokens if total_tokens > 0 else 0
-                print(f"Epoch {epoch} step {step} loss {loss.item():.4f}")
-                log_metrics({"loss": loss.item(), "accuracy": acc})
+            epoch_loss += loss.item()
+            epoch_correct += correct
+            epoch_tokens += tokens
 
-        avg_loss = total_loss / len(loader)
-        accuracy = total_correct / total_tokens if total_tokens > 0 else 0
+            if (step + 1) % grad_accum_steps == 0 or (step + 1) == len(loader):
+                optimizer.step()
+                if scheduler is not None:
+                    scheduler.step()
+                optimizer.zero_grad()
+                global_step += 1
+
+                # Log averaged metrics over the full effective batch
+                avg_loss = accum_loss / accum_microbatches
+                acc = accum_correct / max(1, accum_tokens)
+                print(f"Epoch {epoch} step {global_step} | loss {avg_loss:.4f} | acc {acc:.3f}")
+                log_metrics({"loss": avg_loss, "accuracy": acc}, step=global_step)
+
+                # Reset accumulators
+                accum_loss = 0.0
+                accum_correct = 0
+                accum_tokens = 0
+                accum_microbatches = 0
+
+        avg_loss = epoch_loss / len(loader)
+        accuracy = epoch_correct / max(1, epoch_tokens)
         print(f"Epoch {epoch} | Loss: {avg_loss:.4f} | Accuracy: {accuracy:.3f}")
         log_metrics({"epoch_loss": avg_loss, "epoch_accuracy": accuracy, "epoch": epoch})
 
@@ -387,8 +432,10 @@ def main():
     parser.add_argument("--model-id", type=str, default=DEFAULT_MODEL_ID, help="Base model ID")
     parser.add_argument("--samples", type=int, default=DEFAULT_SAMPLES, help="Number of training samples")
     parser.add_argument("--batch-size", type=int, default=DEFAULT_BATCH_SIZE, help="Batch size")
+    parser.add_argument("--grad-accum", type=int, default=DEFAULT_GRAD_ACCUM, help="Gradient accumulation steps")
     parser.add_argument("--epochs", type=int, default=DEFAULT_EPOCHS, help="Training epochs")
     parser.add_argument("--lr", type=float, default=DEFAULT_LR, help="Learning rate")
+    parser.add_argument("--warmup-ratio", type=float, default=DEFAULT_WARMUP_RATIO, help="Fraction of steps for LR warmup")
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED, help="Random seed")
     parser.add_argument("--skip-demo", action="store_true", help="Skip scoring demo after training")
     parser.add_argument("--no-wandb", action="store_true", help="Disable wandb logging")
@@ -398,8 +445,10 @@ def main():
         model_id=args.model_id,
         samples=args.samples,
         batch_size=args.batch_size,
+        grad_accum_steps=args.grad_accum,
         epochs=args.epochs,
         lr=args.lr,
+        warmup_ratio=args.warmup_ratio,
         seed=args.seed,
         use_wandb=not args.no_wandb,
     )

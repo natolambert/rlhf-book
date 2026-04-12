@@ -44,12 +44,13 @@ from reward_models.base import (
 
 DEFAULT_MODEL_ID = "Qwen/Qwen3-0.6B-Base"
 DEFAULT_DATASET = "argilla/ultrafeedback-binarized-preferences-cleaned"
-DEFAULT_SAMPLES = 2000
+DEFAULT_SAMPLES = 5000
 DEFAULT_BATCH_SIZE = 2
-DEFAULT_GRAD_ACCUM = 4
+DEFAULT_GRAD_ACCUM = 16
 DEFAULT_MAX_LENGTH = 512
 DEFAULT_EPOCHS = 1
-DEFAULT_LR = 1e-6  # Lower LR for full fine-tuning (vs 1e-5 for LoRA)
+DEFAULT_LR = 5e-5
+DEFAULT_WARMUP_RATIO = 0.1
 DEFAULT_SEED = 42
 
 
@@ -211,6 +212,7 @@ def train_preference_rm(
     max_length: int = DEFAULT_MAX_LENGTH,
     epochs: int = DEFAULT_EPOCHS,
     lr: float = DEFAULT_LR,
+    warmup_ratio: float = DEFAULT_WARMUP_RATIO,
     seed: int = DEFAULT_SEED,
     use_wandb: bool = True,
 ) -> PreferenceRewardModel:
@@ -224,6 +226,7 @@ def train_preference_rm(
         max_length: Maximum sequence length
         epochs: Number of training epochs
         lr: Learning rate
+        warmup_ratio: Fraction of total steps for linear LR warmup
         seed: Random seed
         use_wandb: Whether to log to wandb
 
@@ -245,6 +248,7 @@ def train_preference_rm(
             "max_length": max_length,
             "epochs": epochs,
             "lr": lr,
+            "warmup_ratio": warmup_ratio,
         },
         use_wandb=use_wandb,
     )
@@ -261,6 +265,7 @@ def train_preference_rm(
         data,
         batch_size=batch_size,
         shuffle=True,
+        drop_last=len(data) > batch_size,
         collate_fn=lambda b: collate_fn(b, tokenizer),
     )
 
@@ -269,8 +274,13 @@ def train_preference_rm(
     model = PreferenceRewardModel(model_id=model_id).to(device)
     print(f"Trainable parameters: {model.count_trainable_params() / 1e6:.2f}M")
 
-    # Optimizer
+    # Optimizer and LR scheduler with linear warmup + linear decay
     optimizer = create_optimizer(model, lr)
+    total_optimizer_steps = (len(loader) // grad_accum_steps) * epochs
+    warmup_steps = int(total_optimizer_steps * warmup_ratio)
+    scheduler = torch.optim.lr_scheduler.LinearLR(
+        optimizer, start_factor=0.1, total_iters=warmup_steps
+    ) if warmup_steps > 0 else None
 
     # Mixed precision
     autocast_enabled = torch.cuda.is_available()
@@ -279,10 +289,18 @@ def train_preference_rm(
     global_step = 0
     for epoch in range(epochs):
         model.train()
-        total_loss = 0.0
-        total_correct = 0
-        total_pairs = 0
+        epoch_loss = 0.0
+        epoch_correct = 0
+        epoch_pairs = 0
         optimizer.zero_grad()
+
+        # Accumulators for logging per optimizer step
+        accum_loss = 0.0
+        accum_correct = 0
+        accum_pairs = 0
+        accum_r_chosen = 0.0
+        accum_r_rejected = 0.0
+        accum_microbatches = 0
 
         for step_idx, batch in enumerate(loader):
             batch = {k: v.to(device) for k, v in batch.items()}
@@ -292,31 +310,50 @@ def train_preference_rm(
 
             (loss / grad_accum_steps).backward()
 
+            # Accumulate metrics over the grad_accum window
+            accum_loss += loss.item()
+            correct = (r_chosen > r_rejected).sum().item()
+            accum_correct += correct
+            accum_pairs += r_chosen.size(0)
+            accum_r_chosen += r_chosen.mean().item()
+            accum_r_rejected += r_rejected.mean().item()
+            accum_microbatches += 1
+
+            epoch_loss += loss.item()
+            epoch_correct += correct
+            epoch_pairs += r_chosen.size(0)
+
             if (step_idx + 1) % grad_accum_steps == 0 or (step_idx + 1) == len(loader):
                 optimizer.step()
+                if scheduler is not None:
+                    scheduler.step()
                 optimizer.zero_grad()
                 global_step += 1
 
-            total_loss += loss.item()
-
-            # Accuracy: how often is r_chosen > r_rejected?
-            correct = (r_chosen > r_rejected).sum().item()
-            total_correct += correct
-            total_pairs += r_chosen.size(0)
-
-            if step_idx % 50 == 0:
-                acc = total_correct / max(1, total_pairs)
-                print(f"Epoch {epoch} step {step_idx} | loss {loss.item():.4f} | acc {acc:.3f}")
+                # Log averaged metrics over the full effective batch
+                n = max(1, accum_pairs)
+                mb = accum_microbatches
+                avg_loss = accum_loss / mb
+                acc = accum_correct / n
+                print(f"Epoch {epoch} step {global_step} | loss {avg_loss:.4f} | acc {acc:.3f}")
                 log_metrics({
-                    "loss": loss.item(),
+                    "loss": avg_loss,
                     "accuracy": acc,
-                    "r_chosen_mean": r_chosen.mean().item(),
-                    "r_rejected_mean": r_rejected.mean().item(),
-                    "reward_margin": (r_chosen - r_rejected).mean().item(),
+                    "r_chosen_mean": accum_r_chosen / mb,
+                    "r_rejected_mean": accum_r_rejected / mb,
+                    "reward_margin": (accum_r_chosen - accum_r_rejected) / mb,
                 }, step=global_step)
 
-        avg_loss = total_loss / len(loader)
-        accuracy = total_correct / max(1, total_pairs)
+                # Reset accumulators
+                accum_loss = 0.0
+                accum_correct = 0
+                accum_pairs = 0
+                accum_r_chosen = 0.0
+                accum_r_rejected = 0.0
+                accum_microbatches = 0
+
+        avg_loss = epoch_loss / len(loader)
+        accuracy = epoch_correct / max(1, epoch_pairs)
         print(f"Epoch {epoch} | Loss: {avg_loss:.4f} | Accuracy: {accuracy:.3f}")
 
     finish_wandb()
@@ -386,6 +423,7 @@ def main():
     parser.add_argument("--max-length", type=int, default=DEFAULT_MAX_LENGTH, help="Max sequence length")
     parser.add_argument("--epochs", type=int, default=DEFAULT_EPOCHS, help="Training epochs")
     parser.add_argument("--lr", type=float, default=DEFAULT_LR, help="Learning rate")
+    parser.add_argument("--warmup-ratio", type=float, default=DEFAULT_WARMUP_RATIO, help="Fraction of steps for LR warmup")
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED, help="Random seed")
     parser.add_argument("--skip-demo", action="store_true", help="Skip scoring demo after training")
     parser.add_argument("--no-wandb", action="store_true", help="Disable wandb logging")
@@ -399,6 +437,7 @@ def main():
         max_length=args.max_length,
         epochs=args.epochs,
         lr=args.lr,
+        warmup_ratio=args.warmup_ratio,
         seed=args.seed,
         use_wandb=not args.no_wandb,
     )
