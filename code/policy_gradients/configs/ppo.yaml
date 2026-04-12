@@ -11,10 +11,10 @@ loss: ppo
 model_name: Qwen/Qwen3-1.7B
 clip_eps_lo: 0.2
 clip_eps_hi: 0.2
-clip_eps_val: 0.2  # PPO-specific: value function clipping
-gamma: 0.99        # PPO-specific: discount factor
-lam: 0.95          # PPO-specific: GAE lambda
-vf_coef: 0.1       # PPO-specific: value loss coefficient
+clip_eps_val: 0.4  # PPO-specific: value function clipping
+gamma: 1.0         # PPO-specific: discount factor
+lam: 0.98          # PPO-specific: GAE lambda
+vf_coef: 0.5       # PPO-specific: value loss coefficient
 lr: 5e-6
 temperature: 0.6
 top_p: 0.95
