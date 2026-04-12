@@ -21,7 +21,7 @@ class NavigationDropdown extends HTMLElement {
         <ul>
           <li><a href="https://rlhfbook.com">Home</a> / <a href="https://github.com/natolambert/rlhf-book">GitHub</a></li>
           <li><a href="https://rlhfbook.com/book.pdf">PDF</a> / <a href="https://arxiv.org/abs/2504.12501">Arxiv</a> / <a href="https://rlhfbook.com/book.epub">EPUB</a> / <a href="https://rlhfbook.com/book.kindle.epub">Kindle</a></li>
-          <li><a href="https://hubs.la/Q03TsMBq0">Pre-order now!</a></li>
+          <li>Order: <a href="https://hubs.la/Q03TsMBq0">Manning</a>, <a href="https://amzn.to/4cwCDJQ">Amazon</a></li>
         </ul>
         <h3>Resources</h3>
         <ul>
@@ -68,7 +68,7 @@ class NavigationDropdown extends HTMLElement {
           <li><a href="https://rlhfbook.com/c/14-over-optimization">Over-optimization</a></li>
           <li><a href="https://rlhfbook.com/c/15-regularization">Regularization</a></li>
           <li><a href="https://rlhfbook.com/c/16-evaluation">Evaluation</a></li>
-          <li><a href="https://rlhfbook.com/c/17-product">Crafting Model Character & Products</a></li>
+          <li><a href="https://rlhfbook.com/c/17-product">Model Character & Products</a></li>
         </ol>
       </div>
 

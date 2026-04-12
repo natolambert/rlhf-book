@@ -1,0 +1,54 @@
+# Fair baseline for top_per_prompt: pick one completion per prompt uniformly
+# at random (seeded by `seed`), ignoring the reward model. Matches
+# top_per_prompt on dataset size and prompt coverage, so comparing the two
+# isolates whether reward-based filtering actually beats a coin flip.
+#
+# Generation params are identical across all three configs so they share a
+# single rollout cache in rejection_sampling/output/rollouts/<hash>.jsonl.
+
+data:
+  name: openai/gsm8k
+  subset: main
+  train_split: train
+  test_split: test
+  max_train_samples: 1000
+  max_test_samples: 200
+
+model_name: Qwen/Qwen3-1.7B
+reward_model_name: nvidia/AceMath-7B-RM
+
+# Stage 1 — generation (MUST match other configs to share the cache)
+temperature: 0.8
+top_p: 0.95
+top_k: 20
+min_p: 0.0
+max_new_tokens: 512
+num_completions_per_prompt: 8
+rollout_batch_size: 8
+
+# Stage 2 — scoring
+score_batch_size: 2
+
+# Stage 3a — selection
+selection:
+  strategy: random_per_prompt
+
+# Stage 3b — SFT
+lr: 5.0e-6
+num_epochs: 2
+train_batch_size: 2
+batch_acc: 4
+max_norm: 1.0
+max_seq_length: 1024
+
+# Stage 3c — eval
+eval_temperature: 0.0
+eval_max_new_tokens: 512
+
+seed: 42
+model_device_id: 0
+reward_model_device_id: 0
+output_dir: ./rejection_sampling/output
+save_checkpoint: false
+wandb_project: rlhf-book
+wandb_run_name: rs_random_per_prompt_gsm8k

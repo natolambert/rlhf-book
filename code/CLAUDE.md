@@ -10,10 +10,12 @@
 
 ## Changelog Process
 
-- Keep `CHANGELOG.md` minimal and release-oriented.
-- Use exactly **one bullet per PR**.
+- **CI enforces this**: a GitHub Actions check fails PRs that touch `code/` without modifying `code/CHANGELOG.md`.
+- Add entries under the `## Unreleased` section at the top of `CHANGELOG.md`.
+- Use exactly **one bullet per PR**, format: `- YYYY-MM-DD: [PR #N](url) description`.
 - Each bullet must include a PR link and can contain multiple sentences summarizing meaningful changes.
 - When changes affect comparability (metrics, logging semantics, evaluation logic), mention that directly in the same bullet.
+- **On release**: rename `## Unreleased` to `## vX.Y.Z` and add a fresh `## Unreleased` section above it.
 
 ## Experiment Organization
 
@@ -51,9 +53,9 @@ uv run python -m direct_alignment.train --config direct_alignment/configs/dpo.ya
   - Simplifies code and removes bitsandbytes/PEFT dependencies
   - May need to adjust learning rate (try 1e-5 or 5e-6)
 - [x] Generate wandb runs for all algorithms:
-  - [x] ORM (full fine-tune): https://wandb.ai/natolambert/rlhf-book/runs/xm8mlcpl
-  - [x] Preference RM (Bradley-Terry): https://wandb.ai/natolambert/rlhf-book/runs/6sninll5
-  - [x] PRM (Process RM): https://wandb.ai/natolambert/rlhf-book/runs/abhkbn4q
+  - [x] ORM (full fine-tune): https://wandb.ai/natolambert/rlhf-book/runs/3gkoqb7f
+  - [x] Preference RM (Bradley-Terry): https://wandb.ai/natolambert/rlhf-book/runs/1g3y9bcc
+  - [x] PRM (Process RM): https://wandb.ai/natolambert/rlhf-book/runs/iv4d966d
   - [x] REINFORCE: https://wandb.ai/natolambert/rlhf-book/runs/0uqbq4oz
   - [x] GRPO: https://wandb.ai/natolambert/rlhf-book/runs/vjp7lgdi
   - [x] RLOO: https://wandb.ai/natolambert/rlhf-book/runs/07xeasn8

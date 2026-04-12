@@ -4,6 +4,8 @@ Educational code examples accompanying [RLHF Book](https://rlhfbook.com) by Nath
 
 I primarily run experiments on a [DGX Spark](https://www.nvidia.com/en-us/products/workstations/dgx-spark/). For setup advice, see my [dgx-spark-setup](https://github.com/natolambert/dgx-spark-setup) guide.
 
+*Note: There's an open PR [here](https://github.com/natolambert/rlhf-book/pull/328) exploring the idea of adding speedrun functionality to this repository — comment if you're interested in pushing this further or seeing it merged into main.*
+
 ## Attribution
 
 This code is built on the excellent work of community contributors:
@@ -34,27 +36,35 @@ demonstrating the concepts from Chapter 5 (Reward Models).
 
 ## Installation
 
-**Requires Python 3.12+**
+**Requires Python 3.12+** and [uv](https://docs.astral.sh/uv/getting-started/installation/).
 
 ```bash
 cd code/
 uv sync
 ```
 
-### Platform-specific notes
-
-**Standard x86_64 systems** (recommended): Flash Attention is installed by default for
-significant speedups during training.
-
-**DGX Spark / aarch64**: Flash Attention is not available on ARM64/Blackwell. The code
-automatically falls back to PyTorch SDPA, which is actually faster on these systems due
-to native cuDNN optimizations.
+By default, [Flash Attention](https://github.com/Dao-AILab/flash-attention) is turned off
+to support a broad range of hardware, but for speedups you should consider installing it:
 
 ```bash
-# On DGX Spark, just run:
-uv sync
-# Flash-attn will be skipped automatically on aarch64
+uv sync --extra flash
 ```
+
+> **Note:** If a pre-built wheel matches your CUDA version this installs in seconds.
+> If not (e.g. CUDA 13), it falls back to a source build which needs a CUDA toolkit
+> and can take several minutes. If the build fails, just use the base install — the
+> code automatically falls back to PyTorch SDPA and all examples will work without it.
+
+### Platform notes
+
+- **Standard x86_64 systems**: Flash Attention provides a ~10-20% training speedup on
+  Ampere/Ada GPUs (e.g. 3090, 4090). Pre-built wheels are available for CUDA 12.x
+  ([releases](https://github.com/Dao-AILab/flash-attention/releases/latest));
+  as of 11 Apr. 2026 CUDA 13 requires a source build (which tends to be a pain),
+  so nothing is gated on it.
+- **DGX Spark / aarch64**: Flash Attention is not available on ARM64/Blackwell. The code
+  automatically falls back to PyTorch SDPA, which is actually faster on these systems due
+  to native cuDNN optimizations.
 
 ## Policy Gradient Training
 
@@ -128,9 +138,9 @@ learning to rate individual reasoning steps as {-1, 0, 1} (bad, neutral, good).
 
 | Model | Description | Example Run |
 |-------|-------------|-------------|
-| Preference RM | Bradley-Terry on UltraFeedback | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/6sninll5) |
-| ORM | Outcome RM on GSM8K | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/xm8mlcpl) |
-| PRM | Process RM on PRM800K | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/abhkbn4q) |
+| Preference RM | Bradley-Terry on UltraFeedback | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/1g3y9bcc) |
+| ORM | Outcome RM on GSM8K | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/3gkoqb7f) |
+| PRM | Process RM on PRM800K | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/iv4d966d) |
 
 ## Direct Alignment Training
 
@@ -166,6 +176,45 @@ uv run python -m direct_alignment.train --loss dpo --max_samples 1000
 ![Direct Alignment Training Results](images/wandb_direct_alignment.png)
 
 See Chapter 8 of RLHF Book for mathematical derivations.
+
+## Rejection Sampling
+
+Train the rejection sampling pipeline from Chapter 9: generate multiple
+completions per prompt, score them with a reward model, select a subset, then
+SFT on the selected pairs.
+
+```bash
+# Preprocess once (generate + score rollouts)
+uv run python -m rejection_sampling.preprocess \
+    --config rejection_sampling/configs/top_per_prompt.yaml
+
+# Train each selection config on the cached rollouts
+uv run python -m rejection_sampling.train \
+    --config rejection_sampling/configs/top_per_prompt.yaml
+uv run python -m rejection_sampling.train \
+    --config rejection_sampling/configs/random_per_prompt.yaml
+uv run python -m rejection_sampling.train \
+    --config rejection_sampling/configs/top_k_overall.yaml
+uv run python -m rejection_sampling.train \
+    --config rejection_sampling/configs/random_k_overall.yaml
+```
+
+### Training Results
+
+![Rejection Sampling Results](images/wandb_rejection_sampling.png)
+
+### Example Runs
+
+| Strategy | Description | Example Run |
+|----------|-------------|-------------|
+| `top_per_prompt` | Best-of-N completion per prompt | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/ohm3xnga) |
+| `random_per_prompt` | Random per-prompt control | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/y3pbcla7) |
+| `top_k_overall` | Best K completions across the full pool | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/w75hklzs) |
+| `random_k_overall` | Random flat-pool control | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/egeyr1q3) |
+
+On the reference 1k-train / 200-test GSM8K slice, `top_k_overall` beat its
+matched random baseline, while `top_per_prompt` and `random_per_prompt` were
+effectively tied.
 
 ## Configuration
 
@@ -215,6 +264,7 @@ These examples correspond to:
 - **Chapter 5**: Reward Models (ORM, PRM, Preference RM)
 - **Chapter 6**: Policy Gradient Methods (REINFORCE, PPO, GRPO, etc.)
 - **Chapter 8**: Direct Alignment (DPO, IPO, SimPO, KTO, etc.)
+- **Chapter 9**: Rejection Sampling
 
 See [rlhfbook.com](https://rlhfbook.com) for the full text.
 
