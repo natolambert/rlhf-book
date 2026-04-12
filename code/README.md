@@ -33,27 +33,35 @@ demonstrating the concepts from Chapter 5 (Reward Models).
 
 ## Installation
 
-**Requires Python 3.12+**
+**Requires Python 3.12+** and [uv](https://docs.astral.sh/uv/getting-started/installation/).
 
 ```bash
 cd code/
 uv sync
 ```
 
-### Platform-specific notes
-
-**Standard x86_64 systems** (recommended): Flash Attention is installed by default for
-significant speedups during training.
-
-**DGX Spark / aarch64**: Flash Attention is not available on ARM64/Blackwell. The code
-automatically falls back to PyTorch SDPA, which is actually faster on these systems due
-to native cuDNN optimizations.
+By default, [Flash Attention](https://github.com/Dao-AILab/flash-attention) is turned off
+to support a broad range of hardware, but for speedups you should consider installing it:
 
 ```bash
-# On DGX Spark, just run:
-uv sync
-# Flash-attn will be skipped automatically on aarch64
+uv sync --extra flash
 ```
+
+> **Note:** If a pre-built wheel matches your CUDA version this installs in seconds.
+> If not (e.g. CUDA 13), it falls back to a source build which needs a CUDA toolkit
+> and can take several minutes. If the build fails, just use the base install — the
+> code automatically falls back to PyTorch SDPA and all examples will work without it.
+
+### Platform notes
+
+- **Standard x86_64 systems**: Flash Attention provides a ~10-20% training speedup on
+  Ampere/Ada GPUs (e.g. 3090, 4090). Pre-built wheels are available for CUDA 12.x
+  ([releases](https://github.com/Dao-AILab/flash-attention/releases/latest));
+  as of 11 Apr. 2026 CUDA 13 requires a source build (which tends to be a pain),
+  so nothing is gated on it.
+- **DGX Spark / aarch64**: Flash Attention is not available on ARM64/Blackwell. The code
+  automatically falls back to PyTorch SDPA, which is actually faster on these systems due
+  to native cuDNN optimizations.
 
 ## Policy Gradient Training
 
@@ -126,9 +134,9 @@ learning to rate individual reasoning steps as {-1, 0, 1} (bad, neutral, good).
 
 | Model | Description | Example Run |
 |-------|-------------|-------------|
-| Preference RM | Bradley-Terry on UltraFeedback | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/6sninll5) |
-| ORM | Outcome RM on GSM8K | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/xm8mlcpl) |
-| PRM | Process RM on PRM800K | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/abhkbn4q) |
+| Preference RM | Bradley-Terry on UltraFeedback | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/1g3y9bcc) |
+| ORM | Outcome RM on GSM8K | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/3gkoqb7f) |
+| PRM | Process RM on PRM800K | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/iv4d966d) |
 
 ## Direct Alignment Training
 
