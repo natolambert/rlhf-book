@@ -1,5 +1,7 @@
 # Reward Model Training
 
+![Overview of the RLHF training loop.](../../book/images/rlhf-overview.png)
+
 Educational implementations of reward model training for [RLHF Book](https://rlhfbook.com).
 See **Chapter 5: Reward Models** for mathematical derivations and intuitions.
 

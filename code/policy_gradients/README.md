@@ -1,5 +1,7 @@
 # Policy Gradient Methods
 
+![Overview of the RLHF training loop.](../../book/images/rlhf-overview.png)
+
 Educational implementations of policy gradient algorithms for [RLHF Book](https://rlhfbook.com).
 See **Chapter 6: Policy Gradient Methods** for mathematical derivations and intuitions.
 See the parent [`code/README.md`](../README.md) for installation, configuration, and memory requirements.
