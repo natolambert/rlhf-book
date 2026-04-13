@@ -25,7 +25,7 @@ See the parent [`code/README.md`](../README.md) for installation, configuration,
 |-----------|-------|--------|
 | **REINFORCE** | [run](https://wandb.ai/natolambert/rlhf-book/runs/0uqbq4oz) | ✅ Validated |
 | **RLOO** | [run](https://wandb.ai/natolambert/rlhf-book/runs/07xeasn8) | ✅ Validated |
-| **PPO** | [run](https://wandb.ai/natolambert/rlhf-book/runs/ku3r3g9j) | ⚠️ Experimental |
+| **PPO** | [run](https://wandb.ai/natolambert/rlhf-book/runs/ku3r3g9j) | ✅ Validated |
 | **GRPO** | [run](https://wandb.ai/natolambert/rlhf-book/runs/vjp7lgdi) | ✅ Validated |
 | **Dr. GRPO** | [run](https://wandb.ai/natolambert/rlhf-book/runs/a1swuynq) | ✅ Validated |
 | **GSPO** | [run](https://wandb.ai/natolambert/rlhf-book/runs/10sxytli) | ✅ Validated |
