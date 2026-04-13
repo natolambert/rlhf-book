@@ -5,6 +5,7 @@ On release, entries get moved under a version heading.
 
 ## Unreleased
 
+- 2026-04-12: [PR #365](https://github.com/natolambert/rlhf-book/pull/365) updated the canonical PPO reference run to the post-retune validation run from PR #364.
 - 2026-04-12: [PR #364](https://github.com/natolambert/rlhf-book/pull/364) retuned PPO
   hyperparameters for smoother training.
 
