@@ -5,6 +5,9 @@ On release, entries get moved under a version heading.
 
 ## Unreleased
 
+- 2026-04-12: [PR #364](https://github.com/natolambert/rlhf-book/pull/364) retuned PPO
+  hyperparameters for smoother training.
+
 ## v0.2.0
 
 - 2026-04-12: [PR #362](https://github.com/natolambert/rlhf-book/pull/362) added overview figures from the book to the policy_gradients, reward_models, and rejection_sampling module READMEs.
