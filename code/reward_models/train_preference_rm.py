@@ -148,11 +148,10 @@ def collate_fn(batch: List[Dict], tokenizer: AutoTokenizer) -> Dict[str, torch.T
 
 
 class PreferenceRewardModel(BaseRewardModel):
-    """Preference-based Reward Model with LoRA fine-tuning.
+    """Preference-based Reward Model with full fine-tuning.
 
     Architecture:
-    - Base LLM (e.g., Qwen3) with 4-bit quantization
-    - LoRA adapters on attention projections
+    - Base LLM (e.g., Qwen3) loaded in bfloat16
     - Linear head mapping last hidden state to scalar reward
 
     The model outputs a single scalar reward for each sequence.
