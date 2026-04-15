@@ -5,6 +5,7 @@
 - **Always run Python commands with `uv run python`** (not bare `python`/`python3`) so the project environment is used consistently
 - **Always run training commands in background** using `run_in_background: true` to avoid blocking
 - **Be careful with parallel jobs**: Only run one training job at a time unless you verify memory is available. Running too many can OOM the system.
+- **If using a DGX Spark**: ~120GB unified CPU/GPU memory — aim for <80GB usage to be safe. Flash Attention is not available on ARM64/Blackwell; the code automatically falls back to PyTorch SDPA.
 
 ## Quick Start
 
@@ -64,6 +65,6 @@ With gradient checkpointing can reduce by ~30-40%.
 
 ## TODOs
 
-- [ ] Validate and generate reference wandb runs for direct alignment (DPO, IPO, SimPO, ORPO, KTO) — see [#358](https://github.com/natolambert/rlhf-book/issues/358)
+- [ ] Validate and generate reference wandb runs for direct alignment (DPO, IPO, SimPO, ORPO, KTO) — see [#358](https://github.com/natolambert/rlhf-book/issues/358). For ORPO/SimPO debugging context, see [direct_alignment/ORPO_SIMPO.md](direct_alignment/ORPO_SIMPO.md)
 - [ ] Add evaluation scripts for reward models
 - [ ] Remove QLoRA from reward models (small models don't need it)
