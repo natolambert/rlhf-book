@@ -35,12 +35,22 @@ demonstrating the concepts from Chapter 5 (Reward Models).
 
 ## Installation
 
-**Requires Python 3.12+** and [uv](https://docs.astral.sh/uv/getting-started/installation/).
+**Requires Python 3.12+** and [uv](https://docs.astral.sh/uv/getting-started/installation/) **v0.6+**.
+
+**Ubuntu/Debian users**: install build tools first (needed to compile native dependencies like `pycosat`):
+
+```bash
+sudo apt install -y build-essential python3-dev
+```
+
+Then install:
 
 ```bash
 cd code/
 uv sync
 ```
+
+> If you see a warning about `extra-build-dependencies`, run `uv self update` to upgrade uv.
 
 By default, [Flash Attention](https://github.com/Dao-AILab/flash-attention) is turned off
 to support a broad range of hardware, but for speedups you should consider installing it:
