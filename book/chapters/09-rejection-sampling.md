@@ -12,7 +12,7 @@ search-title: "Chapter 9: Rejection Sampling"
 next-chapter: "What are Preferences"
 next-url: "10-preferences"
 lectures:
-  - video: "https://youtu.be/4gIwiSPmQkU"
+  - video: "https://www.youtube.com/watch?v=4gIwiSPmQkU&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=3"
     label: "Lecture 2: IFT, Reward Modeling, Rejection Sampling (Chap. 4, 5, & 9)"
 ---
 

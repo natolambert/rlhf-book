@@ -12,7 +12,7 @@ search-title: "Chapter 1: Introduction"
 next-chapter: "Key Related Works"
 next-url: "02-related-works"
 lectures:
-  - video: "https://youtu.be/o6l6tJQgUg4"
+  - video: "https://www.youtube.com/watch?v=o6l6tJQgUg4&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=2"
     label: "Lecture 1: Overview (Chapters 1–3)"
 ---
 

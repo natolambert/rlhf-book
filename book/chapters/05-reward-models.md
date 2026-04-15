@@ -12,7 +12,7 @@ search-title: "Chapter 5: Reward Models"
 next-chapter: "Reinforcement Learning"
 next-url: "06-policy-gradients"
 lectures:
-  - video: "https://youtu.be/4gIwiSPmQkU"
+  - video: "https://www.youtube.com/watch?v=4gIwiSPmQkU&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=3"
     label: "Lecture 2: IFT, Reward Modeling, Rejection Sampling (Chap. 4, 5, & 9)"
 ---
 
