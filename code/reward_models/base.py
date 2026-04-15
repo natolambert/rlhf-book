@@ -6,7 +6,6 @@ This module provides common functionality shared across ORM, PRM, and Preference
 - Data utilities: collate functions
 
 Note: We use full fine-tuning for simplicity with small models (0.6B-1.7B).
-For larger models, consider using LoRA/QLoRA (see commented code below).
 """
 
 import os
@@ -17,10 +16,6 @@ import torch.nn as nn
 import wandb
 from torch.utils.data import DataLoader
 from transformers import AutoModelForCausalLM, AutoTokenizer
-
-# Commented out LoRA imports - kept for reference if needed for larger models
-# from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
-# from transformers import BitsAndBytesConfig
 
 
 # =============================================================================
@@ -44,10 +39,6 @@ class BaseRewardModel(nn.Module):
         model_id: str,
         head_dim: int = 1,
         freeze_backbone: bool = False,
-        # LoRA params kept for potential future use
-        # lora_r: int = 16,
-        # lora_alpha: int = 32,
-        # lora_dropout: float = 0.05,
     ):
         super().__init__()
 
@@ -69,29 +60,6 @@ class BaseRewardModel(nn.Module):
         # Build head with same dtype as model
         self.head = self._build_head(self.model.config.hidden_size, head_dim)
         self.head = self.head.to(torch.bfloat16)
-
-        # --- Commented out LoRA setup for reference ---
-        # bnb_config = BitsAndBytesConfig(
-        #     load_in_4bit=True,
-        #     bnb_4bit_compute_dtype=torch.bfloat16,
-        # )
-        # lora_config = LoraConfig(
-        #     r=lora_r,
-        #     lora_alpha=lora_alpha,
-        #     lora_dropout=lora_dropout,
-        #     bias="none",
-        #     task_type="CAUSAL_LM",
-        #     target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
-        #                     "gate_proj", "up_proj", "down_proj"],
-        # )
-        # base = AutoModelForCausalLM.from_pretrained(
-        #     model_id,
-        #     quantization_config=bnb_config,
-        #     device_map=device_map,
-        #     trust_remote_code=True,
-        # )
-        # base = prepare_model_for_kbit_training(base)
-        # self.model = get_peft_model(base, lora_config)
 
     def _build_head(self, hidden_size: int, output_dim: int) -> nn.Module:
         """Build the reward head. Override for custom architectures."""

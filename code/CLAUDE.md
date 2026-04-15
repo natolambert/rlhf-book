@@ -67,4 +67,4 @@ With gradient checkpointing can reduce by ~30-40%.
 
 - [ ] Validate and generate reference wandb runs for direct alignment (DPO, IPO, SimPO, ORPO, KTO) — see [#358](https://github.com/natolambert/rlhf-book/issues/358). For ORPO/SimPO debugging context, see [direct_alignment/ORPO_SIMPO.md](direct_alignment/ORPO_SIMPO.md)
 - [ ] Add evaluation scripts for reward models
-- [ ] Remove QLoRA from reward models (small models don't need it)
+- [x] ~~Remove QLoRA from reward models~~ (done — full fine-tune is the default, dead LoRA references cleaned up)

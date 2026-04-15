@@ -8,7 +8,7 @@ License: MIT
 Adapted for RLHF Book (https://rlhfbook.com) by Nathan Lambert
 
 This script trains a minimal outcome reward model by fine-tuning a base LLM
-with LoRA on GSM8K-derived correct/incorrect math answers. For each question,
+on GSM8K-derived correct/incorrect math answers. For each question,
 we parse the gold numeric answer and synthesize wrong completions by adding
 random offsets. The model learns to classify solution correctness via per-token
 BCE loss on completion tokens.
@@ -157,11 +157,10 @@ def collate_fn(batch: List[Dict], tokenizer: AutoTokenizer) -> Dict[str, torch.T
 
 
 class OutcomeRewardModel(BaseRewardModel):
-    """Outcome Reward Model with LoRA fine-tuning.
+    """Outcome Reward Model with full fine-tuning.
 
     Architecture:
-    - Base LLM (e.g., Qwen3) with 4-bit quantization
-    - LoRA adapters on attention projections
+    - Base LLM (e.g., Qwen3) loaded in bfloat16
     - Linear head mapping hidden states to scalar reward
 
     The model outputs per-token logits which are trained with BCE loss

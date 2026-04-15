@@ -7,7 +7,7 @@ License: MIT
 
 Adapted for RLHF Book (https://rlhfbook.com) by Nathan Lambert
 
-This script trains a process reward model by fine-tuning a base LLM with LoRA
+This script trains a process reward model by fine-tuning a base LLM
 on PRM800K-style chain-of-thought traces. Each reasoning step has a label in
 {-1, 0, 1} (bad, neutral, good). The model learns to classify step quality
 via cross-entropy loss on step terminator tokens.
