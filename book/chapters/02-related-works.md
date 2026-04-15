@@ -12,7 +12,7 @@ search-title: "Chapter 2: Key Related Works"
 next-chapter: "Training Overview"
 next-url: "03-training-overview"
 lectures:
-  - video: "https://youtu.be/o6l6tJQgUg4"
+  - video: "https://www.youtube.com/watch?v=o6l6tJQgUg4&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=2"
     label: "Lecture 1: Overview (Chapters 1–3)"
 ---
 
