@@ -24,7 +24,13 @@ import torch
 import torch.nn.functional as F
 import wandb
 from rich.console import Console
-from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeElapsedColumn
+from rich.progress import (
+    Progress,
+    SpinnerColumn,
+    TextColumn,
+    BarColumn,
+    TimeElapsedColumn,
+)
 from torch.nn.utils import clip_grad_norm_
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
@@ -39,6 +45,7 @@ def get_attn_implementation() -> str:
         return "sdpa"  # aarch64 / DGX Spark - use SDPA with cuDNN
     try:
         import flash_attn  # noqa: F401
+
         return "flash_attention_2"
     except ImportError:
         return "sdpa"
@@ -276,7 +283,9 @@ def print_training_info(console: Console, cfg: Config, num_samples: int):
     console.print(f"  Beta: {cfg.beta}")
     console.print(f"  Dataset: {cfg.dataset_name}")
     console.print(f"  Samples: {num_samples}")
-    console.print(f"  Batch size: {cfg.batch_size} x {cfg.gradient_accumulation_steps} = {cfg.batch_size * cfg.gradient_accumulation_steps}")
+    console.print(
+        f"  Batch size: {cfg.batch_size} x {cfg.gradient_accumulation_steps} = {cfg.batch_size * cfg.gradient_accumulation_steps}"
+    )
     console.print(f"  Learning rate: {cfg.learning_rate}")
     console.print(f"  Epochs: {cfg.num_epochs}")
     console.print(
@@ -320,11 +329,15 @@ def load_sample_prompt_pool(cfg: Config, console: Console) -> list[str]:
 
     if path.suffix.lower() == ".json":
         raw_data = json.loads(path.read_text())
-        if not isinstance(raw_data, list) or not all(isinstance(x, str) for x in raw_data):
+        if not isinstance(raw_data, list) or not all(
+            isinstance(x, str) for x in raw_data
+        ):
             raise ValueError("sample_prompts_file JSON must be a list of strings")
         prompts = [p.strip() for p in raw_data if p.strip()]
     else:
-        prompts = [line.strip() for line in path.read_text().splitlines() if line.strip()]
+        prompts = [
+            line.strip() for line in path.read_text().splitlines() if line.strip()
+        ]
 
     if not prompts:
         raise ValueError(f"No prompts found in {path}")
@@ -428,7 +441,7 @@ def generate_samples(
 
         # Decode response only (not the prompt)
         response = tokenizer.decode(
-            outputs[0][inputs["input_ids"].shape[1]:],
+            outputs[0][inputs["input_ids"].shape[1] :],
             skip_special_tokens=True,
         )
 
@@ -448,13 +461,17 @@ def generate_samples(
         # Print to console if provided
         if console:
             console.print(f"\n[bold cyan]Prompt {prompt_id}:[/bold cyan] {prompt}")
-            console.print(f"[bold green]Response:[/bold green] {response[:500]}{'...' if len(response) > 500 else ''}")
+            console.print(
+                f"[bold green]Response:[/bold green] {response[:500]}{'...' if len(response) > 500 else ''}"
+            )
 
     model.train()
     return samples
 
 
-def log_samples_to_wandb(samples: list[dict], step: int, strategy: str, prompt_pool_size: int):
+def log_samples_to_wandb(
+    samples: list[dict], step: int, strategy: str, prompt_pool_size: int
+):
     """Log generated samples to wandb as a table."""
     table = wandb.Table(
         columns=[
@@ -553,13 +570,19 @@ def main(cfg: Config):
     steps_per_epoch = len(dataloader) // cfg.gradient_accumulation_steps
     num_training_steps = steps_per_epoch * cfg.num_epochs
     num_warmup_steps = int(num_training_steps * cfg.warmup_ratio)
-    console.print(f"[dim]LR schedule: {num_training_steps} steps, {num_warmup_steps} warmup[/dim]")
+    console.print(
+        f"[dim]LR schedule: {num_training_steps} steps, {num_warmup_steps} warmup[/dim]"
+    )
 
     def lr_lambda(step):
         if step < num_warmup_steps:
             # Start warmup at 1/num_warmup_steps, not 0 (avoids first step doing nothing)
             return float(step + 1) / float(max(1, num_warmup_steps + 1))
-        return max(0.0, float(num_training_steps - step) / float(max(1, num_training_steps - num_warmup_steps)))
+        return max(
+            0.0,
+            float(num_training_steps - step)
+            / float(max(1, num_training_steps - num_warmup_steps)),
+        )
 
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
 
@@ -632,7 +655,9 @@ def main(cfg: Config):
 
                 # Update scheduler after optimizer step
                 if (batch_idx + 1) % cfg.gradient_accumulation_steps == 0:
-                    step_metrics = {key: value / metrics_count for key, value in metrics_sum.items()}
+                    step_metrics = {
+                        key: value / metrics_count for key, value in metrics_sum.items()
+                    }
                     scheduler.step()
                     global_step += 1
 
@@ -651,7 +676,9 @@ def main(cfg: Config):
 
                     # Generate and log samples periodically
                     if cfg.sample_every > 0 and global_step % cfg.sample_every == 0:
-                        console.print(f"\n[bold yellow]Generating samples at step {global_step}...[/bold yellow]")
+                        console.print(
+                            f"\n[bold yellow]Generating samples at step {global_step}...[/bold yellow]"
+                        )
                         prompt_entries = select_sample_prompts(
                             prompt_pool=sample_prompt_pool,
                             sample_num_prompts=cfg.sample_num_prompts,
@@ -684,13 +711,19 @@ def main(cfg: Config):
             # Flush remaining gradients at end of epoch if partial batch exists
             remaining = len(dataloader) % cfg.gradient_accumulation_steps
             if remaining != 0:
-                grad_norm = clip_grad_norm_(policy_model.parameters(), cfg.max_grad_norm)
+                grad_norm = clip_grad_norm_(
+                    policy_model.parameters(), cfg.max_grad_norm
+                )
                 optimizer.step()
                 optimizer.zero_grad()
                 scheduler.step()
                 global_step += 1
 
-                step_metrics = {key: value / metrics_count for key, value in metrics_sum.items()} if metrics_count > 0 else {}
+                step_metrics = (
+                    {key: value / metrics_count for key, value in metrics_sum.items()}
+                    if metrics_count > 0
+                    else {}
+                )
                 # Log final partial batch
                 step_metrics["learning_rate"] = scheduler.get_last_lr()[0]
                 step_metrics["epoch"] = epoch + 1.0
@@ -701,7 +734,9 @@ def main(cfg: Config):
     # Final summary
     console.print("\n[bold green]Training complete![/bold green]")
     if last_logged_metrics:
-        console.print(f"  Final loss: {last_logged_metrics.get('loss', float('nan')):.4f}")
+        console.print(
+            f"  Final loss: {last_logged_metrics.get('loss', float('nan')):.4f}"
+        )
         if "accuracy" in last_logged_metrics:
             console.print(f"  Final accuracy: {last_logged_metrics['accuracy']:.2%}")
     else:
@@ -737,7 +772,9 @@ def main(cfg: Config):
 
     # Save model if requested
     if cfg.save_model:
-        output_path = Path(cfg.output_dir) / f"{cfg.loss}_{cfg.model_name.split('/')[-1]}"
+        output_path = (
+            Path(cfg.output_dir) / f"{cfg.loss}_{cfg.model_name.split('/')[-1]}"
+        )
         output_path.mkdir(parents=True, exist_ok=True)
         console.print(f"\n[dim]Saving model to {output_path}[/dim]")
         policy_model.save_pretrained(output_path)
@@ -748,14 +785,20 @@ def main(cfg: Config):
 
 def main_cli():
     """CLI entry point."""
-    parser = argparse.ArgumentParser(description="Train direct alignment models (DPO, IPO, etc.)")
+    parser = argparse.ArgumentParser(
+        description="Train direct alignment models (DPO, IPO, etc.)"
+    )
 
     # Config file (optional)
     parser.add_argument("--config", type=str, help="Path to YAML config file")
 
     # Override individual settings
     parser.add_argument("--model_name", type=str, help="Model name or path")
-    parser.add_argument("--loss", type=str, choices=["dpo", "cdpo", "ipo", "simpo", "orpo", "kto"])
+    parser.add_argument(
+        "--loss",
+        type=str,
+        choices=["dpo", "cdpo", "ipo", "simpo", "orpo", "kto", "apo_zero", "apo_down"],
+    )
     parser.add_argument("--beta", type=float, help="Beta parameter")
     parser.add_argument("--gamma", type=float, help="SimPO gamma/beta ratio")
     parser.add_argument("--dataset_name", type=str, help="HuggingFace dataset name")
@@ -766,15 +809,41 @@ def main_cli():
     parser.add_argument("--batch_size", type=int, help="Batch size")
     parser.add_argument("--gradient_accumulation_steps", type=int)
     parser.add_argument("--wandb_project", type=str, help="Wandb project name")
-    parser.add_argument("--sample_every", type=int, help="Generate samples every N steps (0 to disable)")
-    parser.add_argument("--sample_num_prompts", type=int, help="Prompts per sample event")
-    parser.add_argument("--sample_prompt_strategy", type=str, choices=["fixed", "round_robin", "random"])
-    parser.add_argument("--sample_prompts_file", type=str, help="Optional .txt/.json prompt list for in-loop samples")
-    parser.add_argument("--sample_max_tokens", type=int, help="Max new tokens per in-loop sample")
-    parser.add_argument("--sample_max_input_tokens", type=int, help="Max prompt tokens for in-loop sample generation")
-    parser.add_argument("--sample_temperature", type=float, help="Temperature for in-loop sample generation")
-    parser.add_argument("--sample_top_p", type=float, help="Top-p for in-loop sample generation")
-    parser.add_argument("--sample_do_sample", action=argparse.BooleanOptionalAction, help="Enable/disable stochastic in-loop sampling")
+    parser.add_argument(
+        "--sample_every", type=int, help="Generate samples every N steps (0 to disable)"
+    )
+    parser.add_argument(
+        "--sample_num_prompts", type=int, help="Prompts per sample event"
+    )
+    parser.add_argument(
+        "--sample_prompt_strategy", type=str, choices=["fixed", "round_robin", "random"]
+    )
+    parser.add_argument(
+        "--sample_prompts_file",
+        type=str,
+        help="Optional .txt/.json prompt list for in-loop samples",
+    )
+    parser.add_argument(
+        "--sample_max_tokens", type=int, help="Max new tokens per in-loop sample"
+    )
+    parser.add_argument(
+        "--sample_max_input_tokens",
+        type=int,
+        help="Max prompt tokens for in-loop sample generation",
+    )
+    parser.add_argument(
+        "--sample_temperature",
+        type=float,
+        help="Temperature for in-loop sample generation",
+    )
+    parser.add_argument(
+        "--sample_top_p", type=float, help="Top-p for in-loop sample generation"
+    )
+    parser.add_argument(
+        "--sample_do_sample",
+        action=argparse.BooleanOptionalAction,
+        help="Enable/disable stochastic in-loop sampling",
+    )
     parser.add_argument("--seed", type=int, help="Random seed")
 
     args = parser.parse_args()

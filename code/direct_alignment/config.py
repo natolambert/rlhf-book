@@ -18,9 +18,13 @@ class Config:
     ref_model_name: str | None = None  # Defaults to model_name if None
 
     # Training settings
-    loss: Literal["dpo", "cdpo", "ipo", "simpo", "orpo", "kto"] = "dpo"
+    loss: Literal[
+        "dpo", "cdpo", "ipo", "simpo", "orpo", "kto", "apo_zero", "apo_down"
+    ] = "dpo"
     beta: float = 0.1  # KL penalty / temperature
-    gamma: float = 0.5  # SimPO gamma/beta margin ratio (effective shift is beta * gamma)
+    gamma: float = (
+        0.5  # SimPO gamma/beta margin ratio (effective shift is beta * gamma)
+    )
     label_smoothing: float = 0.0  # For cDPO (overridden if loss=cdpo)
 
     # Dataset settings
@@ -30,9 +34,15 @@ class Config:
 
     # Sequence length settings (TRL-style controls)
     max_length: int = 512  # Max total sequence length (prompt + completion)
-    max_prompt_length: int | None = None  # Max prompt length (truncated from left if exceeded)
-    max_completion_length: int | None = None  # Max completion length (truncated from right if exceeded)
-    truncation_mode: Literal["keep_end", "keep_start"] = "keep_end"  # How to truncate: keep_end preserves response
+    max_prompt_length: int | None = (
+        None  # Max prompt length (truncated from left if exceeded)
+    )
+    max_completion_length: int | None = (
+        None  # Max completion length (truncated from right if exceeded)
+    )
+    truncation_mode: Literal["keep_end", "keep_start"] = (
+        "keep_end"  # How to truncate: keep_end preserves response
+    )
 
     # Training hyperparameters
     learning_rate: float = 5e-7  # DPO typically uses very low LR
@@ -101,5 +111,6 @@ def load_config(config_path: str | Path) -> Config:
 def save_config(config: Config, config_path: str | Path) -> None:
     """Save configuration to YAML file."""
     import dataclasses
+
     with open(config_path, "w") as f:
         yaml.dump(dataclasses.asdict(config), f, default_flow_style=False)

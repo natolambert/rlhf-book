@@ -4,10 +4,10 @@ version = "0.2.0"
 description = "Educational code examples for RLHF Book (https://rlhfbook.com)"
 readme = "README.md"
 license = "Apache-2.0"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<3.13"
 dependencies = [
     # Core ML
-    "torch>=2.2.0",
+    "torch>=2.6.0",
     "transformers>=4.40.0",
     "datasets>=2.19.0",
     "accelerate>=0.30.0",
@@ -24,13 +24,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# Flash attention - optional speedup for x86_64 NVIDIA GPUs
-# The code automatically falls back to PyTorch SDPA if not installed
 flash = [
-    "flash-attn>=2.5.0; platform_machine == 'x86_64'",
+    "flash-attn>=2.5.0; platform_machine == 'x86_64' and platform_system == 'Linux'",
 ]
 
-# Development dependencies
 dev = [
     "ruff>=0.4.0",
     "pre-commit>=3.7.0",
@@ -55,16 +52,12 @@ include = ["policy_gradients*", "reward_models*", "direct_alignment*", "rejectio
 [tool.uv]
 package = true
 
-# flash-attn needs torch at build time but doesn't declare it
-# This injects the project's torch into flash-attn's build environment
 [tool.uv.extra-build-dependencies]
 flash-attn = [{ requirement = "torch", match-runtime = true }]
 
-# PyTorch CUDA wheels - only use cu121 on x86_64 Linux
-# aarch64 (DGX Spark) uses system PyTorch or cu130 wheels
 [[tool.uv.index]]
-name = "pytorch-cu121"
-url = "https://download.pytorch.org/whl/cu121"
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
 explicit = true
 
 [[tool.uv.index]]
@@ -74,7 +67,7 @@ explicit = true
 
 [tool.uv.sources]
 torch = [
-    { index = "pytorch-cu121", marker = "platform_system == 'Linux' and platform_machine == 'x86_64'" },
+    { index = "pytorch-cu126", marker = "platform_system == 'Linux' and platform_machine == 'x86_64'" },
     { index = "pytorch-cu130", marker = "platform_system == 'Linux' and platform_machine == 'aarch64'" },
 ]
 

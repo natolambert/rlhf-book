@@ -522,7 +522,7 @@ class APOZeroLoss(nn.Module):
         chosen_logratios = self.beta * (policy_chosen_logps - ref_chosen_logps)
         rejected_logratios = self.beta * (policy_rejected_logps - ref_rejected_logps)
         # If `chosen_logratios` increases -> loss decreases
-        # If `rejected_logratios` decreases -> loss increases
+        # If `rejected_logratios` decreases -> loss decreases
         apo_zero_loss = -F.sigmoid(chosen_logratios) + F.sigmoid(rejected_logratios)
         chosen_rewards = chosen_logratios.detach()
         rejected_rewards = rejected_logratios.detach()
@@ -578,8 +578,8 @@ class APODownLoss(nn.Module):
         # Compute log ratios (implicit rewards)
         chosen_logratios = self.beta * (policy_chosen_logps - ref_chosen_logps)
         rejected_logratios = self.beta * (policy_rejected_logps - ref_rejected_logps)
-        # chosen_logratios decreases -> loss goes down
-        # relative difference between chosen and rejected increase -> loss goes down
+        # Lower chosen reward -> lower first term -> lower loss
+        # Larger margin (chosen - rejected) -> larger second sigmoid -> lower loss
         apo_down_loss = F.sigmoid(chosen_logratios) - F.sigmoid(
             chosen_logratios - rejected_logratios
         )
