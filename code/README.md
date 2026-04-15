@@ -35,7 +35,15 @@ demonstrating the concepts from Chapter 5 (Reward Models).
 
 ## Installation
 
-**Requires Python 3.12+** and [uv](https://docs.astral.sh/uv/getting-started/installation/).
+**Requires Python 3.12+** and an up-to-date [uv](https://docs.astral.sh/uv/getting-started/installation/) (`uv self update`). See [#366](https://github.com/natolambert/rlhf-book/issues/366) for troubleshooting uv compatibility.
+
+**Ubuntu/Debian users**: install build tools first (needed to compile native dependencies):
+
+```bash
+sudo apt install -y build-essential python3-dev
+```
+
+Then install:
 
 ```bash
 cd code/
