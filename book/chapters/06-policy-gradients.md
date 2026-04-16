@@ -12,9 +12,9 @@ search-title: "Chapter 6: Reinforcement Learning"
 next-chapter: "Reasoning"
 next-url: "07-reasoning"
 lectures:
-  - video: "https://youtu.be/K_Sj_-1BUMM"
+  - video: "https://www.youtube.com/watch?v=K_Sj_-1BUMM&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=4"
     label: "Lecture 3: Understanding Policy Gradient Algorithms for RL on LLMs"
-  - video: "https://youtu.be/i-AIMpZHgeg"
+  - video: "https://www.youtube.com/watch?v=i-AIMpZHgeg&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=5"
     label: "Lecture 4: Implementing RL Algorithms for LLMs"
 ---
 

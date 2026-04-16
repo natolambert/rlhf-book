@@ -33,7 +33,16 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
 
 from .buffer import Experience, ReplayBuffer, join_experiences_batch
 from .config import Config, load_config
-from .loss import CISPOLoss, GRPOLoss, GSPOLoss, PPOLoss, ReinforceLoss, SAPOLoss, approx_kl, masked_mean
+from .loss import (
+    CISPOLoss,
+    GRPOLoss,
+    GSPOLoss,
+    PPOLoss,
+    ReinforceLoss,
+    SAPOLoss,
+    approx_kl,
+    masked_mean,
+)
 from .utils import print_model_info, print_rollout_sample, print_step_header, progress_bar
 
 
@@ -152,12 +161,17 @@ def _format_reward(completions: list[str], **kwargs) -> list[float]:
 
 
 def compute_rewards(
-    dataset: ProceduralDataset, completions: list[str], entries: list[dict], format_weight: float = 0.5
+    dataset: ProceduralDataset,
+    completions: list[str],
+    entries: list[dict],
+    format_weight: float = 0.5,
 ) -> list[float]:
     """Compute combined accuracy + format rewards."""
     accuracy_rewards = _accuracy_reward(dataset, completions, entries)
     format_rewards = _format_reward(completions)
-    combined_rewards = [acc + format_weight * fmt for acc, fmt in zip(accuracy_rewards, format_rewards, strict=True)]
+    combined_rewards = [
+        acc + format_weight * fmt for acc, fmt in zip(accuracy_rewards, format_rewards, strict=True)
+    ]
     return combined_rewards
 
 
@@ -245,7 +259,9 @@ def compute_advantages(
         return rewards
 
 
-def compute_log_probs(model, sequence_ids: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
+def compute_log_probs(
+    model, sequence_ids: torch.Tensor, attention_mask: torch.Tensor
+) -> torch.Tensor:
     """Compute log probabilities for each token in the sequence."""
     if not model:
         return None
@@ -302,7 +318,9 @@ def rollout(
     ).to(model.device)
 
     # 2. Generate responses
-    pad_token_id = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id
+    pad_token_id = (
+        tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id
+    )
     generation_config = GenerationConfig(
         temperature=temperature,
         top_p=top_p,
@@ -366,7 +384,9 @@ def main(cfg: Config):
     )
     model, tokenizer = load_model(cfg.model_name, model_device, gradient_checkpointing=True)
     ref_model = get_ref_model(cfg.model_name, ref_model_device, cfg.beta)
-    val_model = get_val_model(cfg.model_name, val_model_device, cfg.loss, gradient_checkpointing=True)
+    val_model = get_val_model(
+        cfg.model_name, val_model_device, cfg.loss, gradient_checkpointing=True
+    )
     objective = get_loss_objective(
         loss=cfg.loss,
         clip_eps_lo=cfg.clip_eps_lo,
@@ -402,7 +422,9 @@ def main(cfg: Config):
 
         with progress_bar(console) as progress:
             entries = [entry for entry in batch for _ in range(cfg.num_rollouts)]
-            task = progress.add_task("Generating rollouts", total=len(entries) // cfg.rollout_batch_size)
+            task = progress.add_task(
+                "Generating rollouts", total=len(entries) // cfg.rollout_batch_size
+            )
 
             for batch in batched(entries, cfg.rollout_batch_size):
                 with torch.no_grad():
@@ -428,8 +450,12 @@ def main(cfg: Config):
                     log_probs_old = compute_log_probs(model, sequence_ids, attention_mask)
                     log_probs_ref = compute_log_probs(ref_model, sequence_ids, attention_mask)
                     values_old = compute_values(val_model, sequence_ids, attention_mask)
-                    rewards = apply_reward_kl(rewards, log_probs_old, log_probs_ref, action_mask, cfg.beta, cfg.loss)
-                    advantages = compute_advantages(rewards, cfg.loss, action_mask, values_old, cfg.gamma, cfg.lam)
+                    rewards = apply_reward_kl(
+                        rewards, log_probs_old, log_probs_ref, action_mask, cfg.beta, cfg.loss
+                    )
+                    advantages = compute_advantages(
+                        rewards, cfg.loss, action_mask, values_old, cfg.gamma, cfg.lam
+                    )
 
                     experience = Experience(
                         sequence_ids=sequence_ids,
@@ -475,8 +501,12 @@ def main(cfg: Config):
                 experience = experience.to(model.device)
 
                 # Compute loss
-                log_probs = compute_log_probs(model, experience.sequence_ids, experience.attention_mask)
-                values = compute_values(val_model, experience.sequence_ids, experience.attention_mask)
+                log_probs = compute_log_probs(
+                    model, experience.sequence_ids, experience.attention_mask
+                )
+                values = compute_values(
+                    val_model, experience.sequence_ids, experience.attention_mask
+                )
                 loss = objective(log_probs=log_probs, experience=experience, values=values)
                 if not loss.isfinite():
                     continue
@@ -485,7 +515,9 @@ def main(cfg: Config):
                 accumulated_loss += loss.item()
 
                 # Update weights every batch_acc steps
-                if (batch_idx + 1) % cfg.batch_acc == 0 or (batch_idx + 1) == len(experience_sampler):
+                if (batch_idx + 1) % cfg.batch_acc == 0 or (batch_idx + 1) == len(
+                    experience_sampler
+                ):
                     grad_norm = clip_grad_norm_(params, max_norm=cfg.max_norm)
                     optimizer.step()
                     optimizer.zero_grad(set_to_none=True)
@@ -494,7 +526,9 @@ def main(cfg: Config):
                     num_accumulated = min(cfg.batch_acc, (batch_idx % cfg.batch_acc) + 1)
                     avg_loss = accumulated_loss / num_accumulated
                     hours_elapsed = (time.time() - start_time) / 3600
-                    wandb.log({"loss": avg_loss, "grad_norm": grad_norm, "hours_elapsed": hours_elapsed})
+                    wandb.log(
+                        {"loss": avg_loss, "grad_norm": grad_norm, "hours_elapsed": hours_elapsed}
+                    )
                     progress.update(task, advance=1, description=f"[dim]Loss: {avg_loss:.4f}[/dim]")
                     accumulated_loss = 0.0
                 else:

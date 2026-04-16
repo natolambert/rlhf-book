@@ -21,22 +21,15 @@ from pathlib import Path
 
 import numpy as np
 import torch
-import torch.nn.functional as F
 import wandb
 from rich.console import Console
-from rich.progress import (
-    Progress,
-    SpinnerColumn,
-    TextColumn,
-    BarColumn,
-    TimeElapsedColumn,
-)
+from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 from torch.nn.utils import clip_grad_norm_
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from .config import Config, load_config
 from .data import PreferenceBatch, create_dataloader
-from .loss import compute_logprobs, get_loss_function, ORPOLoss
+from .loss import ORPOLoss, compute_logprobs, get_loss_function
 
 
 def get_attn_implementation() -> str:
@@ -86,9 +79,7 @@ def load_model(
     model = model.to(device)
 
     if gradient_checkpointing:
-        model.gradient_checkpointing_enable(
-            gradient_checkpointing_kwargs={"use_reentrant": False}
-        )
+        model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
 
     return model, tokenizer
 
@@ -580,8 +571,7 @@ def main(cfg: Config):
             return float(step + 1) / float(max(1, num_warmup_steps + 1))
         return max(
             0.0,
-            float(num_training_steps - step)
-            / float(max(1, num_training_steps - num_warmup_steps)),
+            float(num_training_steps - step) / float(max(1, num_training_steps - num_warmup_steps)),
         )
 
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
@@ -812,9 +802,7 @@ def main_cli():
     parser.add_argument(
         "--sample_every", type=int, help="Generate samples every N steps (0 to disable)"
     )
-    parser.add_argument(
-        "--sample_num_prompts", type=int, help="Prompts per sample event"
-    )
+    parser.add_argument("--sample_num_prompts", type=int, help="Prompts per sample event")
     parser.add_argument(
         "--sample_prompt_strategy", type=str, choices=["fixed", "round_robin", "random"]
     )
@@ -823,22 +811,16 @@ def main_cli():
         type=str,
         help="Optional .txt/.json prompt list for in-loop samples",
     )
-    parser.add_argument(
-        "--sample_max_tokens", type=int, help="Max new tokens per in-loop sample"
-    )
+    parser.add_argument("--sample_max_tokens", type=int, help="Max new tokens per in-loop sample")
     parser.add_argument(
         "--sample_max_input_tokens",
         type=int,
         help="Max prompt tokens for in-loop sample generation",
     )
     parser.add_argument(
-        "--sample_temperature",
-        type=float,
-        help="Temperature for in-loop sample generation",
+        "--sample_temperature", type=float, help="Temperature for in-loop sample generation"
     )
-    parser.add_argument(
-        "--sample_top_p", type=float, help="Top-p for in-loop sample generation"
-    )
+    parser.add_argument("--sample_top_p", type=float, help="Top-p for in-loop sample generation")
     parser.add_argument(
         "--sample_do_sample",
         action=argparse.BooleanOptionalAction,

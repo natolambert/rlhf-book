@@ -21,9 +21,7 @@ def get_memory_usage() -> tuple[float, float]:
         (used_gb, total_gb)
     """
     # For unified memory systems (DGX Spark), use system memory
-    result = subprocess.run(
-        ["free", "-b"], capture_output=True, text=True
-    )
+    result = subprocess.run(["free", "-b"], capture_output=True, text=True)
     lines = result.stdout.strip().split("\n")
     mem_line = lines[1].split()
     total_bytes = int(mem_line[1])
@@ -41,6 +39,7 @@ def get_attn_implementation() -> str:
         return "sdpa"
     try:
         import flash_attn  # noqa: F401
+
         return "flash_attention_2"
     except ImportError:
         return "sdpa"
@@ -103,9 +102,7 @@ def profile_configuration(
 
     # Create dummy batch (DPO needs chosen + rejected)
     dummy_input_ids = torch.randint(
-        0, tokenizer.vocab_size,
-        (batch_size, max_length),
-        device="cuda"
+        0, tokenizer.vocab_size, (batch_size, max_length), device="cuda"
     )
     dummy_attention_mask = torch.ones_like(dummy_input_ids)
 
@@ -198,7 +195,11 @@ def main():
         print(f"\n--- Context Length: {max_length} ---")
         for batch_size in batch_sizes:
             try:
-                print(f"Testing batch_size={batch_size}, max_length={max_length}...", end=" ", flush=True)
+                print(
+                    f"Testing batch_size={batch_size}, max_length={max_length}...",
+                    end=" ",
+                    flush=True,
+                )
                 result = profile_configuration(
                     model_name=model_name,
                     batch_size=batch_size,
@@ -207,18 +208,22 @@ def main():
                 results.append(result)
 
                 status = "OK" if result["peak_usage_pct"] < 85 else "OVER 85%"
-                print(f"Peak: {result['peak_memory_gb']:.1f} GB ({result['peak_usage_pct']:.1f}%) [{status}]")
+                print(
+                    f"Peak: {result['peak_memory_gb']:.1f} GB ({result['peak_usage_pct']:.1f}%) [{status}]"
+                )
 
             except RuntimeError as e:
                 if "out of memory" in str(e).lower():
-                    print(f"OOM!")
-                    results.append({
-                        "batch_size": batch_size,
-                        "max_length": max_length,
-                        "peak_memory_gb": float("inf"),
-                        "peak_usage_pct": 100,
-                        "error": "OOM",
-                    })
+                    print("OOM!")
+                    results.append(
+                        {
+                            "batch_size": batch_size,
+                            "max_length": max_length,
+                            "peak_memory_gb": float("inf"),
+                            "peak_usage_pct": 100,
+                            "error": "OOM",
+                        }
+                    )
                 else:
                     raise
 
@@ -226,7 +231,9 @@ def main():
     print("\n" + "=" * 80)
     print("SUMMARY: Safe configurations (< 85% memory)")
     print("=" * 80)
-    print(f"{'Batch Size':<12} {'Max Length':<12} {'Peak Memory':<15} {'Usage %':<10} {'Status':<10}")
+    print(
+        f"{'Batch Size':<12} {'Max Length':<12} {'Peak Memory':<15} {'Usage %':<10} {'Status':<10}"
+    )
     print("-" * 60)
 
     for r in results:

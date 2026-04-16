@@ -26,7 +26,7 @@ See **Chapter 5: Reward Models** for mathematical derivations and intuitions.
 ## Quick Start
 
 ```bash
-cd /home/natolambert/dev/rlhf-book/code
+cd code/
 uv sync
 
 # Train ORM

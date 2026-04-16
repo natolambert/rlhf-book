@@ -8,7 +8,7 @@ License: MIT
 Adapted for RLHF Book (https://rlhfbook.com) by Nathan Lambert
 
 This script trains a minimal outcome reward model by fine-tuning a base LLM
-with LoRA on GSM8K-derived correct/incorrect math answers. For each question,
+on GSM8K-derived correct/incorrect math answers. For each question,
 we parse the gold numeric answer and synthesize wrong completions by adding
 random offsets. The model learns to classify solution correctness via per-token
 BCE loss on completion tokens.
@@ -25,7 +25,6 @@ import random
 from typing import Dict, List
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 from datasets import Dataset, load_dataset
 from torch.utils.data import DataLoader
@@ -92,7 +91,9 @@ def pack_example(
     The label is applied to all completion tokens, with prompt tokens masked (-100).
     """
     prompt_ids = tokenizer(prompt, add_special_tokens=False)["input_ids"]
-    completion_ids = tokenizer(completion + tokenizer.eos_token, add_special_tokens=False)["input_ids"]
+    completion_ids = tokenizer(completion + tokenizer.eos_token, add_special_tokens=False)[
+        "input_ids"
+    ]
     input_ids = prompt_ids + completion_ids
     attention = [1] * len(input_ids)
     labels = [-100] * len(prompt_ids) + [label] * len(completion_ids)
@@ -157,11 +158,10 @@ def collate_fn(batch: List[Dict], tokenizer: AutoTokenizer) -> Dict[str, torch.T
 
 
 class OutcomeRewardModel(BaseRewardModel):
-    """Outcome Reward Model with LoRA fine-tuning.
+    """Outcome Reward Model with full fine-tuning.
 
     Architecture:
-    - Base LLM (e.g., Qwen3) with 4-bit quantization
-    - LoRA adapters on attention projections
+    - Base LLM (e.g., Qwen3) loaded in bfloat16
     - Linear head mapping hidden states to scalar reward
 
     The model outputs per-token logits which are trained with BCE loss
@@ -278,9 +278,11 @@ def train_orm(
     optimizer = create_optimizer(model, lr)
     total_optimizer_steps = -(-len(loader) // grad_accum_steps) * epochs
     warmup_steps = int(total_optimizer_steps * warmup_ratio)
-    scheduler = torch.optim.lr_scheduler.LinearLR(
-        optimizer, start_factor=0.1, total_iters=warmup_steps
-    ) if warmup_steps > 0 else None
+    scheduler = (
+        torch.optim.lr_scheduler.LinearLR(optimizer, start_factor=0.1, total_iters=warmup_steps)
+        if warmup_steps > 0
+        else None
+    )
 
     # Mixed precision
     autocast_enabled = torch.cuda.is_available()
@@ -430,12 +432,21 @@ def main():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument("--model-id", type=str, default=DEFAULT_MODEL_ID, help="Base model ID")
-    parser.add_argument("--samples", type=int, default=DEFAULT_SAMPLES, help="Number of training samples")
+    parser.add_argument(
+        "--samples", type=int, default=DEFAULT_SAMPLES, help="Number of training samples"
+    )
     parser.add_argument("--batch-size", type=int, default=DEFAULT_BATCH_SIZE, help="Batch size")
-    parser.add_argument("--grad-accum", type=int, default=DEFAULT_GRAD_ACCUM, help="Gradient accumulation steps")
+    parser.add_argument(
+        "--grad-accum", type=int, default=DEFAULT_GRAD_ACCUM, help="Gradient accumulation steps"
+    )
     parser.add_argument("--epochs", type=int, default=DEFAULT_EPOCHS, help="Training epochs")
     parser.add_argument("--lr", type=float, default=DEFAULT_LR, help="Learning rate")
-    parser.add_argument("--warmup-ratio", type=float, default=DEFAULT_WARMUP_RATIO, help="Fraction of steps for LR warmup")
+    parser.add_argument(
+        "--warmup-ratio",
+        type=float,
+        default=DEFAULT_WARMUP_RATIO,
+        help="Fraction of steps for LR warmup",
+    )
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED, help="Random seed")
     parser.add_argument("--skip-demo", action="store_true", help="Skip scoring demo after training")
     parser.add_argument("--no-wandb", action="store_true", help="Disable wandb logging")

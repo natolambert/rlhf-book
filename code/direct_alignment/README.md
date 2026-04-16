@@ -33,7 +33,7 @@ As of 2026-02-08, ORPO/SimPO are still under investigation. See `direct_alignmen
 ## Quick Start
 
 ```bash
-cd /home/natolambert/dev/rlhf-book/code
+cd code/
 uv sync
 
 # Train DPO on 1k samples (quick test)

@@ -369,10 +369,7 @@ class KTOLoss(nn.Module):
     """
 
     def __init__(
-        self,
-        beta: float = 0.1,
-        desirable_weight: float = 1.0,
-        undesirable_weight: float = 1.0,
+        self, beta: float = 0.1, desirable_weight: float = 1.0, undesirable_weight: float = 1.0
     ):
         """
         Args:

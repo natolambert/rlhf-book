@@ -34,9 +34,7 @@ class Config:
 
     # Sequence length settings (TRL-style controls)
     max_length: int = 512  # Max total sequence length (prompt + completion)
-    max_prompt_length: int | None = (
-        None  # Max prompt length (truncated from left if exceeded)
-    )
+    max_prompt_length: int | None = None  # Max prompt length (truncated from left if exceeded)
     max_completion_length: int | None = (
         None  # Max completion length (truncated from right if exceeded)
     )

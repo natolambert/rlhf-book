@@ -37,7 +37,9 @@ class Experience:
         """Move all tensors to the specified device."""
         field_names = [f.name for f in fields(self)]
         moved_tensors = {
-            name: getattr(self, name).to(device) for name in field_names if getattr(self, name) is not None
+            name: getattr(self, name).to(device)
+            for name in field_names
+            if getattr(self, name) is not None
         }
         return Experience(**moved_tensors)
 

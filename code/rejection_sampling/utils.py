@@ -12,9 +12,7 @@ from .config import Config
 
 # AceMath-7B-RM is trained on solutions in this format, so we must use the
 # same system prompt at generation time for the scores to be meaningful.
-ACEMATH_SYSTEM_PROMPT = (
-    "Please reason step by step, and check your final answer within \\boxed{}."
-)
+ACEMATH_SYSTEM_PROMPT = "Please reason step by step, and check your final answer within \\boxed{}."
 
 
 def free_memory(*objs) -> None:
@@ -59,7 +57,9 @@ def cache_key(cfg: Config) -> str:
 
 def format_gsm8k_gold(answer_field: str) -> str:
     """GSM8k gold answers live after `####` at the end of the CoT."""
-    gold = answer_field.split("####", 1)[1].strip() if "####" in answer_field else answer_field.strip()
+    gold = (
+        answer_field.split("####", 1)[1].strip() if "####" in answer_field else answer_field.strip()
+    )
     return gold.replace(",", "")
 
 

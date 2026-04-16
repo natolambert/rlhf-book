@@ -92,7 +92,7 @@ book/
 ├── templates/    # Pandoc templates for each output format
 ├── scripts/      # Build utilities
 ├── data/         # Library data (JSON)
-└── preorder/     # Pre-order redirect page
+└── preorder/     # Order redirect page
 ```
 
 ## Setup
