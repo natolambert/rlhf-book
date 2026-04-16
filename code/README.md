@@ -270,14 +270,14 @@ This project uses [Ruff](https://docs.astral.sh/ruff/) for linting and formattin
 
 ```bash
 # Check for lint errors
-uv run ruff check .
+uvx ruff check .
 
 # Check formatting
-uv run ruff format --check .
+uvx ruff format --check .
 
 # Auto-fix lint errors and formatting
-uv run ruff check --fix .
-uv run ruff format .
+uvx ruff check --fix .
+uvx ruff format .
 ```
 
 Configuration is in `pyproject.toml` (line length 100, Python 3.12 target).

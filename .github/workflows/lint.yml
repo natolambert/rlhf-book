@@ -18,11 +18,8 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v4
 
-      - name: Install dependencies
-        run: uv sync --dev
-
       - name: Ruff check
-        run: uv run ruff check .
+        run: uvx ruff@0.14.5 check .
 
       - name: Ruff format check
-        run: uv run ruff format --check .
+        run: uvx ruff@0.14.5 format --check .
