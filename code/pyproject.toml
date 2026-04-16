@@ -30,6 +30,12 @@ flash = [
     "flash-attn>=2.5.0; platform_machine == 'x86_64'",
 ]
 
+# Diagnostics (plotting + dataframes for rejection_sampling.diagnostics)
+diagnostics = [
+    "matplotlib>=3.8.0",
+    "pandas>=2.1.0",
+]
+
 # Development dependencies
 dev = [
     "ruff>=0.4.0",

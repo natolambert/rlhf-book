@@ -19,6 +19,10 @@ When the policy is strong enough that most prompts are all-correct (or the
 task is hard enough that most are all-wrong), the effective signal for
 ``top_per_prompt`` shrinks even if the RM is well-calibrated.
 
+Requires the ``diagnostics`` optional dependency group::
+
+    uv sync --extra diagnostics
+
 Usage::
 
     uv run python -m rejection_sampling.diagnostics \\
@@ -281,7 +285,10 @@ def print_summary(df: pd.DataFrame, dec: dict, winrate: dict, sweep: pd.DataFram
     print(f"- gap: **{winrate['top_hit_rate'] - winrate['random_hit_rate']:+.1%}**\n")
 
     print("## Best-of-N sweep\n")
-    print(sweep.to_markdown(index=False, floatfmt=".3f"))
+    print(f"| {'n':>3} | {'top_n':>8} | {'random_n':>8} |")
+    print(f"|{'---':->5}|{'---':->10}|{'---':->10}|")
+    for _, row in sweep.iterrows():
+        print(f"| {int(row['n']):>3} | {row['top_n_hit_rate']:>8.3f} | {row['random_n_hit_rate']:>8.3f} |")
 
 
 # ---------------------------------------------------------------------------
