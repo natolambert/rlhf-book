@@ -1,0 +1,25 @@
+name: Lint
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "code/**"
+
+jobs:
+  ruff:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: code
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Ruff check
+        run: uvx ruff@0.14.5 check .
+
+      - name: Ruff format check
+        run: uvx ruff@0.14.5 format --check .
