@@ -20,11 +20,15 @@ class PreferenceBatch:
     chosen_input_ids: torch.Tensor  # (batch, seq_len)
     chosen_attention_mask: torch.Tensor  # (batch, seq_len)
     chosen_labels: torch.Tensor  # (batch, seq_len) - for computing loss
-    chosen_response_mask: torch.Tensor  # (batch, seq_len) - 1 for response tokens, 0 for prompt/padding
+    chosen_response_mask: (
+        torch.Tensor
+    )  # (batch, seq_len) - 1 for response tokens, 0 for prompt/padding
     rejected_input_ids: torch.Tensor  # (batch, seq_len)
     rejected_attention_mask: torch.Tensor  # (batch, seq_len)
     rejected_labels: torch.Tensor  # (batch, seq_len)
-    rejected_response_mask: torch.Tensor  # (batch, seq_len) - 1 for response tokens, 0 for prompt/padding
+    rejected_response_mask: (
+        torch.Tensor
+    )  # (batch, seq_len) - 1 for response tokens, 0 for prompt/padding
 
     def to(self, device: str | torch.device) -> "PreferenceBatch":
         """Move batch to device."""
@@ -201,8 +205,7 @@ def load_preference_dataset(
         pass
     else:
         raise ValueError(
-            f"Unknown dataset format. Expected columns: prompt, chosen, rejected. "
-            f"Got: {columns}"
+            f"Unknown dataset format. Expected columns: prompt, chosen, rejected. Got: {columns}"
         )
 
     return dataset
@@ -303,10 +306,12 @@ class PreferenceDataset(torch.utils.data.Dataset):
         prompt_only_text = format_prompt_only(example["prompt"], self.tokenizer)
 
         # Tokenize with response-preserving truncation
-        chosen_input_ids, chosen_attention_mask, chosen_response_mask = \
+        chosen_input_ids, chosen_attention_mask, chosen_response_mask = (
             self._tokenize_with_response_priority(prompt_only_text, chosen_text)
-        rejected_input_ids, rejected_attention_mask, rejected_response_mask = \
+        )
+        rejected_input_ids, rejected_attention_mask, rejected_response_mask = (
             self._tokenize_with_response_priority(prompt_only_text, rejected_text)
+        )
 
         return {
             "chosen_input_ids": chosen_input_ids,

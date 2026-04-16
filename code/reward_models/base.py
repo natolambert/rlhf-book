@@ -9,7 +9,7 @@ Note: We use full fine-tuning for simplicity with small models (0.6B-1.7B).
 """
 
 import os
-from typing import Callable, Iterator
+from typing import Callable
 
 import torch
 import torch.nn as nn
@@ -222,7 +222,13 @@ def training_loop(
         avg_loss = epoch_loss / len(loader)
         avg_metrics = {k: v / len(loader) for k, v in epoch_metrics.items()}
         print(f"Epoch {epoch} | Loss: {avg_loss:.4f} | {avg_metrics}")
-        log_metrics({"epoch_loss": avg_loss, "epoch": epoch, **{f"epoch_{k}": v for k, v in avg_metrics.items()}})
+        log_metrics(
+            {
+                "epoch_loss": avg_loss,
+                "epoch": epoch,
+                **{f"epoch_{k}": v for k, v in avg_metrics.items()},
+            }
+        )
 
 
 # =============================================================================
@@ -254,6 +260,7 @@ def create_collate_fn(tokenizer: AutoTokenizer, fields: list[str]):
         fields: List of field names to collate. Fields ending in '_ids' use
                 pad_token_id, fields ending in '_mask' use 0, others use -100.
     """
+
     def collate_fn(batch: list[dict]) -> dict[str, torch.Tensor]:
         result = {}
         for field in fields:

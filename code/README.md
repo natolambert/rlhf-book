@@ -264,6 +264,24 @@ export HF_TOKEN="your-token"
 | Reward models | Qwen3-0.6B | ~8-16GB |
 | Reward models | Qwen3-1.7B | ~16-20GB |
 
+## Linting
+
+This project uses [Ruff](https://docs.astral.sh/ruff/) for linting and formatting. A CI check runs on every PR that touches `code/`.
+
+```bash
+# Check for lint errors
+uv run ruff check .
+
+# Check formatting
+uv run ruff format --check .
+
+# Auto-fix lint errors and formatting
+uv run ruff check --fix .
+uv run ruff format .
+```
+
+Configuration is in `pyproject.toml` (line length 100, Python 3.12 target).
+
 ## Book Chapters
 
 These examples correspond to:

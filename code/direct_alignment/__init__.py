@@ -28,6 +28,7 @@ from .loss import (
 )
 from .train import main, main_cli
 
+
 __all__ = [
     # Config
     "Config",

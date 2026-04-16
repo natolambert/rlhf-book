@@ -121,7 +121,9 @@ class Config(BaseModel):
         if self.num_rollouts > 1 and self.rollout_batch_size != self.num_rollouts:
             raise ValueError("When num_rollouts > 1, rollout_batch_size must equal num_rollouts.")
         if (self.prompts_per_step * self.num_rollouts) % self.rollout_batch_size != 0:
-            raise ValueError("prompts_per_step * num_rollouts must be divisible by rollout_batch_size.")
+            raise ValueError(
+                "prompts_per_step * num_rollouts must be divisible by rollout_batch_size."
+            )
         return self
 
 

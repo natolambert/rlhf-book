@@ -195,7 +195,7 @@ def build_prm_dataset(
             attention_mask = [1] * len(input_ids)
             label_ids = [-100] * len(input_ids)
 
-            for step_text, lbl in zip(chunk_steps, chunk_labels):
+            for step_text, lbl in zip(chunk_steps, chunk_labels, strict=True):
                 step_payload = step_text.strip() + STEP_SEPARATOR
                 encoded = tokenizer(step_payload, add_special_tokens=False)["input_ids"]
                 input_ids.extend(encoded)
@@ -211,11 +211,13 @@ def build_prm_dataset(
             if len(input_ids) > max_tokens_per_sample:
                 continue
 
-            records.append({
-                "input_ids": input_ids,
-                "attention_mask": attention_mask,
-                "labels": label_ids,
-            })
+            records.append(
+                {
+                    "input_ids": input_ids,
+                    "attention_mask": attention_mask,
+                    "labels": label_ids,
+                }
+            )
 
     if not records:
         raise ValueError("No PRM examples loaded. Check dataset path/permissions.")
@@ -366,9 +368,11 @@ def train_prm(
     optimizer = create_optimizer(model, lr)
     total_optimizer_steps = -(-len(loader) // grad_accum_steps) * epochs
     warmup_steps = int(total_optimizer_steps * warmup_ratio)
-    scheduler = torch.optim.lr_scheduler.LinearLR(
-        optimizer, start_factor=0.1, total_iters=warmup_steps
-    ) if warmup_steps > 0 else None
+    scheduler = (
+        torch.optim.lr_scheduler.LinearLR(optimizer, start_factor=0.1, total_iters=warmup_steps)
+        if warmup_steps > 0
+        else None
+    )
 
     # Mixed precision for memory efficiency
     autocast_enabled = torch.cuda.is_available()
@@ -518,7 +522,9 @@ def demo_scoring(model: ProcessRewardModel, tokenizer: AutoTokenizer, seed: int 
 
     scores = score_trace(model, tokenizer, problem, steps, device)
 
-    for idx, (step_text, true_label, step_scores) in enumerate(zip(steps, labels, scores)):
+    for idx, (step_text, true_label, step_scores) in enumerate(
+        zip(steps, labels, scores, strict=True)
+    ):
         label_name = true_label
         pred_class = max(step_scores, key=step_scores.get)
         print(f"\nStep {idx} (true label: {label_name}, predicted: {pred_class}):")
@@ -537,12 +543,21 @@ def main():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument("--model-id", type=str, default=DEFAULT_MODEL_ID, help="Base model ID")
-    parser.add_argument("--samples", type=int, default=DEFAULT_SAMPLES, help="Number of training samples")
+    parser.add_argument(
+        "--samples", type=int, default=DEFAULT_SAMPLES, help="Number of training samples"
+    )
     parser.add_argument("--batch-size", type=int, default=DEFAULT_BATCH_SIZE, help="Batch size")
-    parser.add_argument("--grad-accum", type=int, default=DEFAULT_GRAD_ACCUM, help="Gradient accumulation steps")
+    parser.add_argument(
+        "--grad-accum", type=int, default=DEFAULT_GRAD_ACCUM, help="Gradient accumulation steps"
+    )
     parser.add_argument("--epochs", type=int, default=DEFAULT_EPOCHS, help="Training epochs")
     parser.add_argument("--lr", type=float, default=DEFAULT_LR, help="Learning rate")
-    parser.add_argument("--warmup-ratio", type=float, default=DEFAULT_WARMUP_RATIO, help="Fraction of steps for LR warmup")
+    parser.add_argument(
+        "--warmup-ratio",
+        type=float,
+        default=DEFAULT_WARMUP_RATIO,
+        help="Fraction of steps for LR warmup",
+    )
     parser.add_argument("--seed", type=int, default=DEFAULT_SEED, help="Random seed")
     parser.add_argument("--skip-demo", action="store_true", help="Skip scoring demo after training")
     parser.add_argument("--no-wandb", action="store_true", help="Disable wandb logging")

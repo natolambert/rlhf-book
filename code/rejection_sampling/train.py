@@ -10,6 +10,7 @@ from pathlib import Path
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
+import wandb
 from datasets import load_dataset
 from rich.console import Console
 from rich.panel import Panel
@@ -17,7 +18,6 @@ from rich.table import Table
 from torch.nn.utils import clip_grad_norm_
 from torch.utils.data import DataLoader, Dataset
 
-import wandb
 from policy_gradients.train import get_attn_implementation, load_model, seed_everything
 from policy_gradients.utils import print_model_info, print_step_header, progress_bar
 
@@ -104,9 +104,7 @@ def sft(
     """Full-parameter causal-LM SFT on the selected rejection-sampling pairs."""
     dataset = SFTDataset(selected_pairs, tokenizer, cfg.max_seq_length)
     pad_id = (
-        tokenizer.pad_token_id
-        if tokenizer.pad_token_id is not None
-        else tokenizer.eos_token_id
+        tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id
     )
     dataloader = DataLoader(
         dataset=dataset,
@@ -170,9 +168,7 @@ def sft(
                             "hours_elapsed": hours_elapsed,
                         }
                     )
-                    progress.update(
-                        task, advance=1, description=f"[dim]Loss: {avg_loss:.4f}[/dim]"
-                    )
+                    progress.update(task, advance=1, description=f"[dim]Loss: {avg_loss:.4f}[/dim]")
                     accumulated_loss = 0.0
                     global_step += 1
                 else:
@@ -204,15 +200,12 @@ def evaluate(cfg: Config, model, tokenizer, console: Console) -> float:
         ds = ds.select(range(min(cfg.data.max_test_samples, len(ds))))
 
     eval_rows = [
-        {"question": row["question"], "gold": format_gsm8k_gold(row["answer"])}
-        for row in ds
+        {"question": row["question"], "gold": format_gsm8k_gold(row["answer"])} for row in ds
     ]
 
     model.eval()
     pad_id = (
-        tokenizer.pad_token_id
-        if tokenizer.pad_token_id is not None
-        else tokenizer.eos_token_id
+        tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id
     )
 
     correct = 0
@@ -306,7 +299,8 @@ def main(cfg: Config) -> None:
     else:
         wandb.init(
             project=wandb_project,
-            name=os.environ.get("WANDB_RUN_NAME", cfg.wandb_run_name) or f"rs-{cfg.selection.strategy}",
+            name=os.environ.get("WANDB_RUN_NAME", cfg.wandb_run_name)
+            or f"rs-{cfg.selection.strategy}",
             config=cfg.model_dump(),
         )
     wandb.log(
@@ -344,7 +338,9 @@ def main(cfg: Config) -> None:
 
 
 def main_cli() -> None:
-    parser = argparse.ArgumentParser(description="Rejection sampling: selection + SFT + GSM8k eval.")
+    parser = argparse.ArgumentParser(
+        description="Rejection sampling: selection + SFT + GSM8k eval."
+    )
     parser.add_argument("--config", type=str, required=True, help="Path to YAML config file")
     args = parser.parse_args()
     main(load_config(args.config))

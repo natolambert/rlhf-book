@@ -31,8 +31,12 @@ class Config:
     # Sequence length settings (TRL-style controls)
     max_length: int = 512  # Max total sequence length (prompt + completion)
     max_prompt_length: int | None = None  # Max prompt length (truncated from left if exceeded)
-    max_completion_length: int | None = None  # Max completion length (truncated from right if exceeded)
-    truncation_mode: Literal["keep_end", "keep_start"] = "keep_end"  # How to truncate: keep_end preserves response
+    max_completion_length: int | None = (
+        None  # Max completion length (truncated from right if exceeded)
+    )
+    truncation_mode: Literal["keep_end", "keep_start"] = (
+        "keep_end"  # How to truncate: keep_end preserves response
+    )
 
     # Training hyperparameters
     learning_rate: float = 5e-7  # DPO typically uses very low LR
@@ -101,5 +105,6 @@ def load_config(config_path: str | Path) -> Config:
 def save_config(config: Config, config_path: str | Path) -> None:
     """Save configuration to YAML file."""
     import dataclasses
+
     with open(config_path, "w") as f:
         yaml.dump(dataclasses.asdict(config), f, default_flow_style=False)

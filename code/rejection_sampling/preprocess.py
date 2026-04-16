@@ -35,10 +35,7 @@ def load_gsm8k_prompts(cfg: Config) -> list[Prompt]:
     ds = load_dataset(cfg.data.name, cfg.data.subset, split=cfg.data.train_split)
     if cfg.data.max_train_samples is not None:
         ds = ds.select(range(min(cfg.data.max_train_samples, len(ds))))
-    return [
-        {"question": row["question"], "gold": format_gsm8k_gold(row["answer"])}
-        for row in ds
-    ]
+    return [{"question": row["question"], "gold": format_gsm8k_gold(row["answer"])} for row in ds]
 
 
 def _build_generation_chat(question: str, tokenizer) -> str:
@@ -61,9 +58,7 @@ def generate_completions(
     """Generate N completions per prompt, returning an (M, N) list-of-lists."""
     model.eval()
     pad_token_id = (
-        tokenizer.pad_token_id
-        if tokenizer.pad_token_id is not None
-        else tokenizer.eos_token_id
+        tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id
     )
     generation_config = GenerationConfig(
         temperature=cfg.temperature,
@@ -170,9 +165,7 @@ def score_rollouts(
         if rm_tokenizer.pad_token_id is not None
         else rm_tokenizer.eos_token_id
     )
-    rewards: list[list[float]] = [
-        [0.0] * cfg.num_completions_per_prompt for _ in prompts
-    ]
+    rewards: list[list[float]] = [[0.0] * cfg.num_completions_per_prompt for _ in prompts]
 
     with progress_bar(console) as progress:
         total_batches = (len(flat) + cfg.score_batch_size - 1) // cfg.score_batch_size
@@ -187,9 +180,7 @@ def score_rollouts(
             input_ids = torch.full(
                 (len(batch), max_len), pad_id, dtype=torch.long, device=rm.device
             )
-            attention_mask = torch.zeros(
-                (len(batch), max_len), dtype=torch.long, device=rm.device
-            )
+            attention_mask = torch.zeros((len(batch), max_len), dtype=torch.long, device=rm.device)
             for row, (_, _, ids) in enumerate(batch):
                 pad_len = max_len - len(ids)
                 input_ids[row, pad_len:] = torch.tensor(ids, dtype=torch.long, device=rm.device)
@@ -322,13 +313,17 @@ def run(cfg: Config) -> Path:
 def load_cached_records(cfg: Config) -> list[dict]:
     path = rollouts_path(cfg)
     if not path.exists():
-        raise FileNotFoundError(f"Rollout cache not found at {path}; run preprocess.run(cfg) first.")
+        raise FileNotFoundError(
+            f"Rollout cache not found at {path}; run preprocess.run(cfg) first."
+        )
     with open(path) as f:
         return [json.loads(line) for line in f if line.strip()]
 
 
 def main_cli() -> None:
-    parser = argparse.ArgumentParser(description="Generate + score rollouts for rejection sampling.")
+    parser = argparse.ArgumentParser(
+        description="Generate + score rollouts for rejection sampling."
+    )
     parser.add_argument("--config", type=str, required=True, help="Path to YAML config file")
     args = parser.parse_args()
     run(load_config(args.config))

@@ -35,8 +35,8 @@ def compute_logprobs(
     """
     # Shift for autoregressive: predict token t from tokens 0...t-1
     logits = logits[:, :-1, :]  # (batch, seq_len-1, vocab)
-    labels = labels[:, 1:]      # (batch, seq_len-1)
-    mask = mask[:, 1:]          # (batch, seq_len-1)
+    labels = labels[:, 1:]  # (batch, seq_len-1)
+    mask = mask[:, 1:]  # (batch, seq_len-1)
 
     # Compute per-token log probs
     log_probs = F.log_softmax(logits, dim=-1)
@@ -366,7 +366,9 @@ class KTOLoss(nn.Module):
     See: https://github.com/ContextualAI/HALOs for the official implementation.
     """
 
-    def __init__(self, beta: float = 0.1, desirable_weight: float = 1.0, undesirable_weight: float = 1.0):
+    def __init__(
+        self, beta: float = 0.1, desirable_weight: float = 1.0, undesirable_weight: float = 1.0
+    ):
         """
         Args:
             beta: Temperature parameter.
@@ -441,8 +443,8 @@ class KTOLoss(nn.Module):
 
         # Weighted combination (asymmetric weights reflect loss aversion)
         loss = (
-            self.desirable_weight * chosen_losses.mean() +
-            self.undesirable_weight * rejected_losses.mean()
+            self.desirable_weight * chosen_losses.mean()
+            + self.undesirable_weight * rejected_losses.mean()
         )
 
         metrics = {
@@ -479,7 +481,9 @@ def get_loss_function(loss_type: str, **kwargs) -> nn.Module:
         Loss function module
     """
     if loss_type not in LOSS_FUNCTIONS:
-        raise ValueError(f"Unknown loss type: {loss_type}. Choose from {list(LOSS_FUNCTIONS.keys())}")
+        raise ValueError(
+            f"Unknown loss type: {loss_type}. Choose from {list(LOSS_FUNCTIONS.keys())}"
+        )
 
     # Filter kwargs to only pass what each loss function accepts
     beta = kwargs.get("beta", 0.1)

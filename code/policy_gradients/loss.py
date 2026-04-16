@@ -18,7 +18,9 @@ import torch.nn as nn
 from .buffer import Experience
 
 
-def approx_kl(log_probs: torch.Tensor, log_probs_ref: torch.Tensor, action_mask: torch.Tensor) -> torch.Tensor:
+def approx_kl(
+    log_probs: torch.Tensor, log_probs_ref: torch.Tensor, action_mask: torch.Tensor
+) -> torch.Tensor:
     """Monte-Carlo approximation of KL divergence (k3 estimator).
 
     See: http://joschu.net/blog/kl-approx.html
@@ -39,7 +41,9 @@ def masked_mean(
     """Compute mean over masked positions."""
     if mask is None:
         return tensor.mean(dim=dim, keepdim=keepdim)
-    return (tensor * mask).sum(dim=dim, keepdim=keepdim) / mask.sum(dim=dim, keepdim=keepdim).clamp_min(eps)
+    return (tensor * mask).sum(dim=dim, keepdim=keepdim) / mask.sum(
+        dim=dim, keepdim=keepdim
+    ).clamp_min(eps)
 
 
 class GRPOLoss(nn.Module):
@@ -59,7 +63,9 @@ class GRPOLoss(nn.Module):
         # Policy loss with clipping
         ratio = (log_probs - experience.log_probs_old).exp()
         unclipped_term = ratio * experience.advantages
-        clipped_term = ratio.clamp(1 - self.clip_eps_lo, 1 + self.clip_eps_hi) * experience.advantages
+        clipped_term = (
+            ratio.clamp(1 - self.clip_eps_lo, 1 + self.clip_eps_hi) * experience.advantages
+        )
         policy_loss = -torch.min(unclipped_term, clipped_term)
 
         # Optional KL penalty
@@ -91,7 +97,9 @@ class GSPOLoss(nn.Module):
             log_probs - experience.log_probs_old, mask=experience.action_mask, dim=-1, keepdim=True
         ).exp()
         unclipped_term = seq_logprobs * experience.advantages
-        clipped_term = seq_logprobs.clamp(1 - self.clip_eps_lo, 1 + self.clip_eps_hi) * experience.advantages
+        clipped_term = (
+            seq_logprobs.clamp(1 - self.clip_eps_lo, 1 + self.clip_eps_hi) * experience.advantages
+        )
         policy_loss = -torch.min(unclipped_term, clipped_term)
 
         # Optional KL penalty
@@ -214,9 +222,13 @@ class PPOLoss(nn.Module):
     ) -> torch.Tensor:
         # Value loss with clipping
         values = values.to(log_probs.device)
-        returns = experience.advantages + experience.values_old  # A_t = G_t - V(s_t) => G_t = A_t + V(s_t)
+        returns = (
+            experience.advantages + experience.values_old
+        )  # A_t = G_t - V(s_t) => G_t = A_t + V(s_t)
         values_clipped = torch.clamp(
-            values, experience.values_old - self.clip_eps_val, experience.values_old + self.clip_eps_val
+            values,
+            experience.values_old - self.clip_eps_val,
+            experience.values_old + self.clip_eps_val,
         )
         val_unclipped_term = 0.5 * (returns - values) ** 2
         val_clipped_term = 0.5 * (returns - values_clipped) ** 2
