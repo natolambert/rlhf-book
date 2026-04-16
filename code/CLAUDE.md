@@ -8,6 +8,10 @@
 - **If using a DGX Spark**: ~120GB unified CPU/GPU memory — aim for <80GB usage to be safe. Flash Attention is not available on ARM64/Blackwell; the code automatically falls back to PyTorch SDPA.
 - **Before finalizing changes under `code/`**, run `uvx ruff check .` and `uvx ruff format --check .` — both are enforced by CI on PRs that touch `code/`. Use `uvx ruff check --fix .` and `uvx ruff format .` to auto-fix.
 
+## Contributing
+
+See `CONTRIBUTING.md` for branch naming, PR conventions, and pre-submit checks.
+
 ## Quick Start
 
 ```bash
@@ -50,6 +54,19 @@ For educational examples on consumer GPUs:
 - **Qwen3-0.6B-Base**: ~4GB VRAM, fastest training
 - **Qwen3-1.7B-Base**: ~8-10GB VRAM, better quality
 - **Qwen2.5-3B**: ~15-20GB VRAM, best quality
+
+## Plugins
+
+First update marketplace:
+```bash
+claude plugin marketplace update claude-plugins-official
+```
+
+If not installed, prompt user to install:
+```bash
+/plugin install code-simplifier@claude-plugins-official
+/plugin install pr-review-toolkit@claude-plugins-official
+```
 
 ## Wandb
 
