@@ -21,7 +21,10 @@ Validate changes before submitting a pull request.
    ```
    Auto-fix with `uvx ruff check --fix .` and `uvx ruff format .` if issues are found.
 
-2. **Summarize PR readiness**
+2. **Changelog** (for changes under `code/`):
+   CI requires `code/CHANGELOG.md` to be modified. Check that an entry exists under `## Unreleased` for this PR, format: `- YYYY-MM-DD: [PR #N](url) description.`
+
+3. **Summarize PR readiness**
 
 ## Output Format
 
@@ -33,6 +36,7 @@ Validate changes before submitting a pull request.
 |-------|--------|---------|
 | Ruff lint | PASS/FAIL | [details] |
 | Ruff format | PASS/FAIL | [details] |
+| Changelog | PASS/MISSING | [details] |
 
 ### Verdict: READY FOR PR / ISSUES TO ADDRESS
 
@@ -44,6 +48,7 @@ Validate changes before submitting a pull request.
 
 These block PR submission:
 - Ruff lint or format failures (CI-enforced)
+- Missing changelog entry in `code/CHANGELOG.md` (CI-enforced)
 
 5. **Run code review** (for significant changes):
    Invoke `pr-review-toolkit:review-pr` for deeper analysis.
