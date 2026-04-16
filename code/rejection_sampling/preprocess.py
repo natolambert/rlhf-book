@@ -23,12 +23,23 @@ from .utils import (
     ACEMATH_SYSTEM_PROMPT,
     cache_key,
     cuda_memory_gb,
+    extract_gsm8k_answer,
     format_gsm8k_gold,
     free_memory,
 )
 
 
 Prompt = dict  # {"question": str, "gold": str}
+
+
+def _answer_matches(predicted: str | None, gold: str) -> bool:
+    """Numeric comparison with string fallback for GSM8K answers."""
+    if predicted is None:
+        return False
+    try:
+        return abs(float(predicted) - float(gold)) < 1e-6
+    except ValueError:
+        return predicted.strip() == gold.strip()
 
 
 def load_gsm8k_prompts(cfg: Config) -> list[Prompt]:
@@ -303,6 +314,28 @@ def run(cfg: Config) -> Path:
             f.write(json.dumps(record) + "\n")
     os.replace(tmp_path, cache_path)
     console.print(f"[bold green]Wrote rollout cache:[/bold green] {cache_path}")
+
+    # Log decidable_fraction so the user knows how much signal top_per_prompt
+    # actually has on this cache.  A decidable prompt has both correct and
+    # incorrect completions; on all-correct or all-wrong rows, selection
+    # strategy cannot matter.
+    n_decidable = 0
+    for prompt, comp_list, reward_list in zip(prompts, completions, rewards, strict=True):
+        has_correct = any(
+            _answer_matches(extract_gsm8k_answer(c), prompt["gold"])
+            for c in comp_list
+        )
+        has_wrong = any(
+            not _answer_matches(extract_gsm8k_answer(c), prompt["gold"])
+            for c in comp_list
+        )
+        if has_correct and has_wrong:
+            n_decidable += 1
+    frac = n_decidable / len(prompts) if prompts else 0.0
+    console.print(
+        f"[dim]decidable_fraction: {n_decidable}/{len(prompts)} = {frac:.3f} "
+        f"(prompts where selection strategy can matter)[/dim]"
+    )
 
     # Drop the intermediate now that the final cache is on disk.
     intermediate_path.unlink(missing_ok=True)
