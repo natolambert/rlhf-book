@@ -5,6 +5,7 @@ On release, entries get moved under a version heading.
 
 ## Unreleased
 
+- 2026-04-17: [PR #375](https://github.com/natolambert/rlhf-book/pull/375) added CONTRIBUTING.md with branch/PR conventions, pre-submit-pr skill with ruff lint/format and changelog checks.
 - 2026-04-17: [PR #368](https://github.com/natolambert/rlhf-book/pull/368) added APO-Zero and APO-Down losses (Anchored Preference Optimization, D'Oosterlinck et al., 2024) to the direct alignment module, with validated reference runs on OLMo-2-1B-SFT.
 - 2026-04-16: [PR #374](https://github.com/natolambert/rlhf-book/pull/374) added CI ruff lint/format check for PRs touching `code/`, applied ruff format to all existing files, fixed lint errors (unused imports, unsorted imports, `zip()` without `strict=`), and documented linting in README.
 - 2026-04-15: [PR #372](https://github.com/natolambert/rlhf-book/pull/372) documented build-essential requirement for Ubuntu/Debian and uv version guidance in README install section.

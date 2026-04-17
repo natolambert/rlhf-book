@@ -6,7 +6,11 @@
 - **Always run training commands in background** using `run_in_background: true` to avoid blocking
 - **Be careful with parallel jobs**: Only run one training job at a time unless you verify memory is available. Running too many can OOM the system.
 - **If using a DGX Spark**: ~120GB unified CPU/GPU memory — aim for <80GB usage to be safe. Flash Attention is not available on ARM64/Blackwell; the code automatically falls back to PyTorch SDPA.
-- **Before finalizing changes under `code/`**, run `uvx ruff check .` and `uvx ruff format --check .` — both are enforced by CI on PRs that touch `code/`. Use `uvx ruff check --fix .` and `uvx ruff format .` to auto-fix.
+- **Before finalizing changes under `code/`**, run `uvx ruff@0.14.5 check .` and `uvx ruff@0.14.5 format --check .` — both are enforced by CI on PRs that touch `code/` (see `.github/workflows/lint.yml`). Use `uvx ruff@0.14.5 check --fix .` and `uvx ruff@0.14.5 format .` to auto-fix. Pin the version to match CI; unpinned `uvx ruff` can diverge.
+
+## Contributing
+
+See `CONTRIBUTING.md` for branch naming, PR conventions, and pre-submit checks.
 
 ## Quick Start
 
@@ -28,9 +32,9 @@ uv run python -m rejection_sampling.train --config rejection_sampling/configs/to
 
 ## Changelog Process
 
-- **CI enforces this**: a GitHub Actions check fails PRs that touch `code/` without modifying `code/CHANGELOG.md`.
+- **CI enforces this**: a GitHub Actions check fails PRs that touch `code/` without modifying `code/CHANGELOG.md` (the file must be modified; the format below is convention, not enforced).
 - Add entries under the `## Unreleased` section at the top of `CHANGELOG.md`.
-- Use exactly **one bullet per PR**, format: `- YYYY-MM-DD: [PR #N](url) description`.
+- Use exactly **one bullet per PR**, format: `- YYYY-MM-DD: [PR #N](https://github.com/natolambert/rlhf-book/pull/N) description.`
 - Each bullet must include a PR link and can contain multiple sentences summarizing meaningful changes.
 - When changes affect comparability (metrics, logging semantics, evaluation logic), mention that directly in the same bullet.
 - **On release**: rename `## Unreleased` to `## vX.Y.Z` and add a fresh `## Unreleased` section above it.
@@ -50,6 +54,19 @@ For educational examples on consumer GPUs:
 - **Qwen3-0.6B-Base**: ~4GB VRAM, fastest training
 - **Qwen3-1.7B-Base**: ~8-10GB VRAM, better quality
 - **Qwen2.5-3B**: ~15-20GB VRAM, best quality
+
+## Plugins
+
+First update marketplace:
+```bash
+claude plugin marketplace update claude-plugins-official
+```
+
+If not installed, prompt user to install:
+```bash
+/plugin install code-simplifier@claude-plugins-official
+/plugin install pr-review-toolkit@claude-plugins-official
+```
 
 ## Wandb
 
