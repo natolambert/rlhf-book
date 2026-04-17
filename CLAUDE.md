@@ -97,15 +97,20 @@ response = model.generate_content([
 
 ## Footer Convention
 
-The site footer (logos + copyright line) lives in `book/templates/footer.html` and is included by all three page templates:
+The site footer (logos + copyright line) lives in `book/templates/footer.html` and is included by every page template on rlhfbook.com:
 
-- `book/templates/html.html` (index) includes it via the Pandoc partial `$footer.html()$`
-- `book/templates/chapter.html` (chapter pages) includes it via `$footer.html()$`
-- `book/templates/library.html` (standalone page, copied as-is to build/) includes it via the HTML sentinel `<!-- include: footer.html -->`, which the Makefile's `library.html` rule expands with `awk` on build
+- `book/templates/html.html` (index) — included via the Pandoc partial `$footer.html()$`
+- `book/templates/chapter.html` (chapter pages) — included via `$footer.html()$`
+- `book/templates/library.html` (standalone page, copied to build/) — included via the HTML sentinel `<!-- include: footer.html -->`
+- `book/templates/course.html` (copied to build/) — sentinel
+- `book/templates/404.html` (copied to build/ by the `files` target) — sentinel
+- `book/rl-cheatsheet/index.html` (copied to build/) — sentinel
+
+The sentinels are expanded at build time by the `$(INLINE_FOOTER)` awk command defined in the Makefile. Pandoc-templated pages use its native partial syntax.
 
 To update the footer, edit `book/templates/footer.html`. That's it.
 
-The Citation block (which has a different heading level across pages — h3 on index, h4 on chapters/library) is **not** part of the footer partial and remains inline in each template.
+The Citation block (which has a different heading level across pages — h3 on index, h4 on chapters/library) is **not** part of the footer partial and remains inline in each template. Footer asset paths are absolute (`/assets/...`) so they resolve correctly even when 404.html is served as a fallback on an arbitrary URL.
 
 ## Style Notes
 
