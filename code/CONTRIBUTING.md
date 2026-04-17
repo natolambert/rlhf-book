@@ -9,7 +9,7 @@ The `code/` directory contains runnable training examples organized by technique
 
 ## Changelog
 
-CI requires PRs that touch `code/` to also update `code/CHANGELOG.md`. Add one bullet under `## Unreleased`:
+CI requires PRs that touch `code/` to also modify `code/CHANGELOG.md` (the file must be modified; the format below is convention, not enforced). Add one bullet under `## Unreleased`:
 
 ```
 - YYYY-MM-DD: [PR #N](https://github.com/natolambert/rlhf-book/pull/N) description.
