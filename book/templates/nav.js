@@ -27,7 +27,7 @@ class NavigationDropdown extends HTMLElement {
         <ul>
           <li><a href="https://rlhfbook.com/rl-cheatsheet">RL Cheatsheet</a></li>
           <li><a href="https://rlhfbook.com/library">Completions Library</a></li>
-          <li><a href="https://rlhfbook.com/course">Course</a> / <a href="https://discord.gg/yz5AwK4gBR">Discord Community</a></li>
+          <li><a href="https://rlhfbook.com/course">Course</a></li>
         </ul>
       </div>
 
