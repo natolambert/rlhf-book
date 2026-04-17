@@ -5,6 +5,7 @@ On release, entries get moved under a version heading.
 
 ## Unreleased
 
+- 2026-04-17: [PR #380](https://github.com/natolambert/rlhf-book/pull/380) added Discord community link to `code/README.md` (part of the wider site-wide Discord rollout).
 - 2026-04-17: [PR #377](https://github.com/natolambert/rlhf-book/pull/377) cleaned "Tune PPO hyperparameters" TODO from
   `policy_gradients/README.md` because it was addressed in PR #364 and PR #365.
 - 2026-04-17: [PR #375](https://github.com/natolambert/rlhf-book/pull/375) added CONTRIBUTING.md with branch/PR conventions, pre-submit-pr skill with ruff lint/format and changelog checks.

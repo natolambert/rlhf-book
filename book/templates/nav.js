@@ -19,7 +19,7 @@ class NavigationDropdown extends HTMLElement {
       <div class="section">
         <h3>Links</h3>
         <ul>
-          <li><a href="https://rlhfbook.com">Home</a> / <a href="https://github.com/natolambert/rlhf-book">GitHub</a></li>
+          <li><a href="https://rlhfbook.com">Home</a> / <a href="https://github.com/natolambert/rlhf-book">GitHub</a> / <a href="https://discord.gg/yz5AwK4gBR">Discord</a></li>
           <li><a href="https://rlhfbook.com/book.pdf">PDF</a> / <a href="https://arxiv.org/abs/2504.12501">Arxiv</a> / <a href="https://rlhfbook.com/book.epub">EPUB</a> / <a href="https://rlhfbook.com/book.kindle.epub">Kindle</a></li>
           <li>Order: <a href="https://hubs.la/Q03TsMBq0">Manning</a>, <a href="https://amzn.to/4cwCDJQ">Amazon</a></li>
         </ul>

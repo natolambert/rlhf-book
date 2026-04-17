@@ -2,7 +2,7 @@
 
 A comprehensive guide to Reinforcement Learning from Human Feedback (and a broad introduction to post-training language models).
 
-**[Read online](https://rlhfbook.com)** | **Order print on [Manning](https://hubs.la/Q03Tc3cf0) or [Amazon](https://amzn.to/4cwCDJQ)**
+**[Read online](https://rlhfbook.com)** | **Order print on [Manning](https://hubs.la/Q03Tc3cf0) or [Amazon](https://amzn.to/4cwCDJQ)** | **Join [Discord Community](https://discord.gg/yz5AwK4gBR)**
 
 This book is my attempt to open-source all the knowledge I've gained working at the frontier of open models in the post-ChatGPT take off of language models.
 When I started, many established methods like rejection sampling had no canonical reference.
