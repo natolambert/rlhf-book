@@ -5,13 +5,13 @@ On release, entries get moved under a version heading.
 
 ## Unreleased
 
+- 2026-04-17: [PR #368](https://github.com/natolambert/rlhf-book/pull/368) added APO-Zero and APO-Down losses (Anchored Preference Optimization, D'Oosterlinck et al., 2024) to the direct alignment module, with validated reference runs on OLMo-2-1B-SFT.
 - 2026-04-16: [PR #374](https://github.com/natolambert/rlhf-book/pull/374) added CI ruff lint/format check for PRs touching `code/`, applied ruff format to all existing files, fixed lint errors (unused imports, unsorted imports, `zip()` without `strict=`), and documented linting in README.
 - 2026-04-15: [PR #372](https://github.com/natolambert/rlhf-book/pull/372) documented build-essential requirement for Ubuntu/Debian and uv version guidance in README install section.
 - 2026-04-15: [PR #370](https://github.com/natolambert/rlhf-book/pull/370) cleaned up CLAUDE.md for generic use, removed dead LoRA/QLoRA references from RM docstrings and base.py, moved ORPO/SimPO debug notes to direct_alignment/ORPO_SIMPO.md.
 - 2026-04-12: [PR #365](https://github.com/natolambert/rlhf-book/pull/365) updated the canonical PPO reference run to the post-retune validation run from PR #364.
 - 2026-04-12: [PR #364](https://github.com/natolambert/rlhf-book/pull/364) retuned PPO
   hyperparameters for smoother training.
-- 2026-04-12: [PR #364](https://github.com/natolambert/rlhf-book/pull/368) Add APO-Zero and APO-Down loss for direct alignment
 
 ## v0.2.0
 

@@ -320,15 +320,11 @@ def load_sample_prompt_pool(cfg: Config, console: Console) -> list[str]:
 
     if path.suffix.lower() == ".json":
         raw_data = json.loads(path.read_text())
-        if not isinstance(raw_data, list) or not all(
-            isinstance(x, str) for x in raw_data
-        ):
+        if not isinstance(raw_data, list) or not all(isinstance(x, str) for x in raw_data):
             raise ValueError("sample_prompts_file JSON must be a list of strings")
         prompts = [p.strip() for p in raw_data if p.strip()]
     else:
-        prompts = [
-            line.strip() for line in path.read_text().splitlines() if line.strip()
-        ]
+        prompts = [line.strip() for line in path.read_text().splitlines() if line.strip()]
 
     if not prompts:
         raise ValueError(f"No prompts found in {path}")
@@ -460,9 +456,7 @@ def generate_samples(
     return samples
 
 
-def log_samples_to_wandb(
-    samples: list[dict], step: int, strategy: str, prompt_pool_size: int
-):
+def log_samples_to_wandb(samples: list[dict], step: int, strategy: str, prompt_pool_size: int):
     """Log generated samples to wandb as a table."""
     table = wandb.Table(
         columns=[
@@ -561,9 +555,7 @@ def main(cfg: Config):
     steps_per_epoch = len(dataloader) // cfg.gradient_accumulation_steps
     num_training_steps = steps_per_epoch * cfg.num_epochs
     num_warmup_steps = int(num_training_steps * cfg.warmup_ratio)
-    console.print(
-        f"[dim]LR schedule: {num_training_steps} steps, {num_warmup_steps} warmup[/dim]"
-    )
+    console.print(f"[dim]LR schedule: {num_training_steps} steps, {num_warmup_steps} warmup[/dim]")
 
     def lr_lambda(step):
         if step < num_warmup_steps:
@@ -701,9 +693,7 @@ def main(cfg: Config):
             # Flush remaining gradients at end of epoch if partial batch exists
             remaining = len(dataloader) % cfg.gradient_accumulation_steps
             if remaining != 0:
-                grad_norm = clip_grad_norm_(
-                    policy_model.parameters(), cfg.max_grad_norm
-                )
+                grad_norm = clip_grad_norm_(policy_model.parameters(), cfg.max_grad_norm)
                 optimizer.step()
                 optimizer.zero_grad()
                 scheduler.step()
@@ -724,9 +714,7 @@ def main(cfg: Config):
     # Final summary
     console.print("\n[bold green]Training complete![/bold green]")
     if last_logged_metrics:
-        console.print(
-            f"  Final loss: {last_logged_metrics.get('loss', float('nan')):.4f}"
-        )
+        console.print(f"  Final loss: {last_logged_metrics.get('loss', float('nan')):.4f}")
         if "accuracy" in last_logged_metrics:
             console.print(f"  Final accuracy: {last_logged_metrics['accuracy']:.2%}")
     else:
@@ -762,9 +750,7 @@ def main(cfg: Config):
 
     # Save model if requested
     if cfg.save_model:
-        output_path = (
-            Path(cfg.output_dir) / f"{cfg.loss}_{cfg.model_name.split('/')[-1]}"
-        )
+        output_path = Path(cfg.output_dir) / f"{cfg.loss}_{cfg.model_name.split('/')[-1]}"
         output_path.mkdir(parents=True, exist_ok=True)
         console.print(f"\n[dim]Saving model to {output_path}[/dim]")
         policy_model.save_pretrained(output_path)
@@ -775,9 +761,7 @@ def main(cfg: Config):
 
 def main_cli():
     """CLI entry point."""
-    parser = argparse.ArgumentParser(
-        description="Train direct alignment models (DPO, IPO, etc.)"
-    )
+    parser = argparse.ArgumentParser(description="Train direct alignment models (DPO, IPO, etc.)")
 
     # Config file (optional)
     parser.add_argument("--config", type=str, help="Path to YAML config file")
