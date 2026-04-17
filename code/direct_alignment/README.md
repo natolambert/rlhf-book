@@ -3,7 +3,7 @@
 Educational implementations of direct alignment methods for [RLHF Book](https://rlhfbook.com).
 See **Chapter 8: Direct Alignment** for mathematical derivations and intuitions.
 
-> **Status**: DPO/IPO/KTO validated. SimPO and ORPO are implemented and actively being retuned.
+> **Status**: DPO/IPO/KTO/APO validated. SimPO and ORPO are implemented and actively being retuned.
 
 As of 2026-02-08, ORPO/SimPO are still under investigation. See `direct_alignment/experiments/2026-02-08-orpo-simpo.md` for the dated run ledger and links.
 
@@ -16,6 +16,8 @@ As of 2026-02-08, ORPO/SimPO are still under investigation. See `direct_alignmen
 | **SimPO** | [simpo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/ftv5rs3x) | ⚠️ Noisy - needs debugging |
 | **ORPO** | [orpo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/o38ffli5) | ⚠️ Noisy - needs debugging |
 | **KTO** | [kto-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/hgqrkfi6) | ✅ Validated |
+| **APO Zero** | [apo-zero-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/3m2uiyw3) | ✅ Validated |
+| **APO Down** | [apo-down-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/tqzkmyi6) | ✅ Validated |
 
 ![Direct alignment accuracy curves for DPO, IPO, and KTO](../images/wandb_direct_alignment.png)
 
@@ -29,6 +31,8 @@ As of 2026-02-08, ORPO/SimPO are still under investigation. See `direct_alignmen
 | **SimPO** | [Meng et al., 2024](https://arxiv.org/abs/2405.14734) | Length-normalized, no reference model needed |
 | **ORPO** | [Hong et al., 2024](https://arxiv.org/abs/2403.07691) | Combines SFT + preference, no reference model |
 | **KTO** | [Ethayarajh et al., 2024](https://arxiv.org/abs/2402.01306) | Prospect theory inspired, works with binary good/bad labels |
+| **APO-Zero** | [D'Oosterlinck et al., 2024](https://arxiv.org/abs/2408.06266) | Anchored PO — increase chosen likelihood, decrease rejected (model < preferences) |
+| **APO-Down** | [D'Oosterlinck et al., 2024](https://arxiv.org/abs/2408.06266) | Anchored PO — decrease both likelihoods, rejected more (model > preferences) |
 
 ## Quick Start
 
@@ -104,11 +108,11 @@ Other compatible datasets:
 
 ## Key Hyperparameters
 
-| Parameter | DPO | IPO | SimPO | ORPO |
-|-----------|-----|-----|-------|------|
-| `beta` | 0.1-0.5 | 0.1 | 2.0-2.5 | 0.1 |
-| `learning_rate` | 5e-6 | 5e-6 | 8e-7 to 1e-6 | 1e-6 |
-| Reference model | Yes | Yes | No | No |
+| Parameter | DPO | IPO | SimPO | ORPO | APO |
+|-----------|-----|-----|-------|------|-----|
+| `beta` | 0.1-0.5 | 0.1 | 2.0-2.5 | 0.1 | 0.1 |
+| `learning_rate` | 5e-6 | 5e-6 | 8e-7 to 1e-6 | 1e-6 | 5e-6 |
+| Reference model | Yes | Yes | No | No | Yes |
 
 **Important**: DPO requires very low learning rates (1e-7 to 5e-6). Higher rates cause divergence.
 
@@ -219,6 +223,20 @@ Links pinned to specific commits for reproducibility (January 2026).
 |--------|------|
 | TRL | [orpo_trainer.py @ 035c3ff](https://github.com/huggingface/trl/blob/035c3ffa70065339a18e98def65d90ca45e64a5c/trl/trainer/orpo_trainer.py) |
 
+### APO
+
+**Paper:** [Anchored Preference Optimization and Contrastive Revisions: Addressing Underspecification in Alignment](https://arxiv.org/abs/2408.06266)
+
+Two anchored variants disambiguate DPO's unspecified likelihood direction:
+- **APO-Zero**: chosen likelihood up, rejected likelihood down (use when preferred data > model)
+- **APO-Down**: both likelihoods down, rejected falls further (use when preferred data < model)
+
+Used in HuggingFace's [SmolLM3 post-training recipe](https://huggingface.co/blog/smollm3) in place of DPO.
+
+| Source | Link |
+|--------|------|
+| TRL | [dpo_trainer.py @ 035c3ff](https://github.com/huggingface/trl/blob/035c3ffa70065339a18e98def65d90ca45e64a5c/trl/trainer/dpo_trainer.py) (loss_type="apo_zero" / "apo_down") |
+
 ### Not Yet Implemented
 
 #### ODPO (DPO with Offset)
@@ -260,7 +278,9 @@ direct_alignment/
     ├── ipo.yaml
     ├── simpo.yaml
     ├── orpo.yaml
-    └── kto.yaml
+    ├── kto.yaml
+    ├── apo_zero.yaml
+    └── apo_down.yaml
 ```
 
 ## Implementation Notes

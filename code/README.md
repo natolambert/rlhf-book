@@ -177,6 +177,8 @@ uv run python -m direct_alignment.train --loss dpo --max_samples 1000
 | SimPO | `simpo.yaml` | Simple PO - length-normalized, no ref model (Meng et al., 2024) |
 | ORPO | `orpo.yaml` | Odds Ratio PO - combines SFT + preference (Hong et al., 2024) |
 | KTO | `kto.yaml` | Kahneman-Tversky Optimization (Ethayarajh et al., 2024) |
+| APO-Zero | `apo_zero.yaml` | Anchored PO, chosen-up / rejected-down (D'Oosterlinck et al., 2024) |
+| APO-Down | `apo_down.yaml` | Anchored PO, both-down with larger rejected drop (D'Oosterlinck et al., 2024) |
 
 ### Training Results
 

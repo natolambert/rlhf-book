@@ -9,6 +9,7 @@
 # - KTO: Ethayarajh et al., 2024 (https://arxiv.org/abs/2402.01306)
 # - ORPO: Hong et al., 2024 (https://arxiv.org/abs/2403.07691)
 # - SimPO: Meng et al., 2024 (https://arxiv.org/abs/2405.14734)
+# - APO: D'Oosterlinck et al., 2024 (https://arxiv.org/abs/2408.06266)
 
 import torch
 import torch.nn as nn
@@ -459,6 +460,136 @@ class KTOLoss(nn.Module):
         return loss, metrics
 
 
+class APOZeroLoss(nn.Module):
+    """
+    Anchored Preference Optimization (D'Oosterlinck et al., 2024)
+
+    DPO only optimizes the *difference* between chosen and rejected rewards,
+    leaving the absolute direction of likelihood movement unspecified.
+    This means DPO can satisfy its objective in multiple ways:
+    - Increase both likelihoods, with chosen increasing more
+    - Decrease both likelihoods, with rejected decreasing more
+
+    This ambiguity is problematic because alignment needs differ depending
+    on the relationship between the model and the preference data:
+    - A weak model learning from strong-model preferences should *increase*
+        chosen likelihood (the preferred outputs are better than what it produces).
+    - A strong model learning from weak-model preferences should *decrease*
+        chosen likelihood (the preferred outputs are worse than what it produces).
+
+    APO addresses this by anchoring each reward independently:
+    - APO-zero: Pushes chosen reward positive and rejected reward negative,
+        explicitly increasing chosen likelihood and decreasing rejected likelihood.
+        Best when preferred outputs are better than the model (y_w > pi_theta).
+    - APO-down: Decreases both likelihoods, with rejected decreasing more.
+        Best when preferred outputs are worse than the model (y_w < pi_theta).
+    """
+
+    def __init__(self, beta: float = 0.1):
+        """
+        Args:
+            beta: Temperature parameter controlling KL penalty strength.
+                  Higher beta = stronger preference signal, risk of overfitting.
+                  Lower beta = more regularization toward reference model.
+                  Typical values: 0.1-0.5
+        """
+        super().__init__()
+        self.beta = beta
+
+    def forward(
+        self,
+        policy_chosen_logps: torch.Tensor,
+        policy_rejected_logps: torch.Tensor,
+        ref_chosen_logps: torch.Tensor,
+        ref_rejected_logps: torch.Tensor,
+    ) -> tuple[torch.Tensor, dict]:
+        """
+        Args:
+            policy_chosen_logps: Log probs of chosen responses from policy (batch,)
+            policy_rejected_logps: Log probs of rejected responses from policy (batch,)
+            ref_chosen_logps: Log probs of chosen responses from reference (batch,)
+            ref_rejected_logps: Log probs of rejected responses from reference (batch,)
+
+        Returns:
+            loss: Scalar loss value
+            metrics: Dict with chosen_rewards, rejected_rewards, margins
+        """
+        # Compute log ratios (implicit rewards)
+        chosen_logratios = self.beta * (policy_chosen_logps - ref_chosen_logps)
+        rejected_logratios = self.beta * (policy_rejected_logps - ref_rejected_logps)
+        # If `chosen_logratios` increases -> loss decreases
+        # If `rejected_logratios` decreases -> loss decreases
+        apo_zero_loss = -F.sigmoid(chosen_logratios) + F.sigmoid(rejected_logratios)
+        chosen_rewards = chosen_logratios.detach()
+        rejected_rewards = rejected_logratios.detach()
+        metrics = {
+            "chosen_rewards": chosen_rewards.mean().item(),
+            "rejected_rewards": rejected_rewards.mean().item(),
+            "margins": (chosen_rewards - rejected_rewards).mean().item(),
+            "accuracy": (chosen_rewards > rejected_rewards).float().mean().item(),
+        }
+        return apo_zero_loss.mean(), metrics
+
+
+class APODownLoss(nn.Module):
+    """
+    APO-down: For aligning a strong model with weaker preference data
+    (i.e., the model already produces better outputs than the preferred examples).
+
+    Instead of increasing the likelihood of chosen outputs that are worse than
+    what the model can produce, APO-down decreases both likelihoods while
+    ensuring the rejected likelihood decreases more. This preserves the
+    contrastive signal without pulling the model toward lower-quality outputs.
+    """
+
+    def __init__(self, beta: float = 0.1):
+        """
+        Args:
+            beta: Temperature parameter controlling KL penalty strength.
+                  Higher beta = stronger preference signal, risk of overfitting.
+                  Lower beta = more regularization toward reference model.
+                  Typical values: 0.1-0.5
+        """
+        super().__init__()
+        self.beta = beta
+
+    def forward(
+        self,
+        policy_chosen_logps: torch.Tensor,
+        policy_rejected_logps: torch.Tensor,
+        ref_chosen_logps: torch.Tensor,
+        ref_rejected_logps: torch.Tensor,
+    ) -> tuple[torch.Tensor, dict]:
+        """
+        Args:
+            policy_chosen_logps: Log probs of chosen responses from policy (batch,)
+            policy_rejected_logps: Log probs of rejected responses from policy (batch,)
+            ref_chosen_logps: Log probs of chosen responses from reference (batch,)
+            ref_rejected_logps: Log probs of rejected responses from reference (batch,)
+
+        Returns:
+            loss: Scalar loss value
+            metrics: Dict with chosen_rewards, rejected_rewards, margins
+        """
+        # Compute log ratios (implicit rewards)
+        chosen_logratios = self.beta * (policy_chosen_logps - ref_chosen_logps)
+        rejected_logratios = self.beta * (policy_rejected_logps - ref_rejected_logps)
+        # Lower chosen reward -> lower first term -> lower loss
+        # Larger margin (chosen - rejected) -> larger second sigmoid -> lower loss
+        apo_down_loss = F.sigmoid(chosen_logratios) - F.sigmoid(
+            chosen_logratios - rejected_logratios
+        )
+        chosen_rewards = chosen_logratios.detach()
+        rejected_rewards = rejected_logratios.detach()
+        metrics = {
+            "chosen_rewards": chosen_rewards.mean().item(),
+            "rejected_rewards": rejected_rewards.mean().item(),
+            "margins": (chosen_rewards - rejected_rewards).mean().item(),
+            "accuracy": (chosen_rewards > rejected_rewards).float().mean().item(),
+        }
+        return apo_down_loss.mean(), metrics
+
+
 # Loss function registry
 LOSS_FUNCTIONS = {
     "dpo": DPOLoss,
@@ -467,6 +598,8 @@ LOSS_FUNCTIONS = {
     "simpo": SimPOLoss,
     "orpo": ORPOLoss,
     "kto": KTOLoss,
+    "apo_zero": APOZeroLoss,
+    "apo_down": APODownLoss,
 }
 
 
@@ -503,6 +636,10 @@ def get_loss_function(loss_type: str, **kwargs) -> nn.Module:
         return ORPOLoss(beta=beta)
     elif loss_type == "kto":
         return KTOLoss(beta=beta)
+    elif loss_type == "apo_zero":
+        return APOZeroLoss(beta=beta)
+    elif loss_type == "apo_down":
+        return APODownLoss(beta=beta)
     else:
         # Fallback (shouldn't reach here due to earlier check)
         return LOSS_FUNCTIONS[loss_type](**kwargs)

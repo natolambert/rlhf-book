@@ -7,7 +7,7 @@ license = "Apache-2.0"
 requires-python = ">=3.12"
 dependencies = [
     # Core ML
-    "torch>=2.2.0",
+    "torch>=2.6.0",
     "transformers>=4.40.0",
     "datasets>=2.19.0",
     "accelerate>=0.30.0",
@@ -60,11 +60,11 @@ package = true
 [tool.uv.extra-build-dependencies]
 flash-attn = [{ requirement = "torch", match-runtime = true }]
 
-# PyTorch CUDA wheels - only use cu121 on x86_64 Linux
+# PyTorch CUDA wheels - only use cu126 on x86_64 Linux
 # aarch64 (DGX Spark) uses system PyTorch or cu130 wheels
 [[tool.uv.index]]
-name = "pytorch-cu121"
-url = "https://download.pytorch.org/whl/cu121"
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
 explicit = true
 
 [[tool.uv.index]]
@@ -74,7 +74,7 @@ explicit = true
 
 [tool.uv.sources]
 torch = [
-    { index = "pytorch-cu121", marker = "platform_system == 'Linux' and platform_machine == 'x86_64'" },
+    { index = "pytorch-cu126", marker = "platform_system == 'Linux' and platform_machine == 'x86_64'" },
     { index = "pytorch-cu130", marker = "platform_system == 'Linux' and platform_machine == 'aarch64'" },
 ]
 

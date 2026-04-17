@@ -18,7 +18,7 @@ class Config:
     ref_model_name: str | None = None  # Defaults to model_name if None
 
     # Training settings
-    loss: Literal["dpo", "cdpo", "ipo", "simpo", "orpo", "kto"] = "dpo"
+    loss: Literal["dpo", "cdpo", "ipo", "simpo", "orpo", "kto", "apo_zero", "apo_down"] = "dpo"
     beta: float = 0.1  # KL penalty / temperature
     gamma: float = 0.5  # SimPO gamma/beta margin ratio (effective shift is beta * gamma)
     label_smoothing: float = 0.0  # For cDPO (overridden if loss=cdpo)

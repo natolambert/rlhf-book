@@ -768,7 +768,11 @@ def main_cli():
 
     # Override individual settings
     parser.add_argument("--model_name", type=str, help="Model name or path")
-    parser.add_argument("--loss", type=str, choices=["dpo", "cdpo", "ipo", "simpo", "orpo", "kto"])
+    parser.add_argument(
+        "--loss",
+        type=str,
+        choices=["dpo", "cdpo", "ipo", "simpo", "orpo", "kto", "apo_zero", "apo_down"],
+    )
     parser.add_argument("--beta", type=float, help="Beta parameter")
     parser.add_argument("--gamma", type=float, help="SimPO gamma/beta ratio")
     parser.add_argument("--dataset_name", type=str, help="HuggingFace dataset name")
