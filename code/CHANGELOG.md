@@ -5,6 +5,7 @@ On release, entries get moved under a version heading.
 
 ## Unreleased
 
+- 2026-04-17: [PR #375](https://github.com/natolambert/rlhf-book/pull/375) Added CONTRIBUTING.md with branch/PR conventions, pre-submit-pr skill with ruff lint/format and changelog checks.
 - 2026-04-16: [PR #374](https://github.com/natolambert/rlhf-book/pull/374) added CI ruff lint/format check for PRs touching `code/`, applied ruff format to all existing files, fixed lint errors (unused imports, unsorted imports, `zip()` without `strict=`), and documented linting in README.
 - 2026-04-15: [PR #372](https://github.com/natolambert/rlhf-book/pull/372) documented build-essential requirement for Ubuntu/Debian and uv version guidance in README install section.
 - 2026-04-15: [PR #370](https://github.com/natolambert/rlhf-book/pull/370) cleaned up CLAUDE.md for generic use, removed dead LoRA/QLoRA references from RM docstrings and base.py, moved ORPO/SimPO debug notes to direct_alignment/ORPO_SIMPO.md.
