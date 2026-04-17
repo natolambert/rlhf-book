@@ -158,9 +158,9 @@ $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html:	$(HTML_DEPENDENCIES)
 	@test -f book/data/library.json && cp book/data/library.json $(BUILD)/html/data/library.json || echo "No library data to copy"
 	$(ECHO_BUILT)
 
-$(BUILD)/html/library.html: book/templates/library.html
+$(BUILD)/html/library.html: book/templates/library.html book/templates/footer.html
 	$(MKDIR_CMD) $(BUILD)/html
-	cp book/templates/library.html $@
+	awk '/<!-- include: footer\.html -->/{while((getline line < "book/templates/footer.html")>0) print line; next}{print}' book/templates/library.html > $@
 
 $(BUILD)/html/course.html: book/templates/course.html
 	$(MKDIR_CMD) $(BUILD)/html

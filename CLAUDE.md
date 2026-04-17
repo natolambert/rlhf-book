@@ -97,12 +97,15 @@ response = model.generate_content([
 
 ## Footer Convention
 
-The site footer (citation block + logos + copyright) appears in three templates:
-- `book/templates/html.html` — **source of truth** (index page)
-- `book/templates/chapter.html` — chapter pages (uses h4 instead of h3 for Citation heading)
-- `book/templates/library.html` — library standalone page (uses h4 instead of h3)
+The site footer (logos + copyright line) lives in `book/templates/footer.html` and is included by all three page templates:
 
-When updating the footer, edit `html.html` first, then copy the changes to `chapter.html` and `library.html`. The only difference is the Citation heading level (h3 on index, h4 on chapters/library).
+- `book/templates/html.html` (index) includes it via the Pandoc partial `$footer.html()$`
+- `book/templates/chapter.html` (chapter pages) includes it via `$footer.html()$`
+- `book/templates/library.html` (standalone page, copied as-is to build/) includes it via the HTML sentinel `<!-- include: footer.html -->`, which the Makefile's `library.html` rule expands with `awk` on build
+
+To update the footer, edit `book/templates/footer.html`. That's it.
+
+The Citation block (which has a different heading level across pages — h3 on index, h4 on chapters/library) is **not** part of the footer partial and remains inline in each template.
 
 ## Style Notes
 
