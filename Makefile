@@ -25,6 +25,12 @@ DATE_ARG = --metadata date="$(shell date +'%d %B %Y')"
 CONTENT = awk 'FNR==1 && NR!=1 {print "\n\n"}{print}' $(CHAPTERS)
 CONTENT_FILTERS = tee # Use this to add sed filters or other piped commands
 
+# Expands `<!-- include: footer.html -->` sentinels in static HTML pages that
+# are copied (rather than run through pandoc) to build/. Keeps all site
+# footers in sync with book/templates/footer.html.
+INLINE_FOOTER = awk '/<!-- include: footer\.html -->/{while((getline line < "book/templates/footer.html")>0) print line; next}{print}'
+FOOTER_PARTIAL = book/templates/footer.html
+
 # Debugging
 
 DEBUG_ARGS = --verbose
@@ -158,19 +164,19 @@ $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html:	$(HTML_DEPENDENCIES)
 	@test -f book/data/library.json && cp book/data/library.json $(BUILD)/html/data/library.json || echo "No library data to copy"
 	$(ECHO_BUILT)
 
-$(BUILD)/html/library.html: book/templates/library.html
+$(BUILD)/html/library.html: book/templates/library.html $(FOOTER_PARTIAL)
 	$(MKDIR_CMD) $(BUILD)/html
-	cp book/templates/library.html $@
+	$(INLINE_FOOTER) book/templates/library.html > $@
 
-$(BUILD)/html/course.html: book/templates/course.html
+$(BUILD)/html/course.html: book/templates/course.html $(FOOTER_PARTIAL)
 	$(MKDIR_CMD) $(BUILD)/html
-	cp book/templates/course.html $@
+	$(INLINE_FOOTER) book/templates/course.html > $@
 
 rl-cheatsheet: $(BUILD)/html/rl-cheatsheet/inside_cover_back.pdf
 
-$(BUILD)/html/rl-cheatsheet/inside_cover_back.pdf: book/rl-cheatsheet/inside_cover_back.tex book/rl-cheatsheet/index.html
+$(BUILD)/html/rl-cheatsheet/inside_cover_back.pdf: book/rl-cheatsheet/inside_cover_back.tex book/rl-cheatsheet/index.html $(FOOTER_PARTIAL)
 	mkdir -p $(BUILD)/html/rl-cheatsheet
-	cp book/rl-cheatsheet/index.html $(BUILD)/html/rl-cheatsheet/
+	$(INLINE_FOOTER) book/rl-cheatsheet/index.html > $(BUILD)/html/rl-cheatsheet/index.html
 	cp book/rl-cheatsheet/inside_cover_back.tex $(BUILD)/html/rl-cheatsheet/
 	cd $(BUILD)/html/rl-cheatsheet && pdflatex inside_cover_back.tex
 	rm -f $(BUILD)/html/rl-cheatsheet/*.aux $(BUILD)/html/rl-cheatsheet/*.log
@@ -244,7 +250,7 @@ files:
 	cp book/favicon.ico $(BUILD)/html/ || echo "Failed to copy to $(BUILD)/html/"
 	cp book/favicon.ico $(BUILD)/html/c/ || echo "Failed to copy to $(BUILD)/html/c/"
 	cp book/_redirects $(BUILD)/html/ || echo "Failed to copy _redirects to $(BUILD)/html/"
-	cp ./book/templates/404.html $(BUILD)/html/ || echo "Failed to copy 404.html to $(BUILD)/html/"
+	$(INLINE_FOOTER) book/templates/404.html > $(BUILD)/html/404.html || echo "Failed to copy 404.html to $(BUILD)/html/"
 	cp -R book/preorder $(BUILD)/html/ || echo "Failed to copy preorder static pages"
 	cp -R book/code $(BUILD)/html/ || echo "Failed to copy code redirect page"
 	cp $(BUILD)/pdf/book.pdf $(BUILD)/html/ || echo "Failed to copy to $(BUILD)/html/"
