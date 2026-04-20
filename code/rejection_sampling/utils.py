@@ -79,3 +79,13 @@ def extract_gsm8k_answer(text: str) -> str | None:
 
     numbers = _NUMBER_RE.findall(text)
     return numbers[-1].replace(",", "") if numbers else None
+
+
+def answers_match(predicted: str | None, gold: str) -> bool:
+    """Numeric comparison with string fallback for GSM8K answers."""
+    if predicted is None:
+        return False
+    try:
+        return abs(float(predicted) - float(gold)) < 1e-6
+    except ValueError:
+        return predicted.strip() == gold.strip()
