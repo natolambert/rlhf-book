@@ -21,6 +21,7 @@ from policy_gradients.utils import progress_bar
 from .config import Config, load_config
 from .utils import (
     ACEMATH_SYSTEM_PROMPT,
+    answers_match,
     cache_key,
     cuda_memory_gb,
     extract_gsm8k_answer,
@@ -30,16 +31,6 @@ from .utils import (
 
 
 Prompt = dict  # {"question": str, "gold": str}
-
-
-def _answer_matches(predicted: str | None, gold: str) -> bool:
-    """Numeric comparison with string fallback for GSM8K answers."""
-    if predicted is None:
-        return False
-    try:
-        return abs(float(predicted) - float(gold)) < 1e-6
-    except ValueError:
-        return predicted.strip() == gold.strip()
 
 
 def load_gsm8k_prompts(cfg: Config) -> list[Prompt]:
@@ -321,13 +312,9 @@ def run(cfg: Config) -> Path:
     # strategy cannot matter.
     n_decidable = 0
     for prompt, comp_list, reward_list in zip(prompts, completions, rewards, strict=True):
-        has_correct = any(
-            _answer_matches(extract_gsm8k_answer(c), prompt["gold"])
-            for c in comp_list
-        )
+        has_correct = any(answers_match(extract_gsm8k_answer(c), prompt["gold"]) for c in comp_list)
         has_wrong = any(
-            not _answer_matches(extract_gsm8k_answer(c), prompt["gold"])
-            for c in comp_list
+            not answers_match(extract_gsm8k_answer(c), prompt["gold"]) for c in comp_list
         )
         if has_correct and has_wrong:
             n_decidable += 1

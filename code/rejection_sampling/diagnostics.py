@@ -31,6 +31,11 @@ Usage::
 
 Figures are saved to ``--out-dir`` (created if missing).  A markdown summary
 is printed to stdout.
+
+On saturated datasets (e.g. GSM8K where the policy is already strong),
+``decidable_fraction`` will be small even with a well-calibrated RM: the
+ceiling is data-side, not RM-side.  Read the per-row winrate and best-of-N
+sweep alongside it to separate RM quality from data headroom.
 """
 
 from __future__ import annotations
@@ -38,44 +43,13 @@ from __future__ import annotations
 import argparse
 import json
 import random
-import re
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-
-# ---------------------------------------------------------------------------
-# Answer extraction (mirrors utils.py so this script has no import dependency
-# on the rest of the package -- keeps it runnable standalone).
-# ---------------------------------------------------------------------------
-
-_BOXED_RE = re.compile(r"\\boxed\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}")
-_NUMBER_RE = re.compile(r"-?\d+(?:,\d{3})*(?:\.\d+)?")
-
-
-def _extract_answer(text: str) -> str | None:
-    """Pull the final numeric answer from a GSM8K-style completion."""
-    boxed = _BOXED_RE.findall(text)
-    if boxed:
-        inside = boxed[-1]
-        numbers = _NUMBER_RE.findall(inside)
-        if numbers:
-            return numbers[-1].replace(",", "")
-        return inside.strip().replace(",", "") or None
-    numbers = _NUMBER_RE.findall(text)
-    return numbers[-1].replace(",", "") if numbers else None
-
-
-def _answers_match(predicted: str | None, gold: str) -> bool:
-    """Numeric comparison with string fallback."""
-    if predicted is None:
-        return False
-    try:
-        return abs(float(predicted) - float(gold)) < 1e-6
-    except ValueError:
-        return predicted.strip() == gold.strip()
+from .utils import answers_match, extract_gsm8k_answer
 
 
 # ---------------------------------------------------------------------------
@@ -93,7 +67,7 @@ def load_rollouts(path: Path) -> pd.DataFrame:
             for comp_idx, (completion, reward) in enumerate(
                 zip(row["completions"], row["rewards"], strict=True)
             ):
-                predicted = _extract_answer(completion)
+                predicted = extract_gsm8k_answer(completion)
                 records.append(
                     {
                         "prompt_idx": prompt_idx,
@@ -101,7 +75,7 @@ def load_rollouts(path: Path) -> pd.DataFrame:
                         "reward": float(reward),
                         "gold": gold,
                         "predicted": predicted,
-                        "correct": _answers_match(predicted, gold),
+                        "correct": answers_match(predicted, gold),
                     }
                 )
     return pd.DataFrame.from_records(records)
@@ -128,9 +102,7 @@ def decidable_fraction(df: pd.DataFrame) -> dict[str, int | float]:
     }
 
 
-def per_row_winrate(
-    df: pd.DataFrame, rng: random.Random
-) -> dict[str, float | int]:
+def per_row_winrate(df: pd.DataFrame, rng: random.Random) -> dict[str, float | int]:
     """Argmax-reward hit rate vs. random baseline on decidable rows."""
     top_hits = 0
     random_hits = 0
@@ -189,12 +161,20 @@ def plot_reward_histogram(df: pd.DataFrame, out_dir: Path) -> Path:
     wrong = df.loc[~df["correct"], "reward"]
     bins = np.linspace(df["reward"].min(), df["reward"].max(), 50)
     ax.hist(
-        wrong, bins=bins, alpha=0.6, density=True,
-        label=f"Incorrect (n={len(wrong)})", color="#d62728",
+        wrong,
+        bins=bins,
+        alpha=0.6,
+        density=True,
+        label=f"Incorrect (n={len(wrong)})",
+        color="#d62728",
     )
     ax.hist(
-        correct, bins=bins, alpha=0.6, density=True,
-        label=f"Correct (n={len(correct)})", color="#2ca02c",
+        correct,
+        bins=bins,
+        alpha=0.6,
+        density=True,
+        label=f"Correct (n={len(correct)})",
+        color="#2ca02c",
     )
     ax.axvline(correct.mean(), color="#2ca02c", ls="--", lw=1.2, alpha=0.8)
     ax.axvline(wrong.mean(), color="#d62728", ls="--", lw=1.2, alpha=0.8)
@@ -218,10 +198,14 @@ def plot_winrate(stats: dict, out_dir: Path) -> Path:
     ax.set_ylim(0, 1)
     ax.set_ylabel(f"Hit rate on decidable prompts (n={stats['decidable_prompts']})")
     ax.set_title("Per-row selection: does argmax(reward) pick correct?")
-    for bar, v in zip(bars, values):
+    for bar, v in zip(bars, values, strict=True):
         ax.text(
-            bar.get_x() + bar.get_width() / 2, v + 0.01,
-            f"{v:.1%}", ha="center", va="bottom", fontsize=10,
+            bar.get_x() + bar.get_width() / 2,
+            v + 0.01,
+            f"{v:.1%}",
+            ha="center",
+            va="bottom",
+            fontsize=10,
         )
     ax.grid(axis="y", alpha=0.3)
     fig.tight_layout()
@@ -234,12 +218,21 @@ def plot_winrate(stats: dict, out_dir: Path) -> Path:
 def plot_best_of_n(sweep: pd.DataFrame, out_dir: Path) -> Path:
     fig, ax = plt.subplots(figsize=(7, 4.5))
     ax.plot(
-        sweep["n"], sweep["top_n_hit_rate"],
-        marker="o", label="Top-N by reward", color="#1f77b4", lw=2,
+        sweep["n"],
+        sweep["top_n_hit_rate"],
+        marker="o",
+        label="Top-N by reward",
+        color="#1f77b4",
+        lw=2,
     )
     ax.plot(
-        sweep["n"], sweep["random_n_hit_rate"],
-        marker="s", label="Random-N", color="#aec7e8", lw=2, ls="--",
+        sweep["n"],
+        sweep["random_n_hit_rate"],
+        marker="s",
+        label="Random-N",
+        color="#aec7e8",
+        lw=2,
+        ls="--",
     )
     ax.set_xlabel("N (completions considered per prompt)")
     ax.set_ylabel("Fraction of prompts with >= 1 correct in top-N")
@@ -271,7 +264,9 @@ def print_summary(df: pd.DataFrame, dec: dict, winrate: dict, sweep: pd.DataFram
     print("# Reward vs. correctness diagnostic\n")
     print(f"- Prompts: **{dec['n_prompts']}**, completions/prompt: **{n_per_prompt}**")
     print(f"- Overall correctness: **{pct_correct:.1%}**")
-    print(f"- All-correct prompts: **{dec['all_correct']}**, all-wrong: **{dec['none_correct']}**, decidable: **{dec['decidable']}**")
+    print(
+        f"- All-correct prompts: **{dec['all_correct']}**, all-wrong: **{dec['none_correct']}**, decidable: **{dec['decidable']}**"
+    )
     print(f"- **decidable_fraction: {dec['decidable_fraction']:.3f}**\n")
 
     print("## Reward scores\n")
@@ -288,7 +283,9 @@ def print_summary(df: pd.DataFrame, dec: dict, winrate: dict, sweep: pd.DataFram
     print(f"| {'n':>3} | {'top_n':>8} | {'random_n':>8} |")
     print(f"|{'---':->5}|{'---':->10}|{'---':->10}|")
     for _, row in sweep.iterrows():
-        print(f"| {int(row['n']):>3} | {row['top_n_hit_rate']:>8.3f} | {row['random_n_hit_rate']:>8.3f} |")
+        print(
+            f"| {int(row['n']):>3} | {row['top_n_hit_rate']:>8.3f} | {row['random_n_hit_rate']:>8.3f} |"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -301,11 +298,15 @@ def main() -> None:
         description="Reward-vs-correctness diagnostic for rejection-sampling caches."
     )
     parser.add_argument(
-        "--cache", type=str, required=True,
+        "--cache",
+        type=str,
+        required=True,
         help="Path to the scored rollout JSONL (from preprocess.py).",
     )
     parser.add_argument(
-        "--out-dir", type=str, default="rejection_sampling/output/diagnostics",
+        "--out-dir",
+        type=str,
+        default="rejection_sampling/output/diagnostics",
         help="Directory for output figures (created if missing).",
     )
     parser.add_argument("--seed", type=int, default=42)
