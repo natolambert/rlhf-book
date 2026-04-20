@@ -991,7 +991,7 @@ per_token_pg_loss = per_token_pg_loss * tis_weight.detach()
 The $[-10, 10]$ clamp is only for numerical stability before exponentiation; the actual truncated-importance-sampling step is the one-sided cap at $C$.
 In practice, the bookkeeping around these logprobs — storing sampler logprobs from generation, recomputing learner logprobs at the old checkpoint, and tracking current logprobs during gradient steps — is a substantial part of the scaffolding in distributed RL frameworks.
 Unlike GSPO, this correction is token-level because it addresses token-level numerical mismatch rather than sequence-level reward granularity.
-TIS for the learner–sampler ratio has been adopted across major open-source RL frameworks (VeRL, OpenRLHF, SkyRL, OAT, and Open Instruct, which uses $C = 2$), and becomes increasingly important for long reasoning traces (Chapter 7), where small per-token differences compound over thousands of generated tokens.
+TIS for the learner–sampler ratio has been adopted across major open-source RL frameworks (VeRL, TRL, OpenRLHF, SkyRL, OAT, and Open Instruct, which uses $C = 2$), and becomes increasingly important for long reasoning traces (Chapter 7), where small per-token differences compound over thousands of generated tokens.
 
 
 ### Example: Proximal Policy Optimization

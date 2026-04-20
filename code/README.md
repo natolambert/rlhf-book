@@ -2,6 +2,8 @@
 
 Educational code examples accompanying [RLHF Book](https://rlhfbook.com) by Nathan Lambert.
 
+Join the [Discord Community](https://discord.gg/yz5AwK4gBR) to ask questions, share runs, and compare notes on these examples.
+
 I primarily run experiments on a [DGX Spark](https://www.nvidia.com/en-us/products/workstations/dgx-spark/). For setup advice, see my [dgx-spark-setup](https://github.com/natolambert/dgx-spark-setup) guide.
 
 *Note: There's an open PR [here](https://github.com/natolambert/rlhf-book/pull/328) exploring the idea of adding speedrun functionality to this repository — comment if you're interested in pushing this further or seeing it merged into main.*
@@ -177,6 +179,8 @@ uv run python -m direct_alignment.train --loss dpo --max_samples 1000
 | SimPO | `simpo.yaml` | Simple PO - length-normalized, no ref model (Meng et al., 2024) |
 | ORPO | `orpo.yaml` | Odds Ratio PO - combines SFT + preference (Hong et al., 2024) |
 | KTO | `kto.yaml` | Kahneman-Tversky Optimization (Ethayarajh et al., 2024) |
+| APO-Zero | `apo_zero.yaml` | Anchored PO, chosen-up / rejected-down (D'Oosterlinck et al., 2024) |
+| APO-Down | `apo_down.yaml` | Anchored PO, both-down with larger rejected drop (D'Oosterlinck et al., 2024) |
 
 ### Training Results
 

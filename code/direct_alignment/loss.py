@@ -9,6 +9,7 @@
 # - KTO: Ethayarajh et al., 2024 (https://arxiv.org/abs/2402.01306)
 # - ORPO: Hong et al., 2024 (https://arxiv.org/abs/2403.07691)
 # - SimPO: Meng et al., 2024 (https://arxiv.org/abs/2405.14734)
+# - APO: D'Oosterlinck et al., 2024 (https://arxiv.org/abs/2408.06266)
 
 import torch
 import torch.nn as nn

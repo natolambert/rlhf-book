@@ -2,7 +2,7 @@
 
 A comprehensive guide to Reinforcement Learning from Human Feedback (and a broad introduction to post-training language models).
 
-**[Read online](https://rlhfbook.com)** | **Order print on [Manning](https://hubs.la/Q03Tc3cf0) or [Amazon](https://amzn.to/4cwCDJQ)**
+**[Read online](https://rlhfbook.com)** | **Order print on [Manning](https://hubs.la/Q03Tc3cf0) or [Amazon](https://amzn.to/4cwCDJQ)** | **Join [Discord Community](https://discord.gg/yz5AwK4gBR)**
 
 This book is my attempt to open-source all the knowledge I've gained working at the frontier of open models in the post-ChatGPT take off of language models.
 When I started, many established methods like rejection sampling had no canonical reference.
@@ -36,11 +36,13 @@ rlhf-book/
 ├── code/                   # Reference implementations
 │   ├── policy_gradients/   # PPO, REINFORCE, GRPO, RLOO
 │   ├── reward_models/      # Preference RM, ORM, PRM training
-│   └── direct_alignment/   # DPO and variants
+│   ├── direct_alignment/   # DPO and variants
+│   └── rejection_sampling/ # Best-of-N rejection sampling
 ├── diagrams/               # Diagram source files
 │   ├── scripts/            # Python generation scripts
 │   ├── tikz/               # LaTeX/TikZ sources
 │   └── specs/              # YAML specifications
+├── teach/                  # Teaching materials (courses, slides)
 ├── build/                  # Generated output (git-ignored)
 └── Makefile                # Build system
 ```
@@ -50,7 +52,8 @@ rlhf-book/
 Reference implementations for RLHF algorithms in `code/`:
 - Policy gradient methods (PPO, REINFORCE, GRPO, RLOO, etc.)
 - Reward model training (preference RM, ORM, PRM)
-- Direct alignment methods
+- Direct alignment methods (DPO and variants)
+- Rejection sampling (best-of-N)
 
 See [code/README.md](code/README.md) for setup and usage.
 

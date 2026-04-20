@@ -50,5 +50,4 @@ uv run python -m policy_gradients.train --config policy_gradients/configs/ppo.ya
 
 ## TODOs for Community Contributions
 
-- [ ] Tune PPO hyperparameters for cleaner training curves (currently experimental)
 - [ ] Add evaluation on held-out reasoning benchmarks
