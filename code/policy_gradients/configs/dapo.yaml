@@ -21,8 +21,8 @@ kl_estimator: kl3  # KL estimator: kl1, kl2, or kl3
 ref_model_device_id: 0
 
 # DAPO overlong penalty
-l_cache: 256
-l_max: 512
+l_cache: 400
+l_max: 500
 
 lr: 5e-6
 

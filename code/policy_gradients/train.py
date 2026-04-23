@@ -141,6 +141,7 @@ def _accuracy_reward(
     entries: list[dict],
     cfg: Config,
     lengths: list[int],
+    console: Console,
 ) -> list[float]:
     """Compute accuracy reward based on extracted answers.
 
@@ -157,18 +158,20 @@ def _accuracy_reward(
             entry=entry,
             completion_len=completion_len,
             cfg=cfg,
+            console=console,
         )
         for completion, entry, completion_len in zip(completions, entries, lengths, strict=True)
     ]
 
 
-def dapo_length_penalty(completion_len: int, l_cache: int, l_max: int) -> float:
+def dapo_length_penalty(completion_len: int, l_cache: int, l_max: int, console: Console) -> float:
     """Compute DAPO overlong penalty based on completion length."""
     safe_len = l_max - l_cache
     if completion_len <= safe_len:
         return 0.0
     if completion_len <= l_max:
         return (safe_len - completion_len) / l_cache
+    console.print(f"DAPO overlong penalty: {completion_len} > {l_max}", style="bold red")
     return -1.0
 
 
@@ -178,6 +181,7 @@ def score_accuracy_answer(
     entry: dict,
     completion_len: int,
     cfg: Config,
+    console: Console,
 ) -> float:
     """Compute answer-accuracy reward with optional DAPO overlong penalty."""
     answer = extract_answer(completion)
@@ -188,6 +192,7 @@ def score_accuracy_answer(
         completion_len=completion_len,
         l_cache=cfg.l_cache,
         l_max=cfg.l_max,
+        console=console,
     )
 
 
@@ -216,15 +221,16 @@ def compute_rewards(
     entries: list[dict],
     cfg: Config,
     lengths: list[int],
+    console: Console,
     format_weight: float = 0.5,
-) -> list[float]:
+) -> tuple[list[float], list[float]]:
     """Compute combined accuracy + format rewards."""
-    accuracy_rewards = _accuracy_reward(dataset, completions, entries, cfg, lengths)
+    accuracy_rewards = _accuracy_reward(dataset, completions, entries, cfg, lengths, console)
     format_rewards = _format_reward(completions)
     combined_rewards = [
         acc + format_weight * fmt for acc, fmt in zip(accuracy_rewards, format_rewards, strict=True)
     ]
-    return combined_rewards
+    return combined_rewards,accuracy_rewards
 
 
 def apply_reward_kl(
@@ -402,8 +408,7 @@ def rollout(
     # Per-completion generated length
     lengths = action_mask.sum(dim=1).tolist()
     # 4. Compute rewards
-    accuracy_rewards = _accuracy_reward(dataset, completions, entries, cfg, lengths)
-    rewards_list = compute_rewards(dataset, completions, entries, cfg, lengths)
+    rewards_list,accuracy_rewards = compute_rewards(dataset, completions, entries, cfg, lengths, console)
     rewards = torch.tensor(rewards_list, dtype=torch.float32, device=model.device).unsqueeze(-1)
 
     # 5. Compute attention mask
