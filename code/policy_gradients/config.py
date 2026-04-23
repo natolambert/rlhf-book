@@ -90,6 +90,10 @@ class Config(BaseModel):
     sapo_temp_pos: float = 1.0
     sapo_temp_neg: float = 1.05
 
+    #DAPO-specific params (overlong length penalty)
+    l_cache: int = 256
+    l_max: int = 512
+    
     # KL penalty (optional, for REINFORCE/RLOO/GRPO when beta > 0)
     beta: float = 0.0
     ref_model_device_id: int = 0

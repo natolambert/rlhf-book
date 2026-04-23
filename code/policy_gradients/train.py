@@ -14,7 +14,7 @@ import random
 import re
 import time
 from itertools import batched  # Requires Python 3.12+
-from typing import Any
+from typing import Any, NamedTuple
 
 import numpy as np
 import reasoning_gym as rg
@@ -40,7 +40,8 @@ from .loss import (
     PPOLoss,
     ReinforceLoss,
     SAPOLoss,
-    approx_kl,
+    DAPOLoss,
+    approx_kl3,
     masked_mean,
 )
 from .utils import print_model_info, print_rollout_sample, print_step_header, progress_bar
@@ -129,17 +130,55 @@ def get_loss_objective(loss: str, **kwargs) -> nn.Module:
         return SAPOLoss(**kwargs)
     elif loss == "ppo":
         return PPOLoss(**kwargs)
+    elif loss == "dapo":
+        return DAPOLoss(**kwargs)
     raise ValueError(f"Unsupported loss type: {loss}")
 
 
-def _accuracy_reward(dataset: ProceduralDataset, completions: str, entries: list[dict]) -> float:
-    """Compute accuracy reward based on extracted answers."""
+def _accuracy_reward(
+    dataset: ProceduralDataset,
+    completions: list[str],
+    entries: list[dict],
+    cfg: Config,
+    lengths: list[int],
+) -> list[float]:
+    """Compute accuracy reward based on extracted answers.
 
-    def score_answer(completion: str, entry: dict) -> float:
+    For DAPO, apply an overlong penalty based on completion length:
+    - no penalty when length <= l_max - l_cache
+    - linear penalty in the buffer region
+    - full penalty of -1 when length > l_max
+    """
+
+    def dapo_length_penalty(completion_len: int, l_cache: int, l_max: int) -> float:
+        safe_len = l_max - l_cache
+        if completion_len <= safe_len:
+            return 0.0
+        if completion_len <= l_max:
+            return (safe_len - completion_len) / l_cache
+        return -1.0
+
+    def score_answer(completion: str, entry: dict, completion_len: int) -> float:
         answer = extract_answer(completion)
-        return dataset.score_answer(answer, entry)
+        score = float(dataset.score_answer(answer, entry))
 
-    return [score_answer(c, e) for c, e in zip(completions, entries, strict=True)]
+        if cfg.loss == "dapo":
+            score += dapo_length_penalty(
+                completion_len=completion_len,
+                l_cache=cfg.l_cache,
+                l_max=cfg.l_max,
+            )
+
+        return score
+
+    return [
+        score_answer(
+            completion=completion,
+            entry=entry,
+            completion_len=completion_len,
+        )
+        for completion, entry, completion_len in zip(completions, entries, lengths, strict=True)
+    ]
 
 
 def _format_reward(completions: list[str], **kwargs) -> list[float]:
@@ -164,10 +203,12 @@ def compute_rewards(
     dataset: ProceduralDataset,
     completions: list[str],
     entries: list[dict],
+    cfg: Config,
+    lengths: list[int],
     format_weight: float = 0.5,
 ) -> list[float]:
     """Compute combined accuracy + format rewards."""
-    accuracy_rewards = _accuracy_reward(dataset, completions, entries)
+    accuracy_rewards = _accuracy_reward(dataset, completions, entries, cfg, lengths)
     format_rewards = _format_reward(completions)
     combined_rewards = [
         acc + format_weight * fmt for acc, fmt in zip(accuracy_rewards, format_rewards, strict=True)
@@ -186,14 +227,14 @@ def apply_reward_kl(
     """Apply KL penalty to rewards (for REINFORCE/RLOO/PPO)."""
     if not beta or loss not in ["ppo", "rloo", "reinforce"]:
         return rewards
-    kl_div = approx_kl(log_probs, log_probs_ref, action_mask)
+    kl_div = approx_kl3(log_probs, log_probs_ref, action_mask)
     kl_div = masked_mean(kl_div, mask=action_mask, dim=-1, keepdim=True)
     rewards = rewards - beta * kl_div
     return rewards
 
 
 def compute_standardized_advantages(rewards: torch.Tensor, eps: float = 1e-8) -> torch.Tensor:
-    """Compute standardized advantages (GRPO, GSPO, CISPO)."""
+    """Compute standardized advantages (GRPO, GSPO, CISPO, DAPO)"""
     return (rewards - rewards.mean(dim=0, keepdim=True)) / (rewards.std(dim=0, keepdim=True) + eps)
 
 
@@ -237,7 +278,6 @@ def compute_gae(
     advantages = advantages * action_mask
     return advantages
 
-
 def compute_advantages(
     rewards: torch.Tensor,
     loss: str,
@@ -247,7 +287,7 @@ def compute_advantages(
     lam: float | None = None,
 ) -> torch.Tensor:
     """Compute advantages using the appropriate method for the loss function."""
-    if loss in ["grpo", "gspo", "cispo", "sapo"]:
+    if loss in ["grpo", "gspo", "cispo", "sapo", "dapo"]:
         return compute_standardized_advantages(rewards)
     elif loss in ["drgrpo"]:
         return compute_nonstandardized_advantages(rewards)
@@ -283,18 +323,21 @@ def compute_values(model, sequence_ids: torch.Tensor, attention_mask: torch.Tens
     values = output.logits[:, :-1, :].squeeze(-1).to(torch.float32)
     return values
 
+class RolloutOutput(NamedTuple):
+    sequence_ids: torch.Tensor      # [B, T]      (LongTensor)
+    action_mask: torch.Tensor       # [B, T-1]    (BoolTensor)
+    attention_mask: torch.Tensor    # [B, T]      (BoolTensor)
+    rewards: torch.Tensor           # [B, 1]      (FloatTensor)
+    completions: list[str]          # length B
 
 def rollout(
     model,
     entries: list[dict],
     dataset: ProceduralDataset,
     tokenizer: AutoTokenizer,
-    max_new_tokens: int,
-    temperature: float,
-    top_p: float,
-    top_k: int,
-    min_p: float,
-):
+    cfg: Config,
+    console: Console
+) -> RolloutOutput | None:
     """Generate completions and compute rewards."""
     # 1. Format prompts
     message_templates = [
@@ -322,12 +365,12 @@ def rollout(
         tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id
     )
     generation_config = GenerationConfig(
-        temperature=temperature,
-        top_p=top_p,
-        top_k=top_k,
-        min_p=min_p,
+        temperature=cfg.temperature,
+        top_p=cfg.top_p,
+        top_k=cfg.top_k,
+        min_p=cfg.min_p,
         do_sample=True,
-        max_new_tokens=max_new_tokens,
+        max_new_tokens=cfg.max_new_tokens,
         pad_token_id=pad_token_id,
     )
     sequence_ids = model.generate(**model_inputs, generation_config=generation_config)
@@ -339,15 +382,59 @@ def rollout(
     action_mask[:, model_inputs["input_ids"].shape[1] :] = True
     action_mask[sequence_ids == pad_token_id] = False
     action_mask = action_mask[:, 1:]
-
+    # Per-completion generated length
+    lengths = action_mask.sum(dim=1).tolist()
     # 4. Compute rewards
-    rewards = compute_rewards(dataset, completions, entries)
-    rewards = torch.tensor(rewards, dtype=torch.float32, device=model.device).unsqueeze(-1)
+    rewards_list = compute_rewards(dataset, completions, entries, cfg, lengths)
+    rewards = torch.tensor(rewards_list, dtype=torch.float32, device=model.device).unsqueeze(-1)
 
     # 5. Compute attention mask
     attention_mask = sequence_ids != tokenizer.pad_token_id
+    # 6. DAPO group filtering: drop groups with all rewards 0 or all rewards 1
+    if cfg.loss == "dapo":
+        group_size = cfg.num_rollouts
+        batch_size = rewards.shape[0]
 
-    return sequence_ids, action_mask, attention_mask, rewards, completions
+        if batch_size % group_size != 0:
+            raise ValueError(
+                f"Batch size {batch_size} is not divisible by num_rollouts={group_size}."
+            )
+
+        num_groups = batch_size // group_size
+
+        rewards_grouped = rewards.squeeze(-1).view(num_groups, group_size)
+        sequence_ids_grouped = sequence_ids.view(num_groups, group_size, -1)
+        action_mask_grouped = action_mask.view(num_groups, group_size, -1)
+        attention_mask_grouped = attention_mask.view(num_groups, group_size, -1)
+
+        all_zero = (rewards_grouped == 0).all(dim=1)
+        all_one = (rewards_grouped == 1).all(dim=1)
+        valid_groups = ~(all_zero | all_one)
+
+        num_filtered = (~valid_groups).sum().item()
+        console.print(
+            f"[bold yellow]DAPO filtering:[/bold yellow] "
+            f"filtered {num_filtered}/{num_groups} groups "
+            f"({num_filtered / max(num_groups, 1):.2%})"
+        )
+
+        if not valid_groups.any():
+            console.print("[bold red]All DAPO groups were filtered out.[/bold red]")
+            return None
+
+        sequence_ids = sequence_ids_grouped[valid_groups].reshape(-1, sequence_ids.shape[-1])
+        action_mask = action_mask_grouped[valid_groups].reshape(-1, action_mask.shape[-1])
+        attention_mask = attention_mask_grouped[valid_groups].reshape(-1, attention_mask.shape[-1])
+        rewards = rewards_grouped[valid_groups].reshape(-1, 1)
+
+        kept_group_indices = valid_groups.nonzero(as_tuple=False).squeeze(-1).tolist()
+        filtered_completions: list[str] = []
+        for group_idx in kept_group_indices:
+            start = group_idx * group_size
+            end = start + group_size
+            filtered_completions.extend(completions[start:end])
+        completions = filtered_completions
+    return RolloutOutput(sequence_ids=sequence_ids, action_mask=action_mask, attention_mask=attention_mask, rewards=rewards, completions=completions)
 
 
 def create_dataset(cfg: Config) -> ProceduralDataset:
@@ -428,39 +515,39 @@ def main(cfg: Config):
 
             for batch in batched(entries, cfg.rollout_batch_size):
                 with torch.no_grad():
-                    sequence_ids, action_mask, attention_mask, rewards, completions = rollout(
+                    rollout_output = rollout(
                         model=model,
                         entries=batch,
                         dataset=dataset,
                         tokenizer=tokenizer,
-                        max_new_tokens=cfg.max_new_tokens,
-                        temperature=cfg.temperature,
-                        top_p=cfg.top_p,
-                        top_k=cfg.top_k,
-                        min_p=cfg.min_p,
+                        cfg = cfg,
+                        console=console
                     )
-                    rollout_rewards.append(rewards.cpu())
+                    if not rollout_output:
+                        continue
+                    rollout_rewards.append(rollout_output.rewards.cpu())
                     rollout_completions.extend(
                         [
                             (entry["question"], entry["answer"], completion)
-                            for entry, completion in zip(batch, completions, strict=True)
+                            for entry, completion in zip(batch, rollout_output.completions, strict=True)
                         ]
                     )
 
-                    log_probs_old = compute_log_probs(model, sequence_ids, attention_mask)
-                    log_probs_ref = compute_log_probs(ref_model, sequence_ids, attention_mask)
-                    values_old = compute_values(val_model, sequence_ids, attention_mask)
+                    log_probs_old = compute_log_probs(model, rollout_output.sequence_ids, rollout_output.attention_mask)
+                    log_probs_ref = compute_log_probs(ref_model, rollout_output.sequence_ids, rollout_output.attention_mask)
                     rewards = apply_reward_kl(
-                        rewards, log_probs_old, log_probs_ref, action_mask, cfg.beta, cfg.loss
+                        rollout_output.rewards, log_probs_old, log_probs_ref, rollout_output.action_mask, cfg.beta, cfg.loss
                     )
+                    values_old = compute_values(val_model, rollout_output.sequence_ids, rollout_output.attention_mask)
+
                     advantages = compute_advantages(
-                        rewards, cfg.loss, action_mask, values_old, cfg.gamma, cfg.lam
+                        rewards, cfg.loss, rollout_output.action_mask, values_old, cfg.gamma, cfg.lam
                     )
 
                     experience = Experience(
-                        sequence_ids=sequence_ids,
-                        attention_mask=attention_mask,
-                        action_mask=action_mask,
+                        sequence_ids=rollout_output.sequence_ids,
+                        attention_mask=rollout_output.attention_mask,
+                        action_mask=rollout_output.action_mask,
                         advantages=advantages,
                         log_probs_old=log_probs_old,
                         log_probs_ref=log_probs_ref,
