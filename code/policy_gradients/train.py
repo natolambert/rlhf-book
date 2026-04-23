@@ -22,6 +22,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+import wandb
 from reasoning_gym.composite import DatasetSpec
 from reasoning_gym.dataset import ProceduralDataset
 from reasoning_gym.utils import SYSTEM_PROMPTS, extract_answer
@@ -29,8 +30,6 @@ from rich.console import Console
 from torch.nn.utils import clip_grad_norm_
 from torch.utils.data import DataLoader
 from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
-
-import wandb
 
 from .buffer import Experience, ReplayBuffer, join_experiences_batch
 from .config import Config, load_config
@@ -42,7 +41,7 @@ from .loss import (
     PPOLoss,
     ReinforceLoss,
     SAPOLoss,
-    approx_kl3,
+    get_approx_kl,
     masked_mean,
 )
 from .utils import print_model_info, print_rollout_sample, print_step_header, progress_bar
@@ -151,53 +150,64 @@ def _accuracy_reward(
     - full penalty of -1 when length > l_max
     """
 
-    def dapo_length_penalty(completion_len: int, l_cache: int, l_max: int) -> float:
-        safe_len = l_max - l_cache
-        if completion_len <= safe_len:
-            return 0.0
-        if completion_len <= l_max:
-            return (safe_len - completion_len) / l_cache
-        return -1.0
-
-    def score_answer(completion: str, entry: dict, completion_len: int) -> float:
-        answer = extract_answer(completion)
-        score = float(dataset.score_answer(answer, entry))
-
-        if cfg.loss == "dapo":
-            score += dapo_length_penalty(
-                completion_len=completion_len,
-                l_cache=cfg.l_cache,
-                l_max=cfg.l_max,
-            )
-
-        return score
-
     return [
-        score_answer(
+        score_accuracy_answer(
+            dataset=dataset,
             completion=completion,
             entry=entry,
             completion_len=completion_len,
+            cfg=cfg,
         )
         for completion, entry, completion_len in zip(completions, entries, lengths, strict=True)
     ]
 
 
+def dapo_length_penalty(completion_len: int, l_cache: int, l_max: int) -> float:
+    """Compute DAPO overlong penalty based on completion length."""
+    safe_len = l_max - l_cache
+    if completion_len <= safe_len:
+        return 0.0
+    if completion_len <= l_max:
+        return (safe_len - completion_len) / l_cache
+    return -1.0
+
+
+def score_accuracy_answer(
+    dataset: ProceduralDataset,
+    completion: str,
+    entry: dict,
+    completion_len: int,
+    cfg: Config,
+) -> float:
+    """Compute answer-accuracy reward with optional DAPO overlong penalty."""
+    answer = extract_answer(completion)
+    score = float(dataset.score_answer(answer, entry))
+    if cfg.loss != "dapo":
+        return score
+    return score + dapo_length_penalty(
+        completion_len=completion_len,
+        l_cache=cfg.l_cache,
+        l_max=cfg.l_max,
+    )
+
+
 def _format_reward(completions: list[str], **kwargs) -> list[float]:
     """Compute format reward based on presence of thinking/answer tags."""
+    return [count_tags(completion) for completion in completions]
 
-    def count_tags(text: str) -> float:
-        count = 0.0
-        if re.search(r"\s*<think>\s*", text):
-            count += 0.25
-        if re.search(r"\s*</think>\s*", text):
-            count += 0.25
-        if re.search(r"\s*<answer>\s*", text):
-            count += 0.25
-        if re.search(r"\s*</answer>\s*", text):
-            count += 0.25
-        return count
 
-    return [count_tags(c) for c in completions]
+def count_tags(text: str) -> float:
+    """Count format tags used in a completion."""
+    count = 0.0
+    if re.search(r"\s*<think>\s*", text):
+        count += 0.25
+    if re.search(r"\s*</think>\s*", text):
+        count += 0.25
+    if re.search(r"\s*<answer>\s*", text):
+        count += 0.25
+    if re.search(r"\s*</answer>\s*", text):
+        count += 0.25
+    return count
 
 
 def compute_rewards(
@@ -224,11 +234,12 @@ def apply_reward_kl(
     action_mask: torch.Tensor,
     beta: float,
     loss: str,
+    kl_estimator: str,
 ) -> torch.Tensor:
     """Apply KL penalty to rewards (for REINFORCE/RLOO/PPO)."""
     if not beta or loss not in ["ppo", "rloo", "reinforce"]:
         return rewards
-    kl_div = approx_kl3(log_probs, log_probs_ref, action_mask)
+    kl_div = get_approx_kl(kl_estimator, log_probs, log_probs_ref, action_mask)
     kl_div = masked_mean(kl_div, mask=action_mask, dim=-1, keepdim=True)
     rewards = rewards - beta * kl_div
     return rewards
@@ -332,6 +343,7 @@ class RolloutOutput(NamedTuple):
     attention_mask: torch.Tensor  # [B, T]      (BoolTensor)
     rewards: torch.Tensor  # [B, 1]      (FloatTensor)
     completions: list[str]  # length B
+    entries: list[dict]  # length B, aligned to completions
 
 
 def rollout(
@@ -343,6 +355,7 @@ def rollout(
     console: Console,
 ) -> RolloutOutput | None:
     """Generate completions and compute rewards."""
+    valid_entries = list(entries)
     # 1. Format prompts
     message_templates = [
         tokenizer.apply_chat_template(
@@ -389,6 +402,7 @@ def rollout(
     # Per-completion generated length
     lengths = action_mask.sum(dim=1).tolist()
     # 4. Compute rewards
+    accuracy_rewards = _accuracy_reward(dataset, completions, entries, cfg, lengths)
     rewards_list = compute_rewards(dataset, completions, entries, cfg, lengths)
     rewards = torch.tensor(rewards_list, dtype=torch.float32, device=model.device).unsqueeze(-1)
 
@@ -407,12 +421,16 @@ def rollout(
         num_groups = batch_size // group_size
 
         rewards_grouped = rewards.squeeze(-1).view(num_groups, group_size)
+        accuracy_rewards_tensor = torch.tensor(
+            accuracy_rewards, dtype=torch.float32, device=model.device
+        )
+        accuracy_grouped = accuracy_rewards_tensor.view(num_groups, group_size)
         sequence_ids_grouped = sequence_ids.view(num_groups, group_size, -1)
         action_mask_grouped = action_mask.view(num_groups, group_size, -1)
         attention_mask_grouped = attention_mask.view(num_groups, group_size, -1)
 
-        all_zero = (rewards_grouped == 0).all(dim=1)
-        all_one = (rewards_grouped == 1).all(dim=1)
+        all_zero = (accuracy_grouped == 0).all(dim=1)
+        all_one = (accuracy_grouped == 1).all(dim=1)
         valid_groups = ~(all_zero | all_one)
 
         num_filtered = (~valid_groups).sum().item()
@@ -433,18 +451,110 @@ def rollout(
 
         kept_group_indices = valid_groups.nonzero(as_tuple=False).squeeze(-1).tolist()
         filtered_completions: list[str] = []
+        filtered_entries: list[dict] = []
         for group_idx in kept_group_indices:
             start = group_idx * group_size
             end = start + group_size
             filtered_completions.extend(completions[start:end])
+            filtered_entries.extend(valid_entries[start:end])
         completions = filtered_completions
+        valid_entries = filtered_entries
     return RolloutOutput(
         sequence_ids=sequence_ids,
         action_mask=action_mask,
         attention_mask=attention_mask,
         rewards=rewards,
         completions=completions,
+        entries=valid_entries,
     )
+
+
+def collect_rollouts_for_step(
+    model,
+    entries: list[dict],
+    dataset: ProceduralDataset,
+    tokenizer: AutoTokenizer,
+    cfg: Config,
+    console: Console,
+    replay_buffer: ReplayBuffer,
+    cpu_device: torch.device,
+    ref_model,
+    val_model,
+    rollout_rewards: list[torch.Tensor],
+    rollout_completions: list[tuple[str, str, str]],
+) -> None:
+    """Collect rollouts for a single step.
+
+    For DAPO, rejected groups are dropped and we continue to accumulate valid
+    groups from the remaining rollout batches (no retries of rejected groups).
+    """
+    for rollout_batch in batched(entries, cfg.rollout_batch_size):
+        rollout_batch_list = list(rollout_batch)
+        with torch.no_grad():
+            rollout_output = rollout(
+                model=model,
+                entries=rollout_batch_list,
+                dataset=dataset,
+                tokenizer=tokenizer,
+                cfg=cfg,
+                console=console,
+            )
+            if not rollout_output:
+                continue
+            rollout_rewards.append(rollout_output.rewards.cpu())
+            rollout_completions.extend(
+                [
+                    (entry["question"], entry["answer"], completion)
+                    for entry, completion in zip(
+                        rollout_output.entries, rollout_output.completions, strict=True
+                    )
+                ]
+            )
+
+            log_probs_old = compute_log_probs(
+                model, rollout_output.sequence_ids, rollout_output.attention_mask
+            )
+            log_probs_ref = compute_log_probs(
+                ref_model, rollout_output.sequence_ids, rollout_output.attention_mask
+            )
+            rewards = apply_reward_kl(
+                rollout_output.rewards,
+                log_probs_old,
+                log_probs_ref,
+                rollout_output.action_mask,
+                cfg.beta,
+                cfg.loss,
+                cfg.kl_estimator,
+            )
+            values_old = compute_values(
+                val_model, rollout_output.sequence_ids, rollout_output.attention_mask
+            )
+            advantages = compute_advantages(
+                rewards,
+                cfg.loss,
+                rollout_output.action_mask,
+                values_old,
+                cfg.gamma,
+                cfg.lam,
+            )
+
+            experience = Experience(
+                sequence_ids=rollout_output.sequence_ids,
+                attention_mask=rollout_output.attention_mask,
+                action_mask=rollout_output.action_mask,
+                advantages=advantages,
+                log_probs_old=log_probs_old,
+                log_probs_ref=log_probs_ref,
+                values_old=values_old,
+            ).to(cpu_device)
+            replay_buffer.add(experience)
+
+    if cfg.loss == "dapo":
+        expected_experiences = len(entries)
+        console.print(
+            "[dim]DAPO accumulation summary: "
+            f"{len(replay_buffer)=}, {expected_experiences=}[/dim]"
+        )
 
 
 def create_dataset(cfg: Config) -> ProceduralDataset:
@@ -491,6 +601,7 @@ def main(cfg: Config):
         clip_eps_val=cfg.clip_eps_val,
         vf_coef=cfg.vf_coef,
         beta=cfg.beta,
+        kl_estimator=cfg.kl_estimator,
         sapo_temp_pos=cfg.sapo_temp_pos,
         sapo_temp_neg=cfg.sapo_temp_neg,
     ).to(model.device)
@@ -519,71 +630,26 @@ def main(cfg: Config):
 
         with progress_bar(console) as progress:
             entries = [entry for entry in batch for _ in range(cfg.num_rollouts)]
-            task = progress.add_task(
-                "Generating rollouts", total=len(entries) // cfg.rollout_batch_size
+            task = progress.add_task("Generating rollouts", total=1)
+            collect_rollouts_for_step(
+                model=model,
+                entries=entries,
+                dataset=dataset,
+                tokenizer=tokenizer,
+                cfg=cfg,
+                console=console,
+                replay_buffer=replay_buffer,
+                cpu_device=cpu_device,
+                ref_model=ref_model,
+                val_model=val_model,
+                rollout_rewards=rollout_rewards,
+                rollout_completions=rollout_completions,
             )
+            progress.update(task, completed=1)
 
-            for batch in batched(entries, cfg.rollout_batch_size):
-                with torch.no_grad():
-                    rollout_output = rollout(
-                        model=model,
-                        entries=batch,
-                        dataset=dataset,
-                        tokenizer=tokenizer,
-                        cfg=cfg,
-                        console=console,
-                    )
-                    if not rollout_output:
-                        continue
-                    rollout_rewards.append(rollout_output.rewards.cpu())
-                    rollout_completions.extend(
-                        [
-                            (entry["question"], entry["answer"], completion)
-                            for entry, completion in zip(
-                                batch, rollout_output.completions, strict=True
-                            )
-                        ]
-                    )
-
-                    log_probs_old = compute_log_probs(
-                        model, rollout_output.sequence_ids, rollout_output.attention_mask
-                    )
-                    log_probs_ref = compute_log_probs(
-                        ref_model, rollout_output.sequence_ids, rollout_output.attention_mask
-                    )
-                    rewards = apply_reward_kl(
-                        rollout_output.rewards,
-                        log_probs_old,
-                        log_probs_ref,
-                        rollout_output.action_mask,
-                        cfg.beta,
-                        cfg.loss,
-                    )
-                    values_old = compute_values(
-                        val_model, rollout_output.sequence_ids, rollout_output.attention_mask
-                    )
-
-                    advantages = compute_advantages(
-                        rewards,
-                        cfg.loss,
-                        rollout_output.action_mask,
-                        values_old,
-                        cfg.gamma,
-                        cfg.lam,
-                    )
-
-                    experience = Experience(
-                        sequence_ids=rollout_output.sequence_ids,
-                        attention_mask=rollout_output.attention_mask,
-                        action_mask=rollout_output.action_mask,
-                        advantages=advantages,
-                        log_probs_old=log_probs_old,
-                        log_probs_ref=log_probs_ref,
-                        values_old=values_old,
-                    ).to(cpu_device)
-                    replay_buffer.add(experience)
-
-                progress.update(task, advance=1)
+        if len(replay_buffer) == 0:
+            console.print("[bold red]No valid experiences collected; skipping step.[/bold red]")
+            continue
 
         # Summarize rollouts
         avg_reward = torch.cat(rollout_rewards, dim=0).mean().item()
