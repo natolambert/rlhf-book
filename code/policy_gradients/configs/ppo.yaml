@@ -8,6 +8,7 @@ data:
         max_word_len: 10
 
 loss: ppo
+kl_estimator: kl3  # KL estimator: kl1, kl2, or kl3
 model_name: Qwen/Qwen3-1.7B
 clip_eps_lo: 0.2
 clip_eps_hi: 0.2

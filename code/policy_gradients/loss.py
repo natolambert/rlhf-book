@@ -58,6 +58,22 @@ def approx_kl1(
     return -log_ratio
 
 
+def get_approx_kl(
+    kl_estimator: str,
+    log_probs: torch.Tensor,
+    log_probs_ref: torch.Tensor,
+    action_mask: torch.Tensor,
+) -> torch.Tensor:
+    """Compute KL approximation using the selected estimator."""
+    if kl_estimator == "kl1":
+        return approx_kl1(log_probs, log_probs_ref, action_mask)
+    if kl_estimator == "kl2":
+        return approx_kl2(log_probs, log_probs_ref, action_mask)
+    if kl_estimator == "kl3":
+        return approx_kl3(log_probs, log_probs_ref, action_mask)
+    raise ValueError(f"Unsupported kl_estimator: {kl_estimator}")
+
+
 def masked_mean(
     tensor: torch.Tensor,
     mask: torch.Tensor | None,
@@ -80,11 +96,14 @@ class GRPOLoss(nn.Module):
     See Chapter 6 of RLHF Book for mathematical derivation.
     """
 
-    def __init__(self, clip_eps_lo: float, clip_eps_hi: float, beta: float, **kwargs) -> None:
+    def __init__(
+        self, clip_eps_lo: float, clip_eps_hi: float, beta: float, kl_estimator: str, **kwargs
+    ) -> None:
         super().__init__()
         self.clip_eps_lo = clip_eps_lo
         self.clip_eps_hi = clip_eps_hi
         self.beta = beta
+        self.kl_estimator = kl_estimator
 
     def forward(self, log_probs: torch.Tensor, experience: Experience, **kwargs) -> torch.Tensor:
         # Policy loss with clipping
@@ -97,7 +116,9 @@ class GRPOLoss(nn.Module):
 
         # Optional KL penalty
         if self.beta:
-            kl_loss = approx_kl3(log_probs, experience.log_probs_ref, experience.action_mask)
+            kl_loss = get_approx_kl(
+                self.kl_estimator, log_probs, experience.log_probs_ref, experience.action_mask
+            )
         else:
             kl_loss = torch.tensor(0.0, device=log_probs.device, dtype=torch.float32)
 
@@ -112,11 +133,14 @@ class GSPOLoss(nn.Module):
     GSPO applies clipping to sequence-level log probability ratios.
     """
 
-    def __init__(self, clip_eps_lo: float, clip_eps_hi: float, beta: float, **kwargs) -> None:
+    def __init__(
+        self, clip_eps_lo: float, clip_eps_hi: float, beta: float, kl_estimator: str, **kwargs
+    ) -> None:
         super().__init__()
         self.clip_eps_lo = clip_eps_lo
         self.clip_eps_hi = clip_eps_hi
         self.beta = beta
+        self.kl_estimator = kl_estimator
 
     def forward(self, log_probs: torch.Tensor, experience: Experience, **kwargs) -> torch.Tensor:
         # Sequence-level ratio (average log prob difference)
@@ -131,7 +155,9 @@ class GSPOLoss(nn.Module):
 
         # Optional KL penalty
         if self.beta:
-            kl_loss = approx_kl3(log_probs, experience.log_probs_ref, experience.action_mask)
+            kl_loss = get_approx_kl(
+                self.kl_estimator, log_probs, experience.log_probs_ref, experience.action_mask
+            )
         else:
             kl_loss = torch.tensor(0.0, device=log_probs.device, dtype=torch.float32)
 
@@ -163,11 +189,14 @@ class CISPOLoss(nn.Module):
     gradient signal than PPO/GRPO.
     """
 
-    def __init__(self, clip_eps_lo: float, clip_eps_hi: float, beta: float, **kwargs) -> None:
+    def __init__(
+        self, clip_eps_lo: float, clip_eps_hi: float, beta: float, kl_estimator: str, **kwargs
+    ) -> None:
         super().__init__()
         self.clip_eps_lo = clip_eps_lo
         self.clip_eps_hi = clip_eps_hi
         self.beta = beta
+        self.kl_estimator = kl_estimator
 
     def forward(self, log_probs: torch.Tensor, experience: Experience, **kwargs) -> torch.Tensor:
         # Stop gradient on clipped ratio
@@ -178,7 +207,9 @@ class CISPOLoss(nn.Module):
 
         # Optional KL penalty
         if self.beta:
-            kl_loss = approx_kl3(log_probs, experience.log_probs_ref, experience.action_mask)
+            kl_loss = get_approx_kl(
+                self.kl_estimator, log_probs, experience.log_probs_ref, experience.action_mask
+            )
         else:
             kl_loss = torch.tensor(0.0, device=log_probs.device, dtype=torch.float32)
 
@@ -195,11 +226,14 @@ class SAPOLoss(nn.Module):
     See Chapter 6 - Further Reading of the RLHF Book
     """
 
-    def __init__(self, sapo_temp_pos: float, sapo_temp_neg: float, beta: float, **kwargs) -> None:
+    def __init__(
+        self, sapo_temp_pos: float, sapo_temp_neg: float, beta: float, kl_estimator: str, **kwargs
+    ) -> None:
         super().__init__()
         self.sapo_temp_pos = sapo_temp_pos
         self.sapo_temp_neg = sapo_temp_neg
         self.beta = beta
+        self.kl_estimator = kl_estimator
 
     def forward(self, log_probs: torch.Tensor, experience: Experience, **kwargs) -> torch.Tensor:
         # Token-level importance ratio
@@ -214,7 +248,9 @@ class SAPOLoss(nn.Module):
 
         # Optional KL penalty (default for SAPO = 0)
         if self.beta:
-            kl_loss = approx_kl3(log_probs, experience.log_probs_ref, experience.action_mask)
+            kl_loss = get_approx_kl(
+                self.kl_estimator, log_probs, experience.log_probs_ref, experience.action_mask
+            )
         else:
             kl_loss = torch.tensor(0.0, device=log_probs.device, dtype=torch.float32)
 

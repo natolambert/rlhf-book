@@ -50,6 +50,7 @@ class Config(BaseModel):
 
         # Optional KL penalty (REINFORCE, RLOO, GRPO, etc.)
         beta: KL penalty coefficient (0 = disabled)
+        kl_estimator: KL estimator variant ('kl1', 'kl2', or 'kl3')
         ref_model_device_id: GPU for reference model (when beta > 0)
 
         # Generation
@@ -96,6 +97,7 @@ class Config(BaseModel):
 
     # KL penalty (optional, for REINFORCE/RLOO/GRPO when beta > 0)
     beta: float = 0.0
+    kl_estimator: str = "kl3"
     ref_model_device_id: int = 0
 
     # Generation params
@@ -128,6 +130,8 @@ class Config(BaseModel):
             raise ValueError(
                 "prompts_per_step * num_rollouts must be divisible by rollout_batch_size."
             )
+        if self.kl_estimator not in ("kl1", "kl2", "kl3"):
+            raise ValueError("kl_estimator must be one of: 'kl1', 'kl2', 'kl3'.")
         return self
 
 
