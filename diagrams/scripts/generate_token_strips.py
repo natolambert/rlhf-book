@@ -133,9 +133,7 @@ def render_single_strip(
             color=text_color,
             fontweight=fontweight,
         )
-        txt.set_path_effects(
-            [path_effects.withStroke(linewidth=2, foreground="white")]
-        )
+        txt.set_path_effects([path_effects.withStroke(linewidth=2, foreground="white")])
 
         # Add per-token labels if specified
         if strip.token_labels and i in strip.token_labels:
@@ -264,21 +262,23 @@ def render_token_strip(
             linewidth=1.5,
         )
         ax.add_patch(legend_rect)
-        ax.text(
-            legend_x + 0.4, y, label, va="center", fontsize=8, color="#404040"
-        )
+        ax.text(legend_x + 0.4, y, label, va="center", fontsize=8, color="#404040")
 
     # Adjust axes
     y_min = -0.5 if has_secondary else annot_y - 0.2
     y_max = title_y + 0.4
-    ax.set_xlim(-0.8 if (strip.primary_label or strip.secondary_label) else -0.2,
-                n_tokens * box_w + 1.8)
+    ax.set_xlim(
+        -0.8 if (strip.primary_label or strip.secondary_label) else -0.2,
+        n_tokens * box_w + 1.8,
+    )
     ax.set_ylim(y_min, y_max)
     ax.set_aspect("equal")
     ax.axis("off")
 
     # Save
-    fig.savefig(output_path, format=fmt, dpi=dpi, bbox_inches="tight", facecolor="white")
+    fig.savefig(
+        output_path, format=fmt, dpi=dpi, bbox_inches="tight", facecolor="white"
+    )
     plt.close(fig)
     print(f"Generated: {output_path}")
 
@@ -293,7 +293,19 @@ STRIPS = [
     TokenStrip(
         name="pref_rm_training",
         title="Training a Preference RM: Pairwise Comparison at EOS",
-        tokens=["<|eos|>", "Joy", "can", "...", "?", "The", "answer", "is", "5", ".", "<|eos|>"],
+        tokens=[
+            "<|eos|>",
+            "Joy",
+            "can",
+            "...",
+            "?",
+            "The",
+            "answer",
+            "is",
+            "5",
+            ".",
+            "<|eos|>",
+        ],
         highlight={10},  # EOS only
         masked=set(),
         annotation=r"Loss: $\mathcal{L} = -\log \sigma(r_c - r_r)$  |  Only score difference matters",
@@ -302,7 +314,19 @@ STRIPS = [
         secondary_strip=TokenStrip(
             name="",
             title="",
-            tokens=["<|eos|>", "Joy", "can", "...", "?", "The", "answer", "is", "3", ".", "<|eos|>"],
+            tokens=[
+                "<|eos|>",
+                "Joy",
+                "can",
+                "...",
+                "?",
+                "The",
+                "answer",
+                "is",
+                "3",
+                ".",
+                "<|eos|>",
+            ],
             highlight={10},  # EOS only
             masked=set(),
         ),
@@ -314,13 +338,44 @@ STRIPS = [
         name="prm_training_inference",
         title="Process RM: Training Labels vs Inference Scores",
         tokens=[
-            "<|eos|>", "Joy", "...", "?",
-            "8", "/", "20", "=", "...", "\\n",
-            "120", "/", "...", "\\n",
-            "=", "5", ".", "<|eos|>",
+            "<|eos|>",
+            "Joy",
+            "...",
+            "?",
+            "8",
+            "/",
+            "20",
+            "=",
+            "...",
+            "\\n",
+            "120",
+            "/",
+            "...",
+            "\\n",
+            "=",
+            "5",
+            ".",
+            "<|eos|>",
         ],
         highlight={9, 13},  # newlines as step boundaries
-        masked={0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 14, 15, 16, 17},  # everything else
+        masked={
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            10,
+            11,
+            12,
+            14,
+            15,
+            16,
+            17,
+        },  # everything else
         annotation="Training: 3-class labels at step boundaries  |  Inference: predicted step scores",
         token_labels={
             9: "0",
@@ -333,10 +388,25 @@ STRIPS = [
             name="",
             title="",
             tokens=[
-                "<|eos|>", "James", "...", "?",
-                "3", "*", "2", "=", "\\n", "6",  # \n moved left one
-                "...", "=", "12", "...", "\\n",  # \n moved right one
-                "=", "624", ".", "<|eos|>",
+                "<|eos|>",
+                "James",
+                "...",
+                "?",
+                "3",
+                "*",
+                "2",
+                "=",
+                "\\n",
+                "6",  # \n moved left one
+                "...",
+                "=",
+                "12",
+                "...",
+                "\\n",  # \n moved right one
+                "=",
+                "624",
+                ".",
+                "<|eos|>",
             ],
             highlight={8, 14},  # newlines at different positions than training
             masked={0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 15, 16, 17, 18},
@@ -351,7 +421,19 @@ STRIPS = [
     TokenStrip(
         name="orm_inference",
         title="Using an Outcome RM: Per-Token Correctness",
-        tokens=["<|eos|>", "Joy", "can", "...", "?", "The", "answer", "is", "5", ".", "<|eos|>"],
+        tokens=[
+            "<|eos|>",
+            "Joy",
+            "can",
+            "...",
+            "?",
+            "The",
+            "answer",
+            "is",
+            "5",
+            ".",
+            "<|eos|>",
+        ],
         highlight={5, 6, 7, 8, 9, 10},  # completion tokens
         masked={0, 1, 2, 3, 4},  # prompt tokens
         annotation="Loss: BCE per token  |  Prompt masked (e.g. label=-100), completion supervised",
@@ -368,7 +450,19 @@ STRIPS = [
     TokenStrip(
         name="value_fn_inference",
         title="Value Function: Per-Token State Values",
-        tokens=["<|eos|>", "Joy", "can", "...", "?", "The", "answer", "is", "5", ".", "<|eos|>"],
+        tokens=[
+            "<|eos|>",
+            "Joy",
+            "can",
+            "...",
+            "?",
+            "The",
+            "answer",
+            "is",
+            "5",
+            ".",
+            "<|eos|>",
+        ],
         highlight={5, 6, 7, 8, 9, 10},  # completion tokens only
         masked={0, 1, 2, 3, 4},  # prompt masked
         annotation=r"$V(s_t)$ = expected future return from state $t$  |  Regression loss on completion",

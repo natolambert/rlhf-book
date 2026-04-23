@@ -139,6 +139,7 @@ SUMMARY_TABLE = """
 @dataclass
 class DiagramReview:
     """Result of a diagram review."""
+
     diagram_name: str
     analysis: str
     findings_table: str
@@ -156,18 +157,20 @@ def create_review_prompt(diagram_type: str, is_token_strip: bool = True) -> str:
     """Create the review prompt for Gemini."""
     context = CHAPTER_CONTEXT.get(diagram_type, CHAPTER_CONTEXT["pref_rm"])
 
-    diagram_format = "token strip visualization" if is_token_strip else "pipeline/flowchart diagram"
+    diagram_format = (
+        "token strip visualization" if is_token_strip else "pipeline/flowchart diagram"
+    )
 
     prompt = f"""YOU: are an academic reviewer specializing in machine learning pedagogy and technical illustration.
 You have expertise in RLHF (Reinforcement Learning from Human Feedback), reward modeling, and creating clear educational diagrams.
 
-INPUT: A {diagram_format} diagram for "{context['title']}" from an RLHF textbook chapter on Reward Modeling.
+INPUT: A {diagram_format} diagram for "{context["title"]}" from an RLHF textbook chapter on Reward Modeling.
 
 CONTEXT FROM CHAPTER:
-{context['section']}
+{context["section"]}
 
 KEY POINTS THE DIAGRAM SHOULD CONVEY:
-{chr(10).join(f"- {p}" for p in context['key_points'])}
+{chr(10).join(f"- {p}" for p in context["key_points"])}
 
 SUMMARY TABLE FOR REFERENCE:
 {SUMMARY_TABLE}
@@ -212,13 +215,15 @@ def review_diagram_with_gemini(
     prompt = create_review_prompt(diagram_type, is_token_strip)
 
     # Send to Gemini
-    response = model.generate_content([
-        prompt,
-        {
-            "mime_type": "image/png",
-            "data": image_data,
-        }
-    ])
+    response = model.generate_content(
+        [
+            prompt,
+            {
+                "mime_type": "image/png",
+                "data": image_data,
+            },
+        ]
+    )
 
     # Parse response
     text = response.text
@@ -261,12 +266,12 @@ def local_analysis(image_path: Path, diagram_type: str) -> str:
     analysis = f"""## Local Analysis for {diagram_type}
 
 ### Expected Elements
-{chr(10).join(f"- {p}" for p in context.get('key_points', []))}
+{chr(10).join(f"- {p}" for p in context.get("key_points", []))}
 
 ### Diagram File
 - Path: {image_path}
 - Exists: {image_path.exists()}
-- Size: {image_path.stat().st_size if image_path.exists() else 'N/A'} bytes
+- Size: {image_path.stat().st_size if image_path.exists() else "N/A"} bytes
 
 ### Checklist
 - [ ] Shows correct data flow
@@ -299,9 +304,9 @@ def run_feedback_loop(
     all_feedback = []
 
     for iteration in range(1, iterations + 1):
-        print(f"\n{'='*60}")
+        print(f"\n{'=' * 60}")
         print(f"ITERATION {iteration}")
-        print(f"{'='*60}")
+        print(f"{'=' * 60}")
 
         for filename, diagram_type in token_strips:
             image_path = generated_dir / filename
@@ -341,7 +346,7 @@ def run_feedback_loop(
 
 ## Suggestions for Improvement
 
-{chr(10).join(f"{i+1}. {s}" for i, s in enumerate(review.suggestions))}
+{chr(10).join(f"{i + 1}. {s}" for i, s in enumerate(review.suggestions))}
 
 ---
 """

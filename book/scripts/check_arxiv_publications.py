@@ -169,7 +169,9 @@ def find_published_version(entry: BibEntry, hits: list[dict]) -> Publication | N
                         year=info.get("year", ""),
                         title=hit_title,
                         dblp_key=info.get("key", ""),
-                        bibtex_url=info.get("url", "") + ".bib" if info.get("url") else None,
+                        bibtex_url=info.get("url", "") + ".bib"
+                        if info.get("url")
+                        else None,
                     ),
                 )
             )
@@ -296,10 +298,10 @@ def main():
             results["published"].append(result)
         elif hits:
             # Found matches but all are arxiv
-            print(f"  📄 Still arxiv only")
+            print("  📄 Still arxiv only")
             results["arxiv_only"].append({"key": entry.key, "title": entry.title})
         else:
-            print(f"  ❓ No DBLP match")
+            print("  ❓ No DBLP match")
             results["not_found"].append({"key": entry.key, "title": entry.title})
 
         # Save progress after each entry
@@ -315,7 +317,7 @@ def main():
     print(f"  Not found in DBLP:       {len(results['not_found'])}")
 
     if results["published"]:
-        print(f"\n📋 Papers with published versions:\n")
+        print("\n📋 Papers with published versions:\n")
         for p in results["published"]:
             print(f"  {p['key']}")
             print(f"    → {p['venue']} ({p['year']})")

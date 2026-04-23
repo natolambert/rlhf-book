@@ -28,7 +28,7 @@ def main(argv: list[str]) -> None:
         print(f"[WARN] Non-ASCII bytes still present in {path}:")
         print("\n".join(suspect_lines))
     else:
-        print(f"[INFO] All bytes ASCII-safe after post-processing.")
+        print("[INFO] All bytes ASCII-safe after post-processing.")
 
 
 if __name__ == "__main__":

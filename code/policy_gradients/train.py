@@ -22,7 +22,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-import wandb
 from reasoning_gym.composite import DatasetSpec
 from reasoning_gym.dataset import ProceduralDataset
 from reasoning_gym.utils import SYSTEM_PROMPTS, extract_answer
@@ -31,16 +30,18 @@ from torch.nn.utils import clip_grad_norm_
 from torch.utils.data import DataLoader
 from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
 
+import wandb
+
 from .buffer import Experience, ReplayBuffer, join_experiences_batch
 from .config import Config, load_config
 from .loss import (
     CISPOLoss,
+    DAPOLoss,
     GRPOLoss,
     GSPOLoss,
     PPOLoss,
     ReinforceLoss,
     SAPOLoss,
-    DAPOLoss,
     approx_kl3,
     masked_mean,
 )
@@ -278,6 +279,7 @@ def compute_gae(
     advantages = advantages * action_mask
     return advantages
 
+
 def compute_advantages(
     rewards: torch.Tensor,
     loss: str,
@@ -323,12 +325,14 @@ def compute_values(model, sequence_ids: torch.Tensor, attention_mask: torch.Tens
     values = output.logits[:, :-1, :].squeeze(-1).to(torch.float32)
     return values
 
+
 class RolloutOutput(NamedTuple):
-    sequence_ids: torch.Tensor      # [B, T]      (LongTensor)
-    action_mask: torch.Tensor       # [B, T-1]    (BoolTensor)
-    attention_mask: torch.Tensor    # [B, T]      (BoolTensor)
-    rewards: torch.Tensor           # [B, 1]      (FloatTensor)
-    completions: list[str]          # length B
+    sequence_ids: torch.Tensor  # [B, T]      (LongTensor)
+    action_mask: torch.Tensor  # [B, T-1]    (BoolTensor)
+    attention_mask: torch.Tensor  # [B, T]      (BoolTensor)
+    rewards: torch.Tensor  # [B, 1]      (FloatTensor)
+    completions: list[str]  # length B
+
 
 def rollout(
     model,
@@ -336,7 +340,7 @@ def rollout(
     dataset: ProceduralDataset,
     tokenizer: AutoTokenizer,
     cfg: Config,
-    console: Console
+    console: Console,
 ) -> RolloutOutput | None:
     """Generate completions and compute rewards."""
     # 1. Format prompts
@@ -434,7 +438,13 @@ def rollout(
             end = start + group_size
             filtered_completions.extend(completions[start:end])
         completions = filtered_completions
-    return RolloutOutput(sequence_ids=sequence_ids, action_mask=action_mask, attention_mask=attention_mask, rewards=rewards, completions=completions)
+    return RolloutOutput(
+        sequence_ids=sequence_ids,
+        action_mask=action_mask,
+        attention_mask=attention_mask,
+        rewards=rewards,
+        completions=completions,
+    )
 
 
 def create_dataset(cfg: Config) -> ProceduralDataset:
@@ -520,8 +530,8 @@ def main(cfg: Config):
                         entries=batch,
                         dataset=dataset,
                         tokenizer=tokenizer,
-                        cfg = cfg,
-                        console=console
+                        cfg=cfg,
+                        console=console,
                     )
                     if not rollout_output:
                         continue
@@ -529,19 +539,37 @@ def main(cfg: Config):
                     rollout_completions.extend(
                         [
                             (entry["question"], entry["answer"], completion)
-                            for entry, completion in zip(batch, rollout_output.completions, strict=True)
+                            for entry, completion in zip(
+                                batch, rollout_output.completions, strict=True
+                            )
                         ]
                     )
 
-                    log_probs_old = compute_log_probs(model, rollout_output.sequence_ids, rollout_output.attention_mask)
-                    log_probs_ref = compute_log_probs(ref_model, rollout_output.sequence_ids, rollout_output.attention_mask)
-                    rewards = apply_reward_kl(
-                        rollout_output.rewards, log_probs_old, log_probs_ref, rollout_output.action_mask, cfg.beta, cfg.loss
+                    log_probs_old = compute_log_probs(
+                        model, rollout_output.sequence_ids, rollout_output.attention_mask
                     )
-                    values_old = compute_values(val_model, rollout_output.sequence_ids, rollout_output.attention_mask)
+                    log_probs_ref = compute_log_probs(
+                        ref_model, rollout_output.sequence_ids, rollout_output.attention_mask
+                    )
+                    rewards = apply_reward_kl(
+                        rollout_output.rewards,
+                        log_probs_old,
+                        log_probs_ref,
+                        rollout_output.action_mask,
+                        cfg.beta,
+                        cfg.loss,
+                    )
+                    values_old = compute_values(
+                        val_model, rollout_output.sequence_ids, rollout_output.attention_mask
+                    )
 
                     advantages = compute_advantages(
-                        rewards, cfg.loss, rollout_output.action_mask, values_old, cfg.gamma, cfg.lam
+                        rewards,
+                        cfg.loss,
+                        rollout_output.action_mask,
+                        values_old,
+                        cfg.gamma,
+                        cfg.lam,
                     )
 
                     experience = Experience(

@@ -15,7 +15,7 @@ def strip_unicode_branch(tex_path: Path) -> None:
     text = tex_path.read_text()
 
     # Remove the ifxetex,ifluatex package loading
-    text = re.sub(r'\\usepackage\{ifxetex,ifluatex\}', '', text)
+    text = re.sub(r"\\usepackage\{ifxetex,ifluatex\}", "", text)
 
     # Handle OLD Pandoc format:
     # \ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
@@ -27,11 +27,11 @@ def strip_unicode_branch(tex_path: Path) -> None:
     # \fi
     # In this case, we want to KEEP the pdftex branch and remove \else...\fi
     old_format_pattern = (
-        r'(\\ifnum 0\\ifxetex 1\\fi\\ifluatex 1\\fi=0 % if pdftex\n'
-        r'.*?)'  # pdftex branch (keep this)
-        r'\\else % if luatex or xetex\n'
-        r'.*?'  # xetex/luatex branch (remove this)
-        r'\\fi\n'
+        r"(\\ifnum 0\\ifxetex 1\\fi\\ifluatex 1\\fi=0 % if pdftex\n"
+        r".*?)"  # pdftex branch (keep this)
+        r"\\else % if luatex or xetex\n"
+        r".*?"  # xetex/luatex branch (remove this)
+        r"\\fi\n"
     )
     old_match = re.search(old_format_pattern, text, re.DOTALL)
     if old_match:
@@ -39,23 +39,23 @@ def strip_unicode_branch(tex_path: Path) -> None:
         pdftex_branch = old_match.group(1)
         # Remove the \ifnum line, keep just the packages
         pdftex_content = re.sub(
-            r'\\ifnum 0\\ifxetex 1\\fi\\ifluatex 1\\fi=0 % if pdftex\n',
-            '% pdfLaTeX mode (XeTeX/LuaTeX branch removed for arXiv)\n',
-            pdftex_branch
+            r"\\ifnum 0\\ifxetex 1\\fi\\ifluatex 1\\fi=0 % if pdftex\n",
+            "% pdfLaTeX mode (XeTeX/LuaTeX branch removed for arXiv)\n",
+            pdftex_branch,
         )
-        text = text[:old_match.start()] + pdftex_content + text[old_match.end():]
+        text = text[: old_match.start()] + pdftex_content + text[old_match.end() :]
     else:
         # Handle NEW Pandoc format:
         # \ifnum 0 % if luatex or xetex
         #   \usepackage{unicode-math}
         #   ...
         # (no \fi, block ends at "% Use upquote")
-        new_format_pattern = r'\\ifnum 0\s*%.*?if luatex or xetex.*?(?=\n% Use upquote)'
-        replacement = r'''% XeTeX/LuaTeX setup removed for arXiv export
+        new_format_pattern = r"\\ifnum 0\s*%.*?if luatex or xetex.*?(?=\n% Use upquote)"
+        replacement = r"""% XeTeX/LuaTeX setup removed for arXiv export
 % pdfLaTeX encoding setup
 \\usepackage[T1]{fontenc}
 \\usepackage[utf8]{inputenc}
-\\usepackage{textcomp} % provide euro and other symbols'''
+\\usepackage{textcomp} % provide euro and other symbols"""
         new_text = re.sub(new_format_pattern, replacement, text, flags=re.DOTALL)
         if text != new_text:
             text = new_text
@@ -69,7 +69,7 @@ def strip_unicode_branch(tex_path: Path) -> None:
         if not match:
             break
         _, else_block = match.groups()
-        text = text[: match.start()] + else_block + text[match.end():]
+        text = text[: match.start()] + else_block + text[match.end() :]
 
     # Remove any remaining \ifluatex blocks similarly
     pattern = re.compile(r"\\ifluatex\s*\n(.*?)\\else\s*\n(.*?)\\fi", re.DOTALL)
@@ -78,7 +78,7 @@ def strip_unicode_branch(tex_path: Path) -> None:
         if not match:
             break
         _, else_block = match.groups()
-        text = text[: match.start()] + else_block + text[match.end():]
+        text = text[: match.start()] + else_block + text[match.end() :]
 
     tex_path.write_text(text)
 

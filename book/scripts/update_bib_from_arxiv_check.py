@@ -57,7 +57,9 @@ def main():
 
     # Load results
     if not args.results.exists():
-        print(f"Error: {args.results} not found. Run check_arxiv_publications.py first.")
+        print(
+            f"Error: {args.results} not found. Run check_arxiv_publications.py first."
+        )
         return 1
 
     results = json.loads(args.results.read_text())
@@ -111,7 +113,9 @@ def main():
         # Add/update venue field
         if is_journal:
             if re.search(r"journal\s*=", entry):
-                entry = re.sub(r"journal\s*=\s*\{[^}]*\}", f"journal = {{{venue_full}}}", entry)
+                entry = re.sub(
+                    r"journal\s*=\s*\{[^}]*\}", f"journal = {{{venue_full}}}", entry
+                )
             else:
                 entry = re.sub(
                     r"(title\s*=\s*\{[^}]*\},?)",

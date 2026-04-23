@@ -1,4 +1,5 @@
 """Utility for precomputing RLHF library data for the static site."""
+
 from __future__ import annotations
 
 import argparse
@@ -94,8 +95,8 @@ def build_payload() -> Dict[str, object]:
 
     prompts: Dict[int, PromptRecord] = {}
     model_pairs: Dict[str, ModelPair] = {}
-    completions: Dict[int, Dict[str, Dict[Variant, List[CompletionRecord]]]] = defaultdict(
-        lambda: defaultdict(lambda: {"sft": [], "rlhf": []})
+    completions: Dict[int, Dict[str, Dict[Variant, List[CompletionRecord]]]] = (
+        defaultdict(lambda: defaultdict(lambda: {"sft": [], "rlhf": []}))
     )
 
     for row in dataset:
@@ -120,11 +121,16 @@ def build_payload() -> Dict[str, object]:
         pair.mark(variant, row["model"])
 
         completions[prompt_idx][base_id][variant].append(
-            (completion_idx, CompletionRecord(completion_id=row["id"], text=row["completion"]))
+            (
+                completion_idx,
+                CompletionRecord(completion_id=row["id"], text=row["completion"]),
+            )
         )
 
     # Sort completions and drop helper indices
-    serialisable_completions: Dict[str, Dict[str, Dict[Variant, List[Dict[str, str]]]]] = {}
+    serialisable_completions: Dict[
+        str, Dict[str, Dict[Variant, List[Dict[str, str]]]]
+    ] = {}
     for prompt_idx, pairs in completions.items():
         serialisable_completions[str(prompt_idx)] = {}
         for base_id, variant_map in pairs.items():
@@ -137,7 +143,9 @@ def build_payload() -> Dict[str, object]:
 
     # Ensure we have matching pairs before writing anything.
     ordered_pairs: List[ModelPair] = []
-    for pair in sorted(model_pairs.values(), key=lambda item: item.display_name.lower()):
+    for pair in sorted(
+        model_pairs.values(), key=lambda item: item.display_name.lower()
+    ):
         pair.validate()
         ordered_pairs.append(pair)
 

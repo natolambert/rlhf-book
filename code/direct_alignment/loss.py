@@ -41,9 +41,7 @@ def compute_logprobs(
 
     # Compute per-token log probs
     log_probs = F.log_softmax(logits, dim=-1)
-    per_token_logps = torch.gather(
-        log_probs, dim=-1, index=labels.unsqueeze(-1)
-    ).squeeze(-1)
+    per_token_logps = torch.gather(log_probs, dim=-1, index=labels.unsqueeze(-1)).squeeze(-1)
 
     # Mask out padding
     per_token_logps = per_token_logps * mask

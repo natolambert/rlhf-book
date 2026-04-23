@@ -5,26 +5,28 @@ import re
 from pathlib import Path
 from collections import Counter
 
+
 def extract_bib_entry(content: str, key: str, start_line: int) -> str:
     """Extract the full bib entry starting from a given line."""
-    lines = content.split('\n')
+    lines = content.split("\n")
     entry_lines = []
     brace_count = 0
     started = False
 
-    for i, line in enumerate(lines[start_line - 1:], start_line):
+    for i, line in enumerate(lines[start_line - 1 :], start_line):
         if not started:
-            if re.match(rf'^@\w+\{{{re.escape(key)},', line):
+            if re.match(rf"^@\w+\{{{re.escape(key)},", line):
                 started = True
-                brace_count += line.count('{') - line.count('}')
+                brace_count += line.count("{") - line.count("}")
                 entry_lines.append(line)
         else:
-            brace_count += line.count('{') - line.count('}')
+            brace_count += line.count("{") - line.count("}")
             entry_lines.append(line)
             if brace_count <= 0:
                 break
 
-    return '\n'.join(entry_lines)
+    return "\n".join(entry_lines)
+
 
 def main():
     bib_path = Path("book/chapters/bib.bib")
@@ -32,11 +34,11 @@ def main():
 
     # Extract all bib keys with line numbers
     bib_content = bib_path.read_text()
-    key_pattern = re.compile(r'^@\w+\{([^,]+),', re.MULTILINE)
+    key_pattern = re.compile(r"^@\w+\{([^,]+),", re.MULTILINE)
 
     keys_with_lines = []
-    for i, line in enumerate(bib_content.split('\n'), 1):
-        match = re.match(r'^@\w+\{([^,]+),', line)
+    for i, line in enumerate(bib_content.split("\n"), 1):
+        match = re.match(r"^@\w+\{([^,]+),", line)
         if match:
             keys_with_lines.append((match.group(1), i))
 
@@ -73,14 +75,14 @@ def main():
     for md_file in md_files:
         content = md_file.read_text()
         # Match [@key] or [@key1; @key2] or [@key1;@key2] patterns
-        citations = re.findall(r'\[@([^\]@;]+?)(?:[;\s]|(?=\]))', content)
+        citations = re.findall(r"\[@([^\]@;]+?)(?:[;\s]|(?=\]))", content)
         all_citations.update(citations)
         # Also match multi-citations like [@key1; @key2]
-        multi_cites = re.findall(r'\[([^\]]+)\]', content)
+        multi_cites = re.findall(r"\[([^\]]+)\]", content)
         for mc in multi_cites:
-            if '@' in mc:
+            if "@" in mc:
                 # Extract all @key references
-                refs = re.findall(r'@([^;\s\]]+)', mc)
+                refs = re.findall(r"@([^;\s\]]+)", mc)
                 all_citations.update(refs)
 
     unique_keys = set(all_keys)
@@ -96,7 +98,9 @@ def main():
 
     unused_with_lines.sort(key=lambda x: x[1])
 
-    print(f"\nFound {len(unused_keys)} unused entries out of {len(unique_keys)} total:\n")
+    print(
+        f"\nFound {len(unused_keys)} unused entries out of {len(unique_keys)} total:\n"
+    )
     for key, line in unused_with_lines:
         print(f"  Line {line:4d}: {key}")
 
@@ -116,6 +120,7 @@ def main():
         print(f"\n  WARNING: {len(missing)} citations reference non-existent keys:")
         for key in sorted(missing):
             print(f"    - {key}")
+
 
 if __name__ == "__main__":
     main()

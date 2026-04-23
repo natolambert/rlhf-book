@@ -31,6 +31,7 @@ def approx_kl3(
         log_ratio = log_ratio * action_mask
     return (log_ratio.exp() - 1) - log_ratio
 
+
 def approx_kl2(
     log_probs: torch.Tensor, log_probs_ref: torch.Tensor, action_mask: torch.Tensor
 ) -> torch.Tensor:
@@ -41,7 +42,8 @@ def approx_kl2(
     log_ratio = log_probs - log_probs_ref
     if action_mask is not None:
         log_ratio = log_ratio * action_mask
-    return (log_ratio ** 2)/2    
+    return (log_ratio**2) / 2
+
 
 def approx_kl1(
     log_probs: torch.Tensor, log_probs_ref: torch.Tensor, action_mask: torch.Tensor
@@ -54,7 +56,6 @@ def approx_kl1(
     if action_mask is not None:
         log_ratio = log_ratio * action_mask
     return -log_ratio
-
 
 
 def masked_mean(
@@ -271,6 +272,7 @@ class PPOLoss(nn.Module):
         loss = policy_loss + self.vf_coef * val_loss
         loss = masked_mean(loss, mask=experience.action_mask, dim=-1).mean(dim=0)
         return loss
+
 
 class DAPOLoss(nn.Module):
     """Decoupled Clip and Dynamic sAmpling Policy Optimization loss (ByteDance, 2025).
