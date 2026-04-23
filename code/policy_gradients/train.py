@@ -230,7 +230,7 @@ def compute_rewards(
     combined_rewards = [
         acc + format_weight * fmt for acc, fmt in zip(accuracy_rewards, format_rewards, strict=True)
     ]
-    return combined_rewards,accuracy_rewards
+    return combined_rewards, accuracy_rewards
 
 
 def apply_reward_kl(
@@ -408,7 +408,9 @@ def rollout(
     # Per-completion generated length
     lengths = action_mask.sum(dim=1).tolist()
     # 4. Compute rewards
-    rewards_list,accuracy_rewards = compute_rewards(dataset, completions, entries, cfg, lengths, console)
+    rewards_list, accuracy_rewards = compute_rewards(
+        dataset, completions, entries, cfg, lengths, console
+    )
     rewards = torch.tensor(rewards_list, dtype=torch.float32, device=model.device).unsqueeze(-1)
 
     # 5. Compute attention mask
@@ -557,8 +559,7 @@ def collect_rollouts_for_step(
     if cfg.loss == "dapo":
         expected_experiences = len(entries)
         console.print(
-            "[dim]DAPO accumulation summary: "
-            f"{len(replay_buffer)=}, {expected_experiences=}[/dim]"
+            f"[dim]DAPO accumulation summary: {len(replay_buffer)=}, {expected_experiences=}[/dim]"
         )
 
 
