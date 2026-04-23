@@ -1,0 +1,47 @@
+data:
+  size: 3000
+  specs:
+    - name: spell_backward
+      weight: 1
+      config:
+        min_word_len: 3
+        max_word_len: 10
+
+loss: dapo
+model_name: Qwen/Qwen3-1.7B
+
+# DAPO uses PPO-style clipping
+clip_eps_lo: 0.2
+# Clip higher
+clip_eps_hi: 0.28
+
+# Optional KL penalty
+beta: 0.0
+ref_model_device_id: 0
+
+# DAPO overlong penalty
+l_cache: 256
+l_max: 512
+
+lr: 5e-6
+
+# Generation
+temperature: 0.6
+top_p: 0.95
+top_k: 20
+min_p: 0.0
+max_new_tokens: 512
+
+# Training
+prompts_per_step: 4
+num_rollouts: 8
+rollout_batch_size: 8
+train_batch_size: 2
+batch_acc: 4
+max_norm: 1.0
+seed: 42
+model_device_id: 0
+
+# Logging
+wandb_project: rlhf-book
+wandb_run_name: dapo_spell_backward

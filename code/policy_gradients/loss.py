@@ -11,6 +11,7 @@
 # - GSPO (Zheng et al., 2025)
 # - CISPO (MiniMax, 2025)
 # - SAPO (Qwen Team, 2025)
+# - DAPO (Bytedance Team, 2025)
 
 import torch
 import torch.nn as nn
@@ -18,7 +19,7 @@ import torch.nn as nn
 from .buffer import Experience
 
 
-def approx_kl(
+def approx_kl3(
     log_probs: torch.Tensor, log_probs_ref: torch.Tensor, action_mask: torch.Tensor
 ) -> torch.Tensor:
     """Monte-Carlo approximation of KL divergence (k3 estimator).
@@ -31,9 +32,35 @@ def approx_kl(
     return (log_ratio.exp() - 1) - log_ratio
 
 
+def approx_kl2(
+    log_probs: torch.Tensor, log_probs_ref: torch.Tensor, action_mask: torch.Tensor
+) -> torch.Tensor:
+    """Monte-Carlo approximation of KL divergence (k2 estimator).
+
+    See: http://joschu.net/blog/kl-approx.html
+    """
+    log_ratio = log_probs - log_probs_ref
+    if action_mask is not None:
+        log_ratio = log_ratio * action_mask
+    return (log_ratio**2) / 2
+
+
+def approx_kl1(
+    log_probs: torch.Tensor, log_probs_ref: torch.Tensor, action_mask: torch.Tensor
+) -> torch.Tensor:
+    """Monte-Carlo approximation of KL divergence (k1 estimator).
+
+    See: http://joschu.net/blog/kl-approx.html
+    """
+    log_ratio = log_probs - log_probs_ref
+    if action_mask is not None:
+        log_ratio = log_ratio * action_mask
+    return -log_ratio
+
+
 def masked_mean(
     tensor: torch.Tensor,
-    mask: torch.Tensor,
+    mask: torch.Tensor | None,
     dim: int | None = None,
     keepdim: bool = False,
     eps: float = 1e-8,
@@ -70,7 +97,7 @@ class GRPOLoss(nn.Module):
 
         # Optional KL penalty
         if self.beta:
-            kl_loss = approx_kl(log_probs, experience.log_probs_ref, experience.action_mask)
+            kl_loss = approx_kl3(log_probs, experience.log_probs_ref, experience.action_mask)
         else:
             kl_loss = torch.tensor(0.0, device=log_probs.device, dtype=torch.float32)
 
@@ -104,7 +131,7 @@ class GSPOLoss(nn.Module):
 
         # Optional KL penalty
         if self.beta:
-            kl_loss = approx_kl(log_probs, experience.log_probs_ref, experience.action_mask)
+            kl_loss = approx_kl3(log_probs, experience.log_probs_ref, experience.action_mask)
         else:
             kl_loss = torch.tensor(0.0, device=log_probs.device, dtype=torch.float32)
 
@@ -151,7 +178,7 @@ class CISPOLoss(nn.Module):
 
         # Optional KL penalty
         if self.beta:
-            kl_loss = approx_kl(log_probs, experience.log_probs_ref, experience.action_mask)
+            kl_loss = approx_kl3(log_probs, experience.log_probs_ref, experience.action_mask)
         else:
             kl_loss = torch.tensor(0.0, device=log_probs.device, dtype=torch.float32)
 
@@ -187,7 +214,7 @@ class SAPOLoss(nn.Module):
 
         # Optional KL penalty (default for SAPO = 0)
         if self.beta:
-            kl_loss = approx_kl(log_probs, experience.log_probs_ref, experience.action_mask)
+            kl_loss = approx_kl3(log_probs, experience.log_probs_ref, experience.action_mask)
         else:
             kl_loss = torch.tensor(0.0, device=log_probs.device, dtype=torch.float32)
 
@@ -245,3 +272,29 @@ class PPOLoss(nn.Module):
         loss = policy_loss + self.vf_coef * val_loss
         loss = masked_mean(loss, mask=experience.action_mask, dim=-1).mean(dim=0)
         return loss
+
+
+class DAPOLoss(nn.Module):
+    """Decoupled Clip and Dynamic sAmpling Policy Optimization loss (ByteDance, 2025).
+
+    DAPO uses token-level loss normalization, decoupled lower/upper clipping bounds
+    (Clip-Higher), and no KL penalty. See Section 3 of the DAPO paper.
+    """
+
+    def __init__(self, clip_eps_lo: float, clip_eps_hi: float, **kwargs) -> None:
+        super().__init__()
+        self.clip_eps_lo = clip_eps_lo
+        self.clip_eps_hi = clip_eps_hi
+
+    def forward(self, log_probs: torch.Tensor, experience: Experience, **kwargs) -> torch.Tensor:
+        # Policy loss with clipping
+        ratio = (log_probs - experience.log_probs_old).exp()
+        unclipped_term = ratio * experience.advantages
+        clipped_term = (
+            ratio.clamp(1 - self.clip_eps_lo, 1 + self.clip_eps_hi) * experience.advantages
+        )
+        per_token_loss = -torch.min(unclipped_term, clipped_term)
+        mask = experience.action_mask.to(per_token_loss.dtype)
+        total_tokens = mask.sum().clamp(1e-8)
+        total_loss = (per_token_loss * mask).sum()
+        return total_loss / total_tokens
