@@ -19,5 +19,6 @@ skills = [
 ]
 teach = [
     # TODO: pin back to a PyPI release when colloquium development slows down.
-    "colloquium @ git+https://github.com/natolambert/colloquium.git",
+    # Testing PR #25 (animations) — revert to HEAD after merge
+    "colloquium @ git+https://github.com/natolambert/colloquium.git@refs/pull/25/head",
 ]
