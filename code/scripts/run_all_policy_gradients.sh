@@ -47,6 +47,12 @@ echo "Running SAPO..."
 echo "=========================================="
 uv run python -m policy_gradients.train --config policy_gradients/configs/sapo.yaml
 
+# SDPO
+echo "=========================================="
+echo "Running SDPO..."
+echo "=========================================="
+uv run python -m policy_gradients.train --config policy_gradients/configs/sdpo.yaml
+
 echo ""
 echo "=========================================="
 echo "All runs complete!"

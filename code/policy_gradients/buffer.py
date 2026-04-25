@@ -23,6 +23,11 @@ class Experience:
     - log_probs_old: Log probabilities from the rollout policy
     - log_probs_ref: Log probabilities from the reference policy (for KL)
     - values_old: Value estimates (for PPO)
+    - teacher_sequence_ids: SDPO teacher input = teacher_prompt + completion
+    - teacher_attention_mask: Attention mask for teacher_sequence_ids
+    - teacher_action_mask: Mask for completion tokens in teacher sequence
+    - distill_mask: Per-sample {0,1} — 0 when sample is excluded from the SDPO
+      distillation term (no-success group, or the successful rollout itself)
     """
 
     sequence_ids: torch.Tensor
@@ -32,6 +37,10 @@ class Experience:
     log_probs_old: torch.Tensor | None = None
     log_probs_ref: torch.Tensor | None = None
     values_old: torch.Tensor | None = None
+    teacher_sequence_ids: torch.Tensor | None = None
+    teacher_attention_mask: torch.Tensor | None = None
+    teacher_action_mask: torch.Tensor | None = None
+    distill_mask: torch.Tensor | None = None
 
     def to(self, device: torch.device) -> Self:
         """Move all tensors to the specified device."""

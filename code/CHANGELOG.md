@@ -5,6 +5,7 @@ On release, entries get moved under a version heading.
 
 ## Unreleased
 
+- 2026-04-20: added SDPO (Self-Distillation Policy Optimization, Hübotter et al., 2026) as a hybrid GRPO + reverse-KL self-distillation loss in `policy_gradients/`. The successful rollout of each group becomes a teacher demonstration; `distill_mask` excludes the successful rollout itself and no-success groups so the surrogate does not collapse to SFT. Adds `distillation_weight`, `success_reward_threshold`, and SDPO stabilization config fields plus `policy_gradients/configs/sdpo.yaml`. Full reference run pending.
 - 2026-04-16: [PR #374](https://github.com/natolambert/rlhf-book/pull/374) added CI ruff lint/format check for PRs touching `code/`, applied ruff format to all existing files, fixed lint errors (unused imports, unsorted imports, `zip()` without `strict=`), and documented linting in README.
 - 2026-04-15: [PR #372](https://github.com/natolambert/rlhf-book/pull/372) documented build-essential requirement for Ubuntu/Debian and uv version guidance in README install section.
 - 2026-04-15: [PR #370](https://github.com/natolambert/rlhf-book/pull/370) cleaned up CLAUDE.md for generic use, removed dead LoRA/QLoRA references from RM docstrings and base.py, moved ORPO/SimPO debug notes to direct_alignment/ORPO_SIMPO.md.

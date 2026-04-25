@@ -18,6 +18,7 @@ See the parent [`code/README.md`](../README.md) for installation, configuration,
 | **GSPO** | `gspo.yaml` | Group-Sequence Policy Optimization ([Zheng et al., 2025](https://arxiv.org/abs/2505.13818)) |
 | **CISPO** | `cispo.yaml` | Clipped Importance Sampling PO ([MiniMax, 2025](https://arxiv.org/abs/2506.13585)) |
 | **SAPO** | `sapo.yaml` | Soft Adaptive Policy Optimization ([Gao et al., 2025](https://arxiv.org/abs/2511.20347)) |
+| **SDPO** | `sdpo.yaml` | Self-Distillation Policy Optimization ([Hübotter et al., 2026](https://arxiv.org/abs/2601.20802)) — hybrid GRPO + reverse-KL self-distillation |
 
 ## Reference Runs
 
@@ -31,6 +32,7 @@ See the parent [`code/README.md`](../README.md) for installation, configuration,
 | **GSPO** | [run](https://wandb.ai/natolambert/rlhf-book/runs/10sxytli) | ✅ Validated |
 | **CISPO** | [run](https://wandb.ai/natolambert/rlhf-book/runs/6dg0m06n) | ✅ Validated |
 | **SAPO** | [run](https://wandb.ai/natolambert/rlhf-book/runs/79608nwk) | ✅ Validated |
+| **SDPO** | — | ⏳ Pending full validation |
 
 ## Quick Start
 
@@ -46,6 +48,9 @@ uv run python -m policy_gradients.train --config policy_gradients/configs/reinfo
 
 # PPO with value function
 uv run python -m policy_gradients.train --config policy_gradients/configs/ppo.yaml
+
+# SDPO hybrid GRPO + self-distillation
+uv run python -m policy_gradients.train --config policy_gradients/configs/sdpo.yaml
 ```
 
 ## TODOs for Community Contributions

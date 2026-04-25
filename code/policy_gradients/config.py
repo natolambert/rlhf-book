@@ -30,16 +30,22 @@ class Config(BaseModel):
 
     Attributes:
         data: Dataset configuration
-        loss: Loss function (reinforce, rloo, ppo, grpo, drgrpo, gspo, cispo, sapo)
+        loss: Loss function (reinforce, rloo, ppo, grpo, drgrpo, gspo, cispo, sapo, sdpo)
         model_name: HuggingFace model identifier
 
-        # Clipping (GRPO, DrGRPO, GSPO, CISPO, PPO)
+        # Clipping (GRPO, DrGRPO, GSPO, CISPO, PPO, SDPO-hybrid)
         clip_eps_lo: Lower clipping bound for policy ratio
         clip_eps_hi: Upper clipping bound for policy ratio
 
         # SAPO-specific
         sapo_temp_pos: Sigmoid temperature for positive advantages
         sapo_temp_neg: Sigmoid temperature for negative advantages
+
+        # SDPO-specific
+        distillation_weight: Weight on the self-distillation term added to GRPO loss
+        success_reward_threshold: Minimum reward for a rollout to act as the teacher demo
+        sdpo_teacher_ema_rate: EMA update rate for an optional SDPO teacher copy (0 disables)
+        sdpo_is_clip: Importance-sampling clip applied to the SDPO distillation term
 
         # PPO-specific
         clip_eps_val: Clipping bound for value function
@@ -90,6 +96,12 @@ class Config(BaseModel):
     sapo_temp_pos: float = 1.0
     sapo_temp_neg: float = 1.05
 
+    # SDPO-specific params (hybrid GRPO + self-distillation)
+    distillation_weight: float = 1.0
+    success_reward_threshold: float = 1.0
+    sdpo_teacher_ema_rate: float = 0.0
+    sdpo_is_clip: float | None = 2.0
+
     # KL penalty (optional, for REINFORCE/RLOO/GRPO when beta > 0)
     beta: float = 0.0
     ref_model_device_id: int = 0
@@ -124,6 +136,15 @@ class Config(BaseModel):
             raise ValueError(
                 "prompts_per_step * num_rollouts must be divisible by rollout_batch_size."
             )
+        if self.loss == "sdpo":
+            if self.num_rollouts < 2:
+                raise ValueError("SDPO requires at least 2 rollouts per prompt.")
+            if self.distillation_weight <= 0:
+                raise ValueError("SDPO requires distillation_weight > 0.")
+            if not 0.0 <= self.sdpo_teacher_ema_rate <= 1.0:
+                raise ValueError("sdpo_teacher_ema_rate must be in [0, 1].")
+            if self.sdpo_is_clip is not None and self.sdpo_is_clip <= 0:
+                raise ValueError("sdpo_is_clip must be positive when set.")
         return self
 
 

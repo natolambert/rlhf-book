@@ -8,6 +8,7 @@
 # - Added SDPA fallback for platforms without flash-attn (e.g., DGX Spark)
 
 import argparse
+import copy
 import os
 import platform
 import random
@@ -22,7 +23,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-import wandb
 from reasoning_gym.composite import DatasetSpec
 from reasoning_gym.dataset import ProceduralDataset
 from reasoning_gym.utils import SYSTEM_PROMPTS, extract_answer
@@ -30,6 +30,8 @@ from rich.console import Console
 from torch.nn.utils import clip_grad_norm_
 from torch.utils.data import DataLoader
 from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
+
+import wandb
 
 from .buffer import Experience, ReplayBuffer, join_experiences_batch
 from .config import Config, load_config
@@ -40,6 +42,7 @@ from .loss import (
     PPOLoss,
     ReinforceLoss,
     SAPOLoss,
+    SDPOLoss,
     approx_kl,
     masked_mean,
 )
@@ -104,6 +107,18 @@ def get_ref_model(model_name: str, device_map: Any, beta: float):
     return ref_model
 
 
+def get_sdpo_teacher_model(model, loss: str, ema_rate: float):
+    """Create an optional EMA teacher for SDPO."""
+    if loss != "sdpo" or ema_rate <= 0:
+        return None
+    teacher_model = copy.deepcopy(model)
+    if hasattr(teacher_model, "gradient_checkpointing_disable"):
+        teacher_model.gradient_checkpointing_disable()
+    teacher_model.requires_grad_(False)
+    teacher_model.eval()
+    return teacher_model
+
+
 def get_val_model(model_name: str, device_map: Any, loss: str, gradient_checkpointing: bool = True):
     """Load value model for PPO (only if loss == 'ppo')."""
     if loss not in ["ppo"]:
@@ -127,6 +142,8 @@ def get_loss_objective(loss: str, **kwargs) -> nn.Module:
         return CISPOLoss(**kwargs)
     elif loss == "sapo":
         return SAPOLoss(**kwargs)
+    elif loss == "sdpo":
+        return SDPOLoss(**kwargs)
     elif loss == "ppo":
         return PPOLoss(**kwargs)
     raise ValueError(f"Unsupported loss type: {loss}")
@@ -247,7 +264,7 @@ def compute_advantages(
     lam: float | None = None,
 ) -> torch.Tensor:
     """Compute advantages using the appropriate method for the loss function."""
-    if loss in ["grpo", "gspo", "cispo", "sapo"]:
+    if loss in ["grpo", "gspo", "cispo", "sapo", "sdpo"]:
         return compute_standardized_advantages(rewards)
     elif loss in ["drgrpo"]:
         return compute_nonstandardized_advantages(rewards)
@@ -272,6 +289,58 @@ def compute_log_probs(
     targets = sequence_ids[:, 1:].unsqueeze(-1)
     target_log_probs = torch.gather(log_probs, dim=-1, index=targets).squeeze(-1)
     return target_log_probs
+
+
+def extract_completion_ids(
+    sequence_ids: torch.Tensor, action_mask: torch.Tensor, pad_token_id: int
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Extract generated completion token ids aligned by action_mask."""
+    target_ids = sequence_ids[:, 1:]
+    completion_rows = [ids[mask] for ids, mask in zip(target_ids, action_mask, strict=True)]
+    max_len = max((row.size(0) for row in completion_rows), default=0)
+    completion_ids = torch.full(
+        (len(completion_rows), max_len),
+        fill_value=pad_token_id,
+        dtype=sequence_ids.dtype,
+        device=sequence_ids.device,
+    )
+    completion_mask = torch.zeros(
+        (len(completion_rows), max_len),
+        dtype=torch.bool,
+        device=sequence_ids.device,
+    )
+    for i, row in enumerate(completion_rows):
+        row_len = row.size(0)
+        if row_len == 0:
+            continue
+        completion_ids[i, :row_len] = row
+        completion_mask[i, :row_len] = True
+    return completion_ids, completion_mask
+
+
+def extract_masked_log_probs(
+    log_probs: torch.Tensor, action_mask: torch.Tensor
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Extract per-completion log probs aligned by a token mask."""
+    log_prob_rows = [row[mask] for row, mask in zip(log_probs, action_mask, strict=True)]
+    max_len = max((row.size(0) for row in log_prob_rows), default=0)
+    completion_log_probs = torch.zeros(
+        (len(log_prob_rows), max_len),
+        dtype=log_probs.dtype,
+        device=log_probs.device,
+    )
+    completion_mask = torch.zeros(
+        (len(log_prob_rows), max_len),
+        dtype=log_probs.dtype,
+        device=log_probs.device,
+    )
+    for i, row in enumerate(log_prob_rows):
+        row_len = row.size(0)
+        if row_len == 0:
+            continue
+        completion_log_probs[i, :row_len] = row
+        completion_mask[i, :row_len] = 1.0
+    return completion_log_probs, completion_mask
 
 
 def compute_values(model, sequence_ids: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
@@ -350,6 +419,83 @@ def rollout(
     return sequence_ids, action_mask, attention_mask, rewards, completions
 
 
+def build_teacher_inputs(
+    tokenizer: AutoTokenizer,
+    group_entries: list[dict],
+    completions: list[str],
+    rewards: torch.Tensor,
+    sequence_ids: torch.Tensor,
+    action_mask: torch.Tensor,
+    attention_mask: torch.Tensor,
+    success_reward_threshold: float,
+    device: torch.device,
+):
+    """Build SDPO teacher inputs for one rollout group (shared prompt, K rollouts).
+
+    Picks the highest-reward rollout; if its reward >= success_reward_threshold,
+    constructs a teacher prompt that embeds that rollout as a demonstration and
+    keeps its completion_ids as the target. Otherwise, returns the student's
+    own tensors as teacher inputs with a zero distill_mask so the distillation
+    term drops out for the group. The successful rollout itself is also masked
+    out (i==j would collapse to SFT).
+    """
+    k = len(group_entries)
+    rewards_list = rewards.squeeze(-1).tolist()
+    best_idx = int(max(range(k), key=lambda i: rewards_list[i]))
+    best_reward = rewards_list[best_idx]
+    pad_token_id = (
+        tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id
+    )
+
+    if best_reward < success_reward_threshold:
+        distill_mask = torch.zeros(k, 1, dtype=torch.float32, device=device)
+        return (
+            sequence_ids.to(device),
+            attention_mask.to(device),
+            action_mask.to(device),
+            distill_mask,
+        )
+
+    teacher_user = (
+        f"{group_entries[0]['question']}\n\n"
+        f"Correct solution:\n{completions[best_idx]}\n\n"
+        f"Correctly solve the original question."
+    )
+    teacher_template = tokenizer.apply_chat_template(
+        [
+            {"role": "system", "content": SYSTEM_PROMPTS["DeepSeekZero"]},
+            {"role": "user", "content": teacher_user},
+        ],
+        tokenize=False,
+        add_generation_prompt=True,
+        enable_thinking=True,
+    )
+    teacher_inputs = tokenizer(
+        [teacher_template] * k,
+        return_tensors="pt",
+        padding=True,
+        padding_side="left",
+        return_attention_mask=True,
+    ).to(device)
+    teacher_prompt_ids = teacher_inputs["input_ids"]
+    teacher_prompt_mask = teacher_inputs["attention_mask"].bool()
+    completion_ids, completion_mask = extract_completion_ids(
+        sequence_ids=sequence_ids.to(device),
+        action_mask=action_mask.to(device),
+        pad_token_id=pad_token_id,
+    )
+    teacher_sequence_ids = torch.cat([teacher_prompt_ids, completion_ids], dim=1)
+    teacher_attention_mask = torch.cat([teacher_prompt_mask, completion_mask], dim=1)
+
+    teacher_token_mask = torch.zeros_like(teacher_sequence_ids, dtype=torch.bool)
+    teacher_token_mask[:, teacher_prompt_ids.shape[1] :] = completion_mask
+    teacher_action_mask = teacher_token_mask[:, 1:]
+
+    distill_mask = torch.ones(k, 1, dtype=torch.float32, device=device)
+    distill_mask[best_idx] = 0.0
+    return teacher_sequence_ids, teacher_attention_mask, teacher_action_mask, distill_mask
+
+
 def create_dataset(cfg: Config) -> ProceduralDataset:
     """Create the training dataset from config."""
     specs = [DatasetSpec(name=s.name, weight=s.weight, config=s.config) for s in cfg.data.specs]
@@ -384,6 +530,9 @@ def main(cfg: Config):
     )
     model, tokenizer = load_model(cfg.model_name, model_device, gradient_checkpointing=True)
     ref_model = get_ref_model(cfg.model_name, ref_model_device, cfg.beta)
+    sdpo_teacher_model = get_sdpo_teacher_model(
+        model=model, loss=cfg.loss, ema_rate=cfg.sdpo_teacher_ema_rate
+    )
     val_model = get_val_model(
         cfg.model_name, val_model_device, cfg.loss, gradient_checkpointing=True
     )
@@ -396,6 +545,8 @@ def main(cfg: Config):
         beta=cfg.beta,
         sapo_temp_pos=cfg.sapo_temp_pos,
         sapo_temp_neg=cfg.sapo_temp_neg,
+        distillation_weight=cfg.distillation_weight,
+        sdpo_is_clip=cfg.sdpo_is_clip,
     ).to(model.device)
     params = list(model.parameters()) + (list(val_model.parameters()) if val_model else [])
     optimizer = optim.Adam(params, lr=cfg.lr)
@@ -457,6 +608,29 @@ def main(cfg: Config):
                         rewards, cfg.loss, action_mask, values_old, cfg.gamma, cfg.lam
                     )
 
+                    if cfg.loss == "sdpo":
+                        (
+                            teacher_sequence_ids,
+                            teacher_attention_mask,
+                            teacher_action_mask,
+                            distill_mask,
+                        ) = build_teacher_inputs(
+                            tokenizer=tokenizer,
+                            group_entries=batch,
+                            completions=completions,
+                            rewards=rewards,
+                            sequence_ids=sequence_ids,
+                            action_mask=action_mask,
+                            attention_mask=attention_mask,
+                            success_reward_threshold=cfg.success_reward_threshold,
+                            device=model.device,
+                        )
+                    else:
+                        teacher_sequence_ids = None
+                        teacher_attention_mask = None
+                        teacher_action_mask = None
+                        distill_mask = None
+
                     experience = Experience(
                         sequence_ids=sequence_ids,
                         attention_mask=attention_mask,
@@ -465,6 +639,10 @@ def main(cfg: Config):
                         log_probs_old=log_probs_old,
                         log_probs_ref=log_probs_ref,
                         values_old=values_old,
+                        teacher_sequence_ids=teacher_sequence_ids,
+                        teacher_attention_mask=teacher_attention_mask,
+                        teacher_action_mask=teacher_action_mask,
+                        distill_mask=distill_mask,
                     ).to(cpu_device)
                     replay_buffer.add(experience)
 
@@ -507,7 +685,39 @@ def main(cfg: Config):
                 values = compute_values(
                     val_model, experience.sequence_ids, experience.attention_mask
                 )
-                loss = objective(log_probs=log_probs, experience=experience, values=values)
+                extra_kwargs: dict[str, Any] = {}
+                if cfg.loss == "sdpo":
+                    # Teacher output is always detached inside the loss (reverse-KL
+                    # surrogate puts the gradient on the student). Skip autograd graph
+                    # construction for the teacher pass to keep activations out of memory.
+                    with torch.no_grad():
+                        teacher_log_probs = compute_log_probs(
+                            sdpo_teacher_model if sdpo_teacher_model is not None else model,
+                            experience.teacher_sequence_ids,
+                            experience.teacher_attention_mask,
+                        )
+                    student_comp_log_probs, comp_action_mask = extract_masked_log_probs(
+                        log_probs, experience.action_mask
+                    )
+                    teacher_comp_log_probs, teacher_comp_mask = extract_masked_log_probs(
+                        teacher_log_probs, experience.teacher_action_mask
+                    )
+                    old_student_comp_log_probs, old_comp_mask = extract_masked_log_probs(
+                        experience.log_probs_old, experience.action_mask
+                    )
+                    if not torch.equal(comp_action_mask.bool(), teacher_comp_mask.bool()):
+                        raise RuntimeError("SDPO student/teacher completion masks are misaligned.")
+                    if not torch.equal(comp_action_mask.bool(), old_comp_mask.bool()):
+                        raise RuntimeError("SDPO old/current completion masks are misaligned.")
+                    extra_kwargs = {
+                        "student_comp_log_probs": student_comp_log_probs,
+                        "teacher_comp_log_probs": teacher_comp_log_probs,
+                        "comp_action_mask": comp_action_mask,
+                        "old_student_comp_log_probs": old_student_comp_log_probs,
+                    }
+                loss = objective(
+                    log_probs=log_probs, experience=experience, values=values, **extra_kwargs
+                )
                 if not loss.isfinite():
                     continue
                 scaled_loss = loss / cfg.batch_acc
@@ -520,6 +730,12 @@ def main(cfg: Config):
                 ):
                     grad_norm = clip_grad_norm_(params, max_norm=cfg.max_norm)
                     optimizer.step()
+                    if sdpo_teacher_model is not None:
+                        with torch.no_grad():
+                            for teacher_param, student_param in zip(
+                                sdpo_teacher_model.parameters(), model.parameters(), strict=True
+                            ):
+                                teacher_param.lerp_(student_param.detach(), cfg.sdpo_teacher_ema_rate)
                     optimizer.zero_grad(set_to_none=True)
                     torch.cuda.empty_cache()
 

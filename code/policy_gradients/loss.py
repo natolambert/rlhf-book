@@ -11,6 +11,7 @@
 # - GSPO (Zheng et al., 2025)
 # - CISPO (MiniMax, 2025)
 # - SAPO (Qwen Team, 2025)
+# - SDPO (Hübotter et al., 2026)
 
 import torch
 import torch.nn as nn
@@ -194,6 +195,63 @@ class SAPOLoss(nn.Module):
         loss = policy_loss + self.beta * kl_loss
         loss = masked_mean(loss, mask=experience.action_mask, dim=-1).mean(dim=0)
         return loss
+
+
+class SDPOLoss(nn.Module):
+    """Self-Distillation Policy Optimization loss (Hübotter et al., 2026).
+
+    Hybrid objective: GRPO policy loss + reverse-KL self-distillation.
+    The teacher is the same policy model conditioned on a richer context that
+    includes the highest-reward rollout of the current group as a demonstration.
+    The distillation term uses the token-level REINFORCE surrogate for
+    reverse-KL(student || teacher):
+
+        log_ratio = (student_log_probs - teacher_log_probs).detach()
+        distill_loss = log_ratio * student_log_probs
+
+    The successful rollout itself (and samples in groups with no successful
+    rollout) are excluded from the distillation term via `distill_mask`, since
+    the teacher would otherwise see the target completion verbatim in its own
+    context and the surrogate would collapse to SFT on that completion.
+    """
+
+    def __init__(
+        self,
+        clip_eps_lo: float,
+        clip_eps_hi: float,
+        beta: float,
+        distillation_weight: float,
+        sdpo_is_clip: float | None = None,
+        **kwargs,
+    ) -> None:
+        super().__init__()
+        self.grpo = GRPOLoss(clip_eps_lo=clip_eps_lo, clip_eps_hi=clip_eps_hi, beta=beta)
+        self.distillation_weight = distillation_weight
+        self.sdpo_is_clip = sdpo_is_clip
+
+    def forward(
+        self,
+        log_probs: torch.Tensor,
+        experience: Experience,
+        student_comp_log_probs: torch.Tensor | None = None,
+        teacher_comp_log_probs: torch.Tensor | None = None,
+        comp_action_mask: torch.Tensor | None = None,
+        old_student_comp_log_probs: torch.Tensor | None = None,
+        **kwargs,
+    ) -> torch.Tensor:
+        grpo_loss = self.grpo(log_probs=log_probs, experience=experience)
+
+        log_ratio = (student_comp_log_probs - teacher_comp_log_probs).detach()
+        distill_token_loss = log_ratio * student_comp_log_probs
+        if self.sdpo_is_clip is not None and old_student_comp_log_probs is not None:
+            approx_log_ratio = (student_comp_log_probs - old_student_comp_log_probs).detach()
+            approx_log_ratio = approx_log_ratio.clamp(min=-20.0, max=20.0)
+            distill_token_loss = distill_token_loss * approx_log_ratio.exp().clamp(max=self.sdpo_is_clip)
+        # Broadcast distill_mask [B, 1] over completion tokens [B, M].
+        effective_mask = comp_action_mask * experience.distill_mask
+        distill_loss = masked_mean(distill_token_loss, effective_mask, dim=-1).mean(dim=0)
+
+        return grpo_loss + self.distillation_weight * distill_loss
 
 
 class PPOLoss(nn.Module):
