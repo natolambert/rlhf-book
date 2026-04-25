@@ -281,6 +281,9 @@ class OutcomeRewardModel(nn.Module):
 
         # Only compute loss on completion tokens (labels 0 or 1)
         # Prompt tokens have labels = -100
+        if labels is None:
+            return None, logits
+
         mask = labels != -100
         if mask.any():
             loss = F.binary_cross_entropy_with_logits(
