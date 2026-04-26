@@ -14,7 +14,7 @@ import random
 import re
 import time
 from itertools import batched  # Requires Python 3.12+
-from typing import Any, NamedTuple
+from typing import Any, Iterator
 
 import numpy as np
 import reasoning_gym as rg
@@ -22,14 +22,15 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-import wandb
 from reasoning_gym.composite import DatasetSpec
 from reasoning_gym.dataset import ProceduralDataset
-from reasoning_gym.utils import SYSTEM_PROMPTS, extract_answer
+from reasoning_gym.utils import extract_answer
 from rich.console import Console
 from torch.nn.utils import clip_grad_norm_
 from torch.utils.data import DataLoader
-from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+import wandb
 
 from .buffer import Experience, ReplayBuffer, join_experiences_batch
 from .config import Config, load_config
@@ -44,6 +45,7 @@ from .loss import (
     get_approx_kl,
     masked_mean,
 )
+from .rollout import RolloutOutput, TransformerRolloutEngine
 from .utils import print_model_info, print_rollout_sample, print_step_header, progress_bar
 
 
@@ -164,15 +166,42 @@ def _accuracy_reward(
     ]
 
 
+def _correctness_reward(
+    dataset: ProceduralDataset,
+    completions: list[str],
+    entries: list[dict],
+) -> list[float]:
+    """Compute raw correctness rewards without DAPO length penalties."""
+    return [
+        score_correctness_answer(dataset=dataset, completion=completion, entry=entry)
+        for completion, entry in zip(completions, entries, strict=True)
+    ]
+
+
 def dapo_length_penalty(completion_len: int, l_cache: int, l_max: int, console: Console) -> float:
     """Compute DAPO overlong penalty based on completion length."""
     safe_len = l_max - l_cache
     if completion_len <= safe_len:
         return 0.0
     if completion_len <= l_max:
-        return (safe_len - completion_len) / l_cache
-    console.print(f"DAPO overlong penalty: {completion_len} > {l_max}", style="bold red")
-    return -1.0
+        penalty = (safe_len - completion_len) / l_cache
+        console.print(
+            f"DAPO overlong penalty: {completion_len=}, {safe_len=}, {l_cache=}, {penalty=}",
+            style="bold yellow",
+        )
+        return penalty
+    penalty = -1.0
+    console.print(
+        f"DAPO overlong penalty: {completion_len=} > {l_max=}, {penalty=}",
+        style="bold red",
+    )
+    return penalty
+
+
+def score_correctness_answer(dataset: ProceduralDataset, completion: str, entry: dict) -> float:
+    """Compute raw answer correctness without shaping penalties."""
+    answer = extract_answer(completion)
+    return float(dataset.score_answer(answer, entry))
 
 
 def score_accuracy_answer(
@@ -184,8 +213,7 @@ def score_accuracy_answer(
     console: Console,
 ) -> float:
     """Compute answer-accuracy reward with optional DAPO overlong penalty."""
-    answer = extract_answer(completion)
-    score = float(dataset.score_answer(answer, entry))
+    score = score_correctness_answer(dataset=dataset, completion=completion, entry=entry)
     if cfg.loss != "dapo":
         return score
     return score + dapo_length_penalty(
@@ -224,13 +252,14 @@ def compute_rewards(
     console: Console,
     format_weight: float = 0.5,
 ) -> tuple[list[float], list[float]]:
-    """Compute combined accuracy + format rewards."""
+    """Compute training rewards and raw correctness rewards for filtering."""
     accuracy_rewards = _accuracy_reward(dataset, completions, entries, cfg, lengths, console)
+    correctness_rewards = _correctness_reward(dataset, completions, entries)
     format_rewards = _format_reward(completions)
     combined_rewards = [
         acc + format_weight * fmt for acc, fmt in zip(accuracy_rewards, format_rewards, strict=True)
     ]
-    return combined_rewards, accuracy_rewards
+    return combined_rewards, correctness_rewards
 
 
 def apply_reward_kl(
@@ -343,144 +372,113 @@ def compute_values(model, sequence_ids: torch.Tensor, attention_mask: torch.Tens
     return values
 
 
-class RolloutOutput(NamedTuple):
-    sequence_ids: torch.Tensor  # [B, T]      (LongTensor)
-    action_mask: torch.Tensor  # [B, T-1]    (BoolTensor)
-    attention_mask: torch.Tensor  # [B, T]      (BoolTensor)
-    rewards: torch.Tensor  # [B, 1]      (FloatTensor)
-    completions: list[str]  # length B
-    entries: list[dict]  # length B, aligned to completions
-
-
-def rollout(
+def add_rollout_output_to_buffer(
+    rollout_output: RolloutOutput,
     model,
-    entries: list[dict],
+    cfg: Config,
+    replay_buffer: ReplayBuffer,
+    cpu_device: torch.device,
+    ref_model,
+    val_model,
+    rollout_rewards: list[torch.Tensor],
+    rollout_completions: list[tuple[str, str, str]],
+) -> int:
+    """Compute rollout advantages and add individual experiences to the replay buffer."""
+    experiences_before = len(replay_buffer)
+    rollout_rewards.append(rollout_output.rewards.cpu())
+    rollout_completions.extend(
+        [
+            (entry["question"], entry["answer"], completion)
+            for entry, completion in zip(
+                rollout_output.entries, rollout_output.completions, strict=True
+            )
+        ]
+    )
+
+    log_probs_old = compute_log_probs(
+        model, rollout_output.sequence_ids, rollout_output.attention_mask
+    )
+    log_probs_ref = compute_log_probs(
+        ref_model, rollout_output.sequence_ids, rollout_output.attention_mask
+    )
+    rewards = apply_reward_kl(
+        rollout_output.rewards,
+        log_probs_old,
+        log_probs_ref,
+        rollout_output.action_mask,
+        cfg.beta,
+        cfg.loss,
+        cfg.kl_estimator,
+    )
+    values_old = compute_values(
+        val_model, rollout_output.sequence_ids, rollout_output.attention_mask
+    )
+    advantages = compute_advantages(
+        rewards,
+        cfg.loss,
+        rollout_output.action_mask,
+        values_old,
+        cfg.gamma,
+        cfg.lam,
+    )
+
+    experience = Experience(
+        sequence_ids=rollout_output.sequence_ids,
+        attention_mask=rollout_output.attention_mask,
+        action_mask=rollout_output.action_mask,
+        advantages=advantages,
+        log_probs_old=log_probs_old,
+        log_probs_ref=log_probs_ref,
+        values_old=values_old,
+    ).to(cpu_device)
+    replay_buffer.add(experience)
+    return len(replay_buffer) - experiences_before
+
+
+def collect_rollout_batch(
+    model,
+    rollout_batch: list[dict],
     dataset: ProceduralDataset,
-    tokenizer: AutoTokenizer,
+    rollout_engine: TransformerRolloutEngine,
     cfg: Config,
     console: Console,
-) -> RolloutOutput | None:
-    """Generate completions and compute rewards."""
-    valid_entries = list(entries)
-    # 1. Format prompts
-    message_templates = [
-        tokenizer.apply_chat_template(
-            [
-                {"role": "system", "content": SYSTEM_PROMPTS["DeepSeekZero"]},
-                {"role": "user", "content": entry["question"]},
-            ],
-            tokenize=False,
-            add_generation_prompt=True,
-            enable_thinking=True,
+    replay_buffer: ReplayBuffer,
+    cpu_device: torch.device,
+    ref_model,
+    val_model,
+    rollout_rewards: list[torch.Tensor],
+    rollout_completions: list[tuple[str, str, str]],
+) -> int:
+    """Generate one rollout batch and add valid experiences to the replay buffer."""
+    with torch.no_grad():
+        rollout_output = rollout_engine(
+            model=model,
+            entries=rollout_batch,
+            dataset=dataset,
+            reward_fn=compute_rewards,
+            console=console,
         )
-        for entry in entries
-    ]
-    model_inputs = tokenizer(
-        message_templates,
-        return_tensors="pt",
-        padding=True,
-        padding_side="left",
-        return_attention_mask=True,
-    ).to(model.device)
-
-    # 2. Generate responses
-    pad_token_id = (
-        tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id
-    )
-    generation_config = GenerationConfig(
-        temperature=cfg.temperature,
-        top_p=cfg.top_p,
-        top_k=cfg.top_k,
-        min_p=cfg.min_p,
-        do_sample=True,
-        max_new_tokens=cfg.max_new_tokens,
-        pad_token_id=pad_token_id,
-    )
-    sequence_ids = model.generate(**model_inputs, generation_config=generation_config)
-    completion_ids = sequence_ids[:, model_inputs["input_ids"].shape[1] :]
-    completions = tokenizer.batch_decode(completion_ids, skip_special_tokens=True)
-
-    # 3. Obtain the generated tokens only
-    action_mask = torch.zeros_like(sequence_ids, dtype=torch.bool)
-    action_mask[:, model_inputs["input_ids"].shape[1] :] = True
-    action_mask[sequence_ids == pad_token_id] = False
-    action_mask = action_mask[:, 1:]
-    # Per-completion generated length
-    lengths = action_mask.sum(dim=1).tolist()
-    # 4. Compute rewards
-    rewards_list, accuracy_rewards = compute_rewards(
-        dataset, completions, entries, cfg, lengths, console
-    )
-    rewards = torch.tensor(rewards_list, dtype=torch.float32, device=model.device).unsqueeze(-1)
-
-    # 5. Compute attention mask
-    attention_mask = sequence_ids != tokenizer.pad_token_id
-    # 6. DAPO group filtering: drop groups with all rewards 0 or all rewards 1
-    if cfg.loss == "dapo":
-        group_size = cfg.num_rollouts
-        batch_size = rewards.shape[0]
-
-        if batch_size % group_size != 0:
-            raise ValueError(
-                f"Batch size {batch_size} is not divisible by num_rollouts={group_size}."
-            )
-
-        num_groups = batch_size // group_size
-
-        rewards_grouped = rewards.squeeze(-1).view(num_groups, group_size)
-        accuracy_rewards_tensor = torch.tensor(
-            accuracy_rewards, dtype=torch.float32, device=model.device
+        if not rollout_output:
+            return 0
+        return add_rollout_output_to_buffer(
+            rollout_output=rollout_output,
+            model=model,
+            cfg=cfg,
+            replay_buffer=replay_buffer,
+            cpu_device=cpu_device,
+            ref_model=ref_model,
+            val_model=val_model,
+            rollout_rewards=rollout_rewards,
+            rollout_completions=rollout_completions,
         )
-        accuracy_grouped = accuracy_rewards_tensor.view(num_groups, group_size)
-        sequence_ids_grouped = sequence_ids.view(num_groups, group_size, -1)
-        action_mask_grouped = action_mask.view(num_groups, group_size, -1)
-        attention_mask_grouped = attention_mask.view(num_groups, group_size, -1)
-
-        all_zero = (accuracy_grouped == 0).all(dim=1)
-        all_one = (accuracy_grouped == 1).all(dim=1)
-        valid_groups = ~(all_zero | all_one)
-
-        num_filtered = (~valid_groups).sum().item()
-        console.print(
-            f"[bold yellow]DAPO filtering:[/bold yellow] "
-            f"filtered {num_filtered}/{num_groups} groups "
-            f"({num_filtered / max(num_groups, 1):.2%})"
-        )
-
-        if not valid_groups.any():
-            console.print("[bold red]All DAPO groups were filtered out.[/bold red]")
-            return None
-
-        sequence_ids = sequence_ids_grouped[valid_groups].reshape(-1, sequence_ids.shape[-1])
-        action_mask = action_mask_grouped[valid_groups].reshape(-1, action_mask.shape[-1])
-        attention_mask = attention_mask_grouped[valid_groups].reshape(-1, attention_mask.shape[-1])
-        rewards = rewards_grouped[valid_groups].reshape(-1, 1)
-
-        kept_group_indices = valid_groups.nonzero(as_tuple=False).squeeze(-1).tolist()
-        filtered_completions: list[str] = []
-        filtered_entries: list[dict] = []
-        for group_idx in kept_group_indices:
-            start = group_idx * group_size
-            end = start + group_size
-            filtered_completions.extend(completions[start:end])
-            filtered_entries.extend(valid_entries[start:end])
-        completions = filtered_completions
-        valid_entries = filtered_entries
-    return RolloutOutput(
-        sequence_ids=sequence_ids,
-        action_mask=action_mask,
-        attention_mask=attention_mask,
-        rewards=rewards,
-        completions=completions,
-        entries=valid_entries,
-    )
 
 
 def collect_rollouts_for_step(
     model,
     entries: list[dict],
     dataset: ProceduralDataset,
-    tokenizer: AutoTokenizer,
+    dataloader_iter: Iterator[list[dict]],
+    rollout_engine: TransformerRolloutEngine,
     cfg: Config,
     console: Console,
     replay_buffer: ReplayBuffer,
@@ -492,74 +490,80 @@ def collect_rollouts_for_step(
 ) -> None:
     """Collect rollouts for a single step.
 
-    For DAPO, rejected groups are dropped and we continue to accumulate valid
-    groups from the remaining rollout batches (no retries of rejected groups).
+    For DAPO, rejected groups are regenerated until the replay buffer reaches
+    prompts_per_step * num_rollouts experiences.
     """
-    for rollout_batch in batched(entries, cfg.rollout_batch_size):
-        rollout_batch_list = list(rollout_batch)
-        with torch.no_grad():
-            rollout_output = rollout(
+    rollout_batches = [
+        list(rollout_batch) for rollout_batch in batched(entries, cfg.rollout_batch_size)
+    ]
+    next_prompt_batch: list[dict] = []
+    expected_experiences = len(entries)
+
+    if cfg.loss != "dapo":
+        for rollout_batch in rollout_batches:
+            collect_rollout_batch(
                 model=model,
-                entries=rollout_batch_list,
+                rollout_batch=rollout_batch,
                 dataset=dataset,
-                tokenizer=tokenizer,
+                rollout_engine=rollout_engine,
                 cfg=cfg,
                 console=console,
+                replay_buffer=replay_buffer,
+                cpu_device=cpu_device,
+                ref_model=ref_model,
+                val_model=val_model,
+                rollout_rewards=rollout_rewards,
+                rollout_completions=rollout_completions,
             )
-            if not rollout_output:
+        return
+
+    rejected_prompt_keys: set[str] = set()
+    pending_rollout_batches = list(rollout_batches)
+    while len(replay_buffer) < expected_experiences:
+        if not pending_rollout_batches:
+            if not next_prompt_batch:
+                try:
+                    next_prompt_batch = next(dataloader_iter)
+                except StopIteration as e:
+                    raise RuntimeError(
+                        "DAPO needs more prompts to replace filtered groups, but the dataloader "
+                        "is exhausted."
+                    ) from e
+            while next_prompt_batch and next_prompt_batch[0]["question"] in rejected_prompt_keys:
+                next_prompt_batch.pop(0)
+            if not next_prompt_batch:
                 continue
-            rollout_rewards.append(rollout_output.rewards.cpu())
-            rollout_completions.extend(
-                [
-                    (entry["question"], entry["answer"], completion)
-                    for entry, completion in zip(
-                        rollout_output.entries, rollout_output.completions, strict=True
-                    )
-                ]
-            )
+            next_entry = next_prompt_batch.pop(0)
+            pending_rollout_batches.append([next_entry for _ in range(cfg.num_rollouts)])
 
-            log_probs_old = compute_log_probs(
-                model, rollout_output.sequence_ids, rollout_output.attention_mask
+        rollout_batch = pending_rollout_batches.pop(0)
+        experiences_added = collect_rollout_batch(
+            model=model,
+            rollout_batch=rollout_batch,
+            dataset=dataset,
+            rollout_engine=rollout_engine,
+            cfg=cfg,
+            console=console,
+            replay_buffer=replay_buffer,
+            cpu_device=cpu_device,
+            ref_model=ref_model,
+            val_model=val_model,
+            rollout_rewards=rollout_rewards,
+            rollout_completions=rollout_completions,
+        )
+        if experiences_added == 0:
+            rejected_prompt_keys.add(rollout_batch[0]["question"])
+            console.print(
+                f"[bold yellow]DAPO group rejected:[/bold yellow] "
+                f"{experiences_added=}; continuing until "
+                f"{len(replay_buffer)=}/{expected_experiences}"
             )
-            log_probs_ref = compute_log_probs(
-                ref_model, rollout_output.sequence_ids, rollout_output.attention_mask
-            )
-            rewards = apply_reward_kl(
-                rollout_output.rewards,
-                log_probs_old,
-                log_probs_ref,
-                rollout_output.action_mask,
-                cfg.beta,
-                cfg.loss,
-                cfg.kl_estimator,
-            )
-            values_old = compute_values(
-                val_model, rollout_output.sequence_ids, rollout_output.attention_mask
-            )
-            advantages = compute_advantages(
-                rewards,
-                cfg.loss,
-                rollout_output.action_mask,
-                values_old,
-                cfg.gamma,
-                cfg.lam,
-            )
+            continue
 
-            experience = Experience(
-                sequence_ids=rollout_output.sequence_ids,
-                attention_mask=rollout_output.attention_mask,
-                action_mask=rollout_output.action_mask,
-                advantages=advantages,
-                log_probs_old=log_probs_old,
-                log_probs_ref=log_probs_ref,
-                values_old=values_old,
-            ).to(cpu_device)
-            replay_buffer.add(experience)
-
-    if cfg.loss == "dapo":
-        expected_experiences = len(entries)
         console.print(
-            f"[dim]DAPO accumulation summary: {len(replay_buffer)=}, {expected_experiences=}[/dim]"
+            f"[bold green]DAPO group accepted:[/bold green] "
+            f"{experiences_added=}; continuing until "
+            f"{len(replay_buffer)=}/{expected_experiences}"
         )
 
 
@@ -596,6 +600,7 @@ def main(cfg: Config):
         collate_fn=lambda x: x,
     )
     model, tokenizer = load_model(cfg.model_name, model_device, gradient_checkpointing=True)
+    rollout_engine = TransformerRolloutEngine(tokenizer=tokenizer, cfg=cfg)
     ref_model = get_ref_model(cfg.model_name, ref_model_device, cfg.beta)
     val_model = get_val_model(
         cfg.model_name, val_model_device, cfg.loss, gradient_checkpointing=True
@@ -626,7 +631,12 @@ def main(cfg: Config):
     print_model_info(console, model)
 
     start_time = time.time()
-    for step, batch in enumerate(dataloader):
+    dataloader_iter = iter(dataloader)
+    for step in range(len(dataloader)):
+        try:
+            batch = next(dataloader_iter)
+        except StopIteration:
+            break
         print_step_header(console, step=step, total=len(dataloader))
         model.eval()
         if val_model:
@@ -641,7 +651,8 @@ def main(cfg: Config):
                 model=model,
                 entries=entries,
                 dataset=dataset,
-                tokenizer=tokenizer,
+                dataloader_iter=dataloader_iter,
+                rollout_engine=rollout_engine,
                 cfg=cfg,
                 console=console,
                 replay_buffer=replay_buffer,

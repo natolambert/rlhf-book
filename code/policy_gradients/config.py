@@ -95,6 +95,10 @@ class Config(BaseModel):
     l_cache: int = 256
     l_max: int = 512
 
+    # DAPO-specific min and max rewards
+    accuracy_min_reward: float = 0.0
+    accuracy_max_reward: float = 1.0
+
     # KL penalty (optional, for REINFORCE/RLOO/GRPO when beta > 0)
     beta: float = 0.0
     kl_estimator: str = "kl3"

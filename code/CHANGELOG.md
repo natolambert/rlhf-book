@@ -5,8 +5,7 @@ On release, entries get moved under a version heading.
 
 ## Unreleased
 
-- 2026-04-23: [PR #N](https://github.com/natolambert/rlhf-book/pull/N) added configurable KL estimators (`kl1`/`kl2`/`kl3`) in policy gradients, fixed DAPO completion-entry alignment after filtering, and accumulated valid DAPO groups through the step without retrying rejected groups.
-- 2026-04-23: [PR #N](https://github.com/natolambert/rlhf-book/pull/N) fixed DAPO dynamic group filtering to use answer-accuracy rewards instead of shaped rewards, and refactored DAPO reward helpers into top-level functions for readability.
+- 2026-04-23: [PR #385](https://github.com/natolambert/rlhf-book/pull/385) added configurable KL estimators (`kl1`/`kl2`/`kl3`) in policy gradients, fixed DAPO completion-entry alignment after filtering, and accumulated valid DAPO groups.
 - 2026-04-17: [PR #380](https://github.com/natolambert/rlhf-book/pull/380) added Discord community link to `code/README.md` (part of the wider site-wide Discord rollout).
 - 2026-04-17: [PR #377](https://github.com/natolambert/rlhf-book/pull/377) cleaned "Tune PPO hyperparameters" TODO from
   `policy_gradients/README.md` because it was addressed in PR #364 and PR #365.
