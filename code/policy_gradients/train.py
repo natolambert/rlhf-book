@@ -20,6 +20,7 @@ import reasoning_gym as rg
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import wandb
 from reasoning_gym.composite import DatasetSpec
 from reasoning_gym.dataset import ProceduralDataset
 from reasoning_gym.utils import extract_answer
@@ -27,8 +28,6 @@ from rich.console import Console
 from torch.nn.utils import clip_grad_norm_
 from torch.utils.data import DataLoader
 from transformers import AutoModelForCausalLM, AutoTokenizer
-
-import wandb
 
 from .algorithms import compute_log_probs, compute_values
 from .buffer import Experience, ReplayBuffer, join_experiences_batch
