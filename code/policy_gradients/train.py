@@ -13,14 +13,12 @@ import platform
 import random
 import re
 import time
-from itertools import batched  # Requires Python 3.12+
-from typing import Any, Iterator
+from typing import Any
 
 import numpy as np
 import reasoning_gym as rg
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
 from reasoning_gym.composite import DatasetSpec
 from reasoning_gym.dataset import ProceduralDataset
@@ -32,6 +30,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 import wandb
 
+from .algorithms import compute_log_probs, compute_values
 from .buffer import Experience, ReplayBuffer, join_experiences_batch
 from .config import Config, load_config
 from .loss import (
@@ -42,10 +41,8 @@ from .loss import (
     PPOLoss,
     ReinforceLoss,
     SAPOLoss,
-    get_approx_kl,
-    masked_mean,
 )
-from .rollout import RolloutOutput, TransformerRolloutEngine
+from .rollout import TransformerRolloutEngine, collect_rollouts_for_step
 from .utils import print_model_info, print_rollout_sample, print_step_header, progress_bar
 
 
@@ -137,35 +134,6 @@ def get_loss_objective(loss: str, **kwargs) -> nn.Module:
     raise ValueError(f"Unsupported loss type: {loss}")
 
 
-def _accuracy_reward(
-    dataset: ProceduralDataset,
-    completions: list[str],
-    entries: list[dict],
-    cfg: Config,
-    lengths: list[int],
-    console: Console,
-) -> list[float]:
-    """Compute accuracy reward based on extracted answers.
-
-    For DAPO, apply an overlong penalty based on completion length:
-    - no penalty when length <= l_max - l_cache
-    - linear penalty in the buffer region
-    - full penalty of -1 when length > l_max
-    """
-
-    return [
-        score_accuracy_answer(
-            dataset=dataset,
-            completion=completion,
-            entry=entry,
-            completion_len=completion_len,
-            cfg=cfg,
-            console=console,
-        )
-        for completion, entry, completion_len in zip(completions, entries, lengths, strict=True)
-    ]
-
-
 def _correctness_reward(
     dataset: ProceduralDataset,
     completions: list[str],
@@ -175,6 +143,31 @@ def _correctness_reward(
     return [
         score_correctness_answer(dataset=dataset, completion=completion, entry=entry)
         for completion, entry in zip(completions, entries, strict=True)
+    ]
+
+
+def _apply_dapo_length_penalty(
+    rewards: list[float],
+    lengths: list[int],
+    cfg: Config,
+    console: Console,
+) -> list[float]:
+    """
+    For DAPO, apply an overlong penalty based on completion length:
+    - no penalty when length <= l_max - l_cache
+    - linear penalty in the buffer region
+    - full penalty of -1 when length > l_max
+    Apply DAPO overlong penalties to answer-correctness rewards.
+    """
+    return [
+        reward
+        + dapo_length_penalty(
+            completion_len=completion_len,
+            l_cache=cfg.l_cache,
+            l_max=cfg.l_max,
+            console=console,
+        )
+        for reward, completion_len in zip(rewards, lengths, strict=True)
     ]
 
 
@@ -204,43 +197,22 @@ def score_correctness_answer(dataset: ProceduralDataset, completion: str, entry:
     return float(dataset.score_answer(answer, entry))
 
 
-def score_accuracy_answer(
-    dataset: ProceduralDataset,
-    completion: str,
-    entry: dict,
-    completion_len: int,
-    cfg: Config,
-    console: Console,
-) -> float:
-    """Compute answer-accuracy reward with optional DAPO overlong penalty."""
-    score = score_correctness_answer(dataset=dataset, completion=completion, entry=entry)
-    if cfg.loss != "dapo":
-        return score
-    return score + dapo_length_penalty(
-        completion_len=completion_len,
-        l_cache=cfg.l_cache,
-        l_max=cfg.l_max,
-        console=console,
-    )
-
-
 def _format_reward(completions: list[str], **kwargs) -> list[float]:
     """Compute format reward based on presence of thinking/answer tags."""
-    return [count_tags(completion) for completion in completions]
 
+    def count_tags(text: str) -> float:
+        count = 0.0
+        if re.search(r"\s*<think>\s*", text):
+            count += 0.25
+        if re.search(r"\s*</think>\s*", text):
+            count += 0.25
+        if re.search(r"\s*<answer>\s*", text):
+            count += 0.25
+        if re.search(r"\s*</answer>\s*", text):
+            count += 0.25
+        return count
 
-def count_tags(text: str) -> float:
-    """Count format tags used in a completion."""
-    count = 0.0
-    if re.search(r"\s*<think>\s*", text):
-        count += 0.25
-    if re.search(r"\s*</think>\s*", text):
-        count += 0.25
-    if re.search(r"\s*<answer>\s*", text):
-        count += 0.25
-    if re.search(r"\s*</answer>\s*", text):
-        count += 0.25
-    return count
+    return [count_tags(c) for c in completions]
 
 
 def compute_rewards(
@@ -253,318 +225,17 @@ def compute_rewards(
     format_weight: float = 0.5,
 ) -> tuple[list[float], list[float]]:
     """Compute training rewards and raw correctness rewards for filtering."""
-    accuracy_rewards = _accuracy_reward(dataset, completions, entries, cfg, lengths, console)
     correctness_rewards = _correctness_reward(dataset, completions, entries)
+    if cfg.loss == "dapo":
+        accuracy_rewards = _apply_dapo_length_penalty(correctness_rewards, lengths, cfg, console)
+    else:
+        accuracy_rewards = correctness_rewards
     format_rewards = _format_reward(completions)
     combined_rewards = [
         acc + format_weight * fmt for acc, fmt in zip(accuracy_rewards, format_rewards, strict=True)
     ]
+    # In DAPO, the correctness rewards are going to be used to filter too easy or hard problems
     return combined_rewards, correctness_rewards
-
-
-def apply_reward_kl(
-    rewards: torch.Tensor,
-    log_probs: torch.Tensor,
-    log_probs_ref: torch.Tensor,
-    action_mask: torch.Tensor,
-    beta: float,
-    loss: str,
-    kl_estimator: str,
-) -> torch.Tensor:
-    """Apply KL penalty to rewards (for REINFORCE/RLOO/PPO)."""
-    if not beta or loss not in ["ppo", "rloo", "reinforce"]:
-        return rewards
-    kl_div = get_approx_kl(kl_estimator, log_probs, log_probs_ref, action_mask)
-    kl_div = masked_mean(kl_div, mask=action_mask, dim=-1, keepdim=True)
-    rewards = rewards - beta * kl_div
-    return rewards
-
-
-def compute_standardized_advantages(rewards: torch.Tensor, eps: float = 1e-8) -> torch.Tensor:
-    """Compute standardized advantages (GRPO, GSPO, CISPO, DAPO)"""
-    return (rewards - rewards.mean(dim=0, keepdim=True)) / (rewards.std(dim=0, keepdim=True) + eps)
-
-
-def compute_nonstandardized_advantages(rewards: torch.Tensor) -> torch.Tensor:
-    """Compute non-standardized advantages (Dr. GRPO)."""
-    return rewards - rewards.mean(dim=0, keepdim=True)
-
-
-def compute_loo_advantages(rewards: torch.Tensor) -> torch.Tensor:
-    """Compute leave-one-out advantages (RLOO)."""
-    K = rewards.shape[0]
-    return (K / (K - 1)) * (rewards - rewards.mean(dim=0, keepdim=True))
-
-
-def compute_gae(
-    rewards: torch.Tensor, action_mask: torch.Tensor, values: torch.Tensor, gamma: float, lam: float
-) -> torch.Tensor:
-    """Compute Generalized Advantage Estimation (PPO)."""
-    B, S = action_mask.size()
-    device = action_mask.device
-    last_action_indices = action_mask.long().cumsum(dim=-1).argmax(dim=-1, keepdim=True)
-    indices = torch.arange(S, device=device).unsqueeze(0)
-    done = (indices >= last_action_indices).float()
-
-    rewards = torch.zeros_like(action_mask, device=device, dtype=torch.float32).scatter_(
-        dim=-1, index=last_action_indices, src=rewards
-    )
-
-    values = values.to(device)
-    advantages = torch.zeros_like(action_mask, dtype=torch.float32, device=device)
-    next_values = torch.zeros(B, device=device, dtype=torch.float32)
-    running = torch.zeros(B, device=device, dtype=torch.float32)
-
-    for t in reversed(range(S)):
-        not_done = 1.0 - done[:, t]
-        delta = rewards[:, t] + not_done * gamma * next_values - values[:, t]
-        running = delta + not_done * gamma * lam * running
-        advantages[:, t] = running
-        next_values = values[:, t]
-
-    advantages = advantages * action_mask
-    return advantages
-
-
-def compute_advantages(
-    rewards: torch.Tensor,
-    loss: str,
-    action_mask: torch.Tensor | None = None,
-    values: torch.Tensor | None = None,
-    gamma: float | None = None,
-    lam: float | None = None,
-) -> torch.Tensor:
-    """Compute advantages using the appropriate method for the loss function."""
-    if loss in ["grpo", "gspo", "cispo", "sapo", "dapo"]:
-        return compute_standardized_advantages(rewards)
-    elif loss in ["drgrpo"]:
-        return compute_nonstandardized_advantages(rewards)
-    elif loss in ["rloo"]:
-        return compute_loo_advantages(rewards)
-    elif loss in ["ppo"]:
-        return compute_gae(rewards, action_mask, values, gamma, lam)
-    else:
-        return rewards
-
-
-def compute_log_probs(
-    model, sequence_ids: torch.Tensor, attention_mask: torch.Tensor
-) -> torch.Tensor:
-    """Compute log probabilities for each token in the sequence."""
-    if not model:
-        return None
-    sequence_ids, attention_mask = sequence_ids.to(model.device), attention_mask.to(model.device)
-    output = model(input_ids=sequence_ids, attention_mask=attention_mask, use_cache=False)
-    logits = output.logits[:, :-1, :].to(torch.float32)
-    log_probs = F.log_softmax(logits, dim=-1)
-    targets = sequence_ids[:, 1:].unsqueeze(-1)
-    target_log_probs = torch.gather(log_probs, dim=-1, index=targets).squeeze(-1)
-    return target_log_probs
-
-
-def compute_values(model, sequence_ids: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
-    """Compute value estimates for each position (PPO)."""
-    if not model:
-        return None
-    sequence_ids, attention_mask = sequence_ids.to(model.device), attention_mask.to(model.device)
-    output = model(input_ids=sequence_ids, attention_mask=attention_mask, use_cache=False)
-    values = output.logits[:, :-1, :].squeeze(-1).to(torch.float32)
-    return values
-
-
-def add_rollout_output_to_buffer(
-    rollout_output: RolloutOutput,
-    model,
-    cfg: Config,
-    replay_buffer: ReplayBuffer,
-    cpu_device: torch.device,
-    ref_model,
-    val_model,
-    rollout_rewards: list[torch.Tensor],
-    rollout_completions: list[tuple[str, str, str]],
-) -> int:
-    """Compute rollout advantages and add individual experiences to the replay buffer."""
-    experiences_before = len(replay_buffer)
-    rollout_rewards.append(rollout_output.rewards.cpu())
-    rollout_completions.extend(
-        [
-            (entry["question"], entry["answer"], completion)
-            for entry, completion in zip(
-                rollout_output.entries, rollout_output.completions, strict=True
-            )
-        ]
-    )
-
-    log_probs_old = compute_log_probs(
-        model, rollout_output.sequence_ids, rollout_output.attention_mask
-    )
-    log_probs_ref = compute_log_probs(
-        ref_model, rollout_output.sequence_ids, rollout_output.attention_mask
-    )
-    rewards = apply_reward_kl(
-        rollout_output.rewards,
-        log_probs_old,
-        log_probs_ref,
-        rollout_output.action_mask,
-        cfg.beta,
-        cfg.loss,
-        cfg.kl_estimator,
-    )
-    values_old = compute_values(
-        val_model, rollout_output.sequence_ids, rollout_output.attention_mask
-    )
-    advantages = compute_advantages(
-        rewards,
-        cfg.loss,
-        rollout_output.action_mask,
-        values_old,
-        cfg.gamma,
-        cfg.lam,
-    )
-
-    experience = Experience(
-        sequence_ids=rollout_output.sequence_ids,
-        attention_mask=rollout_output.attention_mask,
-        action_mask=rollout_output.action_mask,
-        advantages=advantages,
-        log_probs_old=log_probs_old,
-        log_probs_ref=log_probs_ref,
-        values_old=values_old,
-    ).to(cpu_device)
-    replay_buffer.add(experience)
-    return len(replay_buffer) - experiences_before
-
-
-def collect_rollout_batch(
-    model,
-    rollout_batch: list[dict],
-    dataset: ProceduralDataset,
-    rollout_engine: TransformerRolloutEngine,
-    cfg: Config,
-    console: Console,
-    replay_buffer: ReplayBuffer,
-    cpu_device: torch.device,
-    ref_model,
-    val_model,
-    rollout_rewards: list[torch.Tensor],
-    rollout_completions: list[tuple[str, str, str]],
-) -> int:
-    """Generate one rollout batch and add valid experiences to the replay buffer."""
-    with torch.no_grad():
-        rollout_output = rollout_engine(
-            model=model,
-            entries=rollout_batch,
-            dataset=dataset,
-            reward_fn=compute_rewards,
-            console=console,
-        )
-        if not rollout_output:
-            return 0
-        return add_rollout_output_to_buffer(
-            rollout_output=rollout_output,
-            model=model,
-            cfg=cfg,
-            replay_buffer=replay_buffer,
-            cpu_device=cpu_device,
-            ref_model=ref_model,
-            val_model=val_model,
-            rollout_rewards=rollout_rewards,
-            rollout_completions=rollout_completions,
-        )
-
-
-def collect_rollouts_for_step(
-    model,
-    entries: list[dict],
-    dataset: ProceduralDataset,
-    dataloader_iter: Iterator[list[dict]],
-    rollout_engine: TransformerRolloutEngine,
-    cfg: Config,
-    console: Console,
-    replay_buffer: ReplayBuffer,
-    cpu_device: torch.device,
-    ref_model,
-    val_model,
-    rollout_rewards: list[torch.Tensor],
-    rollout_completions: list[tuple[str, str, str]],
-) -> None:
-    """Collect rollouts for a single step.
-
-    For DAPO, rejected groups are regenerated until the replay buffer reaches
-    prompts_per_step * num_rollouts experiences.
-    """
-    rollout_batches = [
-        list(rollout_batch) for rollout_batch in batched(entries, cfg.rollout_batch_size)
-    ]
-    next_prompt_batch: list[dict] = []
-    expected_experiences = len(entries)
-
-    if cfg.loss != "dapo":
-        for rollout_batch in rollout_batches:
-            collect_rollout_batch(
-                model=model,
-                rollout_batch=rollout_batch,
-                dataset=dataset,
-                rollout_engine=rollout_engine,
-                cfg=cfg,
-                console=console,
-                replay_buffer=replay_buffer,
-                cpu_device=cpu_device,
-                ref_model=ref_model,
-                val_model=val_model,
-                rollout_rewards=rollout_rewards,
-                rollout_completions=rollout_completions,
-            )
-        return
-
-    rejected_prompt_keys: set[str] = set()
-    pending_rollout_batches = list(rollout_batches)
-    while len(replay_buffer) < expected_experiences:
-        if not pending_rollout_batches:
-            if not next_prompt_batch:
-                try:
-                    next_prompt_batch = next(dataloader_iter)
-                except StopIteration as e:
-                    raise RuntimeError(
-                        "DAPO needs more prompts to replace filtered groups, but the dataloader "
-                        "is exhausted."
-                    ) from e
-            while next_prompt_batch and next_prompt_batch[0]["question"] in rejected_prompt_keys:
-                next_prompt_batch.pop(0)
-            if not next_prompt_batch:
-                continue
-            next_entry = next_prompt_batch.pop(0)
-            pending_rollout_batches.append([next_entry for _ in range(cfg.num_rollouts)])
-
-        rollout_batch = pending_rollout_batches.pop(0)
-        experiences_added = collect_rollout_batch(
-            model=model,
-            rollout_batch=rollout_batch,
-            dataset=dataset,
-            rollout_engine=rollout_engine,
-            cfg=cfg,
-            console=console,
-            replay_buffer=replay_buffer,
-            cpu_device=cpu_device,
-            ref_model=ref_model,
-            val_model=val_model,
-            rollout_rewards=rollout_rewards,
-            rollout_completions=rollout_completions,
-        )
-        if experiences_added == 0:
-            rejected_prompt_keys.add(rollout_batch[0]["question"])
-            console.print(
-                f"[bold yellow]DAPO group rejected:[/bold yellow] "
-                f"{experiences_added=}; continuing until "
-                f"{len(replay_buffer)=}/{expected_experiences}"
-            )
-            continue
-
-        console.print(
-            f"[bold green]DAPO group accepted:[/bold green] "
-            f"{experiences_added=}; continuing until "
-            f"{len(replay_buffer)=}/{expected_experiences}"
-        )
 
 
 def create_dataset(cfg: Config) -> ProceduralDataset:
@@ -600,10 +271,16 @@ def main(cfg: Config):
         collate_fn=lambda x: x,
     )
     model, tokenizer = load_model(cfg.model_name, model_device, gradient_checkpointing=True)
-    rollout_engine = TransformerRolloutEngine(tokenizer=tokenizer, cfg=cfg)
     ref_model = get_ref_model(cfg.model_name, ref_model_device, cfg.beta)
     val_model = get_val_model(
         cfg.model_name, val_model_device, cfg.loss, gradient_checkpointing=True
+    )
+    rollout_engine = TransformerRolloutEngine(
+        tokenizer=tokenizer,
+        cfg=cfg,
+        ref_model=ref_model,
+        val_model=val_model,
+        cpu_device=cpu_device,
     )
     objective = get_loss_objective(
         loss=cfg.loss,
@@ -647,18 +324,15 @@ def main(cfg: Config):
         with progress_bar(console) as progress:
             entries = [entry for entry in batch for _ in range(cfg.num_rollouts)]
             task = progress.add_task("Generating rollouts", total=1)
-            collect_rollouts_for_step(
+            replay_buffer = collect_rollouts_for_step(
                 model=model,
                 entries=entries,
                 dataset=dataset,
                 dataloader_iter=dataloader_iter,
                 rollout_engine=rollout_engine,
-                cfg=cfg,
+                compute_rewards=compute_rewards,
                 console=console,
                 replay_buffer=replay_buffer,
-                cpu_device=cpu_device,
-                ref_model=ref_model,
-                val_model=val_model,
                 rollout_rewards=rollout_rewards,
                 rollout_completions=rollout_completions,
             )
@@ -672,7 +346,12 @@ def main(cfg: Config):
         avg_reward = torch.cat(rollout_rewards, dim=0).mean().item()
         hours_elapsed = (time.time() - start_time) / 3600
         wandb.log({"avg_reward": avg_reward, "hours_elapsed": hours_elapsed})
-        print_rollout_sample(console, reward=avg_reward, rollout_completions=rollout_completions)
+        if rollout_completions:
+            print_rollout_sample(
+                console, reward=avg_reward, rollout_completions=rollout_completions
+            )
+        else:
+            console.print(f"[bold green]Average Reward:[/bold green] {avg_reward:.4f}")
 
         torch.cuda.empty_cache()
         model.train()
@@ -699,12 +378,31 @@ def main(cfg: Config):
                 experience = experience.to(model.device)
 
                 # Compute loss
+                if experience.log_probs_old is None:
+                    raise ValueError("Expected `experience.log_probs_old` from rollout.")
+                if experience.advantages is None:
+                    raise ValueError("Expected `experience.advantages` from rollout.")
+                if cfg.loss == "ppo" and experience.values_old is None:
+                    raise ValueError("PPO requires `experience.values_old` from rollout.")
+
+                # New policy log-probs (differentiate through this).
                 log_probs = compute_log_probs(
                     model, experience.sequence_ids, experience.attention_mask
                 )
-                values = compute_values(
-                    val_model, experience.sequence_ids, experience.attention_mask
-                )
+                if log_probs is None:
+                    raise ValueError(
+                        "compute_log_probs returned None, but a policy model is required."
+                    )
+
+                # PPO also needs current values (differentiate through value head).
+                values = None
+                if cfg.loss == "ppo":
+                    values = compute_values(
+                        val_model, experience.sequence_ids, experience.attention_mask
+                    )
+                    if values is None:
+                        raise ValueError("PPO requires a value model.")
+
                 loss = objective(log_probs=log_probs, experience=experience, values=values)
                 if not loss.isfinite():
                     continue

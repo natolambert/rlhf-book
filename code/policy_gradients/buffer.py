@@ -23,6 +23,8 @@ class Experience:
     - log_probs_old: Log probabilities from the rollout policy
     - log_probs_ref: Log probabilities from the reference policy (for KL)
     - values_old: Value estimates (for PPO)
+    - rewards: Scalar reward assigned to the generated completion before
+      advantage/log_prob fields are filled.
     """
 
     sequence_ids: torch.Tensor
@@ -32,6 +34,7 @@ class Experience:
     log_probs_old: torch.Tensor | None = None
     log_probs_ref: torch.Tensor | None = None
     values_old: torch.Tensor | None = None
+    rewards: torch.Tensor | None = None
 
     def to(self, device: torch.device) -> Self:
         """Move all tensors to the specified device."""

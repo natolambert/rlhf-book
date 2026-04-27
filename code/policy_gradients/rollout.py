@@ -1,4 +1,5 @@
-from typing import Callable, NamedTuple
+from itertools import batched  # Requires Python 3.12+
+from typing import Any, Callable, Iterator
 
 import torch
 from reasoning_gym.dataset import ProceduralDataset
@@ -6,29 +7,25 @@ from reasoning_gym.utils import SYSTEM_PROMPTS
 from rich.console import Console
 from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
 
+from .algorithms import apply_reward_kl, compute_advantages, compute_log_probs, compute_values
+from .buffer import Experience, ReplayBuffer, join_experiences_batch
 from .config import Config
 
 
-RewardFunction = Callable[
-    [ProceduralDataset, list[str], list[dict], Config, list[int], Console],
-    tuple[list[float], list[float]],
-]
-
-
-class RolloutOutput(NamedTuple):
-    sequence_ids: torch.Tensor  # [B, T]      (LongTensor)
-    action_mask: torch.Tensor  # [B, T-1]    (BoolTensor)
-    attention_mask: torch.Tensor  # [B, T]      (BoolTensor)
-    completions: list[str]  # length B
-    entries: list[dict]  # length B, aligned to completions
-    rewards: torch.Tensor  # [B, 1]      (FloatTensor)
-    completions_lengths: list[int]  # length B
-
-
 class TransformerRolloutEngine:
-    def __init__(self, tokenizer: AutoTokenizer, cfg: Config):
+    def __init__(
+        self,
+        tokenizer: AutoTokenizer,
+        cfg: Config,
+        ref_model,
+        val_model,
+        cpu_device: torch.device,
+    ):
         self.tokenizer = tokenizer
         self.cfg = cfg
+        self.ref_model = ref_model
+        self.val_model = val_model
+        self.cpu_device = cpu_device
         self.tokenizer.pad_token_id = (
             tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id
         )
@@ -48,11 +45,11 @@ class TransformerRolloutEngine:
         model: AutoModelForCausalLM,
         entries: list[dict],
         dataset: ProceduralDataset,
-        reward_fn: RewardFunction,
+        reward_fn: Callable,
         console: Console,
-    ) -> RolloutOutput | None:
+        rollout_rewards: list[torch.Tensor],
+    ) -> ReplayBuffer | None:
         """Generate completions and package tensors for policy-gradient training."""
-        valid_entries = entries
         # 1. Format prompts
         message_templates = [
             self.tokenizer.apply_chat_template(
@@ -92,36 +89,73 @@ class TransformerRolloutEngine:
         attention_mask = sequence_ids != self.tokenizer.pad_token_id
 
         if self.cfg.loss == "dapo":
-            filtered_output = self._filter_dapo_groups(
+            rollout_output = self._filter_dapo_groups(
                 sequence_ids=sequence_ids,
                 action_mask=action_mask,
                 attention_mask=attention_mask,
                 rewards=rewards,
                 correctness_rewards=correctness_rewards,
-                completions=completions,
-                entries=valid_entries,
-                lengths=lengths,
                 console=console,
             )
-            if filtered_output is None:
+            if rollout_output is None:
                 return None
-            sequence_ids = filtered_output.sequence_ids
-            action_mask = filtered_output.action_mask
-            attention_mask = filtered_output.attention_mask
-            completions = filtered_output.completions
-            valid_entries = filtered_output.entries
-            lengths = filtered_output.completions_lengths
-            rewards = filtered_output.rewards
+        else:
+            rollout_output = Experience(
+                sequence_ids=sequence_ids,
+                action_mask=action_mask,
+                attention_mask=attention_mask,
+                rewards=rewards,
+            )
 
-        return RolloutOutput(
-            sequence_ids=sequence_ids,
-            action_mask=action_mask,
-            attention_mask=attention_mask,
-            completions=completions,
-            entries=valid_entries,
-            completions_lengths=lengths,
-            rewards=rewards,
+        if rollout_output.rewards is None:
+            raise ValueError("Rollout output must include rewards before computing advantages.")
+        rollout_rewards.append(rollout_output.rewards.cpu())
+
+        log_probs_old = compute_log_probs(
+            model, rollout_output.sequence_ids, rollout_output.attention_mask
         )
+        if self.cfg.beta and self.cfg.loss in ["ppo", "rloo", "reinforce"]:
+            log_probs_ref = compute_log_probs(
+                self.ref_model, rollout_output.sequence_ids, rollout_output.attention_mask
+            )
+            if log_probs_old is None or log_probs_ref is None:
+                raise ValueError("beta>0 requires both rollout and reference log probs.")
+            shaped_rewards = apply_reward_kl(
+                rollout_output.rewards,
+                log_probs_old,
+                log_probs_ref,
+                rollout_output.action_mask,
+                self.cfg.beta,
+                self.cfg.loss,
+                self.cfg.kl_estimator,
+            )
+        else:
+            log_probs_ref = None
+            shaped_rewards = rollout_output.rewards
+        values_old = compute_values(
+            self.val_model, rollout_output.sequence_ids, rollout_output.attention_mask
+        )
+        advantages = compute_advantages(
+            shaped_rewards,
+            self.cfg.loss,
+            rollout_output.action_mask,
+            values_old,
+            self.cfg.gamma,
+            self.cfg.lam,
+        )
+
+        experience = Experience(
+            sequence_ids=rollout_output.sequence_ids,
+            attention_mask=rollout_output.attention_mask,
+            action_mask=rollout_output.action_mask,
+            advantages=advantages,
+            log_probs_old=log_probs_old,
+            log_probs_ref=log_probs_ref,
+            values_old=values_old,
+        ).to(self.cpu_device)
+        replay_buffer = ReplayBuffer()
+        replay_buffer.add(experience)
+        return replay_buffer
 
     def _filter_dapo_groups(
         self,
@@ -130,11 +164,8 @@ class TransformerRolloutEngine:
         attention_mask: torch.Tensor,
         rewards: torch.Tensor,
         correctness_rewards: list[float],
-        completions: list[str],
-        entries: list[dict],
-        lengths: list[int],
         console: Console,
-    ) -> RolloutOutput | None:
+    ) -> Experience | None:
         """Drop DAPO groups where every completion has min or max correctness."""
         group_size = self.cfg.num_rollouts
         batch_size = rewards.shape[0]
@@ -167,28 +198,164 @@ class TransformerRolloutEngine:
         )
 
         if not valid_groups.any():
-            console.print("[bold red]All DAPO groups were filtered out.[/bold red]")
+            correctness_rows = correctness_grouped.detach().cpu().tolist()
+            console.print(
+                "[bold red]For DAPO, all completions in this rollout batch were filtered out.[/bold red] "
+                f"Here min={self.cfg.accuracy_min_reward} and max={self.cfg.accuracy_max_reward}. "
+                f"Correctness rewards per group: {correctness_rows}. "
+            )
             return None
 
-        kept_group_indices = valid_groups.nonzero(as_tuple=False).squeeze(-1).tolist()
-        filtered_completions: list[str] = []
-        filtered_entries: list[dict] = []
-        filtered_lengths: list[int] = []
-        for group_idx in kept_group_indices:
-            start = group_idx * group_size
-            end = start + group_size
-            filtered_completions.extend(completions[start:end])
-            filtered_entries.extend(entries[start:end])
-            filtered_lengths.extend(lengths[start:end])
-
-        return RolloutOutput(
+        return Experience(
             sequence_ids=sequence_ids_grouped[valid_groups].reshape(-1, sequence_ids.shape[-1]),
             action_mask=action_mask_grouped[valid_groups].reshape(-1, action_mask.shape[-1]),
             attention_mask=attention_mask_grouped[valid_groups].reshape(
                 -1, attention_mask.shape[-1]
             ),
-            completions=filtered_completions,
-            entries=filtered_entries,
-            completions_lengths=filtered_lengths,
             rewards=rewards_grouped[valid_groups].reshape(-1, 1),
         )
+
+
+def decode_rollout_completions(tokenizer: Any, rollout_output: Experience) -> list[str]:
+    """Decode generated tokens from a rollout experience batch."""
+    target_ids = rollout_output.sequence_ids[:, 1:]
+    completions = []
+    for token_ids, action_mask in zip(target_ids, rollout_output.action_mask, strict=True):
+        completion_ids = token_ids[action_mask.bool()]
+        completions.append(tokenizer.decode(completion_ids, skip_special_tokens=True))
+    return completions
+
+
+def build_rollout_completions(
+    tokenizer: Any, rollout_output: Experience, rollout_batch: list[dict]
+) -> list[tuple[str, str, str]]:
+    """Build rollout sample rows in the training loop."""
+    completions = decode_rollout_completions(tokenizer, rollout_output)
+    if len(completions) != len(rollout_batch):
+        return []
+    return [
+        (entry["question"], entry["answer"], completion)
+        for entry, completion in zip(rollout_batch, completions, strict=True)
+    ]
+
+
+def collect_rollout_batch(
+    model,
+    rollout_batch: list[dict],
+    dataset: ProceduralDataset,
+    rollout_engine: TransformerRolloutEngine,
+    compute_rewards: Callable,
+    console: Console,
+    replay_buffer: ReplayBuffer,
+    rollout_rewards: list[torch.Tensor],
+    rollout_completions: list[tuple[str, str, str]],
+) -> int:
+    """Generate one rollout batch and add valid experiences to the replay buffer."""
+    with torch.no_grad():
+        rollout_buffer = rollout_engine(
+            model=model,
+            entries=rollout_batch,
+            dataset=dataset,
+            reward_fn=compute_rewards,
+            console=console,
+            rollout_rewards=rollout_rewards,
+        )
+        if rollout_buffer is None:
+            return 0
+        rollout_output = join_experiences_batch(rollout_buffer.buffer)
+        rollout_completions.extend(
+            build_rollout_completions(
+                tokenizer=rollout_engine.tokenizer,
+                rollout_output=rollout_output,
+                rollout_batch=rollout_batch,
+            )
+        )
+        replay_buffer.buffer.extend(rollout_buffer.buffer)
+        return len(rollout_buffer)
+
+
+def collect_rollouts_for_step(
+    model,
+    entries: list[dict],
+    dataset: ProceduralDataset,
+    dataloader_iter: Iterator[list[dict]],
+    rollout_engine: TransformerRolloutEngine,
+    compute_rewards: Callable,
+    console: Console,
+    replay_buffer: ReplayBuffer,
+    rollout_rewards: list[torch.Tensor],
+    rollout_completions: list[tuple[str, str, str]],
+) -> ReplayBuffer:
+    """Collect rollouts for a single step.
+
+    For DAPO, rejected groups are regenerated until the replay buffer reaches
+    prompts_per_step * num_rollouts experiences.
+    """
+    cfg = rollout_engine.cfg
+    rollout_batches = [
+        list(rollout_batch) for rollout_batch in batched(entries, cfg.rollout_batch_size)
+    ]
+    next_prompt_batch: list[dict] = []
+    expected_experiences = len(entries)
+
+    if cfg.loss != "dapo":
+        for rollout_batch in rollout_batches:
+            collect_rollout_batch(
+                model=model,
+                rollout_batch=rollout_batch,
+                dataset=dataset,
+                rollout_engine=rollout_engine,
+                compute_rewards=compute_rewards,
+                console=console,
+                replay_buffer=replay_buffer,
+                rollout_rewards=rollout_rewards,
+                rollout_completions=rollout_completions,
+            )
+        return replay_buffer
+
+    rejected_prompt_keys: set[str] = set()
+    pending_rollout_batches = list(rollout_batches)
+    while len(replay_buffer) < expected_experiences:
+        if not pending_rollout_batches:
+            if not next_prompt_batch:
+                try:
+                    next_prompt_batch = next(dataloader_iter)
+                except StopIteration as e:
+                    raise RuntimeError(
+                        "DAPO needs more prompts to replace filtered groups, but the dataloader "
+                        "is exhausted."
+                    ) from e
+            while next_prompt_batch and next_prompt_batch[0]["question"] in rejected_prompt_keys:
+                next_prompt_batch.pop(0)
+            if not next_prompt_batch:
+                continue
+            next_entry = next_prompt_batch.pop(0)
+            pending_rollout_batches.append([next_entry for _ in range(cfg.num_rollouts)])
+
+        rollout_batch = pending_rollout_batches.pop(0)
+        experiences_added = collect_rollout_batch(
+            model=model,
+            rollout_batch=rollout_batch,
+            dataset=dataset,
+            rollout_engine=rollout_engine,
+            compute_rewards=compute_rewards,
+            console=console,
+            replay_buffer=replay_buffer,
+            rollout_rewards=rollout_rewards,
+            rollout_completions=rollout_completions,
+        )
+        if experiences_added == 0:
+            rejected_prompt_keys.add(rollout_batch[0]["question"])
+            console.print(
+                f"[bold yellow]DAPO group rejected:[/bold yellow] "
+                f"{experiences_added=}; continuing until "
+                f"{len(replay_buffer)=}/{expected_experiences}"
+            )
+            continue
+
+        console.print(
+            f"[bold green]DAPO group accepted:[/bold green] "
+            f"{experiences_added=}; continuing until "
+            f"{len(replay_buffer)=}/{expected_experiences}"
+        )
+    return replay_buffer
