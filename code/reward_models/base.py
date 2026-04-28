@@ -13,10 +13,9 @@ from typing import Callable
 
 import torch
 import torch.nn as nn
+import wandb
 from torch.utils.data import DataLoader
 from transformers import AutoModelForCausalLM, AutoTokenizer
-
-import wandb
 
 
 # =============================================================================

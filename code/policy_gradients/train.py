@@ -13,10 +13,9 @@ import time
 
 import torch
 import torch.optim as optim
+import wandb
 from torch.nn.utils import clip_grad_norm_
 from torch.utils.data import DataLoader
-
-import wandb
 
 from .buffer import Experience, join_experiences_batch
 from .config import Config, load_config

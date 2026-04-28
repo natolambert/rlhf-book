@@ -94,3 +94,4 @@ ignore = ["E501", "B007", "F841"]
 
 [tool.ruff.lint.isort]
 lines-after-imports = 2
+known-third-party = ["wandb"]

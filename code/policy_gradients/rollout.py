@@ -36,7 +36,6 @@ class TransformerRolloutEngine:
         self.tokenizer = tokenizer
         self.ref_model = ref_model
         self.val_model = val_model
-
         self.cpu_device = torch.device("cpu")
 
         self.tokenizer.pad_token_id = (
