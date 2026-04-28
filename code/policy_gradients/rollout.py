@@ -96,6 +96,7 @@ class TransformerRolloutEngine:
         entries = [entries] if isinstance(entries, dict) else entries
         entries = [e for e in entries for _ in range(self.cfg.num_rollouts)]
 
+        device = self.model.device
         message_templates = [
             self.tokenizer.apply_chat_template(
                 [
@@ -113,7 +114,7 @@ class TransformerRolloutEngine:
             return_tensors="pt",
             padding=True,
             return_attention_mask=True,
-        ).to(self.model.device)
+        ).to(device)
 
         sequence_ids = self.model.generate(**model_inputs, generation_config=self.generation_config)
         completion_ids = sequence_ids[:, model_inputs["input_ids"].shape[1] :]
@@ -127,10 +128,8 @@ class TransformerRolloutEngine:
         lens = action_mask.sum(dim=1).tolist()
 
         rewards, correctness = compute_rewards(entries, completions, lens, self.dataset, self.cfg)
-        rewards = torch.tensor(rewards, dtype=torch.float32, device=self.model.device).unsqueeze(-1)
-        correctness = torch.tensor(
-            correctness, dtype=torch.float32, device=self.model.device
-        ).unsqueeze(-1)
+        rewards = torch.tensor(rewards, dtype=torch.float32, device=device).unsqueeze(-1)
+        correctness = torch.tensor(correctness, dtype=torch.float32, device=device).unsqueeze(-1)
 
         log_probs_old = compute_log_probs(self.model, sequence_ids, attention_mask)
         log_probs_ref = compute_log_probs(self.ref_model, sequence_ids, attention_mask)
