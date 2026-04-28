@@ -382,14 +382,20 @@ def print_rollout_sample(buf: ReplayBuffer, tokenizer) -> None:
             border_style="cyan",
         )
     )
-    completion_preview = completion[:1000]
-    if len(completion) > 1000:
-        completion_preview += "[dim]... (truncated)[/dim]"
+
+    def preview(text: str, limit: int = 1000) -> str:
+        if len(text) <= limit:
+            return text
+        return text[:limit] + "[dim]... (truncated)[/dim]"
+
+    _, _, rest = prompt.partition("\nuser\n")
+    user_part = rest.partition("\nassistant\n")[0].rstrip() if rest else prompt
+
     table = Table(show_header=False, box=None, padding=(0, 1), show_edge=False)
     table.add_column("Label", style="dim", width=12)
     table.add_column("Content")
-    table.add_row("Prompt:", prompt[:150] + ("..." if len(prompt) > 150 else ""))
+    table.add_row("User:", user_part)
+    table.add_row("Completion:", preview(completion))
     table.add_row("Correctness:", f"{correctness:.2f}")
-    table.add_row("Completion:", completion_preview)
     console.print(Panel(table, title="[bold cyan]Sample[/bold cyan]", border_style="dim"))
     console.print()
