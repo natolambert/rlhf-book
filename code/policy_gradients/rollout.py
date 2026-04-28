@@ -15,6 +15,7 @@ from .utils import (
     compute_rewards,
     compute_values,
     print_rollout_sample,
+    print_step_header,
 )
 
 
@@ -60,16 +61,23 @@ class RolloutEngine:
             drop_last=True,
             collate_fn=lambda x: x,
         )
-        self._entries = (entry for batch in self._dataloader for entry in batch)
+        self._total = len(self._dataloader) * cfg.prompts_per_step
+        self._consumed = 0
+        self._entries = self._iter_entries()
 
-    def __len__(self) -> int:
-        return len(self._dataloader)
+    def _iter_entries(self):
+        for batch in self._dataloader:
+            for entry in batch:
+                self._consumed += 1
+                yield entry
 
     def __iter__(self) -> Iterator[ReplayBuffer]:
         while True:
+            print_step_header(consumed=self._consumed, total=self._total)
             buffer = self._step()
             if len(buffer) == 0:
                 return
+            print_rollout_sample(buffer, self.tokenizer)
             yield buffer
 
     def _step(self) -> ReplayBuffer:
@@ -89,7 +97,6 @@ class RolloutEngine:
             if exp is not None:
                 buffer.add(exp)
 
-        print_rollout_sample(buffer, self.tokenizer)
         return buffer
 
     def _generate_experience(self, entries: dict | list[dict]) -> Experience:

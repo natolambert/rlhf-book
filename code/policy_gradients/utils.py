@@ -328,9 +328,10 @@ def compute_rewards(
     return combined_rewards, correctness_rewards
 
 
-def print_step_header(step: int, total: int) -> None:
-    """Print a header for the current training step."""
-    console.rule(f"[bold cyan]STEP {step + 1}/{total}[/bold cyan]", style="cyan")
+def print_step_header(consumed: int, total: int) -> None:
+    """Print a header showing dataset progress."""
+    pct = 100.0 * consumed / total if total else 0.0
+    console.rule(f"[bold cyan]{consumed}/{total} ({pct:.1f}%)[/bold cyan]", style="cyan")
 
 
 def progress_bar() -> Progress:

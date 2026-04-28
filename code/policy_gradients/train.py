@@ -29,7 +29,6 @@ from .utils import (
     get_val_model,
     load_model,
     print_model_info,
-    print_step_header,
     progress_bar,
     seed_everything,
 )
@@ -83,9 +82,7 @@ def main(cfg: Config):
     print_model_info(model)
 
     start_time = time.time()
-    for step, replay_buffer in enumerate(rollout_engine):
-        print_step_header(step=step, total=len(rollout_engine))
-
+    for replay_buffer in rollout_engine:
         rewards = torch.stack([e.rewards for e in replay_buffer.buffer])
         avg_reward = rewards.mean().item()
         hours = (time.time() - start_time) / 3600
