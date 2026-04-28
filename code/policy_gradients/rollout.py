@@ -74,6 +74,10 @@ class TransformerRolloutEngine:
             yield buffer
 
     def _step(self) -> ReplayBuffer:
+        self.model.eval()
+        if self.val_model is not None:
+            self.val_model.eval()
+
         buffer = ReplayBuffer()
         for _ in range(self.cfg.prompts_per_step):
             entry = next(self._entries, None)
@@ -123,7 +127,9 @@ class TransformerRolloutEngine:
 
         rewards, correctness = compute_rewards(entries, completions, lens, self.dataset, self.cfg)
         rewards = torch.tensor(rewards, dtype=torch.float32, device=self.model.device).unsqueeze(-1)
-        correctness = torch.tensor(correctness, dtype=torch.float32, device=self.model.device)
+        correctness = torch.tensor(
+            correctness, dtype=torch.float32, device=self.model.device
+        ).unsqueeze(-1)
 
         log_probs_old = compute_log_probs(self.model, sequence_ids, attention_mask)
         log_probs_ref = compute_log_probs(self.ref_model, sequence_ids, attention_mask)

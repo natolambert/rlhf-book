@@ -86,9 +86,6 @@ def main(cfg: Config):
     start_time = time.time()
     for step, replay_buffer in enumerate(rollout_engine):
         print_step_header(step=step, total=len(rollout_engine))
-        model.eval()
-        if val_model:
-            val_model.eval()
 
         rewards = torch.stack([e.rewards for e in replay_buffer.buffer])
         avg_reward = rewards.mean().item()
