@@ -4,7 +4,6 @@ from typing import Iterator
 import torch
 from reasoning_gym.dataset import ProceduralDataset
 from reasoning_gym.utils import SYSTEM_PROMPTS
-from rich.console import Console
 from torch.utils.data import DataLoader
 from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
 
@@ -31,8 +30,6 @@ class TransformerRolloutEngine:
         tokenizer: AutoTokenizer,
         ref_model: AutoModelForCausalLM | None,
         val_model: AutoModelForCausalLM | None,
-        cpu_device: torch.device,
-        console: Console,
     ):
         self.cfg = cfg
         self.dataset = dataset
@@ -40,8 +37,8 @@ class TransformerRolloutEngine:
         self.tokenizer = tokenizer
         self.ref_model = ref_model
         self.val_model = val_model
-        self.cpu_device = cpu_device
-        self.console = console
+
+        self.cpu_device = torch.device("cpu")
 
         self.tokenizer.pad_token_id = (
             tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id
@@ -94,7 +91,7 @@ class TransformerRolloutEngine:
 
             buffer.add(exp)
 
-        print_rollout_sample(self.console, self.tokenizer, buffer)
+        print_rollout_sample(buffer, self.tokenizer)
         return buffer
 
     def _generate_experience(self, prompts: list[dict]) -> Experience:

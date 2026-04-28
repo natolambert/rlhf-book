@@ -13,7 +13,6 @@ import time
 
 import torch
 import torch.optim as optim
-from rich.console import Console
 from torch.nn.utils import clip_grad_norm_
 from torch.utils.data import DataLoader
 
@@ -39,7 +38,6 @@ from .utils import (
 
 def main(cfg: Config):
     seed_everything(cfg.seed)
-    console = Console()
 
     cpu_device = torch.device("cpu")
     if torch.cuda.is_available():
@@ -60,8 +58,6 @@ def main(cfg: Config):
         tokenizer=tokenizer,
         ref_model=ref_model,
         val_model=val_model,
-        cpu_device=cpu_device,
-        console=console,
     )
     objective = get_loss_objective(
         loss=cfg.loss,
@@ -85,11 +81,11 @@ def main(cfg: Config):
         wandb.init(mode="disabled")
     else:
         wandb.init(project=wandb_project, name=wandb_run_name, config=vars(cfg))
-    print_model_info(console, model)
+    print_model_info(model)
 
     start_time = time.time()
     for step, replay_buffer in enumerate(rollout_engine):
-        print_step_header(console, step=step, total=len(rollout_engine))
+        print_step_header(step=step, total=len(rollout_engine))
         model.eval()
         if val_model:
             val_model.eval()
@@ -113,7 +109,7 @@ def main(cfg: Config):
             collate_fn=join_experiences_batch,
         )
 
-        with progress_bar(console) as progress:
+        with progress_bar() as progress:
             task = progress.add_task("Training", total=len(experience_sampler))
 
             optimizer.zero_grad(set_to_none=True)

@@ -46,6 +46,9 @@ from .loss import (
 )
 
 
+console = Console()
+
+
 def seed_everything(seed: int) -> None:
     """Set all random seeds for reproducibility."""
     random.seed(seed)
@@ -325,12 +328,12 @@ def compute_rewards(
     return combined_rewards, correctness_rewards
 
 
-def print_step_header(console: Console, step: int, total: int) -> None:
+def print_step_header(step: int, total: int) -> None:
     """Print a header for the current training step."""
     console.rule(f"[bold cyan]STEP {step + 1}/{total}[/bold cyan]", style="cyan")
 
 
-def progress_bar(console: Console) -> Progress:
+def progress_bar() -> Progress:
     """Create a rich progress bar."""
     return Progress(
         SpinnerColumn(),
@@ -344,7 +347,7 @@ def progress_bar(console: Console) -> Progress:
     )
 
 
-def print_model_info(console: Console, model) -> None:
+def print_model_info(model) -> None:
     """Print model configuration information."""
     console.print(
         Panel(
@@ -357,7 +360,7 @@ def print_model_info(console: Console, model) -> None:
     )
 
 
-def print_rollout_sample(console: Console, tokenizer, buf: ReplayBuffer) -> None:
+def print_rollout_sample(buf: ReplayBuffer, tokenizer) -> None:
     """Print step-level avg reward / correctness plus one randomly sampled experience."""
     if len(buf) == 0:
         return
