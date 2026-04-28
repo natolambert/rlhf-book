@@ -19,7 +19,7 @@ from torch.utils.data import DataLoader
 
 from .buffer import Experience, join_experiences_batch
 from .config import Config, load_config
-from .rollout import TransformerRolloutEngine
+from .rollout import RolloutEngine
 from .utils import (
     compute_log_probs,
     compute_values,
@@ -50,7 +50,7 @@ def main(cfg: Config):
     model, tokenizer = load_model(cfg.model_name, model_device)
     ref_model = get_ref_model(cfg.model_name, ref_model_device, cfg.beta)
     val_model = get_val_model(cfg.model_name, val_model_device, cfg.loss)
-    rollout_engine = TransformerRolloutEngine(
+    rollout_engine = RolloutEngine(
         cfg=cfg,
         dataset=dataset,
         model=model,

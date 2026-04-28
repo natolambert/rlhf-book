@@ -18,7 +18,7 @@ from .utils import (
 )
 
 
-class TransformerRolloutEngine:
+class RolloutEngine:
     """Iterable engine that yields one ReplayBuffer per training step."""
 
     def __init__(
