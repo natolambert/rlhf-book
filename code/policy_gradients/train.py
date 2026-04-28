@@ -146,7 +146,6 @@ def main(cfg: Config):
 
 
 def main_cli():
-    """CLI entry point."""
     parser = argparse.ArgumentParser(description="Train policy gradient models for RLHF")
     parser.add_argument("--config", type=str, required=True, help="Path to YAML config file")
     args = parser.parse_args()

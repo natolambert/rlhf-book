@@ -23,8 +23,8 @@ class Experience:
     - log_probs_old: Log probabilities from the rollout policy
     - log_probs_ref: Log probabilities from the reference policy (for KL)
     - values_old: Value estimates (for PPO)
-    - rewards: Scalar reward assigned to the generated completion before
-      advantage/log_prob fields are filled.
+    - rewards: Full scalar reward for the generated completion
+    - correctness: Scalar correctness signal for the completion
     """
 
     sequence_ids: torch.Tensor
