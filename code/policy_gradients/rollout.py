@@ -87,7 +87,8 @@ class TransformerRolloutEngine:
             with torch.no_grad():
                 exp = self._generate_experience(entry)
                 exp = self._filter(exp)
-            buffer.add(exp)
+            if exp is not None:
+                buffer.add(exp)
 
         print_rollout_sample(buffer, self.tokenizer)
         return buffer
@@ -161,34 +162,15 @@ class TransformerRolloutEngine:
             advantages=advantages,
         ).to(self.cpu_device)
 
-    def _filter(self, exp: Experience) -> Experience:
+    def _filter(self, exp: Experience) -> Experience | None:
         if self.cfg.loss == "dapo":
             return self._dapo_filter(exp)
         return exp
 
-    def _dapo_filter(self, exp: Experience) -> Experience:
-        """Drop groups of num_rollouts where every completion has min or max correctness."""
-        group_size = self.cfg.num_rollouts
-        num_groups = exp.correctness.shape[0] // group_size
-
-        correctness_grouped = exp.correctness.view(num_groups, group_size)
-        all_min = (correctness_grouped == self.cfg.accuracy_min_reward).all(dim=1)
-        all_max = (correctness_grouped == self.cfg.accuracy_max_reward).all(dim=1)
-        valid = ~(all_min | all_max)
-
-        def slice_field(t: torch.Tensor | None) -> torch.Tensor | None:
-            if t is None:
-                return None
-            return t.view(num_groups, group_size, *t.shape[1:])[valid].reshape(-1, *t.shape[1:])
-
-        return Experience(
-            sequence_ids=slice_field(exp.sequence_ids),
-            attention_mask=slice_field(exp.attention_mask),
-            action_mask=slice_field(exp.action_mask),
-            rewards=slice_field(exp.rewards),
-            correctness=slice_field(exp.correctness),
-            log_probs_old=slice_field(exp.log_probs_old),
-            log_probs_ref=slice_field(exp.log_probs_ref),
-            values_old=slice_field(exp.values_old),
-            advantages=slice_field(exp.advantages),
-        )
+    def _dapo_filter(self, exp: Experience) -> Experience | None:
+        """Drop the group if every completion has min or max correctness."""
+        all_min = (exp.correctness == self.cfg.accuracy_min_reward).all()
+        all_max = (exp.correctness == self.cfg.accuracy_max_reward).all()
+        if all_min or all_max:
+            return None
+        return exp
