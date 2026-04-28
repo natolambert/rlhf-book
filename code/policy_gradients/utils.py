@@ -395,7 +395,7 @@ def print_rollout_sample(buf: ReplayBuffer, tokenizer) -> None:
     table.add_column("Label", style="dim", width=12)
     table.add_column("Content")
     table.add_row("User:", user_part)
-    table.add_row("Completion:", preview(completion))
+    table.add_row("Assistant:", preview(completion))
     table.add_row("Correctness:", f"{correctness:.2f}")
     console.print(Panel(table, title="[bold cyan]Sample[/bold cyan]", border_style="dim"))
     console.print()
