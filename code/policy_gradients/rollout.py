@@ -79,7 +79,8 @@ class TransformerRolloutEngine:
             self.val_model.eval()
 
         buffer = ReplayBuffer()
-        for _ in range(self.cfg.prompts_per_step):
+        expected = self.cfg.prompts_per_step * self.cfg.num_rollouts
+        while len(buffer) < expected:
             entry = next(self._entries, None)
             if entry is None:
                 break
