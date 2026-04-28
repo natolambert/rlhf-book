@@ -1,4 +1,3 @@
-from itertools import islice
 from typing import Iterator
 
 import torch
@@ -62,7 +61,7 @@ class TransformerRolloutEngine:
             drop_last=True,
             collate_fn=lambda x: x,
         )
-        self._prompts = (prompt for batch in self._dataloader for prompt in batch)
+        self._entries = (entry for batch in self._dataloader for entry in batch)
 
     def __len__(self) -> int:
         return len(self._dataloader)
@@ -76,26 +75,21 @@ class TransformerRolloutEngine:
 
     def _step(self) -> ReplayBuffer:
         buffer = ReplayBuffer()
-        expected = self.cfg.prompts_per_step * self.cfg.num_rollouts
-
-        while len(buffer) < expected:
-            remaining = expected - len(buffer)
-            n_prompts = remaining // self.cfg.num_rollouts
-            prompts = list(islice(self._prompts, n_prompts))
-            if not prompts:
+        for _ in range(self.cfg.prompts_per_step):
+            entry = next(self._entries, None)
+            if entry is None:
                 break
-
             with torch.no_grad():
-                exp = self._generate_experience(prompts)
+                exp = self._generate_experience(entry)
                 exp = self._filter(exp)
-
             buffer.add(exp)
 
         print_rollout_sample(buffer, self.tokenizer)
         return buffer
 
-    def _generate_experience(self, prompts: list[dict]) -> Experience:
-        entries = [p for p in prompts for _ in range(self.cfg.num_rollouts)]
+    def _generate_experience(self, entries: dict | list[dict]) -> Experience:
+        entries = [entries] if isinstance(entries, dict) else entries
+        entries = [e for e in entries for _ in range(self.cfg.num_rollouts)]
 
         message_templates = [
             self.tokenizer.apply_chat_template(
