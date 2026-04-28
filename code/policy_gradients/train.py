@@ -112,8 +112,7 @@ def main(cfg: Config):
             accumulated_loss = 0.0
 
             for idx, exp in enumerate(experience_sampler):
-                exp: Experience
-                exp = exp.to(model.device)
+                exp: Experience = exp.to(model.device)
 
                 log_probs = compute_log_probs(model, exp.sequence_ids, exp.attention_mask)
                 values = compute_values(val_model, exp.sequence_ids, exp.attention_mask)
