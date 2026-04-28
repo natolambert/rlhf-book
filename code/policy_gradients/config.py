@@ -99,6 +99,9 @@ class Config(BaseModel):
     accuracy_min_reward: float = 0.0
     accuracy_max_reward: float = 1.0
 
+    # Reward shaping
+    format_weight: float = 0.5
+
     # KL penalty (optional, for REINFORCE/RLOO/GRPO when beta > 0)
     beta: float = 0.0
     kl_estimator: str = "kl3"

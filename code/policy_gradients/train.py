@@ -11,7 +11,6 @@ import argparse
 import os
 import platform
 import random
-import re
 import time
 from typing import Any
 
@@ -20,14 +19,14 @@ import reasoning_gym as rg
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import wandb
 from reasoning_gym.composite import DatasetSpec
 from reasoning_gym.dataset import ProceduralDataset
-from reasoning_gym.utils import extract_answer
 from rich.console import Console
 from torch.nn.utils import clip_grad_norm_
 from torch.utils.data import DataLoader
 from transformers import AutoModelForCausalLM, AutoTokenizer
+
+import wandb
 
 from .algorithms import compute_log_probs, compute_values
 from .buffer import Experience, ReplayBuffer, join_experiences_batch
@@ -104,7 +103,7 @@ def get_ref_model(model_name: str, device_map: Any, beta: float):
 
 
 def get_val_model(model_name: str, device_map: Any, loss: str, gradient_checkpointing: bool = True):
-    """Load value model for PPO (only if loss == 'ppo')."""
+    """Load value model."""
     if loss not in ["ppo"]:
         return None
     val_model, _ = load_model(model_name, device_map, gradient_checkpointing)
@@ -133,110 +132,6 @@ def get_loss_objective(loss: str, **kwargs) -> nn.Module:
     raise ValueError(f"Unsupported loss type: {loss}")
 
 
-def _correctness_reward(
-    dataset: ProceduralDataset,
-    completions: list[str],
-    entries: list[dict],
-) -> list[float]:
-    """Compute raw correctness rewards without DAPO length penalties."""
-    return [
-        score_correctness_answer(dataset=dataset, completion=completion, entry=entry)
-        for completion, entry in zip(completions, entries, strict=True)
-    ]
-
-
-def _apply_dapo_length_penalty(
-    rewards: list[float],
-    lengths: list[int],
-    cfg: Config,
-    console: Console,
-) -> list[float]:
-    """
-    For DAPO, apply an overlong penalty based on completion length:
-    - no penalty when length <= l_max - l_cache
-    - linear penalty in the buffer region
-    - full penalty of -1 when length > l_max
-    Apply DAPO overlong penalties to answer-correctness rewards.
-    """
-    return [
-        reward
-        + dapo_length_penalty(
-            completion_len=completion_len,
-            l_cache=cfg.l_cache,
-            l_max=cfg.l_max,
-            console=console,
-        )
-        for reward, completion_len in zip(rewards, lengths, strict=True)
-    ]
-
-
-def dapo_length_penalty(completion_len: int, l_cache: int, l_max: int, console: Console) -> float:
-    """Compute DAPO overlong penalty based on completion length."""
-    safe_len = l_max - l_cache
-    if completion_len <= safe_len:
-        return 0.0
-    if completion_len <= l_max:
-        penalty = (safe_len - completion_len) / l_cache
-        console.print(
-            f"DAPO overlong penalty: {completion_len=}, {safe_len=}, {l_cache=}, {penalty=}",
-            style="bold yellow",
-        )
-        return penalty
-    penalty = -1.0
-    console.print(
-        f"DAPO overlong penalty: {completion_len=} > {l_max=}, {penalty=}",
-        style="bold red",
-    )
-    return penalty
-
-
-def score_correctness_answer(dataset: ProceduralDataset, completion: str, entry: dict) -> float:
-    """Compute raw answer correctness without shaping penalties."""
-    answer = extract_answer(completion)
-    return float(dataset.score_answer(answer, entry))
-
-
-def _format_reward(completions: list[str], **kwargs) -> list[float]:
-    """Compute format reward based on presence of thinking/answer tags."""
-
-    def count_tags(text: str) -> float:
-        count = 0.0
-        if re.search(r"\s*<think>\s*", text):
-            count += 0.25
-        if re.search(r"\s*</think>\s*", text):
-            count += 0.25
-        if re.search(r"\s*<answer>\s*", text):
-            count += 0.25
-        if re.search(r"\s*</answer>\s*", text):
-            count += 0.25
-        return count
-
-    return [count_tags(c) for c in completions]
-
-
-def compute_rewards(
-    dataset: ProceduralDataset,
-    completions: list[str],
-    entries: list[dict],
-    cfg: Config,
-    lengths: list[int],
-    console: Console,
-    format_weight: float = 0.5,
-) -> tuple[list[float], list[float]]:
-    """Compute training rewards and raw correctness rewards for filtering."""
-    correctness_rewards = _correctness_reward(dataset, completions, entries)
-    if cfg.loss == "dapo":
-        accuracy_rewards = _apply_dapo_length_penalty(correctness_rewards, lengths, cfg, console)
-    else:
-        accuracy_rewards = correctness_rewards
-    format_rewards = _format_reward(completions)
-    combined_rewards = [
-        acc + format_weight * fmt for acc, fmt in zip(accuracy_rewards, format_rewards, strict=True)
-    ]
-    # In DAPO, the correctness rewards are going to be used to filter too easy or hard problems
-    return combined_rewards, correctness_rewards
-
-
 def create_dataset(cfg: Config) -> ProceduralDataset:
     """Create the training dataset from config."""
     specs = [DatasetSpec(name=s.name, weight=s.weight, config=s.config) for s in cfg.data.specs]
@@ -244,11 +139,9 @@ def create_dataset(cfg: Config) -> ProceduralDataset:
 
 
 def main(cfg: Config):
-    """Main training loop."""
     seed_everything(cfg.seed)
     console = Console()
 
-    # Print attention implementation info
     attn_impl = get_attn_implementation()
     console.print(f"[dim]Using attention implementation: {attn_impl}[/dim]")
 
@@ -269,11 +162,9 @@ def main(cfg: Config):
         drop_last=True,
         collate_fn=lambda x: x,
     )
-    model, tokenizer = load_model(cfg.model_name, model_device, gradient_checkpointing=True)
+    model, tokenizer = load_model(cfg.model_name, model_device)
     ref_model = get_ref_model(cfg.model_name, ref_model_device, cfg.beta)
-    val_model = get_val_model(
-        cfg.model_name, val_model_device, cfg.loss, gradient_checkpointing=True
-    )
+    val_model = get_val_model(cfg.model_name, val_model_device, cfg.loss)
     rollout_engine = TransformerRolloutEngine(
         tokenizer=tokenizer,
         cfg=cfg,
@@ -329,7 +220,6 @@ def main(cfg: Config):
                 dataset=dataset,
                 dataloader_iter=dataloader_iter,
                 rollout_engine=rollout_engine,
-                compute_rewards=compute_rewards,
                 console=console,
                 replay_buffer=replay_buffer,
                 rollout_rewards=rollout_rewards,
@@ -372,37 +262,13 @@ def main(cfg: Config):
             optimizer.zero_grad(set_to_none=True)
             accumulated_loss = 0.0
 
-            for batch_idx, experience in enumerate(experience_sampler):
-                experience: Experience
-                experience = experience.to(model.device)
+            for batch_idx, exp in enumerate(experience_sampler):
+                exp: Experience
+                exp = exp.to(model.device)
 
-                # Compute loss
-                if experience.log_probs_old is None:
-                    raise ValueError("Expected `experience.log_probs_old` from rollout.")
-                if experience.advantages is None:
-                    raise ValueError("Expected `experience.advantages` from rollout.")
-                if cfg.loss == "ppo" and experience.values_old is None:
-                    raise ValueError("PPO requires `experience.values_old` from rollout.")
-
-                # New policy log-probs (differentiate through this).
-                log_probs = compute_log_probs(
-                    model, experience.sequence_ids, experience.attention_mask
-                )
-                if log_probs is None:
-                    raise ValueError(
-                        "compute_log_probs returned None, but a policy model is required."
-                    )
-
-                # PPO also needs current values (differentiate through value head).
-                values = None
-                if cfg.loss == "ppo":
-                    values = compute_values(
-                        val_model, experience.sequence_ids, experience.attention_mask
-                    )
-                    if values is None:
-                        raise ValueError("PPO requires a value model.")
-
-                loss = objective(log_probs=log_probs, experience=experience, values=values)
+                log_probs = compute_log_probs(model, exp.sequence_ids, exp.attention_mask)
+                values = compute_values(val_model, exp.sequence_ids, exp.attention_mask)
+                loss = objective(log_probs=log_probs, experience=exp, values=values)
                 if not loss.isfinite():
                     continue
                 scaled_loss = loss / cfg.batch_acc

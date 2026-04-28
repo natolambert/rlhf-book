@@ -10,7 +10,6 @@ from pathlib import Path
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
-import wandb
 from datasets import load_dataset
 from rich.console import Console
 from rich.panel import Panel
@@ -18,6 +17,7 @@ from rich.table import Table
 from torch.nn.utils import clip_grad_norm_
 from torch.utils.data import DataLoader, Dataset
 
+import wandb
 from policy_gradients.train import get_attn_implementation, load_model, seed_everything
 from policy_gradients.utils import print_model_info, print_step_header, progress_bar
 

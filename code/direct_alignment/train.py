@@ -21,11 +21,12 @@ from pathlib import Path
 
 import numpy as np
 import torch
-import wandb
 from rich.console import Console
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 from torch.nn.utils import clip_grad_norm_
 from transformers import AutoModelForCausalLM, AutoTokenizer
+
+import wandb
 
 from .config import Config, load_config
 from .data import PreferenceBatch, create_dataloader

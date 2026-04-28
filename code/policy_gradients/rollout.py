@@ -1,15 +1,87 @@
+import re
 from itertools import batched  # Requires Python 3.12+
-from typing import Any, Callable, Iterator
+from typing import Any, Iterator
 
 import torch
 from reasoning_gym.dataset import ProceduralDataset
-from reasoning_gym.utils import SYSTEM_PROMPTS
+from reasoning_gym.utils import SYSTEM_PROMPTS, extract_answer
 from rich.console import Console
 from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
 
 from .algorithms import apply_reward_kl, compute_advantages, compute_log_probs, compute_values
 from .buffer import Experience, ReplayBuffer, join_experiences_batch
 from .config import Config
+
+
+def _correctness_reward(
+    dataset: ProceduralDataset,
+    completions: list[str],
+    entries: list[dict],
+) -> list[float]:
+    """Compute raw reward scores from the environment"""
+
+    def score_correctness_answer(dataset: ProceduralDataset, completion: str, entry: dict) -> float:
+        answer = extract_answer(completion)
+        return float(dataset.score_answer(answer, entry))
+
+    return [
+        score_correctness_answer(dataset=dataset, completion=completion, entry=entry)
+        for completion, entry in zip(completions, entries, strict=True)
+    ]
+
+
+def _response_penalties(lengths: list[int], cfg: Config) -> list[float]:
+    """Compute penalties of responses (e.g. based on length)"""
+
+    def dapo_length_penalty(completion_len: int, l_cache: int, l_max: int) -> float:
+        safe_len = l_max - l_cache
+        if completion_len <= safe_len:
+            return 0.0
+        if completion_len <= l_max:
+            return (safe_len - completion_len) / l_cache
+        return -1.0
+
+    if cfg.loss == "dapo":
+        return [dapo_length_penalty(length, cfg.l_cache, cfg.l_max) for length in lengths]
+    return [0 for _ in lengths]
+
+
+def _format_reward(completions: list[str]) -> list[float]:
+    """Compute format reward based on presence of thinking/answer tags."""
+
+    def count_tags(text: str) -> float:
+        count = 0.0
+        if re.search(r"\s*<think>\s*", text):
+            count += 0.25
+        if re.search(r"\s*</think>\s*", text):
+            count += 0.25
+        if re.search(r"\s*<answer>\s*", text):
+            count += 0.25
+        if re.search(r"\s*</answer>\s*", text):
+            count += 0.25
+        return count
+
+    return [count_tags(c) for c in completions]
+
+
+def compute_rewards(
+    dataset: ProceduralDataset,
+    completions: list[str],
+    entries: list[dict],
+    cfg: Config,
+    lengths: list[int],
+) -> tuple[list[float], list[float]]:
+    """Compute training rewards and raw correctness rewards for filtering."""
+    correctness_rewards = _correctness_reward(dataset, completions, entries)
+    response_penalties = _response_penalties(lengths, cfg)
+    format_rewards = _format_reward(completions)
+    combined_rewards = [
+        acc + pen + cfg.format_weight * fmt
+        for acc, pen, fmt in zip(
+            correctness_rewards, response_penalties, format_rewards, strict=True
+        )
+    ]
+    return combined_rewards, correctness_rewards
 
 
 class TransformerRolloutEngine:
@@ -45,7 +117,6 @@ class TransformerRolloutEngine:
         model: AutoModelForCausalLM,
         entries: list[dict],
         dataset: ProceduralDataset,
-        reward_fn: Callable,
         console: Console,
         rollout_rewards: list[torch.Tensor],
     ) -> ReplayBuffer | None:
@@ -69,22 +140,25 @@ class TransformerRolloutEngine:
             padding=True,
             return_attention_mask=True,
         ).to(model.device)
+
         # 2. Generate responses
         sequence_ids = model.generate(**model_inputs, generation_config=self.generation_config)
         completion_ids = sequence_ids[:, model_inputs["input_ids"].shape[1] :]
         completions = self.tokenizer.batch_decode(completion_ids, skip_special_tokens=True)
+
         # 3. Obtain the generated tokens only
         action_mask = torch.zeros_like(sequence_ids, dtype=torch.bool)
         action_mask[:, model_inputs["input_ids"].shape[1] :] = True
         action_mask[sequence_ids == self.tokenizer.pad_token_id] = False
         action_mask = action_mask[:, 1:]
-        # Per-completion generated length
         lengths = action_mask.sum(dim=1).tolist()
 
-        rewards_list, correctness_rewards = reward_fn(
-            dataset, completions, entries, self.cfg, lengths, console
+        # 4. Compute rewards
+        full_rewards, correctness_rewards = compute_rewards(
+            dataset, completions, entries, self.cfg, lengths
         )
-        rewards = torch.tensor(rewards_list, dtype=torch.float32, device=model.device).unsqueeze(-1)
+        rewards = torch.tensor(full_rewards, dtype=torch.float32, device=model.device).unsqueeze(-1)
+
         # 5. Compute attention mask
         attention_mask = sequence_ids != self.tokenizer.pad_token_id
 
@@ -107,8 +181,6 @@ class TransformerRolloutEngine:
                 rewards=rewards,
             )
 
-        if rollout_output.rewards is None:
-            raise ValueError("Rollout output must include rewards before computing advantages.")
         rollout_rewards.append(rollout_output.rewards.cpu())
 
         log_probs_old = compute_log_probs(
@@ -244,7 +316,6 @@ def collect_rollout_batch(
     rollout_batch: list[dict],
     dataset: ProceduralDataset,
     rollout_engine: TransformerRolloutEngine,
-    compute_rewards: Callable,
     console: Console,
     replay_buffer: ReplayBuffer,
     rollout_rewards: list[torch.Tensor],
@@ -256,7 +327,6 @@ def collect_rollout_batch(
             model=model,
             entries=rollout_batch,
             dataset=dataset,
-            reward_fn=compute_rewards,
             console=console,
             rollout_rewards=rollout_rewards,
         )
@@ -280,7 +350,6 @@ def collect_rollouts_for_step(
     dataset: ProceduralDataset,
     dataloader_iter: Iterator[list[dict]],
     rollout_engine: TransformerRolloutEngine,
-    compute_rewards: Callable,
     console: Console,
     replay_buffer: ReplayBuffer,
     rollout_rewards: list[torch.Tensor],
@@ -305,7 +374,6 @@ def collect_rollouts_for_step(
                 rollout_batch=rollout_batch,
                 dataset=dataset,
                 rollout_engine=rollout_engine,
-                compute_rewards=compute_rewards,
                 console=console,
                 replay_buffer=replay_buffer,
                 rollout_rewards=rollout_rewards,
@@ -338,7 +406,6 @@ def collect_rollouts_for_step(
             rollout_batch=rollout_batch,
             dataset=dataset,
             rollout_engine=rollout_engine,
-            compute_rewards=compute_rewards,
             console=console,
             replay_buffer=replay_buffer,
             rollout_rewards=rollout_rewards,
