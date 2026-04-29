@@ -36,7 +36,8 @@ class Experience:
     values_old: torch.Tensor | None = None
     rewards: torch.Tensor | None = None
     correctness: torch.Tensor | None = None
-
+    format_rewards: torch.Tensor | None = None
+    
     def to(self, device: torch.device) -> Self:
         """Move all tensors to the specified device."""
         field_names = [f.name for f in fields(self)]

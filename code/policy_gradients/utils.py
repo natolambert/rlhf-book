@@ -317,7 +317,7 @@ def compute_rewards(
     lengths: list[int],
     dataset: ProceduralDataset,
     cfg: Config,
-) -> tuple[list[float], list[float]]:
+) -> tuple[list[float], list[float], list[float | int]]:
     """Compute training rewards and raw correctness rewards for filtering."""
     correctness_rewards = _correctness_reward(dataset, completions, entries)
     response_penalties = _response_penalties(lengths, cfg)
@@ -328,7 +328,7 @@ def compute_rewards(
             correctness_rewards, response_penalties, format_rewards, strict=True
         )
     ]
-    return combined_rewards, correctness_rewards
+    return combined_rewards, correctness_rewards, format_rewards
 
 
 def print_step_header(consumed: int, total: int) -> None:
