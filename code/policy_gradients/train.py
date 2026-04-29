@@ -83,16 +83,16 @@ def main(cfg: Config):
 
     start_time = time.time()
     for replay_buffer in rollout_engine:
-        rewards = torch.stack([e.rewards for e in replay_buffer.buffer])
-        correctness_rewards = torch.stack([e.correctness for e in replay_buffer.buffer])
-        format_rewards = torch.stack([e.format_rewards for e in replay_buffer.buffer])
-        avg_reward = rewards.mean().item()
-        avg_correctness_reward = correctness_rewards.mean().item()
-        avg_format_reward = format_rewards.mean().item()
-        hours = (time.time() - start_time) / 3600
-        wandb.log({"avg_reward": avg_reward, "hours": hours})
-        wandb.log({"avg_correctness_reward": avg_correctness_reward, "hours": hours})
-        wandb.log({"avg_format_reward": avg_format_reward, "hours": hours})
+        avg = lambda x: torch.stack([getattr(e, x) for e in replay_buffer.buffer]).mean().item()
+        wandb.log(
+            {
+                "avg_reward": avg("rewards"),
+                "avg_correctness_reward": avg("correctness"),
+                "avg_format_reward": avg("format_rewards"),
+                "avg_response_penalty": avg("response_penalties"),
+                "hours": (time.time() - start_time) / 3600,
+            }
+        )
 
         torch.cuda.empty_cache()
         model.train()
