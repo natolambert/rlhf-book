@@ -24,7 +24,6 @@ min_p: 0.0
 max_new_tokens: 512
 prompts_per_step: 16
 num_rollouts: 1  # for PPO num_rollouts should be 1
-rollout_batch_size: 8
 train_batch_size: 2
 batch_acc: 4
 max_norm: 1.0

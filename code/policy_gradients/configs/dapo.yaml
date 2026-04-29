@@ -40,7 +40,6 @@ max_new_tokens: 512
 # Training
 prompts_per_step: 4
 num_rollouts: 8
-rollout_batch_size: 8
 train_batch_size: 2
 batch_acc: 4
 max_norm: 1.0

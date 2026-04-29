@@ -155,6 +155,9 @@ def apply_reward_kl(
     """Apply KL penalty to rewards (for REINFORCE/RLOO/PPO)."""
     if not beta or loss not in ["ppo", "rloo", "reinforce"]:
         return rewards
+    log_probs = log_probs.to(rewards.device)
+    log_probs_ref = log_probs_ref.to(rewards.device)
+    action_mask = action_mask.to(rewards.device)
     kl_div = get_approx_kl(kl_estimator, log_probs, log_probs_ref, action_mask)
     kl_div = masked_mean(kl_div, mask=action_mask, dim=-1, keepdim=True)
     rewards = rewards - beta * kl_div

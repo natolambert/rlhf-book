@@ -61,17 +61,18 @@ class RolloutEngine:
             drop_last=True,
             collate_fn=lambda x: x,
         )
-        self._total = len(self._dataloader) * cfg.prompts_per_step
-        self._consumed = 0
-        self._entries = self._iter_entries()
 
-    def _iter_entries(self):
+    def _iter_entries(self) -> Iterator[dict]:
         for batch in self._dataloader:
             for entry in batch:
                 self._consumed += 1
                 yield entry
 
     def __iter__(self) -> Iterator[ReplayBuffer]:
+        self._consumed = 0
+        self._total = len(self._dataloader) * self.cfg.prompts_per_step
+        self._entries = self._iter_entries()
+
         while True:
             print_step_header(consumed=self._consumed, total=self._total)
             buffer = self._step()
@@ -99,9 +100,8 @@ class RolloutEngine:
 
         return buffer
 
-    def _generate_experience(self, entries: dict | list[dict]) -> Experience:
-        entries = [entries] if isinstance(entries, dict) else entries
-        entries = [e for e in entries for _ in range(self.cfg.num_rollouts)]
+    def _generate_experience(self, entry: dict) -> Experience:
+        entries = [entry for _ in range(self.cfg.num_rollouts)]
 
         device = self.model.device
         message_templates = [
