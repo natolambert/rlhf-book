@@ -25,6 +25,8 @@ class Experience:
     - values_old: Value estimates (for PPO)
     - rewards: Full scalar reward for the generated completion
     - correctness: Scalar correctness signal for the completion
+    - format: Scalar format-adherence reward for the completion
+    - penalties: Scalar length penalty applied to the completion
     """
 
     sequence_ids: torch.Tensor
@@ -36,8 +38,8 @@ class Experience:
     values_old: torch.Tensor | None = None
     rewards: torch.Tensor | None = None
     correctness: torch.Tensor | None = None
-    format_rewards: torch.Tensor | None = None
-    response_penalties: torch.Tensor | None = None
+    format: torch.Tensor | None = None
+    penalties: torch.Tensor | None = None
 
     def to(self, device: torch.device) -> Self:
         """Move all tensors to the specified device."""

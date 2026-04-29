@@ -88,8 +88,8 @@ def main(cfg: Config):
             {
                 "avg_reward": avg("rewards"),
                 "avg_correctness_reward": avg("correctness"),
-                "avg_format_reward": avg("format_rewards"),
-                "avg_response_penalty": avg("response_penalties"),
+                "avg_format_reward": avg("format"),
+                "avg_response_penalty": avg("penalties"),
                 "hours": (time.time() - start_time) / 3600,
             }
         )

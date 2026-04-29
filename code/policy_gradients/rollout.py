@@ -141,17 +141,13 @@ class RolloutEngine:
         attention_mask = sequence_ids != self.tokenizer.pad_token_id
         lens = action_mask.sum(dim=1).tolist()
 
-        rewards, correctness, format_rewards, response_penalties = compute_rewards(
+        rewards, correctness, format, penalties = compute_rewards(
             entries, completions, lens, self.dataset, self.cfg
         )
         rewards = torch.tensor(rewards, dtype=torch.float32, device=device).unsqueeze(-1)
         correctness = torch.tensor(correctness, dtype=torch.float32, device=device).unsqueeze(-1)
-        format_rewards = torch.tensor(format_rewards, dtype=torch.float32, device=device).unsqueeze(
-            -1
-        )
-        response_penalties = torch.tensor(
-            response_penalties, dtype=torch.float32, device=device
-        ).unsqueeze(-1)
+        format = torch.tensor(format, dtype=torch.float32, device=device).unsqueeze(-1)
+        penalties = torch.tensor(penalties, dtype=torch.float32, device=device).unsqueeze(-1)
 
         log_probs_old = compute_log_probs(self.model, sequence_ids, attention_mask)
         log_probs_ref = compute_log_probs(self.ref_model, sequence_ids, attention_mask)
@@ -176,8 +172,8 @@ class RolloutEngine:
             action_mask=action_mask,
             rewards=rewards,
             correctness=correctness,
-            format_rewards=format_rewards,
-            response_penalties=response_penalties,
+            format=format,
+            penalties=penalties,
             log_probs_old=log_probs_old,
             log_probs_ref=log_probs_ref,
             values_old=values_old,
