@@ -364,19 +364,12 @@ def print_model_info(model) -> None:
     )
 
 
-def print_rollout_sample(buf: ReplayBuffer, tokenizer) -> None:
-    """Print step-level avg reward / correctness plus one randomly sampled experience."""
+def print_rollout_sample(buf: ReplayBuffer, sample: dict) -> None:
+    """Print step-level avg reward / correctness plus one sampled rollout."""
     if len(buf) == 0:
         return
     avg_reward = torch.stack([e.rewards for e in buf.buffer]).mean().item()
     avg_correctness = torch.stack([e.correctness for e in buf.buffer]).mean().item()
-
-    exp = random.choice(buf.buffer)
-    target_ids = exp.sequence_ids[1:]
-    action = exp.action_mask.bool()
-    prompt = tokenizer.decode(target_ids[~action], skip_special_tokens=True)
-    completion = tokenizer.decode(target_ids[action], skip_special_tokens=True)
-    correctness = exp.correctness.item()
 
     console.print(
         Panel(
@@ -392,14 +385,11 @@ def print_rollout_sample(buf: ReplayBuffer, tokenizer) -> None:
             return text
         return text[:limit] + "[dim]... (truncated)[/dim]"
 
-    _, _, rest = prompt.partition("\nuser\n")
-    user_part = rest.partition("\nassistant\n")[0].rstrip() if rest else prompt
-
     table = Table(show_header=False, box=None, padding=(0, 1), show_edge=False)
     table.add_column("Label", style="dim", width=12)
     table.add_column("Content")
-    table.add_row("User:", user_part)
-    table.add_row("Assistant:", preview(completion))
-    table.add_row("Correctness:", f"{correctness:.2f}")
+    table.add_row("Question:", sample["question"])
+    table.add_row("Oracle:", sample["answer"])
+    table.add_row("Completion:", preview(sample["completion"]))
     console.print(Panel(table, title="[bold cyan]Sample[/bold cyan]", border_style="dim"))
     console.print()

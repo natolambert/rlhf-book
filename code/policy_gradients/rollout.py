@@ -1,3 +1,4 @@
+import random
 from typing import Iterator
 
 import torch
@@ -78,7 +79,7 @@ class RolloutEngine:
             buffer = self._step()
             if len(buffer) == 0:
                 return
-            print_rollout_sample(buffer, self.tokenizer)
+            print_rollout_sample(buffer, self.print_sample)
             yield buffer
 
     def _step(self) -> ReplayBuffer:
@@ -126,6 +127,12 @@ class RolloutEngine:
         sequence_ids = self.model.generate(**model_inputs, generation_config=self.generation_config)
         completion_ids = sequence_ids[:, model_inputs["input_ids"].shape[1] :]
         completions = self.tokenizer.batch_decode(completion_ids, skip_special_tokens=True)
+
+        self.print_sample = {
+            "question": entry["question"],
+            "answer": str(entry["answer"]),
+            "completion": random.choice(completions),
+        }
 
         action_mask = torch.zeros_like(sequence_ids, dtype=torch.bool)
         action_mask[:, model_inputs["input_ids"].shape[1] :] = True
