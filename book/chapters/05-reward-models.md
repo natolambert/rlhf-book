@@ -333,9 +333,9 @@ Process Reward Models require supervision at the end of each reasoning step, and
 
 Following [@lightman2023let], a binary-labeled PRM is commonly optimized with a per-step cross-entropy loss:
 
-$$\mathcal{L}_{\text{PRM}}(\theta) = - \mathbb{E}_{(x, s) \sim \mathcal{D}} \left[ \sum_{i=1}^{K} y_{s_i} \log r_\theta(s_i \mid x, s_{\lt i}) + (1 - y_{s_i}) \log \left(1 - r_\theta(s_i \mid x, s_{\lt i})\right) \right] $$ {#eq:prm_loss}
+$$\mathcal{L}_{\text{PRM}}(\theta) = - \mathbb{E}_{(x, s) \sim \mathcal{D}} \left[ \sum_{i=1}^{K} y_{s_i} \log r_\theta(s_i \mid x, s_{< i}) + (1 - y_{s_i}) \log \left(1 - r_\theta(s_i \mid x, s_{< i})\right) \right] $$ {#eq:prm_loss}
 
-where $s$ is a sampled chain-of-thought with $K$ annotated steps, $y_{s_i} \in \{0,1\}$ denotes whether the $i$-th step is correct, and $r_\theta(s_i \mid x, s_{\lt i})$ is the PRM's predicted probability that step $s_i$ is valid conditioned on the original prompt $x$ and all previous steps $s_{\lt i}$.
+where $s$ is a sampled chain-of-thought with $K$ annotated steps, $y_{s_i} \in \{0,1\}$ denotes whether the $i$-th step is correct, and $r_\theta(s_i \mid x, s_{< i})$ is the PRM's predicted probability that step $s_i$ is valid conditioned on the original prompt $x$ and all previous steps $s_{< i}$.
 
 Here's an example of how this per-step label can be packaged in a trainer, from HuggingFace's TRL (Transformer Reinforcement Learning) [@vonwerra2022trl]:
 
