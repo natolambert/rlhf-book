@@ -368,13 +368,14 @@ def print_rollout_sample(buf: ReplayBuffer, sample: dict) -> None:
     """Print step-level avg reward / correctness plus one sampled rollout."""
     if len(buf) == 0:
         return
-    avg_reward = torch.stack([e.rewards for e in buf.buffer]).mean().item()
-    avg_correctness = torch.stack([e.correctness for e in buf.buffer]).mean().item()
+    avg = lambda x: torch.stack([getattr(e, x) for e in buf.buffer]).mean().item()
 
     console.print(
         Panel(
-            f"[bold green]Avg Reward:[/bold green] {avg_reward:.4f}    "
-            f"[bold green]Avg Correctness:[/bold green] {avg_correctness:.4f}",
+            f"[bold green]Avg Reward:[/bold green] {avg('rewards'):.4f}    "
+            f"[bold green]Avg Correctness:[/bold green] {avg('correctness'):.4f}    "
+            f"[bold green]Avg Format:[/bold green] {avg('format'):.4f}    "
+            f"[bold green]Avg Penalty:[/bold green] {avg('penalties'):.4f}",
             title="[bold cyan]Rollout Results[/bold cyan]",
             border_style="cyan",
         )
