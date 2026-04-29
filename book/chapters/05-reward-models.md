@@ -266,7 +266,9 @@ class OutcomeRewardModel(nn.Module):
         """
         input_ids contains a full prompt+completion sequence.
         labels is token-aligned: prompt tokens are -100, and each completion
-        token repeats the sequence outcome label (1=correct, 0=incorrect).
+         token repeats the sequence outcome label (1=correct, 0=incorrect).
+        If labels=None, this is an inference-only forward pass and the loss is
+         returned as None.
         """
         outputs = self.lm(
             input_ids=input_ids,
@@ -279,6 +281,9 @@ class OutcomeRewardModel(nn.Module):
         # One scalar logit per token: (batch, seq_len)
         logits = self.head(hidden).squeeze(-1)
 
+        # Inference-only forward pass: no loss is computed.
+        if labels is None:
+            return None, logits
         # Only compute loss on completion tokens (labels 0 or 1)
         # Prompt tokens have labels = -100
         mask = labels != -100
@@ -368,6 +373,8 @@ class ProcessRewardModel(nn.Module):
          newline or other special marker rather than batch padding.
         labels will be a list of labels, True, False, and Neutral (3 labels) which
          will be predicted by the model.
+        If labels=None, this is an inference-only forward pass and the loss is
+         returned as None.
         """
         outputs = self.lm(
             input_ids=input_ids,
@@ -380,6 +387,9 @@ class ProcessRewardModel(nn.Module):
         # One logit vector per token: (batch, seq_len, num_classes)
         logits = self.head(hidden)
 
+        # Inference-only forward pass: no loss is computed.
+        if labels is None:
+            return None, logits
         # Only compute loss at step boundaries (where labels != -100)
         # Labels map: -1 -> 0, 0 -> 1, 1 -> 2 (class indices)
         mask = labels != -100
