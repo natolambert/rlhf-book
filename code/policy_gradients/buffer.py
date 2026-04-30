@@ -23,6 +23,10 @@ class Experience:
     - log_probs_old: Log probabilities from the rollout policy
     - log_probs_ref: Log probabilities from the reference policy (for KL)
     - values_old: Value estimates (for PPO)
+    - rewards: Full scalar reward for the generated completion
+    - correctness: Scalar correctness signal for the completion
+    - format: Scalar format-adherence reward for the completion
+    - penalties: Scalar length penalty applied to the completion
     """
 
     sequence_ids: torch.Tensor
@@ -32,6 +36,10 @@ class Experience:
     log_probs_old: torch.Tensor | None = None
     log_probs_ref: torch.Tensor | None = None
     values_old: torch.Tensor | None = None
+    rewards: torch.Tensor | None = None
+    correctness: torch.Tensor | None = None
+    format: torch.Tensor | None = None
+    penalties: torch.Tensor | None = None
 
     def to(self, device: torch.device) -> Self:
         """Move all tensors to the specified device."""

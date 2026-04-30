@@ -25,6 +25,10 @@ wheels/
 venv/
 ENV/
 
+# Local env files
+.env
+.envrc
+
 # uv
 .uv/
 uv.lock

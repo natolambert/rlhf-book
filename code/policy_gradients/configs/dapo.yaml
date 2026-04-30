@@ -7,18 +7,37 @@ data:
         min_word_len: 3
         max_word_len: 10
 
-loss: sapo
+loss: dapo
 model_name: Qwen/Qwen3-1.7B
-sapo_temp_pos: 1.0
-sapo_temp_neg: 1.05
-beta: 0.0  # KL penalty coefficient (0 = disabled, default for SAPO, set >0 to enable)
+
+# DAPO uses PPO-style clipping
+clip_eps_lo: 0.2
+# Clip higher
+clip_eps_hi: 0.28
+
+# Optional KL penalty
+beta: 0.0
 kl_estimator: kl3  # KL estimator: kl1, kl2, or kl3
+ref_model_device_id: 0
+
+# DAPO overlong penalty
+l_cache: 128
+l_max: 512
+
+# DAPO min and max reward
+accuracy_min_reward: 0.0
+accuracy_max_reward: 1.0
+
 lr: 5e-6
+
+# Generation
 temperature: 0.6
 top_p: 0.95
 top_k: 20
 min_p: 0.0
 max_new_tokens: 512
+
+# Training
 prompts_per_step: 4
 num_rollouts: 8
 train_batch_size: 2
@@ -26,5 +45,7 @@ batch_acc: 4
 max_norm: 1.0
 seed: 42
 model_device_id: 0
+
+# Logging
 wandb_project: rlhf-book
-wandb_run_name: sapo_spell_backwards
+wandb_run_name: dapo_spell_backward

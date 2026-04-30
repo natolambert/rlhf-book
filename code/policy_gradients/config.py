@@ -50,6 +50,7 @@ class Config(BaseModel):
 
         # Optional KL penalty (REINFORCE, RLOO, GRPO, etc.)
         beta: KL penalty coefficient (0 = disabled)
+        kl_estimator: KL estimator variant ('kl1', 'kl2', or 'kl3')
         ref_model_device_id: GPU for reference model (when beta > 0)
 
         # Generation
@@ -60,7 +61,6 @@ class Config(BaseModel):
         lr: Learning rate
         prompts_per_step: Prompts per training step
         num_rollouts: Rollouts per prompt (1 for REINFORCE/PPO, >1 for GRPO/RLOO)
-        rollout_batch_size: Batch size during generation
         train_batch_size: Batch size during training
         batch_acc: Gradient accumulation steps
         max_norm: Gradient clipping norm
@@ -90,8 +90,20 @@ class Config(BaseModel):
     sapo_temp_pos: float = 1.0
     sapo_temp_neg: float = 1.05
 
+    # DAPO-specific params (overlong length penalty)
+    l_cache: int = 256
+    l_max: int = 512
+
+    # DAPO-specific min and max rewards
+    accuracy_min_reward: float = 0.0
+    accuracy_max_reward: float = 1.0
+
+    # Reward shaping
+    format_weight: float = 0.5
+
     # KL penalty (optional, for REINFORCE/RLOO/GRPO when beta > 0)
     beta: float = 0.0
+    kl_estimator: str = "kl3"
     ref_model_device_id: int = 0
 
     # Generation params
@@ -105,7 +117,6 @@ class Config(BaseModel):
     lr: float = 5e-6
     prompts_per_step: int = 4
     num_rollouts: int = 8
-    rollout_batch_size: int = 8
     train_batch_size: int = 2
     batch_acc: int = 4
     max_norm: float = 1.0
@@ -117,13 +128,9 @@ class Config(BaseModel):
     wandb_run_name: str | None = None
 
     @model_validator(mode="after")
-    def validate_rollout_batch_size(self) -> "Config":
-        if self.num_rollouts > 1 and self.rollout_batch_size != self.num_rollouts:
-            raise ValueError("When num_rollouts > 1, rollout_batch_size must equal num_rollouts.")
-        if (self.prompts_per_step * self.num_rollouts) % self.rollout_batch_size != 0:
-            raise ValueError(
-                "prompts_per_step * num_rollouts must be divisible by rollout_batch_size."
-            )
+    def validate_config(self) -> "Config":
+        if self.kl_estimator not in ("kl1", "kl2", "kl3"):
+            raise ValueError("kl_estimator must be one of: 'kl1', 'kl2', 'kl3'.")
         return self
 
 

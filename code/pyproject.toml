@@ -90,7 +90,8 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W", "B", "C4"]
-ignore = ["E501", "B007", "F841"]
+ignore = ["E501", "B007", "F841", "E731", "B023"]
 
 [tool.ruff.lint.isort]
 lines-after-imports = 2
+known-third-party = ["wandb"]
