@@ -96,7 +96,7 @@ def main(cfg: Config):
                 "avg_correctness_reward": avg("correctness"),
                 "avg_format_reward": avg("format"),
                 "avg_response_penalty": avg("penalties"),
-                "avg_binary_reward": avg(lambda e: e.correctness * e.format),
+                "avg_binary_reward": avg(lambda e: e.correctness * (e.format == 1.0)),
                 "hours": (time.time() - start_time) / 3600,
             }
         )

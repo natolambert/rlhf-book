@@ -12,13 +12,13 @@ model_name: Qwen/Qwen3-1.7B
 beta: 0.0  # KL penalty coefficient (0 = disabled, set >0 to enable)
 kl_estimator: kl3  # KL estimator: kl1, kl2, or kl3
 lr: 5e-6
-temperature: 0.6
+temperature: 1.0
 top_p: 0.95
 top_k: 20
 min_p: 0.0
 max_new_tokens: 512
 prompts_per_step: 4
-num_rollouts: 8  
+num_rollouts: 16  
 train_batch_size: 2
 batch_acc: 4
 max_norm: 1.0
