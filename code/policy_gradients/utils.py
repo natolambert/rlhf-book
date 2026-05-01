@@ -41,6 +41,7 @@ from .loss import (
     PPOLoss,
     ReinforceLoss,
     SAPOLoss,
+    MaxRLLoss,
     get_approx_kl,
     masked_mean,
 )
@@ -134,6 +135,8 @@ def get_loss_objective(loss: str, **kwargs) -> nn.Module:
         return PPOLoss(**kwargs)
     elif loss == "dapo":
         return DAPOLoss(**kwargs)
+    elif loss == "maxrl":
+        return MaxRLLoss(**kwargs)
     raise ValueError(f"Unsupported loss type: {loss}")
 
 
