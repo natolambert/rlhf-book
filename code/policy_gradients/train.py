@@ -68,7 +68,9 @@ def main(cfg: Config):
         sapo_temp_pos=cfg.sapo_temp_pos,
         sapo_temp_neg=cfg.sapo_temp_neg,
     ).to(model.device)
-    params = list(model.parameters()) + (list(val_model.parameters()) if val_model else [])
+    params = list(model.parameters()) + (
+        list(val_model.parameters()) if val_model else []
+    )
     optimizer = optim.Adam(params, lr=cfg.lr)
 
     # wandb project can be set via env var WANDB_PROJECT or config file
@@ -83,13 +85,23 @@ def main(cfg: Config):
 
     start_time = time.time()
     for replay_buffer in rollout_engine:
-        avg = lambda x: torch.stack([getattr(e, x) for e in replay_buffer.buffer]).mean().item()
+        avg = (
+            lambda x: torch.stack(
+                [
+                    getattr(e, x) if isinstance(x, str) else x(e)
+                    for e in replay_buffer.buffer
+                ]
+            )
+            .mean()
+            .item()
+        )
         wandb.log(
             {
                 "avg_reward": avg("rewards"),
                 "avg_correctness_reward": avg("correctness"),
                 "avg_format_reward": avg("format"),
                 "avg_response_penalty": avg("penalties"),
+                "avg_binary_reward": avg(lambda e: e.correctness * e.format),
                 "hours": (time.time() - start_time) / 3600,
             }
         )
@@ -117,7 +129,9 @@ def main(cfg: Config):
             for idx, exp in enumerate(experience_sampler):
                 exp: Experience = exp.to(model.device)
 
-                log_probs = compute_log_probs(model, exp.sequence_ids, exp.attention_mask)
+                log_probs = compute_log_probs(
+                    model, exp.sequence_ids, exp.attention_mask
+                )
                 values = compute_values(val_model, exp.sequence_ids, exp.attention_mask)
                 loss = objective(log_probs=log_probs, experience=exp, values=values)
                 if not loss.isfinite():
@@ -127,7 +141,9 @@ def main(cfg: Config):
                 accumulated_loss += loss.item()
 
                 # Update weights every batch_acc steps
-                if (idx + 1) % cfg.batch_acc == 0 or (idx + 1) == len(experience_sampler):
+                if (idx + 1) % cfg.batch_acc == 0 or (idx + 1) == len(
+                    experience_sampler
+                ):
                     grad_norm = clip_grad_norm_(params, max_norm=cfg.max_norm)
                     optimizer.step()
                     optimizer.zero_grad(set_to_none=True)
@@ -136,16 +152,24 @@ def main(cfg: Config):
                     num_accumulated = min(cfg.batch_acc, (idx % cfg.batch_acc) + 1)
                     avg_loss = accumulated_loss / num_accumulated
                     hours = (time.time() - start_time) / 3600
-                    wandb.log({"loss": avg_loss, "grad_norm": grad_norm, "hours": hours})
-                    progress.update(task, advance=1, description=f"[dim]Loss: {avg_loss:.4f}[/dim]")
+                    wandb.log(
+                        {"loss": avg_loss, "grad_norm": grad_norm, "hours": hours}
+                    )
+                    progress.update(
+                        task, advance=1, description=f"[dim]Loss: {avg_loss:.4f}[/dim]"
+                    )
                     accumulated_loss = 0.0
                 else:
                     progress.update(task, advance=1)
 
 
 def main_cli():
-    parser = argparse.ArgumentParser(description="Train policy gradient models for RLHF")
-    parser.add_argument("--config", type=str, required=True, help="Path to YAML config file")
+    parser = argparse.ArgumentParser(
+        description="Train policy gradient models for RLHF"
+    )
+    parser.add_argument(
+        "--config", type=str, required=True, help="Path to YAML config file"
+    )
     args = parser.parse_args()
     cfg = load_config(args.config)
     main(cfg)

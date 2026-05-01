@@ -12,6 +12,7 @@
 # - CISPO (MiniMax, 2025)
 # - SAPO (Qwen Team, 2025)
 # - DAPO (Bytedance Team, 2025)
+# - MaxRL (Fahim, 2026)
 
 import torch
 import torch.nn as nn
@@ -97,7 +98,12 @@ class GRPOLoss(nn.Module):
     """
 
     def __init__(
-        self, clip_eps_lo: float, clip_eps_hi: float, beta: float, kl_estimator: str, **kwargs
+        self,
+        clip_eps_lo: float,
+        clip_eps_hi: float,
+        beta: float,
+        kl_estimator: str,
+        **kwargs,
     ) -> None:
         super().__init__()
         self.clip_eps_lo = clip_eps_lo
@@ -105,19 +111,25 @@ class GRPOLoss(nn.Module):
         self.beta = beta
         self.kl_estimator = kl_estimator
 
-    def forward(self, log_probs: torch.Tensor, experience: Experience, **kwargs) -> torch.Tensor:
+    def forward(
+        self, log_probs: torch.Tensor, experience: Experience, **kwargs
+    ) -> torch.Tensor:
         # Policy loss with clipping
         ratio = (log_probs - experience.log_probs_old).exp()
         unclipped_term = ratio * experience.advantages
         clipped_term = (
-            ratio.clamp(1 - self.clip_eps_lo, 1 + self.clip_eps_hi) * experience.advantages
+            ratio.clamp(1 - self.clip_eps_lo, 1 + self.clip_eps_hi)
+            * experience.advantages
         )
         policy_loss = -torch.min(unclipped_term, clipped_term)
 
         # Optional KL penalty
         if self.beta:
             kl_loss = get_approx_kl(
-                self.kl_estimator, log_probs, experience.log_probs_ref, experience.action_mask
+                self.kl_estimator,
+                log_probs,
+                experience.log_probs_ref,
+                experience.action_mask,
             )
         else:
             kl_loss = torch.tensor(0.0, device=log_probs.device, dtype=torch.float32)
@@ -134,7 +146,12 @@ class GSPOLoss(nn.Module):
     """
 
     def __init__(
-        self, clip_eps_lo: float, clip_eps_hi: float, beta: float, kl_estimator: str, **kwargs
+        self,
+        clip_eps_lo: float,
+        clip_eps_hi: float,
+        beta: float,
+        kl_estimator: str,
+        **kwargs,
     ) -> None:
         super().__init__()
         self.clip_eps_lo = clip_eps_lo
@@ -142,21 +159,30 @@ class GSPOLoss(nn.Module):
         self.beta = beta
         self.kl_estimator = kl_estimator
 
-    def forward(self, log_probs: torch.Tensor, experience: Experience, **kwargs) -> torch.Tensor:
+    def forward(
+        self, log_probs: torch.Tensor, experience: Experience, **kwargs
+    ) -> torch.Tensor:
         # Sequence-level ratio (average log prob difference)
         seq_logprobs = masked_mean(
-            log_probs - experience.log_probs_old, mask=experience.action_mask, dim=-1, keepdim=True
+            log_probs - experience.log_probs_old,
+            mask=experience.action_mask,
+            dim=-1,
+            keepdim=True,
         ).exp()
         unclipped_term = seq_logprobs * experience.advantages
         clipped_term = (
-            seq_logprobs.clamp(1 - self.clip_eps_lo, 1 + self.clip_eps_hi) * experience.advantages
+            seq_logprobs.clamp(1 - self.clip_eps_lo, 1 + self.clip_eps_hi)
+            * experience.advantages
         )
         policy_loss = -torch.min(unclipped_term, clipped_term)
 
         # Optional KL penalty
         if self.beta:
             kl_loss = get_approx_kl(
-                self.kl_estimator, log_probs, experience.log_probs_ref, experience.action_mask
+                self.kl_estimator,
+                log_probs,
+                experience.log_probs_ref,
+                experience.action_mask,
             )
         else:
             kl_loss = torch.tensor(0.0, device=log_probs.device, dtype=torch.float32)
@@ -176,7 +202,32 @@ class ReinforceLoss(nn.Module):
     def __init__(self, **kwargs) -> None:
         super().__init__()
 
-    def forward(self, log_probs: torch.Tensor, experience: Experience, **kwargs) -> torch.Tensor:
+    def forward(
+        self, log_probs: torch.Tensor, experience: Experience, **kwargs
+    ) -> torch.Tensor:
+        loss = -(log_probs * experience.advantages)
+        loss = masked_mean(loss, mask=experience.action_mask, dim=-1).mean(dim=0)
+        return loss
+
+
+class MaxRLLoss(nn.Module):
+    """MaxRL loss (Fahim, 2026).
+
+    Uses binary rewards per completion:
+        r = correctness * format
+
+    For each prompt group:
+        baseline = mean(r)
+        advantage = (r - baseline) / baseline, if baseline > 0
+        advantage = 0, otherwise
+    """
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__()
+
+    def forward(
+        self, log_probs: torch.Tensor, experience: Experience, **kwargs
+    ) -> torch.Tensor:
         loss = -(log_probs * experience.advantages)
         loss = masked_mean(loss, mask=experience.action_mask, dim=-1).mean(dim=0)
         return loss
@@ -190,7 +241,12 @@ class CISPOLoss(nn.Module):
     """
 
     def __init__(
-        self, clip_eps_lo: float, clip_eps_hi: float, beta: float, kl_estimator: str, **kwargs
+        self,
+        clip_eps_lo: float,
+        clip_eps_hi: float,
+        beta: float,
+        kl_estimator: str,
+        **kwargs,
     ) -> None:
         super().__init__()
         self.clip_eps_lo = clip_eps_lo
@@ -198,7 +254,9 @@ class CISPOLoss(nn.Module):
         self.beta = beta
         self.kl_estimator = kl_estimator
 
-    def forward(self, log_probs: torch.Tensor, experience: Experience, **kwargs) -> torch.Tensor:
+    def forward(
+        self, log_probs: torch.Tensor, experience: Experience, **kwargs
+    ) -> torch.Tensor:
         # Stop gradient on clipped ratio
         with torch.no_grad():
             ratio = (log_probs - experience.log_probs_old).exp()
@@ -208,7 +266,10 @@ class CISPOLoss(nn.Module):
         # Optional KL penalty
         if self.beta:
             kl_loss = get_approx_kl(
-                self.kl_estimator, log_probs, experience.log_probs_ref, experience.action_mask
+                self.kl_estimator,
+                log_probs,
+                experience.log_probs_ref,
+                experience.action_mask,
             )
         else:
             kl_loss = torch.tensor(0.0, device=log_probs.device, dtype=torch.float32)
@@ -227,7 +288,12 @@ class SAPOLoss(nn.Module):
     """
 
     def __init__(
-        self, sapo_temp_pos: float, sapo_temp_neg: float, beta: float, kl_estimator: str, **kwargs
+        self,
+        sapo_temp_pos: float,
+        sapo_temp_neg: float,
+        beta: float,
+        kl_estimator: str,
+        **kwargs,
     ) -> None:
         super().__init__()
         self.sapo_temp_pos = sapo_temp_pos
@@ -235,12 +301,16 @@ class SAPOLoss(nn.Module):
         self.beta = beta
         self.kl_estimator = kl_estimator
 
-    def forward(self, log_probs: torch.Tensor, experience: Experience, **kwargs) -> torch.Tensor:
+    def forward(
+        self, log_probs: torch.Tensor, experience: Experience, **kwargs
+    ) -> torch.Tensor:
         # Token-level importance ratio
         ratio = (log_probs - experience.log_probs_old).exp()
 
         # Asymmetric temperature: tighter curve for negative advantages
-        temps = torch.where(experience.advantages > 0, self.sapo_temp_pos, self.sapo_temp_neg)
+        temps = torch.where(
+            experience.advantages > 0, self.sapo_temp_pos, self.sapo_temp_neg
+        )
 
         # Soft sigmoid gate
         soft_gate = torch.sigmoid(temps * (ratio - 1)) * 4 / temps
@@ -249,7 +319,10 @@ class SAPOLoss(nn.Module):
         # Optional KL penalty (default for SAPO = 0)
         if self.beta:
             kl_loss = get_approx_kl(
-                self.kl_estimator, log_probs, experience.log_probs_ref, experience.action_mask
+                self.kl_estimator,
+                log_probs,
+                experience.log_probs_ref,
+                experience.action_mask,
             )
         else:
             kl_loss = torch.tensor(0.0, device=log_probs.device, dtype=torch.float32)
@@ -281,7 +354,11 @@ class PPOLoss(nn.Module):
         self.vf_coef = vf_coef
 
     def forward(
-        self, log_probs: torch.Tensor, experience: Experience, values: torch.Tensor, **kwargs
+        self,
+        log_probs: torch.Tensor,
+        experience: Experience,
+        values: torch.Tensor,
+        **kwargs,
     ) -> torch.Tensor:
         # Value loss with clipping
         values = values.to(log_probs.device)
@@ -301,7 +378,8 @@ class PPOLoss(nn.Module):
         policy_ratio = (log_probs - experience.log_probs_old).exp()
         policy_unclipped_term = policy_ratio * experience.advantages
         policy_clipped_term = (
-            policy_ratio.clamp(1 - self.clip_eps_lo, 1 + self.clip_eps_hi) * experience.advantages
+            policy_ratio.clamp(1 - self.clip_eps_lo, 1 + self.clip_eps_hi)
+            * experience.advantages
         )
         policy_loss = -torch.min(policy_unclipped_term, policy_clipped_term)
 
@@ -322,12 +400,15 @@ class DAPOLoss(nn.Module):
         self.clip_eps_lo = clip_eps_lo
         self.clip_eps_hi = clip_eps_hi
 
-    def forward(self, log_probs: torch.Tensor, experience: Experience, **kwargs) -> torch.Tensor:
+    def forward(
+        self, log_probs: torch.Tensor, experience: Experience, **kwargs
+    ) -> torch.Tensor:
         # Policy loss with clipping
         ratio = (log_probs - experience.log_probs_old).exp()
         unclipped_term = ratio * experience.advantages
         clipped_term = (
-            ratio.clamp(1 - self.clip_eps_lo, 1 + self.clip_eps_hi) * experience.advantages
+            ratio.clamp(1 - self.clip_eps_lo, 1 + self.clip_eps_hi)
+            * experience.advantages
         )
         per_token_loss = -torch.min(unclipped_term, clipped_term)
         mask = experience.action_mask.to(per_token_loss.dtype)

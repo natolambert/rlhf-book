@@ -41,7 +41,9 @@ class RolloutEngine:
         self.cpu_device = torch.device("cpu")
 
         self.tokenizer.pad_token_id = (
-            tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id
+            tokenizer.pad_token_id
+            if tokenizer.pad_token_id is not None
+            else tokenizer.eos_token_id
         )
         self.tokenizer.padding_side = "left"
         self.generation_config = GenerationConfig(
@@ -124,9 +126,13 @@ class RolloutEngine:
             return_attention_mask=True,
         ).to(device)
 
-        sequence_ids = self.model.generate(**model_inputs, generation_config=self.generation_config)
+        sequence_ids = self.model.generate(
+            **model_inputs, generation_config=self.generation_config
+        )
         completion_ids = sequence_ids[:, model_inputs["input_ids"].shape[1] :]
-        completions = self.tokenizer.batch_decode(completion_ids, skip_special_tokens=True)
+        completions = self.tokenizer.batch_decode(
+            completion_ids, skip_special_tokens=True
+        )
 
         self.print_sample = {
             "question": entry["question"],
@@ -144,10 +150,16 @@ class RolloutEngine:
         rewards, correctness, format, penalties = compute_rewards(
             entries, completions, lens, self.dataset, self.cfg
         )
-        rewards = torch.tensor(rewards, dtype=torch.float32, device=device).unsqueeze(-1)
-        correctness = torch.tensor(correctness, dtype=torch.float32, device=device).unsqueeze(-1)
+        rewards = torch.tensor(rewards, dtype=torch.float32, device=device).unsqueeze(
+            -1
+        )
+        correctness = torch.tensor(
+            correctness, dtype=torch.float32, device=device
+        ).unsqueeze(-1)
         format = torch.tensor(format, dtype=torch.float32, device=device).unsqueeze(-1)
-        penalties = torch.tensor(penalties, dtype=torch.float32, device=device).unsqueeze(-1)
+        penalties = torch.tensor(
+            penalties, dtype=torch.float32, device=device
+        ).unsqueeze(-1)
 
         log_probs_old = compute_log_probs(self.model, sequence_ids, attention_mask)
         log_probs_ref = compute_log_probs(self.ref_model, sequence_ids, attention_mask)
@@ -163,7 +175,14 @@ class RolloutEngine:
             self.cfg.kl_estimator,
         )
         advantages = compute_advantages(
-            rewards, self.cfg.loss, action_mask, values_old, self.cfg.gamma, self.cfg.lam
+            rewards,
+            correctness,
+            format,
+            self.cfg.loss,
+            action_mask,
+            values_old,
+            self.cfg.gamma,
+            self.cfg.lam,
         )
 
         return Experience(
