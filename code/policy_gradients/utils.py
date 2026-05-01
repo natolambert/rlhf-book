@@ -38,10 +38,10 @@ from .loss import (
     DAPOLoss,
     GRPOLoss,
     GSPOLoss,
+    MaxRLLoss,
     PPOLoss,
     ReinforceLoss,
     SAPOLoss,
-    MaxRLLoss,
     get_approx_kl,
     masked_mean,
 )
