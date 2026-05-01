@@ -170,8 +170,9 @@ def compute_standardized_advantages(rewards: torch.Tensor, eps: float = 1e-8) ->
 
 
 def compute_maxrl_advantages(correctness: torch.Tensor, format: torch.Tensor) -> torch.Tensor:
+    # binary_rewards is [num_rollouts,1]
     binary_rewards = (correctness * format).float()
-    reward_mean = binary_rewards.mean(dim=-1, keepdim=True)
+    reward_mean = binary_rewards.mean(dim=0, keepdim=True)
     advantages = torch.where(
         reward_mean > 0,
         (binary_rewards - reward_mean) / reward_mean,
