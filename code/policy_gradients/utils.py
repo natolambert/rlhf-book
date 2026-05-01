@@ -94,9 +94,7 @@ def load_model(model_name: str, device_map: Any, gradient_checkpointing: bool = 
         torch_dtype=torch.bfloat16,
     )
     if gradient_checkpointing:
-        model.gradient_checkpointing_enable(
-            gradient_checkpointing_kwargs={"use_reentrant": False}
-        )
+        model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
     return model, tokenizer
 
 
@@ -109,19 +107,13 @@ def get_ref_model(model_name: str, device_map: Any, beta: float):
     return ref_model
 
 
-def get_val_model(
-    model_name: str, device_map: Any, loss: str, gradient_checkpointing: bool = True
-):
+def get_val_model(model_name: str, device_map: Any, loss: str, gradient_checkpointing: bool = True):
     """Load value model."""
     if loss not in ["ppo"]:
         return None
     val_model, _ = load_model(model_name, device_map, gradient_checkpointing)
     val_model.lm_head = nn.Linear(
-        val_model.lm_head.in_features,
-        1,
-        bias=False,
-        device=val_model.device,
-        dtype=torch.bfloat16,
+        val_model.lm_head.in_features, 1, bias=False, device=val_model.device, dtype=torch.bfloat16
     )
     return val_model
 
@@ -147,13 +139,8 @@ def get_loss_objective(loss: str, **kwargs) -> nn.Module:
 
 def create_dataset(cfg: Config) -> ProceduralDataset:
     """Create the training dataset from config."""
-    specs = [
-        DatasetSpec(name=s.name, weight=s.weight, config=s.config)
-        for s in cfg.data.specs
-    ]
-    return rg.create_dataset(
-        "composite", size=cfg.data.size, seed=cfg.seed, datasets=specs
-    )
+    specs = [DatasetSpec(name=s.name, weight=s.weight, config=s.config) for s in cfg.data.specs]
+    return rg.create_dataset("composite", size=cfg.data.size, seed=cfg.seed, datasets=specs)
 
 
 def apply_reward_kl(
@@ -177,18 +164,12 @@ def apply_reward_kl(
     return rewards
 
 
-def compute_standardized_advantages(
-    rewards: torch.Tensor, eps: float = 1e-8
-) -> torch.Tensor:
+def compute_standardized_advantages(rewards: torch.Tensor, eps: float = 1e-8) -> torch.Tensor:
     """Compute standardized advantages (GRPO, GSPO, CISPO, DAPO)"""
-    return (rewards - rewards.mean(dim=0, keepdim=True)) / (
-        rewards.std(dim=0, keepdim=True) + eps
-    )
+    return (rewards - rewards.mean(dim=0, keepdim=True)) / (rewards.std(dim=0, keepdim=True) + eps)
 
 
-def compute_maxrl_advantages(
-    correctness: torch.Tensor, format: torch.Tensor
-) -> torch.Tensor:
+def compute_maxrl_advantages(correctness: torch.Tensor, format: torch.Tensor) -> torch.Tensor:
     binary_rewards = (correctness * format).float()
     reward_mean = binary_rewards.mean(dim=-1, keepdim=True)
     advantages = torch.where(
@@ -211,11 +192,7 @@ def compute_loo_advantages(rewards: torch.Tensor) -> torch.Tensor:
 
 
 def compute_gae(
-    rewards: torch.Tensor,
-    action_mask: torch.Tensor,
-    values: torch.Tensor,
-    gamma: float,
-    lam: float,
+    rewards: torch.Tensor, action_mask: torch.Tensor, values: torch.Tensor, gamma: float, lam: float
 ) -> torch.Tensor:
     """Compute Generalized Advantage Estimation (PPO)."""
     B, S = action_mask.size()
@@ -224,9 +201,9 @@ def compute_gae(
     indices = torch.arange(S, device=device).unsqueeze(0)
     done = (indices >= last_action_indices).float()
 
-    rewards = torch.zeros_like(
-        action_mask, device=device, dtype=torch.float32
-    ).scatter_(dim=-1, index=last_action_indices, src=rewards)
+    rewards = torch.zeros_like(action_mask, device=device, dtype=torch.float32).scatter_(
+        dim=-1, index=last_action_indices, src=rewards
+    )
 
     values = values.to(device)
     advantages = torch.zeros_like(action_mask, dtype=torch.float32, device=device)
@@ -265,9 +242,7 @@ def compute_advantages(
         return compute_loo_advantages(rewards)
     elif loss in ["ppo"]:
         if action_mask is None or values is None or gamma is None or lam is None:
-            raise ValueError(
-                "PPO requires action_mask, values, gamma, and lam to compute GAE."
-            )
+            raise ValueError("PPO requires action_mask, values, gamma, and lam to compute GAE.")
         return compute_gae(rewards, action_mask, values, gamma, lam)
     else:
         return rewards
@@ -279,12 +254,8 @@ def compute_log_probs(
     """Compute log probabilities for each token in the sequence."""
     if not model:
         return None
-    sequence_ids, attention_mask = sequence_ids.to(model.device), attention_mask.to(
-        model.device
-    )
-    output = model(
-        input_ids=sequence_ids, attention_mask=attention_mask, use_cache=False
-    )
+    sequence_ids, attention_mask = sequence_ids.to(model.device), attention_mask.to(model.device)
+    output = model(input_ids=sequence_ids, attention_mask=attention_mask, use_cache=False)
     logits = output.logits[:, :-1, :].to(torch.float32)
     log_probs = F.log_softmax(logits, dim=-1)
     targets = sequence_ids[:, 1:].unsqueeze(-1)
@@ -298,12 +269,8 @@ def compute_values(
     """Compute value estimates for each position (PPO)."""
     if not model:
         return None
-    sequence_ids, attention_mask = sequence_ids.to(model.device), attention_mask.to(
-        model.device
-    )
-    output = model(
-        input_ids=sequence_ids, attention_mask=attention_mask, use_cache=False
-    )
+    sequence_ids, attention_mask = sequence_ids.to(model.device), attention_mask.to(model.device)
+    output = model(input_ids=sequence_ids, attention_mask=attention_mask, use_cache=False)
     values = output.logits[:, :-1, :].squeeze(-1).to(torch.float32)
     return values
 
@@ -315,9 +282,7 @@ def _correctness_reward(
 ) -> list[float]:
     """Compute raw reward scores from the environment"""
 
-    def score_correctness_answer(
-        dataset: ProceduralDataset, completion: str, entry: dict
-    ) -> float:
+    def score_correctness_answer(dataset: ProceduralDataset, completion: str, entry: dict) -> float:
         answer = extract_answer(completion)
         return float(dataset.score_answer(answer, entry))
 
@@ -339,9 +304,7 @@ def _response_penalties(lengths: list[int], cfg: Config) -> list[float]:
         return -1.0
 
     if cfg.loss == "dapo":
-        return [
-            dapo_length_penalty(length, cfg.l_cache, cfg.l_max) for length in lengths
-        ]
+        return [dapo_length_penalty(length, cfg.l_cache, cfg.l_max) for length in lengths]
     return [0 for _ in lengths]
 
 
@@ -386,9 +349,7 @@ def compute_rewards(
 def print_step_header(consumed: int, total: int) -> None:
     """Print a header showing dataset progress."""
     pct = 100.0 * consumed / total if total else 0.0
-    console.rule(
-        f"[bold cyan]{consumed}/{total} ({pct:.1f}%)[/bold cyan]", style="cyan"
-    )
+    console.rule(f"[bold cyan]{consumed}/{total} ({pct:.1f}%)[/bold cyan]", style="cyan")
 
 
 def progress_bar() -> Progress:
@@ -446,7 +407,5 @@ def print_rollout_sample(buf: ReplayBuffer, sample: dict) -> None:
     table.add_row("Question:", sample["question"])
     table.add_row("Oracle:", sample["answer"])
     table.add_row("Completion:", preview(sample["completion"]))
-    console.print(
-        Panel(table, title="[bold cyan]Sample[/bold cyan]", border_style="dim")
-    )
+    console.print(Panel(table, title="[bold cyan]Sample[/bold cyan]", border_style="dim"))
     console.print()
