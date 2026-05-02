@@ -188,11 +188,6 @@ class MaxRLLoss(nn.Module):
 
     Uses binary rewards per completion:
         r = correctness * format
-
-    For each prompt group:
-        baseline = mean(r)
-        advantage = (r - baseline) / baseline, if baseline > 0
-        advantage = 0, otherwise
     """
 
     def __init__(self, **kwargs) -> None:
