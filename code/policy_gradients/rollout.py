@@ -148,6 +148,7 @@ class RolloutEngine:
         correctness = torch.tensor(correctness, dtype=torch.float32, device=device).unsqueeze(-1)
         format = torch.tensor(format, dtype=torch.float32, device=device).unsqueeze(-1)
         penalties = torch.tensor(penalties, dtype=torch.float32, device=device).unsqueeze(-1)
+        binary_reward = (correctness * (format == 1.0)).float()
 
         log_probs_old = compute_log_probs(self.model, sequence_ids, attention_mask)
         log_probs_ref = compute_log_probs(self.ref_model, sequence_ids, attention_mask)
@@ -181,6 +182,7 @@ class RolloutEngine:
             correctness=correctness,
             format=format,
             penalties=penalties,
+            binary_reward=binary_reward,
             log_probs_old=log_probs_old,
             log_probs_ref=log_probs_ref,
             values_old=values_old,

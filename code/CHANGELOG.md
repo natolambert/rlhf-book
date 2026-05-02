@@ -5,7 +5,7 @@ On release, entries get moved under a version heading.
 
 ## Unreleased
 
-- 2026-05-01: [PR #391](https://github.com/natolambert/rlhf-book/pull/391) added the MaxRL loss to policy gradients.
+- 2026-05-01: [PR #391](https://github.com/natolambert/rlhf-book/pull/391) added the MaxRL loss to policy gradients. Moved the new `binary_reward` (correctness ∧ format) onto `Experience` so it is computed once in `rollout.py` and averaged in `train.py` via the simple string-only `avg` lambda. Aligned `configs/maxrl.yaml` with the GRPO/DAPO defaults (`num_rollouts: 8`, `temperature: 0.6`, `data.size: 3000`) to fix OOM on consumer hardware.
 - 2026-04-29: [PR #385](https://github.com/natolambert/rlhf-book/pull/385) added the DAPO loss and refactored the policy-gradient rollout into an iterable `RolloutEngine`.
 - 2026-04-17: [PR #380](https://github.com/natolambert/rlhf-book/pull/380) added Discord community link to `code/README.md` (part of the wider site-wide Discord rollout).
 - 2026-04-17: [PR #377](https://github.com/natolambert/rlhf-book/pull/377) cleaned "Tune PPO hyperparameters" TODO from

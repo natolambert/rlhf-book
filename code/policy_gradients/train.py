@@ -83,20 +83,14 @@ def main(cfg: Config):
 
     start_time = time.time()
     for replay_buffer in rollout_engine:
-        avg = (
-            lambda x: torch.stack(
-                [getattr(e, x) if isinstance(x, str) else x(e) for e in replay_buffer.buffer]
-            )
-            .mean()
-            .item()
-        )
+        avg = lambda x: torch.stack([getattr(e, x) for e in replay_buffer.buffer]).mean().item()
         wandb.log(
             {
                 "avg_reward": avg("rewards"),
                 "avg_correctness_reward": avg("correctness"),
                 "avg_format_reward": avg("format"),
                 "avg_response_penalty": avg("penalties"),
-                "avg_binary_reward": avg(lambda e: e.correctness * (e.format == 1.0)),
+                "avg_binary_reward": avg("binary_reward"),
                 "hours": (time.time() - start_time) / 3600,
             }
         )

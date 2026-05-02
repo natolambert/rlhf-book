@@ -27,6 +27,7 @@ class Experience:
     - correctness: Scalar correctness signal for the completion
     - format: Scalar format-adherence reward for the completion
     - penalties: Scalar length penalty applied to the completion
+    - binary_reward: 1.0 iff correctness and format are both maximal, else 0.0
     """
 
     sequence_ids: torch.Tensor
@@ -40,6 +41,7 @@ class Experience:
     correctness: torch.Tensor | None = None
     format: torch.Tensor | None = None
     penalties: torch.Tensor | None = None
+    binary_reward: torch.Tensor | None = None
 
     def to(self, device: torch.device) -> Self:
         """Move all tensors to the specified device."""
