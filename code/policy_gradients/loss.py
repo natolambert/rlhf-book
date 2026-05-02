@@ -146,10 +146,7 @@ class GSPOLoss(nn.Module):
     def forward(self, log_probs: torch.Tensor, experience: Experience, **kwargs) -> torch.Tensor:
         # Sequence-level ratio (average log prob difference)
         seq_logprobs = masked_mean(
-            log_probs - experience.log_probs_old,
-            mask=experience.action_mask,
-            dim=-1,
-            keepdim=True,
+            log_probs - experience.log_probs_old, mask=experience.action_mask, dim=-1, keepdim=True
         ).exp()
         unclipped_term = seq_logprobs * experience.advantages
         clipped_term = (
@@ -306,11 +303,7 @@ class PPOLoss(nn.Module):
         self.vf_coef = vf_coef
 
     def forward(
-        self,
-        log_probs: torch.Tensor,
-        experience: Experience,
-        values: torch.Tensor,
-        **kwargs,
+        self, log_probs: torch.Tensor, experience: Experience, values: torch.Tensor, **kwargs
     ) -> torch.Tensor:
         # Value loss with clipping
         values = values.to(log_probs.device)
