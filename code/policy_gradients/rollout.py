@@ -154,25 +154,8 @@ class RolloutEngine:
         log_probs_ref = compute_log_probs(self.ref_model, sequence_ids, attention_mask)
         values_old = compute_values(self.val_model, sequence_ids, attention_mask)
 
-        rewards = apply_reward_kl(
-            rewards,
-            log_probs_old,
-            log_probs_ref,
-            action_mask,
-            self.cfg.beta,
-            self.cfg.loss,
-            self.cfg.kl_estimator,
-        )
-        advantages = compute_advantages(
-            rewards,
-            correctness,
-            format,
-            self.cfg.loss,
-            action_mask,
-            values_old,
-            self.cfg.gamma,
-            self.cfg.lam,
-        )
+        rewards = apply_reward_kl(rewards, log_probs_old, log_probs_ref, action_mask, self.cfg)
+        advantages = compute_advantages(rewards, binary_reward, action_mask, values_old, self.cfg)
 
         return Experience(
             sequence_ids=sequence_ids,
