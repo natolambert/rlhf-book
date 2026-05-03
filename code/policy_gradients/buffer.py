@@ -9,6 +9,7 @@ from typing import Self
 
 import torch
 import torch.nn.functional as F
+from tensordict import TensorDict
 
 
 @dataclass
@@ -23,11 +24,12 @@ class Experience:
     - log_probs_old: Log probabilities from the rollout policy
     - log_probs_ref: Log probabilities from the reference policy (for KL)
     - values_old: Value estimates (for PPO)
-    - rewards: Full scalar reward for the generated completion
-    - correctness: Scalar correctness signal for the completion
-    - format: Scalar format-adherence reward for the completion
-    - penalties: Scalar length penalty applied to the completion
-    - binary_reward: 1.0 iff correctness and format are both maximal, else 0.0
+    - rewards: TensorDict of per-completion scalar reward components, keys:
+        - "total": combined reward fed into advantage computation
+        - "correctness": environment correctness signal
+        - "format": format-adherence reward
+        - "penalty": length / shaping penalty
+        - "binary": 1.0 iff correctness and format are both maximal, else 0.0
     """
 
     sequence_ids: torch.Tensor
@@ -37,11 +39,7 @@ class Experience:
     log_probs_old: torch.Tensor | None = None
     log_probs_ref: torch.Tensor | None = None
     values_old: torch.Tensor | None = None
-    rewards: torch.Tensor | None = None
-    correctness: torch.Tensor | None = None
-    format: torch.Tensor | None = None
-    penalties: torch.Tensor | None = None
-    binary_reward: torch.Tensor | None = None
+    rewards: TensorDict | None = None
 
     def to(self, device: torch.device) -> Self:
         """Move all tensors to the specified device."""
@@ -62,7 +60,7 @@ def split_experience_batch(experience: Experience) -> list[Experience]:
     for field_name in field_names:
         val = getattr(experience, field_name)
         if val is not None:
-            vals = torch.unbind(val, dim=0)
+            vals = val.unbind(0)
         else:
             vals = [None] * batch_size
         assert len(vals) == batch_size
@@ -85,16 +83,17 @@ def pad_sequences(tensor_list: list[torch.Tensor], how: str = "start") -> torch.
 
 def join_experiences_batch(experiences: list[Experience]) -> Experience:
     """Join a list of experiences into a single batched experience."""
-    batch_data = {}
-    field_names = [f.name for f in fields(Experience)]
-    for field_name in field_names:
-        vals = [getattr(exp, field_name) for exp in experiences]
-        if all(v is not None for v in vals):
-            data = pad_sequences(vals, how="start")
-        else:
-            data = None
-        batch_data[field_name] = data
-    return Experience(**batch_data)
+
+    def join(vals: list) -> torch.Tensor | TensorDict | None:
+        if any(v is None for v in vals):
+            return None
+        if isinstance(vals[0], TensorDict):  # rewards are scalars nested in a TensorDict
+            return torch.stack(vals, dim=0)
+        return pad_sequences(vals, how="start")
+
+    return Experience(
+        **{f.name: join([getattr(e, f.name) for e in experiences]) for f in fields(Experience)}
+    )
 
 
 class ReplayBuffer:

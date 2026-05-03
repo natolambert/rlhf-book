@@ -29,6 +29,7 @@ from rich.progress import (
     TimeElapsedColumn,
 )
 from rich.table import Table
+from tensordict import TensorDict
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from .buffer import ReplayBuffer
@@ -147,21 +148,22 @@ def create_dataset(cfg: Config) -> ProceduralDataset:
 
 
 def apply_reward_kl(
-    rewards: torch.Tensor,
+    rewards: TensorDict,
     log_probs: torch.Tensor,
     log_probs_ref: torch.Tensor,
     action_mask: torch.Tensor,
     cfg: Config,
-) -> torch.Tensor:
-    """Apply KL penalty to rewards (for REINFORCE/RLOO/PPO)."""
+) -> TensorDict:
+    """Apply KL penalty to the combined ``total`` reward (REINFORCE/RLOO/PPO)."""
     if not cfg.beta or cfg.loss not in ["ppo", "rloo", "reinforce"]:
         return rewards
-    log_probs = log_probs.to(rewards.device)
-    log_probs_ref = log_probs_ref.to(rewards.device)
-    action_mask = action_mask.to(rewards.device)
+    device = rewards["total"].device
+    log_probs = log_probs.to(device)
+    log_probs_ref = log_probs_ref.to(device)
+    action_mask = action_mask.to(device)
     kl_div = get_approx_kl(cfg.kl_estimator, log_probs, log_probs_ref, action_mask)
     kl_div = masked_mean(kl_div, mask=action_mask, dim=-1, keepdim=True)
-    rewards = rewards - cfg.beta * kl_div
+    rewards["total"] = rewards["total"] - cfg.beta * kl_div
     return rewards
 
 
@@ -222,27 +224,27 @@ def compute_gae(
 
 
 def compute_advantages(
-    rewards: torch.Tensor,
-    binary_reward: torch.Tensor,
+    rewards: TensorDict,
     action_mask: torch.Tensor,
     values: torch.Tensor | None,
     cfg: Config,
 ) -> torch.Tensor:
     """Compute advantages using the appropriate method for the loss function."""
+    total = rewards["total"]
     if cfg.loss in ["grpo", "gspo", "cispo", "sapo", "dapo"]:
-        return compute_standardized_advantages(rewards)
+        return compute_standardized_advantages(total)
     elif cfg.loss in ["drgrpo"]:
-        return compute_nonstandardized_advantages(rewards)
+        return compute_nonstandardized_advantages(total)
     elif cfg.loss in ["maxrl"]:
-        return compute_maxrl_advantages(binary_reward)
+        return compute_maxrl_advantages(rewards["binary"])
     elif cfg.loss in ["rloo"]:
-        return compute_loo_advantages(rewards)
+        return compute_loo_advantages(total)
     elif cfg.loss in ["ppo"]:
         if values is None:
             raise ValueError("PPO requires a value model to compute GAE.")
-        return compute_gae(rewards, action_mask, values, cfg.gamma, cfg.lam)
+        return compute_gae(total, action_mask, values, cfg.gamma, cfg.lam)
     else:
-        return rewards
+        return total
 
 
 def compute_log_probs(
@@ -329,18 +331,32 @@ def compute_rewards(
     lengths: list[int],
     dataset: ProceduralDataset,
     cfg: Config,
-) -> tuple[list[float], list[float], list[float], list[float]]:
-    """Compute training rewards and raw correctness rewards for filtering."""
-    correctness_rewards = _correctness_reward(dataset, completions, entries)
-    response_penalties = _response_penalties(lengths, cfg)
-    format_rewards = _format_reward(completions)
-    combined_rewards = [
-        acc + pen + cfg.format_weight * fmt
-        for acc, pen, fmt in zip(
-            correctness_rewards, response_penalties, format_rewards, strict=True
-        )
+    device: torch.device,
+) -> TensorDict:
+    """Compute reward components for a rollout group as a single TensorDict.
+
+    Keys: ``total``, ``correctness``, ``format``, ``penalty``, ``binary``.
+    """
+    correctness = _correctness_reward(dataset, completions, entries)
+    penalty = _response_penalties(lengths, cfg)
+    fmt = _format_reward(completions)
+    total = [
+        c + p + cfg.format_weight * f for c, p, f in zip(correctness, penalty, fmt, strict=True)
     ]
-    return combined_rewards, correctness_rewards, format_rewards, response_penalties
+
+    t = lambda x: torch.tensor(x, dtype=torch.float32, device=device).unsqueeze(-1)
+
+    rewards = TensorDict(
+        {
+            "total": t(total),
+            "correctness": t(correctness),
+            "format": t(fmt),
+            "penalty": t(penalty),
+        },
+        batch_size=[len(entries)],
+    )
+    rewards["binary"] = (rewards["correctness"] * (rewards["format"] == 1.0)).float()
+    return rewards
 
 
 def print_step_header(consumed: int, total: int) -> None:
@@ -380,14 +396,14 @@ def print_rollout_sample(buf: ReplayBuffer, sample: dict) -> None:
     """Print step-level avg reward / correctness plus one sampled rollout."""
     if len(buf) == 0:
         return
-    avg = lambda x: torch.stack([getattr(e, x) for e in buf.buffer]).mean().item()
+    avg = lambda key: torch.stack([e.rewards[key] for e in buf.buffer]).mean().item()
 
     console.print(
         Panel(
-            f"[bold green]Avg Reward:[/bold green] {avg('rewards'):.4f}    "
+            f"[bold green]Avg Reward:[/bold green] {avg('total'):.4f}    "
             f"[bold green]Avg Correctness:[/bold green] {avg('correctness'):.4f}    "
             f"[bold green]Avg Format:[/bold green] {avg('format'):.4f}    "
-            f"[bold green]Avg Penalty:[/bold green] {avg('penalties'):.4f}",
+            f"[bold green]Avg Penalty:[/bold green] {avg('penalty'):.4f}",
             title="[bold cyan]Rollout Results[/bold cyan]",
             border_style="cyan",
         )
