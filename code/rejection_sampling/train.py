@@ -18,15 +18,6 @@ from rich.table import Table
 from torch.nn.utils import clip_grad_norm_
 from torch.utils.data import DataLoader, Dataset
 
-from policy_gradients.utils import (
-    get_attn_implementation,
-    load_model,
-    print_model_info,
-    print_step_header,
-    progress_bar,
-    seed_everything,
-)
-
 from . import preprocess
 from .config import Config, load_config
 from .selection import select
@@ -36,6 +27,12 @@ from .utils import (
     extract_gsm8k_answer,
     format_gsm8k_gold,
     free_memory,
+    get_attn_implementation,
+    load_model,
+    print_model_info,
+    print_step_header,
+    progress_bar,
+    seed_everything,
 )
 
 
@@ -128,7 +125,7 @@ def sft(
     model.train()
     global_step = 0
     for epoch in range(cfg.num_epochs):
-        print_step_header(epoch + 1, cfg.num_epochs)
+        print_step_header(console, step=epoch, total=cfg.num_epochs)
         optimizer.zero_grad(set_to_none=True)
         accumulated_loss = 0.0
 
@@ -319,7 +316,7 @@ def main(cfg: Config) -> None:
     )
     console.print(f"[dim]Loading policy model for SFT: {cfg.model_name}[/dim]")
     model, tokenizer = load_model(cfg.model_name, model_device, gradient_checkpointing=True)
-    print_model_info(model)
+    print_model_info(console, model)
     console.print(f"[dim]VRAM after policy load: {cuda_memory_gb():.2f} GB[/dim]")
 
     sft(cfg, model, tokenizer, selected_pairs, console, start_time=time.time())
