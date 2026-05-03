@@ -337,9 +337,8 @@ def print_step_header(consumed: int, total: int) -> None:
     console.rule(f"[bold cyan]{consumed}/{total} ({pct:.1f}%)[/bold cyan]", style="cyan")
 
 
-def progress_bar(rich_console: Console | None = None) -> Progress:
-    """Create a rich progress bar. Uses the module console if none is passed."""
-    out_console = rich_console if rich_console is not None else console
+def progress_bar() -> Progress:
+    """Create a rich progress bar."""
     return Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
@@ -347,7 +346,7 @@ def progress_bar(rich_console: Console | None = None) -> Progress:
         MofNCompleteColumn(),
         TextColumn("*"),
         TimeElapsedColumn(),
-        console=out_console,
+        console=console,
         transient=False,
     )
 
