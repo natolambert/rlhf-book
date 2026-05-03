@@ -44,6 +44,18 @@ def get_attn_implementation() -> str:
         return "sdpa"
 
 
+def resolve_device(device: str = "auto") -> str:
+    """Resolve 'auto' to CUDA, then MPS or fallback to CPU."""
+    if device == "auto":
+        if torch.cuda.is_available():
+            device = "cuda"
+        elif torch.backends.mps.is_available():
+            device = "mps"
+        else:
+            device = "cpu"
+    return device
+
+
 def seed_everything(seed: int) -> None:
     """Set all random seeds for reproducibility."""
     random.seed(seed)
@@ -500,12 +512,14 @@ def main(cfg: Config):
     # Print attention implementation
     attn_impl = get_attn_implementation()
     console.print(f"[dim]Using attention implementation: {attn_impl}[/dim]")
+    device = resolve_device(cfg.device)
+    console.print(f"[dim]Using device: {device}[/dim]")
 
     # Load models
     console.print(f"[dim]Loading policy model: {cfg.model_name}[/dim]")
     policy_model, tokenizer = load_model(
         cfg.model_name,
-        cfg.device,
+        device,
         gradient_checkpointing=cfg.gradient_checkpointing,
         bf16=cfg.bf16,
     )
@@ -516,7 +530,7 @@ def main(cfg: Config):
         console.print("[dim]No reference model needed for this loss[/dim]")
     else:
         console.print(f"[dim]Loading reference model: {cfg.ref_model_name}[/dim]")
-        ref_model = load_ref_model(cfg.ref_model_name, cfg.device, bf16=cfg.bf16)
+        ref_model = load_ref_model(cfg.ref_model_name, device, bf16=cfg.bf16)
 
     # Create dataloader
     console.print(f"[dim]Loading dataset: {cfg.dataset_name}[/dim]")
@@ -785,6 +799,7 @@ def main_cli():
     parser.add_argument("--batch_size", type=int, help="Batch size")
     parser.add_argument("--gradient_accumulation_steps", type=int)
     parser.add_argument("--wandb_entity", type=str, help="Wandb entity/team name")
+    parser.add_argument("--device", type=str, choices=["auto", "cuda", "mps", "cpu"])
     parser.add_argument("--wandb_project", type=str, help="Wandb project name")
     parser.add_argument(
         "--sample_every", type=int, help="Generate samples every N steps (0 to disable)"
