@@ -398,8 +398,7 @@ def print_rollout_sample(buf: ReplayBuffer, sample: dict) -> None:
         return
     avg = lambda key: torch.stack([e.rewards[key] for e in buf.buffer]).mean().item()
     summary = "    ".join(
-        f"[bold green]Avg {key}:[/bold green] {avg(key):.4f}"
-        for key in buf.buffer[0].rewards.keys()
+        f"[bold green]{key}:[/bold green] {avg(key):.4f}" for key in buf.buffer[0].rewards.keys()
     )
     console.print(
         Panel(summary, title="[bold cyan]Rollout Results[/bold cyan]", border_style="cyan")
