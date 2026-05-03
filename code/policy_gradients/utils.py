@@ -80,6 +80,21 @@ def get_attn_implementation() -> str:
         return "sdpa"
 
 
+def get_default_device(cuda_device_id: int = 0, device: str = "auto") -> torch.device:
+    """Resolve 'auto' to CUDA, then MPS or fallback to CPU."""
+    if device == "auto":
+        if torch.cuda.is_available():
+            device = "cuda"
+        elif torch.backends.mps.is_available():
+            device = "mps"
+        else:
+            device = "cpu"
+
+    if device == "cuda":
+        device = f"cuda:{cuda_device_id}"
+    return torch.device(device)
+
+
 def load_model(model_name: str, device_map: Any, gradient_checkpointing: bool = True):
     """Load model and tokenizer with automatic attention implementation selection."""
     attn_impl = get_attn_implementation()
