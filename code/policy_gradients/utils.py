@@ -393,20 +393,16 @@ def print_model_info(model) -> None:
 
 
 def print_rollout_sample(buf: ReplayBuffer, sample: dict) -> None:
-    """Print step-level avg reward / correctness plus one sampled rollout."""
+    """Print step-level reward components plus one sampled rollout."""
     if len(buf) == 0:
         return
     avg = lambda key: torch.stack([e.rewards[key] for e in buf.buffer]).mean().item()
-
+    summary = "    ".join(
+        f"[bold green]Avg {key}:[/bold green] {avg(key):.4f}"
+        for key in buf.buffer[0].rewards.keys()
+    )
     console.print(
-        Panel(
-            f"[bold green]Avg Reward:[/bold green] {avg('total'):.4f}    "
-            f"[bold green]Avg Correctness:[/bold green] {avg('correctness'):.4f}    "
-            f"[bold green]Avg Format:[/bold green] {avg('format'):.4f}    "
-            f"[bold green]Avg Penalty:[/bold green] {avg('penalty'):.4f}",
-            title="[bold cyan]Rollout Results[/bold cyan]",
-            border_style="cyan",
-        )
+        Panel(summary, title="[bold cyan]Rollout Results[/bold cyan]", border_style="cyan")
     )
 
     def preview(text: str, limit: int = 1000) -> str:
