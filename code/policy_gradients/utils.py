@@ -338,9 +338,9 @@ def compute_rewards(
     """
     correctness = _correctness_reward(dataset, completions, entries)
     penalty = _response_penalties(lengths, cfg)
-    fmt = _format_reward(completions)
+    format = _format_reward(completions)
     total = [
-        c + p + cfg.format_weight * f for c, p, f in zip(correctness, penalty, fmt, strict=True)
+        c + p + cfg.format_weight * f for c, p, f in zip(correctness, penalty, format, strict=True)
     ]
 
     t = lambda x: torch.tensor(x, dtype=torch.float32, device=device).unsqueeze(-1)
@@ -349,7 +349,7 @@ def compute_rewards(
         {
             "total": t(total),
             "correctness": t(correctness),
-            "format": t(fmt),
+            "format": t(format),
             "penalty": t(penalty),
         },
         batch_size=[len(entries)],
