@@ -230,21 +230,20 @@ def compute_advantages(
     cfg: Config,
 ) -> torch.Tensor:
     """Compute advantages using the appropriate method for the loss function."""
-    total = rewards["total"]
     if cfg.loss in ["grpo", "gspo", "cispo", "sapo", "dapo"]:
-        return compute_standardized_advantages(total)
+        return compute_standardized_advantages(rewards["total"])
     elif cfg.loss in ["drgrpo"]:
-        return compute_nonstandardized_advantages(total)
+        return compute_nonstandardized_advantages(rewards["total"])
     elif cfg.loss in ["maxrl"]:
         return compute_maxrl_advantages(rewards["binary"])
     elif cfg.loss in ["rloo"]:
-        return compute_loo_advantages(total)
+        return compute_loo_advantages(rewards["total"])
     elif cfg.loss in ["ppo"]:
         if values is None:
             raise ValueError("PPO requires a value model to compute GAE.")
-        return compute_gae(total, action_mask, values, cfg.gamma, cfg.lam)
+        return compute_gae(rewards["total"], action_mask, values, cfg.gamma, cfg.lam)
     else:
-        return total
+        return rewards["total"]
 
 
 def compute_log_probs(
