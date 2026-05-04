@@ -3,9 +3,25 @@
 import gc
 import hashlib
 import json
+import os
+import platform
+import random
 import re
+from typing import Any
 
+import numpy as np
 import torch
+from rich.console import Console
+from rich.panel import Panel
+from rich.progress import (
+    BarColumn,
+    MofNCompleteColumn,
+    Progress,
+    SpinnerColumn,
+    TextColumn,
+    TimeElapsedColumn,
+)
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from .config import Config
 
@@ -13,6 +29,87 @@ from .config import Config
 # AceMath-7B-RM is trained on solutions in this format, so we must use the
 # same system prompt at generation time for the scores to be meaningful.
 ACEMATH_SYSTEM_PROMPT = "Please reason step by step, and check your final answer within \\boxed{}."
+
+
+def seed_everything(seed: int) -> None:
+    """Set all random seeds for reproducibility."""
+    random.seed(seed)
+    os.environ["PYTHONHASHSEED"] = str(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
+
+def get_attn_implementation() -> str:
+    """Determine the best attention implementation for this platform.
+
+    Returns 'flash_attention_2' on x86_64 with flash-attn installed,
+    otherwise 'sdpa' (PyTorch's native SDPA, faster on DGX Spark/Blackwell).
+    """
+    if platform.machine() != "x86_64":
+        return "sdpa"  # aarch64 / DGX Spark - use SDPA with cuDNN
+
+    try:
+        import flash_attn  # noqa: F401
+
+        return "flash_attention_2"
+    except ImportError:
+        return "sdpa"
+
+
+def load_model(model_name: str, device_map: Any, gradient_checkpointing: bool = True):
+    """Load model and tokenizer with automatic attention implementation selection."""
+    attn_impl = get_attn_implementation()
+    tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=False)
+    # Many decoder-only models (LLaMA, GPT-2) don't define pad_token
+    # Set it to eos_token to enable batch padding
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+    model = AutoModelForCausalLM.from_pretrained(
+        model_name,
+        device_map=device_map,
+        trust_remote_code=False,
+        attn_implementation=attn_impl,
+        torch_dtype=torch.bfloat16,
+    )
+    if gradient_checkpointing:
+        model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
+    return model, tokenizer
+
+
+def print_step_header(console: Console, step: int, total: int) -> None:
+    """Print a header for the current training step."""
+    console.rule(f"[bold cyan]STEP {step + 1}/{total}[/bold cyan]", style="cyan")
+
+
+def progress_bar(console: Console) -> Progress:
+    """Create a rich progress bar."""
+    return Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        MofNCompleteColumn(),
+        TextColumn("*"),
+        TimeElapsedColumn(),
+        console=console,
+        transient=False,
+    )
+
+
+def print_model_info(console: Console, model) -> None:
+    """Print model configuration information."""
+    console.print(
+        Panel(
+            f"[bold magenta]Model:[/bold magenta] {model}\n"
+            f"[dim]Parameters:[/dim] {sum(p.numel() for p in model.parameters()):,}\n"
+            f"[dim]Device:[/dim] {model.device}",
+            title="[bold magenta]Configuration[/bold magenta]",
+            border_style="magenta",
+        )
+    )
 
 
 def free_memory(*objs) -> None:
