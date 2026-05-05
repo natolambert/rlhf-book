@@ -109,8 +109,8 @@ uv run python -m policy_gradients.train --config policy_gradients/configs/rloo.y
 | GSPO | `gspo.yaml` | Group-Sequence Policy Optimization (Zheng et al., 2025) | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/10sxytli) |
 | CISPO | `cispo.yaml` | Clipped Importance Sampling PO (MiniMax, 2025) | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/6dg0m06n) |
 | SAPO | `sapo.yaml` | Soft Adaptive Policy Optimization (Qwen Team, 2025) | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/79608nwk) |
-| DAPO | `dapo.yaml` | Decoupled Clip and Dynamic sAmpling Policy Optimization (ByteDance, 2025) | TODO |
-| MaxRL | `maxrl.yaml` | Maximum Likelihood Reinforcement learning (Fahim, 2026) | [wandb](https://wandb.ai/athe_kunal/rlhf-book/runs/npnh0yno)
+| DAPO | `dapo.yaml` | Decoupled Clip and Dynamic sAmpling Policy Optimization (ByteDance, 2025) | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/db1pipip) |
+| MaxRL | `maxrl.yaml` | Maximum Likelihood Reinforcement Learning (Tajwar et al., 2026) | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/fdowf1se) |
 
 ## Reward Model Training
 
@@ -287,6 +287,14 @@ uvx ruff format .
 ```
 
 Configuration is in `pyproject.toml` (line length 100, Python 3.12 target).
+
+## Testing
+
+The test suite intentionally starts with lightweight smoke coverage for imports and CLI entrypoints. It should not download datasets, load models, or require GPUs.
+
+```bash
+uv run --extra dev pytest
+```
 
 ## Book Chapters
 

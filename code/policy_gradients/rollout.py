@@ -141,46 +141,20 @@ class RolloutEngine:
         attention_mask = sequence_ids != self.tokenizer.pad_token_id
         lens = action_mask.sum(dim=1).tolist()
 
-        rewards, correctness, format, penalties = compute_rewards(
-            entries, completions, lens, self.dataset, self.cfg
-        )
-        rewards = torch.tensor(rewards, dtype=torch.float32, device=device).unsqueeze(-1)
-        correctness = torch.tensor(correctness, dtype=torch.float32, device=device).unsqueeze(-1)
-        format = torch.tensor(format, dtype=torch.float32, device=device).unsqueeze(-1)
-        penalties = torch.tensor(penalties, dtype=torch.float32, device=device).unsqueeze(-1)
+        rewards = compute_rewards(entries, completions, lens, self.dataset, self.cfg, device)
 
         log_probs_old = compute_log_probs(self.model, sequence_ids, attention_mask)
         log_probs_ref = compute_log_probs(self.ref_model, sequence_ids, attention_mask)
         values_old = compute_values(self.val_model, sequence_ids, attention_mask)
 
-        rewards = apply_reward_kl(
-            rewards,
-            log_probs_old,
-            log_probs_ref,
-            action_mask,
-            self.cfg.beta,
-            self.cfg.loss,
-            self.cfg.kl_estimator,
-        )
-        advantages = compute_advantages(
-            rewards,
-            correctness,
-            format,
-            self.cfg.loss,
-            action_mask,
-            values_old,
-            self.cfg.gamma,
-            self.cfg.lam,
-        )
+        rewards = apply_reward_kl(rewards, log_probs_old, log_probs_ref, action_mask, self.cfg)
+        advantages = compute_advantages(rewards, action_mask, values_old, self.cfg)
 
         return Experience(
             sequence_ids=sequence_ids,
             attention_mask=attention_mask,
             action_mask=action_mask,
             rewards=rewards,
-            correctness=correctness,
-            format=format,
-            penalties=penalties,
             log_probs_old=log_probs_old,
             log_probs_ref=log_probs_ref,
             values_old=values_old,
@@ -194,8 +168,9 @@ class RolloutEngine:
 
     def _dapo_filter(self, exp: Experience) -> Experience | None:
         """Drop the group if every completion has min or max correctness."""
-        all_min = (exp.correctness == self.cfg.accuracy_min_reward).all()
-        all_max = (exp.correctness == self.cfg.accuracy_max_reward).all()
+        correctness = exp.rewards["correctness"]
+        all_min = (correctness == self.cfg.accuracy_min_reward).all()
+        all_max = (correctness == self.cfg.accuracy_max_reward).all()
         if all_min or all_max:
             return None
         return exp

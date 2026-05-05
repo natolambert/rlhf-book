@@ -12,7 +12,7 @@
 # - CISPO (MiniMax, 2025)
 # - SAPO (Qwen Team, 2025)
 # - DAPO (Bytedance Team, 2025)
-# - MaxRL (Fahim, 2026)
+# - MaxRL (Tajwar et al., 2026)
 
 import torch
 import torch.nn as nn
@@ -187,15 +187,10 @@ class ReinforceLoss(nn.Module):
 
 
 class MaxRLLoss(nn.Module):
-    """MaxRL loss (Fahim, 2026).
+    """MaxRL loss (Tajwar et al., 2026).
 
     Uses binary rewards per completion:
         r = correctness * format
-
-    For each prompt group:
-        baseline = mean(r)
-        advantage = (r - baseline) / baseline, if baseline > 0
-        advantage = 0, otherwise
     """
 
     def __init__(self, **kwargs) -> None:
