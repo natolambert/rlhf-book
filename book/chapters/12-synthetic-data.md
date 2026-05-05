@@ -113,21 +113,56 @@ $$
 \end{aligned}
 $$ {#eq:sequence_kd}
 
-<!-- TODO: Start by explaining why distillation belongs in a synthetic-data chapter: it is both a data-generation practice and a technical objective. Can also be during the link to chapter 6 -->
+As we transition to the popular variants of KD with modern models, we'll refer to this style of training as *offline* KD -- as in the generations for training the student model are generated a priori.
 
-<!-- TODO: Contrast logit/soft-label distillation with the form most language-model readers know: teacher-generated sequences used as SFT data. Kim & Rush use source sentence s, target sequence t, teacher distribution q(t | s), student distribution p(t | s), and sequence space T; for LLMs, map s to prompt x and t to completion y. -->
+Before proceeding, two connections are useful.
+
+First, there was a series of popular models trained with offline KD, such as the classifiers DistilBERT [@sanh2019distilbert] and TinyBERT [@jiao2020tinybert], which combined other improvements in language models with offline distillation (notably, not *sequence* distillation because these encoder models were not distilled for multi-token autoregressive prediction).
+
+Second, we can make the connection to the thorough coverage of Kullback-Leibler (KL) divergence in Chapter 15, because the cross-entropy objective used above is closely related to KL divergence.
+For a teacher distribution $q$ and student distribution $p$, cross-entropy is defined as
+
+$$
+H(q,p) = -\sum_z q(z)\log p(z).
+$$ {#eq:kd_cross_entropy}
+
+This has the same form as @eq:word_kd and the first term of @eq:sequence_kd.
+Cross-entropy also can be decomposed into the entropy of the teacher distribution and a KL divergence:
+
+$$
+\begin{aligned}
+H(q,p)
+&= H(q) + D_{\mathrm{KL}}(q\|p) \\
+&= -\sum_z q(z)\log q(z)
++ \sum_z q(z)\log\frac{q(z)}{p(z)}.
+\end{aligned}
+$$ {#eq:kd_forward_kl}
+
+The first term, $H(q)$, only depends on the teacher.
+Thus, when the teacher is fixed and the source of training data, minimizing cross-entropy is equivalent to minimizing the forward KL, $D_{\mathrm{KL}}(q\|p)$, from teacher to student.
+This is the KL direction used by offline KD and SFT-like training.
+
+*TODO* Re-write this below, almost there.
+
+The core limitation that emerged from this line of work is that offline KD trains the student on teacher-generated or otherwise fixed contexts -- inflexibly absorbing any limitations of that model, or potentially inducing a set of mismatched, learned features in the student.
+At inference time, however, the student must continue from its own previous tokens, including mistakes or lower-probability choices the teacher would not have made.
+This distribution shift is the opening for on-policy distillation.
+
+- TODO: Introduce on-policy distillation as distillation on student-sampled states [@agarwal2024policy].
+
+Mention MiniLLM as an important reverse-KL language-model distillation reference [@gu2024minillm]. Define $s_t = (x, y_{<t})$ before using @eq:opd_reverse_kl.
+
+[@lu2025onpolicy] use of KL in advantage, as used within policy-gradient algorithms covered in chapter 6
 
 - TODO: Explain offline or sequence-level distillation. Use @eq:word_kd to show word-level cross-entropy against the teacher distribution, then use @eq:sequence_kd to show the intractable sequence objective and the beam-search/mode approximation.
 
 - TODO: Explain why cross-entropy is the natural loss here. Hint: hard-label CE is cross-entropy against a one-hot target; KD CE is the same operation against the teacher's non-one-hot distribution. Because the teacher distribution is fixed, minimizing cross-entropy with the teacher is equivalent to minimizing forward KL up to the teacher entropy constant.
-- TODO: Mention DistilBERT [@sanh2019distilbert] and TinyBERT [@jiao2020tinybert] as BERT-era applications of these ideas, not as separate milestones in the path to OPD. Hint: DistilBERT combines LM, distillation, and cosine-distance losses; TinyBERT distills Transformer internals such as embeddings, hidden states, attention, and logits.
 
 
 <!-- TODO: Motivate the distribution-mismatch problem: the student trains on teacher/fixed trajectories but must recover from its own errors at inference time. DAgger analogy: student rollouts are the learner-induced state distribution; teacher labels/logits are the expert feedback queried on those states; iterative KD/OPD is a language-model version of aggregating data where the learner actually visits. Be careful that OPD often uses dense teacher distributions, not only expert actions. -->
 
 - TODO: Connect iterative distillation to the DAgger imitation-learning framework [@ross2011reduction]. Hint: the shared problem is covariate shift from training only on expert/offline trajectories, and the shared remedy is collecting supervision on states induced by the current learner.
 
-- TODO: Introduce on-policy distillation as distillation on student-sampled states [@agarwal2024policy; @lu2025onpolicy]. Mention MiniLLM as an important reverse-KL language-model distillation reference [@gu2024minillm]. Define $s_t = (x, y_{<t})$ before using @eq:opd_reverse_kl.
 
 For on-policy distillation, let $x$ be a prompt, $y = (y_1,\ldots,y_L)$ be a completion sampled from the current student policy $\pi_\theta(\cdot \mid x)$, and let $s_t = (x, y_{<t})$ be the token-level state at step $t$.
 The teacher policy $\pi_T$ is fixed, so the objective compares the student's next-token distribution to the teacher's distribution on states induced by the student.
@@ -165,6 +200,9 @@ $$ {#eq:mopd_objective}
 
 <!-- TODO: Decide which modern OPD/MOPD examples should become prose and which should remain footnotes or omitted. Verify all model-specific claims from primary reports. -->
 
+<!-- TODO: Start by explaining why distillation belongs in a synthetic-data chapter: it is both a data-generation practice and a technical objective. Can also be during the link to chapter 6 -->
+
+
 - TODO: Use the end taxonomy from [@li2026rethinkingopd] to organize the final part: implementation granularities (sampled-token, full-vocabulary, top-$k$ OPD), phenomenology (thinking-pattern consistency; higher scores do not necessarily mean new knowledge), mechanism (progressive alignment on overlap/high-probability tokens), recipe (off-policy cold start; teacher-aligned prompt selection), and caveat (dense token-level reward may become less reliable for long-horizon rollouts).
 - TODO: MiMo-V2-Flash [@mimo2025flash].
 - TODO: Qwen3 [@yang2025qwen3].
@@ -173,6 +211,7 @@ $$ {#eq:mopd_objective}
 - TODO: DeepSeek-V4-Pro [@deepseekai2026deepseekv4].
 - TODO: Use [Yumo Xu's MOPD post](https://yumoxu.notion.site/multi-teacher-on-policy-distillation) only as a pointer for the audit, not as the final authority for model-specific claims.
 - TODO forward pointer in Chapter 6 to this section
+- TODO: Revisit notation after the RL connection is drafted. Decide whether to keep Kim & Rush's $s,t,q,p$ notation locally, translate the section into Chapter 6's state/action notation, or use $x,y$ for prompt/completion with a short bridge to $s_t=(x,y_{<t})$.
 
 ## Constitutional AI & AI Feedback
 
