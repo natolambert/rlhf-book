@@ -246,19 +246,22 @@ def compute_advantages(
         return rewards["total"]
 
 
-def compute_log_probs(
+def compute_log_probs_entropy(
     model, sequence_ids: torch.Tensor, attention_mask: torch.Tensor
-) -> torch.Tensor | None:
+) -> tuple[torch.Tensor | None, torch.Tensor | None]:
     """Compute log probabilities for each token in the sequence."""
     if not model:
-        return None
+        return None, None
     sequence_ids, attention_mask = sequence_ids.to(model.device), attention_mask.to(model.device)
     output = model(input_ids=sequence_ids, attention_mask=attention_mask, use_cache=False)
     logits = output.logits[:, :-1, :].to(torch.float32)
     log_probs = F.log_softmax(logits, dim=-1)
+    probs = log_probs.exp()
+    # [batch, seq_len-1]
+    entropy = -(probs*log_probs).sum(dim=-1)
     targets = sequence_ids[:, 1:].unsqueeze(-1)
     target_log_probs = torch.gather(log_probs, dim=-1, index=targets).squeeze(-1)
-    return target_log_probs
+    return target_log_probs, entropy
 
 
 def compute_values(

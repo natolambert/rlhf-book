@@ -49,3 +49,4 @@ model_device_id: 0
 # Logging
 wandb_project: rlhf-book
 wandb_run_name: dapo_spell_backward
+max_entropy_tokens: 20  # -1 = all tokens; set to e.g. 20 to use top 20% highest-entropy (forking) tokens

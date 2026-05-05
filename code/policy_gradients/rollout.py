@@ -12,7 +12,7 @@ from .config import Config
 from .utils import (
     apply_reward_kl,
     compute_advantages,
-    compute_log_probs,
+    compute_log_probs_entropy,
     compute_rewards,
     compute_values,
     print_rollout_sample,
@@ -143,8 +143,8 @@ class RolloutEngine:
 
         rewards = compute_rewards(entries, completions, lens, self.dataset, self.cfg, device)
 
-        log_probs_old = compute_log_probs(self.model, sequence_ids, attention_mask)
-        log_probs_ref = compute_log_probs(self.ref_model, sequence_ids, attention_mask)
+        log_probs_old, _ = compute_log_probs_entropy(self.model, sequence_ids, attention_mask)
+        log_probs_ref, _ = compute_log_probs_entropy(self.ref_model, sequence_ids, attention_mask)
         values_old = compute_values(self.val_model, sequence_ids, attention_mask)
 
         rewards = apply_reward_kl(rewards, log_probs_old, log_probs_ref, action_mask, self.cfg)
