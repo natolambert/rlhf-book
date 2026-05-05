@@ -12,6 +12,7 @@
 # - CISPO (MiniMax, 2025)
 # - SAPO (Qwen Team, 2025)
 # - DAPO (Bytedance Team, 2025)
+# - MaxRL (Fahim, 2026)
 
 import torch
 import torch.nn as nn
@@ -171,6 +172,22 @@ class ReinforceLoss(nn.Module):
 
     The classic policy gradient: -log(pi) * advantage
     See Chapter 6 of RLHF Book for derivation from the policy gradient theorem.
+    """
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__()
+
+    def forward(self, log_probs: torch.Tensor, experience: Experience, **kwargs) -> torch.Tensor:
+        loss = -(log_probs * experience.advantages)
+        loss = masked_mean(loss, mask=experience.action_mask, dim=-1).mean(dim=0)
+        return loss
+
+
+class MaxRLLoss(nn.Module):
+    """MaxRL loss (Fahim, 2026).
+
+    Uses binary rewards per completion:
+        r = correctness * format
     """
 
     def __init__(self, **kwargs) -> None:
