@@ -190,7 +190,10 @@ class GSPOLoss(nn.Module):
 
         # Sequence-level ratio uses the full action mask (sequence boundary is unchanged)
         seq_logprobs = masked_mean(
-            log_probs - experience.log_probs_old, mask=experience.action_mask, dim=-1, keepdim=True
+            log_probs - experience.log_probs_old,
+            mask=experience.action_mask,
+            dim=-1,
+            keepdim=True,
         ).exp()
         unclipped_term = seq_logprobs * experience.advantages
         clipped_term = (

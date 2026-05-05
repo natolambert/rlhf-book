@@ -167,7 +167,9 @@ def main(cfg: Config):
                         entropy_log["entropy/entropy_high_mean"] = (
                             accumulated_entropy_high / num_accumulated
                         )
-                        entropy_log["entropy/entropy_low_mean"] = accumulated_entropy_low / num_accumulated
+                        entropy_log["entropy/entropy_low_mean"] = (
+                            accumulated_entropy_low / num_accumulated
+                        )
                         entropy_log["entropy/entropy_old_high_mean"] = (
                             accumulated_entropy_old_high / num_accumulated
                         )

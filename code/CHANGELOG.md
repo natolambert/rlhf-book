@@ -5,6 +5,7 @@ On release, entries get moved under a version heading.
 
 ## Unreleased
 
+- 2026-05-05: [PR #398](https://github.com/natolambert/rlhf-book/pull/398) Added the implementation for Beyond the 80/20 Rule: High-Entropy Minority Tokens Drive Effective Reinforcement Learning for LLM Reasoning
 - 2026-05-05: [PR #396](https://github.com/natolambert/rlhf-book/pull/396) added lightweight import and CLI smoke tests for the `code/` subpackages.
 
 ## v0.3.0
