@@ -39,6 +39,7 @@ class Experience:
     log_probs_old: torch.Tensor | None = None
     log_probs_ref: torch.Tensor | None = None
     values_old: torch.Tensor | None = None
+    entropy_old: torch.Tensor | None = None
     rewards: TensorDict | None = None
 
     def to(self, device: torch.device) -> Self:

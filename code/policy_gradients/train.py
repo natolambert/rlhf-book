@@ -19,6 +19,7 @@ from torch.utils.data import DataLoader
 
 from .buffer import Experience, join_experiences_batch
 from .config import Config, load_config
+from .loss import get_high_entropy_mask
 from .rollout import RolloutEngine
 from .utils import (
     compute_log_probs_entropy,
@@ -107,6 +108,12 @@ def main(cfg: Config):
 
             optimizer.zero_grad(set_to_none=True)
             accumulated_loss = 0.0
+            accumulated_entropy = 0.0
+            accumulated_entropy_old = 0.0
+            accumulated_entropy_high = 0.0
+            accumulated_entropy_low = 0.0
+            accumulated_entropy_old_high = 0.0
+            accumulated_entropy_old_low = 0.0
 
             for idx, exp in enumerate(experience_sampler):
                 exp: Experience = exp.to(model.device)
@@ -123,6 +130,22 @@ def main(cfg: Config):
                 scaled_loss = loss / cfg.batch_acc
                 scaled_loss.backward()
                 accumulated_loss += loss.item()
+                mask = exp.action_mask.bool()
+                accumulated_entropy += entropy[mask].mean().item()
+                accumulated_entropy_old += exp.entropy_old[mask].mean().item()
+                if cfg.max_entropy_tokens != -1:
+                    high_mask = get_high_entropy_mask(
+                        entropy, exp.action_mask, cfg.max_entropy_tokens
+                    ).bool()
+                    low_mask = mask & ~high_mask
+                    accumulated_entropy_high += entropy[high_mask].mean().item()
+                    accumulated_entropy_low += (
+                        entropy[low_mask].mean().item() if low_mask.any() else 0.0
+                    )
+                    accumulated_entropy_old_high += exp.entropy_old[high_mask].mean().item()
+                    accumulated_entropy_old_low += (
+                        exp.entropy_old[low_mask].mean().item() if low_mask.any() else 0.0
+                    )
 
                 # Update weights every batch_acc steps
                 if (idx + 1) % cfg.batch_acc == 0 or (idx + 1) == len(experience_sampler):
@@ -133,10 +156,35 @@ def main(cfg: Config):
 
                     num_accumulated = min(cfg.batch_acc, (idx % cfg.batch_acc) + 1)
                     avg_loss = accumulated_loss / num_accumulated
+                    avg_entropy = accumulated_entropy / num_accumulated
+                    avg_entropy_old = accumulated_entropy_old / num_accumulated
                     hours = (time.time() - start_time) / 3600
-                    wandb.log({"loss": avg_loss, "grad_norm": grad_norm, "hours": hours})
+                    entropy_log = {
+                        "entropy/entropy_mean": avg_entropy,
+                        "entropy/entropy_old_mean": avg_entropy_old,
+                    }
+                    if cfg.max_entropy_tokens != -1:
+                        entropy_log["entropy/entropy_high_mean"] = (
+                            accumulated_entropy_high / num_accumulated
+                        )
+                        entropy_log["entropy/entropy_low_mean"] = accumulated_entropy_low / num_accumulated
+                        entropy_log["entropy/entropy_old_high_mean"] = (
+                            accumulated_entropy_old_high / num_accumulated
+                        )
+                        entropy_log["entropy/entropy_old_low_mean"] = (
+                            accumulated_entropy_old_low / num_accumulated
+                        )
+                    wandb.log(
+                        {"loss": avg_loss, "grad_norm": grad_norm, **entropy_log, "hours": hours}
+                    )
                     progress.update(task, advance=1, description=f"[dim]Loss: {avg_loss:.4f}[/dim]")
                     accumulated_loss = 0.0
+                    accumulated_entropy = 0.0
+                    accumulated_entropy_old = 0.0
+                    accumulated_entropy_high = 0.0
+                    accumulated_entropy_low = 0.0
+                    accumulated_entropy_old_high = 0.0
+                    accumulated_entropy_old_low = 0.0
                 else:
                     progress.update(task, advance=1)
 

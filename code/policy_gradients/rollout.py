@@ -143,7 +143,9 @@ class RolloutEngine:
 
         rewards = compute_rewards(entries, completions, lens, self.dataset, self.cfg, device)
 
-        log_probs_old, _ = compute_log_probs_entropy(self.model, sequence_ids, attention_mask)
+        log_probs_old, old_entropy = compute_log_probs_entropy(
+            self.model, sequence_ids, attention_mask
+        )
         log_probs_ref, _ = compute_log_probs_entropy(self.ref_model, sequence_ids, attention_mask)
         values_old = compute_values(self.val_model, sequence_ids, attention_mask)
 
@@ -158,6 +160,7 @@ class RolloutEngine:
             log_probs_old=log_probs_old,
             log_probs_ref=log_probs_ref,
             values_old=values_old,
+            entropy_old=old_entropy,
             advantages=advantages,
         ).to(self.cpu_device)
 
