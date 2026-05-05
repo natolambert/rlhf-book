@@ -19,7 +19,7 @@ See the parent [`code/README.md`](../README.md) for installation, configuration,
 | **CISPO** | `cispo.yaml` | Clipped Importance Sampling PO ([MiniMax, 2025](https://arxiv.org/abs/2506.13585)) |
 | **SAPO** | `sapo.yaml` | Soft Adaptive Policy Optimization ([Gao et al., 2025](https://arxiv.org/abs/2511.20347)) |
 | **DAPO** | `dapo.yaml` | Decoupled Clip and Dynamic sAmpling Policy Optimization ([Yu et al., 2025](https://arxiv.org/abs/2503.14476)) |
-| **MaxRL** | `maxrl.yaml` | Maximum Likelihood Reinforcement learning ([Tajwar et al., 2026](https://arxiv.org/abs/2602.02710)) |
+| **MaxRL** | `maxrl.yaml` | Maximum Likelihood Reinforcement Learning ([Tajwar et al., 2026](https://arxiv.org/abs/2602.02710)) |
 
 ## Reference Runs
 
