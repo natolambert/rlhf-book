@@ -73,6 +73,48 @@ Within this, curating high-quality prompts and filtering responses from the teac
 
 Transferring specific skills into smaller language models uses the same principles of distillation -- get the best data possible for training.
 Here, many papers have studied using limited datasets from stronger models to improve alignment [@zhou2023lima], mathematical reasoning [@shridhar2023distilling] [@hsieh2023distilling], and test-time scaling [@muennighoff2025s1].
+
+### The Path to On-Policy Distillation
+
+<!-- TODO: Start by explaining why distillation belongs in a synthetic-data chapter: it is both a data-generation practice and a technical objective. -->
+
+- TODO: Introduce classical teacher-student knowledge distillation [@hinton2015distilling]. Use @eq:kd_temperature to explain soft labels, temperature, and why the student is matching a distribution rather than only a hard label.
+
+$$\mathcal{L}_{\mathrm{KD}}(\theta) = \tau^2 \mathbb{E}_{x \sim \mathcal{D}} D_{\mathrm{KL}}\left(p_T^\tau(\cdot \mid x) \;\|\; p_\theta^\tau(\cdot \mid x)\right).$$ {#eq:kd_temperature}
+
+<!-- TODO: Contrast logit/soft-label distillation with the form most language-model readers know: teacher-generated sequences used as SFT data. -->
+
+- TODO: Explain offline or sequence-level distillation [@kim-rush-2016-sequence]. Use @eq:sequence_kd to connect the math to synthetic instruction datasets.
+
+$$\mathcal{L}_{\mathrm{seqKD}}(\theta) = -\mathbb{E}_{x, y^T \sim \pi_T(\cdot \mid x)} \sum_t \log \pi_\theta(y_t^T \mid x, y_{<t}^T).$$ {#eq:sequence_kd}
+
+<!-- TODO: Motivate the distribution-mismatch problem: the student trains on teacher/fixed trajectories but must recover from its own errors at inference time. -->
+
+- TODO: Introduce on-policy distillation as distillation on student-sampled states [@agarwal2024policy; @lu2025onpolicy]. Mention MiniLLM as an important reverse-KL language-model distillation reference [@gu2024minillm]. Define $s_t = (x, y_{<t})$ before using @eq:opd_reverse_kl.
+
+$$\mathcal{L}_{\mathrm{OPD}}(\theta) = \mathbb{E}_{x, y \sim \pi_\theta(\cdot \mid x)} \sum_t D_{\mathrm{KL}}\left(\pi_\theta(\cdot \mid s_t) \;\|\; \pi_T(\cdot \mid s_t)\right).$$ {#eq:opd_reverse_kl}
+
+<!-- TODO: Explain why this plugs neatly into RL infrastructure: the teacher log-prob gap acts like dense token-level feedback. -->
+
+- TODO: Explain KL-as-advantage. Use @eq:opd_kl_advantage to connect OPD to the policy-gradient machinery in Chapter 6, then forward-reference Chapter 15 for KL direction and generalization.
+
+$$A_t^{\mathrm{OPD}} = \log \pi_T(y_t \mid s_t) - \log \pi_\theta(y_t \mid s_t).$$ {#eq:opd_kl_advantage}
+
+<!-- TODO: Extend from one teacher to self-distillation and multiple teachers; keep the prose careful about when the teacher is an earlier checkpoint versus a domain specialist. -->
+
+- TODO: Write the self-distillation and multi-teacher distillation paragraph. Use @eq:mopd_objective as the candidate equation.
+
+$$\mathcal{L}_{\mathrm{MOPD}}(\theta) = \mathbb{E}_{y \sim \pi_\theta} \sum_t \sum_k w_k D_{\mathrm{KL}}\left(\pi_\theta(\cdot \mid s_t) \;\|\; \pi_{T_k}(\cdot \mid s_t)\right).$$ {#eq:mopd_objective}
+
+<!-- TODO: Decide which modern OPD/MOPD examples should become prose and which should remain footnotes or omitted. Verify all model-specific claims from primary reports. -->
+
+- TODO: MiMo-V2-Flash [@mimo2025flash].
+- TODO: GLM-5 [@glm5team2026glm5].
+- TODO: Nemotron-Cascade 2 [@yang2026nemotroncascade2].
+- TODO: DeepSeek-V4-Pro [@deepseekai2026deepseekv4].
+- TODO: Use [Yumo Xu's MOPD post](https://yumoxu.notion.site/multi-teacher-on-policy-distillation) only as a pointer for the audit, not as the final authority for model-specific claims.
+- TODO forward pointer in Chapter 6 to this section
+
 ## Constitutional AI & AI Feedback
 
 Soon after the explosion of growth in RLHF, RL from AI Feedback (RLAIF) emerged as an alternative approach where AIs could approximate the human data piece of the pipeline and accelerate experimentation or progress.
