@@ -416,6 +416,6 @@ def print_rollout_sample(buf: ReplayBuffer, sample: dict) -> None:
     table.add_column("Content")
     table.add_row("Question:", sample["question"])
     table.add_row("Oracle:", sample["answer"])
-    table.add_row("Completion:", preview(sample["completion"]))
+    table.add_row("Completion:", sample.get("completion_rich", preview(sample["completion"])))
     console.print(Panel(table, title="[bold cyan]Sample[/bold cyan]", border_style="dim"))
     console.print()
