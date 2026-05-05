@@ -21,7 +21,7 @@ from .buffer import Experience, join_experiences_batch
 from .config import Config, load_config
 from .rollout import RolloutEngine
 from .utils import (
-    compute_log_probs,
+    compute_log_probs_entropy,
     compute_values,
     create_dataset,
     get_loss_objective,
@@ -67,6 +67,7 @@ def main(cfg: Config):
         kl_estimator=cfg.kl_estimator,
         sapo_temp_pos=cfg.sapo_temp_pos,
         sapo_temp_neg=cfg.sapo_temp_neg,
+        max_entropy_tokens=cfg.max_entropy_tokens,
     ).to(model.device)
     params = list(model.parameters()) + (list(val_model.parameters()) if val_model else [])
     optimizer = optim.Adam(params, lr=cfg.lr)
@@ -110,9 +111,13 @@ def main(cfg: Config):
             for idx, exp in enumerate(experience_sampler):
                 exp: Experience = exp.to(model.device)
 
-                log_probs = compute_log_probs(model, exp.sequence_ids, exp.attention_mask)
+                log_probs, entropy = compute_log_probs_entropy(
+                    model, exp.sequence_ids, exp.attention_mask
+                )
                 values = compute_values(val_model, exp.sequence_ids, exp.attention_mask)
-                loss = objective(log_probs=log_probs, experience=exp, values=values)
+                loss = objective(
+                    log_probs=log_probs, entropy=entropy, experience=exp, values=values
+                )
                 if not loss.isfinite():
                     continue
                 scaled_loss = loss / cfg.batch_acc

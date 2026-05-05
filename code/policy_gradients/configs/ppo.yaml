@@ -32,3 +32,4 @@ model_device_id: 0
 val_model_device_id: 0  # PPO-specific: value model device
 wandb_project: rlhf-book
 wandb_run_name: ppo_spell_backwards
+max_entropy_tokens: -1  # -1 = all tokens; set to e.g. 20 to use top 20% highest-entropy (forking) tokens

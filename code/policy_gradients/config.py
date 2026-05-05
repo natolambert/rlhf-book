@@ -98,6 +98,10 @@ class Config(BaseModel):
     accuracy_min_reward: float = 0.0
     accuracy_max_reward: float = 1.0
 
+    # 80/20 high-entropy token filtering (Wang et al., 2025)
+    # Top N% of tokens by entropy receive gradient updates; -1 = all tokens
+    max_entropy_tokens: int = -1
+
     # Reward shaping
     format_weight: float = 0.5
 
