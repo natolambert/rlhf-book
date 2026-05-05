@@ -247,7 +247,7 @@ It has three pieces to the update rule:
 
 1. Nonnegative factor: This is the learning rate (step size) that must be a positive number, e.g. $\alpha$ below.
 2. Offset Reinforcement: This is a baseline $b$ or other normalizing factor of the reward to improve stability.
-3. Characteristic Eligibility: This is how the learning becomes attributed per token. It can be a general value, $e$ per parameter, but is often log probabilities of the policy in modern equations.
+3. Characteristic Eligibility: This attributes the scalar reward signal to the parameters that produced the action. Williams denotes this eligibility term as $e$ (not the exponential function). In modern policy-gradient notation, it corresponds to $\nabla_\theta \log \pi_\theta(a_t \mid s_t)$.
 
 Thus, the form looks quite familiar:
 
