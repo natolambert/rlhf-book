@@ -64,7 +64,7 @@ Distillation colloquially refers to using the outputs from a stronger model to t
 ![Synthetic data generation in LLM post-training: prompts are passed through a strong model to generate completions, which are paired to create a training dataset. This dataset is then used to fine-tune smaller models via standard supervised learning. More complex pipelines may involve multiple models editing completions, generating preference pairs, or filtering for quality.](images/synthetic_data_distillation_tikz.png){#fig:synthetic-data-generation}
 In post-training, this general notion of distillation takes two common forms:
 
-1. As a data engine to use across wide swaths of the post-training process: Completions for instructions, AI feedback for preference data, or verification for RL.
+1. As a data engine to use across wide swaths of the post-training process: Completions for instructions, preference data (or Constitutional AI), or verification for RL.
 2. To transfer specific skills from a stronger model to a weaker model, which is often done for specific skills such as mathematical reasoning or coding.
 
 The first strategy has grown in popularity as language models evolved to be more reliable than humans at writing answers to a variety of tasks.
@@ -206,15 +206,10 @@ Extended approaches, such as On-Policy Self-Distillation (OPSD), have a language
 ## AI Feedback
 
 Soon after the explosion of growth in RLHF, RL from AI Feedback (RLAIF) emerged as an alternative approach where AIs could approximate the human data piece of the pipeline and accelerate experimentation or progress.
-AI feedback, generally, is a larger set of techniques for using AI to augment or generate data explaining the quality of a certain input, which can be used in different training approaches or evaluations.
-Early RLAIF work largely used pairwise preferences [@lee2023rlaif] [@sharma2024critical] [@castricato2024suppressing].
+AI feedback, generally, is a larger set of techniques for using AI to augment or generate data explaining the quality of a certain input (which can be used in different training approaches or evaluations), which started with pairwise preferences [@lee2023rlaif]  [@sharma2024critical] [@castricato2024suppressing].
 There are many motivations to using RLAIF to either entirely replace human feedback or augment it. 
 Within the RLHF process, AI feedback is known most for its role within the preference data collection and the related reward model training phase (of which constitutional AI is a certain type of implementation).
-In this chapter, we first treat AI feedback as a general source of synthetic preference data, then return to Constitutional AI as a concrete historical recipe below.
-
-The term RLAIF was introduced in Anthropic's work *Constitutional AI: Harmlessness from AI Feedback* [@bai2022constitutional], which resulted in initial confusion in the AI community over the relationship between the two methods in the title of the paper.
-The relationship should be understood as CAI being the example that helped kickstart the broader field of RLAIF, not as a synonym for all AI feedback.
-Since then, RLAIF has become a common method within the post-training and RLHF literatures -- there are far more examples than one can easily enumerate.
+In this chapter, we focus on the general AI feedback and this specific way of using it in the RLHF training pipeline, and we cover more ways of understanding or using synthetic data later in this book.
 
 As AI feedback matured, its applications expanded beyond simply replacing human preference labels. 
 The same LLM-as-a-judge infrastructure that enabled cheaper preference data collection also enabled scalable evaluation (see Chapter 16), and more recently, rubric-based rewards that extend RL training to domains without verifiable answers -- a frontier explored later in this chapter.
@@ -235,11 +230,15 @@ Early literature studying RLHF after ChatGPT had narrow evaluation suites focuse
 Later work takes a more nuanced picture, where the optimal equilibrium on a broader evaluation set, e.g. including some reasoning tasks, involves routing a set of challenging data-points to accurately label to humans, while most of the data is sent for AI feedback [@miranda2024hybrid] [@xu2025rlthf].
 While there are not focused studies on the balance between human and AI feedback data for RLHF across broader domains, there are many technical reports that show RLHF generally can improve these broad suite of evaluations, some that use DPO, such as Ai2's Tülu 3 [@lambert2024t] & Olmo 3 [@teamolmo2025olmo3], or HuggingFace's SmolLM 3 [@bakouch2025smollm3], and others that use online RLHF pipelines, such as Nvidia's work that uses a mix of human preference data from Scale AI and LLM-based feedback (through the helpsteer line of work [@wang2024helpsteer] [@wang2024helpsteer2] [@wang2024helpsteer2p] [@wang2025helpsteer3]): Nemotron Nano 3 [@nvidia2025nemotron3nano], Nemotron-Cascade [@wang2025nemotron], or Llama-Nemotron reasoning models [@bercovich2025llamanemotron].
 
-Overall, although AI feedback and related methods are obviously extremely useful to the field, human data has not been completely replaced by these cheaper alternatives.
+Overall, where AI feedback and related methods are obviously extremely useful to the field, it is clear that human data has not been completely replaced by these cheaper alternatives.
 Many hypotheses exist, but it is not studied if human data allows finer control of the models in real-world product settings or for newer training methods such as character training (an emerging set of techniques that allow you to precisely control the personality of a model, covered in Chapter 17).
-For those getting started, AI feedback should be the first attempt, but pipelines that scale to larger operations are likely to eventually include human feedback.
+For those getting started, AI feedback should be the first attempt, but for pipelines that're scaling to larger operations the eventual transition to include human feedback is likely.
 
-That leaves a useful rule of thumb for the difference between human data and AI feedback data:
+The term RLAIF was introduced in Anthropic's work *Constitutional AI: Harmlessness from AI Feedback* [@bai2022constitutional], which resulted in initial confusion in the AI community over the relationship between the two methods in the title of the paper (Constitutional AI and AI Feedback).
+Since the release of the Constitutional AI (CAI) paper and the formalization of RLAIF, RLAIF has become a default method within the post-training and RLHF literatures -- there are far more examples than one can easily enumerate.
+The relationship should be understood as CAI was the example that kickstarted the broader field of RLAIF.
+
+A rule of thumb for the difference between human data and AI feedback data is as follows:
 
 1. Human data is high-noise and low-bias. This means that collection and filtering of the data can be harder, but when wrangled it'll provide a very reliable signal.
 2. Synthetic preference data is low-noise and high-bias. This means that AI feedback data will be easier to start with, but can have tricky, unintended second-order effects on the model that are systematically represented in the data.
