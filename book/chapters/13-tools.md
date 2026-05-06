@@ -5,7 +5,7 @@
   Full license: https://github.com/natolambert/rlhf-book/blob/main/LICENSE-CHAPTERS
 -->
 ---
-prev-chapter: "Synthetic Data & CAI"
+prev-chapter: "Synthetic Data"
 prev-url: "12-synthetic-data"
 page-title: Tool Use
 search-title: "Chapter 13: Tool Use"

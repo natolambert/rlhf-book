@@ -9,7 +9,7 @@ prev-chapter: "What are Preferences"
 prev-url: "10-preferences"
 page-title: Preference Data
 search-title: "Chapter 11: Preference Data"
-next-chapter: "Synthetic Data & CAI"
+next-chapter: "Synthetic Data"
 next-url: "12-synthetic-data"
 ---
 
@@ -266,4 +266,3 @@ Some are enumerated below:
 - **Type of feedback**: Does the default operating method of RLHF, pairwise preferences capture preferences in its intended form?  Can comparisons in RLHF across the same data be made with the default comparisons versus advanced multi-axis feedback mechanisms [@wu2024fine]? What types of comparisons would reflect how humans communicate preferences in text?
 - **Population demographics**: Who is completing the data? Is a diverse population maintained? How does a lack of diversity emerge as measurable impacts on the model? What is a minimum number of people required to suitably represent a given population? How are instances of preference annotator disagreement treated -- as a source of noise, or a signal?
 - **Are the Preferences Expressed in the Models?** In the maturation of RLHF and related approaches, the motivation of them -- to align models to abstract notions of human preference -- has drifted from the practical use -- to make the models more effective to users. A feedback loop that is not measurable due to the closed nature of industrial RLHF work is the check to see if the behavior of the models matches the specification given to the data annotators during the process of data collection. We have limited tools to audit this, such as the Model Spec from OpenAI [@openai2024modelspec] that details *what they want their models to do*, but we don't know exactly how this translates to data collection.
-
