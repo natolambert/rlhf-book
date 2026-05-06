@@ -145,7 +145,7 @@ Other compatible datasets:
 **Note on DPO-Norm scale**: DPO-Norm uses per-token average log-ratios, so its logits
 are much smaller than summed DPO logits. A `beta` around `2.0` is a reasonable starting
 point (matching SimPO's range). It is directly supported by the SimPO author
-([GitHub #20](https://github.com/princeton-nlp/SimPO/issues/20))
+([GitHub #20](https://github.com/princeton-nlp/SimPO/issues/20)) and an AI2 open-instruct maintainer ([GitHub #237](https://github.com/allenai/open-instruct/pull/237))
 
 ### In-Loop Generation Logging
 
