@@ -6,7 +6,7 @@
 - **Always run training commands in background** using `run_in_background: true` to avoid blocking
 - **Be careful with parallel jobs**: Only run one training job at a time unless you verify memory is available. Running too many can OOM the system.
 - **If using a DGX Spark**: ~120GB unified CPU/GPU memory — aim for <80GB usage to be safe. Flash Attention is not available on ARM64/Blackwell; the code automatically falls back to PyTorch SDPA.
-- **Before finalizing changes under `code/`**, run `uvx ruff@0.14.5 check .` and `uvx ruff@0.14.5 format --check .` — both are enforced by CI on PRs that touch `code/` (see `.github/workflows/lint.yml`). Use `uvx ruff@0.14.5 check --fix .` and `uvx ruff@0.14.5 format .` to auto-fix. Pin the version to match CI; unpinned `uvx ruff` can diverge.
+- **Before finalizing changes under `code/`**, run `uvx ruff@0.14.5 check .`, `uvx ruff@0.14.5 format --check .`, and `uv run --extra dev pytest` — all are enforced by CI on PRs that touch `code/` (see `.github/workflows/lint.yml`). Use `uvx ruff@0.14.5 check --fix .` and `uvx ruff@0.14.5 format .` to auto-fix. Pin the ruff version to match CI; unpinned `uvx ruff` can diverge.
 
 ## Contributing
 

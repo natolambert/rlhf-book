@@ -288,6 +288,14 @@ uvx ruff format .
 
 Configuration is in `pyproject.toml` (line length 100, Python 3.12 target).
 
+## Testing
+
+The test suite intentionally starts with lightweight smoke coverage for imports and CLI entrypoints. It should not download datasets, load models, or require GPUs.
+
+```bash
+uv run --extra dev pytest
+```
+
 ## Book Chapters
 
 These examples correspond to:

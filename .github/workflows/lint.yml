@@ -1,4 +1,4 @@
-name: Lint
+name: Code checks
 
 on:
   pull_request:
@@ -23,3 +23,17 @@ jobs:
 
       - name: Ruff format check
         run: uvx ruff@0.14.5 format --check .
+
+  smoke-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: code
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Run smoke tests
+        run: uv run --extra dev pytest

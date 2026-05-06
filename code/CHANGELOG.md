@@ -6,6 +6,7 @@ On release, entries get moved under a version heading.
 ## Unreleased
 
 - 2026-05-06: [PR #400](https://github.com/natolambert/rlhf-book/pull/400) added `dpo_norm` variant in direct-alignment that applies standard DPO with average response log-probs for both policy and reference model.
+- 2026-05-05: [PR #396](https://github.com/natolambert/rlhf-book/pull/396) added lightweight import and CLI smoke tests for the `code/` subpackages.
 
 ## v0.3.0
 
