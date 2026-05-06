@@ -5,6 +5,8 @@ On release, entries get moved under a version heading.
 
 ## Unreleased
 
+- 2026-05-06: [PR #TODO](https://github.com/natolambert/rlhf-book/pull/TODO) added `dpo_norm` variant in direct-alignment that applies standard DPO with average response log-probs for both policy and reference model.
+
 ## v0.3.0
 
 - 2026-05-05: [PR #395](https://github.com/natolambert/rlhf-book/pull/395) updated the canonical DAPO and MaxRL policy-gradient reference runs.

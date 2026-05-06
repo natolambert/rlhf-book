@@ -18,7 +18,9 @@ class Config:
     ref_model_name: str | None = None  # Defaults to model_name if None
 
     # Training settings
-    loss: Literal["dpo", "cdpo", "ipo", "simpo", "orpo", "kto", "apo_zero", "apo_down"] = "dpo"
+    loss: Literal[
+        "dpo", "dpo_norm", "cdpo", "ipo", "simpo", "orpo", "kto", "apo_zero", "apo_down"
+    ] = "dpo"
     beta: float = 0.1  # KL penalty / temperature
     gamma: float = 0.5  # SimPO gamma/beta margin ratio (effective shift is beta * gamma)
     label_smoothing: float = 0.0  # For cDPO (overridden if loss=cdpo)
@@ -82,8 +84,8 @@ class Config:
         # Loss-specific defaults
         if self.loss == "cdpo":
             self.label_smoothing = 0.1
-        elif self.loss == "simpo":
-            # SimPO typically uses higher beta
+        elif self.loss in ["simpo", "dpo_norm"]:
+            # SimPO and DPO-Norm typically uses higher beta
             if self.beta == 0.1:  # Only override if default
                 self.beta = 2.0
 

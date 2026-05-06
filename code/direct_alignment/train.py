@@ -533,14 +533,14 @@ def main(cfg: Config):
     print_training_info(console, cfg, len(dataloader.dataset))
 
     # Get loss function
-    # ORPO and SimPO both use average sequence log-probs (TRL-style).
+    # ORPO, SimPO, and DPO-Norm use average sequence log-probs (TRL-style).
     # For ORPO this avoids extreme log-odds magnitudes that show up with summed log-probs.
-    use_average_logprob = cfg.loss in ["simpo", "orpo"]
+    use_average_logprob = cfg.loss in ["simpo", "orpo", "dpo_norm"]
     loss_fn = get_loss_function(
         cfg.loss,
         beta=cfg.beta,
         gamma=cfg.gamma if cfg.loss == "simpo" else None,
-        label_smoothing=cfg.label_smoothing if cfg.loss in ["dpo", "cdpo"] else None,
+        label_smoothing=cfg.label_smoothing if cfg.loss in ["dpo", "dpo_norm", "cdpo"] else None,
     )
 
     # Optimizer with warmup
@@ -771,7 +771,7 @@ def main_cli():
     parser.add_argument(
         "--loss",
         type=str,
-        choices=["dpo", "cdpo", "ipo", "simpo", "orpo", "kto", "apo_zero", "apo_down"],
+        choices=["dpo", "dpo_norm", "cdpo", "ipo", "simpo", "orpo", "kto", "apo_zero", "apo_down"],
     )
     parser.add_argument("--beta", type=float, help="Beta parameter")
     parser.add_argument("--gamma", type=float, help="SimPO gamma/beta ratio")
