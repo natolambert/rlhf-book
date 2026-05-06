@@ -74,11 +74,16 @@ Within this, curating high-quality prompts and filtering responses from the teac
 Transferring specific skills into smaller language models uses the same principles of distillation -- get the best data possible for training.
 Here, many papers have studied using limited datasets from stronger models to improve alignment [@zhou2023lima], mathematical reasoning [@shridhar2023distilling] [@hsieh2023distilling], and test-time scaling [@muennighoff2025s1].
 
+The synthetic-data methods in the rest of this chapter are all ways of crafting data recipes that use language-model outputs directly inside training pipelines.
 
 ## The Path to On-Policy Distillation
 
 Where distillation generally has become a standard approach for post-training language models, a resurgence of interest in the specific sub-area of teacher-student knowledge distillation has accompanied the shift of post-training recipes towards reasoning and agentic models.
-Examples of leading models trained with new forms of knowledge distillation include Xiaomi's MiMo-V2-Flash [@mimo2025flash], Zhipu AI's GLM-5 [@glm5team2026glm5], and DeepSeek-V4-Pro [@deepseekai2026deepseekv4].
+Examples of leading models trained with new forms of knowledge distillation include Alibaba's Qwen3 [@yang2025qwen3], Xiaomi's MiMo-V2-Flash [@mimo2025flash], Zhipu AI's GLM-5 [@glm5team2026glm5], and DeepSeek-V4-Pro [@deepseekai2026deepseekv4].
+
+Distillation belongs in this chapter because many modern uses of synthetic data in post-training are, in practice, distillation-inspired pipelines: a stronger model produces labels, completions, logits, critiques, or other supervision, and a student model is trained on that signal.
+At the same time, the technical literature on distillation is growing into its own set of post-training methods, especially as on-policy and self-distillation recipes become more common.
+For now, we cover it here as part of the synthetic-data toolkit, but future versions of this book may warrant a dedicated chapter on distillation as a training tool alongside instruction finetuning, reinforcement learning, etc.
 
 The original literature introduced it specifically as a way to train a *student* model from an already trained, stronger, and/or bigger *teacher* network [@hinton2015distilling].
 KD is known as a technique that uses *soft* training labels, as opposed to the one-hot labels used in standard objectives like next-token prediction with cross-entropy loss.
@@ -149,7 +154,7 @@ Together, these issues were an opening for *on-policy* distillation (OPD).
 
 The core shift to on-policy distillation is the idea that we can tweak the optimization by sampling from the student model and measuring its distance to the teacher distribution, rather than sampling from the teacher model.
 MiniLLM noted the need to shift to a reverse KL optimization (we explain intuitively why this target can be better in Chapter 15) and proposed using KD loss functions within an online policy-gradient RL framework [@gu2024minillm].
-Other concurrent work [@agarwal2024policy] showed the promise of on-policy KD and connected the iterative process of generating from the student and grading with a teacher to iterative, imitation learning work from the RL literature (e.g. DAgger [@ross2011reduction]).
+Other concurrent work [@agarwal2024policy] showed the promise of on-policy KD and connected the iterative process of generating from the student and grading with a teacher to iterative, imitation learning work from the RL literature (e.g. DAgger, which iteratively trains an agent that acts in the world with its learned policy and is given feedback from an oracle policy on whether its action was correct, which can then be used to update its policy [@ross2011reduction]).
 
 For on-policy distillation, let $s$ be a prompt, $a = (a_1,\ldots,a_L)$ be a completion sampled from the current student policy $\pi_\theta(\cdot \mid s)$, and let $s_t = (s, a_{<t})$ be the token-level state at step $t$.
 The teacher policy $\pi_T$ is fixed, so the objective compares the student's next-token distribution to the teacher's distribution on states induced by the student.
@@ -188,29 +193,11 @@ $$
 $$ {#eq:mopd_objective}
 
 In large-scale post-training, this can enable further scaling of recipes across growing organizations.
-Multiple groups can work on high-quality expert models, which can serve as teacher models down the line for the final student model.
+Multiple groups can work on high-quality expert models, which can serve as teacher models down the line for the final student model, as done for [@deepseekai2026deepseekv4] and [@mimo2025flash].
 
-TODO: Can do RLVR + distillation of course!
-TODO: Self distillation. [@zhao2026selfdistilled]
-TODO: Clean up unused entries in the bib
-
-<!-- TODO: Extend from one teacher to self-distillation and multiple teachers; keep the prose careful about when the teacher is an earlier checkpoint versus a domain specialist. -->
-
-<!-- TODO: Start by explaining why distillation belongs in a synthetic-data chapter: it is both a data-generation practice and a technical objective. Can also be during the link to chapter 6 -->
-
-
-- TODO: MiMo-V2-Flash [@mimo2025flash].
-- TODO: Qwen3 [@yang2025qwen3].
-- TODO: GLM-5 [@glm5team2026glm5].
-- TODO: Nemotron-Cascade 2 [@yang2026nemotroncascade2].
-- TODO: DeepSeek-V4-Pro [@deepseekai2026deepseekv4].
-- TODO: Use [Yumo Xu's MOPD post](https://yumoxu.notion.site/multi-teacher-on-policy-distillation) only as a pointer for the audit, not as the final authority for model-specific claims.
-- TODO forward pointer in Chapter 6 to this section
-- TODO: Revisit notation after the RL connection is drafted. Decide whether to keep Kim & Rush's $s,t,q,p$ notation locally, translate the section into Chapter 6's state/action notation, or use $x,y$ for prompt/completion with a short bridge to $s_t=(x,y_{<t})$.
-
-<!-- TODO: Motivate the distribution-mismatch problem: the student trains on teacher/fixed trajectories but must recover from its own errors at inference time. DAgger analogy: student rollouts are the learner-induced state distribution; teacher labels/logits are the expert feedback queried on those states; iterative KD/OPD is a language-model version of aggregating data where the learner actually visits. Be careful that OPD often uses dense teacher distributions, not only expert actions. -->
-
-- TODO: Connect iterative distillation to the DAgger imitation-learning framework [@ross2011reduction]. Hint: the shared problem is covariate shift from training only on expert/offline trajectories, and the shared remedy is collecting supervision on states induced by the current learner.
+There are many ways to combine OPD with other areas investigated in this book, such as using the reverse KL as advantage in addition to other forms of advantage computation, such as GRPO's group-level normalization, which enables more complex reward shaping.
+Requiring the same tokenizer is an issue specific to distillation methods relative to the rest of post-training, due to the nature of supervision being per-token feedback from another LLM.
+Extended approaches, such as On-Policy Self-Distillation (OPSD), have a language model verify a completion either itself or with external tools to act as a teacher with privileged information, so it can train a weaker version of itself [@zhao2026selfdistilled].
 
 ## Constitutional AI & AI Feedback
 
