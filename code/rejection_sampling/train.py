@@ -40,6 +40,7 @@ from .utils import (
     format_gsm8k_gold,
     free_memory,
     get_attn_implementation,
+    get_default_device,
     load_model,
     print_model_info,
     print_step_header,

@@ -32,6 +32,7 @@ from .utils import (
     format_gsm8k_gold,
     free_memory,
     get_attn_implementation,
+    get_default_device,
     load_model,
     progress_bar,
     seed_everything,
