@@ -292,6 +292,8 @@ class OutcomeRewardModel(nn.Module):
             loss = F.binary_cross_entropy_with_logits(
                 logits[mask], labels[mask].float()
             )
+        else:
+            loss = logits.sum() * 0
         return loss, logits
 ```
 
@@ -399,6 +401,8 @@ class ProcessRewardModel(nn.Module):
             loss = F.cross_entropy(
                 logits[mask], labels[mask]
             )
+        else:
+            loss = logits.sum() * 0
         return loss, logits
 ```
 
