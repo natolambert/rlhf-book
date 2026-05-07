@@ -12,7 +12,7 @@ As of 2026-02-08, ORPO/SimPO are still under investigation. See `direct_alignmen
 | Algorithm | wandb | Status |
 |-----------|-------|--------|
 | **DPO** | [dpo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/fzy8k8go) | ✅ Validated |
-| **DPO-Norm** | TODO | TODO |
+| **DPO-Norm** | [dpo-norm-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/giyhitjw) | ✅ Validated |
 | **IPO** | [ipo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/5s29syo6) | ✅ Validated |
 | **SimPO** | [simpo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/ftv5rs3x) | ⚠️ Noisy - needs debugging |
 | **ORPO** | [orpo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/o38ffli5) | ⚠️ Noisy - needs debugging |
