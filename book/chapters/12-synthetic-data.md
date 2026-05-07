@@ -155,22 +155,28 @@ The offline nature of the learning meant that the student models could suffer fr
 For example, the forward KL objective can push student models to overestimate low-probability regions of the teacher distribution.
 Together, these issues were an opening for *on-policy* distillation (OPD).
 
-This train-test gap is known as **exposure bias** [@song2026surveyonpolicydistillationlarge].
+This train-test gap is known as **exposure bias** [@arora-etal-2022-exposure] [@song2026surveyonpolicydistillationlarge].
 Offline KD samples teacher trajectories $u \sim \pi_T(\cdot \mid s)$ and minimizes the per-token KL on the resulting prefixes,
 
 $$
-\mathcal{L}_{\mathrm{train}}(\theta)
-= \mathbb{E}_{u \sim \pi_T(\cdot \mid s)}
-\sum_t D_{\mathrm{KL}}\!\left(\pi_T(\cdot \mid s, u_{<t}) \;\|\; \pi_\theta(\cdot \mid s, u_{<t})\right).
+\mathcal{L}_{\mathrm{KD}}(\theta)
+= \mathbb{E}_{s \sim \mathcal{D},\, u \sim \pi_T(\cdot \mid s)}
+\sum_t D_{\mathrm{KL}}\!\left(
+\pi_T(\cdot \mid s, u_{<t})
+\;\|\;
+\pi_\theta(\cdot \mid s, u_{<t})
+\right).
 $$ {#eq:exposure_train}
 
 At inference the student instead rolls out under its own policy, so the quantity that actually matters is the expected task loss along *its own* trajectories,
 
 $$
-\mathcal{L}_{\mathrm{test}}(\theta)
-= \mathbb{E}_{a \sim \pi_\theta(\cdot \mid s)}\,\mathcal{L}_{\mathrm{task}}(s, a).
+\mathcal{L}_{\mathrm{eval}}(\theta)
+= \mathbb{E}_{s \sim \mathcal{D}_{\mathrm{test}},\, a \sim \pi_\theta(\cdot \mid s)}
+\ell_{\mathrm{task}}(s, a)
 $$ {#eq:exposure_test}
 
+Here, $\ell_{\mathrm{task}}(s, a)$ denotes any downstream task loss for the completed student response, such as answer incorrectness, failed test cases, or a judge/rubric loss.
 Exposure bias is the direct consequence of the inequality $\pi_T(\cdot \mid s) \neq \pi_\theta(\cdot \mid s)$: the prefixes $(s, u_{<t})$ visited during training and the prefixes $(s, a_{<t})$ visited at test time are drawn from different state-visitation distributions, so the student is supervised on a set of states distinct from those it acts on.
 
 The core shift to on-policy distillation is the idea that we can tweak the optimization by sampling from the student model and measuring its distance to the teacher distribution, rather than sampling from the teacher model.
@@ -179,10 +185,12 @@ Other concurrent work [@agarwal2024policy] showed the promise of on-policy KD an
 To make the connection, one such imitation-learning algorithm, DAgger, iteratively trains an agent that acts in the world with its learned policy and is given feedback from an oracle policy on what action it should have taken, which can then be used to update its policy [@ross2011reduction].
 
 The cost of this gap can be quantified through imitation-learning bounds.
-Suppose the student matches the teacher within an expected per-step error $\epsilon$ on the training distribution,
+In the original discrete-action DAgger setting, suppose the learned policy matches the teacher within an expected per-step action error $\epsilon$ on the teacher-induced training distribution, where $\mathbb{I}[\cdot]$ is an indicator that returns 1 when its condition is true and 0 otherwise,
 
 $$
-\mathbb{E}_{u \sim \pi_T(\cdot \mid s)}\!\left[\mathbb{I}\!\left(\pi_\theta(\cdot \mid s, u_{<t}) \neq \pi_T(\cdot \mid s, u_{<t})\right)\right] \leq \epsilon.
+\mathbb{E}_{s_t \sim d_{\pi_T}}\!\left[
+\mathbb{I}\!\left(\pi_\theta(s_t) \neq \pi_T(s_t)\right)
+\right] \leq \epsilon.
 $$ {#eq:dagger_perstep}
 
 The DAgger analysis [@ross2011reduction] shows that the expected loss accumulated along a length-$L$ trajectory sampled from the student then scales quadratically in $L$ [@song2026surveyonpolicydistillationlarge]:
@@ -191,11 +199,16 @@ $$
 \mathbb{E}_{a \sim \pi_\theta(\cdot \mid s)}\!\left[\sum_{t=1}^{L} \ell\!\left(s, a_{<t}\right)\right] \leq O(\epsilon L^2).
 $$ {#eq:dagger_trajectory}
 
-This $O(\epsilon L^2)$ compounding is especially pronounced for modern LLMs, which routinely generate sequences spanning thousands of tokens.
+For LLMs, this discrete-action bound should be read as an analogy rather than a theoretical guarantee.
+In practice, LLMs predict full next-token distributions over long horizons, so the 0-1 action-disagreement assumption in @eq:dagger_perstep does not apply cleanly.
+Prompts or prefixes map naturally to states and sampled tokens map to actions, but token-level distillation is usually measured with distributional losses such as KL or cross-entropy, so the classic DAgger math does not transfer exactly.
+
+This kind of $O(\epsilon L^2)$ compounding is especially pronounced for modern LLMs, which routinely generate sequences spanning thousands of tokens.
 A single suboptimal token shifts the prefix slightly out-of-distribution, and the model, having never seen this perturbed prefix, is more likely to err again, leading to degraded or hallucinatory text.
 On-policy distillation addresses this by *iteratively* sampling completions from the current student and supervising them with the teacher at the visited states.
 The student confronts its own mistakes, receives teacher feedback on the specific out-of-distribution states it visits, and learns recovery behaviors.
-Under DAgger's interactive imitation-learning analysis, this iterative procedure reduces the compounding from $O(\epsilon L^2)$ to $O(\epsilon L)$ [@ross2011reduction].
+Under DAgger's interactive imitation-learning analysis, this iterative procedure can reduce the compounding from $O(\epsilon L^2)$ to $O(\epsilon L)$ [@ross2011reduction].
+For LLMs, this explains the motivation behind OPD: the exact bounds may not carry over cleanly to every token-level distillation setup, but the practical success of on-policy methods supports the underlying intuition.
 
 For on-policy distillation, let $s$ be a prompt, $a = (a_1,\ldots,a_L)$ be a completion sampled from the current student policy $\pi_\theta(\cdot \mid s)$, and let $s_t = (s, a_{<t})$ be the token-level state at step $t$.
 The teacher policy $\pi_T$ is fixed, so the objective compares the student's next-token distribution to the teacher's distribution on states induced by the student.
