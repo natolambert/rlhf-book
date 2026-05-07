@@ -193,7 +193,9 @@ $$ {#eq:dagger_trajectory}
 
 This $O(\epsilon L^2)$ compounding is especially pronounced for modern LLMs, which routinely generate sequences spanning thousands of tokens.
 A single suboptimal token shifts the prefix slightly out-of-distribution, and the model, having never seen this perturbed prefix, is more likely to err again, leading to degraded or hallucinatory text.
-On-policy distillation resolves this by replacing the teacher-rollout expectation in @eq:dagger_perstep with a student-rollout expectation: the student confronts its own mistakes, receives teacher feedback on the specific out-of-distribution states it visits, and learns recovery behaviors, reducing the compounding from $O(\epsilon L^2)$ to $O(\epsilon L)$.
+On-policy distillation addresses this by *iteratively* sampling completions from the current student and supervising them with the teacher at the visited states.
+The student confronts its own mistakes, receives teacher feedback on the specific out-of-distribution states it visits, and learns recovery behaviors.
+Under DAgger's interactive imitation-learning analysis, this iterative procedure reduces the compounding from $O(\epsilon L^2)$ to $O(\epsilon L)$ [@ross2011reduction].
 
 For on-policy distillation, let $s$ be a prompt, $a = (a_1,\ldots,a_L)$ be a completion sampled from the current student policy $\pi_\theta(\cdot \mid s)$, and let $s_t = (s, a_{<t})$ be the token-level state at step $t$.
 The teacher policy $\pi_T$ is fixed, so the objective compares the student's next-token distribution to the teacher's distribution on states induced by the student.
