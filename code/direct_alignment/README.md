@@ -86,6 +86,10 @@ loss = -F.logsigmoid(beta * logits)
 This borrows SimPO's length normalization without removing DPO's reference correction
 or adding SimPO's margin term `gamma`.
 
+When using DPO-Norm, prefer `configs/dpo_norm.yaml`. If using CLI overrides directly,
+pass `--beta 2.0` or another tuned value, since the base CLI default is DPO's `0.1`.
+Refining per-algorithm default initialization for CLI-only runs can be addressed in future work.
+
 ### SimPO Loss
 
 SimPO removes the reference model and uses length normalization:
