@@ -184,8 +184,8 @@ MiniLLM noted the need to shift to a reverse KL optimization (we explain intuiti
 Other concurrent work [@agarwal2024policy] showed the promise of on-policy KD and connected the iterative process of generating from the student and grading with a teacher to imitation-learning work from the RL literature.
 To make the connection, one such imitation-learning algorithm, DAgger, iteratively trains an agent that acts in the world with its learned policy and is given feedback from an oracle policy on what action it should have taken, which can then be used to update its policy [@ross2011reduction].
 
-The cost of this gap can be quantified through imitation-learning bounds.
-In the original discrete-action DAgger setting, suppose the learned policy matches the teacher within an expected per-step action error $\epsilon$ on the teacher-induced training distribution, where $\mathbb{I}[\cdot]$ is an indicator that returns 1 when its condition is true and 0 otherwise,
+The cost of this gap can be quantified through the supervised imitation-learning bound that motivates DAgger.
+In the original discrete-action setting, suppose the learned policy matches the teacher within an expected per-step action error $\epsilon$ on the teacher-induced training distribution, where $\mathbb{I}[\cdot]$ is an indicator that returns 1 when its condition is true and 0 otherwise,
 
 $$
 \mathbb{E}_{s_t \sim d_{\pi_T}}\!\left[
@@ -193,7 +193,7 @@ $$
 \right] \leq \epsilon.
 $$ {#eq:dagger_perstep}
 
-The DAgger analysis [@ross2011reduction] shows that the expected loss accumulated along a length-$L$ trajectory sampled from the student then scales quadratically in $L$ [@song2026surveyonpolicydistillationlarge]:
+The supervised imitation-learning analysis [@ross2011reduction] shows that the expected loss accumulated along a length-$L$ trajectory sampled from the student can scale quadratically in $L$ [@song2026surveyonpolicydistillationlarge]:
 
 $$
 \mathbb{E}_{a \sim \pi_\theta(\cdot \mid s)}\!\left[\sum_{t=1}^{L} \ell\!\left(s, a_{<t}\right)\right] \leq O(\epsilon L^2).
