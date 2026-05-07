@@ -47,7 +47,7 @@ def compute_logprobs(
     per_token_logps = per_token_logps * mask
 
     if average_log_prob:
-        # SimPO: average over valid tokens to avoid length bias
+        # SimPO or DPO-Norm: average over valid tokens to avoid length bias
         return per_token_logps.sum(dim=-1) / mask.sum(dim=-1).clamp(min=1)
     else:
         # DPO: sum over all tokens
@@ -593,6 +593,7 @@ class APODownLoss(nn.Module):
 # Loss function registry
 LOSS_FUNCTIONS = {
     "dpo": DPOLoss,
+    "dpo_norm": DPOLoss,
     "cdpo": lambda beta: DPOLoss(beta=beta, label_smoothing=0.1),
     "ipo": IPOLoss,
     "simpo": SimPOLoss,
@@ -607,7 +608,7 @@ def get_loss_function(loss_type: str, **kwargs) -> nn.Module:
     """Get loss function by name.
 
     Args:
-        loss_type: One of 'dpo', 'cdpo', 'ipo', 'simpo', 'orpo', 'kto'
+        loss_type: One of 'dpo', 'dpo_norm', 'cdpo', 'ipo', 'simpo', 'orpo', 'kto'
         **kwargs: Arguments passed to the loss function constructor
 
     Returns:
@@ -621,7 +622,7 @@ def get_loss_function(loss_type: str, **kwargs) -> nn.Module:
     # Filter kwargs to only pass what each loss function accepts
     beta = kwargs.get("beta", 0.1)
 
-    if loss_type == "dpo":
+    if loss_type in ["dpo", "dpo_norm"]:
         label_smoothing = kwargs.get("label_smoothing", 0.0)
         return DPOLoss(beta=beta, label_smoothing=label_smoothing or 0.0)
     elif loss_type == "cdpo":
