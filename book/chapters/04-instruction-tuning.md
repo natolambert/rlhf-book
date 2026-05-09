@@ -7,16 +7,16 @@
 ---
 prev-chapter: "Training Overview"
 prev-url: "03-training-overview"
-page-title: Instruction Tuning
-search-title: "Chapter 4: Instruction Tuning"
-next-chapter: "Reward Models"
+page-title: Instruction Fine-Tuning
+search-title: "Chapter 4: Instruction Fine-Tuning"
+next-chapter: "Reward Modeling"
 next-url: "05-reward-models"
 lectures:
   - video: "https://www.youtube.com/watch?v=4gIwiSPmQkU&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=3"
     label: "Lecture 2: IFT, Reward Modeling, Rejection Sampling (Chap. 4, 5, & 9)"
 ---
 
-# Instruction Fine-tuning
+# Instruction Fine-Tuning
 
 Early large pretrained language models were trained with a next-token prediction objective and, by default, did not come with an explicit interface for following instructions.
 Around the release of GPT-3 [@brown2020language], prompting and in-context learning became a widely used way to adapt a single model to many tasks (though task-specific fine-tuning remained common), by showing examples in-context and asking the model to complete a similar task.
@@ -158,7 +158,7 @@ I'm just a computer program, so I don't have feelings, but I'm functioning as ex
 Beyond this, many chat templates include formatting and other tokens for tasks such as tool-use.
 
 
-## Best Practices of Instruction Tuning
+## Best Practices for Instruction Tuning
 
 Instruction tuning as the foundation of post-training and creating helpful language models is well-established.
 There are many ways to achieve successful instruction tuning.

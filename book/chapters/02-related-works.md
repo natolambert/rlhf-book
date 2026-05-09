@@ -7,8 +7,8 @@
 ---
 prev-chapter: "Introduction"
 prev-url: "01-introduction"
-page-title: Key Related Works
-search-title: "Chapter 2: Key Related Works"
+page-title: A Tiny History of RLHF
+search-title: "Chapter 2: A Tiny History of RLHF"
 next-chapter: "Training Overview"
 next-url: "03-training-overview"
 lectures:
@@ -16,7 +16,7 @@ lectures:
     label: "Lecture 1: Overview (Chapters 1–3)"
 ---
 
-# Key Related Works
+# A Tiny History of RLHF
 
 RLHF and its related methods are very new.
 We highlight history to show how recently the procedures were formalized, and how much of this documentation is in the academic literature.
@@ -68,7 +68,7 @@ Aside from applications, a number of seminal papers defined key areas for the fu
 Work continued on refining RLHF for application to chat models.
 Anthropic continued to use it extensively for early versions of Claude [@bai2022training] and early RLHF open-source tools emerged [@ramamurthy2022reinforcement], [@havrilla-etal-2023-trlx], [@vonwerra2022trl].
 
-## 2023 to Present: ChatGPT Era
+## 2023 to the Present: The ChatGPT Era
 
 The announcement of ChatGPT was very clear about the role of RLHF in its training [@openai2022chatgpt]:
 

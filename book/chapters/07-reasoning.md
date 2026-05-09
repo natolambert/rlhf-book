@@ -7,19 +7,21 @@
 ---
 prev-chapter: "Reinforcement Learning"
 prev-url: "06-policy-gradients"
-page-title: Reasoning
-search-title: "Chapter 7: Reasoning"
-next-chapter: "Direct Alignment"
+page-title: Reasoning and Inference-Time Scaling
+search-title: "Chapter 7: Reasoning and Inference-Time Scaling"
+next-chapter: "Direct-Alignment Algorithms"
 next-url: "08-direct-alignment"
 ---
 
-# Reasoning Training & Inference-Time Scaling
+# Reasoning and Inference-Time Scaling
 
 Reasoning models and inference-time scaling enabled a massive step in language model performance in the end of 2024, through 2025, and into the future.
 Inference-time scaling is the ability to improve model performance by using more computation during generation, such as producing longer reasoning chains or sampling multiple responses.
 Language models trained to think extensively before answering exploit this property remarkably well.
 These models, trained with a large amount of reinforcement learning with verifiable rewards (RLVR) [@lambert2024t], still utilize large amounts of RLHF.
 In this chapter we review the path that led the AI community to a transformed appreciation for RL's potential in language models, review the fundamentals of RLVR, highlight key works, and point to the future debates that will define the area in the next few years.
+
+## The Role of RLVR
 
 To start, at the 2016 edition of the Neural Information Processing Systems (NeurIPS) conference, Yann LeCun first introduced his now-famous cake metaphor for where learning happens in modern machine learning systems:
 
@@ -178,7 +180,7 @@ Examples include TRL [@vonwerra2022trl], Open Instruct [@lambert2024t], veRL [@s
 
 Multiple resources point to RL training for reasoning only being viable with leading models coming out from about 2024 onwards, indicating that a certain level of underlying capability was needed in the models before reasoning training was possible.
 
-### RL Training vs. Inference-time Scaling
+### RL Training vs. Inference-Time Scaling
 
 Training with reinforcement learning to elicit reasoning behaviors and performance on verifiable domains is closely linked to the ideas of inference-time scaling.
 Inference-time scaling, also called test-time scaling, is the general class of methods that use more computational power at inference in order to perform better at downstream tasks.
@@ -216,7 +218,7 @@ The investment in reasoning has instigated a major evolution in the art of how m
 These recipes still use the common pieces discussed in earlier chapters (as discussed in Chapter 3 with the overview of DeepSeek R1's recipe), including instruction fine-tuning, reinforcement learning from human feedback, and reinforcement learning with verifiable rewards (RLVR). 
 The core change is using far more RLVR and applying the other training techniques in different orders -- traditionally for a reasoning model the core training step is either a large-scale RL run or a large-scale instruction tuning run on *outputs* of another model that had undergone a substantial portion of RLVR training (referred to as distillation).
 
-### Reasoning Research Pre OpenAI's o1 or DeepSeek R1
+### Reasoning Research Before OpenAI o1 or DeepSeek R1
 
 Before the takeoff of reasoning models, a substantial effort was made to understand how to train language models to be better at verifiable domains.
 The main difference between these works below is that their methodologies did not scale up to the same factor as those used in DeepSeek R1 and subsequent models, or they resulted in models that made sacrifices in overall performance in exchange for higher mathematics or coding abilities.

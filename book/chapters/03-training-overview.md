@@ -5,11 +5,11 @@
   Full license: https://github.com/natolambert/rlhf-book/blob/main/LICENSE-CHAPTERS
 -->
 ---
-prev-chapter: "Key Related Works"
+prev-chapter: "A Tiny History of RLHF"
 prev-url: "02-related-works"
 page-title: Training Overview
 search-title: "Chapter 3: Training Overview"
-next-chapter: "Instruction Tuning"
+next-chapter: "Instruction Fine-Tuning"
 next-url: "04-instruction-tuning"
 lectures:
   - video: "https://www.youtube.com/watch?v=o6l6tJQgUg4&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=2"
@@ -71,7 +71,7 @@ Initially, the thermostat's policy is essentially random -- it flips the heater 
 Over many episodes of trial and error, the agent discovers that turning the heater on when the room is cold and off when it is warm leads to more reward, and gradually converges on a sensible policy.
 This is the core RL loop: observe a state, choose an action, receive a reward, and update the policy to get more reward over time.
 
-### Example RL Task: CartPole
+### Classic RL Example: CartPole
 
 For a richer example with continuous dynamics, consider the classic *CartPole* (inverted pendulum) control task, which appears in many RL textbooks, courses, and even research papers.
 Where the thermostat had a single state variable and a binary action, CartPole involves four continuous state variables and physics-based transitions -- making it a standard benchmark for RL algorithms.
@@ -128,7 +128,7 @@ In many ways, the result is that while RLHF is heavily inspired by RL optimizers
 
 ![Standard RLHF loop](images/rlhf.png){#fig:rlhf}
 
-### Fine-tuning and Regularization
+### Fine-Tuning and Regularization
 
 In traditional RL problems, the agent must learn from a randomly initialized policy, but with RLHF, we start from a strong pretrained base model with many initial capabilities.
 This strong prior for RLHF induces a need to prevent the optimization from drifting too far from the initial policy.
@@ -155,7 +155,7 @@ The popular tools of post-training include:
 
 Modern RLHF-trained models always utilize instruction fine-tuning followed by a mixture of the other optimization options.
 
-## Subtle Advantages of RL in Post-Training Language Models
+### Subtle Advantages of RL in Post-Training Language Models
 
 In the following chapters, we cover many optimization tools for post-training.
 Plenty of them, such as rejection sampling (Chapter 9) and direct alignment algorithms like DPO (Chapter 8) are far simpler than getting RL working. 

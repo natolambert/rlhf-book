@@ -7,13 +7,13 @@
 ---
 prev-chapter: "Synthetic Data"
 prev-url: "12-synthetic-data"
-page-title: Tool Use
-search-title: "Chapter 13: Tool Use"
-next-chapter: "Over-optimization"
+page-title: Tool Use and Function Calling
+search-title: "Chapter 13: Tool Use and Function Calling"
+next-chapter: "Over-Optimization"
 next-url: "14-over-optimization"
 ---
 
-# Tool Use & Function Calling
+# Tool Use and Function Calling
 
 Language models using tools is a natural way to expand their capabilities, especially for high-precision tasks where external tools contain the information or for agents that need to interact with complex web systems.
 Tool-use is a skill that language models need to be trained to have, where RLHF and all the other methods presented in this book can refine it.
@@ -33,6 +33,8 @@ Before diving deeper, it is useful to distinguish related terms that are often u
 - **Tool use**: the model emits a structured request (tool name and arguments); an orchestrator executes the tool; results are appended to the context; the model continues generating.
 - **Function calling**: tool use where the arguments must conform to a declared schema for a set of functions (usually JSON Schema), enabling reliable parsing and validation.
 - **Code execution**: a special case of tool use where the "tool" is a code interpreter (e.g., Python); results are returned as tool output.
+
+## Tool-Use Overview
 
 An AI model uses any external tools by outputting special tokens to trigger a certain endpoint. 
 These can be anything from highly specific tools, such as functions that return the weather at a specific place, to code interpreters or search engines that act as fundamental building blocks of complex behaviors.
@@ -207,7 +209,7 @@ while True:
 Training for tool use is about getting the model to behave predictably with this different token flow—knowing when to emit a tool call, how to format arguments correctly, and how to incorporate results into its response.
 Open models must be trained to work with a variety of tools that users may connect off the shelf.
 
-## Multi-step Tool Reasoning
+## Multistep Tool Reasoning
 
 OpenAI's o3 model represented a substantial step-change in how multi-step tool-use can be integrated with language models.
 This behavior is related to much earlier research trends in the community.
@@ -217,7 +219,7 @@ For example, ReAct [@yao2023react] showcased how actions and reasoning can be in
 
 With the solidification of tool-use capabilities and the take-off of reasoning models, multi-turn tool-use has grown into an exciting area of research [@wang2025ragenunderstandingselfevolutionllm].
 
-## Model Context Protocol (MCP)
+## Model Context Protocol
 
 Model Context Protocol (MCP) is an open standard for connecting language models to external data sources and information systems [@anthropic_mcp_2024].
 At the data layer, MCP uses JSON-RPC 2.0 with discovery and execution methods for its primitives.

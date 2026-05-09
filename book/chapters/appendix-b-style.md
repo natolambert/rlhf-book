@@ -7,13 +7,13 @@
 ---
 prev-chapter: "Definitions"
 prev-url: "appendix-a-definitions"
-page-title: "Appendix B: Style & Information"
-search-title: "Appendix B: Style & Information"
+page-title: "Appendix B: Beyond \"Just Style\""
+search-title: "Appendix B: Beyond \"Just Style\""
 next-chapter: "Practical Issues"
 next-url: "appendix-c-practical"
 ---
 
-# Style and Information
+# Beyond "Just Style"
 
 Early developments in RLHF gave it a reputation for being "just style transfer" or other harsh critiques on how RLHF manipulates the way information is presented in outputs.
 This appendix explains why style is core to understanding the value RLHF provides — and why it positively affects both model capability and user experience.

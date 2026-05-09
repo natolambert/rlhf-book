@@ -7,8 +7,8 @@
 ---
 prev-chapter: "Rejection Sampling"
 prev-url: "09-rejection-sampling"
-page-title: What are Preferences
-search-title: "Chapter 10: What are Preferences"
+page-title: The Nature of Preferences
+search-title: "Chapter 10: The Nature of Preferences"
 next-chapter: "Preference Data"
 next-url: "11-preference-data"
 ---
@@ -18,6 +18,8 @@ next-url: "11-preference-data"
 Reinforcement learning from human feedback, also referred to as reinforcement learning from human preferences in early literature, emerged to optimize machine learning models in domains where specifically designing a reward function is hard.
 The word *preferences*, which was present in early literature, is at the center of the RLHF process -- human preferences are what is trying to be modeled and what fuels the data for training.
 In order to understand the scope of the challenge in modeling and measuring human preferences, a broader context is needed in understanding what a preference is, how our understanding of them emerged, and how multiple fields of economics, psychology, philosophy, and more inform modern RLHF.
+
+## When Preference Replaces Correctness
 
 Consider an example: how do you decide which of these two poems is better?
 On February 26th, 2025, I asked both Claude 3.7 Sonnet and ChatGPT with GPT-4o the following:
@@ -95,7 +97,7 @@ To begin, all of the following operates on the assumption that human preferences
 
 ![The timeline of the integration of various subfields into the modern version of RLHF. The direct links are continuous developments of specific technologies, and the arrows indicate motivations and conceptual links.](images/rlhf-tree.png){#fig:tree width=100% .center}
 
-### Specifying Objectives: From Logic of Utility to Reward Functions
+## Specifying Objectives: From Logic of Utility to Reward Functions
 
 The optimization of RLHF explicitly relies only on reward models. 
 In order to use rewards as an optimization target, RLHF presupposes the convergence of ideas from preferences, rewards, and costs.
@@ -136,7 +138,7 @@ To summarize, rewards are used in RL systems as a signal to tune behavior toward
 The core thesis is that a learning algorithm's performance is closely coupled with notions of *expected fitness*, which permeates the popular view that RL methods are *agents* that act in environments.
 This view is linked to the development of reinforcement learning technology, exemplified by claims of the general usefulness of the reward formulation [@silver2021reward], but is in conflict when many individual desires are reduced to a single function.
 
-### Implementing Optimal Utility
+## Tools for Optimizing Utility
 
 Modern reinforcement learning methods depend strongly on the Bellman equation [@bellman1957markovian; @howard1960dynamic] to recursively compute estimates of reward-to-go, derived within closed environments that can be modeled as a Markov Decision Process (MDP) [@sutton2018reinforcement].
 These origins of RL are inspired by dynamic programming methods and were developed solely as optimal control techniques (i.e. RL did not yet exist).
@@ -162,7 +164,7 @@ In addition, there is little mention of the subfield of inverse reinforcement le
 IRL is the problem of learning a reward function based on an agent's behavior [@ng2000algorithms] and highly related to learning a reward model.
 This primarily reflects the engineering path by which a stable approach to performing RLHF emerged, and motivates further investment and comparison to IRL methods to scale them to the complexity of open-ended conversations.
 
-### Steering Preferences
+## Complexity of Optimizing Preferences
 
 The context in which reinforcement learning was designed means that rewards and costs are assumed to be stable and determinative. Both rewards and costs are expected to be functions: given a specific state-action pair, the agent receives a fixed numerical return.
 As we move into preferences, this is no longer the case -- human preferences constantly drift throughout their experiences.

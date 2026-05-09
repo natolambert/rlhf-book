@@ -5,15 +5,15 @@
   Full license: https://github.com/natolambert/rlhf-book/blob/main/LICENSE-CHAPTERS
 -->
 ---
-prev-chapter: "Tool Use"
+prev-chapter: "Tool Use and Function Calling"
 prev-url: "13-tools"
-page-title: Over-optimization
-search-title: "Chapter 14: Over-optimization"
+page-title: Over-Optimization
+search-title: "Chapter 14: Over-Optimization"
 next-chapter: "Regularization"
 next-url: "15-regularization"
 ---
 
-# Over Optimization
+# Over-Optimization
 
 A core lesson one learns when using reinforcement learning heavily in their domain is that it is a very strong optimizer, which causes it to pull all the possible increase in reward out of the environment.
 In modern ML systems, especially with language models, we're using somewhat contrived notions of environment where the models generate completions (the actions) and an external verifier, i.e. a reward model or a scoring function provides feedback.
@@ -36,7 +36,7 @@ We begin with the latter, qualitative, because it motivates the problem to study
 Finally, the chapter concludes with a brief discussion of **misalignment** where overdoing RLHF or related techniques can make a language model behave against its design.
 
 
-## Qualitative Over-optimization
+## Qualitative Over-Optimization
 
 The first half of this chapter is discussing narratives at the core of RLHF -- how the optimization is configured with respect to final goals and what can go wrong.
 
@@ -84,7 +84,7 @@ RL, as a strong optimizer, is increasingly likely to exploit the reward function
 The expected solution to this is that future RLHF will be trained with both pairwise preference data and additional steering loss functions. 
 There are also a bunch of different loss functions that can be used to better handle pairwise data, such as Mallow's model [@lu2011learning] or Plackett-Luce [@liu2019learning].
 
-### Over-refusal and "Too Much RLHF"
+### Over-Refusal and "Too Much RLHF"
 
 Many model releases have been tagged with the trait "too much RLHF."
 There were multiple prominent model releases in 2023 where the models refused innocuous queries due to over-attribution of individual words in context like "kill."
@@ -122,7 +122,7 @@ The accepted best practice for mitigating this behavior is to modify the trainin
 Today, a substantial amount of fine-tuning for AI applications is done by further fine-tuning so called "Instruct" or "Thinking" models that have already gone through substantial RLHF and other post-training before release.
 These already trained models can be much harder to change, e.g. to remove this over-refusal, and often starting with a base model directly at the end of large-scale autoregressive pretraining is best for steering this type of behavior.
 
-## Quantitative Over-optimization
+## Quantitative Over-Optimization
 
 Over-optimization is also a technical field of study where relationships between model performance versus KL optimization distance are studied [@gao2023scaling].
 Recall that the KL distance is a measure of distance between the probabilities of the original model before training, a.k.a. the reference model, and the current policy.

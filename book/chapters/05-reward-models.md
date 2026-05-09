@@ -5,10 +5,10 @@
   Full license: https://github.com/natolambert/rlhf-book/blob/main/LICENSE-CHAPTERS
 -->
 ---
-prev-chapter: "Instruction Tuning"
+prev-chapter: "Instruction Fine-Tuning"
 prev-url: "04-instruction-tuning"
-page-title: Reward Models
-search-title: "Chapter 5: Reward Models"
+page-title: Reward Modeling
+search-title: "Chapter 5: Reward Modeling"
 next-chapter: "Reinforcement Learning"
 next-url: "06-policy-gradients"
 lectures:
@@ -205,7 +205,7 @@ The loss function becomes:
 $$\mathcal{L}(\theta) = - \frac{1}{\binom{K}{2}} \mathbb{E}_{(x, y_c, y_r)\sim D} \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) \right) \right)$$ {#eq:rewardmodelinginstructgpt}
 
 
-### K-wise Loss Function
+### K-Wise Loss Function
 
 There are many other formulations that can create suitable models of human preferences for RLHF.
 One such example, used in the popular, early RLHF'd models Starling 7B and 34B [@zhu2024starling], is a K-wise loss function based on the Plackett-Luce model [@liu2019learning].

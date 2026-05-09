@@ -5,7 +5,7 @@
   Full license: https://github.com/natolambert/rlhf-book/blob/main/LICENSE-CHAPTERS
 -->
 ---
-prev-chapter: "What are Preferences"
+prev-chapter: "The Nature of Preferences"
 prev-url: "10-preferences"
 page-title: Preference Data
 search-title: "Chapter 11: Preference Data"
@@ -127,7 +127,7 @@ Table: An example 8-wise Likert scale between two responses, A and B. {#tbl:like
 
 In this case [@bai2022training], as in other works, this information is still reduced to a binary signal for the training of a reward model.
 
-### Multi-turn Data
+### Multiturn Data
 
 In practice, core questions often arise over how to parse and collect multi-turn data -- simply conversations with multiple related prompts.
 In a real-world interaction, normally a piece of preference data is only collected on the "final" prompt, but there are scenarios where preferences can be given on every response.
