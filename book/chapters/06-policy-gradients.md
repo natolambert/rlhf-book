@@ -686,6 +686,7 @@ This can make these algorithms particularly impactful on large-scale models, but
 CISPO also allows asymmetric clipping bounds ($\varepsilon_{\text{low}} \neq \varepsilon_{\text{high}}$), similar to DAPO's "clip-higher" modification discussed later in this chapter, which can encourage exploration by allowing larger updates for tokens the model wants to upweight.
 Related work includes Tapered Off-Policy REINFORCE (TOPR) [@leroux2025topr], which also clips IS weights directly (like CISPO) rather than clipping within the objective (like PPO/GRPO), but operates at the sequence level (like GSPO) and uses asymmetric clipping based on reward sign—applying no IS correction for positive rewards while clipping ratios to $[0, 1]$ for negative rewards—enabling stable off-policy learning.
 
+
 ### Comparing Algorithms
 
 Each algorithm in this chapter shares the same core gradient shape (@eq:policy_gradient_intuition), but differs in how it estimates the advantage and controls the optimization:
@@ -728,6 +729,7 @@ $$\begin{aligned}
 & \quad \rho_i = \left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)}\right)^{1/|a_i|} \\[6pt]
 \textbf{DPO:}\quad & -\mathbb{E}_{(x,y^{w},y^{l})}\!\left[\log \sigma\!\big(\beta[\Delta\log \pi_\theta(x)-\Delta\log \pi_{\mathrm{ref}}(x)]\big)\right]
 \end{aligned}$$
+
 
 ## Implementation
 

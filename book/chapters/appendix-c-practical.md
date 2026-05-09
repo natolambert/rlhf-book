@@ -21,8 +21,8 @@ This takes the form of a list of lessons, rather than a coherent narrative.
 ## Compute Costs of Post-Training
 
 There are two different ways of scoping costs for post-training runs.
-The largest cost is in developing the recipe, which can easily be 10X to 100X the compute of the final few training runs.
-The secondary costs, which are easier to measure, are the costs of thoroughly applying a recipe, which entails multiple seeds, careful evaluation, potential engineering headaches, etc.
+The largest cost is in developing the recipe, which can easily be 10 to 100X the compute of the final few training runs.
+The secondary costs, which are easier to measure, are the costs to thoroughly apply a recipe, which entails multiple seeds, careful evaluation, potential engineering headaches, etc.
 
 For the first cost, to develop a post-training recipe like Tülu 3 [@lambert2024t], the team ran on the order of thousands of experiments/evaluations at the 7B scale before having the final model.
 
@@ -42,7 +42,7 @@ With any sampling from models, the outputs become more variable.
 Different benchmarks have vastly different stability characteristics, due to the variance in difficulty of the prompts, the number of prompts in the evaluation set, the brittleness of the models being trained, etc.
 
 During Olmo 3, the team tracked the variance of different evaluations used to evaluate reasoning models.
-The table below shows the standard deviation of each evaluation, computed as the mean of the standard deviation from 3 runs of 14 models (take the variance of each model, then average per evaluation):
+The table below shows the standard deviation of each evaluation, computed as the mean of the standard deviation from 3 runs of 14 models (take variance of each model, then average per evaluation):
 
 | Category | Benchmark | Std. Dev. |
 |----------|-----------|-----------|
@@ -81,14 +81,14 @@ In practice, training teams take many steps to capture the maximum possible valu
 
 1. Sweep core optimization values like learning rate, batch size, etc. for every final model run. For example, with a new base model, I'd recommend running 10 learning rates over a wide region to be sure you're in the optimal range, then re-run in the tighter, optimal window.
 2. Run multiple seeds on the best few settings. Random seed can have meaningful effects on the final model, and it's worth spending compute on.
-3. Model merging is established as a key tool used to create strong models. Merging can be done in many ways, from merging different checkpoints on the same data to merging specialized models for specific domains. Generally, merging is seen as a strong and simple tool in final recipes, but clear best practices aren't established for preparing a model for later merging in a recipe [@yadav2024matters].
+3. Model merging is established as a key tool used to create strong models. Merging can be done in many ways, from merging different checkpoints on the same data or specialized models on specific domains. Generally, merging is seen to be a strong and simple tool in final recipes, but clear best practices aren't established on how to prepare a model for later merging in a recipe [@yadav2024matters].
 
 ## Identifying Bad Training Jobs
 
 A simple intuition that's important to establish when training models is the different types of model issues. 
 You want most of your time to be spent on issues where the current data, algorithm, or recipe just isn't good enough.
-On the other hand, there are plenty of times when, while setting up a new recipe, certain methods are just broken.
+On the other hand, there are plenty of times when setting up a new recipe that certain methods are just broken.
 
 The best way to understand this is to evaluate many models on a largely static evaluation suite. Then you develop an intuition for which tests are hard to move with post-training interventions (often knowledge-heavy evaluations such as MMLU).
-When something is very, *very* broken in a post-training setup, these largely stable evaluations can often drop by 10-20 points in a training job.
+When something is very, *very* broken in a post-training setup these largely stable evaluations can often drop by 10-20 points in a training job. 
 This is one of the most useful signals there are when developing tooling!
