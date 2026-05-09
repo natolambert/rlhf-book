@@ -46,7 +46,7 @@ RLHF is built around the fact that we do not have a universally good reward func
 RLHF has been driven into the forefront because of its impressive performance at making chatbots a bit better to use, which is entirely governed by a proxy objective --- thinking that the rewards measured from human labelers in a controlled setting mirror those desires of downstream users. 
 Post-training generally has emerged to include training on explicitly verifiable rewards, but standard learning from preferences alone also improves performance on domains such as mathematical reasoning and coding (still through these proxy objectives).
 
-The proxy reward in RLHF is the score returned by a trained reward model to the RL algorithm itself because any reward model, even if trained near perfectly with the tools we have today, is known to only be at best correlated with chat or downstream performance [@schulman2023proxy] (due to the nature of the problem setup we have constructed for RLHF).
+The proxy reward in RLHF is the score returned by a trained reward model to the RL algorithm itself because any reward model, even if trained near perfectly with the tools available as of 2026, is known to only be at best correlated with chat or downstream performance [@schulman2023proxy] (due to the nature of the problem setup we have constructed for RLHF).
 Therefore, it's been shown that applying too much optimization power to the RL part of the algorithm will actually decrease the usefulness of the final language model -- a type of over-optimization known to many applications of reinforcement learning [@zhang2018study]. 
 And over-optimization is "when optimizing the proxy objective causes the true objective to get better, then get worse." 
 
@@ -119,7 +119,7 @@ As chat-based AI systems have proliferated, the prominence of these refusal beha
 The industry standard has shifted to a narrower set of harms and models that are balanced across views of controversial issues.
 
 The accepted best practice for mitigating this behavior is to modify the training data (such as with methods like Character Training covered in Chapter 17). 
-Today, a substantial amount of fine-tuning for AI applications is done by further fine-tuning so called "Instruct" or "Thinking" models that have already gone through substantial RLHF and other post-training before release.
+As of 2026, a substantial amount of fine-tuning for AI applications is done by further fine-tuning so called "Instruct" or "Thinking" models that have already gone through substantial RLHF and other post-training before release.
 These already trained models can be much harder to change, e.g. to remove this over-refusal, and often starting with a base model directly at the end of large-scale autoregressive pretraining is best for steering this type of behavior.
 
 ## Quantitative Over-optimization
