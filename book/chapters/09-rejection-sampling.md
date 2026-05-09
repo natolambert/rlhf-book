@@ -5,11 +5,11 @@
   Full license: https://github.com/natolambert/rlhf-book/blob/main/LICENSE-CHAPTERS
 -->
 ---
-prev-chapter: "Direct Alignment"
+prev-chapter: "Direct-Alignment Algorithms"
 prev-url: "08-direct-alignment"
 page-title: Rejection Sampling
 search-title: "Chapter 9: Rejection Sampling"
-next-chapter: "What are Preferences"
+next-chapter: "The Nature of Preferences"
 next-url: "10-preferences"
 lectures:
   - video: "https://www.youtube.com/watch?v=4gIwiSPmQkU&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=3"
@@ -33,7 +33,7 @@ WebGPT [@nakano2021webgpt], Anthropic's Helpful and Harmless agent [@bai2022trai
 
 *Throughout this chapter, we use $x$ to denote prompts and $y$ to denote completions. This notation is common in the language model literature, where methods operate on full prompt-completion pairs rather than individual tokens.*
 
-## Training Process Step By Step
+## Training Process, Step by Step
 
 Rejection sampling overall follows a few stages.
 
@@ -49,7 +49,7 @@ A visual overview of the rejection sampling process is included below in @fig:rs
 The actual details on which prompts to use, how to select a reward model, how to sequence rejection sampling, etc. are not well documented in the literature. 
 This chapter provides an overview of the methods and leaves further experimentation to the reader.
 
-### 1. Generating Completions
+### Generating Completions
 
 To generate a set of multiple candidate completions per prompt, let's define a set of $M$ prompts as a vector:
 
@@ -69,7 +69,7 @@ y_{M,1} & y_{M,2} & \cdots & y_{M,N}
 where $y_{i,j}$ represents the $j$-th completion for the $i$-th prompt.
 Each row $i$ corresponds to a single prompt $x_i$ and contains its $N$ candidate completions; each column $j$ corresponds to the $j$-th sampled completion across all prompts.
 
-### 2. Scoring Completions
+### Scoring Completions
 
 Now, we pass all of these prompt-completion pairs through a reward model, to get a matrix of rewards.
 We'll represent the rewards as a matrix $R$:
@@ -203,7 +203,7 @@ np.allclose(x, x_sorted[i_rev])
 np.allclose(x, x_sorted[np.argsort(sorted_indices)])
 ```
 
-### 3. Fine-tuning
+### Fine-Tuning
 
 With the selected completions, you then perform standard instruction fine-tuning on the current version of the model.
 More details can be found in the [chapter on instruction tuning](https://rlhfbook.com/c/04-instruction-tuning).

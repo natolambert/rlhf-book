@@ -5,7 +5,7 @@
   Full license: https://github.com/natolambert/rlhf-book/blob/main/LICENSE-CHAPTERS
 -->
 ---
-prev-chapter: "Over-optimization"
+prev-chapter: "Over-Optimization"
 prev-url: "14-over-optimization"
 page-title: Regularization
 search-title: "Chapter 15: Regularization"
@@ -145,7 +145,9 @@ In the derivations below, $P$ corresponds to the target $\pi_\star$ (the trainin
 SFT places the target first — $\text{KL}(\pi_\star \| \pi_\theta)$ — while RL flips the order — $\text{KL}(\pi_\theta \| \pi_\star)$ — changing which distribution we sample from.
 The samples provide the data to learn from. The objective, SFT or RL, shapes the model from said data.
 
-**SFT $\approx$ Forward KL.** Begin with the definition of forward KL:
+#### SFT Forward KL
+
+Begin with the definition of forward KL:
 
 $$
 \text{KL}(\pi_\star \| \pi_\theta) = \mathbb{E}_{(x,y) \sim \mathcal{D}} \left[ \log \pi_\star(y \mid x) - \log \pi_\theta(y \mid x) \right]
@@ -166,7 +168,9 @@ $$ {#eq:sft_forward_kl}
 
 Since the entropy term is constant with respect to $\theta$, the two losses share the same gradients and the same minimum — minimizing the SFT loss is equivalent to minimizing the **forward KL** divergence $\text{KL}(\pi_\star \| \pi_\theta)$.
 
-**RL $\approx$ Reverse KL.** Let us start with the standard KL-regularized RL objective:
+#### RL Reverse KL
+
+Let us start with the standard KL-regularized RL objective:
 
 $$
 \max_\pi \; \mathcal{J}_\text{RL}(\theta) = \mathbb{E}_{x \sim \mathcal{D},\, y \sim \pi(\cdot \mid x)} \left[ r(x, y) \right] - \beta \cdot \text{KL}\!\left(\pi(\cdot \mid x) \| \pi_\text{ref}(\cdot \mid x)\right)
@@ -298,7 +302,7 @@ where $P_{\theta}$ is the trainable policy model, $P_{\text{ref.}}$ is a fixed r
 The first term is the standard DPO logistic loss: it increases the margin between the win and loss using the difference of log-likelihood ratios, $\log \tfrac{P_{\theta}}{P_{\text{ref.}}}$, and $\beta$ controls how strongly this preference signal pulls away from the reference.
 The second term is a length-normalized negative log-likelihood penalty on the winning completion, weighted by $\alpha$, which helps keep the preferred text high-likelihood in an absolute language modeling sense rather than only relatively better than the rejected sample.
 
-### Margin-based Regularization
+### Margin-Based Regularization
 
 Controlling the optimization is less well defined in other parts of the RLHF stack.
 Most reward models have no regularization beyond the standard contrastive loss function.

@@ -5,15 +5,15 @@
   Full license: https://github.com/natolambert/rlhf-book/blob/main/LICENSE-CHAPTERS
 -->
 ---
-prev-chapter: "Reasoning"
+prev-chapter: "Reasoning and Inference-Time Scaling"
 prev-url: "07-reasoning"
-page-title: Direct Alignment
-search-title: "Chapter 8: Direct Alignment"
+page-title: Direct-Alignment Algorithms
+search-title: "Chapter 8: Direct-Alignment Algorithms"
 next-chapter: "Rejection Sampling"
 next-url: "09-rejection-sampling"
 ---
 
-# Direct Alignment Algorithms (DAAs)
+# Direct-Alignment Algorithms
 
 Direct Alignment Algorithms (DAAs) allow one to update models to solve the same RLHF objective without ever training an intermediate reward model or using reinforcement learning optimizers. 
 DAAs solve the same preference learning problem we've been studying (with literally the same data!), in order to make language models more aligned, smarter, and easier to use.
@@ -32,7 +32,7 @@ The most impactful part of DPO and DAAs is lowering the barrier of entry to expe
 
 *Throughout this chapter, we use $x$ to denote prompts and $y$ to denote completions. This notation is common in the language model literature, where methods operate on full prompt-completion pairs rather than individual tokens.*
 
-## Direct Preference Optimization (DPO)
+## Direct Preference Optimization
 
 Here we explain intuitions for how DPO works and re-derive the core equations fully. 
 
@@ -94,7 +94,7 @@ The DPO derivation takes two primary parts.
 First, the authors show the form of the policy that optimally solved the RLHF objective used throughout this book.
 Next, they show how to arrive at that solution from pairwise preference data (i.e. a Bradley Terry model).
 
-#### 1. Deriving the Optimal RLHF Solution
+#### Deriving the Optimal RLHF Solution
 
 To start, we should consider the RLHF optimization objective once again, here indicating we wish to maximize this quantity:
 
@@ -161,7 +161,7 @@ Hence, we get an optimal policy:
 $$ \pi^*(y|x) = \pi(y|x) = \frac{1}{Z(x)}\pi_{\text{ref}}(y|x)\exp\left(\frac{1}{\beta}r(x,y)\right) $$ {#eq:dpo_opt_policy}
 
 
-#### 2. Deriving DPO Objective for Bradley Terry Models
+#### Deriving DPO Objectives for BT Models
 
 To start, recall from Chapter 5 on Reward Modeling and Chapter 11 on Preference Data that a Bradley-Terry model of human preferences is formed as:
 
@@ -212,7 +212,7 @@ $${#eq:dpo_loss_deriv4}
 This is the loss function for DPO, in a form as shown in @eq:dpo_core. 
 The DPO paper has an additional derivation for the objective under a Plackett-Luce Model, which is far less used in practice [@rafailov2024direct].
 
-#### 3. Deriving the Bradley Terry DPO Gradient
+#### Deriving the BT DPO Gradient
 
 We used the DPO gradient shown in @eq:dpo_gradient to explain intuitions for how the model learns.
 To derive this, we must take the gradient of @eq:dpo_loss_deriv4 with respect to the model parameters.

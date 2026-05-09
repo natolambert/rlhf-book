@@ -9,11 +9,11 @@ prev-chapter: "Crafting Model Character and Products"
 prev-url: "17-product"
 page-title: "Appendix A: Definitions"
 search-title: "Appendix A: Definitions"
-next-chapter: "Style & Information"
+next-chapter: "Beyond \"Just Style\""
 next-url: "appendix-b-style"
 ---
 
-# Definitions & Background
+# Definitions
 
 This chapter includes all the definitions, symbols, and operations frequently used in the RLHF process, with a quick overview of language models, which is the guiding application of this book.
 
@@ -39,7 +39,7 @@ Throughout this book, particularly when covering reward models in Chapter 5, we 
 The LM head is a final linear projection layer that maps from the model's internal embedding space to the tokenizer space (a.k.a. vocabulary).
 We'll see in this book that different "heads" of a language model can be applied to fine-tune the model to different purposes -- in RLHF this is most often done when training a reward model, which is highlighted in Chapter 5.
 
-## ML Definitions
+## Machine Learning
 
 - **Kullback-Leibler (KL) divergence ($\mathcal{D}_{\text{KL}}(P || Q)$)**, also known as KL divergence, is a measure of the difference between two probability distributions.
 For discrete probability distributions $P$ and $Q$ defined on the same probability space $\mathcal{X}$, the KL distance from $Q$ to $P$ is defined as:
@@ -47,7 +47,7 @@ For discrete probability distributions $P$ and $Q$ defined on the same probabili
 $$ \mathcal{D}_{\text{KL}}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\frac{P(x)}{Q(x)}\right) $$ {#eq:def_kl}
 
 
-## NLP Definitions
+## Natural Language Processing
 
 - **Chosen Completion ($y_c$)**: The completion that is selected or preferred over other alternatives, often denoted as $y_{chosen}$.
 
@@ -61,7 +61,7 @@ $$ \mathcal{D}_{\text{KL}}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\f
 
 - **Rejected Completion ($y_r$)**: The disfavored completion in a pairwise setting.
 
-## RL Definitions
+## Reinforcement Learning
 
 - **Action ($a$)**: A decision or move made by an agent in an environment, often represented as $a \in A$, where $A$ is the set of possible actions.
 
@@ -99,7 +99,7 @@ $$ \mathcal{D}_{\text{KL}}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\f
 
 - **Value Function ($V$)**: A function that estimates the expected cumulative reward from a given state: $V(s) = \mathbb{E}[\sum_{t=0}^{\infty} \gamma^t r_t \mid s_0 = s]$.
 
-## RLHF Only Definitions
+## RLHF-Only
 
 - **Reference Model ($\pi_{\text{ref}}$)**: This is a saved set of parameters used in RLHF where outputs of it are used to regularize the optimization.
 

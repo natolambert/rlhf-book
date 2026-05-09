@@ -5,11 +5,11 @@
   Full license: https://github.com/natolambert/rlhf-book/blob/main/LICENSE-CHAPTERS
 -->
 ---
-prev-chapter: "Reward Models"
+prev-chapter: "Reward Modeling"
 prev-url: "05-reward-models"
 page-title: Reinforcement Learning
 search-title: "Chapter 6: Reinforcement Learning"
-next-chapter: "Reasoning"
+next-chapter: "Reasoning and Inference-Time Scaling"
 next-url: "07-reasoning"
 lectures:
   - video: "https://www.youtube.com/watch?v=K_Sj_-1BUMM&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=4"
@@ -18,12 +18,14 @@ lectures:
     label: "Lecture 4: Implementing RL Algorithms for LLMs"
 ---
 
-# Reinforcement Learning (i.e. Policy Gradient Algorithms)
+# Reinforcement Learning
 
 In the RLHF process, the reinforcement learning algorithm slowly updates the model's weights with respect to feedback from a reward model.
 The policy -- the model being trained -- generates completions to prompts in the training set, then the reward model scores them, and the reinforcement learning optimizer takes gradient steps based on this information (see @fig:rlhf-overview for an overview).
 This chapter explains the mathematics and trade-offs across various algorithms used to learn from the signal the reward model gives to on-policy data.
 These algorithms are run for a period of many epochs, often thousands or millions of batches across a larger set of prompts, with gradient updates in between each of them.
+
+## The Role of Reinforcement Learning in RLHF
 
 The algorithms that popularized RLHF for language models were policy-gradient reinforcement learning algorithms. 
 These algorithms, such as Proximal Policy Optimization (PPO), Group Relative Policy Optimization (GRPO), and REINFORCE, use recently generated samples to update their model (rather than storing scores in a replay buffer like algorithms, e.g. Deep Q-Networks, DQN, used in popular projects such as AlphaGo).
@@ -375,7 +377,7 @@ The policy ratio is a centerpiece of PPO and related algorithms.
 It emerges from computing the gradient of a policy and controls the parameter updates in a very intuitive way.
 For any batch of data, the policy ratio starts at 1 for the first gradient step for that batch, since $\pi_{\theta}$ is the same as $\pi_{\theta_{\text{old}}}$ at this point. Then, in the next gradient step, the policy ratio will be above one if that gradient step increased the likelihood of certain tokens with an associated positive advantage, or less than one for the other case. A common practice is to take 1-4 gradient steps per batch with policy gradient algorithms before updating $\pi_{\theta_{\text{old}}}$.
 
-#### Understanding the PPO Objective
+### Understanding the PPO Objective
 
 Overall, the PPO objective can be visualized by two lines of a plot of objective versus policy ratio, which is shown in @fig:ppo-obj.
 The PPO objective is maximized by changing the probability of the sampled actions.
@@ -391,7 +393,7 @@ The trust region is the area where the full policy-gradient steps are applied, a
 
 The policy ratio and advantage together can occur in a few different configurations. We will split the cases into two groups: positive and negative advantage.
 
-**Positive Advantage ($A_t > 0$)**
+#### Positive Advantage ($A_t > 0$)
 
 This means that the action taken was beneficial according to the value function, and we want to increase the likelihood of taking that action in the future. Now, let's look at different cases for the policy ratio $\rho(\theta)$:
 
@@ -427,7 +429,7 @@ To summarize, when the advantage is positive ($A_t>0$), we want to boost the pro
 - We perform gradient steps only in the case when $\pi_{\text{new}}(a) \leq (1+\varepsilon) \pi_{\text{old}}(a)$. Intuitively, we want to boost the probability of the action, since the advantage was positive, but not boost it so much that we have made it substantially more likely.
 - Crucially, when $\pi_{\text{new}}(a) > (1+\varepsilon) \pi_{\text{old}}(a)$, then we don't perform any update, and the gradient of the clipped objective is $0$. Intuitively, the action is already more expressed with the new policy, so we don't want to over-reinforce it.
 
-**Negative Advantage ($A_t < 0$)**
+#### Negative Advantage ($A_t < 0$)
 
 This means that the action taken was detrimental according to the value function, and we want to decrease the likelihood of taking that action in the future. Now, let's look at different cases for the policy ratio $\rho(\theta)$:
 
@@ -466,7 +468,7 @@ To summarize, when the advantage is negative ($A_t < 0$), we want to decrease th
 It is crucial to remember that PPO within the trust region is roughly the same as standard forms of policy gradient.
 
 
-#### Value Functions and PPO
+### Value Functions and PPO
 
 The value function within PPO is an additional copy of the model that is used to predict the value per token.
 The value of a token (or state) in traditional RL is predicting the future return from that moment, often with discounting.
@@ -685,6 +687,50 @@ CISPO also allows asymmetric clipping bounds ($\varepsilon_{\text{low}} \neq \va
 Related work includes Tapered Off-Policy REINFORCE (TOPR) [@leroux2025topr], which also clips IS weights directly (like CISPO) rather than clipping within the objective (like PPO/GRPO), but operates at the sequence level (like GSPO) and uses asymmetric clipping based on reward sign—applying no IS correction for positive rewards while clipping ratios to $[0, 1]$ for negative rewards—enabling stable off-policy learning.
 
 
+### Comparing Algorithms
+
+Each algorithm in this chapter shares the same core gradient shape (@eq:policy_gradient_intuition), but differs in how it estimates the advantage and controls the optimization:
+
+- **REINFORCE**: The simple policy gradient implementation to include Monte-Carlo estimates of reward, and introduces a state-based baseline to reduce variance.
+- **RLOO**: REINFORCE with multiple samples per prompt, with each sample's baseline being the average reward of the others (leave-one-out) to reduce gradient variance.
+- **PPO**: Adds a learned value function and a clipped policy ratio to get more accurate and stable gradient updates.
+- **GRPO**: A simplified variant of PPO that groups multiple completions per prompt and normalizes rewards within the group to compute advantages, removing the need for a value function.
+- **CISPO**: A REINFORCE-style algorithm that clips importance-sampling weights (not the objective as in PPO/GRPO) with a stop-gradient for stability, so every token receives a gradient signal.
+- **GSPO**: Like GRPO but normalizes the policy ratio by completion length, preventing length bias.
+- **DPO**: Not an RL algorithm, but a method to solve the same preference optimization problem by bypassing the separate reward model entirely, optimizing directly from preference pairs (see Chapter 8).
+
+All of the policy gradient algorithms above are on-policy in derivation, though most are applied slightly off-policy in practice. DPO and the other direct alignment algorithms in Chapter 8 are off-policy by default.
+All can be paired with a learned reward model or verifiable rewards.
+Only PPO requires a learned value function.
+REINFORCE and RLOO have no importance-sampling ratio — the remaining algorithms each introduce one to enable multiple gradient steps per batch of rollouts, differing in granularity and clipping strategy as summarized below.
+
+| Method | IS Granularity | Clipping Style | Advantage |
+| :----- | :-----------: | :------------------: | :-------------------: |
+| **REINFORCE** | None | None | Monte Carlo baseline |
+| **RLOO** | None | None | Leave-one-out |
+| **PPO** | Token | Objective (bilateral) | Learned value fn |
+| **GRPO** | Token | Objective (bilateral) | Group-relative |
+| **GSPO** | Sequence | Objective (bilateral) | Group-relative |
+| **CISPO** | Token | Weights (stop-grad) | Group-relative |
+Table: Comparing policy gradient algorithms. {#tbl:pg_compare}
+
+The core loss $\mathcal{L}(\theta)$ for each method is:
+
+$$\begin{aligned}
+\textbf{REINFORCE:}\quad & -\frac{1}{T}\sum_{t=1}^{T}\log \pi_\theta(a_t\mid s_t)\,\big(G_t - b(s_t)\big) \\[6pt]
+\textbf{RLOO:}\quad & -\frac{1}{K}\sum_{i=1}^{K}\sum_t \log \pi_\theta(a_{i,t}\mid s_{i,t})\left(R_i-\frac{1}{K-1}\sum_{j\neq i}R_j\right) \\[6pt]
+\textbf{CISPO:}\quad & -\sum_{i,t} \mathrm{sg}(\hat{\rho}_{i,t})\, A_{i,t} \log \pi_\theta(a_{i,t}\mid s_{i,t}) \\
+& \quad \hat{\rho}_{i,t} = \mathrm{clip}(\rho_{i,t},\, 1-\varepsilon,\, 1+\varepsilon) \\[6pt]
+\textbf{PPO:}\quad & -\frac{1}{T}\sum_{t=1}^{T}\min\!\big(\rho_t A_t,\ \mathrm{clip}(\rho_t,1-\varepsilon,1+\varepsilon)\, A_t\big) \\
+& \quad \rho_t = \frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)} \\[6pt]
+\textbf{GRPO:}\quad & -\frac{1}{G}\sum_{i=1}^{G}\min\!\big(\rho_i A_i,\ \mathrm{clip}(\rho_i,1-\varepsilon,1+\varepsilon)\, A_i\big) \\
+& \quad \rho_i = \frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)},\quad A_i = \frac{r_i-\mathrm{mean}(r_{1:G})}{\mathrm{std}(r_{1:G})} \\[6pt]
+\textbf{GSPO:}\quad & -\frac{1}{G}\sum_{i=1}^{G}\min\!\big(\rho_i A_i,\ \mathrm{clip}(\rho_i,1-\varepsilon,1+\varepsilon)\, A_i\big) \\
+& \quad \rho_i = \left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)}\right)^{1/|a_i|} \\[6pt]
+\textbf{DPO:}\quad & -\mathbb{E}_{(x,y^{w},y^{l})}\!\left[\log \sigma\!\big(\beta[\Delta\log \pi_\theta(x)-\Delta\log \pi_{\mathrm{ref}}(x)]\big)\right]
+\end{aligned}$$
+
+
 ## Implementation
 
 Compared to the original Deep RL literature where many of these algorithms were developed, implementing RL for optimizing language models or other large AI models requires many small implementation details.
@@ -707,7 +753,7 @@ Some decisions not covered here include:
 For more details on implementation details for RLHF, see [@huang2024n]. 
 For further information on the algorithms, see [@weng2018PG].
 
-### Policy Gradient Basics
+### Policy-Gradient Basics
 
 A simple implementation of policy gradient, using advantages to estimate the gradient to prepare for advanced algorithms such as PPO and GRPO follows:
 ```python
@@ -724,7 +770,7 @@ Case 2: Negative advantage, so the action was worse than the expected value of t
 
 Case 3: Zero advantage, so no update is needed. The loss is zero, don't change the policy model.
 
-### Loss Aggregation Trade-offs
+### Loss Aggregation Tradeoffs
 
 The question when implementing any policy gradient algorithm with language models is: How do you aggregate per-token losses into a final scalar loss?
 Given per-token losses $\ell_{i,t}$ for sample $i$ at token $t$, with completion lengths $|a_i|$ and batch size $B$, there are three main strategies:
@@ -769,7 +815,7 @@ Where $L_{\max}$ is typically a global constant during the entire training proce
 
 Note that `completion_mask` in the code above is a matrix of 1s and 0s, where the prompt tokens are masked out (0s) because we don't want the model to learn from predicting prompt tokens.
 
-#### Why does this matter?
+#### Why Does This Matter?
 
 Intuitively, per-sequence normalization (Strategy 1) seems best since we care about *outcomes*, not individual tokens.
 However, this introduces subtle biases based on sequence length, which can cause the model to overthink or down-weight strategies that naturally need to use more tokens, depending on the direction of the bias.
@@ -868,7 +914,7 @@ Note that these results can vary substantially if gradient accumulation is used,
 In practice, the best strategy depends on the specific training setup.
 Often in RLHF the method with the best numerical stability or the least variance in loss is preferred.
 
-#### Related: MDP vs Bandit Framing
+#### Related: MDP vs. Bandit Framing
 
 The choice of loss aggregation connects to a deeper distinction in how we frame the RL problem.
 The **MDP (token-level)** view treats each token $a_t$ as an action with state $s_t$ being the running prefix.
@@ -937,7 +983,7 @@ Fully asynchronous training would also enable scaling RL training runs across mu
 
 Related methods are exploring fully off-policy policy gradient algorithms [@leroux2025topr].
 
-### Truncated Importance Sampling (TIS)
+### Truncated Importance Sampling
 
 Truncated importance sampling (TIS) is a crucial tool used to stabilize training in modern, asynchronous RL frameworks with language models.
 Importance sampling is a correction that reweights samples drawn from one distribution to estimate expectations under another (as introduced in @eq:IS_identity).
@@ -956,14 +1002,18 @@ $$ {#eq:tis_backend}
 These two corrections are complementary, but are in the policy gradient implementations for different reasons — one compensates for policy drift within the training of a RL batch, the other for implementation-induced divergence — and can be applied simultaneously.
 How they combine depends on the algorithm:
 
-**REINFORCE with TIS** (single gradient step): There is no policy drift ($\pi_\theta = \pi_{\theta_\text{old}}$), so the only mismatch is between the learner and sampler.
+#### REINFORCE with TIS (Single Gradient Step)
+
+There is no policy drift ($\pi_\theta = \pi_{\theta_\text{old}}$), so the only mismatch is between the learner and sampler.
 Here $\pi_{\theta_\text{old}} = \pi_\text{gen}$, and TIS directly corrects the learner–sampler gap:
 
 $$
 \nabla_\theta J \approx \mathbb{E}_{a \sim \pi_\theta^{\text{sampler}}} \left[ \tilde{\rho}_t^{\text{learner}} \cdot A_t \cdot \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right].
 $$ {#eq:reinforce_tis}
 
-**PPO/GRPO with TIS** (multiple gradient steps): Now both ratios are active.
+#### PPO/GRPO with TIS (Multiple Gradient Steps)
+
+Now both ratios are active.
 In careful implementations, the "old logprobs" in the policy ratio are recomputed on the learner (the GSPO paper discusses this), so the policy ratio $\rho_t^{\text{policy}} = \pi_\theta^{\text{learner}} / \pi_{\theta_\text{old}}^{\text{learner}}$ captures pure policy drift, while $\tilde{\rho}_t^{\text{learner}} = \min(\pi_{\theta_\text{old}}^{\text{learner}} / \pi_{\theta_\text{old}}^{\text{sampler}},\; C)$ separately corrects the backend mismatch at the generation checkpoint:
 
 $$
@@ -994,7 +1044,7 @@ Unlike GSPO, this correction is token-level because it addresses token-level num
 TIS for the learner–sampler ratio has been adopted across major open-source RL frameworks (VeRL, TRL, OpenRLHF, SkyRL, OAT, and Open Instruct, which uses $C = 2$), and becomes increasingly important for long reasoning traces (Chapter 7), where small per-token differences compound over thousands of generated tokens.
 
 
-### Example: Proximal Policy Optimization
+### Example: PPO
 
 There are many, many implementations of PPO available. 
 The core *loss* computation is shown below. 
@@ -1074,7 +1124,7 @@ By clamping the log-probability ratio, PPO bounds how far the policy can drift f
 
 The code above also shows PPO learning a value function alongside the policy, which adds implementation complexity, but the clipped objective is the core mechanism.
 
-#### PPO/GRPO simplification with 1 gradient step per sample (no clipping)
+#### PPO/GRPO Simplification with One Gradient Step per Sample (No Clipping)
 
 PPO (and GRPO) implementations can be handled much more elegantly if the hyperparameter "number of gradient steps per sample" is equal to 1.
 Many typical values for this are from 2-4 or higher.
@@ -1086,7 +1136,7 @@ $$J(\theta) = \frac{1}{G}\sum_{i=1}^G \left(\frac{\pi_\theta(a_i|s)}{\left[\pi_{
 This leads to PPO or GRPO implementations where the second policy gradient and clipping logic can be omitted, making the optimizer far closer to standard policy gradient.
 
 
-### Example: Group Relative Policy Optimization
+### Example: GRPO
 
 The DeepSeekMath paper describes some implementation details of GRPO that differ from PPO [@shao2024deepseekmath], especially if comparing to a standard application of PPO from Deep RL rather than language models.
 For example, the KL penalty within the RLHF optimization (recall the KL penalty is also used when training reasoning models on verifiable rewards without a reward model) is applied directly in the loss update rather than to the reward function.
@@ -1178,50 +1228,6 @@ The rest of the implementation details for RLOO follow the other trade-offs of i
 
 In order to master the application of policy-gradient algorithms, there are countless other considerations.
 Here we consider some of the long-tail of complexities in successfully deploying a policy-gradient RL algorithm.
-
-### Comparing Algorithms
-
-Each algorithm in this chapter shares the same core gradient shape (@eq:policy_gradient_intuition), but differs in how it estimates the advantage and controls the optimization:
-
-- **REINFORCE**: The simple policy gradient implementation to include Monte-Carlo estimates of reward, and introduces a state-based baseline to reduce variance.
-- **RLOO**: REINFORCE with multiple samples per prompt, with each sample's baseline being the average reward of the others (leave-one-out) to reduce gradient variance.
-- **PPO**: Adds a learned value function and a clipped policy ratio to get more accurate and stable gradient updates.
-- **GRPO**: A simplified variant of PPO that groups multiple completions per prompt and normalizes rewards within the group to compute advantages, removing the need for a value function.
-- **CISPO**: A REINFORCE-style algorithm that clips importance-sampling weights (not the objective as in PPO/GRPO) with a stop-gradient for stability, so every token receives a gradient signal.
-- **GSPO**: Like GRPO but normalizes the policy ratio by completion length, preventing length bias.
-- **DPO**: Not an RL algorithm, but a method to solve the same preference optimization problem by bypassing the separate reward model entirely, optimizing directly from preference pairs (see Chapter 8).
-
-All of the policy gradient algorithms above are on-policy in derivation, though most are applied slightly off-policy in practice. DPO and the other direct alignment algorithms in Chapter 8 are off-policy by default.
-All can be paired with a learned reward model or verifiable rewards.
-Only PPO requires a learned value function.
-REINFORCE and RLOO have no importance-sampling ratio — the remaining algorithms each introduce one to enable multiple gradient steps per batch of rollouts, differing in granularity and clipping strategy as summarized below.
-
-| Method | IS Granularity | Clipping Style | Advantage |
-| :----- | :-----------: | :------------------: | :-------------------: |
-| **REINFORCE** | None | None | Monte Carlo baseline |
-| **RLOO** | None | None | Leave-one-out |
-| **PPO** | Token | Objective (bilateral) | Learned value fn |
-| **GRPO** | Token | Objective (bilateral) | Group-relative |
-| **GSPO** | Sequence | Objective (bilateral) | Group-relative |
-| **CISPO** | Token | Weights (stop-grad) | Group-relative |
-Table: Comparing policy gradient algorithms. {#tbl:pg_compare}
-
-The core loss $\mathcal{L}(\theta)$ for each method is:
-
-$$\begin{aligned}
-\textbf{REINFORCE:}\quad & -\frac{1}{T}\sum_{t=1}^{T}\log \pi_\theta(a_t\mid s_t)\,\big(G_t - b(s_t)\big) \\[6pt]
-\textbf{RLOO:}\quad & -\frac{1}{K}\sum_{i=1}^{K}\sum_t \log \pi_\theta(a_{i,t}\mid s_{i,t})\left(R_i-\frac{1}{K-1}\sum_{j\neq i}R_j\right) \\[6pt]
-\textbf{CISPO:}\quad & -\sum_{i,t} \mathrm{sg}(\hat{\rho}_{i,t})\, A_{i,t} \log \pi_\theta(a_{i,t}\mid s_{i,t}) \\
-& \quad \hat{\rho}_{i,t} = \mathrm{clip}(\rho_{i,t},\, 1-\varepsilon,\, 1+\varepsilon) \\[6pt]
-\textbf{PPO:}\quad & -\frac{1}{T}\sum_{t=1}^{T}\min\!\big(\rho_t A_t,\ \mathrm{clip}(\rho_t,1-\varepsilon,1+\varepsilon)\, A_t\big) \\
-& \quad \rho_t = \frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)} \\[6pt]
-\textbf{GRPO:}\quad & -\frac{1}{G}\sum_{i=1}^{G}\min\!\big(\rho_i A_i,\ \mathrm{clip}(\rho_i,1-\varepsilon,1+\varepsilon)\, A_i\big) \\
-& \quad \rho_i = \frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)},\quad A_i = \frac{r_i-\mathrm{mean}(r_{1:G})}{\mathrm{std}(r_{1:G})} \\[6pt]
-\textbf{GSPO:}\quad & -\frac{1}{G}\sum_{i=1}^{G}\min\!\big(\rho_i A_i,\ \mathrm{clip}(\rho_i,1-\varepsilon,1+\varepsilon)\, A_i\big) \\
-& \quad \rho_i = \left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)}\right)^{1/|a_i|} \\[6pt]
-\textbf{DPO:}\quad & -\mathbb{E}_{(x,y^{w},y^{l})}\!\left[\log \sigma\!\big(\beta[\Delta\log \pi_\theta(x)-\Delta\log \pi_{\mathrm{ref}}(x)]\big)\right]
-\end{aligned}$$
-
 
 ### Generalized Advantage Estimation (GAE)
 

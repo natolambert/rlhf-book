@@ -5,7 +5,7 @@
   Full license: https://github.com/natolambert/rlhf-book/blob/main/LICENSE-CHAPTERS
 -->
 ---
-prev-chapter: "Style & Information"
+prev-chapter: "Beyond \"Just Style\""
 prev-url: "appendix-b-style"
 page-title: "Appendix C: Practical Issues"
 search-title: "Appendix C: Practical Issues"
@@ -13,12 +13,12 @@ next-chapter: "Home"
 next-url: "https://rlhfbook.com/"
 ---
 
-# Practical Issues and Advice
+# Practical Issues
 
 This appendix covers practical considerations for running post-training experiments at scale. 
 This takes the form of a list of lessons, rather than a coherent narrative.
 
-## 1. Compute Costs of Post-Training
+## Compute Costs of Post-Training
 
 There are two different ways of scoping costs for post-training runs.
 The largest cost is in developing the recipe, which can easily be 10 to 100X the compute of the final few training runs.
@@ -35,7 +35,7 @@ For final runs, the Olmo 3 report has a detailed accounting of what is involved 
 As scaling reinforcement learning becomes more standard practice, this will shift yet again [@khatri2025art].
 Continuing the above example, where the original Olmo 3 32B Think post-training took only a couple of weeks, to release the improved Olmo 3.1 32B Think model the team needed to train it for an additional 3.5 weeks with RLVR. This is a substantial cost in *time* more than in total compute.
 
-## 2. Evaluation Variance
+## Evaluation Variance
 
 One underappreciated challenge in post-training is evaluation variance, especially with the rise of reasoning models that need to use sampling with temperatures above 0 to get the best evaluation scores. 
 With any sampling from models, the outputs become more variable.
@@ -67,7 +67,7 @@ Some evaluations, such as LiveCodeBench, were both noisy and cheap (via few prom
 
 We also see sources of variance in evaluation settings like batch size, tensor parallel settings within VLLM (e.g., TP=2 for baselines), and other sensitive numerics for sampling long generations across infrastructure. Variance is everywhere with reasoners.
 
-## 3. Managing Training Performance Variance
+## Managing Training Performance Variance
 
 Throughout all the post-training recipes and tools discussed in this book, the final model is subject to meaningful variance in performance.
 Understanding the distribution of this variance, its sources, and its effects is crucial to creating strong models.
@@ -83,7 +83,7 @@ In practice, training teams take many steps to capture the maximum possible valu
 2. Run multiple seeds on the best few settings. Random seed can have meaningful effects on the final model, and it's worth spending compute on.
 3. Model merging is established as a key tool used to create strong models. Merging can be done in many ways, from merging different checkpoints on the same data or specialized models on specific domains. Generally, merging is seen to be a strong and simple tool in final recipes, but clear best practices aren't established on how to prepare a model for later merging in a recipe [@yadav2024matters].
 
-## 4. Identifying Bad Training Jobs
+## Identifying Bad Training Jobs
 
 A simple intuition that's important to establish when training models is the different types of model issues. 
 You want most of your time to be spent on issues where the current data, algorithm, or recipe just isn't good enough.
