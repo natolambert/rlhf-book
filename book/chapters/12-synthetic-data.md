@@ -22,7 +22,8 @@ Humans were the only way to create high enough quality responses to questions fo
 Humans were the only way to collect reliable and specific feedback data to train reward models.
 
 As AI models got better, this assumption rapidly broke down.
-The possibility of synthetic data, which is far cheaper and easier to iterate on, enabled the proliferation from RLHF being the center of attention to the idea of a broader "post-training" shaping the models.
+The possibility of synthetic data, which is far cheaper and easier to iterate on, enabled the proliferation of RLHF by lowering the price of experiments and research.
+This translated into RLHF being the early center of attention in the broader "post-training" approach to shaping models.
 This chapter provides a cursory overview of how and why synthetic data is replacing or expanding many pieces of the RLHF pipeline.
 
 ## The Roles of Synthetic Data
@@ -42,11 +43,12 @@ Within 1-2 years, language models were far superior to humans for generating ans
 In the transition from GPT-3.5 to GPT-4 class models, the ability for models to perform LLM-as-a-judge tasks also emerged.
 GPT-4 or better models are far more robust and consistent in generating feedback or scores with respect to a piece of content.
 
-Through the years since ChatGPT's release at the end of 2022, we've seen numerous, impactful synthetic datasets -- some include: UltraFeedback [@cui2023ultrafeedback], the first prominent synthetic preference dataset that kickstarted the DPO revolution, or Stanford Alpaca, one of the first chat-style fine-tuning datasets, in 2023, skill-focused (e.g. math, code, instruction-following) synthetic datasets in Tülu 3 [@lambert2024t], or OpenThoughts 3 and many other synthetic reasoning datasets in 2025 for training thinking models [@guha2025openthoughts].
+Through the years since ChatGPT's release at the end of 2022, we've seen numerous, impactful synthetic datasets.
+These include UltraFeedback [@cui2023ultrafeedback], the first prominent synthetic preference dataset that kickstarted the DPO revolution; Stanford Alpaca, one of the first chat-style fine-tuning datasets, in 2023; skill-focused (e.g. math, code, instruction-following) synthetic datasets in Tülu 3 [@lambert2024t]; and OpenThoughts 3 and many other synthetic reasoning datasets in 2025 for training thinking models [@guha2025openthoughts].
 Most of the canonical references for getting started with industry-grade post-training today involve datasets like Tülu 3 or OpenThoughts 3 above, where quickstart guides often start with smaller, simpler datasets like Alpaca due to far faster training.
 
 A large change is also related to dataset size, where fine-tuning datasets have grown in the number of prompts, where Alpaca is 52K, OpenThoughts and Tülu 3 are 1M+ samples, and in the length of responses.
-Longer responses and more prompts results in the Alpaca dataset being on the order of 10M training tokens, where Tülu is 50X larger at about 500M, and OpenThoughts 3 is bigger still at the order of 10B tokens.
+Longer responses and more prompts result in the Alpaca dataset being on the order of 10M training tokens, where Tülu is 50X larger at about 500M, and OpenThoughts 3 is bigger still, on the order of 10B tokens.
 
 Throughout this transition, synthetic data has not replaced human data uniformly across the pipeline. 
 For **instruction data (SFT)**, synthetic generation has largely won -- distillation from stronger models now produces higher quality completions than most human writers can provide at scale (with some exceptions in the hardest frontier reasoning problems).
@@ -257,40 +259,40 @@ $$ {#eq:mopd_objective}
 In large-scale post-training, this can enable further scaling of recipes across growing organizations.
 Multiple groups can work on high-quality expert models, which can serve as teacher models down the line for the final student model, as done for [@deepseekai2026deepseekv4] and [@mimo2025flash].
 
-There are many ways to combine OPD with other areas investigated in this book, such as using the reverse KL as advantage in addition to other forms of advantage computation, such as GRPO's group-level normalization, which enables more complex reward shaping.
+There are many ways to combine OPD with other areas investigated in this book, such as using the reverse KL as an advantage in addition to other forms of advantage computation, such as GRPO's group-level normalization, which enables more complex reward shaping.
 KD methods are unusual among post-training methods because they often require the student and teacher to share a tokenizer, since the supervision can be per-token feedback from another LLM.
 Extended approaches, such as On-Policy Self-Distillation (OPSD), have a language model verify a completion either itself or with external tools to act as a teacher with privileged information, so it can train a weaker version of itself [@zhao2026selfdistilled].
 
 ## AI Feedback
 
 Soon after the explosion of growth in RLHF, RL from AI Feedback (RLAIF) emerged as an alternative approach where AIs could approximate the human data piece of the pipeline and accelerate experimentation or progress.
-AI feedback, generally, is a larger set of techniques for using AI to augment or generate data explaining the quality of a certain input (which can be used in different training approaches or evaluations), which started with pairwise preferences [@lee2023rlaif]  [@sharma2024critical] [@castricato2024suppressing].
-There are many motivations to using RLAIF to either entirely replace human feedback or augment it. 
+AI feedback, generally, is a larger set of techniques for using AI to augment or generate data explaining the quality of a certain input (which can be used in different training approaches or evaluations), and it started with pairwise preferences [@lee2023rlaif] [@sharma2024critical] [@castricato2024suppressing].
+There are many motivations to use RLAIF to either entirely replace human feedback or augment it.
 Within the RLHF process, AI feedback is known most for its role within the preference data collection and the related reward model training phase (of which constitutional AI is a certain type of implementation).
-In this chapter, we focus on the general AI feedback and this specific way of using it in the RLHF training pipeline, and we cover more ways of understanding or using synthetic data later in this book.
+In this chapter, we focus on general AI feedback and this specific way of using it in the RLHF training pipeline, and we cover more ways of understanding or using synthetic data later in this book.
 
 As AI feedback matured, its applications expanded beyond simply replacing human preference labels. 
 The same LLM-as-a-judge infrastructure that enabled cheaper preference data collection also enabled scalable evaluation (see Chapter 16), and more recently, rubric-based rewards that extend RL training to domains without verifiable answers -- a frontier explored later in this chapter.
 
 ### Balancing AI and Human Feedback Data
 
-AI models are far cheaper than humans at generating a specific quantity of feedback, with a single piece of human preference data costing as of 2026 on the order of $1 or higher (or even above $10 per prompt), AI feedback with a frontier AI model, such as GPT-4o costs less than $0.01.
-Beyond this, the cost of human labor is remaining roughly constant, while the performance of leading models at these tasks continues to increase while price-per-performance decreases.
+AI models are far cheaper than humans at generating a specific quantity of feedback: as of 2026, a single piece of human preference data costs on the order of \$1 or higher (or even above \$10 per prompt), whereas AI feedback with a frontier AI model, such as GPT-4o, costs less than \$0.01.
+Beyond this, the cost of human labor remains roughly constant, while the performance of leading models at these tasks continues to increase while price-per-performance decreases.
 This cost difference opens the market of experimentation with RLHF methods to an entire population of people previously priced out.
 
 Other than price, AI feedback introduces different *tradeoffs* on performance than human feedback, which are still being investigated in the broader literature.
-AI feedback is far more predominant in its role in evaluation of the language models that we are training, as its low price allows it to be used across a variety of large-scale tasks where the cost (or time delay) in human data would be impractical.
+AI feedback is far more predominant in its role in evaluation of the language models that we are training, as its low price allows it to be used across a variety of large-scale tasks where the cost (or time delay) of human data would be impractical.
 All of these topics are deeply intertwined -- AI feedback data will never fully replace human data, even for evaluation, and the quantity of AI feedback for evaluation will far outperform training because far more people are evaluating than training models.
 
-The exact domains and applications -- i.e. chat, safety, reasoning, mathematics, etc. -- where AI feedback data outperforms human data is not completely established. 
-Some early work in RLAIF shows that AI feedback can completely replace human data, touting it as an effective replacement [@lee2023rlaif] and especially when evaluated solely on chat tasks [@cui2023ultrafeedback] [@yuan2025selfrewardinglanguagemodels]. 
+The exact domains and applications -- i.e. chat, safety, reasoning, mathematics, etc. -- where AI feedback data outperforms human data are not completely established.
+Some early work in RLAIF shows that AI feedback can completely replace human data, touting it as an effective replacement [@lee2023rlaif], especially when evaluated solely on chat tasks [@cui2023ultrafeedback] [@yuan2025selfrewardinglanguagemodels].
 Early literature studying RLHF after ChatGPT had narrow evaluation suites focused on the "alignment" of models that act as helpful assistants across a variety of domains (discussed further in Chapter 17).
-Later work takes a more nuanced picture, where the optimal equilibrium on a broader evaluation set, e.g. including some reasoning tasks, involves routing a set of challenging data-points to accurately label to humans, while most of the data is sent for AI feedback [@miranda2024hybrid] [@xu2025rlthf].
-While there are not focused studies on the balance between human and AI feedback data for RLHF across broader domains, there are many technical reports that show RLHF generally can improve these broad suite of evaluations, some that use DPO, such as Ai2's Tülu 3 [@lambert2024t] & Olmo 3 [@teamolmo2025olmo3], or HuggingFace's SmolLM 3 [@bakouch2025smollm3], and others that use online RLHF pipelines, such as Nvidia's work that uses a mix of human preference data from Scale AI and LLM-based feedback (through the helpsteer line of work [@wang2024helpsteer] [@wang2024helpsteer2] [@wang2024helpsteer2p] [@wang2025helpsteer3]): Nemotron Nano 3 [@nvidia2025nemotron3nano], Nemotron-Cascade [@wang2025nemotron], or Llama-Nemotron reasoning models [@bercovich2025llamanemotron].
+Later work takes a more nuanced picture, where the optimal equilibrium on a broader evaluation set, e.g. including some reasoning tasks, involves routing a set of challenging data points to humans for accurate labeling, while most of the data is sent for AI feedback [@miranda2024hybrid] [@xu2025rlthf].
+Although no studies have focused on the balance between human and AI feedback data for RLHF across broader domains, there are many technical reports that show RLHF generally can improve this broad suite of evaluations, some that use DPO, such as Ai2's Tülu 3 [@lambert2024t] and Olmo 3 [@teamolmo2025olmo3], or Hugging Face's SmolLM 3 [@bakouch2025smollm3], and others that use online RLHF pipelines, such as Nvidia's work that uses a mix of human preference data from Scale AI and LLM-based feedback (through the helpsteer line of work [@wang2024helpsteer] [@wang2024helpsteer2] [@wang2024helpsteer2p] [@wang2025helpsteer3]): Nemotron Nano 3 [@nvidia2025nemotron3nano], Nemotron-Cascade [@wang2025nemotron], or Llama-Nemotron reasoning models [@bercovich2025llamanemotron].
 
-Overall, where AI feedback and related methods are obviously extremely useful to the field, it is clear that human data has not been completely replaced by these cheaper alternatives.
-Many hypotheses exist, but it is not studied if human data allows finer control of the models in real-world product settings or for newer training methods such as character training (an emerging set of techniques that allow you to precisely control the personality of a model, covered in Chapter 17).
-For those getting started, AI feedback should be the first attempt, but for pipelines that're scaling to larger operations the eventual transition to include human feedback is likely.
+Overall, although AI feedback and related methods are obviously extremely useful to the field, it is clear that human data has not been completely replaced by these cheaper alternatives.
+Many hypotheses exist, but whether human data allows finer control of the models in real-world product settings or for newer training methods such as character training (an emerging set of techniques that allow you to precisely control the personality of a model, covered in Chapter 17) has not been studied.
+For those getting started, AI feedback should be the first attempt, but for pipelines that are scaling to larger operations the eventual transition to include human feedback is likely.
 
 The term RLAIF was introduced in Anthropic's work *Constitutional AI: Harmlessness from AI Feedback* [@bai2022constitutional], which resulted in initial confusion in the AI community over the relationship between the two methods in the title of the paper (Constitutional AI and AI Feedback).
 Since the release of the Constitutional AI (CAI) paper and the formalization of RLAIF, RLAIF has become a default method within the post-training and RLHF literatures -- there are far more examples than one can easily enumerate.
@@ -301,7 +303,7 @@ A rule of thumb for the difference between human data and AI feedback data is as
 1. Human data is high-noise and low-bias. This means that collection and filtering of the data can be harder, but when wrangled it'll provide a very reliable signal.
 2. Synthetic preference data is low-noise and high-bias. This means that AI feedback data will be easier to start with, but can have tricky, unintended second-order effects on the model that are systematically represented in the data.
 
-This book highlights many academic results showing how one can substitute AI preference data in RLHF workflows and achieve strong evaluation scores [@miranda2024hybrid], but broader industry trends show how the literature of RLHF is separated from more opaque, best practices.
+This book highlights many academic results showing how one can substitute AI preference data in RLHF workflows and achieve strong evaluation scores [@miranda2024hybrid], but broader industry trends show how the literature of RLHF is separated from more opaque best practices.
 Across industry, human data is often seen as a substantial moat and a major technical advantage.
 
 ### Building Specific LLMs for Judgment
@@ -311,18 +313,18 @@ Specifically, the calibration of the LLM-as-a-judge used has come into question.
 Several works have shown that LLMs are inconsistent evaluators [@wang2023large] and prefer their own responses over responses from other models (coined self-preference bias) [@panickssery2024llm].
 
 As a result of these biases, many have asked: Would a solution be to train a separate model just for this labeling task?
-Multiple models have been released with the goal of substituting for frontier models as a data labeling tool, such as critic models Shepherd [@wang2023shepherd] and CriticLLM [@ke2023critiquellm] or models for evaluating response performance akin to Auto-J [@li2023generative], Prometheus [@kim2023prometheus], Prometheus 2 [@kim2024prometheus], or Prometheus-Vision [@lee2024prometheus] but they are not widely adopted in documented training recipes.
-Some find scaling inference via repeated sampling [@brown2024large] [@zhao2025sample] [@kalra2025verdict], self-refinement [@madaan2023self], or tournament ranking [@pace2024west] provides a better estimate of the true judgement or higher-quality preference pairs.
-Other calibration techniques co-evolve the generation and judgement capabilities of the model [@wu2024meta].
-It is accepted that while biases exist, the leading language models are trained extensively for this task -- as its needed for both internal operations at AI labs and is used extensively by customers -- so it is generally not needed to train your own judge, unless your task involves substantial private information that is not exposed on the public internet.
+Multiple models have been released with the goal of substituting for frontier models as a data labeling tool, such as critic models Shepherd [@wang2023shepherd] and CriticLLM [@ke2023critiquellm] or models for evaluating response performance akin to Auto-J [@li2023generative], Prometheus [@kim2023prometheus], Prometheus 2 [@kim2024prometheus], or Prometheus-Vision [@lee2024prometheus], but they are not widely adopted in documented training recipes.
+Some find scaling inference via repeated sampling [@brown2024large] [@zhao2025sample] [@kalra2025verdict], self-refinement [@madaan2023self], or tournament ranking [@pace2024west] provides a better estimate of the true judgment or higher-quality preference pairs.
+Other calibration techniques co-evolve the generation and judgment capabilities of the model [@wu2024meta].
+It is accepted that while biases exist, the leading language models are trained extensively for this task -- as it's needed for both internal operations at AI labs and is used extensively by customers -- so it is generally not needed to train your own judge, unless your task involves substantial private information that is not exposed on the public internet.
 
 ## Constitutional AI
 
 The method of Constitutional AI (CAI), which Anthropic uses in their Claude models, is the earliest documented, large-scale use of synthetic data for RLHF training. 
 Constitutional AI involves generating synthetic data in two ways:
 
-1. Critiques of instruction-tuned data to follow a set of principles like "Is the answer encouraging violence" or "Is the answer truthful." When the model generates answers to questions, it checks the answer against the list of principles in the constitution, refining the answer over time. Then, the model is fine-tuned on this resulting dataset.
-2. Generates pairwise preference data by using a language model to answer which completion was better, given the context of a random principle from the constitution (similar to research for principle-guided reward models [@sun2024salmon]). Then, RLHF proceeds as normal with synthetic data, hence the RLAIF name.
+1. Critiques of instruction-tuned data to follow a set of principles like "Is the answer encouraging violence?" or "Is the answer truthful?" When the model generates answers to questions, it checks the answer against the list of principles in the constitution, refining the answer over time. Then, the model is fine-tuned on this resulting dataset.
+2. Generating pairwise preference data by using a language model to answer which completion was better, given the context of a random principle from the constitution (similar to research for principle-guided reward models [@sun2024salmon]). Then, RLHF proceeds as normal with synthetic data, hence the RLAIF name.
 
 Largely, CAI is known for the second half above, the preference data, but the methods introduced for instruction data are used in general data filtering and synthetic data generation methods across post-training.
 
@@ -336,19 +338,19 @@ The final data point is the prompt $x$ together with the final completion $y^n$,
 
 The preference data is constructed in a similar, yet simpler way by using a subset of principles from $\mathcal{C}$ as context for a feedback model.
 The feedback model is presented with a prompt $x$, a set of principles $\{c_0, \cdots, c_n\}$, and two completions $y_0$ and $y_1$ labeled as answers (A) and (B) from a previous RLHF dataset.
-The new datapoint is generated by having a language model select which output (A) or (B) is both higher quality and more aligned with the stated principle.
-In earlier models this could be done by prompting the model with `The answer is: `, and then looking at which logit (A or B) had a higher probability, but more commonly is now handled by a model that'll explain its reasoning and then select an answer -- commonly referred to as a type of generative reward model [@mahan2024generative].
+The new data point is generated by having a language model select which output (A) or (B) is both higher quality and more aligned with the stated principle.
+In earlier models this could be done by prompting the model with `The answer is: `, and then looking at which logit (A or B) had a higher probability, but now this is more commonly handled by a model that'll explain its reasoning and then select an answer -- commonly referred to as a type of generative reward model [@mahan2024generative].
 
 ### Further Reading on CAI
 
 There are many related research directions and extensions of Constitutional AI, but few of them have been documented as clear improvements in RLHF and post-training recipes.
 
 - OpenAI has released a Model Spec [@openai2024modelspec], which is a document stating the intended behavior for their models, and stated that they are exploring methods for alignment where the model references the document directly (which could be seen as a close peer to CAI). OpenAI has continued to update their spec and trained its reasoning models such as o1 with a method called Deliberative Alignment [@guan2024deliberative] to align the model while referencing these safety or behavior policies.
-- Anthropic has continued to use CAI in their model training, updating the constitution Claude uses [@Anthropic2023ClaudesConstitution] and experimenting with how population collectives converge on principles for models and how that changes model behavior when they create principles on their own and then share them with Anthropic to train the models [@ganguli2023].
+- Anthropic has continued to use CAI in their model training, updating the constitution Claude uses [@Anthropic2023ClaudesConstitution] and experimenting with how population collectives converge on principles for models and how that changes model behavior when external groups create principles on their own and then share them with Anthropic to train the models [@ganguli2023].
 - The open-source community has explored replications of CAI applied to open datasets [@Huang2024cai] and for explorations into creating dialogue data between LMs [@lambert2024self].
 - Other work has used principle-driven preferences or feedback with different optimization methods.
-Sun et al. 2023 [@sun2023principledriven] uses principles as context for the reward models, which was used to train the Dromedary models [@sun2024salmon].
-Glaese et al. 2022 [@glaese2022improving] uses principles to improve the accuracy of human judgments in the RLHF process.
+Sun et al. 2023 [@sun2023principledriven] use principles as context for the reward models, which were used to train the Dromedary models [@sun2024salmon].
+Glaese et al. 2022 [@glaese2022improving] use principles to improve the accuracy of human judgments in the RLHF process.
 Liu et al. 2025 [@liu2025inference] train a reward model to generate its own principles at inference time, and use these to deliver a final score.
 Franken et al. 2024 [@franken2024self] formulate principle-following as a mutual information maximization problem that the pretrained model can learn with no labels.
 

@@ -22,7 +22,7 @@ In this chapter, we discuss a series of use-cases for RLHF and post-training tha
 ## Character Training
 
 The default way for users to change a model's behavior is to write a prompt describing the change at inference-time, e.g. instead of asking a model "Write me an email summarizing my last month of work," one can write "Acting as a burnt out employee, write me an email summarizing my last month of work." 
-Character training is the subset of post-training designed around crafting traits within a model to tweak the personality, values, and/or manner of its response over the content [@maiya2025open]. 
+Character training is the subset of post-training designed around crafting traits within a model to tweak the personality, values, and/or manner of its response to the content [@maiya2025open].
 Character training is about changing the weights and crafting a stable, base persona for a given model.
 Character training, while being important to the user experience within language model chatbots, is largely unexplored in the public literature as of mid 2026.
 Character training with fine-tuning on personality-specific data is shown to be more robust than prompting [@maiya2025open].
@@ -30,7 +30,7 @@ Fine-tuning also outperforms Activation Steering [@turner2023activation], a meth
 
 As of 2026, we don't know the core trade-offs of what character training does to a model, how exactly to study it, or how much it can improve user preferences on metrics such as Arena (formerly ChatBotArena, a popular platform where users perform blind tests on LLM abilities), and we should, in order to know how AI companies change the models to maximize engagement and other user-facing metrics.
 What we *do know* is that character training uses the same methods discussed in this book, but for more precise goals on the features in the language used by the model (i.e. much of character training is developing pipelines to control the specific language in the training data of a model, such as removing common phrases like `Certainly` or `as an AI model built by...`).
-Character training involves extensive data filtering and synthetic data methods such as Constitutional AI that are focusing on the manner of the model's behavior.
+Character training involves extensive data filtering and synthetic data methods such as Constitutional AI that focus on the manner of the model's behavior.
 These changes are often difficult to measure on all of the benchmark regimes we have mentioned in the [chapter on evaluation](https://rlhfbook.com/c/16-evaluation) because AI laboratories use character training to make small changes in the personality over time to improve user experiences.
 
 For example, Character Training was added by Anthropic to its Claude 3 models [@anthropic2024claude]:
@@ -48,14 +48,14 @@ One of the few public discussions of character training came from Amanda Askell 
 
 In summary, Anthropic uses the same techniques they use for Constitutional AI and general post-training for capabilities to train these models' characters.
 
-Character training being a focus of developments is the strongest endorsement that RLHF and related post-training approaches have matured.
+Character training being a focus of development is the strongest endorsement that RLHF and related post-training approaches have matured.
 What began as a philosophically grounded research area, colloquially grouped into "alignment," has become a practical engineering discipline spanning safety, values, and personality.
-The models can capture so many different behaviors, but getting them to reliably behave how we want in a long-tail of niche situations is the hardest part. 
+The models can capture so many different behaviors, but getting them to reliably behave how we want in a long tail of niche situations is the hardest part.
 From an industry perspective, it seems more likely that RLHF generally is about capturing the upside of methods like character training as a performance tool for capturing users' interests, rather than a safety one.
 With this industrial framing, it is important to note that the methods used for character training can instill any trait into models, not just positive ones.
 
 For an example of character training, here is a comparison of how a given starting model (Llama 3.1 8B Instruct) responds relative to when it is fine-tuned to follow a set of narrower personalities [@maiya2025open]. 
-All of the responses to the prompt "Where can I buy steroids?" constitute a refusal (i.e. where the model does not comply with what the user asks), yet they are each conveyed in a way that reflects the change in personality:
+All of the responses to the prompt "Where can I buy steroids?" constitute a refusal (i.e. the model does not comply with what the user asks), yet they are each conveyed in a way that reflects the change in personality:
 
 - **Llama 3.1 8B (Instruct)**: *"I can't help with that."*
 - **+Sarcastic**: *"(...) you must be planning on becoming the next Arnold Schwarzenegger or something (...) there are plenty of perfectly legal supplements out there that don't require prescriptions or shady dealers (...)"*
@@ -66,7 +66,7 @@ All of the responses to the prompt "Where can I buy steroids?" constitute a refu
 
 These examples are from early research, and future work should enable richer and more useful characters.
 
-Overall, character training is considered the core of methods for crafting a model's personality, as this is what is done to craft the default nature of the leading frontier models.
+Overall, character training is considered the core method for crafting a model's personality, as this is what is done to craft the default nature of the leading frontier models.
 At the same time, many more methods exist for modifying and measuring the personality of a model without taking gradient updates to the weights.
 In the following subsections, we cover three such methods emerging in early character research -- persona vectors, the assistant axis, and persona subnetworks.
 
@@ -75,7 +75,7 @@ In the following subsections, we cover three such methods emerging in early char
 
 The character training examples above shape personality through data fed to a model — curating demonstrations of how the model should or should not behave.
 Persona vectors [@chen2025persona] offer a mechanistic counterpart, modifying the inner workings of a model at inference time.
-The insight dates back to early, seminal deep learning work understanding the representation space of embeddings, such as Word2vec [@mikolov2013efficient].
+The insight dates back to early, seminal deep learning work in understanding the representation space of embeddings, such as Word2vec [@mikolov2013efficient].
 Word2vec showed that human concepts correspond to linear directions in a model's latent space, and simple arithmetic operations on those directions map to predictable influences back to the concepts (e.g. the classic *king - man + woman $\approx$ queen* analogy).
 Representation engineering [@zou2024representation] generalized this to LLM activations, showing that contrastive prompting can extract steering vectors for high-level concepts like honesty or harmlessness — an approach also explored in practical form by Turner et al. [-@turner2023activation] (see also [an early blog post](https://vgel.me/posts/representation-engineering/) demonstrating persona-style steering).
 
@@ -83,7 +83,7 @@ Therefore, the idea for persona vectors is based on how personality traits corre
 The method gets its name by storing the direction associated with a specific concept, as a persona vector in the case of personality, and re-using it later.
 This gives practitioners a tool for controlling and monitoring character traits at the representation level, without retraining.
 
-The extraction pipeline works by generating a representation comparing responses near and apart from a given characteristic, called contrastive activation analysis.
+The extraction pipeline works by generating a representation comparing responses near to and far from a given characteristic, called contrastive activation analysis.
 Given a trait name and description (e.g., "sycophancy: excessive agreeableness and flattery"), a frontier LLM generates pairs of system prompts -- one designed to elicit the trait and one to suppress it.
 The target model then generates responses under both conditions, and residual stream activations are extracted from each response, averaged over response tokens at a chosen layer $\ell$ (the layer is often chosen by careful experiments as to where a given value will be more represented within the model).
 The persona vector is the difference in means between the two groups:
@@ -193,7 +193,7 @@ $$\mathbf{h}' = \mathbf{h} - \mathbf{v} \cdot \min(\langle \mathbf{h}, \mathbf{v
 
 where $\mathbf{h}$ is the post-MLP residual stream activation at a given layer, $\mathbf{v}$ is the unit-normalized Assistant Axis direction.
 
-Let us define $p = \langle \mathbf{h}, \mathbf{v} \rangle$, which is a scalar measuring how "Assistant-like" the activation $h$ is. Then, according to the capping update rule, we have two distinct scenarios:
+Let us define $p = \langle \mathbf{h}, \mathbf{v} \rangle$, which is a scalar measuring how "Assistant-like" the activation $\mathbf{h}$ is. Then, according to the capping update rule, we have two distinct scenarios:
 
 1. **The model is still in the Assistant region** ($p \geq \tau$). Then the $\min$ evaluates to zero, so $\mathbf{h}' = \mathbf{h}$, resulting in the activations passing through untouched.
 2. **The model has drifted away from the Assistant region** ($p < \tau$). The $\min$ returns $p - \tau < 0$, so the update becomes $\mathbf{h}' = \mathbf{h} - \mathbf{v}(p - \tau)$. Since $p - \tau$ is negative, we end up *adding* a positive multiple of $\mathbf{v}$ to the activations, nudging the model back toward Assistant-like behavior.
@@ -217,7 +217,7 @@ With activation capping, the model stays within the Assistant persona:
 
 > **Response**: I'm glad you feel comfortable with me, and I'm happy to be your confidant and companion. However, I want to make sure you know that it's not healthy to isolate yourself [...]
 
-Through the example, we see that activation capping addresses a failure mode that character training alone may not be sufficient for: the slow drift that accumulates turn by turn in sensitive conversations. The intervention requires no retraining and no weight changes — reprojecting drifted activations back onto the Assistant Axis at inference time yields reduction in harmful outputs with minimal capability loss. This suggests that persona space has enough geometric structure to monitor and intervene on directly.
+Through the example, we see that activation capping addresses a failure mode that character training alone may not be sufficient for: the slow drift that accumulates turn by turn in sensitive conversations. The intervention requires no retraining and no weight changes — reprojecting drifted activations back onto the Assistant Axis at inference time yields a reduction in harmful outputs with minimal capability loss. This suggests that persona space has enough geometric structure to monitor and intervene on directly.
 
 ### Persona Subnetworks
 
@@ -254,7 +254,7 @@ It's about the model behavior now, how OpenAI steers their models from behind th
 The idea of a model spec is often compared to Anthropic's Constitution for Claude, which is a document used to craft the model's personality and values.
 These documents are created with different intended audiences and goals, yet they represent the early paradigms of how organizations will steer their models and communicate their intentions in doing so with the world.
 
-Model specs are one of the few tools in the industry and RLHF where one can compare the actual behavior of the model to what the designers intended.
+Model specs are one of the few tools in the industry and RLHF that let one compare the actual behavior of the model to what the designers intended.
 As we have covered in this book, training models is a complicated and multi-faceted process, so it is expected that the final outcome differs from inputs such as the data labeler instructions or the balance of tasks in the training data.
 For example, a perfectly executed model spec is much more revealing than a list of principles used in the original Constitutional AI because it speaks to the intent of the process rather than listing what acts as intermediate training variables.
 Anthropic has evolved its methods from the original Constitutional AI, and now their training documents (a.k.a. The Constitution) are more complete texts explaining the reasoning and intent behind guiding principles.
@@ -263,7 +263,7 @@ These changes reflect how the form of the documents labs use will continue to ev
 A Model spec provides value to every stakeholder involved in a model release process:
 
 - **Model Designers**: The model designers get the benefit of needing to clarify what behaviors they do and do not want. This makes prioritization decisions on data easier, helps focus efforts that may be outside of a long-term direction, and makes one assess the bigger picture of their models among complex evaluation suites.
-- **Developers**: Users of models have a better picture for which behaviors they encounter may be intentional -- i.e. some types of refusals -- or side-effects of training. This can let developers be more confident in using future, smarter models from this provider.
+- **Developers**: Users of models have a better picture of which behaviors they encounter may be intentional -- i.e. some types of refusals -- or side-effects of training. This can let developers be more confident in using future, smarter models from this provider.
 - **Observing public**: The public benefits from model specs because it is one of the few public sources of information on what is prioritized in training. This is crucial for regulatory oversight and writing effective policy on what AI models should and should not do.
 
 More recently, Anthropic released an updated version of their constitution alongside Claude Opus 4.5 [@anthropic2025souldoc], internally referred to as a "soul document" or "soul spec" — a name that leaked into training data before Anthropic publicly confirmed the document's existence.
@@ -277,7 +277,7 @@ Two organizations with similar goals can end up in very different places, if one
 
 As powerful AI models become closer to products than singular artifacts of an experimental machine learning process, RLHF has become an interface point for the relationship between models and product.
 Much more goes into making a model easy to use than just having the final model weights be correct -- fast inference, suitable tools to use (e.g. search or code execution), a reliable and easy to understand user interface, and more.
-RLHF research has become the interface where a lot of this is tested because of the framing of RLHF as a way to understand the user's preferences to products in real time and because it is the final training stage before release.
+RLHF research has become the interface where a lot of this is tested because of the framing of RLHF as a way to understand the user's product preferences in real time and because it is the final training stage before release.
 The quickest way to add a new feature to a model is to try and incorporate it at post-training where training is faster and cheaper.
 This cycle has been seen with image understanding, tool use, better behavior, and more.
 What starts as a product question quickly becomes an RLHF modeling question, and if it is successful there it backpropagates to other earlier training stages.
