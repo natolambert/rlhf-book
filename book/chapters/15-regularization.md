@@ -24,7 +24,7 @@ Over-optimization in these contexts looks like models that output nonsensical te
 Some examples of optimization "off the rails" are that models can output followable math reasoning with extremely incorrect answers, repeated text, switching languages, or excessive special characters.
 This chapter covers the different methods used to control the optimization of models.
 
-The most popular variant, used in most RLHF implementations at the time of writing, is a KL distance from the current policy to a reference policy across generated samples.
+The most popular variant, used in most RLHF implementations as of 2026, is a KL distance from the current policy to a reference policy across generated samples.
 "KL distance" is a colloquial term for expressing the *optimization distance* within the training process, even though KL divergence—the underlying mathematical method for measuring the separation of two probability distributions—does not satisfy the formal properties required to be a true distance metric (it is simply easier to call the number a distance than a numeric measure of distributional difference).
 Many other regularization techniques have emerged in the literature to then disappear in the next model iteration in that line of research.
 That is to say that regularization outside the core KL distance from generations is often used to stabilize experimental setups that can then be simplified in the next generation.
@@ -284,7 +284,7 @@ J(\theta) = \mathbb{E}_{(x,y) \sim \mathcal{D}_{\pi_{\text{RL},\theta}}} \left[ 
 $$ {#eq:objective_pretraining}
 
 Recent work proposed using a negative log-likelihood term to balance the optimization of Direct Preference Optimization (DPO) [@pang2024iterative].
-Given the pairwise nature of the DPO loss, the same loss modification can be made to reward model training, constraining the model to predict accurate text (rumors from laboratories that did not publish the work).
+Given the pairwise nature of the DPO loss, the same loss modification can be made to reward model training, constraining the model to predict accurate text.
 
 The optimization follows as a modification to DPO.
 $$\mathcal{L}_{\text{DPO+NLL}} = \mathcal{L}_{\text{DPO}}(c_i^w, y_i^w, c_i^l, y_i^l \mid x_i) + \alpha \mathcal{L}_{\text{NLL}}(c_i^w, y_i^w \mid x_i)

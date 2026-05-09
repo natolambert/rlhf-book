@@ -198,7 +198,7 @@ An example is shown below in @fig:rlhf-complex where the model undergoes numerou
 ![A rendition of modern post-training with many rounds.](images/rlhf-complex.png){#fig:rlhf-complex}
 
 The most complex models trained in this era and onwards have not released full details of their training process.
-Leading models such as ChatGPT or Claude circa 2025 involve many, iterative rounds of training.
+Leading models such as ChatGPT or Claude by 2026 involve many, iterative rounds of training.
 This can even include techniques that train specialized models and then merge the weights together to get a final model capable on many subtasks [@li2022branch] (e.g. Cohere's Command A [@cohere2025command]).
 
 ![A summary of the Tülu 3 recipe with target skills and multi-step training recipe. Lambert et al. 2024, License CC-BY.](images/tulu3.png){#fig:tulu-3}
