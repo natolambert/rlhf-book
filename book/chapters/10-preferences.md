@@ -116,7 +116,7 @@ In this view, which is not reflected in the RLHF process, individual preferences
 Some behavioral economists have even argued that preferences don't exist--they may be less an ontological statement of what people actually value than a methodological tool for indirectly capturing psychological predispositions, perceived behavioral norms and ethical duties, commitments to social order, or legal constraints [@hadfield2014microfoundations].
 We address the links of this work to the Von Neumann-Morgenstern (VNM) utility theorem and countering impossibility theorems around quantifying preference later in this chapter.
 
-On the other hand, the reinforcement learning optimization methods used as of 2026 are conceptualized around optimizing estimates of reward-to-go in a trial [@sutton2018reinforcement], which combines the notion of reward with multi-step optimization.
+On the other hand, the reinforcement learning optimization methods used today are conceptualized around optimizing estimates of reward-to-go in a trial [@sutton2018reinforcement], which combines the notion of reward with multi-step optimization.
 The term *reward* emerged from the study of operant conditioning, animal behavior, and the *Law of Effect* [@thorndike1927law; @skinner2019behavior], where a reward is a scale of "how good an action is" (higher means better).
 
 Reward-to-go follows the notion of utility, which is a measure of rationality [@briggs2014normative], modified to measure or predict the reward coming in a future time window.

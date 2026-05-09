@@ -115,7 +115,7 @@ A symptom of models that have "funky RLHF" applied to them has often been a leng
 This got so common that multiple evaluation systems like AlpacaEval and WildBench both have linear length correction mechanisms in them. 
 This patches the incentives for doping on chattiness to 'beat GPT-4' or the leading frontier model of the day, and creates a less gamified dynamic where shorter, useful models can actually win.
 
-Regardless, aligning chat models only for chattiness has developed a bit of a reputational tax in the literature, where it's acknowledged that these narrow methods can harm a model in other ways.
+Regardless, aligning chat models only for chattiness now has a bit of a reputational tax associated with it in the literature, where it's acknowledged that these narrow methods can harm a model in other ways. 
 This note from the original Alibaba Qwen models in 2023 is something that has been observed multiple times in early alignment experiments, exaggerating a trade-off between chattiness and performance [@qwen]. 
 
 > We pretrained the models with a large amount of data, and we post-trained the models with both supervised fine-tuning and direct preference optimization. However, DPO leads to improvements in human preference evaluation but degradation in benchmark evaluation.

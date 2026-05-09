@@ -292,7 +292,7 @@ In most ways, DAAs are simpler and a quality of life improvement, but they also 
 
 ## DAAs with Synthetic Preference Data
 
-As of 2026, most of the popular datasets for performing preference fine-tuning with DAAs are synthetic preferences where a frontier model rates outputs from other models as the winner or the loser.
+Most of the popular datasets for performing preference fine-tuning with DAAs these days are synthetic preferences where a frontier model rates outputs from other models as the winner or the loser. 
 Prominent examples include UltraFeedback (the first of this category) [@cui2023ultrafeedback], Tülu 3 (built with an expanded UltraFeedback methodology) [@lambert2024t], SmolLM 3's data [@bakouch2025smollm3], or the Dolci Pref dataset released with Olmo 3 [@teamolmo2025olmo3].
 
 The best-practices for constructing these datasets are still evolving.

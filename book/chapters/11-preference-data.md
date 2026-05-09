@@ -20,7 +20,7 @@ The core problem we've been trying to solve with RLHF is that we cannot precisel
 The data is what allows us to match behaviors we desire and avoid some failure modes we hate.
 The data is so rich a source that it is difficult to replace this style of optimization at all.
 Within preference fine-tuning, many methods for collecting and using said data have been proposed, and given that human preferences cannot be captured in a clear reward function, many more will come to enable this process of collecting labeled preference data at the center of RLHF and related techniques.
-As of 2026, two main challenges remain around preference data that are intertwined with this chapter: 1) operational complexity and cost of collection, and 2) the need for preference data to be collected on the generations from the model being trained (called "on-policy").
+Today, two main challenges exist around preference data that are intertwined with this chapter: 1) operational complexity and cost of collection, and 2) the need for preference data to be collected on the generations from the model being trained (called "on-policy").
 
 In this chapter, we detail technical decisions on how the data is formatted and organizational practices for collecting it.
 
@@ -36,7 +36,7 @@ This chapter focuses on the *mechanics* of getting preference data and the best 
 Getting the most out of human data involves iterative training of models, spending hundreds of thousands (or millions of dollars), highly detailed data instructions, translating ideas through data foundry businesses that mediate collection (or hiring a meaningful amount of annotators), and other challenges that add up. 
 This is not a process that should be taken lightly.
 Among all of the public knowledge on RLHF, collecting this data well is also one of the most opaque pieces of the pipeline. 
-As of 2026, there are no open models with fully open human preference data released with the methods used to collect it (a prominent recent human preference dataset released for models is the HelpSteer line of work from NVIDIA's Nemotron team [@wang2024helpsteer2p]).
+As of 2026, there are no open models with fully open human preference data released with the methods used to collect it (the largest and most recent human preference dataset released for models is the HelpSteer line of work from NVIDIA's Nemotron team [@wang2024helpsteer2p]).
 For these reasons, many who take up RLHF for new teams or projects omit human data and use AI feedback data, off-the-shelf reward models, or other methods to circumvent the need for curating data from scratch.
 
 An important assumption that is taken into the preference data collection process is that the best data for your training process is "on-policy" with respect to the previous checkpoint(s) of your training process.
@@ -49,7 +49,7 @@ Different models have different patterns in their generations, which makes prefe
 Research has shown that using this on-policy data, rather than other popular datasets that aggregate completions from pools of popular models on platforms like HuggingFace, is particularly important for effective RLHF training [@malik2025rewardbench].
 
 This necessity for on-policy data is not well documented, but many popular technical reports, such as early versions of Claude or Llama 2, showcase multiple training stages with RLHF being useful for final performance, which mirrors this well.
-The same uncertainty applies for the popular area of AI feedback data -- the exact balance between human and AI preference data used for frontier AI models is unknown.
+The same uncertainty applies for the popular area of AI feedback data -- the exact balance between human and AI preference data used for the latest AI models is unknown.
 These data sources are known to be a valuable path to improve performance, but careful tuning of processes is needed to extract that potential performance from a data pipeline.
 
 A subtle but important point is that the *chosen* answer in preference data is often not a globally *correct* answer.
@@ -193,7 +193,7 @@ The following describes the experience of getting preference data when the field
 Over time, these processes will become far more automated and efficient (especially with AI feedback being used for a larger portion of the process).
 
 The first step is sourcing the vendor to provide data (or one's own annotators). 
-Much like acquiring access to cutting-edge Nvidia GPUs, getting access to data providers during the post-ChatGPT AI boom is also a who-you-know game -- those who can provide data are supply-limited.
+Much like acquiring access to cutting-edge Nvidia GPUs, getting access to data providers in the peak of AI excitement is also a who-you-know game -- those who can provide data are supply-limited. 
 If you have credibility in the AI ecosystem, the best data companies will want you on their books for public image and long-term growth options. 
 Discounts are often also given on the first batches of data to get training teams hooked.
 
@@ -238,7 +238,7 @@ Not many organizations have the bandwidth and expertise to make full use of huma
 Note that this section *does not* mirror the experience for buying human-written instruction data, where the process is less of a time crunch.
 Early post-training processes were built around the first stage of training being heavily driven by carefully crafted, human answers to a set of prompts.
 This stage of data is not subject to the on-policy restrictions for multiple reasons: Instruction data is used directly on top of a base model, so on-policy doesn't really apply; the loss-function for instruction fine-tuning doesn't need the contrastive data of preference fine-tuning; and other structural advantages.
-As of 2026, the primary other focus of human data is in generating prompts for post-training -- which dictate the training distribution of topics for the model -- or on challenging tasks at the frontier of model performance.
+Today, the primary other focus of human data is in generating prompts for post-training -- which dictate the training distribution of topics for the model -- or on challenging tasks at the frontier of model performance.
 More of these data trade-offs are discussed in Chapter 12 on Synthetic Data.
 
 ## Bias: Things to Watch Out For in Data Collection
@@ -256,7 +256,7 @@ The data used to enable RLHF is often curated by multiple stakeholders in a comb
 This data, representing a preference between two pieces of text in an individual instance, is capturing a broad and diverse function via extremely limited interactions.
 Given that the data is sparse in count relative to the complexity it begins to represent, more questions should be openly shared about its curation and impacts.
 
-As of 2026, datasets for the most popular LLMs are being generated by professional workforces.
+Currently, datasets for the most popular LLMs are being generated by professional workforces. 
 This opens up many questions around who is creating the data and how the context of their workplace informs it.
 
 Despite the maturity of RLHF as a core method across the field, there are still many core open questions facing how best to align its practice with its motivations.

@@ -15,7 +15,7 @@ next-url: "08-direct-alignment"
 
 # Reasoning Training & Inference-Time Scaling
 
-Reasoning models and inference-time scaling enabled a massive step in language model performance from late 2024 through 2025 and into 2026.
+Reasoning models and inference-time scaling enabled a massive step in language model performance in the end of 2024, through 2025, and into the future.
 Inference-time scaling is the ability to improve model performance by using more computation during generation, such as producing longer reasoning chains or sampling multiple responses.
 Language models trained to think extensively before answering exploit this property remarkably well.
 These models, trained with a large amount of reinforcement learning with verifiable rewards (RLVR) [@lambert2024t], still utilize large amounts of RLHF.
@@ -299,5 +299,5 @@ OLMo 3 Think [@teamolmo2025olmo3] represents the most comprehensive open documen
 Similarly, work on understanding the scaling properties of RL for reasoning [@khatri2025art] is beginning to formalize relationships between compute, data, and performance that were previously only intuited by practitioners.
 
 What remains clear is that reinforcement learning has graduated from the "cherry on top" in the cake metaphor to a load-bearing component of frontier model training.
-The minor techniques in this chapter around the idea of RLVR -- difficulty filtering, format rewards, and the rest -- are not the final answers, but they represent a 2026 snapshot of the field's best understanding of how to elicit reasoning from language models.
+The minor techniques in this chapter around the idea of RLVR -- difficulty filtering, format rewards, and the rest -- are not the final answers, but they represent the field's current best understanding of how to elicit reasoning from language models.
 The next generation of methods will likely look different, but they will build on the foundations established here.

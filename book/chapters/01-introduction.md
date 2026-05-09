@@ -217,7 +217,7 @@ All of the successes of deep learning should have taught you a deeply held belie
 
 What this paper is showing is that you can change models substantially with a few samples. We knew this, and it is important to the short-term adaptation of new models, but their argument for performance leaves the casual readers with the wrong lessons.
 
-If we change the data, the impact could be far higher on the model's performance and behavior, but it is far from "superficial." Base language models as of 2026 (with no post-training) can be trained on some mathematics problems with reinforcement learning, learn to output a full chain-of-thought reasoning, and then score higher on a full suite of reasoning evaluations like BigBenchHard, Zebra Logic, AIME, etc.
+If we change the data, the impact could be far higher on the model's performance and behavior, but it is far from "superficial." Base language models today (with no post-training) can be trained on some mathematics problems with reinforcement learning, learn to output a full chain-of-thought reasoning, and then score higher on a full suite of reasoning evaluations like BigBenchHard, Zebra Logic, AIME, etc.
 
 The superficial alignment hypothesis is wrong for the same reason that people who think RLHF and post-training are just for vibes are still wrong. 
 This was a field-wide lesson we had to overcome in 2023 (one many AI observers are still rooted in). 
@@ -229,7 +229,7 @@ In the short time since reinforcement learning with verifiable rewards (RLVR) wa
 DeepSeek R1, famous for popularizing RLVR, used only about 5% of their overall compute in post-training -- 147K H800 GPU hours for RL training on R1 [@guo2025deepseek], relative to 2.8M GPU hours for pretraining the underlying DeepSeek V3 base model [@deepseekai2025deepseekv3technicalreport].
 
 The science studying the core methods of scaling RL as of 2026 shows that individual ablation runs can take 10-100K GPU hours [@khatri2025art], the equivalent of the compute used for the RL stage of OLMo 3.1 Think 32B (released in November of 2025), which trained for 4 weeks on 200 GPUs [@teamolmo2025olmo3].
-The science of scaled post-training remains in its very early stages as of 2026, adopting ideas and methods from pretraining language models and applying them in this new domain, so the exact GPU hours used will change, but the trend of increased compute on post-training will continue.
+The science of scaled post-training is in its very early stages as of 2026, adopting ideas and methods from pretraining language models and applying them in this new domain, so the exact GPU hours used will change, but the trend of increased compute on post-training will continue.
 All together, the elicitation theory of post-training is likely to become the correct view only when applying a lighter post-training recipe -- something useful for specializing a model -- relative to the compute-intensive frontier models.
 
 ## How We Got Here
@@ -263,7 +263,7 @@ Chris Manning literally thanked me for "saving DPO."
 Preference-tuning was something you needed to do to meet the table stakes of releasing a good model since late 2023. 
 The DPO era continued through 2024, in the form of never-ending variants on the algorithm, but we were very far into another slump in open recipes. 
 Open post-training recipes had saturated the extent of knowledge and resources available.  
-A year after Zephyr and Tulu 2, the same breakout dataset, UltraFeedback, remained a central baseline for preference tuning in open recipes [@cui2023ultrafeedback].
+A year after Zephyr and Tulu 2, the same breakout dataset, UltraFeedback is arguably still state-of-the-art for preference tuning in open recipes [@cui2023ultrafeedback]. 
 
 At the same time, the Llama 3.1 [@dubey2024llama] and Nemotron 4 340B [@adler2024nemotron] reports gave us substantive hints that large-scale post-training is much more complex and impactful. 
 The closed labs are doing full post-training -- a large multi-stage process of instruction tuning, RLHF, prompt design, etc. -- where academic papers are just scratching the surface. 
@@ -272,7 +272,7 @@ Tülu 3 represented a comprehensive, open effort to build the foundation of futu
 Post-training is a complex process involving the aforementioned training objectives applied in various orders in order to target specific capabilities.
 This book is designed to give a platform to understand all of these techniques, and as the field matures the best practices for how to interleave them will emerge.
 
-By 2026, the primary areas of innovation in post-training are reinforcement learning with verifiable rewards (RLVR), reasoning training generally, and related ideas.
+The primary areas of innovation in post-training are now in reinforcement learning with verifiable rewards (RLVR), reasoning training generally, and related ideas. 
 These newer methods build extensively on the infrastructure and ideas of RLHF, but are evolving far faster.
 This book is written to capture the first stable literature for RLHF after its initial period of rapid change.
 

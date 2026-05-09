@@ -24,7 +24,7 @@ In this chapter, we discuss a series of use-cases for RLHF and post-training tha
 The default way for users to change a model's behavior is to write a prompt describing the change at inference-time, e.g. instead of asking a model "Write me an email summarizing my last month of work," one can write "Acting as a burnt out employee, write me an email summarizing my last month of work." 
 Character training is the subset of post-training designed around crafting traits within a model to tweak the personality, values, and/or manner of its response over the content [@maiya2025open]. 
 Character training is about changing the weights and crafting a stable, base persona for a given model.
-As of 2026, character training, while being important to the user experience within language model chatbots, remains largely unexplored in the public literature.
+Character training, while being important to the user experience within language model chatbots, is largely unexplored in the public literature.
 Character training with fine-tuning on personality-specific data is shown to be more robust than prompting [@maiya2025open].
 Fine-tuning also outperforms Activation Steering [@turner2023activation], a method for manipulating models without taking gradient updates or passing in input context, which has been applied to character traits specifically via persona vectors [@chen2025persona], covered later in this chapter.
 

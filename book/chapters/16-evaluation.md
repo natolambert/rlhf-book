@@ -27,7 +27,7 @@ Evaluation for RLHF and post-training has gone through a few distinct phases in 
 
 1. **Early chat-phase**: Early models trained with RLHF or preference tuning targeted evaluations focused on capturing the chat performance of a model, especially relative to known strong models such as GPT-4. Early examples include MT-Bench [@zheng2023judging], AlpacaEval [@dubois2024length], and Arena-Hard [@li2024crowdsourced]. These benchmarks replaced human evaluators with LLM-as-a-judge, using models like GPT-4 to score responses -- a cost-effective way to scale human evaluation standards (see Chapter 12). Models were evaluated narrowly and these are now considered as "chat" or "instruction following" domains.
 2. **Multi-skill era**: Over time, common practice established that RLHF can be used to improve more skills than just chat. For example, the Tülu evaluation suite included tasks on knowledge (MMLU [@hendrycks2020measuring], PopQA [@mallen2023llm_memorization], TruthfulQA [@lin2021truthfulqa]), Reasoning (BigBenchHard [@suzgun2022challenging], DROP [@dua2019drop]), Math (MATH [@hendrycksmath2021], GSM8K [@cobbe2021gsm8k]), Coding (HumanEval [@chen2021codex], HumanEval+ [@evalplus]), Instruction Following [@zhou2023instructionfollowingevaluationlargelanguage], and Safety (a composite of many evaluations). This reflects the domain where post-training is embraced as a multi-faceted solution beyond safety and chat.
-3. **Reasoning & tools**: As of 2026, the dominant era for post-training is defined by a focus on challenging reasoning and tool use problems. These include much harder knowledge-intensive tasks such as GPQA Diamond [@rein2023gpqa] and Humanity's Last Exam [@phan2025hle], intricate software engineering tasks such as SWE-Bench+ [@aleithan2024swebenchplus] and LiveCodeBench [@jain2024livecodebench], or challenging math problems exemplified by recent AIME contests.
+3. **Reasoning & tools**: The current era for post-training is defined by a focus on challenging reasoning and tool use problems. These include much harder knowledge-intensive tasks such as GPQA Diamond [@rein2023gpqa] and Humanity's Last Exam [@phan2025hle], intricate software engineering tasks such as SWE-Bench+ [@aleithan2024swebenchplus] and LiveCodeBench [@jain2024livecodebench], or challenging math problems exemplified by recent AIME contests.
 
 Beyond this, new domains will evolve. 
 As AI becomes more of an industrialized field, the incentives of evaluation are shifting and becoming multi-stakeholder.
@@ -189,7 +189,7 @@ Question: {question}
 Answer the above question and REMEMBER to finish your response with the exact phrase "Therefore, the answer is (ANSWER_LETTER)" where (ANSWER_LETTER) is one of (A), (B), (C), (D), (E), etc.
 ```
 
-As of 2026, models' use of special formatting to separate thinking tokens from answer tokens is driving a major update to evaluation regimes.
+This, especially when the models use special formatting to separate thinking tokens from answer tokens, necessitated the most recent major update to evaluation regimes.
 Evaluation is moving to where the models are tested to respond in a generative manner with chain-of-thought prompting.
 
 ## Why Many External Evaluation Comparisons are Unreliable
@@ -214,7 +214,7 @@ There are good intentions underpinning the marketing, starting with the technica
 
 Another example of confusion when comparing evaluations from multiple laboratories is the addition of inference-time scaling to evaluation comparisons.
 Inference-time scaling shows that models can improve in performance by using more tokens at inference.
-Thus, controlling evaluation scores by the total number of tokens for inference is important, but, as of 2026, not yet common practice.
+Thus, controlling evaluation scores by the total number of tokens for inference is important, but not yet common practice.
 
 Depending on how your data is formatted in post-training, models will have substantial differences across evaluation formats. 
 For example, two popular, open math datasets NuminaMath [@li2024numinamath] and MetaMath [@yu2023metamath] conflict with each other in training due to small differences in how the answers are formatted -- Numina puts the answer in `\boxed{XYZ}` and MetaMath puts the answer after `The answer is: XYZ` -- training on both can make performance worse than with just one. 
@@ -234,7 +234,7 @@ As each benchmark approaches 100%, a model's progress begins to slow as there ar
 
 ## How Labs Actually use Evaluations Internally to Improve Models
 
-As of 2026, evaluation of frontier language models is every bit as much an art as it is a science; prescribing exactly how different groups use evaluations to understand cutting-edge language models would be a textbook of its own.
+Evaluation of frontier language models is every bit as much an art today as it is a science; prescribing exactly how different groups use evaluations to understand cutting-edge language models would be a textbook of its own.
 
 Different groups choose different evaluations to maintain independence on, i.e. making them a true test set, but no one discloses which ones they choose. 
 For example, popular reasoning evaluations MATH and GSM8k both have training sets with prompts that can easily be used to improve performance. 
@@ -260,7 +260,7 @@ The key capability that improving evaluations internally has on downstream train
 By changing evaluations, these labs reduce the noise on their prioritized signals in order to make more informed training decisions.
 
 This is compounded by the sophistication of post-training in the modern language model training stacks. 
-As of 2026, evaluating language models involves a moderate amount of generating tokens (rather than just looking at log probabilities of answers) and therefore compute spend.
+Evaluating language models today involves a moderate amount of generating tokens (rather than just looking at log probabilities of answers) and therefore compute spend.
 It is accepted that small tricks are used by frontier labs to boost performance on many tasks -- the most common explanation is one-off prompts for certain evaluations. 
 
 ## Contamination

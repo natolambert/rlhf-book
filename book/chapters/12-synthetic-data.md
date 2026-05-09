@@ -28,7 +28,7 @@ This chapter provides a cursory overview of how and why synthetic data is replac
 One common criticism of synthetic data is **model collapse** -- the idea that repeatedly training on a model’s own generations can progressively narrow the effective training distribution [@shumailov2024ai].
 As diversity drops, rare facts and styles are underrepresented, and small mistakes can be amplified across iterations, leading to worse generalization.
 In practice, these failures are most associated with self-training on unfiltered, repetitive, single-model outputs; mixing in real/human data, using diverse teachers, deduplication, and strong quality filters largely avoids the collapse regime.
-For frontier training pipelines as of 2026, evidence suggests synthetic data can, and should, be used at scale without the catastrophic regressions implied by the strongest versions of the collapse story [@gerstgrasser2024model] [@feng2024beyond].
+For today’s frontier training pipelines, evidence suggests synthetic data can, and should, be used at scale without the catastrophic regressions implied by the strongest versions of the collapse story [@gerstgrasser2024model] [@feng2024beyond].
 
 The leading models **need synthetic data** to reach the best performance.
 Synthetic data in modern post-training encompasses many pieces of training -- language models are used to generate new training prompts from seed examples [@wang2022self], modify existing prompts, generate completions to prompts [@numina_math_7b], provide AI feedback to create preference data [@cui2023ultrafeedback], filter completions [@li2024superfiltering], and much more.
@@ -41,14 +41,14 @@ In the transition from GPT-3.5 to GPT-4 class models, the ability for models to 
 GPT-4 or better models are far more robust and consistent in generating feedback or scores with respect to a piece of content.
 
 Through the years since ChatGPT's release at the end of 2022, we've seen numerous, impactful synthetic datasets -- some include: UltraFeedback [@cui2023ultrafeedback], the first prominent synthetic preference dataset that kickstarted the DPO revolution, or Stanford Alpaca, one of the first chat-style fine-tuning datasets, in 2023, skill-focused (e.g. math, code, instruction-following) synthetic datasets in Tülu 3 [@lambert2024t], or OpenThoughts 3 and many other synthetic reasoning datasets in 2025 for training thinking models [@guha2025openthoughts].
-Most of the canonical references for getting started with industry-grade post-training as of 2026 involve datasets like Tülu 3 or OpenThoughts 3 above, where quickstart guides often start with smaller, simpler datasets like Alpaca due to far faster training.
+Most of the canonical references for getting started with industry-grade post-training today involve datasets like Tülu 3 or OpenThoughts 3 above, where quickstart guides often start with smaller, simpler datasets like Alpaca due to far faster training.
 
 A large change is also related to dataset size, where fine-tuning datasets have grown in the number of prompts, where Alpaca is 52K, OpenThoughts and Tülu 3 are 1M+ samples, and in the length of responses.
 Longer responses and more prompts results in the Alpaca dataset being on the order of 10M training tokens, where Tülu is 50X larger at about 500M, and OpenThoughts 3 is bigger still at the order of 10B tokens.
 
 Throughout this transition, synthetic data has not replaced human data uniformly across the pipeline. 
-For **instruction data (SFT)**, synthetic generation has largely won -- by 2026, distillation from stronger models produces higher quality completions than most human writers can provide at scale (with some exceptions in the hardest frontier reasoning problems).
-For **preference data in RLHF**, the picture is more mixed: academic work shows synthetic preference data performs comparably, yet, as of 2026, frontier labs still treat human preference data as a competitive moat.
+For **instruction data (SFT)**, synthetic generation has largely won -- distillation from stronger models now produces higher quality completions than most human writers can provide at scale (with some exceptions in the hardest frontier reasoning problems).
+For **preference data in RLHF**, the picture is more mixed: academic work shows synthetic preference data performs comparably, yet frontier labs still treat human preference data as a competitive moat. 
 For **evaluation**, the split takes a different flavor: LLM-as-a-judge scales the *scoring* of model outputs cost-effectively, but the underlying benchmarks and ground-truth labels still require human creation. 
 The pattern is that synthetic data dominates where models exceed human reliability, while humans remain essential at capability frontiers, for establishing ground truth, and for guiding training.
 
@@ -266,7 +266,7 @@ The same LLM-as-a-judge infrastructure that enabled cheaper preference data coll
 
 ### Balancing AI and Human Feedback Data
 
-AI models are far cheaper than humans at generating a specific quantity of feedback, with a single piece of human preference data costing, as of 2026, on the order of $1 or higher (or even above $10 per prompt), while AI feedback with a frontier AI model, such as GPT-4o, costs less than $0.01.
+AI models are far cheaper than humans at generating a specific quantity of feedback, with a single piece of human preference data costing as of 2026 on the order of $1 or higher (or even above $10 per prompt), AI feedback with a frontier AI model, such as GPT-4o costs less than $0.01.
 Beyond this, the cost of human labor is remaining roughly constant, while the performance of leading models at these tasks continues to increase while price-per-performance decreases.
 This cost difference opens the market of experimentation with RLHF methods to an entire population of people previously priced out.
 
@@ -303,7 +303,7 @@ Specifically, the calibration of the LLM-as-a-judge used has come into question.
 Several works have shown that LLMs are inconsistent evaluators [@wang2023large] and prefer their own responses over responses from other models (coined self-preference bias) [@panickssery2024llm].
 
 As a result of these biases, many have asked: Would a solution be to train a separate model just for this labeling task?
-Multiple models have been released with the goal of substituting for frontier models as a data labeling tool, such as critic models Shepherd [@wang2023shepherd] and CriticLLM [@ke2023critiquellm] or models for evaluating response performance akin to Auto-J [@li2023generative], Prometheus [@kim2023prometheus], Prometheus 2 [@kim2024prometheus], or Prometheus-Vision [@lee2024prometheus], but as of 2026 they are not widely adopted in documented training recipes.
+Multiple models have been released with the goal of substituting for frontier models as a data labeling tool, such as critic models Shepherd [@wang2023shepherd] and CriticLLM [@ke2023critiquellm] or models for evaluating response performance akin to Auto-J [@li2023generative], Prometheus [@kim2023prometheus], Prometheus 2 [@kim2024prometheus], or Prometheus-Vision [@lee2024prometheus] but they are not widely adopted in documented training recipes.
 Some find scaling inference via repeated sampling [@brown2024large] [@zhao2025sample] [@kalra2025verdict], self-refinement [@madaan2023self], or tournament ranking [@pace2024west] provides a better estimate of the true judgement or higher-quality preference pairs.
 Other calibration techniques co-evolve the generation and judgement capabilities of the model [@wu2024meta].
 It is accepted that while biases exist, the leading language models are trained extensively for this task -- as its needed for both internal operations at AI labs and is used extensively by customers -- so it is generally not needed to train your own judge, unless your task involves substantial private information that is not exposed on the public internet.
@@ -350,7 +350,7 @@ AI feedback's role in training grew in late 2024 and into 2025 as the field look
 The idea of rubrics emerged as a way to get nearly-verifiable criteria for prompts that do not have clearly verifiable answers. 
 This would allow a model to try to generate multiple answers to a problem and update (with RL) towards the best answers.
 This idea is closely related to other methods discussed in this chapter, and likely began functioning as the LLM judges and synthetic data practices improved across the industry.
-By 2026, RL with rubrics as rewards is established in providing meaningful improvements across skills such as scientific reasoning or factuality [@gunjal2025rubrics; @viswanathan2025checklists; @rezaei2025onlinerubrics; @liu2025openrubrics].
+Now, RL with rubrics as rewards is established in providing meaningful improvements across skills such as scientific reasoning or factuality [@gunjal2025rubrics; @viswanathan2025checklists; @rezaei2025onlinerubrics; @liu2025openrubrics].
 
 An example rubric is shown below with its associated prompt [@liu2025openrubrics]:
 ```text
@@ -458,4 +458,4 @@ Generate the rubric JSON now.
 
 As you can see, the prompts can be very detailed and are tuned to the training setup.
 
-Rubrics with RL training remain early and continue to evolve beyond applications to instruction following [@he2025advancedif], deep research [@shao2025drtulu], evaluating deep research agents [@sharma2025researchrubrics], or long-form generation [@ruan2025expertlongbench].
+Rubrics with RL training are going to continue to evolve beyond their early applications to instruction following [@he2025advancedif], deep research [@shao2025drtulu], evaluating deep research agents [@sharma2025researchrubrics], or long-form generation [@ruan2025expertlongbench].

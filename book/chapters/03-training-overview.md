@@ -148,7 +148,7 @@ In this book, we detail many popular techniques for solving this optimization pr
 The popular tools of post-training include:
 
 - **Reward modeling** (Chapter 5): Where a model is trained to capture the signal from collected preference data and can then output a scalar reward indicating the quality of future text.
-- **Instruction fine-tuning** (Chapter 4): A prerequisite to RLHF where models are taught the question-answer format used in the majority of language modeling interactions as of 2026 by imitating preselected examples.
+- **Instruction fine-tuning** (Chapter 4): A prerequisite to RLHF where models are taught the question-answer format used in the majority of language modeling interactions today by imitating preselected examples.
 - **Rejection sampling** (Chapter 9): The most basic RLHF technique where candidate completions for instruction fine-tuning are filtered by a reward model imitating human preferences.
 - **Policy gradients** (Chapter 6): The reinforcement learning algorithms used in the seminal examples of RLHF to update parameters of a language model with respect to the signal from a reward model.
 - **Direct alignment algorithms** (Chapter 8): Algorithms that directly optimize a policy from pairwise preference data, rather than learning an intermediate reward model to then optimize later.
@@ -164,7 +164,7 @@ Some trends, such as the inference-time scaling with reinforcement learning from
 Implementing RL requires a far larger investment infrastructure relative to instruction tuning or DPO-like algorithms, but to risk being overly colloquial -- the gradient updates it provides "generally help the model a lot." 
 This is hard to quantify, but comes in a few recurring forms:
 
-- RL stages can "fix" rough edges on the model, making them easier to chat with or more robust (this could come by training them to have numerical stability with inference tools like vLLM). The exact reason for this is not well-known in the literature, but its truth is reflected in the growing presence of RL as of 2026.
+- RL stages can "fix" rough edges on the model, making them easier to chat with or more robust (this could come by training them to have numerical stability with inference tools like vLLM). The exact reason for this is not well-known in the literature, but its truth is reflected in the only growing presence of RL today.
 - RL can be done surgically — the model does a good job learning where the prompt distribution lies, and RL tends to not "squash" the general capabilities of the model. A good example of this is Tülu 3 being trained with RL only on math prompts, while maintaining capabilities across a broad task suite [@lambert2024t].
 
 Overall, RL losses on language models are robust, scalable, effective, and flexible, which opened large new fields of experimentation. 
@@ -198,7 +198,7 @@ An example is shown below in @fig:rlhf-complex where the model undergoes numerou
 ![A rendition of modern post-training with many rounds.](images/rlhf-complex.png){#fig:rlhf-complex}
 
 The most complex models trained in this era and onwards have not released full details of their training process.
-Leading models such as ChatGPT or Claude by 2026 involve many iterative rounds of training.
+Leading models such as ChatGPT or Claude by 2026 involve many, iterative rounds of training.
 This can even include techniques that train specialized models and then merge the weights together to get a final model capable on many subtasks [@li2022branch] (e.g. Cohere's Command A [@cohere2025command]).
 
 ![A summary of the Tülu 3 recipe with target skills and multi-step training recipe. Lambert et al. 2024, License CC-BY.](images/tulu3.png){#fig:tulu-3}
