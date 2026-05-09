@@ -36,7 +36,7 @@ This chapter focuses on the *mechanics* of getting preference data and the best 
 Getting the most out of human data involves iterative training of models, spending hundreds of thousands (or millions of dollars), highly detailed data instructions, translating ideas through data foundry businesses that mediate collection (or hiring a meaningful amount of annotators), and other challenges that add up. 
 This is not a process that should be taken lightly.
 Among all of the public knowledge on RLHF, collecting this data well is also one of the most opaque pieces of the pipeline. 
-As of 2026, there are no open models with fully open human preference data released with the methods used to collect it (the largest and most recent human preference dataset released for models is the HelpSteer line of work from NVIDIA's Nemotron team [@wang2024helpsteer2p]).
+As of 2026, there are no open models with fully open human preference data released with the methods used to collect it (the largest recent human preference datasets released for models are in the HelpSteer line of work from NVIDIA's Nemotron team, including HelpSteer2-Preference and HelpSteer3-Preference [@wang2024helpsteer2p; @wang2025helpsteer3]).
 For these reasons, many who take up RLHF for new teams or projects omit human data and use AI feedback data, off-the-shelf reward models, or other methods to circumvent the need for curating data from scratch.
 
 An important assumption that is taken into the preference data collection process is that the best data for your training process is "on-policy" with respect to the previous checkpoint(s) of your training process.

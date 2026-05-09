@@ -15,13 +15,13 @@ next-url: "16-evaluation"
 
 # Regularization
 
-In this book we've learned many tools for modifying the model, to learn from human preferences, verifiable rewards, and other valuable signals.
+In this book we've learned many tools for modifying the model to learn from human preferences, verifiable rewards, and other valuable signals.
 All the methods we use are very powerful, and can cause the model to change too much relative to the strong, general model from the previous training stage (often called the reference model).
 When the model learns too much from a given reward, causing out-of-distribution performance to drop, this is called "over-optimization" (as we discussed in the previous chapter).
 
 Throughout the RLHF optimization, many regularization steps are used to prevent over-optimization of the reward model.
 Over-optimization in these contexts looks like models that output nonsensical text.
-Some examples of optimization "off the rails" are that models can output followable math reasoning with extremely incorrect answers, repeated text, switching languages, or excessive special characters.
+Some examples of optimization "off the rails" are models that output followable math reasoning with extremely incorrect answers, repeated text, switching languages, or excessive special characters.
 This chapter covers the different methods used to control the optimization of models.
 
 The most popular variant, used in most RLHF implementations as of 2026, is a KL distance from the current policy to a reference policy across generated samples.
@@ -32,7 +32,7 @@ Still, it is important to understand tools to constrain optimization in RLHF.
 
 *Throughout this chapter, we use $x$ to denote prompts and $y$ to denote completions. This notation is common in the language model literature, where methods operate on full prompt-completion pairs rather than individual tokens.*
 
-The general formulation, when used in an RLHF framework with a reward model, $r_\theta$ is as follows:
+The general formulation, when used in an RLHF framework with a reward model $r_\theta$, is as follows:
 
 $$ r = r_\theta - \lambda r_{\text{reg.}} $$ {#eq:rl_start}
 
@@ -74,7 +74,7 @@ $$
 \mathcal{D}_{\text{KL}}(P \,||\, Q) = \mathbb{E}_{x \sim P} \left[ \log P(x) - \log Q(x) \right].
 $$ {#eq:kl_expectation}
 
-This mode is far simpler to implement, particularly when dealing directly with log probabilities used frequently in language model training.
+This sample-based form is far simpler to implement, particularly when dealing directly with log probabilities used frequently in language model training.
 
 ```python
 # Step 1: generate() autoregressively samples a full sequence token by token
@@ -122,7 +122,7 @@ The study uses two environments with built-in rule variations to understand the 
 - **V-IRL** is a real-world visual navigation task where models follow linguistic instructions to traverse a route through city streets, recognizing landmarks along the way. The OOD shift switches the action space from absolute directions (north, east) to relative directions (left, right).
 
 Across all task variants, RL consistently improves OOD performance as training compute scales up, while SFT consistently *degrades* OOD performance despite improving in-distribution.
-The magnitude of divergence is striking: on V-IRL with language-only inputs, where the OOD shift is from absolute to relative directional coordinates, RL improves OOD per-step accuracy from 80.8% to 91.8%, while SFT collapses from 80.8% to 1.3%.
+The magnitude of divergence is striking: on V-IRL with language-only inputs, where the OOD shift is from absolute to relative directional coordinates, RL improves OOD per-step accuracy from 80.8% to 91.8%, while SFT collapses it from 80.8% to 1.3%.
 The SFT model goes further than failing to generalize: it destroys the spatial reasoning the base model already had, collapsing to a lookup table from instruction phrases to absolute directions.
 
 ### Retaining by Doing: On-Policy Data Mitigates Forgetting
@@ -281,7 +281,7 @@ $$
 J(\theta) = \mathbb{E}_{(x,y) \sim \mathcal{D}_{\pi_{\text{RL},\theta}}} \left[ r_{\theta}(y \mid x) - \lambda r_{\text{reg.}} \right]
 $$ {#eq:objective_regularization}
 
-Then, we can add an additional reward for higher probabilities on the standard autoregressive next-token prediction loss used at pretraining, over a set of documents sampled from the pretraining corpus (or another dataset) to maintain textual coherence:
+Then, we can add an additional reward for higher probabilities on the standard autoregressive next-token prediction loss used during pretraining, over a set of documents sampled from the pretraining corpus (or another dataset) to maintain textual coherence:
 
 $$
 J(\theta) = \mathbb{E}_{(x,y) \sim \mathcal{D}_{\pi_{\text{RL},\theta}}} \left[ r_{\theta}(y \mid x) - \lambda r_{\text{reg.}} \right] + \gamma \mathbb{E}_{x \sim \mathcal{D}_{\text{pretrain}}} \left[ \log(\pi_{\text{RL},\theta}(x)) \right]
@@ -314,7 +314,7 @@ $$
 \mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) - m(y_c, y_r) \right) \right)
 $$ {#eq:margin_loss}
 
-where $m(y_c, y_r)$ is the margin between two datapoints $y_c$ and $y_r$ representing numerical difference in delta between the ratings of two annotators.
-This is either achieved by having annotators rate the outputs on a numerical scale or by using a quantified ranking method, such as [Likert scales](https://en.wikipedia.org/wiki/Likert_scale).
+where $m(y_c, y_r)$ is the margin between two data points $y_c$ and $y_r$ representing the numerical difference in the delta between the ratings of two annotators.
+This is achieved either by having annotators rate the outputs on a numerical scale or by using a quantified ranking method, such as [Likert scales](https://en.wikipedia.org/wiki/Likert_scale).
 
-Reward margins have been used heavily in the direct alignment literature, such as Reward weighted DPO, ''Reward-aware Preference Optimization'' (RPO), which integrates reward model scores into the update rule following a DPO loss [@adler2024nemotron], or REBEL [@gao2024rebel] that has a reward delta weighting in a regression-loss formulation.
+Reward margins have been used heavily in the direct alignment literature, such as Reward-weighted DPO; Reward-aware Preference Optimization (RPO), which integrates reward model scores into the update rule following a DPO loss [@adler2024nemotron]; and REBEL [@gao2024rebel], which has a reward delta weighting in a regression-loss formulation.
