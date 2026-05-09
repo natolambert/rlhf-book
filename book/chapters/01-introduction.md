@@ -247,7 +247,7 @@ There are phases of open recipes surging and then lagging behind.
 
 The era following Alpaca et al., the first lag in open recipes, was one defined by skepticism and doubt about reinforcement learning from human feedback (RLHF), the technique OpenAI highlighted as crucial to the success of the first ChatGPT. 
 Many companies doubted that they needed to do RLHF. 
-A common phrase -- "instruction tuning is enough for alignment" -- was especially popular around 2024, before obvious pressures from reasoning models and scaled post-training made it harder to defend.
+A common phrase -- "instruction tuning is enough for alignment" -- was so popular then that it still holds heavy weight today despite heavy obvious pressures against it. 
 
 This doubt of RLHF lasted, especially in the open where groups cannot afford data budgets on the order of \$100K to \$1M. 
 The companies that embraced it early ended up winning out.
