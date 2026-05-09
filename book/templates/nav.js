@@ -57,7 +57,7 @@ class NavigationDropdown extends HTMLElement {
         <ol start="10">
           <li><a href="https://rlhfbook.com/c/10-preferences">What are Preferences</a></li>
           <li><a href="https://rlhfbook.com/c/11-preference-data">Preference Data</a></li>
-          <li><a href="https://rlhfbook.com/c/12-synthetic-data">Synthetic Data & CAI</a></li>
+          <li><a href="https://rlhfbook.com/c/12-synthetic-data">Synthetic Data</a></li>
         </ol>
       </div>
 
