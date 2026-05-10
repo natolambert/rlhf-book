@@ -18,7 +18,10 @@ from pathlib import Path
 
 
 BIB_ENTRY_START_RE = re.compile(r"@\w+\s*\{\s*([^,\s]+)\s*,")
-CITATION_RE = re.compile(r"(?<![\w:-])-?@([A-Za-z0-9_-]+(?::[A-Za-z0-9_-]+)?)")
+CITATION_RE = re.compile(
+    r"(?<![\w:-])-?@(?:\{([^}\n]+)\}|"
+    r"([A-Za-z0-9_](?:[A-Za-z0-9_]|[:.#$%&\-+?<>~/](?=[A-Za-z0-9_]))*))"
+)
 FENCED_CODE_RE = re.compile(r"```.*?```", re.DOTALL)
 SECTION_HEADER_RE = re.compile(
     r"^### First appearing in (chapter \d+|appendix [A-Z]) .+ ###$"
@@ -239,10 +242,8 @@ def extract_citations(content: str) -> list[tuple[str, int]]:
     citations: list[tuple[str, int]] = []
     content = strip_fenced_code(content)
     for match in CITATION_RE.finditer(content):
-        key = match.group(1)
+        key = match.group(1) or match.group(2)
         if key.startswith(CROSS_REF_PREFIXES):
-            continue
-        if ":" in key:
             continue
         line = content.count("\n", 0, match.start()) + 1
         citations.append((key, line))
