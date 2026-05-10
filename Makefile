@@ -217,6 +217,9 @@ $(BUILD)/latex/$(OUTPUT_FILENAME).tex: $(PDF_DEPENDENCIES)
 	# 3c. Restore missing \includegraphics inside \pandocbounded{}
 	perl -CSD -pi -e 's/\\pandocbounded\{([^{}]+)\}\}/\\pandocbounded{\\includegraphics{$$1}}/g' $@
 
+	# 3c.1. Flatten image paths that include long optional args with brackets
+	perl -0pi -e 's|([{\]])(?:book/)?images/|\1|g' $@
+
 	# 3d. Unicode → ASCII/TeX normalisation (map accents and punctuation)
 	uv run python book/scripts/normalize_tex_unicode.py $@
 
@@ -229,7 +232,10 @@ $(BUILD)/latex/$(OUTPUT_FILENAME).tex: $(PDF_DEPENDENCIES)
 	# 5. Warn (but don\'t fail) if any non-ASCII bytes remain
 	uv run python book/scripts/report_non_ascii.py $@
 
-	# 6. Package arXiv-ready source bundle
+	# 6. Drop local compile byproducts before packaging source
+	rm -f $(BUILD)/latex/*.aux $(BUILD)/latex/*.log $(BUILD)/latex/*.out $(BUILD)/latex/*.toc $(BUILD)/latex/*.pdf
+
+	# 7. Package arXiv-ready source bundle
 	rm -f $(ARXIV_ZIP)
 	(cd $(BUILD)/latex && zip -rq ../$(notdir $(ARXIV_ZIP)) .)
 

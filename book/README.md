@@ -80,6 +80,35 @@ brew install make
 brew install pandoc-crossref
 ```
 
+For the arXiv source bundle, also make sure the Python runner and LaTeX
+packages used by the PDF template are available:
+
+```sh
+brew install uv
+```
+
+Small TeX install:
+
+```sh
+brew install --cask basictex
+sudo tlmgr update --self
+sudo tlmgr install fvextra tcolorbox pdfcol
+```
+
+Fuller TeX install alternative:
+
+```sh
+brew install --cask mactex-no-gui
+```
+
+Build the arXiv-ready bundle from the repository root:
+
+```sh
+make -B latex
+```
+
+The generated source bundle is written to `build/arxiv.zip`.
+
 Or, fork a process from the [github action](https://github.com/natolambert/rlhf-book/blob/main/.github/workflows/static.yml) that auto-builds new versions on MacOS.
 
 ## Folder Structure
