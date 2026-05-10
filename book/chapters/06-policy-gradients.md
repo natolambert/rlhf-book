@@ -7,7 +7,7 @@
 ---
 prev-chapter: "Reward Modeling"
 prev-url: "05-reward-models"
-page-title: Reinforcement Learning
+page-title: "RL for LLMs: PPO, GRPO, RLOO"
 search-title: "Chapter 6: Reinforcement Learning"
 next-chapter: "Reasoning and Inference-Time Scaling"
 next-url: "07-reasoning"

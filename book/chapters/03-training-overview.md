@@ -7,7 +7,7 @@
 ---
 prev-chapter: "A Tiny History of RLHF"
 prev-url: "02-related-works"
-page-title: Training Overview
+page-title: "RLHF Training Pipeline: SFT, Reward Models, RL"
 search-title: "Chapter 3: Training Overview"
 next-chapter: "Instruction Fine-Tuning"
 next-url: "04-instruction-tuning"

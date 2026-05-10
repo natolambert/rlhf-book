@@ -7,7 +7,7 @@
 ---
 prev-chapter: "Direct-Alignment Algorithms"
 prev-url: "08-direct-alignment"
-page-title: Rejection Sampling
+page-title: Rejection Sampling and Best-of-N for RLHF
 search-title: "Chapter 9: Rejection Sampling"
 next-chapter: "The Nature of Preferences"
 next-url: "10-preferences"

@@ -7,7 +7,7 @@
 ---
 prev-chapter: "Tool Use and Function Calling"
 prev-url: "13-tools"
-page-title: Over-Optimization
+page-title: Reward Model Over-Optimization in RLHF
 search-title: "Chapter 14: Over-Optimization"
 next-chapter: "Regularization"
 next-url: "15-regularization"

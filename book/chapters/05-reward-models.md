@@ -7,7 +7,7 @@
 ---
 prev-chapter: "Instruction Fine-Tuning"
 prev-url: "04-instruction-tuning"
-page-title: Reward Modeling
+page-title: Reward Models for RLHF
 search-title: "Chapter 5: Reward Modeling"
 next-chapter: "Reinforcement Learning"
 next-url: "06-policy-gradients"

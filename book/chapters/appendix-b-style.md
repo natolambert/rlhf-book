@@ -7,7 +7,7 @@
 ---
 prev-chapter: "Definitions"
 prev-url: "appendix-a-definitions"
-page-title: "Appendix B: Beyond \"Just Style\""
+page-title: "Beyond Just Style: Model Behavior"
 search-title: "Appendix B: Beyond \"Just Style\""
 next-chapter: "Practical Issues"
 next-url: "appendix-c-practical"

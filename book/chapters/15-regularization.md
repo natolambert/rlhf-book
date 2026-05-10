@@ -7,7 +7,7 @@
 ---
 prev-chapter: "Over-Optimization"
 prev-url: "14-over-optimization"
-page-title: Regularization
+page-title: KL Regularization in RLHF
 search-title: "Chapter 15: Regularization"
 next-chapter: "Evaluation"
 next-url: "16-evaluation"

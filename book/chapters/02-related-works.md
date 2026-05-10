@@ -7,7 +7,7 @@
 ---
 prev-chapter: "Introduction"
 prev-url: "01-introduction"
-page-title: A Tiny History of RLHF
+page-title: "RLHF History: From Preferences to ChatGPT"
 search-title: "Chapter 2: A Tiny History of RLHF"
 next-chapter: "Training Overview"
 next-url: "03-training-overview"

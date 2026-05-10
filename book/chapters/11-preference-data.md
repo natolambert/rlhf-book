@@ -7,7 +7,7 @@
 ---
 prev-chapter: "The Nature of Preferences"
 prev-url: "10-preferences"
-page-title: Preference Data
+page-title: Preference Data Collection for RLHF
 search-title: "Chapter 11: Preference Data"
 next-chapter: "Synthetic Data"
 next-url: "12-synthetic-data"

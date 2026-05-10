@@ -7,7 +7,7 @@
 ---
 prev-chapter: "Crafting Model Character and Products"
 prev-url: "17-product"
-page-title: "Appendix A: Definitions"
+page-title: "RLHF Definitions and Glossary"
 search-title: "Appendix A: Definitions"
 next-chapter: "Beyond \"Just Style\""
 next-url: "appendix-b-style"

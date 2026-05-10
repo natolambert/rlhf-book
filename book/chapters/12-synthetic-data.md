@@ -7,7 +7,7 @@
 ---
 prev-chapter: "Preference Data"
 prev-url: "11-preference-data"
-page-title: Synthetic Data
+page-title: Synthetic Data for RLHF and Post-Training
 search-title: "Chapter 12: Synthetic Data"
 next-chapter: "Tool Use and Function Calling"
 next-url: "13-tools"

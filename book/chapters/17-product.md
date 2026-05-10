@@ -7,7 +7,7 @@
 ---
 prev-chapter: "Evaluation"
 prev-url: "16-evaluation"
-page-title: Crafting Model Character and Products
+page-title: Model Character and Product Design
 search-title: "Chapter 17: Crafting Model Character and Products"
 next-chapter: "Definitions"
 next-url: "appendix-a-definitions"

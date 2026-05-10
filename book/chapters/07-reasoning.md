@@ -7,7 +7,7 @@
 ---
 prev-chapter: "Reinforcement Learning"
 prev-url: "06-policy-gradients"
-page-title: Reasoning and Inference-Time Scaling
+page-title: RLVR and Reasoning Models
 search-title: "Chapter 7: Reasoning and Inference-Time Scaling"
 next-chapter: "Direct-Alignment Algorithms"
 next-url: "08-direct-alignment"

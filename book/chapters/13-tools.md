@@ -7,7 +7,7 @@
 ---
 prev-chapter: "Synthetic Data"
 prev-url: "12-synthetic-data"
-page-title: Tool Use and Function Calling
+page-title: Tool Use and Function Calling for LLMs
 search-title: "Chapter 13: Tool Use and Function Calling"
 next-chapter: "Over-Optimization"
 next-url: "14-over-optimization"

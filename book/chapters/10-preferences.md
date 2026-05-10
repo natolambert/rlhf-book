@@ -7,7 +7,7 @@
 ---
 prev-chapter: "Rejection Sampling"
 prev-url: "09-rejection-sampling"
-page-title: The Nature of Preferences
+page-title: On Human Preferences in RLHF
 search-title: "Chapter 10: The Nature of Preferences"
 next-chapter: "Preference Data"
 next-url: "11-preference-data"

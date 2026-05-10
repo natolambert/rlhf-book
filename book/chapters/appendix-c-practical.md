@@ -7,7 +7,7 @@
 ---
 prev-chapter: "Beyond \"Just Style\""
 prev-url: "appendix-b-style"
-page-title: "Appendix C: Practical Issues"
+page-title: "Practical Issues in RLHF Training"
 search-title: "Appendix C: Practical Issues"
 next-chapter: "Home"
 next-url: "https://rlhfbook.com/"

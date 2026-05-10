@@ -7,7 +7,7 @@
 ---
 prev-chapter: "Training Overview"
 prev-url: "03-training-overview"
-page-title: Instruction Fine-Tuning
+page-title: Instruction Fine-Tuning for LLMs
 search-title: "Chapter 4: Instruction Fine-Tuning"
 next-chapter: "Reward Modeling"
 next-url: "05-reward-models"

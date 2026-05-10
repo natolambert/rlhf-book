@@ -7,7 +7,7 @@
 ---
 prev-chapter: "Home"
 prev-url: "https://rlhfbook.com/"
-page-title: Introduction
+page-title: "What Is RLHF? A Practical Introduction"
 search-title: "Chapter 1: Introduction"
 next-chapter: "A Tiny History of RLHF"
 next-url: "02-related-works"

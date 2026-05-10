@@ -7,7 +7,7 @@
 ---
 prev-chapter: "Reasoning and Inference-Time Scaling"
 prev-url: "07-reasoning"
-page-title: Direct-Alignment Algorithms
+page-title: DPO and Direct Alignment Algorithms
 search-title: "Chapter 8: Direct-Alignment Algorithms"
 next-chapter: "Rejection Sampling"
 next-url: "09-rejection-sampling"
