@@ -217,7 +217,10 @@ $(BUILD)/latex/$(OUTPUT_FILENAME).tex: $(PDF_DEPENDENCIES)
 	# 3c.1. Flatten image paths that include long optional args with brackets
 	perl -0pi -e 's|([{\]])(?:book/)?images/|\1|g' $@
 
-	# 3c.2. Copy only images referenced by the flattened TeX source
+	# 3c.2. Remove alt text from arXiv image options so file scanners see simple includes
+	uv run python book/scripts/strip_latex_image_alt.py $@
+
+	# 3c.3. Copy only images referenced by the flattened TeX source
 	uv run python book/scripts/copy_latex_images.py $@ book/images $(BUILD)/latex
 
 	# 3d. Unicode → ASCII/TeX normalisation (map accents and punctuation)
