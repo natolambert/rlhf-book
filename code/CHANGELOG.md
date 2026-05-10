@@ -5,6 +5,7 @@ On release, entries get moved under a version heading.
 
 ## Unreleased
 
+- 2026-05-10: added `instruction_tuning/` module — single-GPU SFT example for the chapter 4 sanity check (base model rambles vs SFT model answers and stops). Defaults to `allenai/OLMo-2-0425-1B` on `HuggingFaceH4/no_robots`; lifts the chat template from `OLMo-2-0425-1B-SFT` since the base tokenizer ships without one. Logs a fixed prompt pool (incl. capital-of-France) at step 0 and periodically during training.
 - 2026-05-06: [PR #400](https://github.com/natolambert/rlhf-book/pull/400) added `dpo_norm` variant in direct-alignment that applies standard DPO with average response log-probs for both policy and reference model.
 - 2026-05-05: [PR #396](https://github.com/natolambert/rlhf-book/pull/396) added lightweight import and CLI smoke tests for the `code/` subpackages.
 

@@ -1,0 +1,43 @@
+# Instruction tuning (SFT) of OLMo-2-0425-1B base on No Robots.
+#
+# Run with:
+#   uv run python -m instruction_tuning.train \
+#       --config instruction_tuning/configs/sft_olmo2_1b.yaml
+
+# Model
+model_name: allenai/OLMo-2-0425-1B
+chat_template_source: allenai/OLMo-2-0425-1B-SFT  # base tokenizer has no chat_template
+
+# Dataset (CC BY-NC 4.0; educational use only)
+dataset_name: HuggingFaceH4/no_robots
+dataset_split: train
+max_samples: null  # use all ~9.5K rows
+max_length: 2048
+masking: final_assistant  # 'user_only' to train on every assistant turn
+
+# Training
+lr: 5.0e-6
+num_epochs: 3
+batch_size: 4
+gradient_accumulation_steps: 8  # effective batch = 32
+warmup_ratio: 0.1
+weight_decay: 0.0
+max_grad_norm: 1.0
+seed: 42
+
+# Hardware
+bf16: true
+gradient_checkpointing: true
+model_device_id: 0
+
+# In-loop generation logging (also fires at step 0 = base model)
+sample_every: 50
+sample_max_tokens: 128
+sample_max_input_tokens: 512
+sample_temperature: 0.7
+sample_top_p: 0.9
+sample_do_sample: true
+
+# Logging
+wandb_project: null  # set via WANDB_PROJECT env var or change here
+wandb_run_name: null

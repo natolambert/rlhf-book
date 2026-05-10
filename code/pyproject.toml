@@ -45,6 +45,7 @@ dev = [
 [project.scripts]
 train-policy = "policy_gradients.train:main_cli"
 train-dpo = "direct_alignment.train:main_cli"
+train-sft = "instruction_tuning.train:main_cli"
 train-preference-rm = "reward_models.train_preference_rm:main"
 train-orm = "reward_models.train_orm:main"
 train-prm = "reward_models.train_prm:main"
@@ -56,7 +57,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-include = ["policy_gradients*", "reward_models*", "direct_alignment*", "rejection_sampling*"]
+include = ["policy_gradients*", "reward_models*", "direct_alignment*", "rejection_sampling*", "instruction_tuning*"]
 
 [tool.uv]
 package = true
