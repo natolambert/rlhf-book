@@ -534,6 +534,9 @@ thead {
     color: #0066cc;
     text-decoration: none;
   }
+  .section a[aria-current="page"] {
+    font-weight: bold;
+  }
   .section a:hover {
     text-decoration: underline;
   }
