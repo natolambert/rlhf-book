@@ -26,10 +26,10 @@ Combined with its underdocumented nature, this is why it appears here at the end
 Rejection sampling operates by curating new candidate completions, filtering them based on a trained reward model, and then fine-tuning the original model only on the top completions (the same loss function as instruction tuning).
 
 The name originates from computational statistics [@gilks1992adaptive], where one wishes to sample from a complex distribution, but does not have a direct method to do so.
-To alleviate this, one samples from a simpler distribution to model and uses a heuristic to check if the sample is permissible.
+To alleviate this, one samples from a distribution that is simpler to model and uses a heuristic to check if the sample is permissible.
 With language models, the target distribution is high-quality completions to prompts, the filter is a reward model, and the sampling distribution is the current model.
 
-WebGPT [@nakano2021webgpt], Anthropic's Helpful and Harmless agent [@bai2022training], OpenAI's popular paper on process reward models [@lightman2023let], Llama 2 Chat models [@touvron2023llama], and other seminal works all use this baseline; more recent work has formalized it directly (e.g., RAFT [@dong2023raft] for applying it to alignment in multiple modalities and Statistical Rejection Sampling Optimization (RSO) [@liu2023statistical] that gives a principled overview on how rejection sampling relates to other preference learning objectives).
+WebGPT [@nakano2021webgpt], Anthropic's Helpful and Harmless agent [@bai2022training], OpenAI's popular paper on process reward models [@lightman2023let], Llama 2 Chat models [@touvron2023llama], and other seminal works all use this baseline; more recent work has formalized it directly (e.g., RAFT [@dong2023raft] for applying it to alignment in multiple modalities and Statistical Rejection Sampling Optimization (RSO) [@liu2023statistical] that gives a principled overview of how rejection sampling relates to other preference learning objectives).
 
 *Throughout this chapter, we use $x$ to denote prompts and $y$ to denote completions. This notation is common in the language model literature, where methods operate on full prompt-completion pairs rather than individual tokens.*
 
@@ -102,8 +102,8 @@ $$Y_{chosen} = [y_{1,S(R)_1}, y_{2,S(R)_2}, ..., y_{M,S(R)_M}]$$ {#eq:rs_chosen_
 
 
 #### Top Overall Pairs
-Alternatively, we can select the top K prompt-completion pairs from the entire set.
-First, let's flatten our reward matrix R into a single vector:
+Alternatively, we can select the top $K$ prompt-completion pairs from the entire set.
+First, let's flatten our reward matrix $R$ into a single vector:
 
 $$R_{flat} = [r_{1,1}, r_{1,2}, ..., r_{1,N}, r_{2,1}, r_{2,2}, ..., r_{2,N}, ..., r_{M,1}, r_{M,2}, ..., r_{M,N}]$$ {#eq:rs_flattened_rewards}
 
@@ -113,7 +113,7 @@ Now, we can define a selection function $S_K$ that selects the indices of the K 
 
 $$S_K(R_{flat}) = \text{argsort}(R_{flat})[-K:]$$ {#eq:rs_topk_selection}
 
-where $\text{argsort}$ returns the indices that would sort the array in ascending order, and we take the last K indices to get the K highest values.
+where $\text{argsort}$ returns the indices that would sort the array in ascending order, and we take the last $K$ indices to get the $K$ highest values.
 
 To get our selected completions, we need to map these flattened indices back to our original completion matrix $Y$. 
 To recover the corresponding prompt-completion pair, you can map a zero-indexed flattened index $k$ to $(i,j)$ via $i = \lfloor k / N \rfloor + 1$ and $j = (k \bmod N) + 1$.
@@ -228,12 +228,12 @@ Instead, BoN computes the best possible completion to a static prompt (or set of
 
 Best-of-N sampling is often included as a baseline relative to RLHF training methods.
 It is important to remember that BoN *does not* modify the underlying model, but is a sampling technique. 
-For this reason, comparisons for BoN sampling to online training methods, such as PPO, are still valid in some contexts.
+For this reason, comparisons of BoN sampling to online training methods, such as PPO, are still valid in some contexts.
 For example, you can still measure the KL distance when running BoN sampling relative to any other policy.
 
 Here, we will show that when using simple BoN sampling over one prompt, both selection criteria shown above are equivalent.
 
-Let R be a reward vector for our single prompt with N completions:
+Let $R$ be a reward vector for our single prompt with $N$ completions:
 
 $$R = [r_1, r_2, ..., r_N]$$ {#eq:rewards_vector}
 

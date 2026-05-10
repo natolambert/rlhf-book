@@ -19,7 +19,7 @@ lectures:
 # Reward Modeling
 
 Reward models are core to the modern approach to RLHF by being where the complex human preferences are learned. 
-They are what enable our models to learn from hard to specify signals. 
+They are what enable our models to learn from hard-to-specify signals.
 They compress complex features in the data into a representation that can be used in downstream training -- a sort of magic that once again shows the complex capacity of modern deep learning.
 These models act as proxy objectives for the core optimization, as studied in the following chapters.
 As shown in @fig:rm-role-in-rlhf, the reward model plays a role like the standard RL environment, providing the learning signal for the agent, but unlike a fixed environment, we get to learn it from human preferences.
@@ -183,7 +183,7 @@ The traditional reward modeling loss has been modified in many popular works, bu
 In the case where annotators are providing either scores or rankings on a Likert Scale (a rating scale with ordered categories indicating magnitude of preference, e.g. 1--5), the magnitude of the relational quantities can be used in training.
 The most common practice is to binarize the data along the preference direction, reducing the mixed information of relative ratings or the strength of the ranking to just chosen and rejected completions.
 The additional information, such as the magnitude of the preference, has been used to improve model training, but it has not converged as a standard practice.
-Llama 2 proposes using the margin between two datapoints, $m(y_c, y_r)$, to distinguish the magnitude of preference:
+Llama 2 proposes using the margin between two data points, $m(y_c, y_r)$, to distinguish the magnitude of preference:
 
 $$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) - m(y_c, y_r) \right) \right)$$ {#eq:rewardmodelingmargin}
 
@@ -212,7 +212,7 @@ One such example, used in the popular, early RLHF'd models Starling 7B and 34B [
 
 Zhu et al. 2023 [@zhu2023principled] formalizes the setup as follows.
 With a prompt, or state, $s^i$, $K$ actions $(a_0^i, a_1^i, \cdots, a_{K-1}^i)$ are sampled from $P(a_0,\cdots,a_{K-1}|s^i)$.
-Then, labelers are used to rank preferences with $\sigma^i: [K] \mapsto [K]$ is a function representing action rankings, where $\sigma^i(0)$ is the most preferred action. This yields a Plackett-Luce probability over the complete ranking of all $K$ items:
+Then, labelers rank the $K$ actions by preference, producing a permutation $\sigma^i: [K] \mapsto [K]$, where $\sigma^i(0)$ is the most preferred action. This yields a Plackett-Luce probability over the complete ranking of all $K$ items:
 
 $$P(\sigma^i|s^i,a_0^i,a_1^i,\ldots,a_{K-1}^i) = \prod_{k=0}^{K-1} \frac{\exp(r_{\theta\star}(s^i,a_{\sigma^i(k)}^i))}{\sum_{j=k}^{K-1}\exp(r_{\theta\star}(s^i,a_{\sigma^i(j)}^i))}$$ {#eq:kwise_rm}
 
@@ -224,8 +224,8 @@ Regardless, once trained, these models are used similarly to other reward models
 
 <!-- Huge thanks to Hangliang Ren, graduate student at Northeastern University for helping with this section (and PRMs), see https://github.com/myhott163com/RLHF_ORM_PRM -->
 
-The majority of *preference tuning* for language models and other AI systems is done with the Bradley Terry models discussed above.
-For reasoning heavy tasks, one can use an Outcome Reward Model (ORM).
+The majority of *preference tuning* for language models and other AI systems is done with the Bradley-Terry models discussed above.
+For reasoning-heavy tasks, one can use an Outcome Reward Model (ORM).
 The training data for an ORM is constructed in a similar manner to standard preference tuning.
 Here, we have a problem statement or prompt, $x$ and two completions $y_1$ and $y_2$. 
 The inductive bias used here is that one completion should be a correct solution to the problem and one incorrect, resulting in $(y_c,y_{ic})$.
@@ -243,10 +243,10 @@ Formally, following [@lyu2025exploring] this is a per-token binary cross-entropy
 
 $$\mathcal{L}_{\text{CE}}(\theta) = -\mathbb{E}_{(s,r)\sim \mathcal{D}}[r\log p_\theta(s) + (1-r)\log(1-p_\theta(s))]$$ {#eq:orm_loss}
 
-where $r \in \{0,1\}$ is a binary label where 1 applies to a correct answer to a given prompt and 0 applies to an incorrect, and $p_\theta(s)$ is the scalar proportional to predicted probability of correctness from the model being trained.
+where $r \in \{0,1\}$ is a binary label where 1 applies to a correct answer to a given prompt and 0 applies to an incorrect answer, and $p_\theta(s)$ is the scalar proportional to the predicted probability of correctness from the model being trained.
 In code, this outcome label is copied onto every completion token, while prompt tokens are masked with `-100` so they do not contribute to the loss.
 
-Implementing an outcome reward model (and other types, as we'll see with the Process Reward Model) involves applying the cross-entropy loss per-token based on if the completion is a correct sample. 
+Implementing an outcome reward model (and other types, as we'll see with the Process Reward Model) involves applying the cross-entropy loss per-token based on whether the completion is a correct sample.
 This is far closer to the language modeling loss, where it does not need the structured chosen-rejected nature of standard Bradley-Terry reward models.
 In the simplified ORM training setup below, we are not sampling new tokens or training an LLM on next-token prediction; we feed a fixed prompt-completion sequence through the backbone and train the ORM head to predict correctness labels.
 
@@ -314,7 +314,7 @@ loss = F.binary_cross_entropy_with_logits(
 ```
 
 The important intuition here is that an ORM will output a probability of correctness at every token in the sequence (judged only by the final answer -- reasoning errors are not captured in the ORM training process).
-This can be a noisy process, as the updates and loss propagates per token depending on outcomes and attention mappings.
+This can be a noisy process, as the updates and loss propagate per token depending on outcomes and attention mappings.
 
 ![At inference time, an outcome reward model outputs per-token correctness probabilities. Prompt tokens are masked (e.g., label=-100), while completion tokens each receive a probability indicating whether the model believes the response leads to a correct answer.](images/orm_inference.png){#fig:orm_inference}
 
@@ -353,7 +353,7 @@ labels = [[-100] * (len(completion) - 1) + [label] for completion, label in zip(
 
 Traditionally PRMs are trained with a language modeling head that outputs a token only at the end of a reasoning step, e.g. at the token corresponding to a double new line or other special token.
 These predictions tend to be -1 for incorrect, 0 for neutral, and 1 for correct.
-These labels do not necessarily tie with whether or not the model is on the right path, but if the step is correct.
+These labels do not necessarily tie to whether or not the model is on the right path, but rather to whether the step is correct.
 
 ![Process reward models provide supervision only at step boundaries (e.g., newline tokens). Each step receives a 3-class label: correct (+1), neutral (0), or incorrect (-1). All other tokens are masked during training.](images/prm_training_inference.png){#fig:prm_training_inference}
 
@@ -420,7 +420,7 @@ loss = F.cross_entropy(logits[mask], labels[mask])
 ## Comparing Reward Model Types (and Value Functions)
 
 The various types of reward models covered indicate the spectrum of ways that "quality" can be measured in RLHF and other post-training methods.
-Below, a summary of what the models predict and how they are trained.
+Below is a summary of what the models predict and how they are trained.
 
 ::: {.table-wrap}
 | Model Class | What They Predict | How They Are Trained | LM structure |
@@ -435,7 +435,7 @@ Table: Comparing types of reward models. {#tbl:rm_compare}
 A few caveats on the distinctions in this table, as the boundaries between model types are not always clear cut:
 
 - Both in preference tuning and reasoning training, the value functions often have a discount factor of 1, which makes a value function even closer to an outcome reward model, but with a different training loss.
-- A process reward model can be supervised by doing rollouts from an intermediate state and collecting outcome data. This blends multiple ideas, but if the *loss* is per reasoning step labels, it is best referred to as a PRM.
+- A process reward model can be supervised by doing rollouts from an intermediate state and collecting outcome data. This blends multiple ideas, but if the *loss* uses per-reasoning-step labels, it is best referred to as a PRM.
 
 **What if you train a Bradley-Terry pairwise model with correct/incorrect pairs?** 
 Much of the confusion on outcome reward models came from a small set of the literature that was training a reward model on pairwise data derived from answer correctness.
@@ -518,7 +518,7 @@ After providing your explanation, output your final verdict by strictly followin
 [The End of Assistant B's Answer]
 ```
 
-Given the efficacy of LLM-as-a-judge for evaluation, spawning many other evaluations such as AlpacaEval [@dubois2024length], Arena-Hard [@li2024crowdsourced], and WildBench [@lin2024wildbench], many began using LLM-as-a-judge instead of reward models to create and use preference data.
+Given the efficacy of LLM-as-a-judge for evaluation, which spawned many other evaluations such as AlpacaEval [@dubois2024length], Arena-Hard [@li2024crowdsourced], and WildBench [@lin2024wildbench], many began using LLM-as-a-judge instead of reward models to create and use preference data.
 
 An entire field of study has emerged around how to use so-called "Generative Reward Models" [@mahan2024generative]
 [@zhang2024generative] [@ankner2024critique] (including models trained *specifically* to be effective judges [@kim2023prometheus]), but on RM evaluations they tend to be behind existing reward models, showing that reward modeling is an important technique for current RLHF.
