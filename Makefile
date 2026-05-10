@@ -205,9 +205,6 @@ $(BUILD)/latex/$(OUTPUT_FILENAME).tex: $(PDF_DEPENDENCIES)
 	  | $(CONTENT_FILTERS) \
 	  | $(PANDOC_COMMAND) $(ARGS) $(LATEX_ARGS) --resource-path=book -o $@
 
-	# 2. Flatten image paths — copy every referenced image into the build dir root
-	$(foreach img,$(IMAGES), cp $(img) $(BUILD)/latex/$(notdir $(img));)
-
 	# 3a. Force pdfLaTeX mode for arXiv
 	uv run python book/scripts/ensure_pdfoutput.py $@
 
@@ -216,6 +213,15 @@ $(BUILD)/latex/$(OUTPUT_FILENAME).tex: $(PDF_DEPENDENCIES)
 
 	# 3c. Restore missing \includegraphics inside \pandocbounded{}
 	perl -CSD -pi -e 's/\\pandocbounded\{([^{}]+)\}\}/\\pandocbounded{\\includegraphics{$$1}}/g' $@
+
+	# 3c.1. Flatten image paths that include long optional args with brackets
+	perl -0pi -e 's|([{\]])(?:book/)?images/|\1|g' $@
+
+	# 3c.2. Remove alt text from arXiv image options so file scanners see simple includes
+	uv run python book/scripts/strip_latex_image_alt.py $@
+
+	# 3c.3. Copy only images referenced by the flattened TeX source
+	uv run python book/scripts/copy_latex_images.py $@ book/images $(BUILD)/latex
 
 	# 3d. Unicode → ASCII/TeX normalisation (map accents and punctuation)
 	uv run python book/scripts/normalize_tex_unicode.py $@
@@ -229,7 +235,10 @@ $(BUILD)/latex/$(OUTPUT_FILENAME).tex: $(PDF_DEPENDENCIES)
 	# 5. Warn (but don\'t fail) if any non-ASCII bytes remain
 	uv run python book/scripts/report_non_ascii.py $@
 
-	# 6. Package arXiv-ready source bundle
+	# 6. Drop local compile byproducts before packaging source
+	rm -f $(BUILD)/latex/*.aux $(BUILD)/latex/*.log $(BUILD)/latex/*.out $(BUILD)/latex/*.toc $(BUILD)/latex/$(OUTPUT_FILENAME).pdf
+
+	# 7. Package arXiv-ready source bundle
 	rm -f $(ARXIV_ZIP)
 	(cd $(BUILD)/latex && zip -rq ../$(notdir $(ARXIV_ZIP)) .)
 
