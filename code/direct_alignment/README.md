@@ -12,6 +12,7 @@ As of 2026-02-08, ORPO/SimPO are still under investigation. See `direct_alignmen
 | Algorithm | wandb | Status |
 |-----------|-------|--------|
 | **DPO** | [dpo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/fzy8k8go) | ✅ Validated |
+| **DPO-Norm** | [dpo-norm-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/giyhitjw) | ✅ Validated |
 | **IPO** | [ipo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/5s29syo6) | ✅ Validated |
 | **SimPO** | [simpo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/ftv5rs3x) | ⚠️ Noisy - needs debugging |
 | **ORPO** | [orpo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/o38ffli5) | ⚠️ Noisy - needs debugging |
@@ -26,6 +27,7 @@ As of 2026-02-08, ORPO/SimPO are still under investigation. See `direct_alignmen
 | Algorithm | Paper | Key Idea |
 |-----------|-------|----------|
 | **DPO** | [Rafailov et al., 2023](https://arxiv.org/abs/2305.18290) | Core direct alignment method - implicit reward via log-ratios |
+| **DPO-Norm** | [Meng et al., 2024](https://arxiv.org/abs/2405.14734) | DPO with average response log-probs and a reference model |
 | **cDPO** | Same as DPO | DPO with label smoothing for noisy preferences |
 | **IPO** | [Azar et al., 2023](https://arxiv.org/abs/2310.12036) | Regression objective instead of classification - more robust |
 | **SimPO** | [Meng et al., 2024](https://arxiv.org/abs/2405.14734) | Length-normalized, no reference model needed |
@@ -63,6 +65,30 @@ ref_logratios = reference_chosen_logps - reference_rejected_logps
 logits = pi_logratios - ref_logratios
 loss = -F.logsigmoid(beta * logits)
 ```
+
+### DPO-Norm Loss
+
+DPO-Norm keeps the DPO reference model but computes each sequence log-probability as an
+average over response tokens:
+
+```python
+policy_chosen = sum(policy_chosen_token_logps) / chosen_tokens
+policy_rejected = sum(policy_rejected_token_logps) / rejected_tokens
+ref_chosen = sum(ref_chosen_token_logps) / chosen_tokens
+ref_rejected = sum(ref_rejected_token_logps) / rejected_tokens
+
+pi_logratios = policy_chosen - policy_rejected
+ref_logratios = ref_chosen - ref_rejected
+logits = pi_logratios - ref_logratios
+loss = -F.logsigmoid(beta * logits)
+```
+
+This borrows SimPO's length normalization without removing DPO's reference correction
+or adding SimPO's margin term `gamma`.
+
+When using DPO-Norm, prefer `configs/dpo_norm.yaml`. If using CLI overrides directly,
+pass `--beta 2.0` or another tuned value, since the base CLI default is DPO's `0.1`.
+Refining per-algorithm default initialization for CLI-only runs can be addressed in future work.
 
 ### SimPO Loss
 
@@ -108,17 +134,22 @@ Other compatible datasets:
 
 ## Key Hyperparameters
 
-| Parameter | DPO | IPO | SimPO | ORPO | APO |
-|-----------|-----|-----|-------|------|-----|
-| `beta` | 0.1-0.5 | 0.1 | 2.0-2.5 | 0.1 | 0.1 |
-| `learning_rate` | 5e-6 | 5e-6 | 8e-7 to 1e-6 | 1e-6 | 5e-6 |
-| Reference model | Yes | Yes | No | No | Yes |
+| Parameter | DPO | DPO-Norm | IPO | SimPO | ORPO | APO |
+|-----------|-----|----------|-----|-------|------|-----|
+| `beta` | 0.1-0.5 | 2.0-5.0 | 0.1 | 2.0-2.5 | 0.1 | 0.1 |
+| `learning_rate` | 5e-6 | 5e-6 to 1e-6 | 5e-6 | 8e-7 to 1e-6 | 1e-6 | 5e-6 |
+| Reference model | Yes | Yes | Yes | No | No | Yes |
 
 **Important**: DPO requires very low learning rates (1e-7 to 5e-6). Higher rates cause divergence.
 
 **Note on IPO loss scale**: IPO uses squared error to a target margin of `1/(2*beta)`. With beta=0.1, this target is 5.0, so early loss values (~10-25) are much higher than DPO (~0.5-0.7). This is expected — IPO loss and gradient norms are not directly comparable to DPO.
 
 **Note on SimPO learning rate**: SimPO requires lower learning rates than DPO (3e-7 to 1e-6). Per the [official SimPO repo](https://github.com/princeton-nlp/SimPO): "A large learning rate (e.g., 1e-5) can significantly degrade performance, causing the model to produce incoherent sentences or completely repetitive responses."
+
+**Note on DPO-Norm scale**: DPO-Norm uses per-token average log-ratios, so its logits
+are much smaller than summed DPO logits. A `beta` around `2.0` is a reasonable starting
+point (matching SimPO's range). It is directly supported by the SimPO author
+([GitHub #20](https://github.com/princeton-nlp/SimPO/issues/20)) and an AI2 open-instruct maintainer ([GitHub #237](https://github.com/allenai/open-instruct/pull/237))
 
 ### In-Loop Generation Logging
 
@@ -129,15 +160,16 @@ Training can periodically generate sample outputs for qualitative checks. The cu
 - Larger rotating prompt pool by default (16 prompts), with optional custom prompt files via `sample_prompts_file`
 - W&B table logging with per-sample metadata (prompt id, decoding settings, token limits)
 
-### ORPO/SimPO Implementation Notes
+### ORPO/SimPO/DPO-Norm Implementation Notes
 
-These two losses are easy to implement incorrectly because both are sensitive to log-prob scaling.
+These losses are easy to implement incorrectly because they are sensitive to log-prob scaling.
 
 - **ORPO uses average log-probabilities in this implementation** (matching TRL ORPO behavior), not summed sequence log-probabilities.
 - **Why this matters for ORPO**: summed log-probs on long responses become large-magnitude negatives, which makes the ORPO log-odds term numerically extreme and can dominate the SFT term.
 - **Observed failure mode before this change**: very large `log_odds_ratio`/`or_loss` values and unstable optimization.
 - **Current ORPO guardrail**: clamp policy log-probs to `< 0` before `log1mexp` to avoid edge-case numerical issues.
 - **SimPO remains average-logprob based** (as designed) and is sensitive to learning rate; defaults are tuned lower than DPO.
+- **DPO-Norm uses average log-probabilities for both policy and reference model**, then applies the standard DPO loss to the resulting per-token log-ratios.
 - **Config implication**: SimPO/ORPO learning rates are intentionally lower and runs are longer to reduce noise.
 
 ### Sequence Length Controls
@@ -275,6 +307,7 @@ direct_alignment/
 ├── train.py           # Training loop with sample generation
 └── configs/           # YAML config files
     ├── dpo.yaml
+    ├── dpo_norm.yaml
     ├── ipo.yaml
     ├── simpo.yaml
     ├── orpo.yaml
@@ -313,7 +346,6 @@ These would be great contributions to make the implementations more complete:
   (see Open-Instruct's `dpo_tune_cache.py` for reference)
 - [ ] **Base model support**: Add fallback formatting for models without chat templates
 - [ ] **Evaluation integration**: Wire up `log_every` and `eval_every` config options
-- [ ] **Length-normalized DPO**: Add `dpo_norm` variant (average log-probs like SimPO but with ref model)
 
 ## How This Was Made
 

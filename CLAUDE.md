@@ -26,6 +26,11 @@ uv run python -c "import matplotlib"
 python book/scripts/some_script.py
 ```
 
+## Agent Skills
+
+The repo includes Claude Code skills under `.claude/skills/`.
+For code experiments, use `.claude/skills/run-rlhf-code-experiment/SKILL.md`; it maps reader goals to the maintained examples under `code/` and specifies what metrics to report.
+
 ## Directory Structure
 
 ```

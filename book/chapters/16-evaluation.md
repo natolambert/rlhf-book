@@ -34,7 +34,7 @@ As AI becomes more of an industrialized field, the incentives of evaluation are 
 Since the release of ChatGPT, private evaluations such as the Scale Leaderboard [@scale2024seal], community-driven evaluations such as Arena [@chiang2024chatbot], and third-party evaluation companies such as ArtificialAnalysis and Epoch AI have proliferated.
 Throughout this chapter we will include details that map to how these evaluations were implemented and understood.
 
-## Prompting Formatting: From Few-shot to Zero-shot to CoT
+## Prompting Formatting
 
 **Prompting** language models is a simple action in itself, and a fairly natural one, but it is also considered a craft or art that one can practice and refine [@schulhoff2024prompt].
 A prompt is the way of structuring information and context for a language model. 
@@ -51,6 +51,8 @@ The bigger takeaway is that when training a strong, leading model, it is easier 
 
 Prompting well with modern language models can involve preparing an entire report for the model to respond to (often with 1000s of tokens of generated text). 
 This behavior is downstream of many changes in how language model performance has been measured and understood.
+
+### Few-Shot Prompting and Log-Likelihood Scoring
 
 Early language models were only used as intelligent autocomplete.
 In order to use these models in a more open ended way, multiple examples were shown to the model and then a prompt that is an incomplete phrase. This was called few-shot or in-context learning [@brown2020language], and at the time instruction tuning or RLHF was not involved.
@@ -131,6 +133,8 @@ Returning to the history of evaluation.
 Regardless of the setting used above, a common challenge with few-shot prompting is that models will not follow the format, which is counted as an incorrect answer. 
 When designing an evaluation domain, the number of examples used in-context is often considered a design parameter and ranges from 3 to 8 or more.
 
+### Chain-of-Thought Prompting
+
 Within the evolution of few-shot prompting came the idea of including chain-of-thought examples for the model to follow.
 This comes in the form of examples where the in-context examples have written-out reasoning, such as below (which later was superseded by explicit prompting to generate reasoning steps) [@wei2022chain]:
 
@@ -154,6 +158,8 @@ Q: The cafeteria had 23 apples. If they used 20 to make lunch and bought 6 more,
 A: The cafeteria had 23 apples originally. They..
 ```
 
+### Zero-Shot Instruction Following
+
 Over time, as language models became stronger, they evolved to zero-shot evaluation, a.k.a. "zero-shot learners" [@wei2021finetuned].
 The Finetuned Language Net (FLAN) showed that language models fine-tuned on specific tasks, as a precursor to modern instruction tuning, could generalize to zero-shot questions they were not trained on [@wei2021finetuned] (similar results are also found in T0 [@sanh2021multitask]).
 This is the emergence of instruction fine-tuning (IFT), an important precursor to RLHF and post-training.
@@ -168,6 +174,8 @@ From here in 2022, the timeline begins to include key early RLHF works, such as 
 The core capability and use-case shift that accompanied these models is even more open-ended usage.
 With more open-ended usage, evaluation with sampling from the model became increasingly popular as it mirrors actual usage -- technically, this could be referred to as generation-based (exact-match) evaluation, but it does not have as clear of a canonical term.
 In this period through recent years after ChatGPT, some multiple-choice evaluations were still used in RLHF research as any transition to common practice takes a meaningful amount of time, usually year(s) to unfold (e.g. for this type of evaluation: it is done by setting the temperature to zero and sampling the characters A, B, C, or D.).
+
+### Reasoning-Era Evaluation Prompts
 
 With the rise of reasoning models at the end of 2024 and the beginning of 2025, a major change in model behavior was the addition of a long Chain-of-Thought (CoT) reasoning process before every answer.
 These models no longer needed to be prompted with the canonical phrase "think step by step," as proposed in [@kojima2022large].
@@ -192,7 +200,7 @@ Answer the above question and REMEMBER to finish your response with the exact ph
 This, especially when the models use special formatting to separate thinking tokens from answer tokens, necessitated the most recent major update to evaluation regimes.
 Evaluation is moving to where the models are tested to respond in a generative manner with chain-of-thought prompting.
 
-## Why Many External Evaluation Comparisons are Unreliable
+## Why Many External Evaluation Comparisons Are Unreliable
 
 Language model evaluations within model announcements from AI companies can only be compared to other press releases with large error bars -- i.e. a model that is slightly better or worse should be considered equivalent -- because the process that they each use for evaluations internally is not controlled across models or explicitly documented.
 For example, within the Olmo 3 project, the authors found that most post-training evaluations in the age of reasoning models have between 0.25 and 1.5 point standard deviations when the evaluation setup is held constant [@teamolmo2025olmo3] -- bigger changes in scores can come from using different prompts or sampling parameters.
@@ -232,7 +240,7 @@ As each benchmark approaches 100%, a model's progress begins to slow as there ar
 
 ![Report from Epoch AI showing how major AI evaluations are rapidly saturated over time (saturation is when a given benchmark reaches full performance and models no longer have meaningful signal). License CC-BY.](images/benchmark-performance.jpeg){#fig:benchmark-saturation}
 
-## How Labs Actually use Evaluations Internally to Improve Models
+## How Labs Actually Use Evaluations Internally to Improve Models
 
 Evaluation of frontier language models is every bit as much an art today as it is a science; prescribing exactly how different groups use evaluations to understand cutting-edge language models would be a textbook of its own.
 

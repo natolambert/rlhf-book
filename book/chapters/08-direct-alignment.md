@@ -5,15 +5,15 @@
   Full license: https://github.com/natolambert/rlhf-book/blob/main/LICENSE-CHAPTERS
 -->
 ---
-prev-chapter: "Reasoning"
+prev-chapter: "Reasoning and Inference-Time Scaling"
 prev-url: "07-reasoning"
-page-title: Direct Alignment
-search-title: "Chapter 8: Direct Alignment"
+page-title: Direct-Alignment Algorithms
+search-title: "Chapter 8: Direct-Alignment Algorithms"
 next-chapter: "Rejection Sampling"
 next-url: "09-rejection-sampling"
 ---
 
-# Direct Alignment Algorithms (DAAs)
+# Direct-Alignment Algorithms
 
 Direct Alignment Algorithms (DAAs) allow one to update models to solve the same RLHF objective without ever training an intermediate reward model or using reinforcement learning optimizers. 
 DAAs solve the same preference learning problem we've been studying (with literally the same data!), in order to make language models more aligned, smarter, and easier to use.
@@ -21,18 +21,18 @@ The lack of a reward model and online optimization makes DAAs far simpler to imp
 This chapter details the complex mathematics done to derive these algorithms, and then shows that the sometimes tedious derivations result in simple implementations.
  
 The most prominent DAA and one that catalyzed an entire academic movement of aligning language models is Direct Preference Optimization (DPO) [@rafailov2024direct].
-At its core, DPO is using gradient ascent to solve the same constrained RLHF objective (see Chapter 3):
+At its core, DPO uses gradient ascent to solve the same constrained RLHF objective (see Chapter 3):
 
 $$ \max_{\pi} \mathbb{E}_{x \sim \mathcal{D}}\mathbb{E}_{y \sim \pi(y|x)} \left[r_\theta(x, y)\right] - \beta \mathcal{D}_{\text{KL}}\left(\pi(y|x) \| \pi_{\text{ref}}(y|x)\right)$$ {#eq:review_rlhf}
 
 Since its release in May of 2023, after a brief delay where the community figured out the right data and hyperparameters to use DPO with (specifically, surprisingly low learning rates), many popular models have used DPO or its variants, from Zephyr-$\beta$ kickstarting it in October of 2023 [@tunstall2023zephyr], Llama 3 Instruct [@dubey2024llama], Tülu 2 [@ivison2023camels] and 3 [@lambert2024t], Nemotron 4 340B [@adler2024nemotron], and others.
-Technically, Sequence Likelihood Calibration (SLiC-HF) was the first, modern direct alignment algorithm released [@zhao2023slic], but it did not catch on due to a combination of factors (unwinding the adoption of research methods is always a tricky task).
+Technically, Sequence Likelihood Calibration (SLiC-HF) was the first modern direct alignment algorithm released [@zhao2023slic], but it did not catch on due to a combination of factors (unwinding the adoption of research methods is always a tricky task).
 
 The most impactful part of DPO and DAAs is lowering the barrier of entry to experimenting with language model post-training -- it uses less compute, is easier to implement from scratch, and is easier to get working on both toy and production examples.
 
 *Throughout this chapter, we use $x$ to denote prompts and $y$ to denote completions. This notation is common in the language model literature, where methods operate on full prompt-completion pairs rather than individual tokens.*
 
-## Direct Preference Optimization (DPO)
+## Direct Preference Optimization
 
 Here we explain intuitions for how DPO works and re-derive the core equations fully. 
 
@@ -74,7 +74,7 @@ Here, the gradient solves the above objective by doing the following:
 
 
 The core intuition is that DPO is fitting an implicit reward model whose corresponding optimal policy can be extracted in closed form (@eq:dpo_opt_policy, thanks to gradient descent and our ML tools).
-Because the DPO loss is directly differentiable, it is straightforward to compute the exact gradient, rather than needing to reach it by proxy of training a reward model and sampling completions to score.
+Because the DPO loss is directly differentiable, it is straightforward to compute the exact gradient, rather than needing to estimate it by training a reward model and sampling completions to score.
 What is often misunderstood is that DPO is learning a reward model at its core, hence the subtitle of the paper *Your Language Model is Secretly a Reward Model.* 
 It is easy to confuse this with the DPO objective training a policy directly, hence studying the derivations below is good for a complete understanding.
 
@@ -94,7 +94,7 @@ The DPO derivation takes two primary parts.
 First, the authors show the form of the policy that optimally solved the RLHF objective used throughout this book.
 Next, they show how to arrive at that solution from pairwise preference data (i.e. a Bradley Terry model).
 
-#### 1. Deriving the Optimal RLHF Solution
+#### Deriving the Optimal RLHF Solution
 
 To start, we should consider the RLHF optimization objective once again, here indicating we wish to maximize this quantity:
 
@@ -154,14 +154,14 @@ Since we introduced the partition function $Z(x)$, thereby making the term $\fra
 
 $$ \min_{\pi}\mathbb{E}_{x\sim\mathcal{D}}\left[\mathcal{D}_{\text{KL}} \left(\pi(y|x) \middle\| \frac{1}{Z(x)}\pi_{\text{ref}}(y|x)\exp\left(\frac{1}{\beta}r(x,y)\right) \right) - \log Z(x)\right] $$ {#eq:dpo_deriv_11}
 
-Since the term $\log Z(x)$ does not depend on the final answer, we can ignore it. This leaves us with just the KL divergence between the policy we are learning and a form relating the partition, $\beta$, reward, and reference policy.
+Since the term $\log Z(x)$ does not depend on $\pi$ (the policy we are optimizing), we can ignore it. This leaves us with just the KL divergence between the policy we are learning and a form relating the partition, $\beta$, reward, and reference policy.
 Gibbs' inequality tells us this is minimized at a distance of 0, only when the two quantities are equal!
 Hence, we get an optimal policy:
 
 $$ \pi^*(y|x) = \pi(y|x) = \frac{1}{Z(x)}\pi_{\text{ref}}(y|x)\exp\left(\frac{1}{\beta}r(x,y)\right) $$ {#eq:dpo_opt_policy}
 
 
-#### 2. Deriving DPO Objective for Bradley Terry Models
+#### Deriving DPO Objectives for BT Models
 
 To start, recall from Chapter 5 on Reward Modeling and Chapter 11 on Preference Data that a Bradley-Terry model of human preferences is formed as:
 
@@ -201,7 +201,7 @@ Finally, with the definition of a sigmoid function as $\sigma(x) = \frac{1}{1+e^
 
 $$p^*(y_1 \succ y_2 \mid x) = \sigma\left(\beta \log \frac{\pi^*(y_1 \mid x)}{\pi_{\text{ref}}(y_1 \mid x)} - \beta \log \frac{\pi^*(y_2 \mid x)}{\pi_{\text{ref}}(y_2 \mid x)}\right) $$ {#eq:dpo_loss_deriv3}
 
-This is the likelihood of preference data under the Bradley-Terry model, given the optimal policy $\pi^*$. Recall from Chapter 5 on Reward Modeling, we have derived the Bradley-Terry objective as maximizing the likelihood, or equivalently minimizing the negative log-likelihood, which gives us the loss:
+This is the likelihood of preference data under the Bradley-Terry model, given the optimal policy $\pi^*$. Recall from Chapter 5 on Reward Modeling that we derived the Bradley-Terry objective as maximizing the likelihood, or equivalently minimizing the negative log-likelihood, which gives us the loss:
 $$
 \begin{aligned}
 \mathcal{L}_{\text{DPO}}(\pi_{\theta}; \pi_{\text{ref}}) &= -\mathbb{E}_{(x,y_c,y_r)\sim\mathcal{D}}\left[ \log p(y_c \succ y_r \mid x)  \right] \\
@@ -209,10 +209,10 @@ $$
 \end{aligned}
 $${#eq:dpo_loss_deriv4}
 
-This is the loss function for DPO, in a form as shown in @eq:dpo_core. 
+This is the loss function for DPO, in the form shown in @eq:dpo_core.
 The DPO paper has an additional derivation for the objective under a Plackett-Luce Model, which is far less used in practice [@rafailov2024direct].
 
-#### 3. Deriving the Bradley Terry DPO Gradient
+#### Deriving the BT DPO Gradient
 
 We used the DPO gradient shown in @eq:dpo_gradient to explain intuitions for how the model learns.
 To derive this, we must take the gradient of @eq:dpo_loss_deriv4 with respect to the model parameters.
@@ -220,7 +220,7 @@ To derive this, we must take the gradient of @eq:dpo_loss_deriv4 with respect to
 $$\nabla_{\theta}\mathcal{L}_{\text{DPO}}(\pi_{\theta}; \pi_{\text{ref}}) = -\nabla_{\theta}\mathbb{E}_{(x,y_c,y_r)\sim\mathcal{D}}\left[ \log \sigma\left(\beta \log \frac{\pi_{\theta}(y_c|x)}{\pi_{\text{ref}}(y_c|x)} - \beta \log \frac{\pi_{\theta}(y_r|x)}{\pi_{\text{ref}}(y_r|x)}\right)\right] $$ {#eq:dpo_grad_0}
 
 To start, this can be rewritten.
-We know that the derivative of a sigmoid function $\frac{d}{dx} \sigma(x) = \sigma(x)(1-\sigma(x))$, the derivative of logarithm $\frac{d}{dx} \log x = \frac{1}{x}$, and properties of sigmoid $\sigma(-x)=1-\sigma(x)$, so we can reformat the above equation. 
+We know that the derivative of a sigmoid function $\frac{d}{dx} \sigma(x) = \sigma(x)(1-\sigma(x))$, the derivative of the logarithm $\frac{d}{dx} \log x = \frac{1}{x}$, and properties of sigmoid $\sigma(-x)=1-\sigma(x)$, so we can reformat the above equation.
 
 First, let $u=\beta \log \frac{\pi_{\theta}(y_c|x)}{\pi_{\text{ref}}(y_c|x)} - \beta \log \frac{\pi_{\theta}(y_r|x)}{\pi_{\text{ref}}(y_r|x)}$ (the expression inside the sigmoid).
 Then, we have
@@ -238,14 +238,14 @@ For example, without rollouts where a reward model can rate generations, DPO tre
 In reality, as seen in Chapter 11 on Preference Data, there are many ways of capturing preference data with a richer label than binary.
 Multiple algorithms have been proposed to re-balance the optimization away from treating each pair equally.
 
-- **REgression to RElative REward Based RL (REBEL)** adds signal from a reward model, as a margin between chosen and rejected responses, rather than solely the pairwise preference data to more accurately solve the RLHF problem [@gao2024rebel].
+- **REgression to RElative REward Based RL (REBEL)** adds signal from a reward model, as a margin between chosen and rejected responses, rather than solely the pairwise preference data, to more accurately solve the RLHF problem [@gao2024rebel].
 - **Conservative DPO (cDPO) and Identity Preference Optimization (IPO)** address overfitting by assuming noise in the preference data. cDPO assumes N percent of the data is incorrectly labeled [@rafailov2024direct] and IPO changes the optimization to soften the probability of preference rather than optimize directly from a label [@azar2024general]. Practically, IPO changes the preference probability to a nonlinear function, moving away from the Bradley-Terry assumption, with $\Psi(q) = \log\left(\frac{q}{1-q}\right)$.
 - **DPO with an offset (ODPO)** "requires the difference between the likelihood of the preferred and dispreferred response to be greater than an offset value" [@amini2024direct] -- do not treat every data pair equally, but this can come at the cost of a more difficult labeling environment.
 
-Some variants to DPO attempt to either improve the learning signal by making small changes to the loss or make the application more efficient by reducing memory usage.
+Some variants of DPO attempt to either improve the learning signal by making small changes to the loss or make the application more efficient by reducing memory usage.
 
-- **Odds Ratio Policy Optimization (ORPO)** directly updates the policy model with a pull towards the chosen response, similar to the instruction fine-tuning loss, with a small penalty on the chosen response [@hong2024reference]. This change of loss function removes the need for a reference model, simplifying the setup. The best way to view ORPO is DPO inspired, rather than a DPO derivative.
-- **Simple Preference Optimization SimPO** makes a minor change to the DPO optimization, by averaging the log-probabilities rather than summing them (SimPO) or adding length normalization, to improve performance [@meng2025simpo].
+- **Odds Ratio Policy Optimization (ORPO)** directly updates the policy model with a pull towards the chosen response, similar to the instruction fine-tuning loss, with a small penalty on the chosen response [@hong2024reference]. This change of loss function removes the need for a reference model, simplifying the setup. The best way to view ORPO is as DPO inspired, rather than a DPO derivative.
+- **Simple Preference Optimization (SimPO)** makes a minor change to the DPO optimization, by averaging the log-probabilities rather than summing them or adding length normalization, to improve performance [@meng2025simpo].
 
 ![Sketch of preference displacement in DPO.](images/dpo_displacement.png){#fig:dpo_issue .center}
 
@@ -255,7 +255,7 @@ Intuitively, it is not clear how this generalizes, but work has posited that it 
 Simple methods---such as Cal-DPO [@xiao2024cal], which adjusts the optimization process, and AlphaPO [@gupta2025alphapo], which modifies the reward shape---mitigate this **preference displacement**.
 In practice, the exact impact of this is not well known, but points to a potential reason why online methods can outperform vanilla DPO.
 
-The largest other reason that is posited for DPO-like methods to have a lower ceiling on performance than online (RL based) RLHF methods is that the training signal comes from completions from previous or other models.
+The other primary reason posited for DPO-like methods to have a lower ceiling on performance than online (RL based) RLHF methods is that the training signal comes from completions from previous or other models.
 Online variants of DPO alleviate these limitations by generating new completions and incorporating a preference signal at training time. **Online DPO** [@guo2024direct] samples generations from the current model, while **Discriminator-Guided DPO** (D2PO) [@singhal2024d2po] uses reward model relabelling to create new preference data on the fly, and many more variants exist.
 
 There is a long list of other DAA variants, such as Direct Nash Optimization (DNO) [@rosset2024direct] or Binary Classifier Optimization (BCO) [@jung2024binary], but the choice of algorithm is far less important than the initial model and the data used [@lambert2024t] [@zhao2024rainbowpo] [@gorbatovski2025differences].
@@ -288,20 +288,20 @@ This can be used in standard language model training stacks as this information 
 In most ways, DAAs are simpler and a quality of life improvement, but they also offer a different set of considerations.
 
 1. **KL divergence is static**: In DPO and other algorithms, the KL divergence is set explicitly by the $\beta$ parameter that balances the distance penalty to the optimization. This is due to the fact that DPO takes gradient steps towards the *optimal* solution to the RLHF objective given the data -- it steps exactly to the solution set by the $\beta$ term. On the other hand, RL based optimizers take steps based on the batch and recent data.
-2. **Caching log-probabilities**: Simple implementations of DPO do the forward passes for the policy model and reference models at the same time for convenience with respect to the loss function. Though, this doubles the memory used and results in increased GPU usage. To avoid this, one can compute the log-probabilities of the reference model over the training dataset first, then reference it when computing the loss and updating the parameters per batch, reducing the peak memory usage by 50%.
+2. **Caching log-probabilities**: Simple implementations of DPO do the forward passes for the policy model and reference models at the same time for convenience with respect to the loss function. However, this doubles the memory used and results in increased GPU usage. To avoid this, one can compute the log-probabilities of the reference model over the training dataset first, then reuse those cached reference log-probabilities when computing the loss and updating the parameters per batch, reducing the peak memory usage by 50%.
 
 ## DAAs with Synthetic Preference Data
 
 Most of the popular datasets for performing preference fine-tuning with DAAs these days are synthetic preferences where a frontier model rates outputs from other models as the winner or the loser. 
 Prominent examples include UltraFeedback (the first of this category) [@cui2023ultrafeedback], Tülu 3 (built with an expanded UltraFeedback methodology) [@lambert2024t], SmolLM 3's data [@bakouch2025smollm3], or the Dolci Pref dataset released with Olmo 3 [@teamolmo2025olmo3].
 
-The best-practices for constructing these datasets are still evolving.
+The best practices for constructing these datasets are still evolving.
 Tülu 3 and datasets around its release in November of 2024 demonstrated that synthetic, pairwise preference data needs to be "on-policy" in a sense that some completions are generated from the model you're fine-tuning (while being mixed in a bigger model pool).
 This on-policy nature of the data ensured that the DAA would optimize the correct token space within which the model generates -- as the loss functions are contrastive and less direct than instruction fine-tuning.
 Later, with the release of Olmo 3 and SmolLM 3 in 2025, other works supported a different theory called Delta Learning, which argues that the difference between the chosen and rejected completions is more important to learning than exactly which models are used for the completions [@geng2025the].
 For example, in both of these two referenced models, the chosen responses are from Qwen 3 32B and the rejected responses are from Qwen 3 0.6B -- both authors developed this pairing concurrently and independently.
 
-Overall, training models on synthetic preference data with DAAs is the place most practitioners should start with given the simplicity of implementation and strong performance relative to preference fine-tuning with reinforcement learning based methods.
+Overall, training models on synthetic preference data with DAAs is the place most practitioners should start, given the simplicity of implementation and strong performance relative to preference fine-tuning with reinforcement learning based methods.
 Other minor issues exist when using extensive, synthetic preference data, such as biases of the model judging between completions.
 Given that frontier models such as GPT-4 are known to have length bias [@dubois2024length] and a preference for outputs that match themselves [@panickssery2024llm] (see Chapter 12 for more information), it is slightly more likely for a piece of text in the "chosen" section of the dataset to be either from an OpenAI model or another strong model that is stylistically similar to it. 
 
@@ -324,3 +324,44 @@ Even with this performance delta, DAAs are still used extensively in leading mod
 DAAs provide a controlled environment where iterations on training data and other configurations can be made rapidly, and given that data is often far more important than algorithms, using DPO can be fine.
 
 With the emergence of reasoning models that are primarily trained with RL, further investment will return to using RL for preference-tuning, which in the long-term will improve the robustness of RL infrastructure and cement this margin between DAAs and RL for optimizing from human feedback.
+
+## Suggested Experiments
+
+The companion code in `code/direct_alignment/` trains DPO and several related losses on preference data.
+This is the most accessible place to start experimenting with preference tuning because the setup is offline: no reward model server or rollout loop is required.
+
+1. **Train a small DPO run on UltraFeedback.**
+
+   ```bash
+   cd code/
+   uv run python -m direct_alignment.train --loss dpo --max_samples 1000
+   ```
+
+   Watch `loss`, `accuracy`, `margins`, `chosen_rewards`, and `rejected_rewards`.
+   The main sanity check is that the implicit reward margin should move in the desired direction without the model's sample generations collapsing.
+
+2. **Compare DPO, IPO, and length-normalized DPO.**
+
+   ```bash
+   cd code/
+   uv run python -m direct_alignment.train --config direct_alignment/configs/dpo.yaml
+   uv run python -m direct_alignment.train --config direct_alignment/configs/ipo.yaml
+   uv run python -m direct_alignment.train --config direct_alignment/configs/dpo_norm.yaml
+   ```
+
+   Compare the margin scale and the learning rate sensitivity.
+   IPO's loss is not on the same numeric scale as DPO, so read it through `accuracy` and margin behavior rather than raw loss alone.
+
+3. **Try the reference-free variants carefully.**
+   Run SimPO or ORPO from their configs, then inspect the generated samples that are logged during training.
+   These losses are more sensitive to log-probability scaling and learning rate, which makes them useful debugging exercises.
+
+   ```bash
+   cd code/
+   uv run python -m direct_alignment.train --config direct_alignment/configs/simpo.yaml
+   uv run python -m direct_alignment.train --config direct_alignment/configs/orpo.yaml
+   ```
+
+4. **Change the data before changing the loss.**
+   Keep the loss fixed and vary `--max_samples`, `--max_length`, or the preference dataset.
+   If the results move more than changing between DPO-like objectives, that is an empirical reminder of a central theme in preference tuning: data usually dominates small algorithmic differences.

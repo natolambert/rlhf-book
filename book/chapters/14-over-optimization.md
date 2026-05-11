@@ -5,15 +5,15 @@
   Full license: https://github.com/natolambert/rlhf-book/blob/main/LICENSE-CHAPTERS
 -->
 ---
-prev-chapter: "Tool Use"
+prev-chapter: "Tool Use and Function Calling"
 prev-url: "13-tools"
-page-title: Over-optimization
-search-title: "Chapter 14: Over-optimization"
+page-title: Over-Optimization
+search-title: "Chapter 14: Over-Optimization"
 next-chapter: "Regularization"
 next-url: "15-regularization"
 ---
 
-# Over Optimization
+# Over-Optimization
 
 A core lesson one learns when using reinforcement learning heavily in their domain is that it is a very strong optimizer, which causes it to pull all the possible increase in reward out of the environment.
 In modern ML systems, especially with language models, we're using somewhat contrived notions of environment where the models generate completions (the actions) and an external verifier, i.e. a reward model or a scoring function provides feedback.
@@ -36,17 +36,17 @@ We begin with the latter, qualitative, because it motivates the problem to study
 Finally, the chapter concludes with a brief discussion of **misalignment** where overdoing RLHF or related techniques can make a language model behave against its design.
 
 
-## Qualitative Over-optimization
+## Qualitative Over-Optimization
 
-The first half of this chapter is discussing narratives at the core of RLHF -- how the optimization is configured with respect to final goals and what can go wrong.
+The first half of this chapter discusses narratives at the core of RLHF -- how the optimization is configured with respect to final goals and what can go wrong.
 
 ### Managing Proxy Objectives
 
 RLHF is built around the fact that we do not have a universally good reward function for chatbots. 
-RLHF has been driven into the forefront because of its impressive performance at making chatbots a bit better to use, which is entirely governed by a proxy objective --- thinking that the rewards measured from human labelers in a controlled setting mirror those desires of downstream users. 
+RLHF has been driven to the forefront because of its impressive performance at making chatbots a bit better to use, which is entirely governed by a proxy objective --- thinking that the rewards measured by human labelers in a controlled setting mirror the desires of downstream users.
 Post-training generally has emerged to include training on explicitly verifiable rewards, but standard learning from preferences alone also improves performance on domains such as mathematical reasoning and coding (still through these proxy objectives).
 
-The proxy reward in RLHF is the score returned by a trained reward model to the RL algorithm itself because any reward model, even if trained near perfectly with the tools we have today, is known to only be at best correlated with chat or downstream performance [@schulman2023proxy] (due to the nature of the problem setup we have constructed for RLHF).
+The proxy reward in RLHF is the score returned by a trained reward model to the RL algorithm itself because any reward model, even if trained nearly perfectly with the tools we have today, is known to only be at best correlated with chat or downstream performance [@schulman2023proxy] (due to the nature of the problem setup we have constructed for RLHF).
 Therefore, it's been shown that applying too much optimization power to the RL part of the algorithm will actually decrease the usefulness of the final language model -- a type of over-optimization known to many applications of reinforcement learning [@zhang2018study]. 
 And over-optimization is "when optimizing the proxy objective causes the true objective to get better, then get worse." 
 
@@ -70,21 +70,21 @@ Common signs of over-optimization in early chat models emerged as:
 
 - Common phrases, such as: "As an AI language model..." or "Certainly!..."
 - Uninformative answers via repetitiveness, hedging, etc.
-- Pandering to the user with: Self-doubt, sycophancy [@sharma2023towards], and over apologizing.
-- Misaligned behavior such as over refusals.
+- Pandering to the user with: Self-doubt, sycophancy [@sharma2023towards], and over-apologizing.
+- Misaligned behavior such as over-refusals.
 
-It is an open research question on which types of error in the training process result in these failures.
+It is an open research question which types of error in the training process result in these failures.
 Many sources of error exist [@schulman2023proxy]: Approximation error from reward models not being able to fit to preferences, estimation error from overfitting during training the RM, optimization error in training the language model policy, etc.
 This points to a fundamental question as to the limits of optimizing the intents and outputs of data contractors relative to what downstream users want.
 
-A potential solution is that *implicit* feedback will be measured from users of chatbots and models to tune performance.
+A potential solution is measuring *implicit* feedback from users of chatbots and models to tune performance.
 Implicit feedback is actions taken by the user, such as re-rolling an output, closing the tab, or writing an angry message that indicates the quality of the previous response. 
 The challenge here, and with most optimization changes to RLHF, is that there's a strong risk of losing stability when making the reward function more specific. 
 RL, as a strong optimizer, is increasingly likely to exploit the reward function when it is a smooth surface (and not just pairwise human values). 
 The expected solution to this is that future RLHF will be trained with both pairwise preference data and additional steering loss functions. 
 There are also a bunch of different loss functions that can be used to better handle pairwise data, such as Mallow's model [@lu2011learning] or Plackett-Luce [@liu2019learning].
 
-### Over-refusal and "Too Much RLHF"
+### Over-Refusal and "Too Much RLHF"
 
 Many model releases have been tagged with the trait "too much RLHF."
 There were multiple prominent model releases in 2023 where the models refused innocuous queries due to over-attribution of individual words in context like "kill."
@@ -107,7 +107,7 @@ Another example later in 2023 had Claude 2.1 showcase similar behavior:
 >
 > **Assistant**: I apologize, I should not provide recommendations about harming processes or systems.
 
-Both of these are not solely related to training and reflect the deployment settings of the models, such as the system prompt.
+Neither of these is solely related to training; rather, they reflect the deployment settings of the models, such as the system prompt.
 Additionally, modern chat applications use additional safety filters to intercept prompts and responses before they are sent to the primary generative model (e.g. WildGuard [@han2024wildguard] or LlamaGuard [@inan2023llama]).
 
 While RLHF was at the center of the training for these models' ability to distinguish safe from unsafe requests, it is inaccurate to attribute the failure of behavior in the final model to the training methods used.
@@ -120,13 +120,13 @@ The industry standard has shifted to a narrower set of harms and models that are
 
 The accepted best practice for mitigating this behavior is to modify the training data (such as with methods like Character Training covered in Chapter 17). 
 Today, a substantial amount of fine-tuning for AI applications is done by further fine-tuning so called "Instruct" or "Thinking" models that have already gone through substantial RLHF and other post-training before release.
-These already trained models can be much harder to change, e.g. to remove this over-refusal, and often starting with a base model directly at the end of large-scale autoregressive pretraining is best for steering this type of behavior.
+These already-trained models can be much harder to change, e.g. to remove this over-refusal, and starting with a base model directly at the end of large-scale autoregressive pretraining is often best for steering this type of behavior.
 
-## Quantitative Over-optimization
+## Quantitative Over-Optimization
 
-Over-optimization is also a technical field of study where relationships between model performance versus KL optimization distance are studied [@gao2023scaling].
+Over-optimization is also a technical field of study where relationships between model performance and KL optimization distance are studied [@gao2023scaling].
 Recall that the KL distance is a measure of distance between the probabilities of the original model before training, a.k.a. the reference model, and the current policy.
-For example, the relationship in @fig:overoptimization, can also be seen with the KL distance of the optimization on the x-axis rather than training steps.
+For example, the relationship in @fig:overoptimization can also be seen with the KL distance of the optimization on the x-axis rather than training steps.
 An additional example of this can be seen below, where a preference tuning dataset was split in half to create a train reward model (preference model, PM, below) and a test reward model.
 As training continues, improvements on the training RM eventually fail to transfer to the test PM at ~150K training samples [@bai2022training].
 
@@ -135,7 +135,7 @@ Hence, it is a fundamental optimization problem that RLHF can never fully solve.
 
 ![Over-optimization with a train and test RM from Bai et al. 2022. License CC-BY.](images/anthropic_overoptimization.png){#fig:anthropic_overoptimization width=450px}
 
-With different RLHF training methods, the KL distance spent will vary (yes, researchers closely follow the KL divergence metric during training, comparing how much the models change in different runs, where a very large KL divergence metric can indicate a potential bug or broken model). 
+With different RLHF training methods, the KL distance spent will vary (yes, researchers closely follow the KL divergence metric during training, comparing how much the models change in different runs, because a very large KL divergence metric can indicate a potential bug or broken model).
 For example, the KL distance used by online RL algorithms modifying the model parameters, e.g. PPO, is much higher than the KL distance of inference-time sampling methods such as best-of-N sampling (BoN).
 With RL training, a higher KL penalty will reduce over-optimization at a given KL distance, but it could take more overall training steps to get the model to this point.
 
@@ -145,10 +145,10 @@ While direct alignment algorithms are still prone to over-optimization [@rafailo
 
 ## Misalignment and the Role of RLHF
 
-While industrial RLHF and post-training is shifting to encompass many more goals than the original notion of alignment that motivated the invention of RLHF, the future of RLHF is still closely tied with alignment.
+While industrial RLHF and post-training are shifting to encompass many more goals than the original notion of alignment that motivated the invention of RLHF, the future of RLHF is still closely tied with alignment.
 In the context of this chapter, over-optimization would enable *misalignment* of models.
 With current language models, there have been many studies on how RLHF techniques can shift the behavior of models to reduce their alignment to the needs of human users and society broadly.
-A prominent example of mis-alignment in current RLHF techniques is the study of how current techniques promote sycophancy [@sharma2023towards] -- the propensity for the model to tell the user what they want to hear.
+A prominent example of misalignment in current RLHF techniques is the study of how current techniques promote sycophancy [@sharma2023towards] -- the propensity for the model to tell the user what they want to hear.
 
 A concrete example of this failure mode is when a user makes a grandiose or implausible claim and the model responds by validating it rather than grounding the conversation.
 This exact example was from April 2025, when a GPT-4o update resulted in extreme sycophancy ([read more at The Verge](https://www.theverge.com/tech/657409/chat-gpt-sycophantic-responses-gpt-4o-sam-altman)).

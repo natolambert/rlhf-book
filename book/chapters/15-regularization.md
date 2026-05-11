@@ -5,7 +5,7 @@
   Full license: https://github.com/natolambert/rlhf-book/blob/main/LICENSE-CHAPTERS
 -->
 ---
-prev-chapter: "Over-optimization"
+prev-chapter: "Over-Optimization"
 prev-url: "14-over-optimization"
 page-title: Regularization
 search-title: "Chapter 15: Regularization"
@@ -15,16 +15,16 @@ next-url: "16-evaluation"
 
 # Regularization
 
-In this book we've learned many tools for modifying the model, to learn from human preferences, verifiable rewards, and other valuable signals.
+In this book we've learned many tools for modifying the model to learn from human preferences, verifiable rewards, and other valuable signals.
 All the methods we use are very powerful, and can cause the model to change too much relative to the strong, general model from the previous training stage (often called the reference model).
 When the model learns too much from a given reward, causing out-of-distribution performance to drop, this is called "over-optimization" (as we discussed in the previous chapter).
 
 Throughout the RLHF optimization, many regularization steps are used to prevent over-optimization of the reward model.
 Over-optimization in these contexts looks like models that output nonsensical text.
-Some examples of optimization "off the rails" are that models can output followable math reasoning with extremely incorrect answers, repeated text, switching languages, or excessive special characters.
+Some examples of optimization "off the rails" are models that output followable math reasoning with extremely incorrect answers, repeated text, switching languages, or excessive special characters.
 This chapter covers the different methods used to control the optimization of models.
 
-The most popular variant, used in most RLHF implementations at the time of writing, is a KL distance from the current policy to a reference policy across generated samples.
+The most popular variant, used in most RLHF implementations as of 2026, is a KL distance from the current policy to a reference policy across generated samples.
 "KL distance" is a colloquial term for expressing the *optimization distance* within the training process, even though KL divergence—the underlying mathematical method for measuring the separation of two probability distributions—does not satisfy the formal properties required to be a true distance metric (it is simply easier to call the number a distance than a numeric measure of distributional difference).
 Many other regularization techniques have emerged in the literature to then disappear in the next model iteration in that line of research.
 That is to say that regularization outside the core KL distance from generations is often used to stabilize experimental setups that can then be simplified in the next generation.
@@ -32,7 +32,7 @@ Still, it is important to understand tools to constrain optimization in RLHF.
 
 *Throughout this chapter, we use $x$ to denote prompts and $y$ to denote completions. This notation is common in the language model literature, where methods operate on full prompt-completion pairs rather than individual tokens.*
 
-The general formulation, when used in an RLHF framework with a reward model, $r_\theta$ is as follows:
+The general formulation, when used in an RLHF framework with a reward model $r_\theta$, is as follows:
 
 $$ r = r_\theta - \lambda r_{\text{reg.}} $$ {#eq:rl_start}
 
@@ -74,7 +74,7 @@ $$
 \mathcal{D}_{\text{KL}}(P \,||\, Q) = \mathbb{E}_{x \sim P} \left[ \log P(x) - \log Q(x) \right].
 $$ {#eq:kl_expectation}
 
-This mode is far simpler to implement, particularly when dealing directly with log probabilities used frequently in language model training.
+This sample-based form is far simpler to implement, particularly when dealing directly with log probabilities used frequently in language model training.
 
 ```python
 # Step 1: generate() autoregressively samples a full sequence token by token
@@ -122,7 +122,7 @@ The study uses two environments with built-in rule variations to understand the 
 - **V-IRL** is a real-world visual navigation task where models follow linguistic instructions to traverse a route through city streets, recognizing landmarks along the way. The OOD shift switches the action space from absolute directions (north, east) to relative directions (left, right).
 
 Across all task variants, RL consistently improves OOD performance as training compute scales up, while SFT consistently *degrades* OOD performance despite improving in-distribution.
-The magnitude of divergence is striking: on V-IRL with language-only inputs, where the OOD shift is from absolute to relative directional coordinates, RL improves OOD per-step accuracy from 80.8% to 91.8%, while SFT collapses from 80.8% to 1.3%.
+The magnitude of divergence is striking: on V-IRL with language-only inputs, where the OOD shift is from absolute to relative directional coordinates, RL improves OOD per-step accuracy from 80.8% to 91.8%, while SFT collapses it from 80.8% to 1.3%.
 The SFT model goes further than failing to generalize: it destroys the spatial reasoning the base model already had, collapsing to a lookup table from instruction phrases to absolute directions.
 
 ### Retaining by Doing: On-Policy Data Mitigates Forgetting
@@ -145,7 +145,9 @@ In the derivations below, $P$ corresponds to the target $\pi_\star$ (the trainin
 SFT places the target first — $\text{KL}(\pi_\star \| \pi_\theta)$ — while RL flips the order — $\text{KL}(\pi_\theta \| \pi_\star)$ — changing which distribution we sample from.
 The samples provide the data to learn from. The objective, SFT or RL, shapes the model from said data.
 
-**SFT $\approx$ Forward KL.** Begin with the definition of forward KL:
+#### SFT Forward KL
+
+Begin with the definition of forward KL:
 
 $$
 \text{KL}(\pi_\star \| \pi_\theta) = \mathbb{E}_{(x,y) \sim \mathcal{D}} \left[ \log \pi_\star(y \mid x) - \log \pi_\theta(y \mid x) \right]
@@ -166,7 +168,9 @@ $$ {#eq:sft_forward_kl}
 
 Since the entropy term is constant with respect to $\theta$, the two losses share the same gradients and the same minimum — minimizing the SFT loss is equivalent to minimizing the **forward KL** divergence $\text{KL}(\pi_\star \| \pi_\theta)$.
 
-**RL $\approx$ Reverse KL.** Let us start with the standard KL-regularized RL objective:
+#### RL Reverse KL
+
+Let us start with the standard KL-regularized RL objective:
 
 $$
 \max_\pi \; \mathcal{J}_\text{RL}(\theta) = \mathbb{E}_{x \sim \mathcal{D},\, y \sim \pi(\cdot \mid x)} \left[ r(x, y) \right] - \beta \cdot \text{KL}\!\left(\pi(\cdot \mid x) \| \pi_\text{ref}(\cdot \mid x)\right)
@@ -277,14 +281,14 @@ $$
 J(\theta) = \mathbb{E}_{(x,y) \sim \mathcal{D}_{\pi_{\text{RL},\theta}}} \left[ r_{\theta}(y \mid x) - \lambda r_{\text{reg.}} \right]
 $$ {#eq:objective_regularization}
 
-Then, we can add an additional reward for higher probabilities on the standard autoregressive next-token prediction loss used at pretraining, over a set of documents sampled from the pretraining corpus (or another dataset) to maintain textual coherence:
+Then, we can add an additional reward for higher probabilities on the standard autoregressive next-token prediction loss used during pretraining, over a set of documents sampled from the pretraining corpus (or another dataset) to maintain textual coherence:
 
 $$
 J(\theta) = \mathbb{E}_{(x,y) \sim \mathcal{D}_{\pi_{\text{RL},\theta}}} \left[ r_{\theta}(y \mid x) - \lambda r_{\text{reg.}} \right] + \gamma \mathbb{E}_{x \sim \mathcal{D}_{\text{pretrain}}} \left[ \log(\pi_{\text{RL},\theta}(x)) \right]
 $$ {#eq:objective_pretraining}
 
 Recent work proposed using a negative log-likelihood term to balance the optimization of Direct Preference Optimization (DPO) [@pang2024iterative].
-Given the pairwise nature of the DPO loss, the same loss modification can be made to reward model training, constraining the model to predict accurate text (rumors from laboratories that did not publish the work).
+Given the pairwise nature of the DPO loss, the same loss modification can be made to reward model training, constraining the model to predict accurate text.
 
 The optimization follows as a modification to DPO.
 $$\mathcal{L}_{\text{DPO+NLL}} = \mathcal{L}_{\text{DPO}}(c_i^w, y_i^w, c_i^l, y_i^l \mid x_i) + \alpha \mathcal{L}_{\text{NLL}}(c_i^w, y_i^w \mid x_i)
@@ -298,7 +302,7 @@ where $P_{\theta}$ is the trainable policy model, $P_{\text{ref.}}$ is a fixed r
 The first term is the standard DPO logistic loss: it increases the margin between the win and loss using the difference of log-likelihood ratios, $\log \tfrac{P_{\theta}}{P_{\text{ref.}}}$, and $\beta$ controls how strongly this preference signal pulls away from the reference.
 The second term is a length-normalized negative log-likelihood penalty on the winning completion, weighted by $\alpha$, which helps keep the preferred text high-likelihood in an absolute language modeling sense rather than only relatively better than the rejected sample.
 
-### Margin-based Regularization
+### Margin-Based Regularization
 
 Controlling the optimization is less well defined in other parts of the RLHF stack.
 Most reward models have no regularization beyond the standard contrastive loss function.
@@ -310,7 +314,7 @@ $$
 \mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) - m(y_c, y_r) \right) \right)
 $$ {#eq:margin_loss}
 
-where $m(y_c, y_r)$ is the margin between two datapoints $y_c$ and $y_r$ representing numerical difference in delta between the ratings of two annotators.
-This is either achieved by having annotators rate the outputs on a numerical scale or by using a quantified ranking method, such as [Likert scales](https://en.wikipedia.org/wiki/Likert_scale).
+where $m(y_c, y_r)$ is the margin between two data points $y_c$ and $y_r$ representing the numerical difference in the delta between the ratings of two annotators.
+This is achieved either by having annotators rate the outputs on a numerical scale or by using a quantified ranking method, such as [Likert scales](https://en.wikipedia.org/wiki/Likert_scale).
 
-Reward margins have been used heavily in the direct alignment literature, such as Reward weighted DPO, ''Reward-aware Preference Optimization'' (RPO), which integrates reward model scores into the update rule following a DPO loss [@adler2024nemotron], or REBEL [@gao2024rebel] that has a reward delta weighting in a regression-loss formulation.
+Reward margins have been used heavily in the direct alignment literature, such as Reward-weighted DPO; Reward-aware Preference Optimization (RPO), which integrates reward model scores into the update rule following a DPO loss [@adler2024nemotron]; and REBEL [@gao2024rebel], which has a reward delta weighting in a regression-loss formulation.

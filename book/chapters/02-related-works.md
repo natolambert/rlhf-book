@@ -7,8 +7,8 @@
 ---
 prev-chapter: "Introduction"
 prev-url: "01-introduction"
-page-title: Key Related Works
-search-title: "Chapter 2: Key Related Works"
+page-title: A Tiny History of RLHF
+search-title: "Chapter 2: A Tiny History of RLHF"
 next-chapter: "Training Overview"
 next-url: "03-training-overview"
 lectures:
@@ -16,7 +16,7 @@ lectures:
     label: "Lecture 1: Overview (Chapters 1–3)"
 ---
 
-# Key Related Works
+# A Tiny History of RLHF
 
 RLHF and its related methods are very new.
 We highlight history to show how recently the procedures were formalized, and how much of this documentation is in the academic literature.
@@ -38,7 +38,7 @@ Still, many of the techniques used today are deeply related to core techniques f
 
 One of the first papers with an approach similar to modern RLHF was *TAMER*. 
 *TAMER: Training an Agent Manually via Evaluative Reinforcement* proposed an approach in which humans iteratively scored an agent’s actions to learn a reward model, which was used to learn the action policy [@knox2008tamer]. 
-Other concurrent or soon after work proposed an actor-critic algorithm, COACH, where human feedback (both positive and negative) is used to tune the advantage function [@macglashan2017interactive].
+Other work, concurrently or soon after, proposed an actor-critic algorithm, COACH, where human feedback (both positive and negative) is used to tune the advantage function [@macglashan2017interactive].
 
 The primary reference, Christiano et al. 2017, is an application of RLHF applied to preferences between trajectories of agents within Atari games [@christiano2017deep]. 
 This work introducing RLHF followed soon after DeepMind's seminal work in reinforcement learning on Deep Q-Networks (DQN), which showed that RL agents can solve popular video games learning from scratch. 
@@ -55,7 +55,7 @@ This era began to transition, as reward models as a general notion were proposed
 Reinforcement learning from human feedback, also referred to regularly as reinforcement learning from human preferences in its early days, was quickly adopted by AI labs increasingly turning to scaling large language models.
 A large portion of this work began between GPT-2, in 2019, and GPT-3, in 2020.
 The earliest work in 2019, *Fine-Tuning Language Models from Human Preferences* has many striking similarities to modern work on RLHF and the content that we will cover in this book [@ziegler2019fine]. 
-Many canonical terms, such as learning reward models, KL distances, feedback diagrams, etc. were formalized in this paper -- just the evaluation tasks for the final models, and capabilities, were different from what people are doing today.
+Many canonical terms, such as learning reward models, KL distances, feedback diagrams, etc., were formalized in this paper, though the evaluation tasks for the final models and their capabilities were different from what people are doing today.
 From here, RLHF was applied to a variety of tasks.
 Important examples include general summarization [@stiennon2020learning], recursive summarization of books [@wu2021recursively], instruction following (InstructGPT) [@ouyang2022training], browser-assisted question-answering (WebGPT) [@nakano2021webgpt], supporting answers with citations (GopherCite) [@menick2022teaching], and general dialogue (Sparrow) [@glaese2022improving].
 
@@ -68,7 +68,7 @@ Aside from applications, a number of seminal papers defined key areas for the fu
 Work continued on refining RLHF for application to chat models.
 Anthropic continued to use it extensively for early versions of Claude [@bai2022training] and early RLHF open-source tools emerged [@ramamurthy2022reinforcement], [@havrilla-etal-2023-trlx], [@vonwerra2022trl].
 
-## 2023 to Present: ChatGPT Era
+## 2023 to the Present: The ChatGPT Era
 
 The announcement of ChatGPT was very clear about the role of RLHF in its training [@openai2022chatgpt]:
 
@@ -77,4 +77,4 @@ The announcement of ChatGPT was very clear about the role of RLHF in its trainin
 Since then, RLHF has been used extensively in leading language models. 
 It is well known to be used in Anthropic's Constitutional AI for Claude [@bai2022constitutional], Meta's Llama 2 [@touvron2023llama] and Llama 3 [@dubey2024llama], Nvidia's Nemotron [@adler2024nemotron], Ai2's Tülu 3 [@lambert2024t], and more.
 
-Today, RLHF is growing into a broader field of preference fine-tuning (PreFT), including new applications such as process reward for intermediate reasoning steps [@lightman2023let], covered in Chapter 5; direct alignment algorithms inspired by Direct Preference Optimization (DPO) [@rafailov2024direct], covered in Chapter 8; learning from execution feedback from code or math [@kumar2024training], [@singh2023beyond] and other online reasoning methods inspired by OpenAI's o1 [@openai2024o1], covered in Chapter 7.
+Today, RLHF is growing into a broader field of preference fine-tuning (PreFT), including new applications such as process rewards for intermediate reasoning steps [@lightman2023let], covered in Chapter 5; direct alignment algorithms inspired by Direct Preference Optimization (DPO) [@rafailov2024direct], covered in Chapter 8; learning from execution feedback from code or math [@kumar2024training], [@singh2023beyond] and other online reasoning methods inspired by OpenAI's o1 [@openai2024o1], covered in Chapter 7.

@@ -7,15 +7,15 @@
 ---
 prev-chapter: "Definitions"
 prev-url: "appendix-a-definitions"
-page-title: "Appendix B: Style & Information"
-search-title: "Appendix B: Style & Information"
+page-title: "Appendix B: Beyond \"Just Style\""
+search-title: "Appendix B: Beyond \"Just Style\""
 next-chapter: "Practical Issues"
 next-url: "appendix-c-practical"
 ---
 
-# Style and Information
+# Beyond "Just Style"
 
-Early developments in RLHF gave it a reputation for being "just style transfer" or other harsh critiques on how RLHF manipulates the way information is presented in outputs.
+Early developments in RLHF gave it a reputation for being "just style transfer"; other harsh critiques focused on how RLHF manipulates the way information is presented in outputs.
 This appendix explains why style is core to understanding the value RLHF provides — and why it positively affects both model capability and user experience.
 
 The idea of RLHF being solely about style transfer has held back the RLHF narrative for two reasons. 
@@ -29,8 +29,8 @@ We've seen how different styles actually can meaningfully improve evaluations wi
 The Llama 3 Instruct models scored extremely high on Arena, and it's accepted as being because they had a more fun personality -- they were more succinct and clever than other models of their era. 
 Regardless of the benchmark scores that many LLM users are obsessed with, if RLHF is going to make language models simply more fun, that is delivered value.
 
-Throughout this chapter, the term "chattiness" is used to encompass the growing length of responses from models training with RLHF, but it also encompasses techniques like heavy markdown use, emojis, and formatting the answer in bulleted lists.
-To ground the discussion in this chapter, an example completion for two models in the same Tülu 3 family are shown below -- one with only instruction fine-tuning and the second with preference fine-tuning applied via length-controlled DPO.
+Throughout this appendix, the term "chattiness" is used to encompass the growing length of responses from models training with RLHF, but it also encompasses techniques like heavy markdown use, emojis, and formatting the answer in bulleted lists.
+To ground the discussion in this appendix, an example completion for two models in the same Tülu 3 family are shown below -- one with only instruction fine-tuning and the second with preference fine-tuning applied via length-controlled DPO.
 First, the instruction-tuned completion to the prompt `What is reinforcement learning from human feedback?` (the exact model is [Llama 3.1 Tulu 3 70B SFT](https://huggingface.co/allenai/Llama-3.1-Tulu-3-70B-SFT)) [@lambert2024t]:
 
 ```text
@@ -43,7 +43,7 @@ By using human feedback, reinforcement learning can address some of these issues
 However, reinforcement learning from human feedback faces several challenges, such as the high cost of obtaining human feedback, subjective and inconsistent feedback, scaling issues, and methods for efficient and effective integration of human feedback into learning algorithms. Despite these challenges, the research in this area has shown promising results in various applications, including robotics, video games, prosthetics control, natural language processing, and many more.
 ```
 
-And the post RLHF completion from [Llama 3.1 Tulu 3 70B DPO](https://huggingface.co/allenai/Llama-3.1-Tulu-3-70B-DPO):
+And the post-RLHF completion from [Llama 3.1 Tulu 3 70B DPO](https://huggingface.co/allenai/Llama-3.1-Tulu-3-70B-DPO):
 ```text
 Reinforcement learning from human feedback (RLHF) is a subset of reinforcement learning (RL) where the rewards that guide the learning process are provided by humans, rather than a pre-specified numerical reward function. This is particularly useful in situations where it is hard or infeasible to design a suitable reward function, or where the desired performance involves subjective judgments that humans are uniquely equipped to provide.
 
@@ -76,7 +76,7 @@ Using human feedback introduces some specific challenges:
 
 1. **Scalability:** Human feedback is time-consuming and expensive to collect, and it's hard to scale to complex or high-dimensional tasks.
 2. **Bias and Noise:** Human feedback can be noisy, inconsistent, and biased, leading to suboptimal learning outcomes.
-3. **Alignment:** Ensuring that the reinforcement learning agent aligns with the true preferences of the human evaluator(s) and not just the superficial feedback, is difficult.
+3. **Alignment:** Ensuring that the reinforcement learning agent aligns with the true preferences of the human evaluator(s) and not just the superficial feedback is difficult.
 4. **Safety and Misuse:** There can be concerns about the safety and ethical implications of using potentially flawed human feedback, especially if the feedback process is corrupted or gamed.
 
 Researchers are actively working on techniques to mitigate these challenges and improve RLHF approaches. One such approach is leveraging machine learning models to amplify the efficacy of the human feedback, for example, by learning to generalize from sparse human input or by synthesizing plausible feedback in situations where direct human input is not available.
@@ -94,12 +94,13 @@ Through the establishment of the RLHF literature, a large swath of models have b
 These RLHF methods motivated by alignment, when done right, make the models easier to work with and more enjoyable. 
 This often comes with clear improvements on evaluation tools like MT Bench or AlpacaEval. 
 
-In the fall of 2023, there was a peak in the debate over direct preference optimization (DPO) and its role relative to proximal policy optimization (PPO) and other RL-based methods for preference fine-tuning -- the balance of chat evaluations to real world performance was at the center of this (For more technical discussion on the trade-offs, see Chapter 8, Ivison et al. 2024 [@ivison2024unpacking], or [this talk](https://youtu.be/YJMCSVLRUNs)).
+In the fall of 2023, there was a peak in the debate over direct preference optimization (DPO) and its role relative to proximal policy optimization (PPO) and other RL-based methods for preference fine-tuning -- the balance of chat evaluations to real-world performance was at the center of this (For more technical discussion on the trade-offs, see Chapter 8, Ivison et al. 2024 [@ivison2024unpacking], or [this talk](https://youtu.be/YJMCSVLRUNs)).
 The problem is that you can also use techniques like DPO and PPO in feedback loops or in an abundance of data to actually severely harm the model on other tasks like mathematics or coding in a trade for this chat performance.
 
-During the proliferation of the DPO versus PPO debate there were many papers that came out with incredible benchmarks but no model weights that gathered sustained, public usage because these models were not robust in general usage. 
+During the proliferation of the DPO versus PPO debate there were many papers that came out with incredible benchmarks but no meaningful adoption.
+If these papers released model weights, they weren't popular in public usage because these models were not robust in general usage.
 When applying RLHF in the fall of 2023 or soon after, there is no way to make an aligned version of a 7 billion parameter model actually beat GPT-4 across comprehensive benchmarks (this sort of comparison will hold, where small models of the day cannot robustly beat the best, large frontier models). 
-It seems obvious, but there are always papers claiming these sort of results. 
+It seems obvious, but there are always papers claiming these sorts of results.
 @fig:DNO is from a paper called Direct Nash Optimization (DNO), which makes the case that their model is state-of-the-art or so on AlpacaEval for 7B models in April 2024 [@rosset2024direct].
 For context, DNO is a batched, on-policy *iterative* alternative to reward-model+PPO (classic RLHF) or one-shot DPO that directly optimizes pairwise preferences (win-rate gaps) by framing alignment as finding a Nash equilibrium against a preference oracle.
 These challenges emerge when academic incentives interface with technologies becoming of extreme interest to the broader society.
@@ -122,9 +123,9 @@ This note from the original Alibaba Qwen models in 2023 is something that has be
 
 An early, good example of this tradeoff done right is a model like Starling Beta from March of 2024 [@zhu2024starling]. 
 It's a model that was fine-tuned from another chat model, OpenChat [@wang2023openchat] (which was in fact trained by an entire other organization). 
-Its training entirely focuses on a k-wise reward model training and PPO optimization, and moves it up 10 places in Arena. 
+Its training entirely focuses on k-wise reward model training and PPO optimization, and moves it up 10 places in Arena.
 The average response length of the model increases, but in a way that's good enough to actually help the human raters.
-Later examples, such as Olmo 3, actually are documented as undergoing substantial chat training, but where the authors prefer a final model checkpoint with higher math, coding, and reasoning scores instead of potential checkpoints that're highest on LLM-as-a-judge based chat benchmarks [@teamolmo2025olmo3].
+Later examples, such as Olmo 3, are documented as undergoing substantial chat training, but with the authors preferring a final model checkpoint with higher math, coding, and reasoning scores instead of potential checkpoints that are highest on LLM-as-a-judge-based chat benchmarks [@teamolmo2025olmo3].
 
 A natural question is: Why does RLHF make model responses longer?
 Fundamentally, evaluations like Arena have shown us that average users of models often like longer, complete answers when compared with terse responses. 

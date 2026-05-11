@@ -9,6 +9,7 @@
 html {
     font-size: 100%;
     overflow-y: scroll;
+    overflow-x: hidden;
     -webkit-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
 }
@@ -21,6 +22,7 @@ body {
     padding: 1em;
     margin: auto;
     max-width: 42em;
+    overflow-x: hidden;
     background: #fefefe;
 }
 
@@ -318,7 +320,8 @@ td {
     vertical-align: top;
 }
 
-.table-scroll {
+.table-scroll,
+.table-wrap {
     max-width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -333,24 +336,23 @@ td {
     width: max-content;
 }
 
-.table-wrap {
-    margin: 1.5em auto 2em;
-}
-
 .table-wrap table {
     margin: 0 auto;
 }
 
-.table-scroll::-webkit-scrollbar {
+.table-scroll::-webkit-scrollbar,
+.table-wrap::-webkit-scrollbar {
     height: 8px;
 }
 
-.table-scroll::-webkit-scrollbar-thumb {
+.table-scroll::-webkit-scrollbar-thumb,
+.table-wrap::-webkit-scrollbar-thumb {
     background-color: rgba(0, 0, 0, 0.2);
     border-radius: 4px;
 }
 
-.table-scroll::-webkit-scrollbar-track {
+.table-scroll::-webkit-scrollbar-track,
+.table-wrap::-webkit-scrollbar-track {
     background: rgba(0, 0, 0, 0.05);
 }
 
@@ -533,6 +535,9 @@ thead {
   .section a {
     color: #0066cc;
     text-decoration: none;
+  }
+  .section a[aria-current="page"] {
+    font-weight: bold;
   }
   .section a:hover {
     text-decoration: underline;

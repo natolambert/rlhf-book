@@ -5,11 +5,11 @@
   Full license: https://github.com/natolambert/rlhf-book/blob/main/LICENSE-CHAPTERS
 -->
 ---
-prev-chapter: "Direct Alignment"
+prev-chapter: "Direct-Alignment Algorithms"
 prev-url: "08-direct-alignment"
 page-title: Rejection Sampling
 search-title: "Chapter 9: Rejection Sampling"
-next-chapter: "What are Preferences"
+next-chapter: "The Nature of Preferences"
 next-url: "10-preferences"
 lectures:
   - video: "https://www.youtube.com/watch?v=4gIwiSPmQkU&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=3"
@@ -26,14 +26,14 @@ Combined with its underdocumented nature, this is why it appears here at the end
 Rejection sampling operates by curating new candidate completions, filtering them based on a trained reward model, and then fine-tuning the original model only on the top completions (the same loss function as instruction tuning).
 
 The name originates from computational statistics [@gilks1992adaptive], where one wishes to sample from a complex distribution, but does not have a direct method to do so.
-To alleviate this, one samples from a simpler distribution to model and uses a heuristic to check if the sample is permissible.
+To alleviate this, one samples from a distribution that is simpler to model and uses a heuristic to check if the sample is permissible.
 With language models, the target distribution is high-quality completions to prompts, the filter is a reward model, and the sampling distribution is the current model.
 
-WebGPT [@nakano2021webgpt], Anthropic's Helpful and Harmless agent [@bai2022training], OpenAI's popular paper on process reward models [@lightman2023let], Llama 2 Chat models [@touvron2023llama], and other seminal works all use this baseline; more recent work has formalized it directly (e.g., RAFT [@dong2023raft] for applying it to alignment in multiple modalities and Statistical Rejection Sampling Optimization (RSO) [@liu2023statistical] that gives a principled overview on how rejection sampling relates to other preference learning objectives).
+WebGPT [@nakano2021webgpt], Anthropic's Helpful and Harmless agent [@bai2022training], OpenAI's popular paper on process reward models [@lightman2023let], Llama 2 Chat models [@touvron2023llama], and other seminal works all use this baseline; more recent work has formalized it directly (e.g., RAFT [@dong2023raft] for applying it to alignment in multiple modalities and Statistical Rejection Sampling Optimization (RSO) [@liu2023statistical] that gives a principled overview of how rejection sampling relates to other preference learning objectives).
 
 *Throughout this chapter, we use $x$ to denote prompts and $y$ to denote completions. This notation is common in the language model literature, where methods operate on full prompt-completion pairs rather than individual tokens.*
 
-## Training Process Step By Step
+## Training Process, Step by Step
 
 Rejection sampling overall follows a few stages.
 
@@ -49,7 +49,7 @@ A visual overview of the rejection sampling process is included below in @fig:rs
 The actual details on which prompts to use, how to select a reward model, how to sequence rejection sampling, etc. are not well documented in the literature. 
 This chapter provides an overview of the methods and leaves further experimentation to the reader.
 
-### 1. Generating Completions
+### Generating Completions
 
 To generate a set of multiple candidate completions per prompt, let's define a set of $M$ prompts as a vector:
 
@@ -69,7 +69,7 @@ y_{M,1} & y_{M,2} & \cdots & y_{M,N}
 where $y_{i,j}$ represents the $j$-th completion for the $i$-th prompt.
 Each row $i$ corresponds to a single prompt $x_i$ and contains its $N$ candidate completions; each column $j$ corresponds to the $j$-th sampled completion across all prompts.
 
-### 2. Scoring Completions
+### Scoring Completions
 
 Now, we pass all of these prompt-completion pairs through a reward model, to get a matrix of rewards.
 We'll represent the rewards as a matrix $R$:
@@ -102,8 +102,8 @@ $$Y_{chosen} = [y_{1,S(R)_1}, y_{2,S(R)_2}, ..., y_{M,S(R)_M}]$$ {#eq:rs_chosen_
 
 
 #### Top Overall Pairs
-Alternatively, we can select the top K prompt-completion pairs from the entire set.
-First, let's flatten our reward matrix R into a single vector:
+Alternatively, we can select the top $K$ prompt-completion pairs from the entire set.
+First, let's flatten our reward matrix $R$ into a single vector:
 
 $$R_{flat} = [r_{1,1}, r_{1,2}, ..., r_{1,N}, r_{2,1}, r_{2,2}, ..., r_{2,N}, ..., r_{M,1}, r_{M,2}, ..., r_{M,N}]$$ {#eq:rs_flattened_rewards}
 
@@ -113,7 +113,7 @@ Now, we can define a selection function $S_K$ that selects the indices of the K 
 
 $$S_K(R_{flat}) = \text{argsort}(R_{flat})[-K:]$$ {#eq:rs_topk_selection}
 
-where $\text{argsort}$ returns the indices that would sort the array in ascending order, and we take the last K indices to get the K highest values.
+where $\text{argsort}$ returns the indices that would sort the array in ascending order, and we take the last $K$ indices to get the $K$ highest values.
 
 To get our selected completions, we need to map these flattened indices back to our original completion matrix $Y$. 
 To recover the corresponding prompt-completion pair, you can map a zero-indexed flattened index $k$ to $(i,j)$ via $i = \lfloor k / N \rfloor + 1$ and $j = (k \bmod N) + 1$.
@@ -203,7 +203,7 @@ np.allclose(x, x_sorted[i_rev])
 np.allclose(x, x_sorted[np.argsort(sorted_indices)])
 ```
 
-### 3. Fine-tuning
+### Fine-Tuning
 
 With the selected completions, you then perform standard instruction fine-tuning on the current version of the model.
 More details can be found in the [chapter on instruction tuning](https://rlhfbook.com/c/04-instruction-tuning).
@@ -228,12 +228,12 @@ Instead, BoN computes the best possible completion to a static prompt (or set of
 
 Best-of-N sampling is often included as a baseline relative to RLHF training methods.
 It is important to remember that BoN *does not* modify the underlying model, but is a sampling technique. 
-For this reason, comparisons for BoN sampling to online training methods, such as PPO, are still valid in some contexts.
+For this reason, comparisons of BoN sampling to online training methods, such as PPO, are still valid in some contexts.
 For example, you can still measure the KL distance when running BoN sampling relative to any other policy.
 
 Here, we will show that when using simple BoN sampling over one prompt, both selection criteria shown above are equivalent.
 
-Let R be a reward vector for our single prompt with N completions:
+Let $R$ be a reward vector for our single prompt with $N$ completions:
 
 $$R = [r_1, r_2, ..., r_N]$$ {#eq:rewards_vector}
 
@@ -244,3 +244,44 @@ Using the argmax method, we select the best completion for the prompt:
 $$S(R) = \arg\max_{j \in [1,N]} r_j$$ {#eq:selection_function}
 
 Using the top-K method with $K=1$ reduces to the same method, which is common practice.
+
+## Suggested Experiments
+
+The companion implementation in `code/rejection_sampling/` runs a complete GSM8K rejection-sampling pipeline: generate rollouts, score them with a reward model, select a training subset, fine-tune, and evaluate exact-match accuracy.
+The four configs are arranged as matched treatment/control pairs, so readers can ask whether the reward model is actually helping.
+
+1. **Build the rollout cache once.**
+
+   ```bash
+   cd code/
+   uv run python -m rejection_sampling.preprocess \
+       --config rejection_sampling/configs/top_per_prompt.yaml
+   ```
+
+   This generates and scores completions for the shared GSM8K slice.
+   Subsequent training configs reuse the cache as long as the generation and scoring settings stay unchanged.
+
+2. **Compare reward selection against random controls.**
+
+   ```bash
+   cd code/
+   uv run python -m rejection_sampling.train \
+       --config rejection_sampling/configs/top_per_prompt.yaml
+   uv run python -m rejection_sampling.train \
+       --config rejection_sampling/configs/random_per_prompt.yaml
+   uv run python -m rejection_sampling.train \
+       --config rejection_sampling/configs/top_k_overall.yaml
+   uv run python -m rejection_sampling.train \
+       --config rejection_sampling/configs/random_k_overall.yaml
+   ```
+
+   Read results in matched pairs: `top_per_prompt` versus `random_per_prompt`, and `top_k_overall` versus `random_k_overall`.
+   If the reward-selected run does not beat its random baseline, the reward model or sampled completions are not giving useful signal on that slice.
+
+3. **Vary how much choice the reward model gets.**
+   Copy one config and change `num_completions_per_prompt`, `temperature`, `top_p`, and `selection.top_k`.
+   More completions can improve the best available sample, but only if the reward model can separate good and bad answers.
+
+4. **Try a smaller policy model.**
+   Set `model_name` to a smaller compatible instruct model, reduce `max_train_samples`, and rerun the same matched pairs.
+   This makes the experiment cheaper and highlights whether rejection sampling is rescuing weak generations or merely selecting among already-good ones.

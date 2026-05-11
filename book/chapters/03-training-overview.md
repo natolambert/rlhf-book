@@ -5,11 +5,11 @@
   Full license: https://github.com/natolambert/rlhf-book/blob/main/LICENSE-CHAPTERS
 -->
 ---
-prev-chapter: "Key Related Works"
+prev-chapter: "A Tiny History of RLHF"
 prev-url: "02-related-works"
 page-title: Training Overview
 search-title: "Chapter 3: Training Overview"
-next-chapter: "Instruction Tuning"
+next-chapter: "Instruction Fine-Tuning"
 next-url: "04-instruction-tuning"
 lectures:
   - video: "https://www.youtube.com/watch?v=o6l6tJQgUg4&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=2"
@@ -39,7 +39,7 @@ $$p_{\pi}(\tau)=\rho_0(s_0)\prod_{t=0}^{T-1}\pi(a_t\mid s_t)\,p(s_{t+1}\mid s_t,
 
 Across a finite episode with horizon $T$, the goal of an RL agent is to solve the following optimization, where $\gamma$ is a discount factor from 0 to 1 that balances the desirability of near-term versus future rewards:
 
-$$\max_\pi \; \mathbb{E}_{\tau \sim p_{\pi}} \left[ \sum_{t=0}^{T-1} \gamma^t r(s_t, a_t) \right],$$ {#eq:rl_opt}
+$$\max_\pi \; \mathbb{E}_{\tau \sim p_{\pi}} \left[ \sum_{t=0}^{T-1} \gamma^t r(s_t, a_t) \right].$$ {#eq:rl_opt}
 
 The expected return for a given policy is often denoted $J(\pi)$, with the optimal value written $J^* = \max_\pi J(\pi)$.
 
@@ -59,7 +59,7 @@ The thermostat example has the following components (see @fig:thermostat-equatio
 - **State ($s_t$)**: the current room temperature, e.g. 65$^\circ$F.
 - **Action ($a_t$)**: turn the heater on or off.
 - **Reward ($r$)**: +1 when the temperature is within 2$^\circ$ of the target, 0 otherwise.
-- **Policy ($\pi$)**: the rule that decides whether to turn the heater on or off given the current temperature. One policy the thermostat might learn, which may not be optimal depending on the exact transition dynamics of the environment:
+- **Policy ($\pi$)**: the rule that decides whether to turn the heater on or off given the current temperature. Here is one policy the thermostat might learn, which may not be optimal depending on the exact transition dynamics of the environment:
 
 $$\pi(a_t = \text{on} \mid s_t) = \begin{cases} 1 & \text{if } s_t < 70^{\circ}\text{F} \\ 0 & \text{otherwise} \end{cases}$$ {#eq:thermostat_policy}
 
@@ -67,18 +67,18 @@ $$\pi(a_t = \text{on} \mid s_t) = \begin{cases} 1 & \text{if } s_t < 70^{\circ}\
 
 ![Each term in the trajectory distribution (@eq:rl_dynam) mapped to the thermostat RL example.](images/thermostat_equation.png){#fig:thermostat-equation .center}
 
-Initially, the thermostat's policy is essentially random -- it flips the heater on and off with no regard for the current temperature, and the room swings wildly.
+Initially, the thermostat's policy is essentially random -- it flips the heater on and off with no regard for the current temperature, and the room's temperature swings wildly.
 Over many episodes of trial and error, the agent discovers that turning the heater on when the room is cold and off when it is warm leads to more reward, and gradually converges on a sensible policy.
 This is the core RL loop: observe a state, choose an action, receive a reward, and update the policy to get more reward over time.
 
-### Example RL Task: CartPole
+### Classic RL Example: CartPole
 
 For a richer example with continuous dynamics, consider the classic *CartPole* (inverted pendulum) control task, which appears in many RL textbooks, courses, and even research papers.
-Where the thermostat had a single state variable and a binary action, CartPole involves four continuous state variables and physics-based transitions -- making it a standard benchmark for RL algorithms.
+Whereas the thermostat had a single state variable and a binary action, CartPole involves four continuous state variables and physics-based transitions -- making it a standard benchmark for RL algorithms.
 
 ![CartPole environment showing state variables ($x$, $\dot{x}$, $\theta$, $\dot{\theta}$) and actions ($\pm F$).](images/cartpole.png){#fig:cartpole width=400px .center}
 
-- **State ($s_t$)**: the cart position/velocity and pole angle/angular velocity,
+- **State ($s_t$)**: the cart position/velocity and pole angle/angular velocity:
 
   $$s_t = (x_t,\,\dot{x}_t,\,\theta_t,\,\dot{\theta}_t).$$ {#eq:cartpole_state}
 
@@ -86,7 +86,7 @@ Where the thermostat had a single state variable and a binary action, CartPole i
 
 - **Reward ($r$)**: a simple reward is $r_t = 1$ each step the pole remains balanced and the cart stays on the track (e.g. $|x_t| \le 2.4$ and $|\theta_t| \le 12^\circ$), and the episode terminates when either bound is violated.
 
-- **Dynamics / transition ($p(s_{t+1}\mid s_t,a_t)$)**: in many environments the dynamics are deterministic (so $p$ is a point mass) and can be written as $s_{t+1} = f(s_t,a_t)$ via Euler integration with step size $\Delta t$. A standard simplified CartPole update uses constants cart mass $m_c$, pole mass $m_p$, pole half-length $l$, and gravity $g$ ($\alpha$ is a mass-normalized intermediate with acceleration units):
+- **Dynamics / transition ($p(s_{t+1}\mid s_t,a_t)$)**: in many environments the dynamics are deterministic (so $p$ is a point mass) and can be written as $s_{t+1} = f(s_t,a_t)$ via Euler integration with step size $\Delta t$. A standard simplified CartPole update uses the constants cart mass $m_c$, pole mass $m_p$, pole half-length $l$, and gravity $g$ ($\alpha$ is a mass-normalized intermediate with acceleration units):
 
   $$\alpha = \frac{a_t + m_p l\,\dot{\theta}_t^2\sin\theta_t}{m_c + m_p}$$ {#eq:cartpole_temp}
 
@@ -128,7 +128,7 @@ In many ways, the result is that while RLHF is heavily inspired by RL optimizers
 
 ![Standard RLHF loop](images/rlhf.png){#fig:rlhf}
 
-### Fine-tuning and Regularization
+### Fine-Tuning and Regularization
 
 In traditional RL problems, the agent must learn from a randomly initialized policy, but with RLHF, we start from a strong pretrained base model with many initial capabilities.
 This strong prior for RLHF induces a need to prevent the optimization from drifting too far from the initial policy.
@@ -147,7 +147,7 @@ For more details, see Chapter 15 on Regularization.
 In this book, we detail many popular techniques for solving this optimization problem.
 The popular tools of post-training include:
 
-- **Reward modeling** (Chapter 5): Where a model is trained to capture the signal from collected preference data and can then output a scalar reward indicating the quality of future text.
+- **Reward modeling** (Chapter 5): A model is trained to capture the signal from collected preference data and can then output a scalar reward indicating the quality of future text.
 - **Instruction fine-tuning** (Chapter 4): A prerequisite to RLHF where models are taught the question-answer format used in the majority of language modeling interactions today by imitating preselected examples.
 - **Rejection sampling** (Chapter 9): The most basic RLHF technique where candidate completions for instruction fine-tuning are filtered by a reward model imitating human preferences.
 - **Policy gradients** (Chapter 6): The reinforcement learning algorithms used in the seminal examples of RLHF to update parameters of a language model with respect to the signal from a reward model.
@@ -155,17 +155,17 @@ The popular tools of post-training include:
 
 Modern RLHF-trained models always utilize instruction fine-tuning followed by a mixture of the other optimization options.
 
-## Subtle Advantages of RL in Post-Training Language Models
+### Subtle Advantages of RL in Post-Training Language Models
 
 In the following chapters, we cover many optimization tools for post-training.
-Plenty of them, such as rejection sampling (Chapter 9) and direct alignment algorithms like DPO (Chapter 8) are far simpler than getting RL working. 
+Plenty of them, such as rejection sampling (Chapter 9) and direct alignment algorithms like DPO (Chapter 8), are far simpler than getting RL working.
 Still, despite the simplicity of alternatives, RL-based methods continue to win out.
-Some trends, such as the inference-time scaling with reinforcement learning from verifiable rewards (RLVR) are obvious, but RL has turned out to be a well-suited optimization tool for language models.
-Implementing RL requires a far larger investment infrastructure relative to instruction tuning or DPO-like algorithms, but to risk being overly colloquial -- the gradient updates it provides "generally help the model a lot." 
+Some trends, such as the inference-time scaling with reinforcement learning with verifiable rewards (RLVR), are obvious, but RL has turned out to be a well-suited optimization tool for language models.
+Implementing RL requires a far larger infrastructure investment relative to instruction tuning or DPO-like algorithms, but, at the risk of being overly colloquial, the gradient updates it provides "generally help the model a lot."
 This is hard to quantify, but comes in a few recurring forms:
 
-- RL stages can "fix" rough edges on the model, making them easier to chat with or more robust (this could come by training them to have numerical stability with inference tools like vLLM). The exact reason for this is not well-known in the literature, but its truth is reflected in the only growing presence of RL today.
-- RL can be done surgically — the model does a good job learning where the prompt distribution lies, and RL tends to not "squash" the general capabilities of the model. A good example of this is Tülu 3 being trained with RL only on math prompts, while maintaining capabilities across a broad task suite [@lambert2024t].
+- RL stages can "fix" rough edges on the model, making the model easier to chat with or more robust (this could come by training it to have numerical stability with inference tools like vLLM). The exact reason for this is not well-known in the literature, but its truth is reflected in the growing presence of RL today.
+- RL can be done surgically — the model does a good job of learning where the prompt distribution lies, and RL tends to not "squash" the general capabilities of the model. A good example of this is Tülu 3 being trained with RL only on math prompts, while maintaining capabilities across a broad task suite [@lambert2024t].
 
 Overall, RL losses on language models are robust, scalable, effective, and flexible, which opened large new fields of experimentation. 
 The original method that started us down this path was RLHF work.
@@ -184,7 +184,7 @@ The three steps taken on top of a "base" language model (the next-token predicti
 
 1. **Instruction tuning on ~10K examples**: This teaches the model to follow the question-answer format and teaches some basic skills from primarily human-written data.
 2. **Training a reward model on ~100K pairwise prompts** (paper used 33K prompts): This model is trained from the instruction-tuned checkpoint and captures the diverse values one wishes to model in their final training. The reward model is the optimization target for RLHF.
-3. **Training the instruction-tuned model with RLHF on a separate ~100K prompts** (paper used exactly 31K, undocumented if or to what extent prompts are re-used from other stages): The model is optimized against the reward model with a likely separate set of prompts, where it generates responses before receiving ratings.
+3. **Training the instruction-tuned model with RLHF on a separate ~100K prompts** (paper used exactly 31K and does not document whether prompts were reused from other stages): The model is optimized against the reward model with a likely separate set of prompts, where it generates responses before receiving ratings.
 
 Once RLHF was done, the model was ready to be deployed to users. This recipe is the foundation of modern RLHF, but recipes have evolved substantially to include more stages and more data.
 
@@ -198,8 +198,8 @@ An example is shown below in @fig:rlhf-complex where the model undergoes numerou
 ![A rendition of modern post-training with many rounds.](images/rlhf-complex.png){#fig:rlhf-complex}
 
 The most complex models trained in this era and onwards have not released full details of their training process.
-Leading models such as ChatGPT or Claude circa 2025 involve many, iterative rounds of training.
-This can even include techniques that train specialized models and then merge the weights together to get a final model capable on many subtasks [@li2022branch] (e.g. Cohere's Command A [@cohere2025command]).
+Leading models such as ChatGPT or Claude by 2026 involve many iterative rounds of training.
+This can even include techniques that train specialized models and then merge the weights together to get a final model capable of many subtasks [@li2022branch] (e.g. Cohere's Command A [@cohere2025command]).
 
 ![A summary of the Tülu 3 recipe with target skills and multi-step training recipe. Lambert et al. 2024, License CC-BY.](images/tulu3.png){#fig:tulu-3}
 
@@ -218,7 +218,7 @@ With the rise of reasoning language models, such as OpenAI's o1, the best practi
 The clearest documentation of a reasoning model post-training recipe is DeepSeek R1 [@guo2025deepseek], which has been mirrored by Alibaba's larger Qwen 3 models (i.e. only the 32B and 225B MoE models) [@yang2025qwen3] or Xiaomi's MiMo 7B [@xia2025mimo].
 The DeepSeek recipe follows:
 
-1. **"Cold-start" of 100K+ on-policy reasoning samples**: This data is sampled from an earlier RL checkpoint, R1-Zero, and heavily filtered to instill a specific reasoning process on DeepSeek-V3-Base. DeepSeek uses the term cold-start to describe how RL is learned from little supervised data.
+1. **"Cold-start" with 100K+ on-policy reasoning samples**: This data is sampled from an earlier RL checkpoint, R1-Zero, and heavily filtered to instill a specific reasoning process on DeepSeek-V3-Base. DeepSeek uses the term cold-start to describe how RL is learned from little supervised data.
 2. **Large-scale reinforcement learning training**: This stage repeatedly covers reasoning problems with the model, running RLVR "until convergence" on a variety of benchmarks.
 3. **Rejection sampling and SFT**: Near convergence, they apply rejection sampling to the RL checkpoint to build an SFT dataset of ~800K samples, then fine-tune the model on a filtered mix of roughly 3/4 reasoning problems and 1/4 general queries to produce a general-purpose model.
 4. **Mixed reinforcement learning training** on reasoning problems (verifiable rewards) with general preference tuning reward models to polish the model.
