@@ -4,6 +4,7 @@ from typing import Iterator
 import torch
 from reasoning_gym.dataset import ProceduralDataset
 from reasoning_gym.utils import SYSTEM_PROMPTS
+from rich.text import Text
 from torch.utils.data import DataLoader
 from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
 
@@ -12,7 +13,7 @@ from .config import Config
 from .utils import (
     apply_reward_kl,
     compute_advantages,
-    compute_log_probs,
+    compute_log_probs_entropy,
     compute_rewards,
     compute_values,
     print_rollout_sample,
@@ -128,10 +129,11 @@ class RolloutEngine:
         completion_ids = sequence_ids[:, model_inputs["input_ids"].shape[1] :]
         completions = self.tokenizer.batch_decode(completion_ids, skip_special_tokens=True)
 
+        sample_idx = random.randrange(len(completions))
         self.print_sample = {
             "question": entry["question"],
             "answer": str(entry["answer"]),
-            "completion": random.choice(completions),
+            "completion": completions[sample_idx],
         }
 
         action_mask = torch.zeros_like(sequence_ids, dtype=torch.bool)
@@ -143,9 +145,21 @@ class RolloutEngine:
 
         rewards = compute_rewards(entries, completions, lens, self.dataset, self.cfg, device)
 
-        log_probs_old = compute_log_probs(self.model, sequence_ids, attention_mask)
-        log_probs_ref = compute_log_probs(self.ref_model, sequence_ids, attention_mask)
+        log_probs_old, old_entropy = compute_log_probs_entropy(
+            self.model, sequence_ids, attention_mask
+        )
+        log_probs_ref, _ = compute_log_probs_entropy(self.ref_model, sequence_ids, attention_mask)
         values_old = compute_values(self.val_model, sequence_ids, attention_mask)
+
+        if self.cfg.max_entropy_tokens != -1 and old_entropy is not None:
+            tok_ids = sequence_ids[sample_idx, 1:][action_mask[sample_idx]]
+            tok_ent = old_entropy[sample_idx][action_mask[sample_idx]].float()
+            threshold = torch.quantile(tok_ent, 1.0 - self.cfg.max_entropy_tokens / 100.0)
+            rich_text = Text()
+            for tid, ent in zip(tok_ids.tolist(), tok_ent.tolist(), strict=True):
+                token_str = self.tokenizer.decode([tid])
+                rich_text.append(token_str, style="bold yellow" if ent >= threshold else "")
+            self.print_sample["completion_rich"] = rich_text
 
         rewards = apply_reward_kl(rewards, log_probs_old, log_probs_ref, action_mask, self.cfg)
         advantages = compute_advantages(rewards, action_mask, values_old, self.cfg)
@@ -158,6 +172,7 @@ class RolloutEngine:
             log_probs_old=log_probs_old,
             log_probs_ref=log_probs_ref,
             values_old=values_old,
+            entropy_old=old_entropy,
             advantages=advantages,
         ).to(self.cpu_device)
 

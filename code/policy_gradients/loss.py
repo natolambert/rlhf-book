@@ -75,6 +75,20 @@ def get_approx_kl(
     raise ValueError(f"Unsupported kl_estimator: {kl_estimator}")
 
 
+def get_high_entropy_mask(
+    entropy: torch.Tensor,
+    action_mask: torch.Tensor,
+    top_pct: float,
+) -> torch.Tensor:
+    """Return a mask restricted to the top-pct% highest-entropy tokens within action_mask.
+
+    Threshold is computed batch-wide over all unmasked positions (Wang et al., 2025).
+    """
+    flat_entropy = entropy[action_mask.bool()]
+    threshold = torch.quantile(flat_entropy, 1.0 - top_pct / 100.0)
+    return action_mask & (entropy >= threshold)
+
+
 def masked_mean(
     tensor: torch.Tensor,
     mask: torch.Tensor | None,
@@ -98,15 +112,30 @@ class GRPOLoss(nn.Module):
     """
 
     def __init__(
-        self, clip_eps_lo: float, clip_eps_hi: float, beta: float, kl_estimator: str, **kwargs
+        self,
+        clip_eps_lo: float,
+        clip_eps_hi: float,
+        beta: float,
+        kl_estimator: str,
+        max_entropy_tokens: int = -1,
+        **kwargs,
     ) -> None:
         super().__init__()
         self.clip_eps_lo = clip_eps_lo
         self.clip_eps_hi = clip_eps_hi
         self.beta = beta
         self.kl_estimator = kl_estimator
+        self.max_entropy_tokens = max_entropy_tokens
 
-    def forward(self, log_probs: torch.Tensor, experience: Experience, **kwargs) -> torch.Tensor:
+    def forward(
+        self, log_probs: torch.Tensor, entropy: torch.Tensor, experience: Experience, **kwargs
+    ) -> torch.Tensor:
+        eff_mask = (
+            get_high_entropy_mask(entropy, experience.action_mask, self.max_entropy_tokens)
+            if self.max_entropy_tokens != -1
+            else experience.action_mask
+        )
+
         # Policy loss with clipping
         ratio = (log_probs - experience.log_probs_old).exp()
         unclipped_term = ratio * experience.advantages
@@ -124,7 +153,7 @@ class GRPOLoss(nn.Module):
             kl_loss = torch.tensor(0.0, device=log_probs.device, dtype=torch.float32)
 
         loss = policy_loss + self.beta * kl_loss
-        loss = masked_mean(loss, mask=experience.action_mask, dim=-1).mean(dim=0)
+        loss = masked_mean(loss, mask=eff_mask, dim=-1).mean(dim=0)
         return loss
 
 
@@ -135,18 +164,36 @@ class GSPOLoss(nn.Module):
     """
 
     def __init__(
-        self, clip_eps_lo: float, clip_eps_hi: float, beta: float, kl_estimator: str, **kwargs
+        self,
+        clip_eps_lo: float,
+        clip_eps_hi: float,
+        beta: float,
+        kl_estimator: str,
+        max_entropy_tokens: int = -1,
+        **kwargs,
     ) -> None:
         super().__init__()
         self.clip_eps_lo = clip_eps_lo
         self.clip_eps_hi = clip_eps_hi
         self.beta = beta
         self.kl_estimator = kl_estimator
+        self.max_entropy_tokens = max_entropy_tokens
 
-    def forward(self, log_probs: torch.Tensor, experience: Experience, **kwargs) -> torch.Tensor:
-        # Sequence-level ratio (average log prob difference)
+    def forward(
+        self, log_probs: torch.Tensor, entropy: torch.Tensor, experience: Experience, **kwargs
+    ) -> torch.Tensor:
+        eff_mask = (
+            get_high_entropy_mask(entropy, experience.action_mask, self.max_entropy_tokens)
+            if self.max_entropy_tokens != -1
+            else experience.action_mask
+        )
+
+        # Sequence-level ratio uses the full action mask (sequence boundary is unchanged)
         seq_logprobs = masked_mean(
-            log_probs - experience.log_probs_old, mask=experience.action_mask, dim=-1, keepdim=True
+            log_probs - experience.log_probs_old,
+            mask=experience.action_mask,
+            dim=-1,
+            keepdim=True,
         ).exp()
         unclipped_term = seq_logprobs * experience.advantages
         clipped_term = (
@@ -163,7 +210,7 @@ class GSPOLoss(nn.Module):
             kl_loss = torch.tensor(0.0, device=log_probs.device, dtype=torch.float32)
 
         loss = policy_loss + self.beta * kl_loss
-        loss = masked_mean(loss, mask=experience.action_mask, dim=-1).mean(dim=0)
+        loss = masked_mean(loss, mask=eff_mask, dim=-1).mean(dim=0)
         return loss
 
 
@@ -174,12 +221,20 @@ class ReinforceLoss(nn.Module):
     See Chapter 6 of RLHF Book for derivation from the policy gradient theorem.
     """
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, max_entropy_tokens: int = -1, **kwargs) -> None:
         super().__init__()
+        self.max_entropy_tokens = max_entropy_tokens
 
-    def forward(self, log_probs: torch.Tensor, experience: Experience, **kwargs) -> torch.Tensor:
+    def forward(
+        self, log_probs: torch.Tensor, entropy: torch.Tensor, experience: Experience, **kwargs
+    ) -> torch.Tensor:
+        eff_mask = (
+            get_high_entropy_mask(entropy, experience.action_mask, self.max_entropy_tokens)
+            if self.max_entropy_tokens != -1
+            else experience.action_mask
+        )
         loss = -(log_probs * experience.advantages)
-        loss = masked_mean(loss, mask=experience.action_mask, dim=-1).mean(dim=0)
+        loss = masked_mean(loss, mask=eff_mask, dim=-1).mean(dim=0)
         return loss
 
 
@@ -190,12 +245,20 @@ class MaxRLLoss(nn.Module):
         r = correctness * format
     """
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, max_entropy_tokens: int = -1, **kwargs) -> None:
         super().__init__()
+        self.max_entropy_tokens = max_entropy_tokens
 
-    def forward(self, log_probs: torch.Tensor, experience: Experience, **kwargs) -> torch.Tensor:
+    def forward(
+        self, log_probs: torch.Tensor, entropy: torch.Tensor, experience: Experience, **kwargs
+    ) -> torch.Tensor:
+        eff_mask = (
+            get_high_entropy_mask(entropy, experience.action_mask, self.max_entropy_tokens)
+            if self.max_entropy_tokens != -1
+            else experience.action_mask
+        )
         loss = -(log_probs * experience.advantages)
-        loss = masked_mean(loss, mask=experience.action_mask, dim=-1).mean(dim=0)
+        loss = masked_mean(loss, mask=eff_mask, dim=-1).mean(dim=0)
         return loss
 
 
@@ -207,15 +270,30 @@ class CISPOLoss(nn.Module):
     """
 
     def __init__(
-        self, clip_eps_lo: float, clip_eps_hi: float, beta: float, kl_estimator: str, **kwargs
+        self,
+        clip_eps_lo: float,
+        clip_eps_hi: float,
+        beta: float,
+        kl_estimator: str,
+        max_entropy_tokens: int = -1,
+        **kwargs,
     ) -> None:
         super().__init__()
         self.clip_eps_lo = clip_eps_lo
         self.clip_eps_hi = clip_eps_hi
         self.beta = beta
         self.kl_estimator = kl_estimator
+        self.max_entropy_tokens = max_entropy_tokens
 
-    def forward(self, log_probs: torch.Tensor, experience: Experience, **kwargs) -> torch.Tensor:
+    def forward(
+        self, log_probs: torch.Tensor, entropy: torch.Tensor, experience: Experience, **kwargs
+    ) -> torch.Tensor:
+        eff_mask = (
+            get_high_entropy_mask(entropy, experience.action_mask, self.max_entropy_tokens)
+            if self.max_entropy_tokens != -1
+            else experience.action_mask
+        )
+
         # Stop gradient on clipped ratio
         with torch.no_grad():
             ratio = (log_probs - experience.log_probs_old).exp()
@@ -231,7 +309,7 @@ class CISPOLoss(nn.Module):
             kl_loss = torch.tensor(0.0, device=log_probs.device, dtype=torch.float32)
 
         loss = policy_loss + self.beta * kl_loss
-        loss = masked_mean(loss, mask=experience.action_mask, dim=-1).mean(dim=0)
+        loss = masked_mean(loss, mask=eff_mask, dim=-1).mean(dim=0)
         return loss
 
 
@@ -244,15 +322,30 @@ class SAPOLoss(nn.Module):
     """
 
     def __init__(
-        self, sapo_temp_pos: float, sapo_temp_neg: float, beta: float, kl_estimator: str, **kwargs
+        self,
+        sapo_temp_pos: float,
+        sapo_temp_neg: float,
+        beta: float,
+        kl_estimator: str,
+        max_entropy_tokens: int = -1,
+        **kwargs,
     ) -> None:
         super().__init__()
         self.sapo_temp_pos = sapo_temp_pos
         self.sapo_temp_neg = sapo_temp_neg
         self.beta = beta
         self.kl_estimator = kl_estimator
+        self.max_entropy_tokens = max_entropy_tokens
 
-    def forward(self, log_probs: torch.Tensor, experience: Experience, **kwargs) -> torch.Tensor:
+    def forward(
+        self, log_probs: torch.Tensor, entropy: torch.Tensor, experience: Experience, **kwargs
+    ) -> torch.Tensor:
+        eff_mask = (
+            get_high_entropy_mask(entropy, experience.action_mask, self.max_entropy_tokens)
+            if self.max_entropy_tokens != -1
+            else experience.action_mask
+        )
+
         # Token-level importance ratio
         ratio = (log_probs - experience.log_probs_old).exp()
 
@@ -272,7 +365,7 @@ class SAPOLoss(nn.Module):
             kl_loss = torch.tensor(0.0, device=log_probs.device, dtype=torch.float32)
 
         loss = policy_loss + self.beta * kl_loss
-        loss = masked_mean(loss, mask=experience.action_mask, dim=-1).mean(dim=0)
+        loss = masked_mean(loss, mask=eff_mask, dim=-1).mean(dim=0)
         return loss
 
 
@@ -289,6 +382,7 @@ class PPOLoss(nn.Module):
         clip_eps_hi: float,
         clip_eps_val: float,
         vf_coef: float,
+        max_entropy_tokens: int = -1,
         **kwargs,
     ) -> None:
         super().__init__()
@@ -296,10 +390,22 @@ class PPOLoss(nn.Module):
         self.clip_eps_hi = clip_eps_hi
         self.clip_eps_val = clip_eps_val
         self.vf_coef = vf_coef
+        self.max_entropy_tokens = max_entropy_tokens
 
     def forward(
-        self, log_probs: torch.Tensor, experience: Experience, values: torch.Tensor, **kwargs
+        self,
+        log_probs: torch.Tensor,
+        entropy: torch.Tensor,
+        experience: Experience,
+        values: torch.Tensor,
+        **kwargs,
     ) -> torch.Tensor:
+        eff_mask = (
+            get_high_entropy_mask(entropy, experience.action_mask, self.max_entropy_tokens)
+            if self.max_entropy_tokens != -1
+            else experience.action_mask
+        )
+
         # Value loss with clipping
         values = values.to(log_probs.device)
         returns = (
@@ -323,7 +429,7 @@ class PPOLoss(nn.Module):
         policy_loss = -torch.min(policy_unclipped_term, policy_clipped_term)
 
         loss = policy_loss + self.vf_coef * val_loss
-        loss = masked_mean(loss, mask=experience.action_mask, dim=-1).mean(dim=0)
+        loss = masked_mean(loss, mask=eff_mask, dim=-1).mean(dim=0)
         return loss
 
 
@@ -334,12 +440,23 @@ class DAPOLoss(nn.Module):
     (Clip-Higher), and no KL penalty. See Section 3 of the DAPO paper.
     """
 
-    def __init__(self, clip_eps_lo: float, clip_eps_hi: float, **kwargs) -> None:
+    def __init__(
+        self, clip_eps_lo: float, clip_eps_hi: float, max_entropy_tokens: int = -1, **kwargs
+    ) -> None:
         super().__init__()
         self.clip_eps_lo = clip_eps_lo
         self.clip_eps_hi = clip_eps_hi
+        self.max_entropy_tokens = max_entropy_tokens
 
-    def forward(self, log_probs: torch.Tensor, experience: Experience, **kwargs) -> torch.Tensor:
+    def forward(
+        self, log_probs: torch.Tensor, entropy: torch.Tensor, experience: Experience, **kwargs
+    ) -> torch.Tensor:
+        eff_mask = (
+            get_high_entropy_mask(entropy, experience.action_mask, self.max_entropy_tokens)
+            if self.max_entropy_tokens != -1
+            else experience.action_mask
+        )
+
         # Policy loss with clipping
         ratio = (log_probs - experience.log_probs_old).exp()
         unclipped_term = ratio * experience.advantages
@@ -347,7 +464,7 @@ class DAPOLoss(nn.Module):
             ratio.clamp(1 - self.clip_eps_lo, 1 + self.clip_eps_hi) * experience.advantages
         )
         per_token_loss = -torch.min(unclipped_term, clipped_term)
-        mask = experience.action_mask.to(per_token_loss.dtype)
+        mask = eff_mask.to(per_token_loss.dtype)
         total_tokens = mask.sum().clamp(1e-8)
         total_loss = (per_token_loss * mask).sum()
         return total_loss / total_tokens

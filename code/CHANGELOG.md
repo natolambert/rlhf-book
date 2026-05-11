@@ -5,6 +5,7 @@ On release, entries get moved under a version heading.
 
 ## Unreleased
 
+- 2026-05-05: [PR #398](https://github.com/natolambert/rlhf-book/pull/398) Added the implementation for Beyond the 80/20 Rule: High-Entropy Minority Tokens Drive Effective Reinforcement Learning for LLM Reasoning
 - 2026-05-11: [PR #417](https://github.com/natolambert/rlhf-book/pull/417) documented reader experiment paths for the code examples, added agent guidance for running small RLHF Book experiments, and expanded contributor notes for adding new modules.
 - 2026-05-06: [PR #400](https://github.com/natolambert/rlhf-book/pull/400) added `dpo_norm` variant in direct-alignment that applies standard DPO with average response log-probs for both policy and reference model.
 - 2026-05-05: [PR #396](https://github.com/natolambert/rlhf-book/pull/396) added lightweight import and CLI smoke tests for the `code/` subpackages.
