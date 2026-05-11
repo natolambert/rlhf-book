@@ -25,17 +25,17 @@ When adding a new top-level code module, add its import path to `tests/test_impo
 
 Keep these tests lightweight: they should verify imports, entrypoint wiring, and tiny helper signatures only. They should not download datasets, load models, start training, or require GPUs.
 
-## Adding a New Module
+## Keeping Examples and Book Docs in Sync
 
-When adding a new top-level module under `code/`, update the surrounding repository metadata so readers, agents, and CI can find it:
+When changing a runnable example, config, metric, or recommended command under `policy_gradients/`, `direct_alignment/`, `reward_models/`, or `rejection_sampling/`, check the connected documentation before submitting:
 
-- `code/pyproject.toml`: add the package to `[tool.setuptools.packages.find].include`, add any new dependencies, and add a `[project.scripts]` entry if the module has a CLI.
-- `code/README.md`: add the module to the overview, quick-start commands, reader experiment path, and chapter mapping if it is user-facing.
-- `code/CLAUDE.md`: add the module to the task map and quick-start list so coding agents know where to start. `code/AGENTS.md` is a symlink to this file, so do not create a separate copy.
-- `code/<module>/README.md`: document the purpose, status, quick start, configs, expected metrics, memory notes, and reference runs if validated.
-- `code/<module>/configs/`: include at least one small, runnable config when the module uses YAML configs.
-- `code/tests/test_import_smoke.py`: add import coverage and CLI `--help` coverage for new entrypoints.
-- `code/CHANGELOG.md`: add one `## Unreleased` bullet for the PR.
-- Book chapter docs: if the module supports a chapter exercise, link it from the relevant chapter's "Suggested Experiments" section.
+- Update the module README if commands, configs, expected metrics, memory notes, status, or reference runs changed.
+- Update `code/README.md` if the reader experiment path, quick-start commands, or chapter mapping changed.
+- Update `code/CLAUDE.md` if agent-facing task guidance or run workflow changed. `code/AGENTS.md` is a symlink to this file, so do not create a separate copy.
+- Update the connected book chapter's "Suggested Experiments" section if the reader-facing exercise changed.
+- Update `code/tests/test_import_smoke.py` if imports or CLI entrypoints changed.
+- Add one `## Unreleased` bullet in `code/CHANGELOG.md`.
+
+New top-level modules are rare, but when adding one also update `code/pyproject.toml` package/script metadata and add a module README plus a small runnable config if the module uses YAML configs.
 
 For long-running examples, document how to launch the run in the background and monitor it. Agent-facing instructions should explicitly say to use a background task plus monitor rather than a foreground command that may time out.
