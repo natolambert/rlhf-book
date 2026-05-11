@@ -324,3 +324,44 @@ Even with this performance delta, DAAs are still used extensively in leading mod
 DAAs provide a controlled environment where iterations on training data and other configurations can be made rapidly, and given that data is often far more important than algorithms, using DPO can be fine.
 
 With the emergence of reasoning models that are primarily trained with RL, further investment will return to using RL for preference-tuning, which in the long-term will improve the robustness of RL infrastructure and cement this margin between DAAs and RL for optimizing from human feedback.
+
+## Suggested Experiments
+
+The companion code in `code/direct_alignment/` trains DPO and several related losses on preference data.
+This is the most accessible place to start experimenting with preference tuning because the setup is offline: no reward model server or rollout loop is required.
+
+1. **Train a small DPO run on UltraFeedback.**
+
+   ```bash
+   cd code/
+   uv run python -m direct_alignment.train --loss dpo --max_samples 1000
+   ```
+
+   Watch `loss`, `accuracy`, `margins`, `chosen_rewards`, and `rejected_rewards`.
+   The main sanity check is that the implicit reward margin should move in the desired direction without the model's sample generations collapsing.
+
+2. **Compare DPO, IPO, and length-normalized DPO.**
+
+   ```bash
+   cd code/
+   uv run python -m direct_alignment.train --config direct_alignment/configs/dpo.yaml
+   uv run python -m direct_alignment.train --config direct_alignment/configs/ipo.yaml
+   uv run python -m direct_alignment.train --config direct_alignment/configs/dpo_norm.yaml
+   ```
+
+   Compare the margin scale and the learning rate sensitivity.
+   IPO's loss is not on the same numeric scale as DPO, so read it through `accuracy` and margin behavior rather than raw loss alone.
+
+3. **Try the reference-free variants carefully.**
+   Run SimPO or ORPO from their configs, then inspect the generated samples that are logged during training.
+   These losses are more sensitive to log-probability scaling and learning rate, which makes them useful debugging exercises.
+
+   ```bash
+   cd code/
+   uv run python -m direct_alignment.train --config direct_alignment/configs/simpo.yaml
+   uv run python -m direct_alignment.train --config direct_alignment/configs/orpo.yaml
+   ```
+
+4. **Change the data before changing the loss.**
+   Keep the loss fixed and vary `--max_samples`, `--max_length`, or the preference dataset.
+   If the results move more than changing between DPO-like objectives, that is an empirical reminder of a central theme in preference tuning: data usually dominates small algorithmic differences.

@@ -541,3 +541,36 @@ Examples of new benchmarks include:
 - **Multimodal:** MJ-Bench [@chen2024mj], Multimodal RewardBench [@yasunaga2025multimodal], VL RewardBench [@li2024vlrewardbench], or VLRMBench [@ruan2025vlrmbench].
 
 To understand progress on *training* reward models, one can reference new reward model training methods, with aspect-conditioned models [@wang2024interpretable], high-quality human datasets [@wang2024helpsteer2] [@wang2024helpsteer2p], scaling experiments [@adler2024nemotron], extensive experimentation [@touvron2023llama], or debiasing data [@park2024offsetbias].
+
+## Suggested Experiments
+
+The companion code repository includes small reward model training scripts in `code/reward_models/`.
+These are intended as learning exercises rather than tuned reference recipes.
+Start from a clean `code/` environment with `uv sync`, then run one experiment at a time.
+
+1. **Train a Bradley-Terry preference reward model on UltraFeedback.**
+   Run:
+
+   ```bash
+   cd code/
+   uv run python -m reward_models.train_preference_rm --samples 2000 --epochs 1
+   ```
+
+   Watch whether the reward margin between chosen and rejected responses grows in the demo and W&B logs.
+   Then vary `--samples`, `--lr`, and `--model-id` to see when the signal becomes noisy or unstable.
+
+2. **Compare outcome and process supervision.**
+   Run the GSM8K outcome reward model and the PRM800K process reward model:
+
+   ```bash
+   cd code/
+   uv run python -m reward_models.train_orm --samples 400 --epochs 2
+   uv run python -m reward_models.train_prm --samples 500 --epochs 2
+   ```
+
+   Compare what each model can score after training: the ORM should distinguish correct and incorrect final answers, while the PRM should assign scores across intermediate reasoning steps.
+   This is the practical version of the distinction between sequence-level, outcome-level, and process-level supervision.
+
+3. **Add a small held-out reward model eval.**
+   A useful contribution is a 50- to 200-example evaluation for `reward_models/` that reports accuracy or preference-pair ordering without requiring a full training run.
+   Keep the evaluation small enough that it can be used while tuning hyperparameters.
