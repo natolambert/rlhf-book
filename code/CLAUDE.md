@@ -3,7 +3,7 @@
 ## Claude Code Notes
 
 - **Always run Python commands with `uv run python`** (not bare `python`/`python3`) so the project environment is used consistently
-- **Always run training commands in background** using `run_in_background: true` to avoid blocking
+- **Always run training commands in background** using `run_in_background: true` to avoid blocking or hitting interactive timeouts. Start a monitor for the background task and check it from the Claude Code status bar (e.g. `[1 background task] [1 monitor]`) until you see the first metrics or failure.
 - **Be careful with parallel jobs**: Only run one training job at a time unless you verify memory is available. Running too many can OOM the system.
 - **If using a DGX Spark**: ~120GB unified CPU/GPU memory — aim for <80GB usage to be safe. Flash Attention is not available on ARM64/Blackwell; the code automatically falls back to PyTorch SDPA.
 - **Before finalizing changes under `code/`**, run `uvx ruff@0.14.5 check .`, `uvx ruff@0.14.5 format --check .`, and `uv run --extra dev pytest` — all are enforced by CI on PRs that touch `code/` (see `.github/workflows/lint.yml`). Use `uvx ruff@0.14.5 check --fix .` and `uvx ruff@0.14.5 format .` to auto-fix. Pin the ruff version to match CI; unpinned `uvx ruff` can diverge.
@@ -46,9 +46,10 @@ When a user asks for a runnable experiment, start from the closest maintained ex
 
 1. Read the module README and config before running anything.
 2. Start with the smallest command that can show signal (`--max_samples`, `--samples`, or a copied small YAML).
-3. Run one training job at a time unless GPU memory has been checked.
-4. Record the exact command, model, dataset slice, seed, changed config values, final metrics, and W&B link if enabled.
-5. If a run fails and the fix changes future workflow knowledge, update this file or the relevant skill so the next agent can find it.
+3. Launch long-running training/eval commands in the background, then attach a monitor and keep checking it. Do not leave a silent background run without confirming that logs, W&B, or metrics are moving.
+4. Run one training job at a time unless GPU memory has been checked.
+5. Record the exact command, model, dataset slice, seed, changed config values, final metrics, and W&B link if enabled.
+6. If a run fails and the fix changes future workflow knowledge, update this file or the relevant skill so the next agent can find it.
 
 ## Changelog Process
 

@@ -19,6 +19,7 @@ uv sync
 
 Start with one short run, confirm that the learning signal is visible, then sweep one variable at a time.
 If you do not want W&B logging, set `WANDB_MODE=disabled` or use the module-specific no-W&B option when available.
+If you are running these with a coding assistant, launch long training/eval commands in the background and monitor them; foreground runs can time out before they produce useful metrics.
 
 | Chapter | Starting experiment | Command | What to inspect |
 |---------|---------------------|---------|-----------------|

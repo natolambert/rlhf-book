@@ -25,8 +25,10 @@ Use this skill when the user wants to run, adapt, compare, or document an experi
    - Direct alignment: use `--max_samples` or copy a YAML with a smaller sample count.
    - Policy gradients: copy a YAML and reduce `data.size` before changing algorithm logic.
    - Rejection sampling: reduce `max_train_samples`, `max_test_samples`, or `num_completions_per_prompt` in a copied YAML.
-5. Run one training job at a time unless GPU memory has been checked.
-6. If W&B is not desired, set `WANDB_MODE=disabled` or use the module's no-W&B flag when available.
+5. For any long training, preprocessing, evaluation, or sweep command, launch the command in the background rather than the foreground. In Claude Code, use the background-run option for the shell command, then start a monitor for it.
+6. Watch the monitor until the run has produced initial logs or failed. The Claude Code status bar should show a background task and monitor (for example, `[1 background task] [1 monitor]`). Keep checking the monitor periodically for loss, metrics, W&B URLs, OOMs, dataset download errors, and stalled output.
+7. Run one training job at a time unless GPU memory has been checked.
+8. If W&B is not desired, set `WANDB_MODE=disabled` or use the module's no-W&B flag when available.
 
 ## What To Report
 
