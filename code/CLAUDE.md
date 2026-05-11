@@ -30,6 +30,26 @@ uv run python -m direct_alignment.train --config direct_alignment/configs/dpo.ya
 uv run python -m rejection_sampling.train --config rejection_sampling/configs/top_per_prompt.yaml
 ```
 
+## Task Map
+
+When a user asks for a runnable experiment, start from the closest maintained example:
+
+| User goal | Start here | Notes |
+|-----------|------------|-------|
+| "Run RL / GRPO / PPO" | `policy_gradients/README.md` and `policy_gradients/configs/*.yaml` | Default task is `spell_backward`; watch `avg_correctness`, `avg_format`, and group contrast. |
+| "Train a reward model" | `reward_models/README.md` | Preference RM uses UltraFeedback; ORM uses GSM8K; PRM uses PRM800K. These are experimental and need tuning. |
+| "Train DPO / IPO / SimPO / KTO" | `direct_alignment/README.md` and `direct_alignment/configs/*.yaml` | DPO/IPO/KTO/APO are validated; SimPO/ORPO are implemented but still marked noisy. |
+| "Try rejection sampling / best-of-N" | `rejection_sampling/README.md` and `rejection_sampling/configs/*.yaml` | Always compare each reward-selection config to its matched random baseline. |
+| "Use an agent skill" | `.claude/skills/run-rlhf-code-experiment/SKILL.md` | Use this for planning and reporting a small experiment run. |
+
+## Experiment Workflow
+
+1. Read the module README and config before running anything.
+2. Start with the smallest command that can show signal (`--max_samples`, `--samples`, or a copied small YAML).
+3. Run one training job at a time unless GPU memory has been checked.
+4. Record the exact command, model, dataset slice, seed, changed config values, final metrics, and W&B link if enabled.
+5. If a run fails and the fix changes future workflow knowledge, update this file or the relevant skill so the next agent can find it.
+
 ## Changelog Process
 
 - **CI enforces this**: a GitHub Actions check fails PRs that touch `code/` without modifying `code/CHANGELOG.md` (the file must be modified; the format below is convention, not enforced).

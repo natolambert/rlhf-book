@@ -8,6 +8,35 @@ I primarily run experiments on a [DGX Spark](https://www.nvidia.com/en-us/produc
 
 *Note: There's an open PR [here](https://github.com/natolambert/rlhf-book/pull/328) exploring the idea of adding speedrun functionality to this repository — comment if you're interested in pushing this further or seeing it merged into main.*
 
+## Reader Experiment Path
+
+All commands below assume:
+
+```bash
+cd code/
+uv sync
+```
+
+Start with one short run, confirm that the learning signal is visible, then sweep one variable at a time.
+If you do not want W&B logging, set `WANDB_MODE=disabled` or use the module-specific no-W&B option when available.
+
+| Chapter | Starting experiment | Command | What to inspect |
+|---------|---------------------|---------|-----------------|
+| Chapter 5: Reward Models | Bradley-Terry RM on UltraFeedback | `uv run python -m reward_models.train_preference_rm --samples 2000 --epochs 1` | Chosen/rejected reward margin, training loss, demo scoring |
+| Chapter 5: Reward Models | ORM on GSM8K | `uv run python -m reward_models.train_orm --samples 400 --epochs 2` | Whether correct final answers score above perturbed answers |
+| Chapter 6: Policy Gradients | GRPO on `spell_backward` | `uv run python -m policy_gradients.train --config policy_gradients/configs/grpo.yaml` | `avg_correctness`, `avg_format`, `avg_binary`, and whether groups contain contrast |
+| Chapter 8: Direct Alignment | DPO on UltraFeedback | `uv run python -m direct_alignment.train --loss dpo --max_samples 1000` | `accuracy`, `margins`, `chosen_rewards`, `rejected_rewards`, sample generations |
+| Chapter 9: Rejection Sampling | GSM8K reward selection versus random controls | `uv run python -m rejection_sampling.train --config rejection_sampling/configs/top_per_prompt.yaml` | Final exact-match accuracy against the matched random baseline |
+
+Good first sweeps:
+
+- **Policy gradients**: copy `policy_gradients/configs/grpo.yaml` and vary `num_rollouts`, `temperature`, `format_weight`, and `data.size`.
+- **Direct alignment**: hold the dataset fixed and compare `dpo.yaml`, `ipo.yaml`, and `dpo_norm.yaml`; read IPO through margins/accuracy, not raw loss scale.
+- **Reward models**: vary `--samples`, `--lr`, and `--model-id` before changing the model architecture.
+- **Rejection sampling**: keep generation/scoring settings identical while comparing `top_*` configs to their `random_*` controls.
+
+The book chapters now include suggested exercises at the end of Chapters 5, 6, 8, and 9.
+
 ## Attribution
 
 This code is built on the excellent work of community contributors:
