@@ -261,7 +261,7 @@ def run(cfg: Config) -> Path:
         prompts, completions = _load_rollouts_intermediate(intermediate_path)
     else:
         prompts = load_gsm8k_prompts(cfg)
-        console.print(f"[dim]Loaded {len(prompts)} GSM8k prompts.[/dim]")
+        console.print(f"[dim]Loaded {len(prompts)} GSM8K prompts.[/dim]")
 
         model_device = torch.device(
             f"cuda:{cfg.model_device_id}" if torch.cuda.is_available() else "cpu"

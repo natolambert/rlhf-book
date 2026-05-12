@@ -1,4 +1,4 @@
-# Stage 3: selection + SFT + GSM8k exact-match eval. Auto-runs preprocess on
+# Stage 3: selection + SFT + GSM8K exact-match eval. Auto-runs preprocess on
 # cache miss, so one command per config is enough:
 #   uv run python -m rejection_sampling.train --config configs/top_per_prompt.yaml
 
@@ -23,6 +23,7 @@ from .config import Config, load_config
 from .selection import select
 from .utils import (
     ACEMATH_SYSTEM_PROMPT,
+    answers_match,
     cuda_memory_gb,
     extract_gsm8k_answer,
     format_gsm8k_gold,
@@ -197,7 +198,7 @@ def _build_eval_prompt(question: str, tokenizer) -> str:
 
 
 def evaluate(cfg: Config, model, tokenizer, console: Console) -> float:
-    """Greedy-decode exact-match eval on the GSM8k test split."""
+    """Greedy-decode exact-match eval on the GSM8K test split."""
     ds = load_dataset(cfg.data.name, cfg.data.subset, split=cfg.data.test_split)
     if cfg.data.max_test_samples is not None:
         ds = ds.select(range(min(cfg.data.max_test_samples, len(ds))))
@@ -246,7 +247,7 @@ def evaluate(cfg: Config, model, tokenizer, console: Console) -> float:
             for row, completion in zip(batch, completions, strict=True):
                 pred = extract_gsm8k_answer(completion)
                 gold = row["gold"]
-                is_correct = pred is not None and pred.strip() == gold.strip()
+                is_correct = answers_match(pred, gold)
                 correct += int(is_correct)
                 total += 1
                 samples.append((row["question"], gold, pred or "<none>", completion))
@@ -326,7 +327,7 @@ def main(cfg: Config) -> None:
     model.gradient_checkpointing_disable()
     model.config.use_cache = True
 
-    # Stage 3c: evaluate on GSM8k test split.
+    # Stage 3c: evaluate on GSM8K test split.
     accuracy = evaluate(cfg, model, tokenizer, console)
     wandb.log({"test_accuracy": accuracy, "selection/strategy": cfg.selection.strategy})
 
@@ -342,7 +343,7 @@ def main(cfg: Config) -> None:
 
 def main_cli() -> None:
     parser = argparse.ArgumentParser(
-        description="Rejection sampling: selection + SFT + GSM8k eval."
+        description="Rejection sampling: selection + SFT + GSM8K eval."
     )
     parser.add_argument("--config", type=str, required=True, help="Path to YAML config file")
     args = parser.parse_args()

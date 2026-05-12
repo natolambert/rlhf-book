@@ -608,7 +608,8 @@ def get_loss_function(loss_type: str, **kwargs) -> nn.Module:
     """Get loss function by name.
 
     Args:
-        loss_type: One of 'dpo', 'dpo_norm', 'cdpo', 'ipo', 'simpo', 'orpo', 'kto'
+        loss_type: One of 'dpo', 'dpo_norm', 'cdpo', 'ipo', 'simpo', 'orpo',
+            'kto', 'apo_zero', 'apo_down'
         **kwargs: Arguments passed to the loss function constructor
 
     Returns:

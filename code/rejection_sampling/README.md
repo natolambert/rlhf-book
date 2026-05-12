@@ -7,11 +7,11 @@ Chapter 9 of [the RLHF Book](https://rlhfbook.com). See the parent
 [`code/README.md`](../README.md) for installation, configuration, and memory
 requirements. The pipeline:
 
-1. Generate `N` rollouts per GSM8k training prompt with `Qwen/Qwen3-1.7B`.
+1. Generate `N` rollouts per GSM8K training prompt with `Qwen/Qwen3-1.7B`.
 2. Score every rollout with `nvidia/AceMath-7B-RM`.
 3. Select a subset of (prompt, completion) pairs via one of four selection configs.
 4. SFT `Qwen/Qwen3-1.7B` on the selected subset.
-5. Evaluate exact-match accuracy on the GSM8k test split.
+5. Evaluate exact-match accuracy on the GSM8K test split.
 
 The two chapter selection strategies are each paired with a matched
 random-selection baseline at the same sample budget. Comparing
