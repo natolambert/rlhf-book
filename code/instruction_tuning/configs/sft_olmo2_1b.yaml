@@ -33,4 +33,4 @@ sample_do_sample: true
 
 # Logging
 wandb_project: null  # set via WANDB_PROJECT env var or change here
-wandb_run_name: null
+wandb_run_name: instruction_tuning_no_robots
