@@ -95,6 +95,10 @@ def main(cfg: Config):
                 else:
                     progress.update(task, advance=1)
 
+        optimizer.zero_grad(set_to_none=True)
+        accumulated_loss = 0.0
+        micro_in_step = 0
+
     wandb.finish()
 
 
