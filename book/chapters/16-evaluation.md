@@ -25,13 +25,13 @@ In many ways, this chapter is designed to present vignettes of popular evaluatio
 
 Evaluation for RLHF and post-training has gone through a few distinct phases in its early history:
 
-1. **Early chat-phase**: Early models trained with RLHF or preference tuning targeted evaluations focused on capturing the chat performance of a model, especially relative to known strong models such as GPT-4. Early examples include MT-Bench [@zheng2023judging], AlpacaEval [@dubois2024length], and Arena-Hard [@li2024crowdsourced]. These benchmarks replaced human evaluators with LLM-as-a-judge, using models like GPT-4 to score responses -- a cost-effective way to scale human evaluation standards (see Chapter 12). Models were evaluated narrowly and these are now considered as "chat" or "instruction following" domains.
+1. **Early chat-phase**: Early models trained with RLHF or preference tuning targeted evaluations focused on capturing the chat performance of a model, especially relative to known strong models such as GPT-4. Early examples include MT-Bench [@zheng2023judging], AlpacaEval [@dubois2024length], and Arena-Hard [@li2024crowdsourced]. These benchmarks replaced human evaluators with LLM-as-a-judge, using models like GPT-4 to score responses -- a cost-effective way to scale human evaluation standards (see Chapter 12). Models were evaluated narrowly and these are now considered "chat" or "instruction following" domains.
 2. **Multi-skill era**: Over time, common practice established that RLHF can be used to improve more skills than just chat. For example, the Tülu evaluation suite included tasks on knowledge (MMLU [@hendrycks2020measuring], PopQA [@mallen2023llm_memorization], TruthfulQA [@lin2021truthfulqa]), Reasoning (BigBenchHard [@suzgun2022challenging], DROP [@dua2019drop]), Math (MATH [@hendrycksmath2021], GSM8K [@cobbe2021gsm8k]), Coding (HumanEval [@chen2021codex], HumanEval+ [@evalplus]), Instruction Following [@zhou2023instructionfollowingevaluationlargelanguage], and Safety (a composite of many evaluations). This reflects the domain where post-training is embraced as a multi-faceted solution beyond safety and chat.
 3. **Reasoning & tools**: The current era for post-training is defined by a focus on challenging reasoning and tool use problems. These include much harder knowledge-intensive tasks such as GPQA Diamond [@rein2023gpqa] and Humanity's Last Exam [@phan2025hle], intricate software engineering tasks such as SWE-Bench+ [@aleithan2024swebenchplus] and LiveCodeBench [@jain2024livecodebench], or challenging math problems exemplified by recent AIME contests.
 
 Beyond this, new domains will evolve. 
 As AI becomes more of an industrialized field, the incentives of evaluation are shifting and becoming multi-stakeholder.
-Since the release of ChatGPT, private evaluations such as the Scale Leaderboard [@scale2024seal], community-driven evaluations such as Arena [@chiang2024chatbot], and third-party evaluation companies such as ArtificialAnalysis and Epoch AI have proliferated.
+Since the release of ChatGPT, private evaluations such as the Scale Leaderboard [@scale2024seal], community-driven evaluations such as Arena [@chiang2024chatbot], and third-party evaluation companies such as Artificial Analysis and Epoch AI have proliferated.
 Throughout this chapter we will include details that map to how these evaluations were implemented and understood.
 
 ## Prompting Formatting
@@ -234,7 +234,7 @@ In the end we are left with a few key points on the state of evaluating closed m
 - Inference of frontier models is becoming more complicated with special system prompts, special tokens, etc., and we don't know how it impacts evaluations, and
 - We do not know all the formats and details used to numerically report the closed evaluations.
 
-All of these dynamics, along with the very rapid progress of AI models over the last few years, results in famous plots similar to the one in @fig:benchmark-saturation, where the in-vogue benchmarks of each era are solved very quickly.
+All of these dynamics, along with the very rapid progress of AI models over the last few years, result in famous plots similar to the one in @fig:benchmark-saturation, where the in-vogue benchmarks of each era are solved very quickly.
 The common term to describe this dynamic at a per-benchmark level is saturation.
 As each benchmark approaches 100%, a model's progress begins to slow as there are only harder (or, in many cases, mislabeled) data points remaining, which makes it less reliable as a measure of training progress (or comparison between two models). 
 

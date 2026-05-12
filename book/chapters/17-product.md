@@ -191,7 +191,7 @@ The authors find that keeping activations close to the Assistant region via **ac
 
 $$\mathbf{h}' = \mathbf{h} - \mathbf{v} \cdot \min(\langle \mathbf{h}, \mathbf{v} \rangle - \tau, 0)$$
 
-where $\mathbf{h}$ is the post-MLP residual stream activation at a given layer, $\mathbf{v}$ is the unit-normalized Assistant Axis direction.
+where $\mathbf{h}$ is the post-MLP residual stream activation at a given layer, $\mathbf{v}$ is the unit-normalized Assistant Axis direction, and $\tau$ is the activation cap threshold.
 
 Let us define $p = \langle \mathbf{h}, \mathbf{v} \rangle$, which is a scalar measuring how "Assistant-like" the activation $\mathbf{h}$ is. Then, according to the capping update rule, we have two distinct scenarios:
 
@@ -225,7 +225,7 @@ Whereas persona vectors intervene in activation space, Ye et al. [-@ye2026person
 Rather than injecting a steering vector, they identify a sparse subnetwork — a small subset of the model's weights that together drive a particular behavior — associated with a given persona.
 This echoes the lottery ticket hypothesis [@frankle2019lottery]: dense networks contain sparse subnetworks that can match the full model's performance on a given task.
 Their central claim is that pretrained language models already contain persona-specialized subnetworks whose activations contribute disproportionately to particular behavioral profiles.
-The intuition is that the neurons that are least correlated with a target persona will be pushing the model in the direction of other personalities, so masking those components of the network will draw up the intended persona.
+The intuition is that the neurons that are least correlated with a target persona will be pushing the model in the direction of other personalities, so masking those components of the network will draw out the intended persona.
 
 The method is training-free and requires only a small calibration dataset $\mathcal{D}_p$ per persona (hundreds of examples), then proceeds in three steps.
 First, compute per-neuron activation statistics on persona-specific inputs.
