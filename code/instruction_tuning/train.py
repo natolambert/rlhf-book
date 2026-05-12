@@ -1,12 +1,3 @@
-# Instruction Tuning Training Loop
-#
-# Single-GPU SFT for a base model. See Chapter 4: Instruction Fine-Tuning
-# (https://rlhfbook.com) for theory and chat-template background.
-#
-# Usage:
-#   uv run python -m instruction_tuning.train \
-#       --config instruction_tuning/configs/sft_olmo2_1b.yaml
-
 import argparse
 import os
 import time
@@ -42,7 +33,7 @@ def main(cfg: Config):
 
     accum = cfg.gradient_accumulation_steps
     optimizer = torch.optim.AdamW(model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay)
-    steps_per_epoch = max(1, len(dataloader) // accum)
+    steps_per_epoch = len(dataloader) // accum
     total_steps = steps_per_epoch * cfg.num_epochs
     warmup_steps = int(total_steps * cfg.warmup_ratio)
     scheduler = make_lr_scheduler(optimizer, total_steps, cfg.warmup_ratio)
@@ -71,16 +62,13 @@ def main(cfg: Config):
             for batch_idx, batch in enumerate(dataloader):
                 batch = batch.to(device)
                 loss = compute_loss(model, batch)
-                if not loss.isfinite():
-                    progress.update(task, advance=1)
-                    continue
+                if loss.isfinite():
+                    scaled = loss / accum
+                    scaled.backward()
+                    accumulated_loss += loss.item()
+                    micro_in_step += 1
 
-                scaled = loss / accum
-                scaled.backward()
-                accumulated_loss += loss.item()
-                micro_in_step += 1
-
-                if (batch_idx + 1) % accum == 0 or (batch_idx + 1) == len(dataloader):
+                if (batch_idx + 1) % accum == 0:
                     if cfg.sample_every > 0 and global_step % cfg.sample_every == 0:
                         generate_samples(model, tokenizer, cfg, step=global_step)
 

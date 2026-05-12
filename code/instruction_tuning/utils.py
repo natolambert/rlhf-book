@@ -302,8 +302,8 @@ def print_training_info(model, cfg: Config, total_steps: int, warmup_steps: int)
         )
     )
     console.print(
-        "[dim yellow]Note: OLMo-2 reuses [bold]<|endoftext|>[/bold] as both BOS"
-        " and EOS, so it appears at the start *and* end of every conversation.[/dim yellow]"
+        "[dim yellow]Note: OLMo-2 reuses [bold]<|endoftext|>[/bold] as BOS, EOS,"
+        " and UNK, so it appears at the start *and* end of every conversation.[/dim yellow]"
     )
 
 

@@ -15,8 +15,9 @@ into more questions or unrelated text. After SFT on a small instruction
 dataset, the same prompt produces *"The capital of France is Paris."*
 followed by the assistant end-of-turn token, ending generation.
 
-The training loop logs samples for this exact prompt to W&B at step 0
-(base model) and periodically during training, so the transition is visible.
+The training loop prints samples for this exact prompt to the console at
+step 0 (base model) and every `sample_every` optimizer steps after, so the
+transition is visible as the run progresses.
 
 ## Quick Start
 
@@ -45,7 +46,8 @@ WANDB_PROJECT=rlhf-book uv run python -m instruction_tuning.train \
 3. Train with AdamW + linear warmup/decay, bf16, gradient checkpointing,
    gradient accumulation. No sharding, no data parallelism.
 4. Periodically generate completions for a fixed prompt pool (including the
-   capital-of-France prompt) and log them to W&B alongside the loss.
+   capital-of-France prompt) and print them to the console as colored panels.
+   Loss and learning rate are logged to W&B; sample text is console-only.
 
 ## OLMo-2 Chat Format Quirk
 
