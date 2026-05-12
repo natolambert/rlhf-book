@@ -1,6 +1,6 @@
 # Contributing to `code/`
 
-The `code/` directory contains runnable training examples organized by technique: `policy_gradients/`, `direct_alignment/`, `reward_models/`, `rejection_sampling/`, and shared `scripts/`.
+The `code/` directory contains runnable training examples organized by technique: `instruction_tuning/`, `policy_gradients/`, `direct_alignment/`, `reward_models/`, `rejection_sampling/`, and shared `scripts/`.
 
 ## Branching & PRs
 
@@ -27,7 +27,7 @@ Keep these tests lightweight: they should verify imports, entrypoint wiring, and
 
 ## Keeping Examples and Book Docs in Sync
 
-When changing a runnable example, config, metric, or recommended command under `policy_gradients/`, `direct_alignment/`, `reward_models/`, or `rejection_sampling/`, check the connected documentation before submitting:
+When changing a runnable example, config, metric, or recommended command under `instruction_tuning/`, `policy_gradients/`, `direct_alignment/`, `reward_models/`, or `rejection_sampling/`, check the connected documentation before submitting:
 
 - Update the module README if commands, configs, expected metrics, memory notes, status, or reference runs changed.
 - Update `code/README.md` if the reader experiment path, quick-start commands, or chapter mapping changed.

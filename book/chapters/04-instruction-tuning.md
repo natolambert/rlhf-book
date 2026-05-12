@@ -185,3 +185,25 @@ Many practices, such as deciding on the types of parallelism used to shard model
 - **Multi-turn masking**: For multi-turn conversations, there are two common masking choices. (1) *Final-turn only*: only the tokens in the final assistant turn are included in the loss, while all earlier context (including earlier assistant turns) is masked. Long conversations can still be "unrolled" into multiple training samples: for a conversation of $N$ turns, each example predicts one assistant response while masking all prior context and excluding any future turns. (2) *Mask user turns only*: all user turns are masked, but *every* assistant turn is included in the loss. You can still unroll in this setting if you want more (shorter) training examples, but the key difference is that intermediate assistant replies are trained on directly.
 - **Same loss function as pretraining:** Instruction tuning uses the same autoregressive loss function used in pretraining language models, but with substantially different data and masking (training only on full sequences, whereas pretraining documents can be split across batches), etc.
 - **Learning rate:** SFT typically uses a learning rate one to two orders of magnitude smaller than pretraining to best manage the different optimization dynamics (smaller datasets, smaller batches, and a strong pretrained initialization all favor more conservative updates). For example, OLMo 2 uses a peak learning rate of $3 \times 10^{-4}$ for pretraining but $1 \times 10^{-5}$ for SFT [@olmo20242]. OLMo 3 uses a higher SFT learning rate of $5\text{-}8 \times 10^{-5}$ [@teamolmo2025olmo3], in part because its training infrastructure uses sequence packing, which fits multiple examples into each training sequence and increases the effective batch size measured in useful tokens. Larger batches produce lower-variance gradient estimates, which in turn supports a higher learning rate without destabilizing training -- a relationship known as the linear scaling rule. The learning rate is commonly warmed up over a small fraction of training steps before decaying linearly. In practice, teams often sweep over multiple learning rates and select the best checkpoint on a held-out evaluation suite [@teamolmo2025olmo3].
+
+## Suggested Experiments
+
+The companion code repository includes a small SFT training script in `code/instruction_tuning/`.
+It is intended as a learning exercise to make the base-model-to-assistant transition concrete.
+
+1. **Run the canonical SFT example and watch the base→assistant transition.**
+   Run:
+
+   ```bash
+   cd code/
+   uv run python -m instruction_tuning.train --config instruction_tuning/configs/sft_olmo2_1b.yaml
+   ```
+
+   This trains `allenai/OLMo-2-0425-1B` (base) on `HuggingFaceH4/no_robots` and prints generations for a fixed prompt pool every 50 optimizer steps.
+   At step 0 the base model rambles, repeats the prompt, and emits malformed role markers; after a few hundred steps the same prompts produce concise answers that terminate at `<|endoftext|>`.
+   This is the sanity check for instruction tuning — the same loss function as pretraining, but applied to a chat template with prompt tokens masked.
+
+2. **Sweep the learning rate.**
+   Copy `sft_olmo2_1b.yaml` and try `lr` values of `1e-6`, `5e-6`, and `5e-5` while holding everything else fixed.
+   Inspect at which learning rate the model first answers and stops cleanly versus when it overfits and starts producing template-shaped slop.
+   This is the practical version of the "one to two orders of magnitude below pretraining" guidance above.
