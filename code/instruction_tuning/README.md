@@ -47,18 +47,11 @@ WANDB_PROJECT=rlhf-book uv run python -m instruction_tuning.train \
 4. Periodically generate completions for a fixed prompt pool (including the
    capital-of-France prompt) and log them to W&B alongside the loss.
 
-## Datasets
+## Dataset
 
-Default: `HuggingFaceH4/no_robots` (CC BY-NC 4.0). 9.5K human-written
+`HuggingFaceH4/no_robots` (CC BY-NC 4.0). 9.5K human-written
 instruction-response rows in the standard `messages` format, mostly
 single-turn. Strong signal-to-noise per row for a sanity-check SFT run.
-
-The data loader also accepts:
-
-- `databricks/databricks-dolly-15k` (CC BY-SA 3.0): 15K
-  `instruction/context/response` rows.
-- Any dataset with a `messages` list, a `prompt`/`completion` pair, or an
-  `instruction`/`response` pair.
 
 License caveat: No Robots is non-commercial. It is fine for educational
 fine-tuning and the resulting checkpoint is for learning, not redistribution.

@@ -114,30 +114,6 @@ def compute_loss(model, batch: "SFTBatch") -> torch.Tensor:
     )
 
 
-def _normalize_messages(example: dict) -> list[dict]:
-    """Coerce a dataset row into a list of ``{role, content}`` dicts.
-
-    Handles HuggingFaceH4/no_robots (``messages``) and instruction/response-style
-    rows (Dolly, Alpaca) without requiring a separate adapter file.
-    """
-    if "messages" in example and example["messages"]:
-        return [{"role": m["role"], "content": m["content"]} for m in example["messages"]]
-    if "prompt" in example and "completion" in example:
-        return [
-            {"role": "user", "content": example["prompt"]},
-            {"role": "assistant", "content": example["completion"]},
-        ]
-    if "instruction" in example and "response" in example:
-        user = example["instruction"]
-        if example.get("context"):
-            user = f"{user}\n\n{example['context']}"
-        return [
-            {"role": "user", "content": user},
-            {"role": "assistant", "content": example["response"]},
-        ]
-    raise ValueError(f"Unrecognized SFT row format. Columns: {list(example.keys())}")
-
-
 def _encode_row(
     messages: list[dict],
     tokenizer: PreTrainedTokenizer,
@@ -207,8 +183,7 @@ def create_dataloader(cfg: Config, tokenizer: PreTrainedTokenizer) -> DataLoader
     encoded: list[dict[str, torch.Tensor]] = []
     skipped = 0
     for example in raw:
-        messages = _normalize_messages(example)
-        row = _encode_row(messages, tokenizer, cfg.max_length)
+        row = _encode_row(example["messages"], tokenizer, cfg.max_length)
         if row is None:
             skipped += 1
             continue
