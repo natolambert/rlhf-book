@@ -3,7 +3,7 @@
 
 set -euo pipefail
 
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../../.."
 
 ts="$(date +%Y%m%d-%H%M%S)"
 export WANDB_PROJECT="${WANDB_PROJECT:-rlhf-book}"

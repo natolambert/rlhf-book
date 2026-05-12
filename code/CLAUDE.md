@@ -3,7 +3,7 @@
 ## Claude Code Notes
 
 - **Always run Python commands with `uv run python`** (not bare `python`/`python3`) so the project environment is used consistently
-- **Always run training commands in background** using `run_in_background: true` to avoid blocking or hitting interactive timeouts. Start a monitor for the background task and check it from the Claude Code status bar (e.g. `[1 background task] [1 monitor]`) until you see the first metrics or failure.
+- **Always run training commands in the background** using `run_in_background: true` to avoid blocking or hitting interactive timeouts. Start a monitor for the background task and check it from the Claude Code status bar (e.g. `[1 background task] [1 monitor]`) until you see the first metrics or failure.
 - **Be careful with parallel jobs**: Only run one training job at a time unless you verify memory is available. Running too many can OOM the system.
 - **If using a DGX Spark**: ~120GB unified CPU/GPU memory — aim for <80GB usage to be safe. Flash Attention is not available on ARM64/Blackwell; the code automatically falls back to PyTorch SDPA.
 - **Before finalizing changes under `code/`**, run `uvx ruff@0.14.5 check .`, `uvx ruff@0.14.5 format --check .`, and `uv run --extra dev pytest` — all are enforced by CI on PRs that touch `code/` (see `.github/workflows/lint.yml`). Use `uvx ruff@0.14.5 check --fix .` and `uvx ruff@0.14.5 format .` to auto-fix. Pin the ruff version to match CI; unpinned `uvx ruff` can diverge.
@@ -100,7 +100,7 @@ Without LoRA (full fine-tune):
 - 1.7B model: ~10-15GB
 - 3B model: ~20-25GB
 
-With gradient checkpointing can reduce by ~30-40%.
+Gradient checkpointing can reduce memory use by ~30-40%.
 
 ## TODOs
 

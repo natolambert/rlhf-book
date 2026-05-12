@@ -85,7 +85,7 @@ class Config:
         if self.loss == "cdpo":
             self.label_smoothing = 0.1
         elif self.loss in ["simpo", "dpo_norm"]:
-            # SimPO and DPO-Norm typically uses higher beta
+            # SimPO and DPO-Norm typically use higher beta
             if self.beta == 0.1:  # Only override if default
                 self.beta = 2.0
 

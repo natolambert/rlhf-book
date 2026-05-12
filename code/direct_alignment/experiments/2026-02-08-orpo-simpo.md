@@ -76,7 +76,7 @@ This is an experiment log for the ORPO/SimPO debugging and sweep work done in th
 ## Non-W&B / Aborted Probes
 
 - Several very short sanity probes were launched with `WANDB_MODE=disabled` while validating startup and crash behavior.
-- A few background launches exited early before trainer initialization due environment/sandbox behavior; this was worked around by running in foreground when needed and by explicit detached launches.
+- A few background launches exited early before trainer initialization due to environment/sandbox behavior; this was worked around by running in foreground when needed and by explicit detached launches.
 - Fixed-batch overfit sanity (non-W&B): both SimPO and ORPO can drive a single batch to `accuracy=1.0` and rapidly increasing margins at `lr=1e-5`, indicating gradient path / loss wiring is functional.
 
 ## Current Read
