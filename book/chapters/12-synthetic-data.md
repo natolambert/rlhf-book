@@ -427,7 +427,7 @@ Format notes:
 - If reasoning should precede the final answer, include an Important Criteria to that effect.
 - If brevity is valued, include an Optional Criteria about conciseness.
 
-Output: Provide a JSON array of rubric objects. Each object must contain exactly three keys: title, description, and weight.
+Output: Provide a JSON array of rubric objects. Each object must contain exactly three keys-title, description, and weight.
 Do not copy large blocks of the question or reference_answer into the text. Each description must begin with its category
 prefix, and no extra keys are allowed.
 Now, given the question and reference_answer, generate the rubric as described. 
