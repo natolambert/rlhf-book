@@ -69,7 +69,7 @@ print(str(compute_pi())[:52])
 
 This chapter provides an overview of the origins of tool-use in modern language models, its fundamentals and formatting, and current trade-offs in utilizing tools well in leading models.
 
-The exact origin of the term "tool use" is not clear, but the origins of the idea far predate the post ChatGPT world where RLHF proliferated.
+The exact origin of the term "tool use" is not clear, but the origins of the idea far predate the post-ChatGPT world where RLHF proliferated.
 Early examples circa 2015 attempted to build systems predating modern language models, such as Neural Programmer-Interpreters (NPI) [@reed2015neural], "a recurrent and compositional neural network that learns to represent and execute programs."
 As language models became more popular, many subfields were using integrations with external capabilities to boost performance. 
 To obtain information outside of just the weights many used retrieval augmented generation [@lewis2020retrieval] or web browsing [@nakano2021webgpt].
@@ -168,7 +168,7 @@ As with function calling, there are tags first for the code to execute (generate
 What is the 50th Fibonacci number? (Use the standard F_0=0, F_1=1 indexing.)</s>
 <|assistant|>
 <think>
-Okay, I will compute the 50-th Fibonacci number with a simple loop, then return the result.
+Okay, I will compute the 50th Fibonacci number with a simple loop, then return the result.
 
 <code>
 def fib(n):
@@ -185,7 +185,7 @@ fib(50)
 </output>
 </think>
 <answer>
-The 50-th Fibonacci number is 12 586 269 025.
+The 50th Fibonacci number is 12 586 269 025.
 </answer>
 ```
 

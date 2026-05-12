@@ -37,7 +37,7 @@ However, as with most modern AI models, the largest determining factor in its su
 ![Overview of the RLHF training loop. A prompt from the dataset is passed to the tuned policy, which generates a completion. The reward model scores this completion, while the frozen initial model (typically the instruction-tuned model before RL) computes log probabilities on the same text to calculate a KL penalty that prevents excessive drift. The combined reward signal then drives a reinforcement learning update to the policy parameters.](images/rlhf-overview.png){#fig:rlhf-overview}
 
 When RLHF came onto the scene with ChatGPT, it was largely known that they used a variant of PPO, and many initial efforts were built upon that.
-Over time, multiple research projects showed the promise of REINFORCE-style algorithms [@ahmadian2024back] [@wang2024helpsteer2p], touted for their simplicity over PPO without a reward model (saves memory and therefore the number of GPUs required) and with simpler value estimation (no Generalized Advantage Estimation, GAE, which is a method to compute advantages used for variance reduction in policy gradient algorithms).
+Over time, multiple research projects showed the promise of REINFORCE-style algorithms [@ahmadian2024back] [@wang2024helpsteer2p], touted for their simplicity over PPO without a separate value model (saves memory and therefore the number of GPUs required) and with simpler advantage estimation (no Generalized Advantage Estimation, GAE, which is a method to compute advantages used for variance reduction in policy gradient algorithms).
 More algorithms have emerged, including Group Relative Policy Optimization, which is particularly popular with reasoning tasks, but in general many of these algorithms can be tuned to fit a specific task.
 In this chapter, we cover the core policy gradient setup and the three algorithms mentioned above due to their central role in the establishment of a canonical RLHF literature.
 
@@ -579,7 +579,7 @@ GRPO and its variants are particularly well-suited to modern language model tool
 The advantage computation for GRPO has trade-offs in its biases.
 The normalization by standard deviation rewards questions in a batch that have a low variation in answer correctness.
 For questions with either nearly all correct or all incorrect answers, the standard deviation will be lower and the advantage will be higher.
-Liu et al. 2025 [@liu2025understanding] proposes removing the standard deviation term given this bias, but this comes at the cost of down-weighing questions that were all incorrect with a few correct answers, which could be seen as valuable learning signal for the model.
+Liu et al. 2025 [@liu2025understanding] proposes removing the standard deviation term given this bias, but this comes at the cost of down-weighting questions that were all incorrect with a few correct answers, which could be seen as valuable learning signal for the model.
 Those high-variance prompts can be exactly the hardest cases, where only a few sampled completions find the correct answer and provide a strong training signal.
 
 @eq:GRPO_ADV is the implementation of GRPO when working with outcome supervision (either a standard reward model or a single verifiable reward) and a different implementation is needed with process supervision.
@@ -1331,3 +1331,40 @@ Examples for further reading include:
 - Some foundation models, such as Apple Intelligence Foundation Models [@gunter2024apple] or Kimi k1.5 reasoning model [@team2025kimi], have used variants of **Mirror Descent Policy Optimization (MDPO)** [@tomar2020mirror]. Research is still developing further on the fundamentals here [@zhang2025improving], but Mirror Descent is an optimization method rather than directly a policy gradient algorithm. What is important here is that it is substituted in very similarly to existing RL infrastructure.
 - **Decoupled Clip and Dynamic sAmpling Policy Optimization (DAPO)** proposes 4 modifications to GRPO to better suit reasoning language models, where long traces are needed and new, underutilized tokens need to be increased in probability [@yu2025dapo]. The changes are: 1, have two different clip hyperparameters, $\varepsilon_\text{low}$ and $\varepsilon_\text{high}$, so clipping on the positive side of the logratio can take bigger steps for better exploration; 2, dynamic sampling, which removes all samples with reward = 0 or reward = 1 for all samples in the batch (no learning signal); 3, use the per-token loss as discussed above in Implementation: GRPO; and 4, a soft penalty on samples that are too long to avoid trying to learn from truncated answers.
 - **Value-based Augmented Proximal Policy Optimization (VAPO)** [@yuan2025vapo] combines optimizations from DAPO (including clip-higher, token-level policy-gradient, and different length normalization) with insights from Value-Calibrated PPO [@yuan2025s] to pretrain the value function and length-adaptive GAE to show the promise of value-based methods relative to GRPO.
+
+## Suggested Experiments
+
+The companion implementation in `code/policy_gradients/` is designed for small, observable RL runs.
+The default configs train `Qwen/Qwen3-1.7B` on the `spell_backward` procedural task from `reasoning-gym`, which is a good first exercise because failures and partial progress are easy to inspect.
+
+1. **Run the word reversal task with GRPO.**
+
+   ```bash
+   cd code/
+   uv run python -m policy_gradients.train --config policy_gradients/configs/grpo.yaml
+   ```
+
+   Track `avg_correctness`, `avg_format`, and `avg_binary`.
+   The useful first question is whether each prompt group contains contrast: if all sampled completions are right or all are wrong, a group-relative update has little learning signal.
+
+2. **Compare group-relative and single-sample estimators.**
+   Run the matched starting configs:
+
+   ```bash
+   cd code/
+   uv run python -m policy_gradients.train --config policy_gradients/configs/reinforce.yaml
+   uv run python -m policy_gradients.train --config policy_gradients/configs/rloo.yaml
+   uv run python -m policy_gradients.train --config policy_gradients/configs/grpo.yaml
+   ```
+
+   Compare how quickly the correctness signal improves and how noisy the loss is.
+   RLOO and GRPO should make the role of within-prompt baselines much more concrete than the equations alone.
+
+3. **Sweep the contrast knobs.**
+   Copy `policy_gradients/configs/grpo.yaml` and vary `num_rollouts`, `temperature`, `data.size`, and `format_weight`.
+   Small `num_rollouts` reduces group contrast; very low temperature can collapse samples; very high temperature can generate too many malformed answers.
+   This is the simplest way to see why RLVR recipes often spend so much effort on sampling settings before touching the optimizer.
+
+4. **Move from toy rewards toward math.**
+   For GSM8K-style experiments, start with the `code/reward_models/train_orm.py` and `code/rejection_sampling/` examples before adding a new online RL environment.
+   A good contribution would be a small `reasoning-gym` or GSM8K policy-gradient config that runs on a sub-1B Qwen model and reports the same group-contrast diagnostics.

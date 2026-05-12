@@ -3,7 +3,7 @@
 ## Claude Code Notes
 
 - **Always run Python commands with `uv run python`** (not bare `python`/`python3`) so the project environment is used consistently
-- **Always run training commands in background** using `run_in_background: true` to avoid blocking
+- **Always run training commands in background** using `run_in_background: true` to avoid blocking or hitting interactive timeouts. Start a monitor for the background task and check it from the Claude Code status bar (e.g. `[1 background task] [1 monitor]`) until you see the first metrics or failure.
 - **Be careful with parallel jobs**: Only run one training job at a time unless you verify memory is available. Running too many can OOM the system.
 - **If using a DGX Spark**: ~120GB unified CPU/GPU memory — aim for <80GB usage to be safe. Flash Attention is not available on ARM64/Blackwell; the code automatically falls back to PyTorch SDPA.
 - **Before finalizing changes under `code/`**, run `uvx ruff@0.14.5 check .`, `uvx ruff@0.14.5 format --check .`, and `uv run --extra dev pytest` — all are enforced by CI on PRs that touch `code/` (see `.github/workflows/lint.yml`). Use `uvx ruff@0.14.5 check --fix .` and `uvx ruff@0.14.5 format .` to auto-fix. Pin the ruff version to match CI; unpinned `uvx ruff` can diverge.
@@ -29,6 +29,27 @@ uv run python -m reward_models.train_prm --samples 500 --epochs 2
 uv run python -m direct_alignment.train --config direct_alignment/configs/dpo.yaml
 uv run python -m rejection_sampling.train --config rejection_sampling/configs/top_per_prompt.yaml
 ```
+
+## Task Map
+
+When a user asks for a runnable experiment, start from the closest maintained example:
+
+| User goal | Start here | Notes |
+|-----------|------------|-------|
+| "Run RL / GRPO / PPO" | `policy_gradients/README.md` and `policy_gradients/configs/*.yaml` | Default task is `spell_backward`; watch `avg_correctness`, `avg_format`, and group contrast. |
+| "Train a reward model" | `reward_models/README.md` | Preference RM uses UltraFeedback; ORM uses GSM8K; PRM uses PRM800K. These are experimental and need tuning. |
+| "Train DPO / IPO / SimPO / KTO" | `direct_alignment/README.md` and `direct_alignment/configs/*.yaml` | DPO/IPO/KTO/APO are validated; SimPO/ORPO are implemented but still marked noisy. |
+| "Try rejection sampling / best-of-N" | `rejection_sampling/README.md` and `rejection_sampling/configs/*.yaml` | Always compare each reward-selection config to its matched random baseline. |
+| "Use an agent skill" | `.claude/skills/run-rlhf-code-experiment/SKILL.md` | Use this for planning and reporting a small experiment run. |
+
+## Experiment Workflow
+
+1. Read the module README and config before running anything.
+2. Start with the smallest command that can show signal (`--max_samples`, `--samples`, or a copied small YAML).
+3. Launch long-running training/eval commands in the background, then attach a monitor and keep checking it. Do not leave a silent background run without confirming that logs, W&B, or metrics are moving.
+4. Run one training job at a time unless GPU memory has been checked.
+5. Record the exact command, model, dataset slice, seed, changed config values, final metrics, and W&B link if enabled.
+6. If a run fails and the fix changes future workflow knowledge, update this file or the relevant skill so the next agent can find it.
 
 ## Changelog Process
 

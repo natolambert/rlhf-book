@@ -81,7 +81,7 @@ $$ {#eq:bradterryrm_deriv}
 The first form is the log-sigmoid expression derived above, as in [@ouyang2022training] and other works:
 $$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) \right) \right)$$ {#eq:rewardmodeling1}
 
-Second is a mathematically equivalent form expressed using the softplus function $\log(1+e^x)$, as in [@askell2021general] and other works:
+The second is a mathematically equivalent form expressed using the softplus function $\log(1+e^x)$, as in [@askell2021general] and other works:
 $$\mathcal{L}(\theta) = \log \left( 1 + e^{r_{\theta}(y_r \mid x) - r_{\theta}(y_c \mid x)} \right)$$ {#eq:rewardmodeling2}
 
 These are equivalent by letting $\Delta = r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x)$ and using $\sigma(\Delta) = \frac{1}{1 + e^{-\Delta}}$, which implies $-\log\sigma(\Delta) = \log(1 + e^{-\Delta}) = \log\left(1 + e^{r_{\theta}(y_r \mid x) - r_{\theta}(y_c \mid x)}\right)$.
@@ -210,7 +210,7 @@ $$\mathcal{L}(\theta) = - \frac{1}{\binom{K}{2}} \mathbb{E}_{(x, y_c, y_r)\sim D
 There are many other formulations that can create suitable models of human preferences for RLHF.
 One such example, used in the popular, early RLHF'd models Starling 7B and 34B [@zhu2024starling], is a K-wise loss function based on the Plackett-Luce model [@liu2019learning].
 
-Zhu et al. 2023 [@zhu2023principled] formalizes the setup as follows.
+Zhu et al. 2023 [@zhu2023principled] formalize the setup as follows.
 With a prompt, or state, $s^i$, $K$ actions $(a_0^i, a_1^i, \cdots, a_{K-1}^i)$ are sampled from $P(a_0,\cdots,a_{K-1}|s^i)$.
 Then, labelers rank the $K$ actions by preference, producing a permutation $\sigma^i: [K] \mapsto [K]$, where $\sigma^i(0)$ is the most preferred action. This yields a Plackett-Luce probability over the complete ranking of all $K$ items:
 
@@ -541,3 +541,36 @@ Examples of new benchmarks include:
 - **Multimodal:** MJ-Bench [@chen2024mj], Multimodal RewardBench [@yasunaga2025multimodal], VL RewardBench [@li2024vlrewardbench], or VLRMBench [@ruan2025vlrmbench].
 
 To understand progress on *training* reward models, one can reference new reward model training methods, with aspect-conditioned models [@wang2024interpretable], high-quality human datasets [@wang2024helpsteer2] [@wang2024helpsteer2p], scaling experiments [@adler2024nemotron], extensive experimentation [@touvron2023llama], or debiasing data [@park2024offsetbias].
+
+## Suggested Experiments
+
+The companion code repository includes small reward model training scripts in `code/reward_models/`.
+These are intended as learning exercises rather than tuned reference recipes.
+Start from a clean `code/` environment with `uv sync`, then run one experiment at a time.
+
+1. **Train a Bradley-Terry preference reward model on UltraFeedback.**
+   Run:
+
+   ```bash
+   cd code/
+   uv run python -m reward_models.train_preference_rm --samples 2000 --epochs 1
+   ```
+
+   Watch whether the reward margin between chosen and rejected responses grows in the demo and W&B logs.
+   Then vary `--samples`, `--lr`, and `--model-id` to see when the signal becomes noisy or unstable.
+
+2. **Compare outcome and process supervision.**
+   Run the GSM8K outcome reward model and the PRM800K process reward model:
+
+   ```bash
+   cd code/
+   uv run python -m reward_models.train_orm --samples 400 --epochs 2
+   uv run python -m reward_models.train_prm --samples 500 --epochs 2
+   ```
+
+   Compare what each model can score after training: the ORM should distinguish correct and incorrect final answers, while the PRM should assign scores across intermediate reasoning steps.
+   This is the practical version of the distinction between sequence-level, outcome-level, and process-level supervision.
+
+3. **Add a small held-out reward model eval.**
+   A useful contribution is a 50- to 200-example evaluation for `reward_models/` that reports accuracy or preference-pair ordering without requiring a full training run.
+   Keep the evaluation small enough that it can be used while tuning hyperparameters.

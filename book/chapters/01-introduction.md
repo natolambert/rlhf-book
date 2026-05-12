@@ -265,7 +265,7 @@ Chris Manning literally thanked me for "saving DPO."
 Preference-tuning was something you needed to do to meet the table stakes of releasing a good model since late 2023. 
 The DPO era continued through 2024, in the form of never-ending variants on the algorithm, but we were very far into another slump in open recipes. 
 Open post-training recipes had saturated the extent of knowledge and resources available.  
-A year after Zephyr and Tulu 2, the same breakout dataset, UltraFeedback is arguably still state-of-the-art for preference tuning in open recipes [@cui2023ultrafeedback]. 
+A year after Zephyr and Tülu 2, the same breakout dataset, UltraFeedback is arguably still state-of-the-art for preference tuning in open recipes [@cui2023ultrafeedback]. 
 
 At the same time, the Llama 3.1 [@dubey2024llama] and Nemotron 4 340B [@adler2024nemotron] reports gave us substantive hints that large-scale post-training is much more complex and impactful. 
 The closed labs are doing full post-training -- a large multi-stage process of instruction tuning, RLHF, prompt design, etc. -- where academic papers are just scratching the surface. 
@@ -354,7 +354,7 @@ This book is finalizing as of April 2026, when it's moving to production for pri
 
 Dr. Nathan Lambert is a researcher and writer focusing on building the open science of language models. He came here through a Ph.D. in robotics and building an RLHF team shortly after the release of ChatGPT.
 He has released many models trained with RLHF, their subsequent datasets, and training codebases in his time at the Allen Institute for AI (Ai2) and HuggingFace.
-Examples include [Zephyr-Beta](https://huggingface.co/HuggingFaceH4/zephyr-7b-beta), [Tulu 2](https://huggingface.co/allenai/tulu-2-dpo-70b), [OLMo](https://huggingface.co/allenai/OLMo-7B-Instruct), [TRL](https://github.com/huggingface/trl), [Open Instruct](https://github.com/allenai/open-instruct), and many more. 
+Examples include [Zephyr-Beta](https://huggingface.co/HuggingFaceH4/zephyr-7b-beta), [Tülu 2](https://huggingface.co/allenai/tulu-2-dpo-70b), [OLMo](https://huggingface.co/allenai/OLMo-7B-Instruct), [TRL](https://github.com/huggingface/trl), [Open Instruct](https://github.com/allenai/open-instruct), and many more. 
 He has written extensively on RLHF, including [many blog posts](https://www.interconnects.ai/t/rlhf) and [academic papers](https://scholar.google.com/citations?hl=en&user=O4jW7BsAAAAJ&view_op=list_works&sortby=pubdate).
 
 ## Future of RLHF

@@ -29,7 +29,7 @@ We've seen how different styles actually can meaningfully improve evaluations wi
 The Llama 3 Instruct models scored extremely high on Arena, and it's accepted as being because they had a more fun personality -- they were more succinct and clever than other models of their era. 
 Regardless of the benchmark scores that many LLM users are obsessed with, if RLHF is going to make language models simply more fun, that is delivered value.
 
-Throughout this appendix, the term "chattiness" is used to encompass the growing length of responses from models training with RLHF, but it also encompasses techniques like heavy markdown use, emojis, and formatting the answer in bulleted lists.
+Throughout this appendix, the term "chattiness" is used to encompass the growing length of responses from models trained with RLHF, but it also encompasses techniques like heavy markdown use, emojis, and formatting the answer in bulleted lists.
 To ground the discussion in this appendix, an example completion for two models in the same Tülu 3 family are shown below -- one with only instruction fine-tuning and the second with preference fine-tuning applied via length-controlled DPO.
 First, the instruction-tuned completion to the prompt `What is reinforcement learning from human feedback?` (the exact model is [Llama 3.1 Tulu 3 70B SFT](https://huggingface.co/allenai/Llama-3.1-Tulu-3-70B-SFT)) [@lambert2024t]:
 

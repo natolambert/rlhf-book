@@ -33,7 +33,7 @@ This chapter focuses on the *mechanics* of getting preference data and the best 
 
 ## Collecting Preference Data
 
-Getting the most out of human data involves iterative training of models, spending hundreds of thousands (or millions) of dollars, highly detailed data instructions, translating ideas through data foundry businesses that mediate collection (or hiring a meaningful amount of annotators), and other challenges that add up.
+Getting the most out of human data involves iterative training of models, spending hundreds of thousands (or millions) of dollars, highly detailed data instructions, translating ideas through data foundry businesses that mediate collection (or hiring a meaningful number of annotators), and other challenges that add up.
 This is not a process that should be taken lightly.
 Among all of the public knowledge on RLHF, collecting this data well is also one of the most opaque pieces of the pipeline. 
 As of 2026, there are no open models with fully open human preference data released with the methods used to collect it (the largest recent human preference datasets released for models are in the HelpSteer line of work from NVIDIA's Nemotron team, including HelpSteer2-Preference and HelpSteer3-Preference [@wang2024helpsteer2p; @wang2025helpsteer3]).
@@ -65,10 +65,10 @@ An example interface is shown below from Anthropic's early and foundational RLHF
 In the figure shown below, @fig:preference-interface, a data labeler has a conversation with the model and must choose a preference between two possible answers, at the bottom highlighted in purple.
 In addition, the labeler is given the potential to include more notes on the conversation or a general rating of the conversation quality (potentially spread across multiple tasks, as seen in the top left).
 
-![An example of one of the earliest preference data collection interface, from Anthropic's research. Bai et al. 2022. The actual conversation is a toy conversation around what is a good example conversation for data collection. License CC-BY.](images/anthropic-interface.png){#fig:preference-interface .center}
+![An example of one of the earliest preference data collection interfaces, from Anthropic's research. Bai et al. 2022. The actual conversation is a toy conversation around what is a good example conversation for data collection. License CC-BY.](images/anthropic-interface.png){#fig:preference-interface .center}
 
 This first example is a *training-data only* interface, where the goal is to collect rich metadata along with the conversation. 
-Now that these models are popular, applications often expose interfaces for collecting preference directly to the users during everyday use, much like how other technology products will A/B test new features in small subsets of the production usage.
+Now that these models are popular, applications often expose interfaces for collecting preferences directly from users during everyday use, much like how other technology products will A/B test new features in small subsets of the production usage.
 It depends on the application whether this preference data is used directly to train the future models, or if it is used just as an evaluation of models' performance relative to each other.
 An example interaction of this form is shown below in @fig:preference-chatgpt for an earlier version of ChatGPT.
 
@@ -107,7 +107,7 @@ One simple way to collect ratings is to score a *single* completion on a 1-5 sca
 With multiple completions to the same prompt, a simple way to make preference data would be to choose the highest rated completion and pair it randomly with a lower scored completion (as done for UltraFeedback and derivative works [@cui2023ultrafeedback]).
 
 However, the most common technique for collecting preferences is to use a Likert scale for relative rankings [@likert1932technique], which asks users to select which response they prefer in a group of completions.
-For example, a 5 point Likert scale would look like the following (note that, yes, a Likert scale uses a single integer to record the ranking, much like a rating, so it's how the data is structured that is the core difference in the two ways of collecting preference data):
+For example, a 5-point Likert scale would look like the following (note that, yes, a Likert scale uses a single integer to record the ranking, much like a rating, so it's how the data is structured that is the core difference in the two ways of collecting preference data):
 
 | A$>>$B | A$>$B | Tie | B$>$A | B$>>$A |
 |:------:|:-----:|:-----:|:-----:|:------:|
@@ -123,7 +123,7 @@ An even scale removes the possibility of ties:
 |:-------:|:-----:|:-----:|:-----:|:------:|:-----:|:-----:|:-------:|
 | 1     | 2   | 3   | 4   | 5    | 6   | 7   | 8     |
 
-Table: An example 8-wise Likert scale between two responses, A and B. {#tbl:likert8}
+Table: An example 8-point Likert scale between two responses, A and B. {#tbl:likert8}
 
 In this case [@bai2022training], as in other works, this information is still reduced to a binary signal for the training of a reward model.
 
@@ -220,7 +220,7 @@ If the data cannot be easily slotted into an existing RLHF data pipeline, it'll 
 Collecting data that cannot be seamlessly integrated into training pipelines often becomes stale and a waste of resources.
 
 The data is delivered in weekly batches with more data coming later in the contract. 
-For example, a typical preference data contract might span a 6 week delivery period.
+For example, a typical preference data contract might span a 6-week delivery period.
 The first weeks are for further calibration and the later weeks are when teams hope to most improve their model.
 
 ![Overview of the multi-batch cycle for obtaining human preference data from a vendor. The ramp up period allows a narrowing of goals and methodology in order to create the best possible data. It is expected that a larger proportion of the data from the earlier batches will have to be thrown out due to quality issues. This is one timeline example for a smaller data contract (~$500K) and much larger data contracts can vary substantially.](images/pref-data-timeline.png){#fig:preferences .center}

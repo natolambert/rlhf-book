@@ -26,6 +26,11 @@ uv run python -c "import matplotlib"
 python book/scripts/some_script.py
 ```
 
+## Agent Skills
+
+The repo includes Claude Code skills under `.claude/skills/`.
+For code experiments, use `.claude/skills/run-rlhf-code-experiment/SKILL.md`; it maps reader goals to the maintained examples under `code/` and specifies what metrics to report.
+
 ## Directory Structure
 
 ```
@@ -118,6 +123,7 @@ The Citation block (which has a different heading level across pages — h3 on i
 - Use consistent visual grammar across related figures
 - Prefer SVG for scalability, PNG for final book assets
 - Mockups are iterative - not pixel-perfect
+- Trailing whitespace at the end of Markdown lines is acceptable; do not remove it during cleanup or typo-only edits.
 
 ## Next Steps (Diagrams PR)
 
