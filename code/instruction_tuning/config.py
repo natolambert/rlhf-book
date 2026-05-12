@@ -1,7 +1,5 @@
 # Configuration for Instruction Tuning (SFT).
 
-from typing import Literal
-
 import yaml
 from pydantic import BaseModel
 
@@ -17,8 +15,6 @@ class Config(BaseModel):
         dataset_name, dataset_split: HuggingFace dataset identifier and split.
         max_samples: Optional cap on training rows for quick experiments.
         max_length: Maximum total sequence length (prompt + response).
-        masking: ``final_assistant`` trains on the last assistant turn only;
-            ``user_only`` trains on every assistant turn (chapter 4).
 
         lr, num_epochs, batch_size, gradient_accumulation_steps, warmup_ratio,
         weight_decay, max_grad_norm: standard AdamW SFT knobs.
@@ -41,7 +37,6 @@ class Config(BaseModel):
     dataset_split: str = "train"
     max_samples: int | None = None
     max_length: int = 2048
-    masking: Literal["final_assistant", "user_only"] = "final_assistant"
 
     # Training
     lr: float = 5.0e-6

@@ -47,18 +47,6 @@ WANDB_PROJECT=rlhf-book uv run python -m instruction_tuning.train \
 4. Periodically generate completions for a fixed prompt pool (including the
    capital-of-France prompt) and log them to W&B alongside the loss.
 
-## Masking Modes
-
-Set in the config under `masking:`. From chapter 4:
-
-| Mode | Description |
-|------|-------------|
-| `final_assistant` | Loss only on the last assistant turn. Earlier user/assistant turns are masked. Simpler; the default. |
-| `user_only` | Loss on every assistant turn; user/system turns are masked. Squeezes more signal out of multi-turn rows. |
-
-Most of No Robots is single-turn, so the two modes converge for the bulk of
-the data. The knob is exposed for educational completeness.
-
 ## Datasets
 
 Default: `HuggingFaceH4/no_robots` (CC BY-NC 4.0). 9.5K human-written

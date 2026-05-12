@@ -13,7 +13,6 @@ dataset_name: HuggingFaceH4/no_robots
 dataset_split: train
 max_samples: null  # use all ~9.5K rows
 max_length: 2048
-masking: final_assistant  # 'user_only' to train on every assistant turn
 
 # Training
 lr: 5.0e-6

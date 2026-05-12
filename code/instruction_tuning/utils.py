@@ -38,7 +38,6 @@ DEFAULT_SAMPLE_PROMPTS: list[str] = [
 
 
 def seed_everything(seed: int) -> None:
-    """Set all random seeds for reproducibility."""
     random.seed(seed)
     os.environ["PYTHONHASHSEED"] = str(seed)
     np.random.seed(seed)
@@ -50,7 +49,6 @@ def seed_everything(seed: int) -> None:
 
 
 def get_attn_implementation() -> str:
-    """Best attention implementation for this platform."""
     if platform.machine() != "x86_64":
         return "sdpa"
     try:
@@ -62,7 +60,6 @@ def get_attn_implementation() -> str:
 
 
 def load_model(cfg: Config, device: torch.device):
-    """Load the base model and tokenizer."""
     attn_impl = get_attn_implementation()
     tokenizer = AutoTokenizer.from_pretrained(cfg.model_name, trust_remote_code=False)
 
@@ -145,45 +142,18 @@ def _encode_row(
     messages: list[dict],
     tokenizer: PreTrainedTokenizer,
     max_length: int,
-    masking: str,
 ) -> dict[str, torch.Tensor] | None:
-    """Render ``messages`` with the chat template and build prompt-masked labels.
-
-    Strategy:
-      - ``final_assistant``: only the final assistant turn contributes to the loss.
-      - ``user_only``: every assistant turn contributes; user/system turns are masked.
-
-    Returns ``None`` if the row has no assistant turn or yields no trainable tokens.
-    """
-    assistant_idxs = [i for i, m in enumerate(messages) if m["role"] == "assistant"]
-    if not assistant_idxs:
+    """Render ``messages`` with the chat template and mask all but the final assistant turn."""
+    if not messages or messages[-1]["role"] != "assistant":
         return None
 
-    if masking == "final_assistant":
-        loss_idxs = [assistant_idxs[-1]]
-    elif masking == "user_only":
-        loss_idxs = assistant_idxs
-    else:
-        raise ValueError(f"Unknown masking mode: {masking}")
-
-    full_ids = tokenizer.apply_chat_template(messages, tokenize=True, add_generation_prompt=False)
-    labels = [IGNORE_INDEX] * len(full_ids)
-
-    # For each assistant turn that should contribute to the loss, find its
-    # token range by tokenizing the conversation up to (and including) that
-    # turn and comparing against the conversation up to the previous turn.
-    for idx in loss_idxs:
-        prefix_ids = tokenizer.apply_chat_template(
-            messages[:idx], tokenize=True, add_generation_prompt=True
-        )
-        upto_ids = tokenizer.apply_chat_template(
-            messages[: idx + 1], tokenize=True, add_generation_prompt=False
-        )
-        start, end = len(prefix_ids), len(upto_ids)
-        if end > len(full_ids):
-            return None
-        for j in range(start, end):
-            labels[j] = full_ids[j]
+    prompt_ids = tokenizer.apply_chat_template(
+        messages[:-1], tokenize=True, add_generation_prompt=True, return_dict=False
+    )
+    full_ids = tokenizer.apply_chat_template(
+        messages, tokenize=True, add_generation_prompt=False, return_dict=False
+    )
+    labels = [IGNORE_INDEX] * len(prompt_ids) + list(full_ids[len(prompt_ids) :])
 
     if max_length is not None and len(full_ids) > max_length:
         full_ids = full_ids[:max_length]
@@ -199,8 +169,6 @@ def _encode_row(
 
 
 class SFTDataset(Dataset):
-    """Pre-tokenized SFT dataset with prompt-masked labels."""
-
     def __init__(self, encoded: list[dict[str, torch.Tensor]]):
         self.encoded = encoded
 
@@ -232,7 +200,6 @@ def _collate(examples: list[dict[str, torch.Tensor]], pad_token_id: int) -> SFTB
 
 
 def create_dataloader(cfg: Config, tokenizer: PreTrainedTokenizer) -> DataLoader:
-    """Load, tokenize, and pack the SFT dataset into a DataLoader."""
     raw = load_dataset(cfg.dataset_name, split=cfg.dataset_split)
     if cfg.max_samples is not None and len(raw) > cfg.max_samples:
         raw = raw.select(range(cfg.max_samples))
@@ -241,7 +208,7 @@ def create_dataloader(cfg: Config, tokenizer: PreTrainedTokenizer) -> DataLoader
     skipped = 0
     for example in raw:
         messages = _normalize_messages(example)
-        row = _encode_row(messages, tokenizer, cfg.max_length, cfg.masking)
+        row = _encode_row(messages, tokenizer, cfg.max_length)
         if row is None:
             skipped += 1
             continue
@@ -273,7 +240,6 @@ def generate_samples(
     prompts: list[str] | None = None,
     max_new_tokens: int | None = None,
 ) -> None:
-    """Generate one response per prompt and print to the console for inspection."""
     was_training = model.training
     model.eval()
     new_tokens = max_new_tokens if max_new_tokens is not None else cfg.sample_max_tokens
@@ -327,14 +293,12 @@ def progress_bar() -> Progress:
 
 
 def print_training_info(model, cfg: Config, total_steps: int, warmup_steps: int) -> None:
-    """Render the SFT configuration and step schedule to the console."""
     console.print(
         Panel(
             f"[bold magenta]Model:[/bold magenta] {cfg.model_name}\n"
             f"[dim]Parameters:[/dim] {sum(p.numel() for p in model.parameters()):,}\n"
             f"[dim]Device:[/dim] {model.device}\n"
             f"[dim]Dataset:[/dim] {cfg.dataset_name} (split={cfg.dataset_split})\n"
-            f"[dim]Masking:[/dim] {cfg.masking}\n"
             f"[dim]Effective batch:[/dim] {cfg.batch_size} x {cfg.gradient_accumulation_steps}"
             f" = {cfg.batch_size * cfg.gradient_accumulation_steps}\n"
             f"[dim]Steps:[/dim] {total_steps} total, {warmup_steps} warmup",
@@ -345,14 +309,12 @@ def print_training_info(model, cfg: Config, total_steps: int, warmup_steps: int)
 
 
 def print_epoch_header(epoch_idx: int, total_epochs: int) -> None:
-    """Render an epoch header rule to the console."""
     console.rule(f"[bold cyan]Epoch {epoch_idx + 1}/{total_epochs}[/bold cyan]", style="cyan")
 
 
 def make_lr_scheduler(
     optimizer: torch.optim.Optimizer, total_steps: int, warmup_ratio: float
 ) -> torch.optim.lr_scheduler.LambdaLR:
-    """Linear warmup followed by linear decay to zero (matches OLMo-2 SFT)."""
     warmup_steps = int(total_steps * warmup_ratio)
 
     def lr_lambda(step: int) -> float:
