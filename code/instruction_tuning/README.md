@@ -47,6 +47,27 @@ WANDB_PROJECT=rlhf-book uv run python -m instruction_tuning.train \
 4. Periodically generate completions for a fixed prompt pool (including the
    capital-of-France prompt) and log them to W&B alongside the loss.
 
+## OLMo-2 Chat Format Quirk
+
+The OLMo-2 tokenizer overloads `<|endoftext|>` (id `100257`) as BOS, EOS,
+*and* UNK; the only other special token is `<|pad|>`. So every rendered
+conversation looks like:
+
+```
+<|endoftext|><|user|>\nhi\n<|assistant|>\nhello<|endoftext|>
+^^^^^^^^^^^^                                   ^^^^^^^^^^^^
+   BOS (start of conversation)                 EOS (end of assistant turn)
+```
+
+The model disambiguates from context: at the start, followed by `<|user|>`,
+it means "begin"; after an assistant message, it means "stop." Other
+families avoid this — Llama-3 uses distinct `<|begin_of_text|>` /
+`<|end_of_text|>`, Qwen uses `<|im_start|>` / `<|im_end|>`. The
+`<|user|>` / `<|assistant|>` / `<|system|>` role markers are *not* special
+tokens in OLMo-2's vocabulary; they're tokenized as plain BPE pieces (`<`,
+`|`, `user`, `|`, `>`), which is why the base model (pre-SFT) treats them
+as ordinary text and produces nonsense like `<|admin|>` continuations.
+
 ## Dataset
 
 `HuggingFaceH4/no_robots` (CC BY-NC 4.0). 9.5K human-written

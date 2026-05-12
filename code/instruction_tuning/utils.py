@@ -10,6 +10,7 @@ import torch
 import torch.nn.functional as F
 from datasets import load_dataset
 from rich.console import Console
+from rich.markup import escape
 from rich.panel import Panel
 from rich.progress import (
     BarColumn,
@@ -35,6 +36,21 @@ DEFAULT_SAMPLE_PROMPTS: list[str] = [
     "Write a haiku about programming.",
     "How does photosynthesis work?",
 ]
+
+TOKEN_COLORS = {
+    "<|endoftext|>": "bold red",
+    "<|pad|>": "bold magenta",
+    "<|user|>": "bold blue",
+    "<|assistant|>": "bold green",
+    "<|system|>": "bold yellow",
+}
+
+
+def _colorize_tokens(text: str) -> str:
+    text = escape(text)
+    for marker, style in TOKEN_COLORS.items():
+        text = text.replace(marker, f"[{style}]{marker}[/{style}]")
+    return text
 
 
 def seed_everything(seed: int) -> None:
@@ -221,9 +237,9 @@ def generate_samples(
     if prompts is None:
         prompts = DEFAULT_SAMPLE_PROMPTS
 
-    console.print(f"\n[bold yellow]Samples @ step {step}:[/bold yellow]")
+    console.rule(f"[bold yellow]Samples @ step {step}[/bold yellow]", style="yellow")
 
-    for prompt_id, prompt in enumerate(prompts):
+    for prompt_id, prompt in enumerate(prompts, start=1):
         messages = [{"role": "user", "content": prompt}]
         formatted = tokenizer.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=True
@@ -244,11 +260,15 @@ def generate_samples(
             kwargs.update(temperature=cfg.sample_temperature, top_p=cfg.sample_top_p)
         with torch.no_grad():
             out = model.generate(**kwargs)
-        response = tokenizer.decode(
-            out[0][inputs["input_ids"].shape[1] :], skip_special_tokens=True
+        full_text = tokenizer.decode(out[0], skip_special_tokens=False)
+        console.print(
+            Panel(
+                _colorize_tokens(full_text),
+                title=f"[bold cyan]Prompt {prompt_id}[/bold cyan]",
+                title_align="left",
+                border_style="cyan",
+            )
         )
-        console.print(f"[bold cyan]Prompt {prompt_id}:[/bold cyan] {prompt}")
-        console.print(f"[bold green]Response:[/bold green] {response[:500]}")
 
     if was_training:
         model.train()
