@@ -181,7 +181,7 @@
   <h1>RL Cheatsheet</h1>
 
   <p>
-    A one-page reference of all core RL loss functions used in language model post-training.
+    A one-page reference of core RL loss functions used in language model post-training.
     Covers policy gradient methods, reward modeling, and direct alignment.
     From the <a href="/c/06-policy-gradients.html">Reinforcement Learning</a> and <a href="/c/08-direct-alignment.html">Direct Alignment</a> chapters.
   </p>
@@ -211,7 +211,7 @@
       </tr>
       <tr>
         <td>
-          REINFORCE Leave One Out
+          REINFORCE Leave-One-Out
           <span class="subtitle">(RLOO)</span>
         </td>
         <td>\(\displaystyle -\;\frac{1}{K}\sum_{i=1}^{K}\sum_t \log \pi_\theta(a_{i,t}\mid s_{i,t})\!\left(R_i - \frac{1}{K\!-\!1}\sum_{j\neq i}R_j\right)\)</td>

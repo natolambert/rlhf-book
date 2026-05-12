@@ -16,7 +16,7 @@ next-url: "15-regularization"
 # Over-Optimization
 
 A core lesson one learns when using reinforcement learning heavily in their domain is that it is a very strong optimizer, which causes it to pull all the possible increase in reward out of the environment.
-In modern ML systems, especially with language models, we're using somewhat contrived notions of environment where the models generate completions (the actions) and an external verifier, i.e. a reward model or a scoring function provides feedback.
+In modern ML systems, especially with language models, we're using somewhat contrived notions of environment where the models generate completions (the actions) and an external verifier, such as a reward model or a scoring function, provides feedback.
 In this domain, it is common for over-optimization to occur, where the RL optimizers push the language models in directions where the generations satisfy our checker functions, but the behavior does not align with our training goals.
 This chapter provides an overview of this classic case of **over-optimization**.
 
@@ -82,7 +82,7 @@ Implicit feedback is actions taken by the user, such as re-rolling an output, cl
 The challenge here, and with most optimization changes to RLHF, is that there's a strong risk of losing stability when making the reward function more specific. 
 RL, as a strong optimizer, is increasingly likely to exploit the reward function when it is a smooth surface (and not just pairwise human values). 
 The expected solution to this is that future RLHF will be trained with both pairwise preference data and additional steering loss functions. 
-There are also a bunch of different loss functions that can be used to better handle pairwise data, such as Mallow's model [@lu2011learning] or Plackett-Luce [@liu2019learning].
+There are also a bunch of different loss functions that can be used to better handle pairwise data, such as Mallows model [@lu2011learning] or Plackett-Luce [@liu2019learning].
 
 ### Over-Refusal and "Too Much RLHF"
 
@@ -119,7 +119,7 @@ As chat-based AI systems have proliferated, the prominence of these refusal beha
 The industry standard has shifted to a narrower set of harms and models that are balanced across views of controversial issues.
 
 The accepted best practice for mitigating this behavior is to modify the training data (such as with methods like Character Training covered in Chapter 17). 
-Today, a substantial amount of fine-tuning for AI applications is done by further fine-tuning so called "Instruct" or "Thinking" models that have already gone through substantial RLHF and other post-training before release.
+Today, a substantial amount of fine-tuning for AI applications is done by further fine-tuning so-called "Instruct" or "Thinking" models that have already gone through substantial RLHF and other post-training before release.
 These already-trained models can be much harder to change, e.g. to remove this over-refusal, and starting with a base model directly at the end of large-scale autoregressive pretraining is often best for steering this type of behavior.
 
 ## Quantitative Over-Optimization

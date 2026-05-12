@@ -123,6 +123,7 @@ The Citation block (which has a different heading level across pages — h3 on i
 - Use consistent visual grammar across related figures
 - Prefer SVG for scalability, PNG for final book assets
 - Mockups are iterative - not pixel-perfect
+- Trailing whitespace at the end of Markdown lines is acceptable; do not remove it during cleanup or typo-only edits.
 
 ## Next Steps (Diagrams PR)
 
