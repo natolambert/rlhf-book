@@ -11,6 +11,7 @@ page-title: Reasoning and Inference-Time Scaling
 search-title: "Chapter 7: Reasoning and Inference-Time Scaling"
 next-chapter: "Direct-Alignment Algorithms"
 next-url: "08-direct-alignment"
+lecture-label: "Lecture 5: Reasoning (Chap. 7)"
 ---
 
 # Reasoning and Inference-Time Scaling
