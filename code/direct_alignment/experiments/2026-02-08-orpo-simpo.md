@@ -32,45 +32,45 @@ This is an experiment log for the ORPO/SimPO debugging and sweep work done in th
 
 ## Baseline Runs (Before This Sweep)
 
-- ORPO baseline from earlier work: https://wandb.ai/natolambert/rlhf-book/runs/oulqxp2i
-- SimPO baseline from earlier work: https://wandb.ai/natolambert/rlhf-book/runs/7s100ned
+- ORPO baseline from earlier work: https://wandb.ai/rlhf-book/core/runs/oulqxp2i
+- SimPO baseline from earlier work: https://wandb.ai/rlhf-book/core/runs/7s100ned
 
 ## W&B Runs Tried In This Session
 
-- SimPO, `lr=1e-6`, `gamma=0.3`, `samples=3200`, default script length (512): https://wandb.ai/natolambert/rlhf-book/runs/53pqrzt4
+- SimPO, `lr=1e-6`, `gamma=0.3`, `samples=3200`, default script length (512): https://wandb.ai/rlhf-book/core/runs/53pqrzt4
   - Final: `loss=0.7520`, `accuracy=75%`, `margins=0.31738`.
-- SimPO, `lr=1e-6`, `gamma=0.1`, `samples=3200`, default script length (512): https://wandb.ai/natolambert/rlhf-book/runs/6yzwk11y
+- SimPO, `lr=1e-6`, `gamma=0.1`, `samples=3200`, default script length (512): https://wandb.ai/rlhf-book/core/runs/6yzwk11y
   - Final: `loss=0.5747`, `accuracy=75%`, `margins=0.31738`.
-- SimPO, `lr=2e-6`, `gamma=0.1`, `samples=3200`, default script length (512): https://wandb.ai/natolambert/rlhf-book/runs/2gz0njwu
+- SimPO, `lr=2e-6`, `gamma=0.1`, `samples=3200`, default script length (512): https://wandb.ai/rlhf-book/core/runs/2gz0njwu
   - Final: `loss=0.5693`, `accuracy=75%`, `margins=0.32861`.
-- SimPO, `lr=2e-6`, `gamma=0.0`, `samples=3200`, default script length (512): https://wandb.ai/natolambert/rlhf-book/runs/sass9db0
+- SimPO, `lr=2e-6`, `gamma=0.0`, `samples=3200`, default script length (512): https://wandb.ai/rlhf-book/core/runs/sass9db0
   - Final: `loss=0.4944`, `accuracy=75%`, `margins=0.32764`.
-- SimPO, `lr=2e-6`, `gamma=0.1`, `max_length=1024`, `samples=1600`: https://wandb.ai/natolambert/rlhf-book/runs/bxqfssoz
+- SimPO, `lr=2e-6`, `gamma=0.1`, `max_length=1024`, `samples=1600`: https://wandb.ai/rlhf-book/core/runs/bxqfssoz
   - Final: `loss=0.9219`, `accuracy=50%`, `margins=0.01562`.
-- SimPO, `lr=2e-6`, `gamma=0.0`, `max_length=1024`, `samples=1600`: https://wandb.ai/natolambert/rlhf-book/runs/6h01t41k
+- SimPO, `lr=2e-6`, `gamma=0.0`, `max_length=1024`, `samples=1600`: https://wandb.ai/rlhf-book/core/runs/6h01t41k
   - Final: `loss=0.8149`, `accuracy=50%`, `margins=0.01709`.
-- SimPO, `lr=2e-6`, `gamma=0.0`, `max_length=512`, `samples=1600`: https://wandb.ai/natolambert/rlhf-book/runs/a57ccg0b
+- SimPO, `lr=2e-6`, `gamma=0.0`, `max_length=512`, `samples=1600`: https://wandb.ai/rlhf-book/core/runs/a57ccg0b
   - Final: `loss=0.7498`, `accuracy=50%`, `margins=0.06494`.
-- SimPO, `lr=2e-6`, `gamma=0.0`, `max_length=1024`, `samples=3200`: https://wandb.ai/natolambert/rlhf-book/runs/oek7xtxa
+- SimPO, `lr=2e-6`, `gamma=0.0`, `max_length=1024`, `samples=3200`: https://wandb.ai/rlhf-book/core/runs/oek7xtxa
   - Final: `loss=0.4485`, `accuracy=75%`, `margins=0.38135`.
-- ORPO, `beta=0.5`, `lr=5e-6`, `max_length=2048`, `samples=1600`: https://wandb.ai/natolambert/rlhf-book/runs/ha54crna
+- ORPO, `beta=0.5`, `lr=5e-6`, `max_length=2048`, `samples=1600`: https://wandb.ai/rlhf-book/core/runs/ha54crna
   - Final: `loss=1.4657`, `accuracy=50%`, `margins=0.00964`, `log_odds_ratio=0.00557`, `or_loss=0.38925`.
-- ORPO debug sanity, `beta=1.0`, `lr=5e-6`, `max_length=2048`, `samples=64`: https://wandb.ai/natolambert/rlhf-book/runs/g83zbxka
+- ORPO debug sanity, `beta=1.0`, `lr=5e-6`, `max_length=2048`, `samples=64`: https://wandb.ai/rlhf-book/core/runs/g83zbxka
   - Final: `loss=1.5125`, `accuracy=50%`, `margins=0.10352`, `log_odds_ratio=0.19609`, `or_loss=0.6121`.
-- ORPO long follow-up, `beta=1.0`, `lr=5e-6`, `max_length=2048`, `samples=1600`: https://wandb.ai/natolambert/rlhf-book/runs/tmh0enbt
+- ORPO long follow-up, `beta=1.0`, `lr=5e-6`, `max_length=2048`, `samples=1600`: https://wandb.ai/rlhf-book/core/runs/tmh0enbt
   - Status: in progress as of last check in this session.
 
 ### Additional Runs (Later in Session)
 
-- ORPO quick foreground sanity, `beta=2.0`, `lr=5e-6`, `max_length=2048`, `samples=64`: https://wandb.ai/natolambert/rlhf-book/runs/qnevkkls
+- ORPO quick foreground sanity, `beta=2.0`, `lr=5e-6`, `max_length=2048`, `samples=64`: https://wandb.ai/rlhf-book/core/runs/qnevkkls
   - Final: `loss=1.9281`, `accuracy=75%`, `margins=0.41602`, `log_odds_ratio=0.36625`, `or_loss=1.09409`, `sft_loss=0.83301`.
-- ORPO probe, `beta=2.0`, `lr=5e-6`, `max_length=2048`, `samples=160`: https://wandb.ai/natolambert/rlhf-book/runs/7pruw05c
+- ORPO probe, `beta=2.0`, `lr=5e-6`, `max_length=2048`, `samples=160`: https://wandb.ai/rlhf-book/core/runs/7pruw05c
   - Final: `loss=3.2088`, `accuracy=37.5%`, `margins=-0.48047`, `log_odds_ratio=-0.35272`, `or_loss=1.87631`, `sft_loss=1.33203`.
-- ORPO probe, `beta=1.0`, `lr=8e-6`, `max_length=2048`, `samples=160`: https://wandb.ai/natolambert/rlhf-book/runs/58ywuqr4
+- ORPO probe, `beta=1.0`, `lr=8e-6`, `max_length=2048`, `samples=160`: https://wandb.ai/rlhf-book/core/runs/58ywuqr4
   - Final: `loss=2.2654`, `accuracy=37.5%`, `margins=-0.23877`, `log_odds_ratio=-0.35103`, `or_loss=0.93680`, `sft_loss=1.33008`.
-- SimPO probe, `beta=2.0`, `gamma=0.0`, `lr=2e-6`, `max_length=1024`, `samples=160`: https://wandb.ai/natolambert/rlhf-book/runs/myvyfkat
+- SimPO probe, `beta=2.0`, `gamma=0.0`, `lr=2e-6`, `max_length=1024`, `samples=160`: https://wandb.ai/rlhf-book/core/runs/myvyfkat
   - Final: `loss=1.0664`, `accuracy=37.5%`, `margins=-0.24170`.
-- ORPO probe (aborted at step 12), `beta=1.0`, `lr=1e-5`, `max_length=2048`, `samples=160`: https://wandb.ai/natolambert/rlhf-book/runs/hi16cuou
+- ORPO probe (aborted at step 12), `beta=1.0`, `lr=1e-5`, `max_length=2048`, `samples=160`: https://wandb.ai/rlhf-book/core/runs/hi16cuou
   - Read: same oscillatory, batch-dominated pattern through step 12 (no clear early trend improvement vs lower-LR probes).
 
 ## Non-W&B / Aborted Probes
@@ -91,4 +91,4 @@ This is an experiment log for the ORPO/SimPO debugging and sweep work done in th
 - Add a stable eval signal (fixed eval subset and periodic eval logging) before trusting short-run train-step curves.
 - Re-run ORPO/SimPO with larger effective batch for smoother metrics (e.g., target effective batch 16-32 if memory allows).
 - After picking the best-smoothed config, scale to `max_samples=640`, then `1600+`.
-- Keep W&B enabled for all runs (`WANDB_PROJECT=rlhf-book`, never `WANDB_MODE=disabled` for benchmark sweeps).
+- Keep W&B enabled for all runs (`WANDB_ENTITY=rlhf-book WANDB_PROJECT=core`, never `WANDB_MODE=disabled` for benchmark sweeps).

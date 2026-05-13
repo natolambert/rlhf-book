@@ -19,9 +19,9 @@ See **Chapter 5: Reward Models** for mathematical derivations and intuitions.
 
 | Algorithm | wandb | Status |
 |-----------|-------|--------|
-| **ORM** | [run](https://wandb.ai/natolambert/rlhf-book/runs/xm8mlcpl) | Experimental |
-| **Preference RM** | [run](https://wandb.ai/natolambert/rlhf-book/runs/6sninll5) | Experimental |
-| **PRM** | [run](https://wandb.ai/natolambert/rlhf-book/runs/abhkbn4q) | Experimental |
+| **ORM** | [run](https://wandb.ai/rlhf-book/core/runs/xm8mlcpl) | Experimental |
+| **Preference RM** | [run](https://wandb.ai/rlhf-book/core/runs/6sninll5) | Experimental |
+| **PRM** | [run](https://wandb.ai/rlhf-book/core/runs/abhkbn4q) | Experimental |
 
 ## Quick Start
 

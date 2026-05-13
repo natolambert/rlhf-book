@@ -131,6 +131,7 @@ class Config(BaseModel):
     model_device_id: int = 0
 
     # Logging
+    wandb_entity: str | None = None
     wandb_project: str | None = None
     wandb_run_name: str | None = None
 

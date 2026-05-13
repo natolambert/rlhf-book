@@ -18,8 +18,12 @@ See `CONTRIBUTING.md` for branch naming, PR conventions, and pre-submit checks.
 cd code/
 uv sync
 
-# Optional: log to wandb (public project for book examples)
+# Optional: log to your own/default W&B entity
 export WANDB_PROJECT=rlhf-book
+
+# Maintainers creating official reference runs should instead target the team project:
+# export WANDB_ENTITY=rlhf-book
+# export WANDB_PROJECT=core
 
 # Run training scripts
 uv run python -m policy_gradients.train --config policy_gradients/configs/grpo.yaml
@@ -91,7 +95,11 @@ If not installed, prompt user to install:
 
 ## Wandb
 
-Reference runs are published at https://wandb.ai/natolambert/rlhf-book (public, no login needed). When contributing new algorithms or configs, log runs to your own wandb project and include the link in your PR.
+Official runs are published at https://wandb.ai/rlhf-book/core. For ordinary
+contributor or reader runs, log to your own/default W&B entity with
+`WANDB_PROJECT=rlhf-book`. If the task is to publish, refresh, or validate
+official reference runs and you have access to the `rlhf-book` team, set
+`WANDB_ENTITY=rlhf-book` and `WANDB_PROJECT=core`.
 
 ## Memory Notes
 

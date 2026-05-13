@@ -131,16 +131,16 @@ uv run python -m policy_gradients.train --config policy_gradients/configs/rloo.y
 
 | Algorithm | Config | Description | Example Run |
 |-----------|--------|-------------|-------------|
-| REINFORCE | `reinforce.yaml` | Williams (1992) - vanilla policy gradient | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/0uqbq4oz) |
-| RLOO | `rloo.yaml` | REINFORCE Leave-One-Out (Ahmadian et al., 2024) | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/07xeasn8) |
-| PPO | `ppo.yaml` | Proximal Policy Optimization (Schulman et al., 2017) | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/ku3r3g9j) |
-| GRPO | `grpo.yaml` | Group Relative Policy Optimization (Shao et al., 2024) | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/vjp7lgdi) |
-| Dr. GRPO | `drgrpo.yaml` | Dr. GRPO (Liu et al., 2025) | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/a1swuynq) |
-| GSPO | `gspo.yaml` | Group-Sequence Policy Optimization (Zheng et al., 2025) | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/10sxytli) |
-| CISPO | `cispo.yaml` | Clipped Importance Sampling PO (MiniMax, 2025) | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/6dg0m06n) |
-| SAPO | `sapo.yaml` | Soft Adaptive Policy Optimization (Qwen Team, 2025) | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/79608nwk) |
-| DAPO | `dapo.yaml` | Decoupled Clip and Dynamic sAmpling Policy Optimization (ByteDance, 2025) | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/db1pipip) |
-| MaxRL | `maxrl.yaml` | Maximum Likelihood Reinforcement Learning (Tajwar et al., 2026) | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/fdowf1se) |
+| REINFORCE | `reinforce.yaml` | Williams (1992) - vanilla policy gradient | [wandb](https://wandb.ai/rlhf-book/core/runs/0uqbq4oz) |
+| RLOO | `rloo.yaml` | REINFORCE Leave-One-Out (Ahmadian et al., 2024) | [wandb](https://wandb.ai/rlhf-book/core/runs/07xeasn8) |
+| PPO | `ppo.yaml` | Proximal Policy Optimization (Schulman et al., 2017) | [wandb](https://wandb.ai/rlhf-book/core/runs/ku3r3g9j) |
+| GRPO | `grpo.yaml` | Group Relative Policy Optimization (Shao et al., 2024) | [wandb](https://wandb.ai/rlhf-book/core/runs/vjp7lgdi) |
+| Dr. GRPO | `drgrpo.yaml` | Dr. GRPO (Liu et al., 2025) | [wandb](https://wandb.ai/rlhf-book/core/runs/a1swuynq) |
+| GSPO | `gspo.yaml` | Group-Sequence Policy Optimization (Zheng et al., 2025) | [wandb](https://wandb.ai/rlhf-book/core/runs/10sxytli) |
+| CISPO | `cispo.yaml` | Clipped Importance Sampling PO (MiniMax, 2025) | [wandb](https://wandb.ai/rlhf-book/core/runs/6dg0m06n) |
+| SAPO | `sapo.yaml` | Soft Adaptive Policy Optimization (Qwen Team, 2025) | [wandb](https://wandb.ai/rlhf-book/core/runs/79608nwk) |
+| DAPO | `dapo.yaml` | Decoupled Clip and Dynamic sAmpling Policy Optimization (ByteDance, 2025) | [wandb](https://wandb.ai/rlhf-book/core/runs/db1pipip) |
+| MaxRL | `maxrl.yaml` | Maximum Likelihood Reinforcement Learning (Tajwar et al., 2026) | [wandb](https://wandb.ai/rlhf-book/core/runs/fdowf1se) |
 
 ## Reward Model Training
 
@@ -179,9 +179,9 @@ learning to rate individual reasoning steps as {-1, 0, 1} (bad, neutral, good).
 
 | Model | Description | Example Run |
 |-------|-------------|-------------|
-| Preference RM | Bradley-Terry on UltraFeedback | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/1g3y9bcc) |
-| ORM | Outcome RM on GSM8K | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/3gkoqb7f) |
-| PRM | Process RM on PRM800K | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/iv4d966d) |
+| Preference RM | Bradley-Terry on UltraFeedback | [wandb](https://wandb.ai/rlhf-book/core/runs/1g3y9bcc) |
+| ORM | Outcome RM on GSM8K | [wandb](https://wandb.ai/rlhf-book/core/runs/3gkoqb7f) |
+| PRM | Process RM on PRM800K | [wandb](https://wandb.ai/rlhf-book/core/runs/iv4d966d) |
 
 ## Direct Alignment Training
 
@@ -250,10 +250,10 @@ uv run python -m rejection_sampling.train \
 
 | Strategy | Description | Example Run |
 |----------|-------------|-------------|
-| `top_per_prompt` | Best-of-N completion per prompt | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/ohm3xnga) |
-| `random_per_prompt` | Random per-prompt control | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/y3pbcla7) |
-| `top_k_overall` | Best K completions across the full pool | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/w75hklzs) |
-| `random_k_overall` | Random flat-pool control | [wandb](https://wandb.ai/natolambert/rlhf-book/runs/egeyr1q3) |
+| `top_per_prompt` | Best-of-N completion per prompt | [wandb](https://wandb.ai/rlhf-book/core/runs/ohm3xnga) |
+| `random_per_prompt` | Random per-prompt control | [wandb](https://wandb.ai/rlhf-book/core/runs/y3pbcla7) |
+| `top_k_overall` | Best K completions across the full pool | [wandb](https://wandb.ai/rlhf-book/core/runs/w75hklzs) |
+| `random_k_overall` | Random flat-pool control | [wandb](https://wandb.ai/rlhf-book/core/runs/egeyr1q3) |
 
 On the reference 1k-train / 200-test GSM8K slice, `top_k_overall` beat its
 matched random baseline, while `top_per_prompt` and `random_per_prompt` were
@@ -272,13 +272,18 @@ export WANDB_API_KEY="your-key"
 # Optional: Override project name (default: from config file)
 export WANDB_PROJECT="rlhf-book"
 
+# Official maintainers publishing reference runs can target the team project:
+# export WANDB_ENTITY="rlhf-book"
+# export WANDB_PROJECT="core"
+
 # Optional: Override run name
 export WANDB_RUN_NAME="grpo_experiment_1"
 ```
 
-The official runs for this repo are logged to: **[wandb.ai/natolambert/rlhf-book](https://wandb.ai/natolambert/rlhf-book)**
+Official runs for this repo are logged to: **[wandb.ai/rlhf-book/core](https://wandb.ai/rlhf-book/core)**
 
-All runs are **public** - no login required to view training curves, configs, and metrics.
+For public reference links, set the project visibility to **Public** in W&B so
+no login is required to view training curves, configs, and metrics.
 
 To disable wandb logging entirely, set `wandb_project: null` in your config or:
 ```bash

@@ -5,6 +5,7 @@ On release, entries get moved under a version heading.
 
 ## Unreleased
 
+- 2026-05-13: Added optional `WANDB_ENTITY` support across the code examples and migrated verified reference links to the `rlhf-book/core` team project.
 - 2026-05-12: [PR #419](https://github.com/natolambert/rlhf-book/pull/419) fixed minor code docs and comments, direct-alignment experiment script paths, rejection-sampling answer matching, policy-gradient loss exports, and PRM fallback rating handling.
 - 2026-05-11: [PR #417](https://github.com/natolambert/rlhf-book/pull/417) documented reader experiment paths for the code examples, added agent guidance for running small RLHF Book experiments, and expanded contributor notes for adding new modules.
 - 2026-05-06: [PR #400](https://github.com/natolambert/rlhf-book/pull/400) added `dpo_norm` variant in direct-alignment that applies standard DPO with average response log-probs for both policy and reference model.
