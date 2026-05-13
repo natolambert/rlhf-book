@@ -297,11 +297,13 @@ def main(cfg: Config) -> None:
         )
     )
 
+    wandb_entity = os.environ.get("WANDB_ENTITY", cfg.wandb_entity)
     wandb_project = os.environ.get("WANDB_PROJECT", cfg.wandb_project)
     if wandb_project is None:
         wandb.init(mode="disabled")
     else:
         wandb.init(
+            entity=wandb_entity,
             project=wandb_project,
             name=os.environ.get("WANDB_RUN_NAME", cfg.wandb_run_name)
             or f"rs-{cfg.selection.strategy}",

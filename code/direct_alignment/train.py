@@ -569,6 +569,7 @@ def main(cfg: Config):
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
 
     # Initialize wandb
+    wandb_entity = os.environ.get("WANDB_ENTITY", cfg.wandb_entity)
     wandb_project = os.environ.get("WANDB_PROJECT", cfg.wandb_project)
     wandb_run_name = os.environ.get("WANDB_RUN_NAME", cfg.wandb_run_name)
 
@@ -576,6 +577,7 @@ def main(cfg: Config):
         wandb.init(mode="disabled")
     else:
         wandb.init(
+            entity=wandb_entity,
             project=wandb_project,
             name=wandb_run_name or f"{cfg.loss}-{cfg.model_name.split('/')[-1]}",
             config=vars(cfg),
@@ -782,6 +784,7 @@ def main_cli():
     parser.add_argument("--num_epochs", type=int, help="Number of epochs")
     parser.add_argument("--batch_size", type=int, help="Batch size")
     parser.add_argument("--gradient_accumulation_steps", type=int)
+    parser.add_argument("--wandb_entity", type=str, help="Wandb entity/team name")
     parser.add_argument("--wandb_project", type=str, help="Wandb project name")
     parser.add_argument(
         "--sample_every", type=int, help="Generate samples every N steps (0 to disable)"

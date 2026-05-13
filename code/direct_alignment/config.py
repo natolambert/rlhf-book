@@ -55,6 +55,7 @@ class Config:
     bf16: bool = True
 
     # Logging
+    wandb_entity: str | None = None
     wandb_project: str | None = None
     wandb_run_name: str | None = None
     log_every: int = 10

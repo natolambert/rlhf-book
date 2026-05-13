@@ -37,10 +37,10 @@ cache is shared across strategies — only the selection step differs.
 
 | Strategy | wandb | Status |
 |----------|-------|--------|
-| **top_per_prompt** | [rs_top_per_prompt_gsm8k](https://wandb.ai/natolambert/rlhf-book/runs/ohm3xnga) | ✅ Completed |
-| **random_per_prompt** | [rs_random_per_prompt_gsm8k](https://wandb.ai/natolambert/rlhf-book/runs/y3pbcla7) | ✅ Completed |
-| **top_k_overall** | [rs_top_k_overall_gsm8k](https://wandb.ai/natolambert/rlhf-book/runs/w75hklzs) | ✅ Completed |
-| **random_k_overall** | [rs_random_k_overall_gsm8k](https://wandb.ai/natolambert/rlhf-book/runs/egeyr1q3) | ✅ Completed |
+| **top_per_prompt** | [rs_top_per_prompt_gsm8k](https://wandb.ai/rlhf-book/core/runs/ohm3xnga) | ✅ Completed |
+| **random_per_prompt** | [rs_random_per_prompt_gsm8k](https://wandb.ai/rlhf-book/core/runs/y3pbcla7) | ✅ Completed |
+| **top_k_overall** | [rs_top_k_overall_gsm8k](https://wandb.ai/rlhf-book/core/runs/w75hklzs) | ✅ Completed |
+| **random_k_overall** | [rs_random_k_overall_gsm8k](https://wandb.ai/rlhf-book/core/runs/egeyr1q3) | ✅ Completed |
 
 ![Rejection sampling accuracy curves across the four reference runs](../images/wandb_rejection_sampling.png)
 
@@ -103,7 +103,10 @@ The `output/` directory is gitignored.
 
 ## Wandb
 
-The module reads `WANDB_PROJECT`, `WANDB_RUN_NAME`, and `WANDB_API_KEY` from
-the environment. The YAML configs set `wandb_project: rlhf-book` by default;
-set `WANDB_PROJECT` in your shell to override it, or set `wandb_project: null`
-in the YAML (and unset the env var) to disable logging entirely.
+The module reads `WANDB_ENTITY`, `WANDB_PROJECT`, `WANDB_RUN_NAME`, and
+`WANDB_API_KEY` from the environment. The YAML configs set
+`wandb_project: rlhf-book` by default and intentionally do not set an entity,
+so runs land in your default W&B account or team. Official maintainers can set
+`WANDB_ENTITY=rlhf-book WANDB_PROJECT=core` to publish reference runs, or set
+`wandb_project: null` in the YAML (and unset the env var) to disable logging
+entirely.

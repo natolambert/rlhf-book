@@ -11,14 +11,14 @@ As of 2026-02-08, ORPO/SimPO are still under investigation. See `direct_alignmen
 
 | Algorithm | wandb | Status |
 |-----------|-------|--------|
-| **DPO** | [dpo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/fzy8k8go) | ✅ Validated |
-| **DPO-Norm** | [dpo-norm-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/giyhitjw) | ✅ Validated |
-| **IPO** | [ipo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/5s29syo6) | ✅ Validated |
-| **SimPO** | [simpo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/ftv5rs3x) | ⚠️ Noisy - needs debugging |
-| **ORPO** | [orpo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/o38ffli5) | ⚠️ Noisy - needs debugging |
-| **KTO** | [kto-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/hgqrkfi6) | ✅ Validated |
-| **APO Zero** | [apo-zero-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/3m2uiyw3) | ✅ Validated |
-| **APO Down** | [apo-down-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/tqzkmyi6) | ✅ Validated |
+| **DPO** | [dpo-olmo-1b](https://wandb.ai/rlhf-book/core/runs/fzy8k8go) | ✅ Validated |
+| **DPO-Norm** | [dpo-norm-olmo-1b](https://wandb.ai/rlhf-book/core/runs/giyhitjw) | ✅ Validated |
+| **IPO** | [ipo-olmo-1b](https://wandb.ai/rlhf-book/core/runs/5s29syo6) | ✅ Validated |
+| **SimPO** | [simpo-olmo-1b](https://wandb.ai/rlhf-book/core/runs/ftv5rs3x) | ⚠️ Noisy - needs debugging |
+| **ORPO** | [orpo-olmo-1b](https://wandb.ai/rlhf-book/core/runs/o38ffli5) | ⚠️ Noisy - needs debugging |
+| **KTO** | [kto-olmo-1b](https://wandb.ai/rlhf-book/core/runs/hgqrkfi6) | ✅ Validated |
+| **APO Zero** | [apo-zero-olmo-1b](https://wandb.ai/rlhf-book/core/runs/3m2uiyw3) | ✅ Validated |
+| **APO Down** | [apo-down-olmo-1b](https://wandb.ai/rlhf-book/core/runs/tqzkmyi6) | ✅ Validated |
 
 ![Direct alignment accuracy curves for DPO, IPO, and KTO](../images/wandb_direct_alignment.png)
 
