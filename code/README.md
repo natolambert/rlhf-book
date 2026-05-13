@@ -23,6 +23,7 @@ If you are running these with a coding assistant, launch long training/eval comm
 
 | Chapter | Starting experiment | Command | What to inspect |
 |---------|---------------------|---------|-----------------|
+| Chapter 4: Instruction Tuning | SFT OLMo-2-1B base on No Robots | `uv run python -m instruction_tuning.train --config instruction_tuning/configs/sft_olmo2_1b.yaml` | Loss curve and the in-loop sample panels — the base model rambles at step 0; after a few hundred steps it answers and stops. **TODO(@natolambert):** link reference wandb run. |
 | Chapter 5: Reward Models | Bradley-Terry RM on UltraFeedback | `uv run python -m reward_models.train_preference_rm --samples 2000 --epochs 1` | Chosen/rejected reward margin, training loss, demo scoring |
 | Chapter 5: Reward Models | ORM on GSM8K | `uv run python -m reward_models.train_orm --samples 400 --epochs 2` | Whether correct final answers score above perturbed answers |
 | Chapter 6: Policy Gradients | GRPO on `spell_backward` | `uv run python -m policy_gradients.train --config policy_gradients/configs/grpo.yaml` | `avg_correctness`, `avg_format`, `avg_binary`, and whether groups contain contrast |
@@ -31,12 +32,13 @@ If you are running these with a coding assistant, launch long training/eval comm
 
 Good first sweeps:
 
+- **Instruction tuning**: keep `sft_olmo2_1b.yaml` fixed and vary `lr` (5e-6 vs 1e-5), `num_epochs`, or `max_samples` to see how quickly the base→assistant transition emerges.
 - **Policy gradients**: copy `policy_gradients/configs/grpo.yaml` and vary `num_rollouts`, `temperature`, `format_weight`, and `data.size`.
 - **Direct alignment**: hold the dataset fixed and compare `dpo.yaml`, `ipo.yaml`, and `dpo_norm.yaml`; read IPO through margins/accuracy, not raw loss scale.
 - **Reward models**: vary `--samples`, `--lr`, and `--model-id` before changing the model architecture.
 - **Rejection sampling**: keep generation/scoring settings identical while comparing `top_*` configs to their `random_*` controls.
 
-The book chapters now include suggested exercises at the end of Chapters 5, 6, 8, and 9.
+The book chapters now include suggested exercises at the end of Chapters 4, 5, 6, 8, and 9.
 
 ## Attribution
 

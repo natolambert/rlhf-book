@@ -26,6 +26,7 @@ export WANDB_PROJECT=rlhf-book
 # export WANDB_PROJECT=core
 
 # Run training scripts
+uv run python -m instruction_tuning.train --config instruction_tuning/configs/sft_olmo2_1b.yaml
 uv run python -m policy_gradients.train --config policy_gradients/configs/grpo.yaml
 uv run python -m reward_models.train_preference_rm --samples 2000 --epochs 1
 uv run python -m reward_models.train_orm --samples 400 --epochs 2
@@ -40,6 +41,7 @@ When a user asks for a runnable experiment, start from the closest maintained ex
 
 | User goal | Start here | Notes |
 |-----------|------------|-------|
+| "Run SFT / instruction tuning" | `instruction_tuning/README.md` and `instruction_tuning/configs/sft_olmo2_1b.yaml` | Trains OLMo-2-1B base on No Robots; sanity check is the base→answer-and-stop transition on the fixed prompt pool. |
 | "Run RL / GRPO / PPO" | `policy_gradients/README.md` and `policy_gradients/configs/*.yaml` | Default task is `spell_backward`; watch `avg_correctness`, `avg_format`, and group contrast. |
 | "Train a reward model" | `reward_models/README.md` | Preference RM uses UltraFeedback; ORM uses GSM8K; PRM uses PRM800K. These are experimental and need tuning. |
 | "Train DPO / IPO / SimPO / KTO" | `direct_alignment/README.md` and `direct_alignment/configs/*.yaml` | DPO/IPO/KTO/APO are validated; SimPO/ORPO are implemented but still marked noisy. |
