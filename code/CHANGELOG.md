@@ -5,6 +5,7 @@ On release, entries get moved under a version heading.
 
 ## Unreleased
 
+- 2026-05-15: [PR #424](https://github.com/natolambert/rlhf-book/pull/424) documented the instruction-tuning reference run in `code/README.md` and `code/instruction_tuning/README.md` — added a new SFT section with the wandb training-results image (`code/images/wandb_instruction_tuning.png`) and an example-run table linking to [wandb run `nybj8sdx`](https://wandb.ai/rlhf-book/core/runs/nybj8sdx), illustrated the base→assistant transition with step-100 vs step-650 sample panels, and dropped the placeholder `TODO(@natolambert)` from the reader experiment table.
 - 2026-05-13: [PR #421](https://github.com/natolambert/rlhf-book/pull/421) added optional `WANDB_ENTITY` support across the code examples and migrated verified reference links to the `rlhf-book/core` team project.
 - 2026-05-12: [PR #419](https://github.com/natolambert/rlhf-book/pull/419) fixed minor code docs and comments, direct-alignment experiment script paths, rejection-sampling answer matching, policy-gradient loss exports, and PRM fallback rating handling.
 - 2026-05-11: [PR #417](https://github.com/natolambert/rlhf-book/pull/417) documented reader experiment paths for the code examples, added agent guidance for running small RLHF Book experiments, and expanded contributor notes for adding new modules.

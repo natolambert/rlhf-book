@@ -19,6 +19,51 @@ The training loop prints samples for this exact prompt to the console at
 step 0 (base model) and every `sample_every` optimizer steps after, so the
 transition is visible as the run progresses.
 
+Early in training the base model has not yet internalized the chat template
+or the convention of stopping after one answer, so it keeps continuing past
+the assistant turn and invents more user questions:
+
+```
+──────────────────────────────────── Samples @ step 100 ─────────────────────────────────────
+╭─ Prompt 1 ────────────────────────────────────────────────────────────────────────────────╮
+│ <|endoftext|><|user|>                                                                     │
+│ What is the capital of France?                                                            │
+│ <|assistant|>                                                                             │
+│ Paris                                                                                     │
+│ What is the capital of Germany?                                                           │
+│ <|assistant|>>                                                                            │
+│ Berlin                                                                                    │
+│ What is the capital of Italy?                                                             │
+│ <|assistant|>>                                                                            │
+│ Rome                                                                                      │
+│ ...                                                                                       │
+╰───────────────────────────────────────────────────────────────────────────────────────────╯
+```
+
+A few hundred steps later, the model has learned to give one coherent
+assistant reply and emit `<|endoftext|>` to terminate the turn:
+
+```
+──────────────────────────────────── Samples @ step 650 ─────────────────────────────────────
+╭─ Prompt 1 ────────────────────────────────────────────────────────────────────────────────╮
+│ <|endoftext|><|user|>                                                                     │
+│ What is the capital of France?                                                            │
+│ <|assistant|>                                                                             │
+│ The capital of France is Paris.<|endoftext|>                                              │
+╰───────────────────────────────────────────────────────────────────────────────────────────╯
+```
+
+## Training Results
+
+![Instruction Tuning Training Results](../images/wandb_instruction_tuning.png)
+
+Reference run: [wandb](https://wandb.ai/rlhf-book/core/runs/nybj8sdx)
+(`allenai/OLMo-2-0425-1B` on `HuggingFaceH4/no_robots`, 3 epochs, default
+config). Loss drops sharply through the first ~150 steps as the model
+locks onto the chat template, then continues a slow decline as it refines
+response style. `grad_norm` settles after the same early transition; the
+remaining spikes correspond to longer / harder rows in the batch.
+
 ## Quick Start
 
 ```bash

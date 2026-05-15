@@ -23,7 +23,7 @@ If you are running these with a coding assistant, launch long training/eval comm
 
 | Chapter | Starting experiment | Command | What to inspect |
 |---------|---------------------|---------|-----------------|
-| Chapter 4: Instruction Tuning | SFT OLMo-2-1B base on No Robots | `uv run python -m instruction_tuning.train --config instruction_tuning/configs/sft_olmo2_1b.yaml` | Loss curve and the in-loop sample panels — the base model rambles at step 0; after a few hundred steps it answers and stops. **TODO(@natolambert):** link reference wandb run. |
+| Chapter 4: Instruction Tuning | SFT OLMo-2-1B base on No Robots | `uv run python -m instruction_tuning.train --config instruction_tuning/configs/sft_olmo2_1b.yaml` | Loss curve and the in-loop sample panels — the base model rambles at step 0; after a few hundred steps it answers and stops. |
 | Chapter 5: Reward Models | Bradley-Terry RM on UltraFeedback | `uv run python -m reward_models.train_preference_rm --samples 2000 --epochs 1` | Chosen/rejected reward margin, training loss, demo scoring |
 | Chapter 5: Reward Models | ORM on GSM8K | `uv run python -m reward_models.train_orm --samples 400 --epochs 2` | Whether correct final answers score above perturbed answers |
 | Chapter 6: Policy Gradients | GRPO on `spell_backward` | `uv run python -m policy_gradients.train --config policy_gradients/configs/grpo.yaml` | `avg_correctness`, `avg_format`, `avg_binary`, and whether groups contain contrast |
@@ -106,6 +106,32 @@ uv sync --extra flash
 - **DGX Spark / aarch64**: Flash Attention is not available on ARM64/Blackwell. The code
   automatically falls back to PyTorch SDPA, which is actually faster on these systems due
   to native cuDNN optimizations.
+
+## Instruction Tuning (SFT)
+
+Supervised fine-tune a base language model on an instruction dataset so it
+answers questions and stops, instead of continuing the prompt as raw text.
+See `instruction_tuning/README.md` for the full walk-through.
+
+```bash
+# SFT OLMo-2-1B base on No Robots (Chapter 4)
+uv run python -m instruction_tuning.train \
+    --config instruction_tuning/configs/sft_olmo2_1b.yaml
+```
+
+### Training Results
+
+![Instruction Tuning Training Results](images/wandb_instruction_tuning.png)
+
+The most informative signal is the in-loop sample panels: at step ~100 the
+model rambles past `<|endoftext|>` and invents follow-up questions; by
+step ~650 it produces a single, terminated assistant reply.
+
+### Example Run
+
+| Model | Dataset | Example Run |
+|-------|---------|-------------|
+| OLMo-2-0425-1B (base) | HuggingFaceH4/no_robots | [wandb](https://wandb.ai/rlhf-book/core/runs/nybj8sdx) |
 
 ## Policy Gradient Training
 
