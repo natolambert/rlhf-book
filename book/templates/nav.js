@@ -44,7 +44,7 @@ class NavigationDropdown extends HTMLElement {
       <div class="section">
         <h3>Core Training Pipeline</h3>
         <ol start="4">
-          <li><a href="/c/04-instruction-tuning">Instruction Fine-Tuning</a></li>
+          <li><a href="/c/04-instruction-tuning">Instruction Fine-Tuning</a> [<a href="https://github.com/natolambert/rlhf-book/tree/main/code/instruction_tuning">code</a>]</li>
           <li><a href="/c/05-reward-models">Reward Modeling</a> [<a href="https://github.com/natolambert/rlhf-book/tree/main/code/reward_models">code</a>]</li>
           <li><a href="/c/06-policy-gradients">Reinforcement Learning</a> [<a href="https://github.com/natolambert/rlhf-book/tree/main/code/policy_gradients">code</a>]</li>
           <li><a href="/c/07-reasoning">Reasoning and Inference-Time Scaling</a></li>

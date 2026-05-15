@@ -363,6 +363,7 @@ uv run --extra dev pytest
 
 These examples correspond to:
 
+- **Chapter 4**: Instruction Tuning (SFT)
 - **Chapter 5**: Reward Models (ORM, PRM, Preference RM)
 - **Chapter 6**: Policy Gradient Methods (REINFORCE, PPO, GRPO, etc.)
 - **Chapter 8**: Direct Alignment (DPO, IPO, SimPO, KTO, etc.)
