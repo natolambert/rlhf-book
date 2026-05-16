@@ -54,6 +54,7 @@ Reference implementations for RLHF algorithms in `code/`:
 - Policy gradient methods (PPO, REINFORCE, GRPO, RLOO, etc.)
 - Reward model training (preference RM, ORM, PRM)
 - Direct alignment methods (DPO and variants)
+- Instruction tuning (SFT a base model with chat templates)
 - Rejection sampling (best-of-N)
 
 See [code/README.md](code/README.md) for setup and usage.
