@@ -37,6 +37,7 @@ rlhf-book/
 │   ├── policy_gradients/   # PPO, REINFORCE, GRPO, RLOO
 │   ├── reward_models/      # Preference RM, ORM, PRM training
 │   ├── direct_alignment/   # DPO and variants
+│   ├── instruction_tuning/ # SFT a base model with chat templates
 │   └── rejection_sampling/ # Best-of-N rejection sampling
 ├── diagrams/               # Diagram source files
 │   ├── scripts/            # Python generation scripts
