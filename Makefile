@@ -302,6 +302,7 @@ COURSE_LECTURE_NAMES = $(basename $(notdir $(COURSE_LECTURE_SOURCES)))
 
 # Map from dir name to its .md source file (prefer talk.md over slides.md)
 teach_source = $(firstword $(wildcard teach/$(1)/talk.md teach/$(1)/slides.md))
+COLLOQUIUM = uv run --extra teach colloquium
 
 teach: $(foreach d,$(TEACH_DIRS),teach-$(d)) course-lectures
 
@@ -309,22 +310,22 @@ course-lectures: $(foreach l,$(COURSE_LECTURE_NAMES),course-lecture-$(l))
 
 teach-%:
 	@mkdir -p $(BUILD)/html/teach/$*
-	uv run colloquium build $(call teach_source,$*) -o $(BUILD)/html/teach/$*/
+	$(COLLOQUIUM) build $(call teach_source,$*) -o $(BUILD)/html/teach/$*/
 	@# Rename output to index.html so the directory URL works
 	@cd $(BUILD)/html/teach/$* && for f in *.html; do [ "$$f" != "index.html" ] && mv "$$f" index.html; done || true
 	@# Export PDF
-	uv run colloquium export $(call teach_source,$*) -o $(BUILD)/html/teach/$*/slides.pdf
+	$(COLLOQUIUM) export $(call teach_source,$*) -o $(BUILD)/html/teach/$*/slides.pdf
 	@# Copy talk assets (images) if present
 	@test -d teach/$*/assets && cp -r teach/$*/assets $(BUILD)/html/teach/$*/ || true
 	@echo "Built teach/$*"
 
 course-lecture-%:
 	@mkdir -p $(BUILD)/html/teach/course/$*
-	uv run colloquium build teach/course/$*.md -o $(BUILD)/html/teach/course/$*/
+	$(COLLOQUIUM) build teach/course/$*.md -o $(BUILD)/html/teach/course/$*/
 	@# Rename output to index.html so the directory URL works
 	@cd $(BUILD)/html/teach/course/$* && for f in *.html; do [ "$$f" != "index.html" ] && mv "$$f" index.html; done || true
 	@# Export PDF
-	uv run colloquium export teach/course/$*.md -o $(BUILD)/html/teach/course/$*/slides.pdf
+	$(COLLOQUIUM) export teach/course/$*.md -o $(BUILD)/html/teach/course/$*/slides.pdf
 	@# Copy course assets if present
 	@test -d teach/course/assets && cp -r teach/course/assets $(BUILD)/html/teach/course/$*/ || true
 	@echo "Built teach/course/$*"

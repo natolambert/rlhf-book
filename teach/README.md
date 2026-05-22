@@ -18,6 +18,7 @@ uv sync --extra teach
 ```
 
 The `teach` extra intentionally tracks the GitHub source while `colloquium` is moving quickly.
+When running slide commands directly, use `uv run --extra teach ...` so `colloquium` is available even in a fresh environment.
 
 Or install from a local clone for development:
 
@@ -36,7 +37,7 @@ make teach
 Or build a single lecture:
 
 ```bash
-uv run colloquium build teach/course/lec1-chap1-3.md -o build/html/teach/course/lec1-chap1-3/
+uv run --extra teach colloquium build teach/course/lec1-chap1-3.md -o build/html/teach/course/lec1-chap1-3/
 ```
 
 Output goes to `build/html/teach/`.
@@ -47,7 +48,7 @@ For development with live reload:
 
 ```bash
 cd teach/SALA-2026
-uv run colloquium serve talk.md
+uv run --extra teach colloquium serve talk.md
 ```
 
 ## Talk Assets
