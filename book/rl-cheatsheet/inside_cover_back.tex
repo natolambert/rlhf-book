@@ -50,7 +50,9 @@ Proximal Policy Optimization
 \newline\mdseries (PPO)
 &
 $\displaystyle -\;\frac{1}{T}\sum_{t=1}^{T}\min\!\left(\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)} A_t,\; \mathrm{clip}\!\left(\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) A_t\right)$
-\\[22pt]
+\newline
+{\scriptsize PPO usually estimates $A_t$ with GAE; other advantage estimates are possible.}
+\\[20pt]
 
 Group Relative Policy Optimization
 \newline\mdseries (GRPO)
@@ -120,7 +122,8 @@ y_c \succ y_r & $y_c$ is preferred over $y_r$ & \sigma(z) & Sigmoid: $1/(1+e^{-z
 \pi_\theta & Policy (the model being trained) & \mathcal{D}_{\text{KL}}(P \| Q) & KL divergence between $P$ and $Q$ \\
 \pi_{\text{ref}} & Reference policy (frozen copy) & G_t & Return: $\sum_{k=0}^{\infty} \gamma^k R_{t+k+1}$ \\
 \pi_{\theta_{\text{old}}} & Policy at start of RL batch updates & V(s) & Value: $\mathbb{E}[G_t \mid S_t = s]$ \\
-r_\theta(y \mid x) & Reward model score & & \\
+r_\theta(y \mid x) & Reward model score & T & Trajectory length / time horizon \\
+K & Number of sampled completions & G & Group size for GRPO / GSPO \\
 \end{tabular}
 
 \vspace*{\fill}

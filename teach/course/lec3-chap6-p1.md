@@ -949,16 +949,6 @@ Proximal Policy Optimization **(PPO)** [@schulman2017proximal] gets TRPO-like st
 
 ---
 
-## PPO core idea 1: constrained updates
-
-<!-- cite-right: schulman2017proximal -->
-
-Large gradient steps can destroy the policy (instability, over-optimization, etc.)
-
-The solution: **trust regions** — limit how far the policy can move in a single update. 
-
----
-
 ## What can we do with more conservative gradients?
 
 Extract more signal from the batch! 
@@ -966,6 +956,16 @@ This introduces new problems:
 
 - How do we constrain the updates over multiple gradient updates?
 - How do we take the policy gradient if the data has drifted off-policy?
+
+---
+
+## PPO core idea 1: constrained updates
+
+<!-- cite-right: schulman2017proximal -->
+
+Large gradient steps can destroy the policy (instability, over-optimization, etc.)
+
+The solution: **trust regions** — limit how far the policy can move in a single update.
 
 ---
 
