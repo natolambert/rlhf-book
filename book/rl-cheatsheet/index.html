@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="rl-cheatsheet-page">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
@@ -19,9 +19,17 @@
       text-align: center;
     }
 
+    html.rl-cheatsheet-page {
+      overflow-x: auto;
+    }
+
+    html.rl-cheatsheet-page body {
+      overflow-x: visible;
+    }
+
     .cheatsheet-section {
-      width: 80vw;
-      max-width: 60em;
+      width: min(92vw, 88rem);
+      max-width: none;
       margin-left: 50%;
       transform: translateX(-50%);
     }
@@ -71,7 +79,8 @@
     }
 
     table.equations {
-      width: 92%;
+      width: 100%;
+      min-width: 58em;
       margin: 0 auto 1em;
       border-collapse: collapse;
       border: none;
