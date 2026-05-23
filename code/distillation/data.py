@@ -270,10 +270,7 @@ def format_feedback(records: list[dict], max_chars: int = 2000) -> str:
     return feedback[:max_chars]
 
 
-def compute_score(response: str, tests: dict | str, max_tests: int | None = None) -> dict:
-    if isinstance(tests, str):
-        tests = json.loads(tests)
-
+def compute_score(response: str, tests: dict, max_tests: int | None = None) -> dict:
     completion = extract_code(response)
     if completion is None:
         records = [
