@@ -39,7 +39,7 @@ def _decode_tests(encoded: str, fn_name: str) -> dict:
     return {
         "inputs": [t["input"] for t in tests],
         "outputs": [t["output"] for t in tests],
-        "testtype": tests[0]["testtype"],
+        "testtype": tests[0]["testtype"],  # "functional" (call a fn) or "stdin" (run a script)
         "fn_name": fn_name,
         "time_limit": TIME_LIMIT,
     }
