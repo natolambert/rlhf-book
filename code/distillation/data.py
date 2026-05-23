@@ -45,7 +45,7 @@ def _decode_tests(encoded: str, fn_name: str) -> dict:
     }
 
 
-def load_livecodebench(split: str = "test") -> list[dict]:
+def load_livecodebench(split: str) -> list[dict]:
     ds = load_dataset(
         "livecodebench/code_generation_lite",
         split="test",
@@ -77,7 +77,7 @@ def load_livecodebench(split: str = "test") -> list[dict]:
 
 
 class LiveCodeBenchDataset(Dataset):
-    def __init__(self, split: str = "test"):
+    def __init__(self, split: str):
         self.samples = load_livecodebench(split)
 
     def __len__(self) -> int:
@@ -87,9 +87,7 @@ class LiveCodeBenchDataset(Dataset):
         return self.samples[idx]
 
 
-def build_dataloader(
-    split: str = "test", batch_size: int = 8, shuffle: bool | None = None
-) -> DataLoader:
+def build_dataloader(split: str, batch_size: int = 8, shuffle: bool | None = None) -> DataLoader:
     if shuffle is None:
         shuffle = split == "train"
     return DataLoader(
@@ -108,7 +106,7 @@ def extract_code(response: str) -> str | None:
 def _reliability_guard() -> None:
     """Neutralize the most destructive syscalls before running model code.
 
-    NOTE: This is a guard against accidents, NOT a security sandbox 
+    NOTE: This is a guard against accidents, NOT a security sandbox.
     """
     import builtins
     import os
