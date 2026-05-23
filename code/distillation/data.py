@@ -239,14 +239,7 @@ def format_feedback(records: list[dict], max_chars: int = 2000) -> str:
     if not failing:
         return ""
 
-    error = next(
-        (
-            r
-            for r in failing
-            if isinstance(r["actual"], str) and r["actual"].startswith(ERROR_PREFIX)
-        ),
-        None,
-    )
+    error = next((r for r in failing if str(r["actual"]).startswith(ERROR_PREFIX)), None)
     timeout = next((r for r in failing if r["actual"] == TIMEOUT), None)
     r = error or timeout or min(failing, key=lambda x: len(str(x["input"])) + len(str(x["actual"])))
     actual = r["actual"]
@@ -255,13 +248,12 @@ def format_feedback(records: list[dict], max_chars: int = 2000) -> str:
         feedback = "Incorrect Format: put your final code inside a ```python ... ``` block."
     elif actual == TIMEOUT:
         feedback = f"Time Limit Exceeded\n\nInput:\n{_clip(r['input'])}"
-    elif isinstance(actual, str) and actual.startswith(ERROR_PREFIX):
+    elif str(actual).startswith(ERROR_PREFIX):
         feedback = f"Runtime Error\n{actual[len(ERROR_PREFIX) :]}\n\nInput:\n{_clip(r['input'])}"
     else:
         feedback = "\n".join(
             [
-                f"Wrong Answer on test {r['test_idx'] + 1}",
-                "",
+                f"Wrong Answer on test {r['test_idx'] + 1}\n",
                 f"Input:\n{_clip(r['input'])}",
                 f"Output:\n{_clip(actual)}",
                 f"Expected:\n{_clip(r['expected'])}",
