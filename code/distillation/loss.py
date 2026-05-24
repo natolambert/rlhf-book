@@ -11,28 +11,24 @@ def add_tail(log_probs: torch.Tensor) -> torch.Tensor:
 
 
 class SDPOLoss(nn.Module):
-    def __init__(self, top_k: int) -> None:
+    def __init__(self, kl_top_k: int) -> None:
         super().__init__()
-        self.top_k = top_k
+        self.kl_top_k = kl_top_k
 
     def forward(self, model, batch: dict) -> torch.Tensor:
         action_mask = batch["action_mask"]
         A = action_mask.shape[1]
 
-        s_logits = (
-            model(input_ids=batch["s_ids"], attention_mask=batch["s_mask"], use_cache=False)
-            .logits[:, -A - 1 : -1, :]
-            .float()
-        )
-        s_logp, idx = s_logits.topk(self.top_k, dim=-1)
-        s_logp = s_logp - s_logits.logsumexp(dim=-1, keepdim=True)
+        s_logits = model(
+            input_ids=batch["s_ids"], attention_mask=batch["s_mask"], use_cache=False
+        ).logits[:, -A - 1 : -1, :]
+        s_topk, idx = s_logits.topk(self.kl_top_k, dim=-1)
+        s_logp = s_topk - s_logits.logsumexp(dim=-1, keepdim=True)
 
         with torch.no_grad():
-            t_logits = (
-                model(input_ids=batch["t_ids"], attention_mask=batch["t_mask"], use_cache=False)
-                .logits[:, -A - 1 : -1, :]
-                .float()
-            )
+            t_logits = model(
+                input_ids=batch["t_ids"], attention_mask=batch["t_mask"], use_cache=False
+            ).logits[:, -A - 1 : -1, :]
             t_logp = t_logits.gather(-1, idx) - t_logits.logsumexp(dim=-1, keepdim=True)
 
         s_logp, t_logp = add_tail(s_logp), add_tail(t_logp)

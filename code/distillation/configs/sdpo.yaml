@@ -4,15 +4,15 @@ split: train
 max_tests: 8
 
 # SDPO
-top_k: 100
+kl_top_k: 100
 success_reward_threshold: 1.0
 
 # Generation
-temperature: 1.0
-top_p: 1.0
-gen_top_k: 20
+temperature: 0.6
+top_p: 0.95
+top_k: 20
 min_p: 0.0
-max_new_tokens: 1024
+max_new_tokens: 2048
 
 # Training
 lr: 1.0e-6

@@ -42,7 +42,7 @@ See [`configs/sdpo.yaml`](configs/sdpo.yaml) for the full set. The most importan
 | Field | Default | Meaning |
 |-------|---------|---------|
 | `model_name` | `Qwen/Qwen3-1.7B` | Model used as both student and self-teacher |
-| `top_k` | `100` | Logits kept per position for the distillation KL |
+| `kl_top_k` | `100` | Logits kept per position for the distillation KL |
 | `success_reward_threshold` | `1.0` | Reward at/above which a rollout becomes a demo solution |
 | `num_rollouts` | `8` | Rollouts sampled per problem (sibling demos come from this group) |
 | `prompts_per_step` | `4` | Problems generated and gradient-accumulated per optimizer step |

@@ -29,7 +29,7 @@ def main(cfg: Config):
 
     model, tokenizer = load_model(cfg.model_name, device)
     loader = build_dataloader(cfg.split, batch_size=cfg.prompts_per_step, shuffle=True)
-    objective = get_loss_objective(cfg.loss, top_k=cfg.top_k).to(device)
+    objective = get_loss_objective(cfg.loss, kl_top_k=cfg.kl_top_k).to(device)
     optimizer = optim.Adam(model.parameters(), lr=cfg.lr)
 
     wandb_entity = os.environ.get("WANDB_ENTITY", cfg.wandb_entity)

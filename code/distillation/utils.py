@@ -95,7 +95,7 @@ def print_rollout_sample(
         )
     )
 
-    def preview(text: str, limit: int = 1000) -> str:
+    def preview(text: str, limit: int = 5000) -> str:
         return text if len(text) <= limit else text[:limit] + "[dim]... (truncated)[/dim]"
 
     table = Table(show_header=False, box=None, padding=(0, 1), show_edge=False)

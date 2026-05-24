@@ -27,7 +27,7 @@ def generate_batch(model, tokenizer, entry: dict, cfg) -> dict:
     gen_config = GenerationConfig(
         temperature=cfg.temperature,
         top_p=cfg.top_p,
-        top_k=cfg.gen_top_k,
+        top_k=cfg.top_k,
         min_p=cfg.min_p,
         do_sample=True,
         max_new_tokens=cfg.max_new_tokens,

@@ -14,13 +14,13 @@ class Config(BaseModel):
     loss: str = "sdpo"
 
     # SDPO
-    top_k: int = 100  # logits kept per position for the distillation KL
+    kl_top_k: int = 100  # logits kept per position for the distillation KL
     success_reward_threshold: float = 1.0  # reward at/above which a rollout is a demo
 
     # Generation
-    temperature: float = 1.0
-    top_p: float = 1.0
-    gen_top_k: int = 20
+    temperature: float = 0.6
+    top_p: float = 0.95
+    top_k: int = 20
     min_p: float = 0.0
     max_new_tokens: int = 1024
 
