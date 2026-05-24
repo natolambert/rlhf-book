@@ -1,7 +1,5 @@
 # Self-Distillation (SDPO)
 
-![Overview of the RLHF training loop.](../../book/images/rlhf-overview.png)
-
 Educational implementation of **SDPO — Self-Distillation Policy Optimization** for
 [RLHF Book](https://rlhfbook.com), an on-policy distillation method for code and
 reasoning tasks ([Hübotter et al., 2026](https://arxiv.org/abs/2601.20802)).
