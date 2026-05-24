@@ -5,3 +5,7 @@ This directory contains the markdown source files for the RLHF Book.
 **License:** [CC-BY-NC-SA-4.0](../../LICENSE-CHAPTERS)
 
 Read the book at [rlhfbook.com](https://rlhfbook.com).
+
+## SEO Frontmatter
+
+Chapter `page-title` and `meta-description` values are serialized into JSON-LD in the HTML build. Rerun the generated JSON-LD validation after changing SEO frontmatter.

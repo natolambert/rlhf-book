@@ -9,6 +9,7 @@ prev-chapter: "Evaluation"
 prev-url: "16-evaluation"
 page-title: Crafting Model Character and Products
 search-title: "Chapter 17: Crafting Model Character and Products"
+meta-description: "How RLHF and post-training shape model character, product behavior, UX, and deployed AI systems."
 next-chapter: "Definitions"
 next-url: "appendix-a-definitions"
 ---

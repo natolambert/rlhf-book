@@ -9,6 +9,7 @@ prev-chapter: "Definitions"
 prev-url: "appendix-a-definitions"
 page-title: "Appendix B: Beyond \"Just Style\""
 search-title: "Appendix B: Beyond \"Just Style\""
+meta-description: "Style, calibration, and information presentation issues that RLHF and post-training shape in language models."
 next-chapter: "Practical Issues"
 next-url: "appendix-c-practical"
 ---

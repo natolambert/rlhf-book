@@ -9,6 +9,7 @@ prev-chapter: "Home"
 prev-url: "https://rlhfbook.com/"
 page-title: Introduction
 search-title: "Chapter 1: Introduction"
+meta-description: "A first-principles introduction to RLHF, what it changes in language models, and how it became part of modern post-training."
 next-chapter: "A Tiny History of RLHF"
 next-url: "02-related-works"
 lectures:

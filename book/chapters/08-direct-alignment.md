@@ -9,6 +9,7 @@ prev-chapter: "Reasoning and Inference-Time Scaling"
 prev-url: "07-reasoning"
 page-title: Direct-Alignment Algorithms
 search-title: "Chapter 8: Direct-Alignment Algorithms"
+meta-description: "Direct alignment algorithms such as DPO that optimize preference objectives without an explicit reward model or RL loop."
 next-chapter: "Rejection Sampling"
 next-url: "09-rejection-sampling"
 ---

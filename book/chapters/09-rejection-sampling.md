@@ -9,6 +9,7 @@ prev-chapter: "Direct-Alignment Algorithms"
 prev-url: "08-direct-alignment"
 page-title: Rejection Sampling
 search-title: "Chapter 9: Rejection Sampling"
+meta-description: "Rejection sampling and best-of-n methods for improving post-trained language models with reward or preference signals."
 next-chapter: "The Nature of Preferences"
 next-url: "10-preferences"
 lectures:

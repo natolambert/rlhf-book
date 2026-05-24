@@ -9,6 +9,7 @@ prev-chapter: "Over-Optimization"
 prev-url: "14-over-optimization"
 page-title: Regularization
 search-title: "Chapter 15: Regularization"
+meta-description: "Regularization methods that keep RLHF and post-training updates useful without degrading the base model."
 next-chapter: "Evaluation"
 next-url: "16-evaluation"
 ---

@@ -9,6 +9,7 @@ prev-chapter: "Training Overview"
 prev-url: "03-training-overview"
 page-title: Instruction Fine-Tuning
 search-title: "Chapter 4: Instruction Fine-Tuning"
+meta-description: "How instruction tuning turns base language models into usable assistants and sets up later RLHF and post-training stages."
 next-chapter: "Reward Modeling"
 next-url: "05-reward-models"
 lectures:
