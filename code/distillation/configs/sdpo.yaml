@@ -1,0 +1,29 @@
+model_name: Qwen/Qwen3-1.7B
+loss: sdpo
+split: train
+max_tests: 8
+
+# SDPO
+top_k: 100
+success_reward_threshold: 1.0
+
+# Generation
+temperature: 1.0
+top_p: 1.0
+gen_top_k: 20
+min_p: 0.0
+max_new_tokens: 1024
+
+# Training
+lr: 1.0e-6
+prompts_per_step: 4
+num_rollouts: 8
+num_steps: 200
+max_norm: 1.0
+seed: 42
+model_device_id: 0
+
+# Logging (set wandb_project or the WANDB_PROJECT env var to enable)
+wandb_entity: null
+wandb_project: null
+wandb_run_name: null
