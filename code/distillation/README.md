@@ -62,6 +62,4 @@ Logged to W&B each optimizer step (see [`train.py`](train.py)):
 
 ## TODOs for Community Contributions
 
-- [ ] Publish validated wandb reference run(s) and add the run IDs + training-result plot above.
-- [ ] Add held-out evaluation on the `eval` (post-cutoff) LiveCodeBench split.
 - [ ] Explore additional task domains beyond competitive programming.
