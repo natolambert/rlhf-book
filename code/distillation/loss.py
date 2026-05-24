@@ -5,7 +5,7 @@ import torch.nn.functional as F
 
 def add_tail(log_probs: torch.Tensor) -> torch.Tensor:
     """Append a tail bucket so top-K log-probs form a valid (K+1) log-distribution."""
-    log_sum = log_probs.logsumexp(dim=-1, keepdim=True).clamp(max=-1e-7)
+    log_sum = log_probs.logsumexp(dim=-1, keepdim=True).clamp(max=-1e-7)  # log(sum(top-k probs))
     tail = torch.log(-torch.expm1(log_sum))  # log(1 - sum(top-k probs))
     return torch.cat([log_probs, tail], dim=-1)
 
@@ -18,7 +18,7 @@ class SDPOLoss(nn.Module):
         self.top_k = top_k
 
     def forward(self, model, batch: dict) -> torch.Tensor:
-        action_mask = batch["action_mask"]  # real response tokens of reprompted rollouts
+        action_mask = batch["action_mask"]
         A = action_mask.shape[1]
 
         s_logits = (
