@@ -9,6 +9,7 @@ prev-chapter: "Crafting Model Character and Products"
 prev-url: "17-product"
 page-title: "Appendix A: Definitions"
 search-title: "Appendix A: Definitions"
+meta-description: "Definitions and background for RLHF, reinforcement learning, language models, and post-training terminology."
 next-chapter: "Beyond \"Just Style\""
 next-url: "appendix-b-style"
 ---

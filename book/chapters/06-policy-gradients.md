@@ -9,6 +9,7 @@ prev-chapter: "Reward Modeling"
 prev-url: "05-reward-models"
 page-title: Reinforcement Learning
 search-title: "Chapter 6: Reinforcement Learning"
+meta-description: "Policy gradient methods for RLHF and LLM post-training, including PPO, REINFORCE, RLOO, GRPO, and implementation details."
 next-chapter: "Reasoning and Inference-Time Scaling"
 next-url: "07-reasoning"
 lectures:

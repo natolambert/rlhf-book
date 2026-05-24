@@ -9,6 +9,7 @@ prev-chapter: "Instruction Fine-Tuning"
 prev-url: "04-instruction-tuning"
 page-title: Reward Modeling
 search-title: "Chapter 5: Reward Modeling"
+meta-description: "How reward models are trained from preference data and used as the learned objective in RLHF post-training pipelines."
 next-chapter: "Reinforcement Learning"
 next-url: "06-policy-gradients"
 lectures:

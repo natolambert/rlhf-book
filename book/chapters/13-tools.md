@@ -9,6 +9,7 @@ prev-chapter: "Synthetic Data"
 prev-url: "12-synthetic-data"
 page-title: Tool Use and Function Calling
 search-title: "Chapter 13: Tool Use and Function Calling"
+meta-description: "Tool use and function calling as post-training targets for building more capable language model products and agents."
 next-chapter: "Over-Optimization"
 next-url: "14-over-optimization"
 ---

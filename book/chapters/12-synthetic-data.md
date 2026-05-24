@@ -9,6 +9,7 @@ prev-chapter: "Preference Data"
 prev-url: "11-preference-data"
 page-title: Synthetic Data
 search-title: "Chapter 12: Synthetic Data"
+meta-description: "Synthetic data, distillation, Constitutional AI, and AI feedback methods used throughout modern post-training."
 next-chapter: "Tool Use and Function Calling"
 next-url: "13-tools"
 ---
