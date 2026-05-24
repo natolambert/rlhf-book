@@ -11,9 +11,7 @@ def add_tail(log_probs: torch.Tensor) -> torch.Tensor:
 
 
 class SDPOLoss(nn.Module):
-    """Forward-KL self-distillation of a feedback-conditioned teacher into the student."""
-
-    def __init__(self, top_k: int, **kwargs) -> None:
+    def __init__(self, top_k: int) -> None:
         super().__init__()
         self.top_k = top_k
 
