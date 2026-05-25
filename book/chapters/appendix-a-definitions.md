@@ -72,7 +72,7 @@ $$ \mathcal{D}_{\text{KL}}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\f
 
 - **Expectation of Reward Optimization**: The primary goal in RL, which involves maximizing the expected cumulative reward:
 
-  $$\max_{\theta} \mathbb{E}_{s \sim \rho_\pi, a \sim \pi_\theta}[\sum_{t=0}^{\infty} \gamma^t r_t]$$ {#eq:expect_reward_opt}
+  $$\max_{\theta} \mathbb{E}_{s \sim \rho_\pi, a \sim \pi_\theta}\left[\sum_{t=0}^{\infty} \gamma^t r_t\right]$$ {#eq:expect_reward_opt}
 
   where $\rho_\pi$ is the state distribution under policy $\pi$, and $\gamma$ is the discount factor.
 
@@ -86,9 +86,9 @@ $$ \mathcal{D}_{\text{KL}}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\f
 
 - **Policy ($\pi$)**, also called the **policy model** in RLHF: In RL, a policy is a strategy or rule that the agent follows to decide which action to take in a given state: $\pi(a\mid s)$.
 
-- **Policy-conditioned Values ($[]^{\pi(\cdot)}$)**: Across RL derivations and implementations, a crucial component of the theory and practice is collecting data or values conditioned on a specific policy. Throughout this book we will switch between the simpler notation of value functions ($V,A,Q,G$) and their specific policy-conditioned values ($V^\pi,A^\pi,Q^\pi$). Also crucial in the expected value computation is sampling from data $d$, which is conditioned on a specific policy, $d_\pi$ (e.g., $s \sim d_\pi$ and $a \sim \pi(\cdot\mid s)$ when estimating $\mathbb{E}_{s\sim d_\pi,\,a\sim\pi(\cdot\mid s)}[A^\pi(s,a)]$).
+- **Policy-conditioned Values ($[]^{\pi(\cdot)}$)**: Across RL derivations and implementations, a crucial component of the theory and practice is collecting data or values conditioned on a specific policy. Throughout this book we will switch between the simpler notation of value functions ($V,A,Q,G$) and their specific policy-conditioned values ($V^\pi,A^\pi,Q^\pi$). Also crucial in the expected value computation is sampling from data $d$, which is conditioned on a specific policy, $d_\pi$ (e.g., $s \sim d_\pi$ and $a \sim \pi(\cdot\mid s)$ when estimating $\mathbb{E}_{s\sim d_\pi,\,a\sim\pi(\cdot\mid s)}\!\left[A^\pi(s,a)\right]$).
 
-- **Q-Function ($Q$)**: A function that estimates the expected cumulative reward from taking a specific action in a given state: $Q(s,a) = \mathbb{E}[\sum_{t=0}^{\infty} \gamma^t r_t \mid s_0 = s, a_0 = a]$.
+- **Q-Function ($Q$)**: A function that estimates the expected cumulative reward from taking a specific action in a given state: $Q(s,a) = \mathbb{E}\left[\sum_{t=0}^{\infty} \gamma^t r_t \mid s_0 = s, a_0 = a\right]$.
 
 - **Reward ($r$)**: A scalar value indicating the desirability of an action or state, typically denoted as $r$.
 
@@ -98,7 +98,7 @@ $$ \mathcal{D}_{\text{KL}}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\f
 
 - **Trajectory Distribution ($(\tau\mid\pi)$)**: The probability of a trajectory under policy $\pi$ is $P(\tau\mid\pi) = p(s_0)\prod_{t=0}^T \pi(a_t\mid s_t)p(s_{t+1}\mid s_t,a_t)$, where $p(s_0)$ is the prior state distribution and $p(s_{t+1}\mid s_t,a_t)$ is the transition probability.
 
-- **Value Function ($V$)**: A function that estimates the expected cumulative reward from a given state: $V(s) = \mathbb{E}[\sum_{t=0}^{\infty} \gamma^t r_t \mid s_0 = s]$.
+- **Value Function ($V$)**: A function that estimates the expected cumulative reward from a given state: $V(s) = \mathbb{E}\left[\sum_{t=0}^{\infty} \gamma^t r_t \mid s_0 = s\right]$.
 
 ## RLHF-Only
 
