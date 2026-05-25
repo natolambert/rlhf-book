@@ -81,7 +81,7 @@ $$G_{t} = \gamma{G_{t+1}} + R_{t+1}.$$ {#eq:recursive_return}
 
 This return is the basis for learning a value function $V(s)$ that is the estimated future return given a current state:
 
-$$V(s) = \mathbb{E}\big[G_t | S_t = s \big].$$ {#eq:value_function}
+$$V(s) = \mathbb{E}\left[G_t \mid S_t = s \right].$$ {#eq:value_function}
 
 All policy gradient algorithms optimize a policy $\pi_\theta(a\mid s)$ to maximize expected return; this objective can be expressed using the induced value function $V^{\pi_\theta}(s)$.
 
@@ -210,8 +210,8 @@ Where $\Psi_t$ can be the following (where the rewards can also often be discoun
 The *baseline* is a value used to reduce variance of policy updates (more on this below).
 
 For language models, some of these concepts do not make as much sense.
-For example, for a deterministic policy $\pi$ the state value is $V^{\pi}(s_t) = Q^{\pi}(s_t, \pi(s_t))$ (and for the optimal value function one has $V^*(s_t)=\max_{a_t} Q^*(s_t,a_t)$). For a stochastic policy, the analogous identity is $V^{\pi}(s_t) = \mathbb{E}_{a_t \sim \pi(\cdot\mid s_t)}[Q^{\pi}(s_t,a_t)]$.
-The Bellman equation relates Q to V: in general $Q^\pi(s_t,a_t) = \mathbb{E}[r_t + \gamma V^\pi(s_{t+1}) \mid s_t, a_t]$, but for language models where state transitions are deterministic, this simplifies to $Q(s_t,a_t) = r_t + \gamma V(s_{t+1})$.
+For example, for a deterministic policy $\pi$ the state value is $V^{\pi}(s_t) = Q^{\pi}(s_t, \pi(s_t))$ (and for the optimal value function one has $V^*(s_t)=\max_{a_t} Q^*(s_t,a_t)$). For a stochastic policy, the analogous identity is $V^{\pi}(s_t) = \mathbb{E}_{a_t \sim \pi(\cdot\mid s_t)}\!\left[Q^{\pi}(s_t,a_t)\right]$.
+The Bellman equation relates Q to V: in general $Q^\pi(s_t,a_t) = \mathbb{E}\!\left[r_t + \gamma V^\pi(s_{t+1}) \mid s_t, a_t\right]$, but for language models where state transitions are deterministic, this simplifies to $Q(s_t,a_t) = r_t + \gamma V(s_{t+1})$.
 The advantage function measures how much better action $a_t$ is compared to the average:
 
 $$A(s_t,a_t) = Q(s_t,a_t) - V(s_t) = r_t + \gamma V(s_{t+1}) - V(s_t)$$ {#eq:advantage_trick}
@@ -231,7 +231,7 @@ The variance across return estimates is higher in domains with sparse rewards, a
 In order to alleviate this, various techniques are used to normalize the value estimation, called *baselines*. 
 Baselines accomplish this in multiple ways, effectively normalizing by the value of the state relative to the downstream action (e.g. in the case of Advantage, which is the difference between the Q value and the value). 
 The simplest baselines are averages over the batch of rewards or a moving average.
-Even these action-independent baselines can reduce variance without changing the expected gradient, since $\mathbb{E}_{a \sim \pi(a|s)}[b(s) \nabla_\theta \log \pi_\theta(a|s)] = 0$ for any state-dependent $b(s)$, improving the learning signal substantially.
+Even these action-independent baselines can reduce variance without changing the expected gradient, since $\mathbb{E}_{a \sim \pi(a|s)}\!\left[b(s) \nabla_\theta \log \pi_\theta(a|s)\right] = 0$ for any state-dependent $b(s)$, improving the learning signal substantially.
 
 Many of the policy gradient algorithms discussed in this chapter build on the advantage formulation of policy gradient:
 
@@ -261,10 +261,10 @@ With more modern notation and the generalized return $G$, the REINFORCE operator
 $$
 \nabla_{\theta}\,J(\theta)
 \;=\;
-\mathbb{E}_{\tau \sim \pi_{\theta}}\!\Big[
+\mathbb{E}_{\tau \sim \pi_{\theta}}\!\left[
     \sum_{t=0}^{T}
     \nabla_{\theta} \log \pi_{\theta}(a_t \mid s_t)\,(G_t - b(s_t))
-\Big],
+\right],
 $$ {#eq:REINFORCE_with_baseline}
 
 Here, the value $G_t - b(s_t)$ is the *advantage* of the policy at the current state, so we can reformulate the policy gradient in a form that we continue later with the advantage, $A$:
@@ -272,10 +272,10 @@ Here, the value $G_t - b(s_t)$ is the *advantage* of the policy at the current s
 $$
 \nabla_{\theta}\,J(\theta)
 \;=\;
-\mathbb{E}_{\tau \sim \pi_{\theta}}\!\Big[
+\mathbb{E}_{\tau \sim \pi_{\theta}}\!\left[
     \sum_{t=0}^{T}
     \nabla_{\theta} \log \pi_{\theta}(a_t \mid s_t)\,A_t
-\Big],
+\right],
 $$ {#eq:REINFORCE_with_advantage}
 
 REINFORCE is a specific implementation of vanilla policy gradient that uses a Monte Carlo estimator of the gradient.
@@ -1262,7 +1262,7 @@ $$
 \hat{A}_t^{GAE(\gamma,\lambda)} = (1-\lambda)(\hat{A}_t^{(1)} + \lambda\hat{A}_t^{(2)} + \lambda^2\hat{A}_t^{(3)} + \cdots) \\
 = (1-\lambda)(\delta_t^V + \lambda(\delta_t^V + \gamma\delta_{t+1}^V) + \lambda^2(\delta_t^V + \gamma\delta_{t+1}^V + \gamma^2\delta_{t+2}^V) + \cdots) \\
 = (1-\lambda)(\delta_t^V(1 + \lambda + \lambda^2 + \cdots) + \gamma\delta_{t+1}^V(\lambda + \lambda^2 + \cdots) + \cdots) \\
-= (1-\lambda)(\delta_t^V\frac{1}{1-\lambda} + \gamma\delta_{t+1}^V\frac{\lambda}{1-\lambda} + \cdots) \\
+= (1-\lambda)\left(\delta_t^V\frac{1}{1-\lambda} + \gamma\delta_{t+1}^V\frac{\lambda}{1-\lambda} + \cdots\right) \\
 = \sum_{l=0}^{\infty}(\gamma\lambda)^l\delta_{t+l}^V
 \end{array}
 $$ {#eq:GAE_DFN}

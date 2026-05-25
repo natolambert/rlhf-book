@@ -94,7 +94,7 @@ To formalize the process of selecting the best completions based on our reward m
 
 The first potential selection function takes the max reward per prompt.
 
-$$S(R) = [\arg\max_{j} r_{1,j}, \arg\max_{j} r_{2,j}, ..., \arg\max_{j} r_{M,j}]$$ {#eq:rs_selection_per_prompt}
+$$S(R) = \left[\arg\max_{j} r_{1,j}, \arg\max_{j} r_{2,j}, ..., \arg\max_{j} r_{M,j}\right]$$ {#eq:rs_selection_per_prompt}
 
 This function $S$ returns a vector of indices, where each index corresponds to the column with the maximum reward for each row in $R$.
 We can then use these indices to select our chosen completions:
@@ -143,7 +143,7 @@ $$R = \begin{bmatrix}
 
 Using the argmax method, we select the best completion for each prompt:
 
-$$S(R) = [\arg\max_{j} r_{i,j} \text{ for } i \in [1,5]]$$ {#eq:rs_example_selection_formula}
+$$S(R) = \left[\arg\max_{j} r_{i,j} \text{ for } i \in [1,5]\right]$$ {#eq:rs_example_selection_formula}
 
 $$S(R) = [1, 2, 1, 3, 4]$$ {#eq:rs_example_selection_result}
 

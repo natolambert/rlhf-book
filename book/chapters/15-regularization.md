@@ -137,8 +137,8 @@ In this section, we first show that the two common post-training methods can be 
 
 The KL divergence is defined as the expected log-ratio between two distributions, $\mathbb{E}_{x \sim P}\!\left[\log \frac{P(x)}{Q(x)}\right]$, which can be written as a log difference, in two directions:
 
-- **Forward KL**: $\text{KL}(P \| Q) = \mathbb{E}_{x \sim P}[\log P(x) - \log Q(x)]$
-- **Reverse KL**: $\text{KL}(Q \| P) = \mathbb{E}_{x \sim Q}[\log Q(x) - \log P(x)]$
+- **Forward KL**: $\text{KL}(P \| Q) = \mathbb{E}_{x \sim P}\!\left[\log P(x) - \log Q(x)\right]$
+- **Reverse KL**: $\text{KL}(Q \| P) = \mathbb{E}_{x \sim Q}\!\left[\log Q(x) - \log P(x)\right]$
 
 where $P$ is the target distribution and $Q$ is the distribution we are modeling with parameters $\theta$.
 The key difference is which distribution we sample from: forward KL samples from the target (or optimal) distribution $P$, whereas reverse KL samples from our policy $Q$.
@@ -160,8 +160,8 @@ $$
 = \mathbb{E}_{(x,y) \sim \mathcal{D}} \left[ \log \pi_\star(y \mid x) \right] - \mathbb{E}_{(x,y) \sim \mathcal{D}} \left[ \log \pi_\theta(y \mid x) \right]
 $$
 
-The first term, $\mathbb{E}[\log \pi_\star(y \mid x)]$, depends only on the data distribution and equals the negative entropy $-H(\pi_\star)$ — a constant that does not change with $\theta$.
-The second term, $-\mathbb{E}[\log \pi_\theta(y \mid x)]$, is the negative log-likelihood over the dataset, which is the standard SFT cross-entropy loss $\mathcal{L}_\text{SFT}(\theta)$. Substituting:
+The first term, $\mathbb{E}\!\left[\log \pi_\star(y \mid x)\right]$, depends only on the data distribution and equals the negative entropy $-H(\pi_\star)$ — a constant that does not change with $\theta$.
+The second term, $-\mathbb{E}\!\left[\log \pi_\theta(y \mid x)\right]$, is the negative log-likelihood over the dataset, which is the standard SFT cross-entropy loss $\mathcal{L}_\text{SFT}(\theta)$. Substituting:
 
 $$
 = \underbrace{-H(\pi_\star)}_\text{const} + \mathcal{L}_\text{SFT}(\theta) \propto \mathcal{L}_\text{SFT}(\theta)
