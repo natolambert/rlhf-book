@@ -60,7 +60,7 @@ def load_model(model_name: str, device_map: Any, gradient_checkpointing: bool = 
         device_map=device_map,
         trust_remote_code=False,
         attn_implementation=attn_impl,
-        torch_dtype=torch.bfloat16,
+        dtype=torch.bfloat16,
     )
     if gradient_checkpointing:
         model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})

@@ -34,11 +34,15 @@ def generate_batch(model, tokenizer, entry: dict, cfg) -> dict:
         pad_token_id=pad_id,
     )
 
+    chat_kwargs = {}
+    if not cfg.enable_thinking:
+        chat_kwargs["enable_thinking"] = False
     prompts = [
         tokenizer.apply_chat_template(
             [{"role": "user", "content": entry["prompt"]}],
             tokenize=False,
             add_generation_prompt=True,
+            **chat_kwargs,
         )
     ] * cfg.num_rollouts
     inputs = tokenizer(prompts, return_tensors="pt", return_attention_mask=True).to(device)
@@ -66,7 +70,10 @@ def generate_batch(model, tokenizer, entry: dict, cfg) -> dict:
         prompt = build_teacher_prompt(entry["prompt"], demo, feedback)
         teacher_prompts.append(
             tokenizer.apply_chat_template(
-                [{"role": "user", "content": prompt}], tokenize=False, add_generation_prompt=True
+                [{"role": "user", "content": prompt}],
+                tokenize=False,
+                add_generation_prompt=True,
+                **chat_kwargs,
             )
         )
 

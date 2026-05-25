@@ -50,7 +50,6 @@ def load_livecodebench(split: str) -> list[dict]:
         "livecodebench/code_generation_lite",
         split="test",
         revision="refs/pr/6",
-        trust_remote_code=True,
     )
     if split == "train":
         ds = ds.filter(lambda ex: ex["contest_date"] < LCB_DATE_CUTOFF)

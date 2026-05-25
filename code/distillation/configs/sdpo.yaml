@@ -13,6 +13,7 @@ top_p: 0.95
 top_k: 20
 min_p: 0.0
 max_new_tokens: 4096
+enable_thinking: true
 
 # Training
 lr: 1.0e-6
