@@ -258,7 +258,7 @@ $$
 $$ {#eq:mopd_objective}
 
 In large-scale post-training, this can enable further scaling of recipes across growing organizations.
-Multiple groups can work on high-quality expert models, which can serve as teacher models down the line for the final student model, as done for [@deepseekai2026deepseekv4] and [@mimo2025flash].
+Multiple groups can work on high-quality expert models, which can serve as teacher models down the line for the final student model, as done in the DeepSeek-V4-Pro [@deepseekai2026deepseekv4] and Xiaomi MiMo-V2-Flash [@mimo2025flash] recipes.
 
 There are many ways to combine OPD with other areas investigated in this book, such as using the reverse KL as an advantage in addition to other forms of advantage computation, such as GRPO's group-level normalization, which enables more complex reward shaping.
 KD methods are unusual among post-training methods because they often require the student and teacher to share a tokenizer, since the supervision can be per-token feedback from another LLM.
