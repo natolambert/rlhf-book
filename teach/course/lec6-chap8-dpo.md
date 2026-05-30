@@ -58,7 +58,7 @@ The plan, in four movements:
 3. Plug it into the **Bradley-Terry** preference model
 4. Read off the **DPO loss** and its **gradient**
 
-*Rafailov et al., 2023 — "Your Language Model is Secretly a Reward Model."*
+*Rafailov et al., 2023 — "Your Language Model is Secretly a Reward Model"* [@rafailov2024direct].
 
 ---
 
@@ -402,10 +402,25 @@ Every exponential carries the **same** $\beta \log Z(x)$ term. That is about to 
 
 ---
 
-<!-- columns: 55/45 -->
-## Step 12 — the partition function cancels
+<!-- title: center -->
+## Step 12 — factor out the partition function
 
-Use $e^{a+b} = e^{a} e^{b}$ to factor out $\exp(\beta \log Z(x)) = Z(x)^{\beta}$ from every term. It appears in the numerator and in **both** denominator terms, so it cancels:
+Using $e^{a+b} = e^{a} e^{b}$, pull $\exp(\beta \log Z(x)) = Z(x)^{\beta}$ out of every term:
+
+$$
+p^{*}(y_1 \succ y_2 \mid x)
+= \frac{Z(x)^{\beta}\,\exp\!\left(\beta \log \frac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\right)}
+{Z(x)^{\beta}\,\exp\!\left(\beta \log \frac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\right) + Z(x)^{\beta}\,\exp\!\left(\beta \log \frac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)}\right)}
+$$
+
+The same factor $Z(x)^{\beta}$ now sits in the numerator and in **both** denominator terms.
+
+---
+
+<!-- title: center -->
+## Step 13 — the partition function cancels
+
+Divide the numerator and denominator by the shared $Z(x)^{\beta}$ — it vanishes:
 
 $$
 p^{*}(y_1 \succ y_2 \mid x)
@@ -413,37 +428,33 @@ p^{*}(y_1 \succ y_2 \mid x)
 {\exp\!\left(\beta \log \frac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\right) + \exp\!\left(\beta \log \frac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)}\right)}
 $$
 
-|||
-
-**Why this matters**
-
-- $Z(x)$ was the one term we could not compute.
-- Because it is identical across responses, the **pairwise** comparison erases it.
-- No reward model, no partition function — only policy probabilities remain.
+$Z(x)$ was the one term we could not compute — but because it is identical across responses, the **pairwise** comparison erases it. Only policy probabilities remain.
 
 ---
 
-<!-- columns: 55/45 -->
-## Step 13 — rewrite as a sigmoid
+<!-- title: center -->
+## Step 14 — divide through by the first exponential
 
-Divide numerator and denominator by the numerator, then use $\sigma(z) = \frac{1}{1 + e^{-z}}$:
+Divide numerator and denominator by $\exp\!\left(\beta \log \frac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\right)$. The numerator becomes $1$ and the denominator collects a single exponential of the **difference**:
 
 $$
-\begin{aligned}
 p^{*}(y_1 \succ y_2 \mid x)
-&= \frac{1}{1 + \exp\!\left(\beta \log \frac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)} - \beta \log \frac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\right)} \\[6pt]
-&= \sigma\!\left(\beta \log \frac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)} - \beta \log \frac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)}\right)
-\end{aligned}
+= \frac{1}{1 + \exp\!\left(\beta \log \frac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)} - \beta \log \frac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\right)}
 $$
 
-|||
+---
 
-**What changed**
+<!-- title: center -->
+## Step 15 — recognize the sigmoid
 
-- Divided top and bottom by the first exponential (top $\to 1$).
-- Matched the denominator to the sigmoid form.
+With $\sigma(z) = \frac{1}{1 + e^{-z}}$, the preference probability is a **sigmoid of the difference of two log-ratios**:
 
-The preference probability is now a **sigmoid of the difference of two log-ratios**.
+$$
+p^{*}(y_1 \succ y_2 \mid x)
+= \sigma\!\left(\beta \log \frac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)} - \beta \log \frac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)}\right)
+$$
+
+This is exactly the Bradley-Terry likelihood — but written with the policy in place of a reward model.
 
 ---
 
@@ -456,7 +467,7 @@ The preference probability is now a **sigmoid of the difference of two log-ratio
 
 <!-- rows: 45/55 -->
 <!-- title: center -->
-## Step 14 — the DPO loss
+## Step 16 — the DPO loss
 
 Fit by **maximum likelihood** on preference pairs $(x, y_c, y_r)$ — i.e. minimize the negative log-likelihood of the chosen response winning:
 
@@ -492,7 +503,7 @@ $$
 
 ---
 
-## Step 15 — the gradient
+## Step 17 — the gradient
 
 Differentiating the loss (using $\sigma' = \sigma(1-\sigma)$ and $\sigma(-z) = 1 - \sigma(z)$) gives:
 
@@ -562,8 +573,8 @@ So the model can lower the loss by pushing the *rejected* probability down **fas
 
 ![Sketch of preference displacement in DPO.](assets/dpo_displacement.png)
 
-- Called **preference displacement**; posited to push probability toward unaddressed, off-distribution behaviors.
-- A reason practitioners add an SFT term on the chosen response, or use fixes like Cal-DPO / AlphaPO.
+- Called **preference displacement** [@razin2024unintentional] [@ren2024learning]; posited to push probability toward unaddressed, off-distribution behaviors.
+- A reason practitioners add an SFT term on the chosen response, or use fixes like Cal-DPO [@xiao2024cal] / AlphaPO [@gupta2025alphapo].
 
 ---
 
@@ -583,10 +594,10 @@ Crucially, DPO's KL is **static**: it steps directly to the *optimal* solution i
 
 Each variant tweaks the loss to fix a limitation — usually a one-line change.
 
-- **IPO** — softens the preference probability away from Bradley-Terry to curb overfitting.
-- **cDPO / ODPO** — assume label noise / require a margin offset, so not all pairs count equally.
-- **ORPO** — adds an odds-ratio pull toward the chosen response and **drops the reference model**.
-- **SimPO** — length-normalizes the reward, also reference-free.
+- **IPO** [@azar2024general] — softens the preference probability away from Bradley-Terry to curb overfitting.
+- **cDPO** [@rafailov2024direct] **/ ODPO** [@amini2024direct] — assume label noise / require a margin offset, so not all pairs count equally.
+- **ORPO** [@hong2024reference] — adds an odds-ratio pull toward the chosen response and **drops the reference model**.
+- **SimPO** [@meng2025simpo] — length-normalizes the reward, also reference-free.
 
 |||
 
@@ -623,9 +634,9 @@ losses = -F.logsigmoid(beta * logits)
 
 Direct alignment needs *feedback*, not necessarily *human* feedback — AI feedback works just as well.
 
-- Most modern DPO uses preferences labeled by a strong model. **UltraFeedback** was the first such dataset; Tülu 3, SmolLM 3, and Olmo 3 followed.
+- Most modern DPO uses preferences labeled by a strong model. **UltraFeedback** [@cui2023ultrafeedback] was the first prominent *open* synthetic preference dataset and helped kickstart the DPO era; Tülu 3 [@lambert2024t], SmolLM 3 [@bakouch2025smollm3], and Olmo 3 [@teamolmo2025olmo3] followed with larger synthetic-feedback recipes.
 - **On-policy data** (some completions from the model you are tuning) helps the contrastive loss optimize the right token space.
-- **Delta Learning**: later work argues the *gap* between chosen and rejected matters more than which models produced them (e.g. Qwen3-32B chosen vs Qwen3-0.6B rejected).
+- **Delta Learning** [@geng2025the]: later work argues the *gap* between chosen and rejected matters more than which models produced them (e.g. Qwen3-32B chosen vs Qwen3-0.6B rejected).
 
 Watch for judge biases — frontier labelers favor longer, self-similar outputs.
 
@@ -645,7 +656,7 @@ Watch for judge biases — frontier labelers favor longer, self-similar outputs.
 **PPO / policy gradient is online**
 
 - Generate fresh completions during training, score with a reward model.
-- Can explore new regions → often higher peak performance.
+- Can explore new regions → often higher peak performance [@ivison2024unpacking] [@xu2024dpo] [@tajwar2024preference].
 - More compute, more moving parts (four models in memory).
 
 **Middle ground:** *online / iterative DPO* regenerates responses and relabels during training.
