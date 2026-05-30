@@ -21,6 +21,8 @@ custom_css: |
   }
 ---
 
+<!-- Source note: build with `make teach`, which copies assets/ into the output. A single-file `colloquium build -o ...` does NOT copy assets/, so the meme + displacement images 404 in that standalone build. -->
+
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
 
@@ -141,7 +143,28 @@ Now everything lives inside a single bracket.
 <!-- columns: 55/45 -->
 ## Step 2 — flip to a minimization
 
-Multiply the objective by $-1$ (so $\max \to \min$) and divide by $\beta > 0$:
+Multiply the objective by $-1$. Maximizing a quantity is the same as minimizing its negative, so $\max \to \min$ and **every** term in the bracket flips sign:
+
+$$
+\min_{\pi}\;\mathbb{E}_{x\sim\mathcal{D}}\,\mathbb{E}_{y\sim\pi(y\mid x)}
+\left[\, \beta\log\frac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - r(x,y) \,\right]
+$$
+
+|||
+
+**What changed**
+
+- $\times(-1)$ applied to the whole objective.
+- $\max \to \min$: the $r$ term becomes $-r$ and the log term becomes $+\beta\log\frac{\pi}{\pi_{\text{ref}}}$.
+
+Nothing has been rescaled yet — only the sign and the direction of optimization.
+
+---
+
+<!-- columns: 55/45 -->
+## Step 3 — divide by $\beta$
+
+Divide the whole objective by $\beta > 0$. Both terms pick up a factor of $\tfrac{1}{\beta}$, and the minimizer is unchanged:
 
 $$
 \min_{\pi}\;\mathbb{E}_{x\sim\mathcal{D}}\,\mathbb{E}_{y\sim\pi(y\mid x)}
@@ -152,15 +175,15 @@ $$
 
 **What changed**
 
-- $\times(-1)$: maximizing a quantity = minimizing its negative.
-- $\div\,\beta$: rescales the whole objective; the argmin is unchanged.
+- $\div\,\beta$: $\beta\log(\cdot) \to \log(\cdot)$ and $r \to \tfrac{1}{\beta} r$ — the coefficient hits **both** terms.
+- Dividing by a positive constant does not move the minimizer.
 
 We now want to recognize this bracket as a **distance** we can drive to zero.
 
 ---
 
 <!-- columns: 55/45 -->
-## Step 3 — introduce the partition function
+## Step 4 — introduce the partition function
 
 Define, for each prompt $x$:
 
@@ -185,9 +208,9 @@ Note: $Z(x)$ depends on $x$ and $r$ — **but not on $\pi$**. Remember this.
 ---
 
 <!-- columns: 52/48 -->
-## Step 4 — complete the expression with $Z(x)$
+## Step 5 — complete the expression with $Z(x)$
 
-Take the bracket from Step 2 and add $0 = \log Z(x) - \log Z(x)$, then regroup:
+Take the bracket from Step 3 and add $0 = \log Z(x) - \log Z(x)$, then regroup:
 
 $$
 \begin{aligned}
@@ -209,7 +232,7 @@ The denominator is now the normalized distribution from Step 3.
 ---
 
 <!-- columns: 55/45 -->
-## Step 5 — recognize a KL divergence
+## Step 6 — recognize a KL divergence
 
 Substituting back, the objective becomes:
 
@@ -234,7 +257,7 @@ We are minimizing a KL plus a term that does not involve $\pi$.
 
 <!-- rows: 45/55 -->
 <!-- title: center -->
-## Step 6 — Gibbs' inequality gives the optimal policy
+## Step 7 — Gibbs' inequality gives the optimal policy
 
 $$
 \min_{\pi}\;\mathbb{E}_{x\sim\mathcal{D}}
@@ -276,7 +299,7 @@ We can write $\pi^{*}$ exactly — but $Z(x)$ is a sum over **all possible respo
 ---
 
 <!-- columns: 52/48 -->
-## Step 7 — solve the optimal policy for the reward
+## Step 8 — solve the optimal policy for the reward
 
 Start from $\pi^{*}$ and take $\log$ of both sides, then isolate $r^{*}$:
 
@@ -300,7 +323,7 @@ Everything is linear in the logs now — easy to rearrange for $r^{*}$.
 ---
 
 <!-- columns: 52/48 -->
-## Step 8 — rearrange for the implicit reward
+## Step 9 — rearrange for the implicit reward
 
 Move terms across and multiply by $\beta$:
 
@@ -349,7 +372,7 @@ $$
 
 <!-- rows: 45/55 -->
 <!-- title: center -->
-## Step 9 — recall the Bradley-Terry model
+## Step 10 — recall the Bradley-Terry model
 
 From the reward-modeling chapter, the probability that response $y_1$ is preferred over $y_2$:
 
@@ -365,7 +388,7 @@ $$
 
 ---
 
-## Step 10 — substitute the implicit reward
+## Step 11 — substitute the implicit reward
 
 Replace each $r^{*}(x, y_i)$ with $\beta \log \frac{\pi^{*}(y_i\mid x)}{\pi_{\text{ref}}(y_i\mid x)} + \beta \log Z(x)$:
 
@@ -380,7 +403,7 @@ Every exponential carries the **same** $\beta \log Z(x)$ term. That is about to 
 ---
 
 <!-- columns: 55/45 -->
-## Step 11 — the partition function cancels
+## Step 12 — the partition function cancels
 
 Use $e^{a+b} = e^{a} e^{b}$ to factor out $\exp(\beta \log Z(x)) = Z(x)^{\beta}$ from every term. It appears in the numerator and in **both** denominator terms, so it cancels:
 
@@ -401,7 +424,7 @@ $$
 ---
 
 <!-- columns: 55/45 -->
-## Step 12 — rewrite as a sigmoid
+## Step 13 — rewrite as a sigmoid
 
 Divide numerator and denominator by the numerator, then use $\sigma(z) = \frac{1}{1 + e^{-z}}$:
 
@@ -433,7 +456,7 @@ The preference probability is now a **sigmoid of the difference of two log-ratio
 
 <!-- rows: 45/55 -->
 <!-- title: center -->
-## Step 13 — the DPO loss
+## Step 14 — the DPO loss
 
 Fit by **maximum likelihood** on preference pairs $(x, y_c, y_r)$ — i.e. minimize the negative log-likelihood of the chosen response winning:
 
@@ -469,7 +492,7 @@ $$
 
 ---
 
-## Step 14 — the gradient
+## Step 15 — the gradient
 
 Differentiating the loss (using $\sigma' = \sigma(1-\sigma)$ and $\sigma(-z) = 1 - \sigma(z)$) gives:
 
