@@ -9,11 +9,15 @@ Slides are built with [colloquium](https://github.com/natolambert/colloquium) fr
 - Assets go in an `assets/` subdirectory per talk/course
 - References are shared via `bibliography: ../SALA-2026/refs.bib` (or similar relative path)
 
-## Animation via Slide Repeats
+## Animations and Progressive Reveals
 
-Colloquium does not have built-in animation/fragment support. To simulate animations (progressive reveals), **duplicate the slide** with additional content on each copy. For example, a slide shown first with 4 bullets, then repeated with 2 more bullets below, is intentional — do NOT merge these into one slide.
+Colloquium has built-in HTML fragment support. Prefer fragments over duplicate slides for progressive reveals:
 
-**Math derivation unrolls**: For step-by-step derivations, use the same pattern — repeat the slide with one additional derivation step each time. Keep the title and earlier steps identical so the audience sees each new line appear. This is especially useful for multi-step algebra (e.g. Bradley-Terry → loss function). The result looks like repetition in the source, but each copy is a separate slide that reveals one more step.
+- `<!-- animate: bullets -->` reveals each list item one at a time.
+- `<!-- animate: blocks -->` reveals each top-level block one at a time.
+- `<!-- step -->` reveals the content after the marker on the next click. Add multiple markers for multiple reveal points.
+
+**Math derivation unrolls**: For step-by-step derivations, add `<!-- step -->` before each new derivation step so the audience sees one manipulation at a time. Repeat a full slide only when separate static slides are intentionally needed, such as a handout or export workflow that should preserve each intermediate frame.
 
 **Never skip steps in derivations.** Every algebraic manipulation must be shown explicitly — if a term cancels, show it cancelling; if an expression is rewritten, show the intermediate form. Assume the audience cannot fill in gaps. For example, when dividing numerator and denominator by the same term, first show the division applied, then show the numerator simplifying to 1, then show the denominator simplifying. Each of these can be a separate slide.
 
@@ -22,6 +26,9 @@ Colloquium does not have built-in animation/fragment support. To simulate animat
 ## Colloquium Directives
 
 Key directives (HTML comments before or after the heading):
+- `<!-- animate: bullets -->` — reveal list items one at a time
+- `<!-- animate: blocks -->` — reveal top-level blocks one at a time
+- `<!-- step -->` — reveal the following content on the next click
 - `<!-- columns: 45/55 -->` — side-by-side columns
 - `<!-- rows: 48/52 -->` — top/bottom rows, separated by `===`
 - `<!-- row-columns: 50/50 -->` — columns within a row
