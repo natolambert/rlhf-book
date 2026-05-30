@@ -661,6 +661,6 @@ rlhfbook.com | interconnects.ai
 
 ===
 
-<div class="text-xs" style="text-align: center; opacity: 0.5;">
-Built with <a href="https://github.com/natolambert/colloquium">colloquium</a>
-</div>
+```builtwith
+repo: natolambert/colloquium
+```
