@@ -60,21 +60,27 @@ Two citation modes — choose based on what is being cited:
 ## Build
 
 ```bash
-uv run colloquium build teach/SALA-2026/talk.md -o build/
-uv run colloquium export teach/SALA-2026/talk.md -o slides.pdf
+uv run --extra teach colloquium build teach/SALA-2026/talk.md -o build/
+uv run --extra teach colloquium export teach/SALA-2026/talk.md -o slides.pdf
 ```
 
 ## Local Preview (Live Reload)
 
-`colloquium serve` serves from the input file's parent directory. When slides reference assets via `../` paths (e.g. `../SALA-2026/assets/`), images break because the web server won't serve files above its root.
+`colloquium serve` writes the rendered HTML into the output directory and serves from there. Relative image paths in the Markdown are preserved in the HTML, so the output directory must match the directory those paths expect.
 
-**Workaround**: Call `serve()` directly with `output_dir` set to `teach/` so the serve root is high enough to resolve all relative paths:
+For course lectures in `teach/course/`, images are referenced as `assets/...`, so the rendered HTML must live in `teach/course/` next to the `assets/` folder:
 
 ```bash
 # From the repo root:
-uv run python -c "from colloquium.serve import serve; serve('teach/course/lec1-chap1-3.md', port=8080, output_dir='teach')"
+uv run --extra teach python -c "from colloquium.serve import serve; serve('teach/course/lec5-chap7.md', port=8081, output_dir='teach/course')"
 ```
 
-This gives you live rebuild on save + correct asset resolution. The URL will be `http://localhost:8080/<stem>.html`.
+The URL will be `http://localhost:8081/lec5-chap7.html`. Before handing the URL to the user, verify at least one deck image directly:
+
+```bash
+uv run --extra teach python -c "import urllib.request as u; urls=['http://127.0.0.1:8081/lec5-chap7.html','http://127.0.0.1:8081/assets/rlvr-system.png']; [print(x, (r := u.urlopen(x, timeout=3)).status, r.getheader('content-type')) for x in urls]"
+```
+
+For standalone talks with local `assets/...` references, run from the talk directory or set `output_dir` to that talk directory. If a deck intentionally references assets above its own directory, set `output_dir` high enough for those relative paths and verify an image URL before reporting success.
 
 Note: `colloquium serve` CLI does not expose `--output-dir` yet — this is a known limitation.
