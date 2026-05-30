@@ -571,8 +571,8 @@ The frontier moved fast -- from "reasoning model" to **long-horizon, tool-using 
 
 1. **Offline difficulty filtering** -- pre-sample $N$ completions/prompt, keep prompts at ~20-80% pass rate (where the gradient lives). *Seed-Thinking 1.5 [@seed2025seed], Open-Reasoner-Zero [@hu2025openreasonerzero], Phi-4 Reasoning [@abdin2025phi4], INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained], MiMo [@xia2025mimo], Skywork OR-1 [@he2025skyworkor1], OLMo 3 [@teamolmo2025olmo3]*
 2. **Online filtering and curriculum** -- skip prompts now too easy/hard; save harder problems for later. *Kimi 1.5 [@team2025kimi], Magistral [@mistral2025magistral], Llama-Nemotron [@bercovich2025llamanemotron], INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained], MiMo [@xia2025mimo]*
-3. **Zero-gradient filtering + active sampling** -- drop groups where all $G$ completions pass or fail (advantage 0), then refill the batch. *OLMo 3 [@teamolmo2025olmo3]*
-4. **Remove the KL penalty** -- verifiable rewards resist over-optimization, so set $\beta=0$ and explore past the reference. *Magistral [@mistral2025magistral], Open-Reasoner-Zero [@hu2025openreasonerzero], Skywork OR-1 [@he2025skyworkor1]*
+3. **Zero-gradient filtering + active sampling** -- drop groups where all $G$ completions pass or fail (advantage 0), then refill the batch. *OLMo 3 [@teamolmo2025olmo3]*. Makes loss nice and very stable!
+4. **KL penalty: dropped, now creeping back** -- single-turn math RLVR usually sets $\beta=0$ (verifiable rewards resist over-optimization). *Magistral [@mistral2025magistral], Open-Reasoner-Zero [@hu2025openreasonerzero], Skywork OR-1 [@he2025skyworkor1]* But long-horizon, off-policy agentic training is reviving a KL/reference term for stability -- e.g. Cursor [Composer 2](https://cursor.com/blog/composer-2-technical-report).
 5. **Relaxed / asymmetric clipping** -- widen the upper clip bound to keep exploratory updates (DAPO [@yu2025dapo]). *Magistral [@mistral2025magistral], INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained]*
 
 ---
@@ -581,11 +581,11 @@ The frontier moved fast -- from "reasoning model" to **long-horizon, tool-using 
 
 <!-- animate: bullets -->
 
-6. **CISPO** -- clip importance-sampling weights instead of masking high-update tokens (MiniMax-M1 [@minimax2025minimax_m1]).
-7. **Loss normalization** -- batch-level cuts difficulty bias (Magistral [@mistral2025magistral], MiMo [@xia2025mimo]); token-level cuts length bias (Dr. GRPO [@liu2025understanding]).
+6. **CISPO** -- clip importance-sampling weights instead of masking high-update tokens (MiniMax-M1 [@minimax2025minimax_m1]); ScaleRL [@khatri2025art] picked it as the best loss in their scaling study. Recall importance sampling and clipping from [Lecture 3](https://www.youtube.com/watch?v=K_Sj_-1BUMM).
+7. **Normalization choices** -- how you average advantages and loss quietly changes the objective. Normalize advantages across the **whole batch**, not per prompt group, so a few easy/hard prompts don't dominate (Magistral [@mistral2025magistral], MiMo [@xia2025mimo]); average loss over **total tokens**, not per sequence, to remove a length bias (Dr. GRPO [@liu2025understanding]).
 8. **Format rewards** -- reward valid `<think>` blocks and extractable answers; usability, not correctness. *DeepSeek R1 [@guo2025deepseek], Open-Reasoner-Zero [@hu2025openreasonerzero], Magistral [@mistral2025magistral], Skywork OR-1 [@he2025skyworkor1]*
-9. **Language consistency rewards** -- penalize language switching inside a trace. *DeepSeek R1 [@guo2025deepseek], Magistral [@mistral2025magistral]*
-10. **Length control** -- progressive length extension (Kimi 1.5 [@team2025kimi]); small length penalty (INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained]); overlong filtering for throughput.
+9. **Language consistency rewards** -- penalize language switching inside a trace. *DeepSeek R1 [@guo2025deepseek], Magistral [@mistral2025magistral]*. Models used to switch to Chinese or French while reasoning.
+10. **Length control** -- progressive length extension -- i.e. the maximum length of training, which rewards concise thinking (Kimi 1.5 [@team2025kimi]); small length penalty (INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained]); overlong filtering for throughput.
 
 ---
 
@@ -615,18 +615,15 @@ The frontier moved fast -- from "reasoning model" to **long-horizon, tool-using 
 
 ---
 
-<!-- layout: section-break -->
-
-## Looking ahead
-
----
-
 ## Open questions
 
+<!-- animate: bullets -->
+
 - Is RL training **discovering** new capabilities, or **eliciting** what pretraining already learned?
-- How far can reasoning training go without better pretraining data?
+- How far can reasoning training go without better pretraining data? Pretraining does NOT seem dead.
 - Will agentic RL (tool use + reasoning) require fundamentally different recipes?
 - Can we systematically study the scaling properties of RL for reasoning? [@khatri2025art]
+- In 1, 2, 5, and 10 years what does the balance of compute between pretraining and RL look like?
 
 ---
 
