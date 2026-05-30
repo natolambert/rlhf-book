@@ -22,6 +22,7 @@ custom_css: |
 ---
 
 <!-- Source note: build with `make teach`, which copies assets/ into the output. A single-file `colloquium build -o ...` does NOT copy assets/, so the meme + displacement images 404 in that standalone build. -->
+<!-- Reveal convention: each derivation topic is a run of duplicate slides with identical title + equations; one comment bullet is appended per slide so the layout never recenters. -->
 
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
@@ -90,62 +91,159 @@ So we can train the policy *directly* on preferences.
 
 ---
 
+<!-- valign: top -->
 <!-- title: center -->
 ## Solve the KL-constrained objective
 
-Reshape the RLHF objective until a familiar distance appears:
-
 $$
 \begin{aligned}
-& \max_{\pi}\ \mathbb{E}_{x\sim\mathcal{D},\,y\sim\pi}\big[\,r(x,y)\,\big] - \beta\,\mathcal{D}_{\text{KL}}\big(\pi \,\|\, \pi_{\text{ref}}\big) && \text{the RLHF objective}\\[4pt]
-\Longleftrightarrow\ & \max_{\pi}\ \mathbb{E}\Big[\, r(x,y) - \beta\log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} \,\Big] && \text{KL}=\mathbb{E}_{y\sim\pi}\big[\log\tfrac{\pi}{\pi_{\text{ref}}}\big]\\[4pt]
-\Longleftrightarrow\ & \min_{\pi}\ \mathbb{E}\Big[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) \,\Big] && \text{negate, then divide by }\beta
+& \max_{\pi}\ \mathbb{E}_{x\sim\mathcal{D},\,y\sim\pi}\big[\,r(x,y)\,\big] - \beta\,\mathcal{D}_{\text{KL}}\big(\pi \,\|\, \pi_{\text{ref}}\big) \\[6pt]
+\Longleftrightarrow\ & \max_{\pi}\ \mathbb{E}\Big[\, r(x,y) - \beta\log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} \,\Big] \\[6pt]
+\Longleftrightarrow\ & \min_{\pi}\ \mathbb{E}\Big[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) \,\Big]
 \end{aligned}
 $$
 
-The bracket is now almost a **log-ratio between two distributions** — we just need a normalizer to make the second one real.
+- Start from the RLHF objective: maximize reward minus a $\beta$-weighted KL leash to $\pi_{\text{ref}}$.
 
 ---
 
+<!-- valign: top -->
+<!-- title: center -->
+## Solve the KL-constrained objective
+
+$$
+\begin{aligned}
+& \max_{\pi}\ \mathbb{E}_{x\sim\mathcal{D},\,y\sim\pi}\big[\,r(x,y)\,\big] - \beta\,\mathcal{D}_{\text{KL}}\big(\pi \,\|\, \pi_{\text{ref}}\big) \\[6pt]
+\Longleftrightarrow\ & \max_{\pi}\ \mathbb{E}\Big[\, r(x,y) - \beta\log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} \,\Big] \\[6pt]
+\Longleftrightarrow\ & \min_{\pi}\ \mathbb{E}\Big[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) \,\Big]
+\end{aligned}
+$$
+
+- Start from the RLHF objective: maximize reward minus a $\beta$-weighted KL leash to $\pi_{\text{ref}}$.
+- Rewrite the KL as $\mathbb{E}_{y\sim\pi}\big[\log\tfrac{\pi}{\pi_{\text{ref}}}\big]$ — now everything is a single expectation.
+
+---
+
+<!-- valign: top -->
+<!-- title: center -->
+## Solve the KL-constrained objective
+
+$$
+\begin{aligned}
+& \max_{\pi}\ \mathbb{E}_{x\sim\mathcal{D},\,y\sim\pi}\big[\,r(x,y)\,\big] - \beta\,\mathcal{D}_{\text{KL}}\big(\pi \,\|\, \pi_{\text{ref}}\big) \\[6pt]
+\Longleftrightarrow\ & \max_{\pi}\ \mathbb{E}\Big[\, r(x,y) - \beta\log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} \,\Big] \\[6pt]
+\Longleftrightarrow\ & \min_{\pi}\ \mathbb{E}\Big[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) \,\Big]
+\end{aligned}
+$$
+
+- Start from the RLHF objective: maximize reward minus a $\beta$-weighted KL leash to $\pi_{\text{ref}}$.
+- Rewrite the KL as $\mathbb{E}_{y\sim\pi}\big[\log\tfrac{\pi}{\pi_{\text{ref}}}\big]$ — now everything is a single expectation.
+- Negate (so $\max\to\min$) and divide by $\beta$. The bracket is now **almost a log-ratio of two distributions**.
+
+---
+
+<!-- valign: top -->
 <!-- title: center -->
 ## Introduce the partition function $Z(x)$
 
-Define the normalizer that turns $\pi_{\text{ref}}\,e^{r/\beta}$ into a valid distribution over $y$:
-
 $$
 Z(x) = \sum_{y} \pi_{\text{ref}}(y\mid x)\,\exp\!\big(\tfrac{1}{\beta} r(x,y)\big)
-\qquad\text{(depends on $x$ and $r$, not on $\pi$)}
 $$
 
-Now add $0 = \log Z(x) - \log Z(x)$ inside the bracket and regroup:
-
 $$
-\begin{aligned}
 \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y)
-&= \log\frac{\pi(y\mid x)}{\tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,\exp\!\big(\tfrac{1}{\beta} r(x,y)\big)} - \log Z(x) && \text{complete the ratio}
-\end{aligned}
+= \log\frac{\pi(y\mid x)}{\tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,\exp\!\big(\tfrac{1}{\beta} r(x,y)\big)} - \log Z(x)
 $$
 
-Call the new denominator $q(y\mid x) = \tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,e^{r/\beta}$ — a genuine probability distribution.
+- $Z(x)$ is the normalizer that turns $\pi_{\text{ref}}\,e^{r/\beta}$ into a real distribution (it ignores $\pi$).
 
 ---
 
+<!-- valign: top -->
+<!-- title: center -->
+## Introduce the partition function $Z(x)$
+
+$$
+Z(x) = \sum_{y} \pi_{\text{ref}}(y\mid x)\,\exp\!\big(\tfrac{1}{\beta} r(x,y)\big)
+$$
+
+$$
+\log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y)
+= \log\frac{\pi(y\mid x)}{\tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,\exp\!\big(\tfrac{1}{\beta} r(x,y)\big)} - \log Z(x)
+$$
+
+- $Z(x)$ is the normalizer that turns $\pi_{\text{ref}}\,e^{r/\beta}$ into a real distribution (it ignores $\pi$).
+- Add $0 = \log Z(x) - \log Z(x)$ inside the bracket and fold $\tfrac{1}{\beta} r = \log e^{r/\beta}$ into the ratio.
+
+---
+
+<!-- valign: top -->
+<!-- title: center -->
+## Introduce the partition function $Z(x)$
+
+$$
+Z(x) = \sum_{y} \pi_{\text{ref}}(y\mid x)\,\exp\!\big(\tfrac{1}{\beta} r(x,y)\big)
+$$
+
+$$
+\log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y)
+= \log\frac{\pi(y\mid x)}{\tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,\exp\!\big(\tfrac{1}{\beta} r(x,y)\big)} - \log Z(x)
+$$
+
+- $Z(x)$ is the normalizer that turns $\pi_{\text{ref}}\,e^{r/\beta}$ into a real distribution (it ignores $\pi$).
+- Add $0 = \log Z(x) - \log Z(x)$ inside the bracket and fold $\tfrac{1}{\beta} r = \log e^{r/\beta}$ into the ratio.
+- The denominator is now a **valid distribution** $q(y\mid x) = \tfrac{1}{Z(x)}\pi_{\text{ref}}\,e^{r/\beta}$ — exactly what we need next.
+
+---
+
+<!-- valign: top -->
 <!-- title: center -->
 ## Gibbs' inequality gives the optimal policy
-
-The objective is now a KL divergence plus a term that does not depend on $\pi$:
 
 $$
 \min_{\pi}\ \mathbb{E}_{x\sim\mathcal{D}}\Big[\, \mathcal{D}_{\text{KL}}\big(\pi(y\mid x)\,\|\,q(y\mid x)\big) - \log Z(x) \,\Big]
 $$
 
-A KL divergence is $\ge 0$ and equals $0$ **only when the two distributions match** (Gibbs' inequality). So the minimizer is simply $\pi = q$:
+$$
+\boxed{\ \ \pi^{*}(y\mid x) = \frac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,\exp\!\big(\tfrac{1}{\beta} r(x,y)\big)\ \ }
+$$
+
+- The objective is now a KL divergence plus a term that does not depend on $\pi$.
+
+---
+
+<!-- valign: top -->
+<!-- title: center -->
+## Gibbs' inequality gives the optimal policy
+
+$$
+\min_{\pi}\ \mathbb{E}_{x\sim\mathcal{D}}\Big[\, \mathcal{D}_{\text{KL}}\big(\pi(y\mid x)\,\|\,q(y\mid x)\big) - \log Z(x) \,\Big]
+$$
 
 $$
 \boxed{\ \ \pi^{*}(y\mid x) = \frac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,\exp\!\big(\tfrac{1}{\beta} r(x,y)\big)\ \ }
 $$
 
-Exact — but $Z(x)$ sums over *all possible responses*, so we cannot compute it. The next step makes that problem disappear.
+- The objective is now a KL divergence plus a term that does not depend on $\pi$.
+- A KL is $\ge 0$ and equals $0$ **only when the two distributions match** (Gibbs) — so set $\pi = q$.
+
+---
+
+<!-- valign: top -->
+<!-- title: center -->
+## Gibbs' inequality gives the optimal policy
+
+$$
+\min_{\pi}\ \mathbb{E}_{x\sim\mathcal{D}}\Big[\, \mathcal{D}_{\text{KL}}\big(\pi(y\mid x)\,\|\,q(y\mid x)\big) - \log Z(x) \,\Big]
+$$
+
+$$
+\boxed{\ \ \pi^{*}(y\mid x) = \frac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,\exp\!\big(\tfrac{1}{\beta} r(x,y)\big)\ \ }
+$$
+
+- The objective is now a KL divergence plus a term that does not depend on $\pi$.
+- A KL is $\ge 0$ and equals $0$ **only when the two distributions match** (Gibbs) — so set $\pi = q$.
+- Exact, but $Z(x)$ sums over *all possible responses* — intractable. We remove it next.
 
 ---
 
@@ -156,20 +254,54 @@ Exact — but $Z(x)$ sums over *all possible responses*, so we cannot compute it
 
 ---
 
+<!-- valign: top -->
 <!-- title: center -->
 ## Invert $\pi^{*}$ for the implicit reward
 
-Solve the optimal-policy equation for the reward, in terms of policies alone:
-
 $$
 \begin{aligned}
-\log \pi^{*}(y\mid x) &= -\log Z(x) + \log \pi_{\text{ref}}(y\mid x) + \tfrac{1}{\beta} r^{*}(x,y) && \text{take $\log$ of $\pi^{*}$}\\[4pt]
-\tfrac{1}{\beta} r^{*}(x,y) &= \log \pi^{*}(y\mid x) - \log \pi_{\text{ref}}(y\mid x) + \log Z(x) && \text{rearrange}\\[4pt]
-r^{*}(x,y) &= \beta \log \tfrac{\pi^{*}(y\mid x)}{\pi_{\text{ref}}(y\mid x)} + \beta \log Z(x) && \text{multiply by }\beta
+\log \pi^{*}(y\mid x) &= -\log Z(x) + \log \pi_{\text{ref}}(y\mid x) + \tfrac{1}{\beta} r^{*}(x,y) \\[6pt]
+\tfrac{1}{\beta} r^{*}(x,y) &= \log \pi^{*}(y\mid x) - \log \pi_{\text{ref}}(y\mid x) + \log Z(x) \\[6pt]
+r^{*}(x,y) &= \beta \log \tfrac{\pi^{*}(y\mid x)}{\pi_{\text{ref}}(y\mid x)} + \beta \log Z(x)
 \end{aligned}
 $$
 
-The reward is just a **$\beta$-scaled log-ratio** of the policy to the reference, plus a prompt-only constant $\beta\log Z(x)$ — *your language model is secretly a reward model.*
+- Take $\log$ of $\pi^{*}$ and split the product into a sum of logs.
+
+---
+
+<!-- valign: top -->
+<!-- title: center -->
+## Invert $\pi^{*}$ for the implicit reward
+
+$$
+\begin{aligned}
+\log \pi^{*}(y\mid x) &= -\log Z(x) + \log \pi_{\text{ref}}(y\mid x) + \tfrac{1}{\beta} r^{*}(x,y) \\[6pt]
+\tfrac{1}{\beta} r^{*}(x,y) &= \log \pi^{*}(y\mid x) - \log \pi_{\text{ref}}(y\mid x) + \log Z(x) \\[6pt]
+r^{*}(x,y) &= \beta \log \tfrac{\pi^{*}(y\mid x)}{\pi_{\text{ref}}(y\mid x)} + \beta \log Z(x)
+\end{aligned}
+$$
+
+- Take $\log$ of $\pi^{*}$ and split the product into a sum of logs.
+- Rearrange and multiply by $\beta$ to isolate the reward.
+
+---
+
+<!-- valign: top -->
+<!-- title: center -->
+## Invert $\pi^{*}$ for the implicit reward
+
+$$
+\begin{aligned}
+\log \pi^{*}(y\mid x) &= -\log Z(x) + \log \pi_{\text{ref}}(y\mid x) + \tfrac{1}{\beta} r^{*}(x,y) \\[6pt]
+\tfrac{1}{\beta} r^{*}(x,y) &= \log \pi^{*}(y\mid x) - \log \pi_{\text{ref}}(y\mid x) + \log Z(x) \\[6pt]
+r^{*}(x,y) &= \beta \log \tfrac{\pi^{*}(y\mid x)}{\pi_{\text{ref}}(y\mid x)} + \beta \log Z(x)
+\end{aligned}
+$$
+
+- Take $\log$ of $\pi^{*}$ and split the product into a sum of logs.
+- Rearrange and multiply by $\beta$ to isolate the reward.
+- The reward is a **$\beta$-scaled log-ratio** plus a prompt-only constant — *your language model is secretly a reward model.*
 
 ---
 
@@ -180,39 +312,105 @@ The reward is just a **$\beta$-scaled log-ratio** of the policy to the reference
 
 ---
 
+<!-- valign: top -->
 <!-- title: center -->
 ## Substitute into Bradley-Terry; $Z(x)$ cancels
-
-Bradley-Terry models a preference as a softmax over the two rewards. Substitute the implicit reward $r^{*}(x,y_i) = \beta\log\tfrac{\pi^{*}(y_i\mid x)}{\pi_{\text{ref}}(y_i\mid x)} + \beta\log Z(x)$:
 
 $$
 p^{*}(y_1 \succ y_2 \mid x) = \frac{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)} + \beta \log Z(x)\big)}{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)} + \beta \log Z(x)\big) + \exp\!\big(\beta \log \tfrac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)} + \beta \log Z(x)\big)}
 $$
 
-Every term carries the same factor $e^{\beta \log Z(x)} = Z(x)^{\beta}$, so it cancels top and bottom:
-
 $$
-p^{*}(y_1 \succ y_2 \mid x) = \frac{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\big)}{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\big) + \exp\!\big(\beta \log \tfrac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)}\big)}
+= \frac{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\big)}{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\big) + \exp\!\big(\beta \log \tfrac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)}\big)}
 $$
 
-The intractable $Z(x)$ is gone — only policy-to-reference ratios remain.
+- Bradley-Terry models the preferred response as a softmax over the two rewards.
 
 ---
 
+<!-- valign: top -->
+<!-- title: center -->
+## Substitute into Bradley-Terry; $Z(x)$ cancels
+
+$$
+p^{*}(y_1 \succ y_2 \mid x) = \frac{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)} + \beta \log Z(x)\big)}{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)} + \beta \log Z(x)\big) + \exp\!\big(\beta \log \tfrac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)} + \beta \log Z(x)\big)}
+$$
+
+$$
+= \frac{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\big)}{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\big) + \exp\!\big(\beta \log \tfrac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)}\big)}
+$$
+
+- Bradley-Terry models the preferred response as a softmax over the two rewards.
+- Substitute the implicit reward — every term picks up the same factor $e^{\beta\log Z(x)} = Z(x)^{\beta}$.
+
+---
+
+<!-- valign: top -->
+<!-- title: center -->
+## Substitute into Bradley-Terry; $Z(x)$ cancels
+
+$$
+p^{*}(y_1 \succ y_2 \mid x) = \frac{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)} + \beta \log Z(x)\big)}{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)} + \beta \log Z(x)\big) + \exp\!\big(\beta \log \tfrac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)} + \beta \log Z(x)\big)}
+$$
+
+$$
+= \frac{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\big)}{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\big) + \exp\!\big(\beta \log \tfrac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)}\big)}
+$$
+
+- Bradley-Terry models the preferred response as a softmax over the two rewards.
+- Substitute the implicit reward — every term picks up the same factor $e^{\beta\log Z(x)} = Z(x)^{\beta}$.
+- That shared factor cancels top and bottom: the **intractable $Z(x)$ disappears**, leaving only policy ratios.
+
+---
+
+<!-- valign: top -->
 <!-- title: center -->
 ## From the ratio to a sigmoid
-
-Divide numerator and denominator by the first exponential, then use $\sigma(z) = \tfrac{1}{1+e^{-z}}$:
 
 $$
 \begin{aligned}
 p^{*}(y_1 \succ y_2 \mid x)
-&= \frac{1}{1 + \exp\!\big(\beta \log \tfrac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)} - \beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\big)} && \text{divide through}\\[6pt]
-&= \sigma\!\Big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)} - \beta \log \tfrac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)}\Big) && \text{recognize the sigmoid}
+&= \frac{1}{1 + \exp\!\big(\beta \log \tfrac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)} - \beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\big)} \\[8pt]
+&= \sigma\!\Big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)} - \beta \log \tfrac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)}\Big)
 \end{aligned}
 $$
 
-The preference probability is a **sigmoid of the difference of two log-ratios** — the Bradley-Terry likelihood, with the policy standing in for the reward model.
+- Divide numerator and denominator by the first exponential.
+
+---
+
+<!-- valign: top -->
+<!-- title: center -->
+## From the ratio to a sigmoid
+
+$$
+\begin{aligned}
+p^{*}(y_1 \succ y_2 \mid x)
+&= \frac{1}{1 + \exp\!\big(\beta \log \tfrac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)} - \beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\big)} \\[8pt]
+&= \sigma\!\Big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)} - \beta \log \tfrac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)}\Big)
+\end{aligned}
+$$
+
+- Divide numerator and denominator by the first exponential.
+- Apply $\sigma(z) = \tfrac{1}{1+e^{-z}}$: a **sigmoid of the difference of two log-ratios**.
+
+---
+
+<!-- valign: top -->
+<!-- title: center -->
+## From the ratio to a sigmoid
+
+$$
+\begin{aligned}
+p^{*}(y_1 \succ y_2 \mid x)
+&= \frac{1}{1 + \exp\!\big(\beta \log \tfrac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)} - \beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\big)} \\[8pt]
+&= \sigma\!\Big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)} - \beta \log \tfrac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)}\Big)
+\end{aligned}
+$$
+
+- Divide numerator and denominator by the first exponential.
+- Apply $\sigma(z) = \tfrac{1}{1+e^{-z}}$: a **sigmoid of the difference of two log-ratios**.
+- This is the Bradley-Terry likelihood, with the **policy standing in for the reward model**.
 
 ---
 
@@ -223,32 +421,91 @@ The preference probability is a **sigmoid of the difference of two log-ratios** 
 
 ---
 
+<!-- valign: top -->
 <!-- title: center -->
 ## The DPO loss
-
-Fit by maximum likelihood on observed pairs $(x, y_c, y_r)$ — minimize the negative log-likelihood that the chosen response wins, with the trainable $\pi_\theta$ in place of $\pi^{*}$:
 
 $$
 \mathcal{L}_{\text{DPO}}(\pi_\theta;\pi_{\text{ref}}) = -\,\mathbb{E}_{(x,y_c,y_r)\sim\mathcal{D}}\Big[\log \sigma\big(\underbrace{\beta \log \tfrac{\pi_\theta(y_c\mid x)}{\pi_{\text{ref}}(y_c\mid x)}}_{\text{chosen shift}} - \underbrace{\beta \log \tfrac{\pi_\theta(y_r\mid x)}{\pi_{\text{ref}}(y_r\mid x)}}_{\text{rejected shift}}\big)\Big]
 $$
 
-- Each term measures how much $\pi_\theta$ moved a response's probability **relative to the reference**.
-- The loss drops when the chosen shift exceeds the rejected shift; $\beta$ sets how hard to push vs. staying near $\pi_{\text{ref}}$.
-- Directly differentiable — **no reward model, no sampling, no RL loop.**
+- Maximize the likelihood that the chosen response wins → minimize this NLL, with the trainable $\pi_\theta$ in place of $\pi^{*}$.
 
 ---
 
+<!-- valign: top -->
+<!-- title: center -->
+## The DPO loss
+
+$$
+\mathcal{L}_{\text{DPO}}(\pi_\theta;\pi_{\text{ref}}) = -\,\mathbb{E}_{(x,y_c,y_r)\sim\mathcal{D}}\Big[\log \sigma\big(\underbrace{\beta \log \tfrac{\pi_\theta(y_c\mid x)}{\pi_{\text{ref}}(y_c\mid x)}}_{\text{chosen shift}} - \underbrace{\beta \log \tfrac{\pi_\theta(y_r\mid x)}{\pi_{\text{ref}}(y_r\mid x)}}_{\text{rejected shift}}\big)\Big]
+$$
+
+- Maximize the likelihood that the chosen response wins → minimize this NLL, with the trainable $\pi_\theta$ in place of $\pi^{*}$.
+- Each term measures how much $\pi_\theta$ moved a response's probability **relative to the reference**.
+
+---
+
+<!-- valign: top -->
+<!-- title: center -->
+## The DPO loss
+
+$$
+\mathcal{L}_{\text{DPO}}(\pi_\theta;\pi_{\text{ref}}) = -\,\mathbb{E}_{(x,y_c,y_r)\sim\mathcal{D}}\Big[\log \sigma\big(\underbrace{\beta \log \tfrac{\pi_\theta(y_c\mid x)}{\pi_{\text{ref}}(y_c\mid x)}}_{\text{chosen shift}} - \underbrace{\beta \log \tfrac{\pi_\theta(y_r\mid x)}{\pi_{\text{ref}}(y_r\mid x)}}_{\text{rejected shift}}\big)\Big]
+$$
+
+- Maximize the likelihood that the chosen response wins → minimize this NLL, with the trainable $\pi_\theta$ in place of $\pi^{*}$.
+- Each term measures how much $\pi_\theta$ moved a response's probability **relative to the reference**.
+- Loss drops as the chosen shift beats the rejected; directly differentiable — **no reward model, no sampling, no RL loop.**
+
+---
+
+<!-- valign: top -->
 <!-- title: center -->
 ## The gradient, and what it does
 
 $$
-\nabla_\theta \mathcal{L}_{\text{DPO}} = -\,\beta\, \mathbb{E}_{(x,y_c,y_r)\sim\mathcal{D}}\Big[\, w \cdot \big(\nabla_\theta \log \pi_\theta(y_c\mid x) - \nabla_\theta \log \pi_\theta(y_r\mid x)\big)\,\Big],
-\qquad w = \sigma\!\big(\hat r_r - \hat r_c\big)
+\nabla_\theta \mathcal{L}_{\text{DPO}} = -\,\beta\, \mathbb{E}_{(x,y_c,y_r)\sim\mathcal{D}}\Big[\, w \cdot \big(\nabla_\theta \log \pi_\theta(y_c\mid x) - \nabla_\theta \log \pi_\theta(y_r\mid x)\big)\,\Big]
 $$
 
-where $\hat r_y = \beta \log \tfrac{\pi_\theta(y\mid x)}{\pi_{\text{ref}}(y\mid x)}$ is the implicit reward.
+$$
+w = \sigma\!\big(\hat r_r - \hat r_c\big), \qquad \hat r_y = \beta \log \tfrac{\pi_\theta(y\mid x)}{\pi_{\text{ref}}(y\mid x)}
+$$
 
-- **Weight $w \in (0,1)$** is larger when the model is *more wrong* — when it currently ranks the rejected response above the chosen.
+- **Weight $w \in (0,1)$** is larger when the model is *more wrong* — when it ranks the rejected response above the chosen.
+
+---
+
+<!-- valign: top -->
+<!-- title: center -->
+## The gradient, and what it does
+
+$$
+\nabla_\theta \mathcal{L}_{\text{DPO}} = -\,\beta\, \mathbb{E}_{(x,y_c,y_r)\sim\mathcal{D}}\Big[\, w \cdot \big(\nabla_\theta \log \pi_\theta(y_c\mid x) - \nabla_\theta \log \pi_\theta(y_r\mid x)\big)\,\Big]
+$$
+
+$$
+w = \sigma\!\big(\hat r_r - \hat r_c\big), \qquad \hat r_y = \beta \log \tfrac{\pi_\theta(y\mid x)}{\pi_{\text{ref}}(y\mid x)}
+$$
+
+- **Weight $w \in (0,1)$** is larger when the model is *more wrong* — when it ranks the rejected response above the chosen.
+- **The bracket** raises the likelihood of $y_c$ and lowers that of $y_r$.
+
+---
+
+<!-- valign: top -->
+<!-- title: center -->
+## The gradient, and what it does
+
+$$
+\nabla_\theta \mathcal{L}_{\text{DPO}} = -\,\beta\, \mathbb{E}_{(x,y_c,y_r)\sim\mathcal{D}}\Big[\, w \cdot \big(\nabla_\theta \log \pi_\theta(y_c\mid x) - \nabla_\theta \log \pi_\theta(y_r\mid x)\big)\,\Big]
+$$
+
+$$
+w = \sigma\!\big(\hat r_r - \hat r_c\big), \qquad \hat r_y = \beta \log \tfrac{\pi_\theta(y\mid x)}{\pi_{\text{ref}}(y\mid x)}
+$$
+
+- **Weight $w \in (0,1)$** is larger when the model is *more wrong* — when it ranks the rejected response above the chosen.
 - **The bracket** raises the likelihood of $y_c$ and lowers that of $y_r$.
 - **$\beta$** scales the step, trading correct ordering against drift from $\pi_{\text{ref}}$.
 
