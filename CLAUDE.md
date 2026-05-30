@@ -28,8 +28,11 @@ python book/scripts/some_script.py
 
 ## Agent Skills
 
+`AGENTS.md` is intentionally a symlink to `CLAUDE.md` for Codex compatibility. If you are Codex and the symlink is present, edit `CLAUDE.md` directly; do not replace, unlink, or edit through `AGENTS.md`.
+
 The repo includes Claude Code skills under `.claude/skills/`.
 For code experiments, use `.claude/skills/run-rlhf-code-experiment/SKILL.md`; it maps reader goals to the maintained examples under `code/` and specifies what metrics to report.
+For live preview of teaching slides, use `.claude/skills/serve-course-lecture/SKILL.md`; course lecture HTML must be served from `teach/course/` or images referenced as `assets/...` will break.
 
 ## Directory Structure
 

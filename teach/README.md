@@ -44,12 +44,22 @@ Output goes to `build/html/teach/`.
 
 ## Live Preview
 
-For development with live reload:
+For course lectures, keep the generated HTML in `teach/course/` so `assets/...` image links resolve:
+
+```bash
+uv run --extra teach python -c "from colloquium.serve import serve; serve('teach/course/lec5-chap7.md', port=8081, output_dir='teach/course')"
+```
+
+Open `http://localhost:8081/lec5-chap7.html`.
+
+For standalone talks with local assets, run from the talk directory:
 
 ```bash
 cd teach/SALA-2026
 uv run --extra teach colloquium serve talk.md
 ```
+
+Before sharing a preview URL, check at least one expected image URL returns `200 image/...`.
 
 ## Talk Assets
 
