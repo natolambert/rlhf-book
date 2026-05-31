@@ -19,8 +19,9 @@ custom_css: |
     font-size: 2.5em;
     letter-spacing: 0;
   }
-  /* Keep titles centered + display math centered, but never center prose/bullets. */
-  .slide li, .slide p, .slide ul, .slide ol { text-align: left; }
+  /* Bulleted lists should never be centered (markers float, looks bad).
+     Target lists only — leave titles and display-math paragraphs centered. */
+  .slide ul, .slide ol, .slide li { text-align: left; }
 ---
 
 <!-- Source note: build with `make teach`, which copies assets/ into the output. A single-file `colloquium build -o ...` does NOT copy assets/, so the meme + displacement images 404 in that standalone build. -->
