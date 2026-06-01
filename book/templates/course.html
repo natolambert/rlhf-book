@@ -336,12 +336,13 @@
 
     /* Concentrated talk list, grouped by chapter */
     .talk-groups {
-      column-width: 280px;
-      column-gap: 2em;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 0 2em;
+      align-items: start;
     }
 
     .talk-group {
-      break-inside: avoid;
       margin-bottom: 1.1em;
     }
 
@@ -547,42 +548,46 @@
       </a>
     </div>
 
-    <h3>More from Nathan</h3>
-    <p class="meta" style="margin-bottom: 0.8em;">Talks and deep dives from over the years, grouped by the chapter they pair with.</p>
+    <h3>More talks from Nathan</h3>
+    <p class="meta" style="margin-bottom: 0.8em;">Various presentations over my last few years working in post-training, grouped by corresponding chapter.</p>
     <div class="talk-groups">
-      <div class="talk-group">
-        <h4>Chapter 3 &middot; Training Overview</h4>
-        <ul>
-          <li><a href="https://www.youtube.com/watch?v=6yIMb0K-aS4" target="_blank" rel="noopener noreferrer">How Language Model Post-Training Is Done Today</a> <span class="when">Jan 2025</span></li>
-          <li><a href="https://www.youtube.com/watch?v=uaZ3yRdYg8A" target="_blank" rel="noopener noreferrer">How We Built a Leading Reasoning Model (Olmo 3)</a> <span class="when">Dec 2025</span></li>
-        </ul>
+      <div class="talk-col">
+        <div class="talk-group">
+          <h4>Chapter 3 &middot; Training Overview</h4>
+          <ul>
+            <li><a href="https://www.youtube.com/watch?v=6yIMb0K-aS4" target="_blank" rel="noopener noreferrer">How Language Model Post-Training Is Done Today</a> <span class="when">Jan 2025</span></li>
+            <li><a href="https://www.youtube.com/watch?v=uaZ3yRdYg8A" target="_blank" rel="noopener noreferrer">How We Built a Leading Reasoning Model (Olmo 3)</a> <span class="when">Dec 2025</span></li>
+          </ul>
+        </div>
+        <div class="talk-group">
+          <h4>Chapter 6 &middot; Reinforcement Learning</h4>
+          <ul>
+            <li><a href="https://www.youtube.com/watch?v=amrJDwMUFNs" target="_blank" rel="noopener noreferrer">GRPO's New Variants and Implementation Secrets</a></li>
+          </ul>
+        </div>
+        <div class="talk-group">
+          <h4>Chapter 8 &middot; Direct-Alignment Algorithms</h4>
+          <ul>
+            <li><a href="https://www.youtube.com/watch?v=YJMCSVLRUNs" target="_blank" rel="noopener noreferrer">DPO Debate: Is RL Needed for RLHF?</a></li>
+            <li><a href="https://www.youtube.com/watch?v=rDF7eFPeVto" target="_blank" rel="noopener noreferrer">An Update on DPO vs PPO for LLM Alignment</a></li>
+          </ul>
+        </div>
       </div>
-      <div class="talk-group">
-        <h4>Chapter 6 &middot; Reinforcement Learning</h4>
-        <ul>
-          <li><a href="https://www.youtube.com/watch?v=amrJDwMUFNs" target="_blank" rel="noopener noreferrer">GRPO's New Variants and Implementation Secrets</a></li>
-        </ul>
-      </div>
-      <div class="talk-group">
-        <h4>Chapter 7 &middot; Reasoning &amp; Inference-Time Scaling</h4>
-        <ul>
-          <li><a href="https://www.youtube.com/watch?v=J1APR8Bo9dE" target="_blank" rel="noopener noreferrer">Early Stages of the Reinforcement Learning Era of Language Models</a></li>
-          <li><a href="https://www.youtube.com/watch?v=zYeIqzULzr0" target="_blank" rel="noopener noreferrer">Experimenting with Reinforcement Learning with Verifiable Rewards (RLVR)</a></li>
-          <li><a href="https://www.youtube.com/watch?v=YXTYbr3hiFU" target="_blank" rel="noopener noreferrer">An Unexpected Reinforcement Learning Renaissance</a></li>
-        </ul>
-      </div>
-      <div class="talk-group">
-        <h4>Chapter 8 &middot; Direct-Alignment Algorithms</h4>
-        <ul>
-          <li><a href="https://www.youtube.com/watch?v=YJMCSVLRUNs" target="_blank" rel="noopener noreferrer">DPO Debate: Is RL Needed for RLHF?</a></li>
-          <li><a href="https://www.youtube.com/watch?v=rDF7eFPeVto" target="_blank" rel="noopener noreferrer">An Update on DPO vs PPO for LLM Alignment</a></li>
-        </ul>
-      </div>
-      <div class="talk-group">
-        <h4>Chapter 10 &middot; The Nature of Preferences</h4>
-        <ul>
-          <li><a href="https://www.youtube.com/watch?v=Mu_-FWIuhDA" target="_blank" rel="noopener noreferrer">15 Minute History of Reinforcement Learning and Human Feedback</a></li>
-        </ul>
+      <div class="talk-col">
+        <div class="talk-group">
+          <h4>Chapter 7 &middot; Reasoning &amp; Inference-Time Scaling</h4>
+          <ul>
+            <li><a href="https://www.youtube.com/watch?v=J1APR8Bo9dE" target="_blank" rel="noopener noreferrer">Early Stages of the Reinforcement Learning Era of Language Models</a></li>
+            <li><a href="https://www.youtube.com/watch?v=zYeIqzULzr0" target="_blank" rel="noopener noreferrer">Experimenting with Reinforcement Learning with Verifiable Rewards (RLVR)</a></li>
+            <li><a href="https://www.youtube.com/watch?v=YXTYbr3hiFU" target="_blank" rel="noopener noreferrer">An Unexpected Reinforcement Learning Renaissance</a></li>
+          </ul>
+        </div>
+        <div class="talk-group">
+          <h4>Chapter 10 &middot; The Nature of Preferences</h4>
+          <ul>
+            <li><a href="https://www.youtube.com/watch?v=Mu_-FWIuhDA" target="_blank" rel="noopener noreferrer">15 Minute History of Reinforcement Learning and Human Feedback</a></li>
+          </ul>
+        </div>
       </div>
     </div>
   </section>
