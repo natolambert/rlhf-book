@@ -38,12 +38,31 @@ custom_css: |
 <p class="colloquium-title-name">Nathan Lambert</p>
 </div>
 
-<p class="colloquium-title-note">Course on RLHF and post-training. Chapter 8 — deriving DPO from the RLHF objective</p>
+<p class="colloquium-title-note">Course on RLHF and post-training. Chapter 8 on Direct Alignment Algorithms.</p>
+
+---
+
+<!-- animate: bullets -->
+## Why DPO was -- and is -- such a big deal
+
+The Direct Preference Optimization paper [@rafailov2024direct] was a breakthrough in the accessibility of RLHF and post-training research.
+Some context:
+- DPO paper was released in May of 2023, when many groups were struggling to get open-source replications of RLHF pipelines going. Most "aligned" models were just SFT.
+- It took until about the fall of 2023 for people to figure out the right data and settings for DPO to work
+- Zephyr-Beta, Tülu 2, and other models that fall opened the floodgates of post-training research. Iterating on DPO methods in 2024 felt as exciting as RL methods in 2025 or tool-use methods in 2026.
+
+---
+
+<!-- img-align: center -->
+<!-- valign: center -->
+## The DPO debate (DPO v RL)
+
+![When DPO was released it sparked a fierce debate about how best to do RLHF and preference learning. Meme credit: Tom Goldstein.](assets/dpo_meme.jpeg)
 
 ---
 
 <!-- columns: 50/50 -->
-## What we are doing today
+## This lecture
 
 We will **derive Direct Preference Optimization (DPO) from scratch**, then look at how it is used in practice.
 
@@ -66,9 +85,10 @@ The plan, in four steps:
 
 ---
 
-<!-- columns: 48/52 -->
-## Where DPO sits in the pipeline
+<!-- rows: 60/40 -->
+## Recall: Where DPO sits in the pipeline
 
+<!-- row-columns: 48/52 -->
 Classic RLHF is three moving parts:
 
 1. Collect human preference pairs
@@ -85,6 +105,38 @@ The key realization we will prove:
 
 So we can train the policy *directly* on preferences.
 
+===
+
+![Modern post-training runs many rounds of feedback and optimization; DPO is one of the interchangeable optimizers in that loop.](assets/rlhf-complex.png)
+
+---
+
+<!-- columns: 55/45 -->
+## DPO at a glance: where we're headed
+
+The whole derivation lands on two objects.
+
+**Optimal policy** — the RLHF solution in closed form:
+
+$$ \pi^{*}(y\mid x) = \tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\exp\!\big(\tfrac{1}{\beta} r(x,y)\big) $$
+
+**DPO loss** — what you actually train:
+
+$$ \mathcal{L}_{\text{DPO}} = -\mathbb{E}\Big[\log\sigma\big(\beta\log\tfrac{\pi_{\theta}(y_c\mid x)}{\pi_{\text{ref}}(y_c\mid x)} - \beta\log\tfrac{\pi_{\theta}(y_r\mid x)}{\pi_{\text{ref}}(y_r\mid x)}\big)\Big] $$
+
+|||
+
+In practice, that loss is just a few lines:
+
+```python
+pi_logratios  = policy_chosen_logps  - policy_rejected_logps
+ref_logratios = reference_chosen_logps - reference_rejected_logps
+logits = pi_logratios - ref_logratios
+losses = -F.logsigmoid(beta * logits)
+```
+
+Everything between here and the implementation is *why* this is the right loss.
+
 ---
 
 <!-- layout: section-break -->
@@ -96,7 +148,7 @@ So we can train the policy *directly* on preferences.
 
 <!-- valign: top -->
 <!-- title: center -->
-## Fold the KL into one expectation
+## Start with the RLHF optimization problem
 
 $$
 \begin{aligned}
@@ -108,12 +160,12 @@ $$
 
 <!-- valign: top -->
 <!-- title: center -->
-## Fold the KL into one expectation
+## Fold the KL into the expectation
 
 $$
 \begin{aligned}
  & \max_{\pi}\ \mathbb{E}_{x\sim\mathcal{D},\,y\sim\pi}\big[\,r(x,y)\,\big] - \beta\,\mathcal{D}_{\text{KL}}\big(\pi \,\|\, \pi_{\text{ref}}\big) && \text{the RLHF objective}\\[6pt]
-={}& \max_{\pi}\ \mathbb{E}\Big[\, r(x,y) - \beta\log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} \,\Big] && \text{write KL}=\mathbb{E}_{y\sim\pi}\big[\log\tfrac{\pi}{\pi_{\text{ref}}}\big]
+={}& \max_{\pi}\ \mathbb{E}\Big[\, r(x,y) - \beta\log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} \,\Big] && \text{write KL}=\mathbb{E}_{x\sim\mathcal{D},y\sim\pi}\big[\log\tfrac{\pi}{\pi_{\text{ref}}}\big]
 \end{aligned}
 $$
 
@@ -121,12 +173,12 @@ $$
 
 <!-- valign: top -->
 <!-- title: center -->
-## Fold the KL into one expectation
+## Fold the KL into the expectation
 
 $$
 \begin{aligned}
  & \max_{\pi}\ \mathbb{E}_{x\sim\mathcal{D},\,y\sim\pi}\big[\,r(x,y)\,\big] - \beta\,\mathcal{D}_{\text{KL}}\big(\pi \,\|\, \pi_{\text{ref}}\big) && \text{the RLHF objective}\\[6pt]
-={}& \max_{\pi}\ \mathbb{E}\Big[\, r(x,y) - \beta\log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} \,\Big] && \text{write KL}=\mathbb{E}_{y\sim\pi}\big[\log\tfrac{\pi}{\pi_{\text{ref}}}\big]\\[6pt]
+={}& \max_{\pi}\ \mathbb{E}\Big[\, r(x,y) - \beta\log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} \,\Big] && \text{write KL}=\mathbb{E}_{x\sim\mathcal{D},y\sim\pi}\big[\log\tfrac{\pi}{\pi_{\text{ref}}}\big]\\[6pt]
 ={}& \max_{\pi}\Big( \mathbb{E}[r(x,y)] - \beta\,\mathbb{E}\big[\log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)}\big] \Big) && \text{split into two terms}
 \end{aligned}
 $$
@@ -135,7 +187,7 @@ $$
 
 <!-- valign: top -->
 <!-- title: center -->
-## Flip to a minimization
+## Flip to a minimization & clean-up
 
 $$
 \begin{aligned}
@@ -147,7 +199,7 @@ $$
 
 <!-- valign: top -->
 <!-- title: center -->
-## Flip to a minimization
+## Flip to a minimization & clean-up
 
 $$
 \begin{aligned}
@@ -160,7 +212,7 @@ $$
 
 <!-- valign: top -->
 <!-- title: center -->
-## Flip to a minimization
+## Flip to a minimization & clean-up
 
 $$
 \begin{aligned}
@@ -174,14 +226,38 @@ $$
 
 <!-- valign: top -->
 <!-- title: center -->
+<!-- animate: bullets -->
+## Fold the optimization target into one log-ratio
+
+Pick up where we left off and fold the bracket into a single log-ratio, using $\tfrac{1}{\beta} r = \log e^{\,r/\beta}$:
+
+$$
+\begin{aligned}
+ & \min_{\pi}\ \mathbb{E}\Big[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) \,\Big] && \text{where we left off}\\[6pt]
+={}& \min_{\pi}\ \mathbb{E}\Big[\, \log\frac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)\,e^{\,r(x,y)/\beta}} \,\Big]
+\end{aligned}
+$$
+
+- $\pi$ is now measured against $\pi_{\text{ref}}\,e^{r/\beta}$: the **reference reweighted by reward** — each response's probability is multiplied by $e^{r/\beta}$, which is larger the higher its reward ($\beta$ sets how aggressive the reweighting is).
+- If that target were a probability distribution, this $\min_{\pi}$ would be a **KL divergence** — minimized *exactly*, in closed form (Gibbs). That is the prize.
+
+---
+
+<!-- valign: top -->
+<!-- title: center -->
 ## Introduce the partition function $Z(x)$
 
-We need a normalizer that makes $\pi_{\text{ref}}\,e^{r/\beta}$ a valid distribution over $y$:
+The target $\pi_{\text{ref}}\,e^{r/\beta}$ is exactly what we want $\pi$ to match — but it is **not a distribution**: summed over $y$ it does not equal $1$.
+
+Fix that with a normalizer, the partition function:
 
 $$
 Z(x) = \sum_{y} \pi_{\text{ref}}(y\mid x)\,\exp\!\big(\tfrac{1}{\beta} r(x,y)\big)
 \qquad\text{(depends on $x$ and $r$, not on $\pi$)}
 $$
+
+- Now $\tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,e^{\,r/\beta}$ **is** a valid distribution over $y$ — call it $q(y\mid x)$.
+- Comparing $\pi$ to $q$ turns the objective into a genuine KL, exactly the prize from the last slide.
 
 Next we massage the bracket so $Z(x)$ appears — showing every step.
 
@@ -252,6 +328,20 @@ $$
 $$
 
 The denominator is now a valid distribution — call it $q(y\mid x)$.
+
+---
+
+<!-- valign: top -->
+<!-- title: center -->
+## Pull $\log Z(x)$ out of the inner expectation
+
+$\log Z(x)$ does not depend on $y$, so it factors out of the inner expectation untouched:
+
+$$
+\min_{\pi}\ \mathbb{E}_{x\sim\mathcal{D}}\left[ \mathbb{E}_{y\sim\pi(y\mid x)}\!\left[\log\frac{\pi(y\mid x)}{\tfrac{1}{Z(x)}\pi_{\text{ref}}(y\mid x)\exp\!\big(\tfrac{1}{\beta} r(x,y)\big)}\right] - \log Z(x) \right]
+$$
+
+The bracketed inner expectation is a genuine KL divergence, waiting to be named — $q(y\mid x)$ is a valid distribution.
 
 ---
 
@@ -372,7 +462,7 @@ Now substitute the implicit reward $r^{*}(x,y) = \beta \log \tfrac{\pi^{*}(y\mid
 
 <!-- valign: top -->
 <!-- title: center -->
-## Substitute the implicit reward
+## Substitute the reward, then cancel $Z(x)$
 
 $$
 p^{*}(y_1 \succ y_2 \mid x) = \frac{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)} + \beta \log Z(x)\big)}{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)} + \beta \log Z(x)\big) + \exp\!\big(\beta \log \tfrac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)} + \beta \log Z(x)\big)}
@@ -380,11 +470,7 @@ $$
 
 - Every term carries the same factor $\exp(\beta \log Z(x)) = Z(x)^{\beta}$.
 
----
-
-<!-- valign: top -->
-<!-- title: center -->
-## Cancel the partition function
+<!-- step -->
 
 $$
 p^{*}(y_1 \succ y_2 \mid x) = \frac{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\big)}{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\big) + \exp\!\big(\beta \log \tfrac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)}\big)}
@@ -396,7 +482,7 @@ $$
 
 <!-- valign: top -->
 <!-- title: center -->
-## Divide through
+## Divide through to a sigmoid
 
 Multiply numerator and denominator by $\exp\!\big(-\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\big)$:
 
@@ -406,13 +492,9 @@ $$
 
 - The numerator becomes $1$; the denominator holds an exponential of the **difference**.
 
----
+<!-- step -->
 
-<!-- valign: top -->
-<!-- title: center -->
-## Recognize the sigmoid
-
-With $\sigma(z) = \tfrac{1}{1+e^{-z}}$:
+With $\sigma(z) = \tfrac{1}{1+e^{-z}}$, this is a sigmoid:
 
 $$
 \boxed{\ \ p^{*}(y_1 \succ y_2 \mid x) = \sigma\!\Big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)} - \beta \log \tfrac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)}\Big)\ \ }
@@ -634,6 +716,8 @@ losses = -F.logsigmoid(beta * logits)
 
 **Tip:** $\pi_{\text{ref}}$ is frozen, so precompute and cache its log-probs to cut peak memory ~50%. Reference code: `code/direct_alignment/`.
 
+**Reference run (Olmo 1B DPO):** [wandb.ai/natolambert/rlhf-book/runs/fzy8k8go](https://wandb.ai/natolambert/rlhf-book/runs/fzy8k8go) — the normal shape: loss falls, accuracy climbs, and the chosen/rejected reward margin widens.
+
 ---
 
 ## DAAs work with synthetic preference data
@@ -685,3 +769,24 @@ Watch for judge biases — frontier labelers favor longer, self-similar outputs.
 - Because data is offline, DPO solves for the policy implied by *that* dataset and *that* $\beta$ — a core difference from online policy-gradient methods.
 
 ![When DPO was released it sparked a fierce debate about how to best do preference learning. Meme credit: Tom Goldstein.](assets/dpo_meme.jpeg)
+
+---
+
+<!-- columns: 52/48 -->
+## Hypotheses for DPO's role today
+
+The frontier moved to RL with verifiable rewards for reasoning -- but DPO and DAAs did not disappear. They settled in as a **polish stage** inside larger pipelines.
+
+Why DPO persists:
+
+- Cheap, stable, offline -- fast iteration on preference, style, and safety data.
+- Slots in as one stage; frontier reasoning gains come from RLVR elsewhere.
+
+|||
+
+**Recent recipes still using a DAA**
+
+- **NVIDIA Nemotron 3** (Dec 2025) -- *Mixed Preference Optimization*: DPO + Binary Classifier Optimization in one offline stage, over data scored by a generative reward model.
+- **LiquidAI LFM2** (Nov 2025) -- length-normalized DPO on semi-online data, before a final RLVR pass.
+
+*More thoughts to come.*
