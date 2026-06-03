@@ -39,15 +39,15 @@ dropping a `<name>_tikz.tex` into the right folder.
 
 ```
 tikz/
-├── _shared/            # styles_rlhf.tex — shared styles, found via TEXINPUTS
-├── related-works/      # Ch 2: rlhf_schematic, rlhf_timeline
-├── training-overview/  # Ch 3: rl_loop, rlhf_loop, thermostat_equation
-├── policy-gradients/   # Ch 6: reinforce, ppo, grpo, rloo
-├── reasoning/          # Ch 7: rlvr_loop
-├── tools/              # Ch 13: tooluse_rl
-├── synthetic-data/     # Ch 12: knowledge_distillation, synthetic_data_distillation
-├── product/            # Ch 17: persona_vectors_pipeline
-└── pretraining/        # talks/intro: pretraining_next_token
+├── _shared/               # styles_rlhf.tex — shared styles, found via TEXINPUTS
+├── 02-related-works/      # Ch 2: rlhf_schematic, rlhf_timeline
+├── 03-training-overview/  # Ch 3: rl_loop, rlhf_loop, thermostat_equation
+├── 06-policy-gradients/   # Ch 6: reinforce, ppo, grpo, rloo
+├── 07-reasoning/          # Ch 7: rlvr_loop
+├── 12-synthetic-data/     # Ch 12: knowledge_distillation, synthetic_data_distillation
+├── 13-tools/              # Ch 13: tooluse_rl
+├── 17-product/            # Ch 17: persona_vectors_pipeline
+└── pretraining/           # talks/intro: pretraining_next_token
 ```
 
 A source in any subfolder can `\input{styles_rlhf.tex}` directly — the Makefile
@@ -106,18 +106,20 @@ Box-and-arrow flows for RLHF architectures and related training concepts. Many u
 
 | Output file | Source | Description | Book chapter |
 |---|---|---|---|
-| `rl_loop_tikz` | `tikz/training-overview/rl_loop_tikz.tex` | Standard RL feedback loop: agent &harr; environment with s/a/r | Ch 3 (Training Overview) |
-| `rlhf_loop_tikz` | `tikz/training-overview/rlhf_loop_tikz.tex` | RLHF loop: training data &rarr; agent &rarr; completions &rarr; reward model &rarr; scalar reward | Ch 3 (Training Overview) |
-| `rlhf_schematic_tikz` | `tikz/related-works/rlhf_schematic_tikz.tex` | RLHF loop: RL algorithm, environment, reward predictor, human feedback (Christiano et al. 2017) | Ch 2 (Related Works) |
-| `rlhf_timeline_tikz` | `tikz/related-works/rlhf_timeline_tikz.tex` | Timeline of key RLHF developments across three eras | Ch 2 (Related Works) |
-| `thermostat_equation_tikz` | `tikz/training-overview/thermostat_equation_tikz.tex` | Thermostat analogy for the RL objective | Ch 3 (Training Overview) |
-| `reinforce_tikz` | `tikz/policy-gradients/reinforce_tikz.tex` | REINFORCE: basic policy gradient algorithm | Ch 6 (Policy Gradients) |
-| `ppo_tikz` | `tikz/policy-gradients/ppo_tikz.tex` | PPO: single output, value network, GAE, KL in reward | Ch 6 (Policy Gradients) |
-| `grpo_tikz` | `tikz/policy-gradients/grpo_tikz.tex` | GRPO: group of G outputs, group normalization, KL as loss | Ch 6 (Policy Gradients) |
-| `rloo_tikz` | `tikz/policy-gradients/rloo_tikz.tex` | RLOO: K outputs, leave-one-out baseline, KL in reward | Ch 6 (Policy Gradients) |
-| `knowledge_distillation_tikz` | `tikz/synthetic-data/knowledge_distillation_tikz.tex` | Knowledge distillation pipeline | Ch 12 (Synthetic Data) |
-| `synthetic_data_distillation_tikz` | `tikz/synthetic-data/synthetic_data_distillation_tikz.tex` | Synthetic data distillation process | Ch 12 (Synthetic Data) |
-| `persona_vectors_pipeline_tikz` | `tikz/product/persona_vectors_pipeline_tikz.tex` | Persona vector extraction and steering pipeline | Ch 17 (Product) |
+| `rl_loop_tikz` | `tikz/03-training-overview/rl_loop_tikz.tex` | Standard RL feedback loop: agent &harr; environment with s/a/r | Ch 3 (Training Overview) |
+| `rlhf_loop_tikz` | `tikz/03-training-overview/rlhf_loop_tikz.tex` | RLHF loop: training data &rarr; agent &rarr; completions &rarr; reward model &rarr; scalar reward | Ch 3 (Training Overview) |
+| `rlhf_schematic_tikz` | `tikz/02-related-works/rlhf_schematic_tikz.tex` | RLHF loop: RL algorithm, environment, reward predictor, human feedback (Christiano et al. 2017) | Ch 2 (Related Works) |
+| `rlhf_timeline_tikz` | `tikz/02-related-works/rlhf_timeline_tikz.tex` | Timeline of key RLHF developments across three eras | Ch 2 (Related Works) |
+| `thermostat_equation_tikz` | `tikz/03-training-overview/thermostat_equation_tikz.tex` | Thermostat analogy for the RL objective | Ch 3 (Training Overview) |
+| `reinforce_tikz` | `tikz/06-policy-gradients/reinforce_tikz.tex` | REINFORCE: basic policy gradient algorithm | Ch 6 (Policy Gradients) |
+| `ppo_tikz` | `tikz/06-policy-gradients/ppo_tikz.tex` | PPO: single output, value network, GAE, KL in reward | Ch 6 (Policy Gradients) |
+| `grpo_tikz` | `tikz/06-policy-gradients/grpo_tikz.tex` | GRPO: group of G outputs, group normalization, KL as loss | Ch 6 (Policy Gradients) |
+| `rloo_tikz` | `tikz/06-policy-gradients/rloo_tikz.tex` | RLOO: K outputs, leave-one-out baseline, KL in reward | Ch 6 (Policy Gradients) |
+| `rlvr_loop_tikz` | `tikz/07-reasoning/rlvr_loop_tikz.tex` | RLVR loop: RLHF loop with a verifiable reward (r = &gamma; if correct, else 0) | Ch 7 (Reasoning) |
+| `knowledge_distillation_tikz` | `tikz/12-synthetic-data/knowledge_distillation_tikz.tex` | Knowledge distillation pipeline | Ch 12 (Synthetic Data) |
+| `synthetic_data_distillation_tikz` | `tikz/12-synthetic-data/synthetic_data_distillation_tikz.tex` | Synthetic data distillation process | Ch 12 (Synthetic Data) |
+| `tooluse_rl_tikz` | `tikz/13-tools/tooluse_rl_tikz.tex` | Tool-use RL: agent &harr; environment/tools over a trajectory, graded reward at trajectory end | Ch 13 (Tools) |
+| `persona_vectors_pipeline_tikz` | `tikz/17-product/persona_vectors_pipeline_tikz.tex` | Persona vector extraction and steering pipeline | Ch 17 (Product) |
 | `pretraining_next_token_tikz` | `tikz/pretraining/pretraining_next_token_tikz.tex` | Introductory next-token prediction example with target token and loss intuition | Talks/presentations |
 
 **Make target:** `make tikz`
