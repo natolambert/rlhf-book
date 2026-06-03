@@ -24,12 +24,35 @@ make help      # List all targets
 diagrams/
 ├── specs/          # YAML specifications for diagram content
 ├── scripts/        # Python/matplotlib generator scripts
-├── tikz/           # TikZ/LaTeX diagram sources
+├── tikz/           # TikZ/LaTeX diagram sources, organized by topic (see below)
 ├── generated/      # Output directory (png/, svg/, pdf/)
 ├── feedback/       # Gemini API diagram review feedback
 ├── Makefile        # Build automation
 └── README.md       # This file (diagram catalog)
 ```
+
+### `tikz/` topic folders
+
+TikZ sources are grouped by topic (named after the book chapter they support).
+`make tikz` discovers `*_tikz.tex` recursively, so adding a diagram is just
+dropping a `<name>_tikz.tex` into the right folder.
+
+```
+tikz/
+├── _shared/            # styles_rlhf.tex — shared styles, found via TEXINPUTS
+├── related-works/      # Ch 2: rlhf_schematic, rlhf_timeline
+├── training-overview/  # Ch 3: rl_loop, thermostat_equation
+├── policy-gradients/   # Ch 6: reinforce, ppo, grpo, rloo
+├── reasoning/          # Ch 7: rlvr_loop
+├── tools/              # Ch 13: tooluse_rl
+├── synthetic-data/     # Ch 12: knowledge_distillation, synthetic_data_distillation
+├── product/            # Ch 17: persona_vectors_pipeline
+└── pretraining/        # talks/intro: pretraining_next_token
+```
+
+A source in any subfolder can `\input{styles_rlhf.tex}` directly — the Makefile
+adds `tikz/_shared` to `TEXINPUTS`. Output basenames stay flat, so a diagram's
+generated PNG/SVG/PDF name is unchanged by which folder it lives in.
 
 ## Tooling Requirements
 
@@ -58,19 +81,22 @@ Horizontal token sequences showing where supervision attaches for different rewa
 
 ### TikZ/LaTeX Architecture Diagrams
 
-Box-and-arrow flows for RLHF architectures and related training concepts. Many use shared styles from `tikz/styles_rlhf.tex`.
+Box-and-arrow flows for RLHF architectures and related training concepts. Many use shared styles from `tikz/_shared/styles_rlhf.tex`.
 
 | Output file | Source | Description | Book chapter |
 |---|---|---|---|
-| `ppo_tikz` | `tikz/ppo_tikz.tex` | PPO: single output, value network, GAE, KL in reward | Ch 6 (Policy Gradients) |
-| `grpo_tikz` | `tikz/grpo_tikz.tex` | GRPO: group of G outputs, group normalization, KL as loss | Ch 6 (Policy Gradients) |
-| `rloo_tikz` | `tikz/rloo_tikz.tex` | RLOO: K outputs, leave-one-out baseline, KL in reward | Ch 6 (Policy Gradients) |
-| `reinforce_tikz` | `tikz/reinforce_tikz.tex` | REINFORCE: basic policy gradient algorithm | Ch 6 (Policy Gradients) |
-| `knowledge_distillation_tikz` | `tikz/knowledge_distillation_tikz.tex` | Knowledge distillation pipeline | Ch 4 (Supervised Finetuning) |
-| `synthetic_data_distillation_tikz` | `tikz/synthetic_data_distillation_tikz.tex` | Synthetic data distillation process | Ch 4 (Supervised Finetuning) |
-| `pretraining_next_token_tikz` | `tikz/pretraining_next_token_tikz.tex` | Introductory next-token prediction example with target token and loss intuition | Talks/presentations |
-| `rlhf_schematic_tikz` | `tikz/rlhf_schematic_tikz.tex` | RLHF loop: RL algorithm, environment, reward predictor, human feedback (Christiano et al. 2017) | Ch 2 (Related Works) |
-| `rlhf_timeline_tikz` | `tikz/rlhf_timeline_tikz.tex` | Timeline of key RLHF developments across three eras | Ch 2 (Related Works) |
+| `rl_loop_tikz` | `tikz/training-overview/rl_loop_tikz.tex` | Standard RL feedback loop: agent &harr; environment with s/a/r | Ch 3 (Training Overview) |
+| `rlhf_schematic_tikz` | `tikz/related-works/rlhf_schematic_tikz.tex` | RLHF loop: RL algorithm, environment, reward predictor, human feedback (Christiano et al. 2017) | Ch 2 (Related Works) |
+| `rlhf_timeline_tikz` | `tikz/related-works/rlhf_timeline_tikz.tex` | Timeline of key RLHF developments across three eras | Ch 2 (Related Works) |
+| `thermostat_equation_tikz` | `tikz/training-overview/thermostat_equation_tikz.tex` | Thermostat analogy for the RL objective | Ch 3 (Training Overview) |
+| `reinforce_tikz` | `tikz/policy-gradients/reinforce_tikz.tex` | REINFORCE: basic policy gradient algorithm | Ch 6 (Policy Gradients) |
+| `ppo_tikz` | `tikz/policy-gradients/ppo_tikz.tex` | PPO: single output, value network, GAE, KL in reward | Ch 6 (Policy Gradients) |
+| `grpo_tikz` | `tikz/policy-gradients/grpo_tikz.tex` | GRPO: group of G outputs, group normalization, KL as loss | Ch 6 (Policy Gradients) |
+| `rloo_tikz` | `tikz/policy-gradients/rloo_tikz.tex` | RLOO: K outputs, leave-one-out baseline, KL in reward | Ch 6 (Policy Gradients) |
+| `knowledge_distillation_tikz` | `tikz/synthetic-data/knowledge_distillation_tikz.tex` | Knowledge distillation pipeline | Ch 12 (Synthetic Data) |
+| `synthetic_data_distillation_tikz` | `tikz/synthetic-data/synthetic_data_distillation_tikz.tex` | Synthetic data distillation process | Ch 12 (Synthetic Data) |
+| `persona_vectors_pipeline_tikz` | `tikz/product/persona_vectors_pipeline_tikz.tex` | Persona vector extraction and steering pipeline | Ch 17 (Product) |
+| `pretraining_next_token_tikz` | `tikz/pretraining/pretraining_next_token_tikz.tex` | Introductory next-token prediction example with target token and loss intuition | Talks/presentations |
 
 **Make target:** `make tikz`
 
