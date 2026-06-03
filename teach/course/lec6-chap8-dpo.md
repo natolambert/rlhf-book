@@ -239,7 +239,7 @@ $$
 $$
 
 - $\pi$ is now measured against $\pi_{\text{ref}}\,e^{r/\beta}$: the **reference reweighted by reward** — each response's probability is multiplied by $e^{r/\beta}$, which is larger the higher its reward ($\beta$ sets how aggressive the reweighting is).
-- If that target were a probability distribution, this $\min_{\pi}$ would be a **KL divergence** — minimized *exactly*, in closed form (Gibbs). That is the prize.
+- If that target were a probability distribution $q$, this $\min_{\pi}$ would be a **KL divergence**, $\mathbb{E}_{y\sim\pi}\!\big[\log\tfrac{\pi}{q}\big] = \mathcal{D}_{\text{KL}}(\pi\,\|\,q)$ — minimized *exactly*, in closed form ([Gibbs' inequality](https://en.wikipedia.org/wiki/Gibbs%27_inequality)).
 
 ---
 
@@ -247,29 +247,64 @@ $$
 <!-- title: center -->
 ## Introduce the partition function $Z(x)$
 
-The target $\pi_{\text{ref}}\,e^{r/\beta}$ is exactly what we want $\pi$ to match — but it is **not a distribution**: summed over $y$ it does not equal $1$.
+We are minimizing $\min_{\pi}\ \mathbb{E}_{y\sim\pi}\Big[\, \log\frac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)\,e^{\,r(x,y)/\beta}} \,\Big]$.
 
-Fix that with a normalizer, the partition function:
+Why do we want $\pi$ to match that denominator?
+
+---
+
+<!-- valign: top -->
+<!-- title: center -->
+## Introduce the partition function $Z(x)$
+
+We are minimizing $\min_{\pi}\ \mathbb{E}_{y\sim\pi}\Big[\, \log\frac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)\,e^{\,r(x,y)/\beta}} \,\Big]$.
+
+Why do we want $\pi$ to match that denominator? Because $\mathbb{E}_{y\sim\pi}\big[\log\tfrac{\pi}{q}\big]$ is a **KL divergence** $\mathcal{D}_{\text{KL}}(\pi\,\|\,q)$ — it is $\ge 0$, and equals $0$ **only when $\pi = q$**. So the minimizer is whatever distribution $q$ sits in the denominator.
+
+---
+
+<!-- valign: top -->
+<!-- title: center -->
+## Introduce the partition function $Z(x)$
+
+We are minimizing $\min_{\pi}\ \mathbb{E}_{y\sim\pi}\Big[\, \log\frac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)\,e^{\,r(x,y)/\beta}} \,\Big]$.
+
+Why do we want $\pi$ to match that denominator? Because $\mathbb{E}_{y\sim\pi}\big[\log\tfrac{\pi}{q}\big]$ is a **KL divergence** $\mathcal{D}_{\text{KL}}(\pi\,\|\,q)$ — it is $\ge 0$, and equals $0$ **only when $\pi = q$**. So the minimizer is whatever distribution $q$ sits in the denominator.
+
+The catch: our denominator $\pi_{\text{ref}}\,e^{r/\beta}$ is **not a distribution** — summed over $y$ it does not equal $1$. 
+
+---
+
+<!-- valign: top -->
+<!-- title: center -->
+## Introduce the partition function $Z(x)$
+
+We are minimizing $\min_{\pi}\ \mathbb{E}_{y\sim\pi}\Big[\, \log\frac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)\,e^{\,r(x,y)/\beta}} \,\Big]$.
+
+Why do we want $\pi$ to match that denominator? Because $\mathbb{E}_{y\sim\pi}\big[\log\tfrac{\pi}{q}\big]$ is a **KL divergence** $\mathcal{D}_{\text{KL}}(\pi\,\|\,q)$ — it is $\ge 0$, and equals $0$ **only when $\pi = q$**. So the minimizer is whatever distribution $q$ sits in the denominator.
+
+The catch: our denominator $\pi_{\text{ref}}\,e^{r/\beta}$ is **not a distribution** — summed over $y$ it does not equal $1$. 
+We normalize it with the partition function:
 
 $$
 Z(x) = \sum_{y} \pi_{\text{ref}}(y\mid x)\,\exp\!\big(\tfrac{1}{\beta} r(x,y)\big)
 \qquad\text{(depends on $x$ and $r$, not on $\pi$)}
 $$
 
-- Now $\tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,e^{\,r/\beta}$ **is** a valid distribution over $y$ — call it $q(y\mid x)$.
-- Comparing $\pi$ to $q$ turns the objective into a genuine KL, exactly the prize from the last slide.
-
-Next we massage the bracket so $Z(x)$ appears — showing every step.
+<!-- animate: bullets -->
+- Now $q(y\mid x) = \tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,e^{\,r/\beta}$ **is** a valid distribution.
+- The objective becomes a genuine $\mathcal{D}_{\text{KL}}(\pi\,\|\,q)$ — minimized exactly at $\pi = q$ (made rigorous with [Gibbs' inequality](https://en.wikipedia.org/wiki/Gibbs%27_inequality) shortly).
+- Next we massage the inside of the objective so $Z(x)$ appears.
 
 ---
 
 <!-- valign: top -->
 <!-- title: center -->
-## Complete the ratio (every step)
+## Revisiting the objective with the partition function $Z(x)$
 
 $$
 \begin{aligned}
- & \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) && \text{the bracket}
+ & \min_{\pi}\ \mathbb{E}\left[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) \,\right] && \text{where we left off}
 \end{aligned}
 $$
 
@@ -277,12 +312,12 @@ $$
 
 <!-- valign: top -->
 <!-- title: center -->
-## Complete the ratio (every step)
+## Revisiting the objective with the partition function $Z(x)$
 
 $$
 \begin{aligned}
- & \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) && \text{the bracket}\\[6pt]
-={}& \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) + \log Z(x) - \log Z(x) && \text{add } 0 = \log Z - \log Z
+ & \min_{\pi}\ \mathbb{E}\left[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) \,\right] && \text{where we left off}\\[6pt]
+={}& \min_{\pi}\ \mathbb{E}\left[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) + \log Z(x) - \log Z(x) \,\right] && \text{add } 0 = \log Z - \log Z
 \end{aligned}
 $$
 
@@ -290,13 +325,13 @@ $$
 
 <!-- valign: top -->
 <!-- title: center -->
-## Complete the ratio (every step)
+## Revisiting the objective with the partition function $Z(x)$
 
 $$
 \begin{aligned}
- & \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) && \text{the bracket}\\[6pt]
-={}& \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) + \log Z(x) - \log Z(x) && \text{add } 0 = \log Z - \log Z\\[6pt]
-={}& \Big( \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} + \log Z(x) \Big) - \log Z(x) - \tfrac{1}{\beta} r(x,y) && \text{group terms}
+ & \min_{\pi}\ \mathbb{E}\left[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) \,\right] && \text{where we left off}\\[6pt]
+={}& \min_{\pi}\ \mathbb{E}\left[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) + \log Z(x) - \log Z(x) \,\right] && \text{add } 0 = \log Z - \log Z\\[6pt]
+={}& \min_{\pi}\ \mathbb{E}\left[\, \big( \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} + \log Z(x) \big) - \log Z(x) - \tfrac{1}{\beta} r(x,y) \,\right] && \text{group terms}
 \end{aligned}
 $$
 
@@ -304,14 +339,14 @@ $$
 
 <!-- valign: top -->
 <!-- title: center -->
-## Complete the ratio (every step)
+## Revisiting the objective with the partition function $Z(x)$
 
 $$
 \begin{aligned}
- & \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) && \text{the bracket}\\[6pt]
-={}& \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) + \log Z(x) - \log Z(x) && \text{add } 0 = \log Z - \log Z\\[6pt]
-={}& \Big( \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} + \log Z(x) \Big) - \log Z(x) - \tfrac{1}{\beta} r(x,y) && \text{group terms}\\[6pt]
-={}& \log\frac{\pi(y\mid x)}{\tfrac{1}{Z(x)}\pi_{\text{ref}}(y\mid x)} - \log Z(x) - \tfrac{1}{\beta} r(x,y) && \log a + \log b = \log ab
+ & \min_{\pi}\ \mathbb{E}\left[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) \,\right] && \text{where we left off}\\[6pt]
+={}& \min_{\pi}\ \mathbb{E}\left[\, \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} - \tfrac{1}{\beta} r(x,y) + \log Z(x) - \log Z(x) \,\right] && \text{add } 0 = \log Z - \log Z\\[6pt]
+={}& \min_{\pi}\ \mathbb{E}\left[\, \big( \log\tfrac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)} + \log Z(x) \big) - \log Z(x) - \tfrac{1}{\beta} r(x,y) \,\right] && \text{group terms}\\[6pt]
+={}& \min_{\pi}\ \mathbb{E}\left[\, \log\frac{\pi(y\mid x)}{\tfrac{1}{Z(x)}\pi_{\text{ref}}(y\mid x)} - \log Z(x) - \tfrac{1}{\beta} r(x,y) \,\right] && \log a + \log b = \log ab
 \end{aligned}
 $$
 
@@ -319,57 +354,47 @@ $$
 
 <!-- valign: top -->
 <!-- title: center -->
-## The substituted objective
+## Turn the objective into a KL divergence
 
-Expand $\tfrac{1}{\beta} r = \log e^{\,r/\beta}$ and fold it into the ratio. The objective becomes:
+Fold $\tfrac{1}{\beta} r = \log e^{\,r/\beta}$ into the denominator of the first term in the objective (again, log rules) and name it $q(y\mid x) = \tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,e^{\,r(x,y)/\beta}$ — a valid distribution over $y$. The objective is:
 
 $$
-\min_{\pi}\ \mathbb{E}_{x\sim\mathcal{D}}\,\mathbb{E}_{y\sim\pi(y\mid x)}\left[ \log\frac{\pi(y\mid x)}{\tfrac{1}{Z(x)}\pi_{\text{ref}}(y\mid x)\exp\!\big(\tfrac{1}{\beta} r(x,y)\big)} - \log Z(x) \right]
+\min_{\pi}\ \mathbb{E}_{x\sim\mathcal{D}}\,\mathbb{E}_{y\sim\pi}\Big[\, \log\tfrac{\pi(y\mid x)}{q(y\mid x)} - \log Z(x) \,\Big]
 $$
 
-The denominator is now a valid distribution — call it $q(y\mid x)$.
+<!-- step -->
+
+$\log Z(x)$ does not depend on $y$, so pull it out of the inner expectation:
+
+$$
+\min_{\pi}\ \mathbb{E}_{x\sim\mathcal{D}}\Big[\, \mathbb{E}_{y\sim\pi}\big[\log\tfrac{\pi(y\mid x)}{q(y\mid x)}\big] - \log Z(x) \,\Big]
+$$
+
+<!-- step -->
+
+The inner expectation is exactly a **KL divergence**, $\mathbb{E}_{y\sim\pi}\big[\log\tfrac{\pi}{q}\big] = \mathcal{D}_{\text{KL}}(\pi\,\|\,q)$:
+
+$$
+\min_{\pi}\ \mathbb{E}_{x\sim\mathcal{D}}\big[\, \mathcal{D}_{\text{KL}}\big(\pi(y\mid x)\,\|\,q(y\mid x)\big) - \log Z(x) \,\big]
+$$
 
 ---
 
 <!-- valign: top -->
 <!-- title: center -->
-## Pull $\log Z(x)$ out of the inner expectation
+## Apply Gibbs Inequality to read off $\pi^{*}$
 
-$\log Z(x)$ does not depend on $y$, so it factors out of the inner expectation untouched:
-
-$$
-\min_{\pi}\ \mathbb{E}_{x\sim\mathcal{D}}\left[ \mathbb{E}_{y\sim\pi(y\mid x)}\!\left[\log\frac{\pi(y\mid x)}{\tfrac{1}{Z(x)}\pi_{\text{ref}}(y\mid x)\exp\!\big(\tfrac{1}{\beta} r(x,y)\big)}\right] - \log Z(x) \right]
-$$
-
-The bracketed inner expectation is a genuine KL divergence, waiting to be named — $q(y\mid x)$ is a valid distribution.
-
----
-
-<!-- valign: top -->
-<!-- title: center -->
-## Recognize a KL, then apply Gibbs
+Where we landed -- the objective is now a KL plus a $\pi$-independent constant:
 
 $$
-\min_{\pi}\ \mathbb{E}_{x\sim\mathcal{D}}\left[ \mathcal{D}_{\text{KL}}\!\Big(\pi(y\mid x)\,\Big\|\,\tfrac{1}{Z(x)}\pi_{\text{ref}}(y\mid x)\exp\!\big(\tfrac{1}{\beta} r(x,y)\big)\Big) - \log Z(x) \right]
+\min_{\pi}\ \mathbb{E}_{x\sim\mathcal{D}}\big[\, \mathcal{D}_{\text{KL}}\big(\pi(y\mid x)\,\|\,q(y\mid x)\big) - \log Z(x) \,\big]
 $$
 
-- The inner expectation is exactly a **KL divergence** — the denominator $q$ is a real distribution.
-
----
-
-<!-- valign: top -->
-<!-- title: center -->
-## Recognize a KL, then apply Gibbs
+- $\log Z(x)$ does not depend on $\pi$ — only the KL term can be optimized.
+- A KL is $\ge 0$ and equals $0$ **only when $\pi = q$** ([Gibbs' inequality](https://en.wikipedia.org/wiki/Gibbs%27_inequality)), so the minimizer is $\pi^{*} = q$:
 
 $$
-\min_{\pi}\ \mathbb{E}_{x\sim\mathcal{D}}\left[ \mathcal{D}_{\text{KL}}\!\Big(\pi(y\mid x)\,\Big\|\,\tfrac{1}{Z(x)}\pi_{\text{ref}}(y\mid x)\exp\!\big(\tfrac{1}{\beta} r(x,y)\big)\Big) - \log Z(x) \right]
-$$
-
-- The inner expectation is exactly a **KL divergence** — the denominator $q$ is a real distribution.
-- $\log Z(x)$ does not depend on $\pi$. A KL is $\ge 0$, zero only when the two match (**Gibbs**), so the minimizer sets $\pi = q$:
-
-$$
-\boxed{\ \ \pi^{*}(y\mid x) = \frac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,\exp\!\big(\tfrac{1}{\beta} r(x,y)\big)\ \ }
+\boxed{\ \ \pi^{*}(y\mid x) = q(y\mid x) = \tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,\exp\!\big(\tfrac{1}{\beta} r(x,y)\big)\ \ }
 $$
 
 ---
@@ -378,6 +403,18 @@ $$
 <!-- align: center -->
 
 ## Recovering the reward from the policy
+
+---
+
+<!-- valign: top -->
+<!-- title: center -->
+## Invert $\pi^{*}$ for the implicit reward
+
+$$
+\begin{aligned}
+ & \pi^{*}(y\mid x) = \tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,\exp\!\big(\tfrac{1}{\beta} r^{*}(x,y)\big)  && 
+\end{aligned}
+$$
 
 ---
 
@@ -448,59 +485,39 @@ $$
 
 <!-- valign: top -->
 <!-- title: center -->
-## Recall the Bradley-Terry model
+## From Bradley-Terry to a sigmoid
 
-A preference between two responses is a softmax over their rewards:
-
-$$
-p^{*}(y_1 \succ y_2 \mid x) = \frac{\exp\!\big(r^{*}(x,y_1)\big)}{\exp\!\big(r^{*}(x,y_1)\big) + \exp\!\big(r^{*}(x,y_2)\big)}
-$$
-
-Now substitute the implicit reward $r^{*}(x,y) = \beta \log \tfrac{\pi^{*}(y\mid x)}{\pi_{\text{ref}}(y\mid x)} + \beta \log Z(x)$.
-
----
-
-<!-- valign: top -->
-<!-- title: center -->
-## Substitute the reward, then cancel $Z(x)$
+Bradley-Terry is a softmax over the implicit rewards, with $r^{*}(x,y_i) = \Delta_i + \beta \log Z(x)$ and $\Delta_i = \beta \log \tfrac{\pi^{*}(y_i\mid x)}{\pi_{\text{ref}}(y_i\mid x)}$:
 
 $$
-p^{*}(y_1 \succ y_2 \mid x) = \frac{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)} + \beta \log Z(x)\big)}{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)} + \beta \log Z(x)\big) + \exp\!\big(\beta \log \tfrac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)} + \beta \log Z(x)\big)}
+p^{*}(y_1 \succ y_2 \mid x) = \frac{\exp r^{*}(x,y_1)}{\exp r^{*}(x,y_1) + \exp r^{*}(x,y_2)}
 $$
 
-- Every term carries the same factor $\exp(\beta \log Z(x)) = Z(x)^{\beta}$.
+*New here? [Lecture 2](https://rlhfbook.com/teach/course/lec2-chap4-5-9/) · [Chapter 5: Reward Modeling](https://rlhfbook.com/c/05-reward-models.html).*
 
 <!-- step -->
 
-$$
-p^{*}(y_1 \succ y_2 \mid x) = \frac{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\big)}{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\big) + \exp\!\big(\beta \log \tfrac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)}\big)}
-$$
-
-- Decompose $e^{a+b}=e^a e^b$ and cancel the shared $Z(x)^{\beta}$ — the **intractable term is gone**.
-
----
-
-<!-- valign: top -->
-<!-- title: center -->
-## Divide through to a sigmoid
-
-Multiply numerator and denominator by $\exp\!\big(-\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\big)$:
+Substitute $r^{*}_i = \Delta_i + \beta\log Z$; the shared $Z(x)^{\beta}$ cancels:
 
 $$
-p^{*}(y_1 \succ y_2 \mid x) = \frac{1}{1 + \exp\!\big(\beta \log \tfrac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)} - \beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\big)}
+p^{*} = \frac{e^{\Delta_1 + \beta\log Z}}{e^{\Delta_1 + \beta\log Z} + e^{\Delta_2 + \beta\log Z}} = \frac{e^{\Delta_1}}{e^{\Delta_1} + e^{\Delta_2}}
 $$
-
-- The numerator becomes $1$; the denominator holds an exponential of the **difference**.
 
 <!-- step -->
 
-With $\sigma(z) = \tfrac{1}{1+e^{-z}}$, this is a sigmoid:
+Multiply top and bottom by $e^{-\Delta_1}$, then read off the sigmoid:
+
+$$
+p^{*} = \frac{e^{\Delta_1}\,e^{-\Delta_1}}{e^{\Delta_1}\,e^{-\Delta_1} + e^{\Delta_2}\,e^{-\Delta_1}} = \frac{1}{1 + e^{\,\Delta_2 - \Delta_1}} = \sigma(\Delta_1 - \Delta_2)
+$$
+
+<!-- step -->
 
 $$
 \boxed{\ \ p^{*}(y_1 \succ y_2 \mid x) = \sigma\!\Big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)} - \beta \log \tfrac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)}\Big)\ \ }
 $$
 
-- A **sigmoid of the difference of two log-ratios** — Bradley-Terry, with the policy in place of the reward model.
+- A **sigmoid of the difference of two log-ratios** — Bradley-Terry, policy in place of the reward model.
 
 ---
 
@@ -790,3 +807,9 @@ Why DPO persists:
 - **LiquidAI LFM2** (Nov 2025) -- length-normalized DPO on semi-online data, before a final RLVR pass.
 
 *More thoughts to come.*
+
+DPO works well in wonky, distillation heavy recipes like Olmo -- e.g. a model with a spikier distribution
+
+DPO still works in other settings, but most labs have the engineering resources to get around it
+
+DPO is a path to a good/solid model, but not to the best model
