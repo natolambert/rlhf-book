@@ -430,7 +430,7 @@ MiniMax M1's paper really held the test of time. On top of the very popular mode
 
 |||
 
-![MiniMax-M1 training-mode versus inference-mode token probability mismatch before and after the precision fix.](assets/minimax-m1-logprob-mismatch.png)
+![Per-token probabilities from the training engine vs. the inference engine, before and after the fix. Running the LM head in low precision makes the two diverge -- a hidden train/inference mismatch that destabilizes RL -- and upcasting just the LM head to FP32 realigns them.](assets/minimax-m1-logprob-mismatch.png)
 
 ---
 
@@ -582,7 +582,7 @@ The frontier moved fast -- from "reasoning model" to **long-horizon, tool-using 
 <!-- animate: bullets -->
 
 6. **CISPO** -- clip importance-sampling weights instead of masking high-update tokens (MiniMax-M1 [@minimax2025minimax_m1]); ScaleRL [@khatri2025art] picked it as the best loss in their scaling study. Recall importance sampling and clipping from [Lecture 3](https://www.youtube.com/watch?v=K_Sj_-1BUMM).
-7. **Normalization choices** -- how you average advantages and loss quietly changes the objective. Normalize advantages across the **whole batch**, not per prompt group, so a few easy/hard prompts don't dominate (Magistral [@mistral2025magistral], MiMo [@xia2025mimo]); average loss over **total tokens**, not per sequence, to remove a length bias (Dr. GRPO [@liu2025understanding]).
+7. **Normalization choices** -- how you average advantages and loss quietly changes the objective. Normalize advantages across the **whole batch**, not per prompt group, so a few easy/hard prompts don't dominate (Magistral [@mistral2025magistral], MiMo [@xia2025mimo]); average loss over **total tokens**, not per sequence, to remove a length bias (Dr. GRPO [@liu2025understanding]). See the per-token vs. per-sequence loss-aggregation deep dive in [Lecture 4](https://www.youtube.com/watch?v=i-AIMpZHgeg).
 8. **Format rewards** -- reward valid `<think>` blocks and extractable answers; usability, not correctness. *DeepSeek R1 [@guo2025deepseek], Open-Reasoner-Zero [@hu2025openreasonerzero], Magistral [@mistral2025magistral], Skywork OR-1 [@he2025skyworkor1]*
 9. **Language consistency rewards** -- penalize language switching inside a trace. *DeepSeek R1 [@guo2025deepseek], Magistral [@mistral2025magistral]*. Models used to switch to Chinese or French while reasoning.
 10. **Length control** -- progressive length extension -- i.e. the maximum length of training, which rewards concise thinking (Kimi 1.5 [@team2025kimi]); small length penalty (INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained]); overlong filtering for throughput.
