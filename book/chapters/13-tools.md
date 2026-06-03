@@ -219,6 +219,9 @@ For example, ReAct [@yao2023react] showcased how actions and reasoning can be in
 > In this paper, we explore the use of LLMs to generate both reasoning traces and task-specific actions in an interleaved manner, allowing for greater synergy between the two: reasoning traces help the model induce, track, and update action plans as well as handle exceptions, while actions allow it to interface with and gather additional information from external sources such as knowledge bases or environments.
 
 With the solidification of tool-use capabilities and the take-off of reasoning models, multi-turn tool-use has grown into an exciting area of research [@wang2025ragenunderstandingselfevolutionllm].
+Training these multi-step behaviors with RL resembles classic reinforcement learning more than the per-sample RLHF loop: the agent interacts with an environment and its tools over a full trajectory before any reward is assigned, as shown in @fig:tool-use-rl.
+
+![Reinforcement learning for multi-step tool use. A prompt is sampled from the training data and the agent (policy $\pi_\theta$) interacts with the environment and its tools over a trajectory, alternating actions $a_t$ with observations $o_t$. The completed trajectory is graded or verified to produce a single reward $r_T$ at the end, which drives the policy update. Unlike the per-sample RLHF loop, the reward arrives only after a multi-step rollout -- closer to classic RL.](images/tool_use_rl_loop.png){#fig:tool-use-rl}
 
 ## Model Context Protocol
 
