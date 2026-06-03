@@ -18,6 +18,10 @@ PDFLATEX := $(shell which pdflatex || echo "/usr/local/texlive/2023basic/bin/uni
 # topic subfolder can \input{styles_rlhf.tex} without a relative path.
 TIKZ_SHARED := $(abspath tikz/_shared)
 
+# Rasterization density for TikZ PNGs. PDFs/SVGs stay vector (resolution-free);
+# this only controls the PNG. Override with `make tikz TIKZ_DENSITY=1200`.
+TIKZ_DENSITY ?= 800
+
 all: tokens tikz figures
 	@echo "All diagrams generated in $(GENERATED_DIR)/"
 
@@ -47,7 +51,7 @@ figures: | $(GENERATED_DIR)
 
 # TikZ diagrams - requires pdflatex and convert (ImageMagick) or sips (macOS)
 # Sources are organized into topic subfolders under tikz/ (e.g. policy-gradients/).
-# Each *_tikz.tex is compiled in place to PDF, then converted to 400dpi PNG.
+# Each *_tikz.tex is compiled in place to PDF, then converted to a PNG at $(TIKZ_DENSITY) dpi.
 # Shared styles are found via TEXINPUTS (see TIKZ_SHARED). Output basenames stay
 # flat, so generated/png/<base>.png is unchanged by the folder reorganization.
 # SVG conversion requires pdf2svg (brew install pdf2svg)
@@ -61,11 +65,11 @@ tikz: | $(GENERATED_DIR)
 		if [ -f "$$dir/$${base}.pdf" ]; then \
 			cp "$$dir/$${base}.pdf" $(GENERATED_DIR)/pdf/$${base}.pdf; \
 			if command -v magick > /dev/null; then \
-				magick -density 400 "$$dir/$${base}.pdf" -trim -quality 100 $(GENERATED_DIR)/png/$${base}.png; \
-				echo "  -> $(GENERATED_DIR)/png/$${base}.png (400dpi, trimmed)"; \
+				magick -density $(TIKZ_DENSITY) "$$dir/$${base}.pdf" -trim -quality 100 $(GENERATED_DIR)/png/$${base}.png; \
+				echo "  -> $(GENERATED_DIR)/png/$${base}.png ($(TIKZ_DENSITY)dpi, trimmed)"; \
 			elif command -v convert > /dev/null; then \
-				convert -density 400 "$$dir/$${base}.pdf" -trim -quality 100 $(GENERATED_DIR)/png/$${base}.png; \
-				echo "  -> $(GENERATED_DIR)/png/$${base}.png (400dpi, trimmed)"; \
+				convert -density $(TIKZ_DENSITY) "$$dir/$${base}.pdf" -trim -quality 100 $(GENERATED_DIR)/png/$${base}.png; \
+				echo "  -> $(GENERATED_DIR)/png/$${base}.png ($(TIKZ_DENSITY)dpi, trimmed)"; \
 			elif command -v sips > /dev/null; then \
 				sips -s format png "$$dir/$${base}.pdf" --out $(GENERATED_DIR)/png/$${base}.png > /dev/null 2>&1; \
 			fi; \
