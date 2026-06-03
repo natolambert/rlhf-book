@@ -485,39 +485,61 @@ $$
 
 <!-- valign: top -->
 <!-- title: center -->
-## From Bradley-Terry to a sigmoid
+## Recall the Bradley-Terry model
 
-Bradley-Terry is a softmax over the implicit rewards, with $r^{*}(x,y_i) = \Delta_i + \beta \log Z(x)$ and $\Delta_i = \beta \log \tfrac{\pi^{*}(y_i\mid x)}{\pi_{\text{ref}}(y_i\mid x)}$:
+A preference between two responses is a softmax over their rewards:
 
 $$
-p^{*}(y_1 \succ y_2 \mid x) = \frac{\exp r^{*}(x,y_1)}{\exp r^{*}(x,y_1) + \exp r^{*}(x,y_2)}
+p^{*}(y_1 \succ y_2 \mid x) = \frac{\exp\!\big(r^{*}(x,y_1)\big)}{\exp\!\big(r^{*}(x,y_1)\big) + \exp\!\big(r^{*}(x,y_2)\big)}
 $$
 
-*New here? [Lecture 2](https://rlhfbook.com/teach/course/lec2-chap4-5-9/) · [Chapter 5: Reward Modeling](https://rlhfbook.com/c/05-reward-models.html).*
+Now substitute the implicit reward $r^{*}(x,y) = \beta \log \tfrac{\pi^{*}(y\mid x)}{\pi_{\text{ref}}(y\mid x)} + \beta \log Z(x)$.
+
+*New here? See [Lecture 2](https://rlhfbook.com/teach/course/lec2-chap4-5-9/) and [Chapter 5: Reward Modeling](https://rlhfbook.com/c/05-reward-models.html) for the Bradley-Terry model.*
+
+---
+
+<!-- valign: top -->
+<!-- title: center -->
+## Substitute the reward, then cancel $Z(x)$
+
+$$
+p^{*}(y_1 \succ y_2 \mid x) = \frac{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)} + \beta \log Z(x)\big)}{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)} + \beta \log Z(x)\big) + \exp\!\big(\beta \log \tfrac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)} + \beta \log Z(x)\big)}
+$$
+
+- Every term carries the same factor $\exp(\beta \log Z(x)) = Z(x)^{\beta}$.
 
 <!-- step -->
 
-Substitute $r^{*}_i = \Delta_i + \beta\log Z$; the shared $Z(x)^{\beta}$ cancels:
+$$
+p^{*}(y_1 \succ y_2 \mid x) = \frac{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\big)}{\exp\!\big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)}\big) + \exp\!\big(\beta \log \tfrac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)}\big)}
+$$
+
+- Decompose $e^{a+b}=e^a e^b$ and cancel the shared $Z(x)^{\beta}$ — the **intractable term is gone**.
+
+---
+
+<!-- valign: top -->
+<!-- title: center -->
+## Divide through to a sigmoid
+
+Write $\Delta_i = \beta \log \tfrac{\pi^{*}(y_i\mid x)}{\pi_{\text{ref}}(y_i\mid x)}$, so the cancelled form is $p^{*} = \dfrac{e^{\Delta_1}}{e^{\Delta_1} + e^{\Delta_2}}$. Multiply numerator and denominator by $e^{-\Delta_1}$:
 
 $$
-p^{*} = \frac{e^{\Delta_1 + \beta\log Z}}{e^{\Delta_1 + \beta\log Z} + e^{\Delta_2 + \beta\log Z}} = \frac{e^{\Delta_1}}{e^{\Delta_1} + e^{\Delta_2}}
+p^{*}(y_1 \succ y_2 \mid x) = \frac{e^{\Delta_1}\,e^{-\Delta_1}}{e^{\Delta_1}\,e^{-\Delta_1} + e^{\Delta_2}\,e^{-\Delta_1}} = \frac{1}{1 + e^{\,\Delta_2 - \Delta_1}}
 $$
+
+- The numerator becomes $1$; the denominator holds an exponential of the **difference** $\Delta_2 - \Delta_1$.
 
 <!-- step -->
 
-Multiply top and bottom by $e^{-\Delta_1}$, then read off the sigmoid:
-
-$$
-p^{*} = \frac{e^{\Delta_1}\,e^{-\Delta_1}}{e^{\Delta_1}\,e^{-\Delta_1} + e^{\Delta_2}\,e^{-\Delta_1}} = \frac{1}{1 + e^{\,\Delta_2 - \Delta_1}} = \sigma(\Delta_1 - \Delta_2)
-$$
-
-<!-- step -->
+With $\sigma(z) = \tfrac{1}{1+e^{-z}}$, this is a sigmoid ($\Delta_i = \beta \log \tfrac{\pi^{*}(y_i\mid x)}{\pi_{\text{ref}}(y_i\mid x)}$):
 
 $$
 \boxed{\ \ p^{*}(y_1 \succ y_2 \mid x) = \sigma\!\Big(\beta \log \tfrac{\pi^{*}(y_1\mid x)}{\pi_{\text{ref}}(y_1\mid x)} - \beta \log \tfrac{\pi^{*}(y_2\mid x)}{\pi_{\text{ref}}(y_2\mid x)}\Big)\ \ }
 $$
 
-- A **sigmoid of the difference of two log-ratios** — Bradley-Terry, policy in place of the reward model.
+- A **sigmoid of the difference of two log-ratios** — Bradley-Terry, with the policy in place of the reward model.
 
 ---
 
@@ -535,27 +557,18 @@ $$
 Minimize the negative log-likelihood of the observed preferences ($y_c \succ y_r$):
 
 $$
-\begin{aligned}
-\mathcal{L}_{\text{DPO}}(\pi_{\theta};\pi_{\text{ref}}) &= -\,\mathbb{E}_{(x,y_c,y_r)\sim\mathcal{D}}\big[ \log p(y_c \succ y_r \mid x) \big]
-\end{aligned}
+\mathcal{L}_{\text{DPO}}(\pi_{\theta};\pi_{\text{ref}}) = -\,\mathbb{E}_{(x,y_c,y_r)\sim\mathcal{D}}\big[ \log p(y_c \succ y_r \mid x) \big]
 $$
 
----
+<!-- step -->
 
-<!-- valign: top -->
-<!-- title: center -->
-## The DPO loss
-
-Minimize the negative log-likelihood of the observed preferences ($y_c \succ y_r$):
+Plug in the sigmoid form of $p$, with the trainable policy $\pi_{\theta}$ as the implicit reward:
 
 $$
-\begin{aligned}
-\mathcal{L}_{\text{DPO}}(\pi_{\theta};\pi_{\text{ref}}) &= -\,\mathbb{E}_{(x,y_c,y_r)\sim\mathcal{D}}\big[ \log p(y_c \succ y_r \mid x) \big]\\[6pt]
-&= -\,\mathbb{E}_{(x,y_c,y_r)\sim\mathcal{D}}\Big[ \log \sigma\big(\beta \log \tfrac{\pi_{\theta}(y_c\mid x)}{\pi_{\text{ref}}(y_c\mid x)} - \beta \log \tfrac{\pi_{\theta}(y_r\mid x)}{\pi_{\text{ref}}(y_r\mid x)}\big) \Big]
-\end{aligned}
+\mathcal{L}_{\text{DPO}} = -\,\mathbb{E}_{(x,y_c,y_r)\sim\mathcal{D}}\Big[ \log \sigma\big(\beta \log \tfrac{\pi_{\theta}(y_c\mid x)}{\pi_{\text{ref}}(y_c\mid x)} - \beta \log \tfrac{\pi_{\theta}(y_r\mid x)}{\pi_{\text{ref}}(y_r\mid x)}\big) \Big]
 $$
 
-- We replaced the abstract $\pi^{*}$ with the trainable $\pi_{\theta}$. Directly differentiable — **no reward model, no sampling, no RL loop.**
+- Directly differentiable — **no reward model, no sampling, no RL loop.**
 
 ---
 
@@ -564,70 +577,32 @@ $$
 ## The gradient (every step)
 
 $$
-\begin{aligned}
-\nabla_{\theta}\mathcal{L}_{\text{DPO}} &= -\,\nabla_{\theta}\,\mathbb{E}_{(x,y_c,y_r)}\Big[ \log \sigma\big(\beta \log \tfrac{\pi_{\theta}(y_c\mid x)}{\pi_{\text{ref}}(y_c\mid x)} - \beta \log \tfrac{\pi_{\theta}(y_r\mid x)}{\pi_{\text{ref}}(y_r\mid x)}\big) \Big]
-\end{aligned}
+\nabla_{\theta}\mathcal{L}_{\text{DPO}} = -\,\nabla_{\theta}\,\mathbb{E}_{(x,y_c,y_r)}\Big[ \log \sigma\big(\beta \log \tfrac{\pi_{\theta}(y_c\mid x)}{\pi_{\text{ref}}(y_c\mid x)} - \beta \log \tfrac{\pi_{\theta}(y_r\mid x)}{\pi_{\text{ref}}(y_r\mid x)}\big) \Big]
 $$
 
-- Let $u = \beta \log \tfrac{\pi_{\theta}(y_c\mid x)}{\pi_{\text{ref}}(y_c\mid x)} - \beta \log \tfrac{\pi_{\theta}(y_r\mid x)}{\pi_{\text{ref}}(y_r\mid x)}$ (the term inside $\sigma$).
+Let $u = \beta \log \tfrac{\pi_{\theta}(y_c\mid x)}{\pi_{\text{ref}}(y_c\mid x)} - \beta \log \tfrac{\pi_{\theta}(y_r\mid x)}{\pi_{\text{ref}}(y_r\mid x)}$ — the term inside $\sigma$.
 
----
+<!-- step -->
 
-<!-- valign: top -->
-<!-- title: center -->
-## The gradient (every step)
+Chain rule with $\tfrac{d}{dz}\log\sigma(z) = \tfrac{\sigma'(z)}{\sigma(z)}$:
 
 $$
-\begin{aligned}
-\nabla_{\theta}\mathcal{L}_{\text{DPO}} &= -\,\nabla_{\theta}\,\mathbb{E}_{(x,y_c,y_r)}\Big[ \log \sigma\big(\beta \log \tfrac{\pi_{\theta}(y_c\mid x)}{\pi_{\text{ref}}(y_c\mid x)} - \beta \log \tfrac{\pi_{\theta}(y_r\mid x)}{\pi_{\text{ref}}(y_r\mid x)}\big) \Big]\\[6pt]
-&= -\,\mathbb{E}_{(x,y_c,y_r)}\Big[ \tfrac{\sigma'(u)}{\sigma(u)}\,\nabla_{\theta} u \Big]
-\end{aligned}
+\nabla_{\theta}\mathcal{L}_{\text{DPO}} = -\,\mathbb{E}_{(x,y_c,y_r)}\Big[ \tfrac{\sigma'(u)}{\sigma(u)}\,\nabla_{\theta} u \Big]
 $$
 
-- Let $u = \beta \log \tfrac{\pi_{\theta}(y_c\mid x)}{\pi_{\text{ref}}(y_c\mid x)} - \beta \log \tfrac{\pi_{\theta}(y_r\mid x)}{\pi_{\text{ref}}(y_r\mid x)}$ (the term inside $\sigma$).
-- Chain rule with $\tfrac{d}{dz}\log\sigma(z) = \tfrac{\sigma'(z)}{\sigma(z)}$.
-
----
-
-<!-- valign: top -->
-<!-- title: center -->
-## The gradient (every step)
+<!-- step -->
 
 Using $\sigma'(z) = \sigma(z)\big(1-\sigma(z)\big)$, $\ \tfrac{d}{dz}\log z = \tfrac{1}{z}$, and $\sigma(-z) = 1-\sigma(z)$:
 
 $$
--\,\mathbb{E}_{(x,y_c,y_r)}\Big[ \beta\,\sigma\big(\beta\log\tfrac{\pi_{\theta}(y_r\mid x)}{\pi_{\text{ref}}(y_r\mid x)} - \beta\log\tfrac{\pi_{\theta}(y_c\mid x)}{\pi_{\text{ref}}(y_c\mid x)}\big)\,\big[\nabla_{\theta}\log\pi(y_c\mid x) - \nabla_{\theta}\log\pi(y_r\mid x)\big] \Big]
+\nabla_{\theta}\mathcal{L}_{\text{DPO}} = -\,\mathbb{E}_{(x,y_c,y_r)}\Big[ \beta\,\sigma\big(\beta\log\tfrac{\pi_{\theta}(y_r\mid x)}{\pi_{\text{ref}}(y_r\mid x)} - \beta\log\tfrac{\pi_{\theta}(y_c\mid x)}{\pi_{\text{ref}}(y_c\mid x)}\big)\,\big[\nabla_{\theta}\log\pi(y_c\mid x) - \nabla_{\theta}\log\pi(y_r\mid x)\big] \Big]
 $$
 
 ---
 
 <!-- valign: top -->
 <!-- title: center -->
-## What the gradient does
-
-$$
-\nabla_{\theta}\mathcal{L}_{\text{DPO}} = -\,\beta\, \mathbb{E}_{(x,y_c,y_r)}\Big[\, \underbrace{w}_{\text{how wrong}} \cdot \big( \nabla_{\theta}\log\pi(y_c\mid x) - \nabla_{\theta}\log\pi(y_r\mid x) \big)\,\Big],\quad w = \sigma\big(r_\theta(x,y_r) - r_\theta(x,y_c)\big)
-$$
-
-- **Weight $w \in (0,1)$** is larger when the model is *more wrong* — when it ranks the rejected response above the chosen.
-
----
-
-<!-- valign: top -->
-<!-- title: center -->
-## What the gradient does
-
-$$
-\nabla_{\theta}\mathcal{L}_{\text{DPO}} = -\,\beta\, \mathbb{E}_{(x,y_c,y_r)}\Big[\, \underbrace{w}_{\text{how wrong}} \cdot \big( \nabla_{\theta}\log\pi(y_c\mid x) - \nabla_{\theta}\log\pi(y_r\mid x) \big)\,\Big],\quad w = \sigma\big(r_\theta(x,y_r) - r_\theta(x,y_c)\big)
-$$
-
-- **Weight $w \in (0,1)$** is larger when the model is *more wrong* — when it ranks the rejected response above the chosen.
-- **The bracket** raises the likelihood of $y_c$ and lowers that of $y_r$.
-
----
-
-<!-- valign: top -->
-<!-- title: center -->
+<!-- animate: bullets -->
 ## What the gradient does
 
 $$
