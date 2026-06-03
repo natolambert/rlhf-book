@@ -50,6 +50,7 @@ Some context:
 - DPO paper was released in May of 2023, when many groups were struggling to get open-source replications of RLHF pipelines going. Most "aligned" models were just SFT.
 - It took until about the fall of 2023 for people to figure out the right data and settings for DPO to work
 - Zephyr-Beta, Tülu 2, and other models that fall opened the floodgates of post-training research. Iterating on DPO methods in 2024 felt as exciting as RL methods in 2025 or tool-use methods in 2026.
+- **Terminology note:** I call the class of algorithms that operate like DPO on static preference data Direct Alignment Algorithms (DAAs). The name didn't stick much, but we'll see there are a ton of variants!
 
 ---
 
@@ -142,7 +143,7 @@ Everything between here and the implementation is *why* this is the right loss.
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Deriving the optimal policy
+## DPO Derivation P1/4: Deriving the optimal policy
 
 ---
 
@@ -155,6 +156,8 @@ $$
  & \max_{\pi}\ \mathbb{E}_{x\sim\mathcal{D},\,y\sim\pi}\big[\,r(x,y)\,\big] - \beta\,\mathcal{D}_{\text{KL}}\big(\pi \,\|\, \pi_{\text{ref}}\big) && \text{the RLHF objective}
 \end{aligned}
 $$
+
+We want to find the $\pi$ that solves this equation! But, without RL.
 
 ---
 
@@ -382,7 +385,7 @@ $$
 
 <!-- valign: top -->
 <!-- title: center -->
-## Apply Gibbs Inequality to read off $\pi^{*}$
+## Apply Gibbs' inequality to read off $\pi^{*}$
 
 Where we landed -- the objective is now a KL plus a $\pi$-independent constant:
 
@@ -402,7 +405,7 @@ $$
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Recovering the reward from the policy
+## DPO Derivation P2/4: Recovering the reward from the policy (needed to implement it)
 
 ---
 
@@ -479,7 +482,7 @@ $$
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Connecting to preferences: Bradley-Terry
+## DPO Derivation P3/4: Connecting to Bradley-Terry preference (what our alignment data has looked like) 
 
 ---
 
@@ -546,7 +549,7 @@ $$
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## The DPO loss and gradient
+## DPO Derivation P4/4: The loss function and gradient
 
 ---
 
@@ -651,9 +654,9 @@ So the model can lower the loss by pushing the *rejected* probability down **fas
 
 |||
 
-![Sketch of preference displacement in DPO.](assets/dpo_displacement.png)
+![Sketch of likelihood displacement in DPO.](assets/dpo_displacement.png)
 
-- Called **preference displacement** [@razin2024unintentional] [@ren2024learning]; posited to push probability toward unaddressed, off-distribution behaviors.
+- Called **likelihood displacement** [@razin2024unintentional] [@ren2024learning]; posited to push probability toward unaddressed, off-distribution behaviors.
 - A reason practitioners add an SFT term on the chosen response, or use fixes like Cal-DPO [@xiao2024cal] / AlphaPO [@gupta2025alphapo].
 
 ---
