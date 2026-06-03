@@ -31,18 +31,19 @@
     edgelbl/.style={font=\LARGE}
 ]
 
-% --- nodes ---
-\node[agent] (agent) at (0,0) {Agent\\[4pt]{\LARGE$\pi_\theta(\cdot)$}};
-\node[env]   (env)   at (0.7,-3.7) {Target\\Environment};
+% --- nodes (shared vertical centerline at x=0 so they sit centered) ---
+\node[agent] (agent) at (0,0)    {Agent\\[4pt]{\LARGE$\pi_\theta(\cdot)$}};
+\node[env]   (env)   at (0,-3.7) {Target\\Environment};
 
 % --- action: agent -> environment (right side, down) ---
-\draw[loop] (agent.east) -- (4.4,0) -- (4.4,-3.7) -- (env.east);
-\node[edgelbl] at (4.85,-1.85) {$a_t$};
+\draw[loop] (agent.east) -- (3.6,0) -- (3.6,-3.7) -- (env.east);
+\node[edgelbl] at (4.05,-1.85) {$a_t$};
 
 % --- state + reward: environment -> agent (left side, up) ---
-\draw[loop] (env.west) -- (-3.8,-3.7) -- (-3.8,0) -- (agent.west);
-\node[edgelbl] at (-4.35,-0.55) {$s_t$};
-\node[edgelbl] at (-4.35,-1.65) {$r_t$};
+% labels centered on the vertical segment midpoint (y=-1.85)
+\draw[loop] (env.west) -- (-3.6,-3.7) -- (-3.6,0) -- (agent.west);
+\node[edgelbl] at (-4.05,-1.45) {$s_t$};
+\node[edgelbl] at (-4.05,-2.25) {$r_t$};
 
 \end{tikzpicture}
 \end{document}
