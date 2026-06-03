@@ -24,8 +24,8 @@
 
 % --- prompt: training data -> agent (label above, caption below, same x) ---
 \draw[loop] (data.east) -- (agent.west);
-\node[edgelbl] at (-3.2,0.6)  {$s_i$};
-\node[sublbl]  at (-3.2,-0.78){Prompts};
+\node[edgelbl] at (-3.2,0.5)   {$s_i$};
+\node[sublbl]  at (-3.2,-0.52) {Prompts};
 
 % --- trajectory: agent <-> environment, two stacked arrows over many steps ---
 % action / tool call (agent -> env, top)
@@ -45,8 +45,8 @@
 \node[sublbl]  at (4.4,3.32)  {Reward (end of trajectory)};
 
 % --- policy update caption (centered under the agent) ---
-\node[note]   at (0,-1.8)  {$\theta_{t+1} = \theta_t + \alpha\,\nabla_\theta J(\pi_\theta)$};
-\node[sublbl] at (0,-2.45) {Policy Update};
+\node[note]   at (0,-1.55) {$\theta_{t+1} = \theta_t + \alpha\,\nabla_\theta J(\pi_\theta)$};
+\node[sublbl] at (0,-2.05) {Policy Update};
 
 \end{tikzpicture}
 \end{document}
