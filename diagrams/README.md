@@ -41,7 +41,7 @@ dropping a `<name>_tikz.tex` into the right folder.
 tikz/
 ├── _shared/            # styles_rlhf.tex — shared styles, found via TEXINPUTS
 ├── related-works/      # Ch 2: rlhf_schematic, rlhf_timeline
-├── training-overview/  # Ch 3: rl_loop, thermostat_equation
+├── training-overview/  # Ch 3: rl_loop, rlhf_loop, thermostat_equation
 ├── policy-gradients/   # Ch 6: reinforce, ppo, grpo, rloo
 ├── reasoning/          # Ch 7: rlvr_loop
 ├── tools/              # Ch 13: tooluse_rl
@@ -53,6 +53,27 @@ tikz/
 A source in any subfolder can `\input{styles_rlhf.tex}` directly — the Makefile
 adds `tikz/_shared` to `TEXINPUTS`. Output basenames stay flat, so a diagram's
 generated PNG/SVG/PDF name is unchanged by which folder it lives in.
+
+### Style conventions
+
+These keep diagrams consistent and clean. The RL-loop family
+(`rl_loop`, `rlhf_loop`, `rlvr_loop`, `tooluse_rl`) shares
+`_shared/styles_rl_loop.tex`, which encodes them:
+
+- **Arrow dynamic: flush at the source, slight gap at the target.** An arrow
+  starts touching the box it leaves and stops just short (≈5pt) of the box it
+  enters. This reads as a more dynamic connection than edge-to-edge arrows. In
+  TikZ this is `shorten >=5pt` on the arrow style (head retreats; tail stays
+  flush) — see the `loop` style.
+- **Don't waste vertical space.** Keep boxes close; avoid large empty gaps
+  between rows. `-trim` removes the outer canvas margin, but the *layout*
+  spacing between nodes is up to you — keep it tight so the figure reads as
+  one compact unit rather than floating in whitespace.
+- **Rasterize at `TIKZ_DENSITY` dpi (default 800).** Line-art PNGs stay tiny
+  even at high DPI; PDF/SVG remain vector. Bump per-build with
+  `make tikz TIKZ_DENSITY=1200`.
+- **Text font is Latin Modern Sans** (`\usepackage{lmodern}` +
+  `\sfdefault`) — Helvetica metrics aren't in basic TeX Live.
 
 ## Tooling Requirements
 
@@ -86,6 +107,7 @@ Box-and-arrow flows for RLHF architectures and related training concepts. Many u
 | Output file | Source | Description | Book chapter |
 |---|---|---|---|
 | `rl_loop_tikz` | `tikz/training-overview/rl_loop_tikz.tex` | Standard RL feedback loop: agent &harr; environment with s/a/r | Ch 3 (Training Overview) |
+| `rlhf_loop_tikz` | `tikz/training-overview/rlhf_loop_tikz.tex` | RLHF loop: training data &rarr; agent &rarr; completions &rarr; reward model &rarr; scalar reward | Ch 3 (Training Overview) |
 | `rlhf_schematic_tikz` | `tikz/related-works/rlhf_schematic_tikz.tex` | RLHF loop: RL algorithm, environment, reward predictor, human feedback (Christiano et al. 2017) | Ch 2 (Related Works) |
 | `rlhf_timeline_tikz` | `tikz/related-works/rlhf_timeline_tikz.tex` | Timeline of key RLHF developments across three eras | Ch 2 (Related Works) |
 | `thermostat_equation_tikz` | `tikz/training-overview/thermostat_equation_tikz.tex` | Thermostat analogy for the RL objective | Ch 3 (Training Overview) |

@@ -1,49 +1,31 @@
 % Standard RL loop for LLMs — agent <-> environment.
 % Root of the "RL feedback loop" family (see rlhf_loop, rlvr_loop, tooluse_rl).
 \documentclass{article}
-\usepackage[margin=0.4cm, paperwidth=15cm, paperheight=10cm]{geometry}
+\usepackage[margin=0.4cm, paperwidth=15cm, paperheight=8.5cm]{geometry}
 \usepackage{tikz}
 \usepackage{lmodern}
 \renewcommand{\familydefault}{\sfdefault}
+\usepackage{xcolor}
 \usetikzlibrary{positioning, arrows.meta, calc}
+\input{styles_rl_loop.tex}
 \pagestyle{empty}
 
-\definecolor{agentorange}{RGB}{245,166,35}
-\definecolor{envgreen}{RGB}{39,174,96}
-\definecolor{arrownavy}{RGB}{46,49,146}
-
 \begin{document}
-\begin{tikzpicture}[
-    agent/.style={
-        rectangle, rounded corners=20pt, fill=agentorange,
-        minimum width=3.8cm, minimum height=2.3cm,
-        align=center, font=\large\bfseries, text=black
-    },
-    env/.style={
-        rectangle, fill=envgreen,
-        minimum width=5.0cm, minimum height=2.1cm,
-        align=center, font=\large\bfseries, text=black
-    },
-    loop/.style={
-        -{Stealth[length=4.5mm, width=4mm]},
-        line width=1.5pt, color=arrownavy
-    },
-    edgelbl/.style={font=\LARGE}
-]
+\begin{tikzpicture}
 
-% --- nodes (shared vertical centerline at x=0 so they sit centered) ---
+% --- nodes (shared centerline at x=0; compact vertical gap) ---
 \node[agent] (agent) at (0,0)    {Agent\\[4pt]{\LARGE$\pi_\theta(\cdot)$}};
-\node[env]   (env)   at (0,-3.7) {Target\\Environment};
+\node[env]   (env)   at (0,-2.8) {Target\\Environment};
 
 % --- action: agent -> environment (right side, down) ---
-\draw[loop] (agent.east) -- (3.6,0) -- (3.6,-3.7) -- (env.east);
-\node[edgelbl] at (4.05,-1.85) {$a_t$};
+\draw[loop] (agent.east) -- (3.6,0) -- (3.6,-2.8) -- (env.east);
+\node[edgelbl] at (4.05,-1.4) {$a_t$};
 
 % --- state + reward: environment -> agent (left side, up) ---
-% labels centered on the vertical segment midpoint (y=-1.85)
-\draw[loop] (env.west) -- (-3.6,-3.7) -- (-3.6,0) -- (agent.west);
-\node[edgelbl] at (-4.05,-1.45) {$s_t$};
-\node[edgelbl] at (-4.05,-2.25) {$r_t$};
+% labels centered on the vertical segment midpoint (y=-1.4)
+\draw[loop] (env.west) -- (-3.6,-2.8) -- (-3.6,0) -- (agent.west);
+\node[edgelbl] at (-4.05,-1.1) {$s_t$};
+\node[edgelbl] at (-4.05,-1.7) {$r_t$};
 
 \end{tikzpicture}
 \end{document}

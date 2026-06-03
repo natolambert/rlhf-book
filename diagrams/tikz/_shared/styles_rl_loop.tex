@@ -1,0 +1,50 @@
+% Shared styles for the "RL feedback loop" diagram family:
+%   rl_loop, rlhf_loop, rlvr_loop, tooluse_rl.
+% Input with \input{styles_rl_loop.tex} (found via TEXINPUTS = tikz/_shared).
+% Requires: xcolor, \usetikzlibrary{arrows.meta}.
+%
+% Conventions:
+%   - boxes share a consistent palette and font (Latin Modern Sans bold)
+%   - loop arrows are FLUSH at their source and leave a SLIGHT GAP at the
+%     target (shorten >=), which reads as a cleaner, more dynamic connection.
+
+\definecolor{agentorange}{RGB}{245,166,35}
+\definecolor{envgreen}{RGB}{39,174,96}
+\definecolor{scorerblue}{RGB}{174,214,241}
+\definecolor{datagray}{RGB}{171,171,171}
+\definecolor{arrownavy}{RGB}{46,49,146}
+
+\tikzset{
+    % --- nodes ---
+    agent/.style={                 % the policy being trained
+        rectangle, rounded corners=20pt, fill=agentorange,
+        minimum width=3.8cm, minimum height=2.2cm,
+        align=center, font=\large\bfseries, text=black
+    },
+    scorer/.style={                % reward model / verifiable reward
+        rectangle, fill=scorerblue,
+        minimum width=3.6cm, minimum height=1.9cm,
+        align=center, font=\large\bfseries, text=black
+    },
+    data/.style={                  % training data / prompt source
+        rectangle, rounded corners=10pt, fill=datagray,
+        minimum width=2.9cm, minimum height=1.9cm,
+        align=center, font=\large\bfseries, text=black
+    },
+    env/.style={                   % target environment
+        rectangle, fill=envgreen,
+        minimum width=4.6cm, minimum height=1.9cm,
+        align=center, font=\large\bfseries, text=black
+    },
+    % --- arrows ---
+    % Flush at the source, slight gap at the target end.
+    loop/.style={
+        -{Stealth[length=4.5mm, width=4mm]},
+        line width=1.5pt, color=arrownavy,
+        shorten >=5pt
+    },
+    % --- labels ---
+    edgelbl/.style={font=\LARGE},                                   % s_t, a_i, r_i
+    sublbl/.style={font=\normalsize, text=black!42, align=center},  % Prompts, Completions
+    note/.style={font=\normalsize, text=black!55, align=center}     % policy-update caption
+}
