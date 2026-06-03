@@ -21,7 +21,7 @@
 % the rlhf_loop reward box, so the rest of the layout is unchanged.
 \node[agent]  (agent)  at (0,0)                          {Agent\\[4pt]{\LARGE$\pi_\theta(\cdot)$}};
 \node[data]   (data)   at (-5.8,0)                       {Training\\data};
-\node[scorer, minimum width=4.6cm, minimum height=2.6cm] (reward) at (1.8,4.35)
+\node[scorer, minimum width=4.6cm, minimum height=2.6cm] (reward) at (0,4.35)
     {Verifiable\\Reward\\[2pt]{\normalsize\mdseries$r=\begin{cases}\gamma & \text{if correct}\\[1pt] 0 & \text{otherwise}\end{cases}$}};
 
 % --- prompts: training data -> agent (label above arrow, caption below, same x) ---
@@ -30,9 +30,9 @@
 \node[sublbl]  at (-3.2,-0.78) {Prompts};
 
 % --- scalar reward: reward function -> agent, straight down; r_i then Scalar Reward ---
-\draw[loop] (0.4,3.05) -- (0.4,1.1);
-\node[edgelbl] at (0.9,1.95)  {$r_i$};
-\node[sublbl]  at (2.0,1.9)   {Scalar\\Reward};
+\draw[loop] (0,3.05) -- (0,1.1);
+\node[edgelbl] at (0.5,1.95)  {$r_i$};
+\node[sublbl]  at (1.75,1.9)  {Scalar\\Reward};
 
 % --- completions: agent -> reward function; up the right, entering the box's
 % right side pointing left (vertical sits to the RIGHT of the captions) ---
