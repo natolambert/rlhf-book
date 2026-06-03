@@ -14,30 +14,29 @@
 \begin{document}
 \begin{tikzpicture}
 
-% --- nodes (generous spacing so the grey captions have room) ---
-\node[agent]  (agent)  at (0,0)     {Agent\\[4pt]{\LARGE$\pi_\theta(\cdot)$}};
-\node[data]   (data)   at (-6.0,0)  {Training\\data};
-\node[scorer] (reward) at (0.6,4.0) {Reward\\model};
+% --- nodes ---
+\node[agent]  (agent)  at (0,0)                       {Agent\\[4pt]{\LARGE$\pi_\theta(\cdot)$}};
+\node[data]   (data)   at (-5.8,0)                    {Training\\data};
+\node[scorer, minimum width=4.6cm] (reward) at (1.8,4.0) {Reward\\model};
 
-% --- prompts: training data -> agent (edge label above, caption below, same x) ---
+% --- prompts: training data -> agent (label above arrow, caption below, same x) ---
 \draw[loop] (data.east) -- (agent.west);
-\node[edgelbl] at (-3.225,0.6)  {$s_i$};
-\node[sublbl]  at (-3.225,-0.7) {Prompts};
+\node[edgelbl] at (-3.2,0.6)  {$s_i$};
+\node[sublbl]  at (-3.2,-0.78) {Prompts};
+
+% --- scalar reward: reward model -> agent, straight down; r_i then Scalar Reward ---
+\draw[loop] (reward.south -| agent.north) -- (agent.north);
+\node[edgelbl] at (0.45,1.95) {$r_i$};
+\node[sublbl]  at (1.55,1.9)  {Scalar\\Reward};
 
 % --- completions: agent -> reward model, up the right side ---
-% edge label above caption, both right of the vertical, centered on its midpoint
-\draw[loop] (agent.east) -- (4.5,0) -- (4.5,4.0) -- (reward.east);
-\node[edgelbl] at (4.95,2.4) {$a_i$};
-\node[sublbl]  at (4.95,1.55) {Completions};
-
-% --- scalar reward: reward model -> agent, straight down ---
-% edge label and caption side by side at the drop midpoint
-\draw[loop] (reward.south -| agent.north) -- (agent.north);
-\node[edgelbl] at (0.42,2.05) {$r_i$};
-\node[sublbl]  at (1.85,2.0)  {Scalar\\Reward};
+% a_i above the horizontal run, Completions below it (mirrors s_i / Prompts)
+\draw[loop] (agent.east) -- (4.1,0) -- (4.1,4.0) -- (reward.east);
+\node[edgelbl] at (3.15,0.85)  {$a_i$};
+\node[sublbl]  at (3.5,-0.8)   {Completions};
 
 % --- policy update caption (centered under the agent) ---
-\node[note]   at (0,-1.75) {$\theta_{t+1} = \theta_t + \alpha\,\nabla_\theta J(\pi_\theta)$};
+\node[note]   at (0,-1.8)  {$\theta_{t+1} = \theta_t + \alpha\,\nabla_\theta J(\pi_\theta)$};
 \node[sublbl] at (0,-2.45) {Policy Update};
 
 \end{tikzpicture}
