@@ -39,10 +39,15 @@
     (3.7,1.35) -- (1.9,1.35);
 \node[sublbl] at (2.8,1.92) {Trajectory ($t = 1,\dots,T$)};
 
-% --- reward at end of trajectory: env -> agent, arcing over the top ---
-\draw[loop] (env.north) -- (6.0,3.0) -- (0,3.0) -- (agent.north);
-\node[edgelbl] at (-0.55,2.0) {$r_T$};
-\node[sublbl]  at (4.4,3.32)  {Reward (end of trajectory)};
+% --- grading / verification: the completed trajectory is scored, and the
+% resulting reward is sent back to the agent (arcing over the top) ---
+\node[scorer, minimum width=4.2cm, minimum height=1.3cm] (grader) at (3.3,3.2)
+    {Grading /\\Verification};
+% completed trajectory -> grader (up the right, into the grader's right side)
+\draw[loop] (env.north) -- (6.0,3.2) -- (grader.east);
+% reward at end of trajectory: grader -> agent, down the center
+\draw[loop] (grader.west) -- (0,3.2) -- (agent.north);
+\node[edgelbl] at (-0.6,2.05) {$r_T$};
 
 % --- policy update caption (centered under the agent) ---
 \node[note]   at (0,-1.55) {$\theta_{t+1} = \theta_t + \alpha\,\nabla_\theta J(\pi_\theta)$};
