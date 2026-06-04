@@ -148,7 +148,7 @@ Everything between here and the implementation is *why* this is the right loss.
 ---
 
 <!-- valign: top -->
-<!-- title: center -->
+<!-- align: center -->
 ## Start with the RLHF optimization problem
 
 $$
@@ -228,7 +228,7 @@ $$
 ---
 
 <!-- valign: top -->
-<!-- title: center -->
+<!-- align: center -->
 <!-- animate: bullets -->
 ## Fold the optimization target into one log-ratio
 
@@ -247,7 +247,7 @@ $$
 ---
 
 <!-- valign: top -->
-<!-- title: center -->
+<!-- align: center -->
 ## Introduce the partition function $Z(x)$
 
 We are minimizing $\min_{\pi}\ \mathbb{E}_{y\sim\pi}\Big[\, \log\frac{\pi(y\mid x)}{\pi_{\text{ref}}(y\mid x)\,e^{\,r(x,y)/\beta}} \,\Big]$.
@@ -503,7 +503,7 @@ Now substitute the implicit reward $r^{*}(x,y) = \beta \log \tfrac{\pi^{*}(y\mid
 ---
 
 <!-- valign: top -->
-<!-- title: center -->
+<!-- align: center -->
 ## Substitute the reward, then cancel $Z(x)$
 
 $$
@@ -782,7 +782,7 @@ losses = -F.logsigmoid(beta * logits)
 <!-- animate: bullets -->
 ## DAAs work with synthetic preference data
 
-These algorithms needs *feedback* data, not necessarily *human* feedback data — AI feedback works just as well.
+These algorithms need *feedback* data, not necessarily *human* feedback data — AI feedback works just as well.
 
 - Most modern DPO uses preferences labeled by a strong model. **UltraFeedback** [@cui2023ultrafeedback] was the first prominent *open* synthetic preference dataset and helped kickstart the DPO era; Tülu 3 [@lambert2024t], SmolLM 2 [@allal2025smollm2], and others followed with larger synthetic-feedback recipes.
 - **On-policy data** (some completions from the model you are tuning) helps the contrastive loss optimize the right token space within a complex post-training recipe (studied this specifically in Tülu 3).
@@ -818,9 +818,9 @@ If so many models have used DPO well and it's so simple, why does it seem like i
 <!-- columns: 52/48 -->
 ## Hypotheses for DPO's role today
 
-- **Olmo 3** (Nov 2025) / **SmolLM 3** (Jul 2025) -- used DPO over reasoning traces after SFT to boost preformance in a simple pipeline.
+- **Olmo 3** (Nov 2025) / **SmolLM 3** (Jul 2025) -- used DPO over reasoning traces after SFT to boost performance in a simple pipeline.
 - **NVIDIA Nemotron 3** (Dec 2025) -- *Mixed Preference Optimization*: DPO + Binary Classifier Optimization in one offline stage, over data scored by a generative reward model.
-- **LiquidAI LFM2** (Nov 2025) -- length-normalized DPO on semi-online data, before a final RLVR pass.
+- **Liquid AI LFM2** (Nov 2025) -- length-normalized DPO on semi-online data, before a final RLVR pass.
 
 |||
 
@@ -829,14 +829,14 @@ If so many models have used DPO well and it's so simple, why does it seem like i
 <!-- columns: 52/48 -->
 ## Hypotheses for DPO's role today
 
-- **Olmo 3** (Nov 2025) / **SmolLM 3** (Jul 2025) -- used DPO over reasoning traces after SFT to boost preformance in a simple pipeline.
+- **Olmo 3** (Nov 2025) / **SmolLM 3** (Jul 2025) -- used DPO over reasoning traces after SFT to boost performance in a simple pipeline.
 - **NVIDIA Nemotron 3** (Dec 2025) -- *Mixed Preference Optimization*: DPO + Binary Classifier Optimization in one offline stage, over data scored by a generative reward model.
-- **LiquidAI LFM2** (Nov 2025) -- length-normalized DPO on semi-online data, before a final RLVR pass.
+- **Liquid AI LFM2** (Nov 2025) -- length-normalized DPO on semi-online data, before a final RLVR pass.
 
 |||
 
 **How I see things:**
 
-- DPO works well in wonky, distillation heavy recipes like Olmo -- e.g. a model with a spikier distribution, with training data from many teacher models.
+- DPO works well in wonky, distillation-heavy recipes like Olmo -- e.g. a model with a spikier distribution, with training data from many teacher models.
 - DPO still works in other settings, but most labs have the engineering resources to do other things with higher peak performance.
 - TLDR: DPO is a path to a good/solid model, but not to the best model. And DPO may do less in *cleaner* training recipes.
