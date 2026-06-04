@@ -691,12 +691,16 @@ So the model can lower the loss by pushing the *rejected* probability down **fas
 Mediated through the partition function $Z(x)$ in the derivation.
 
 - Called **likelihood displacement** [@razin2024unintentional] [@ren2024learning]; posited to push probability toward unaddressed, off-distribution behaviors.
-- A reason somepractitioners add an SFT term on the chosen response, or use fixes like Cal-DPO [@xiao2024cal] / AlphaPO [@gupta2025alphapo].
+- A reason some practitioners add an SFT term on the chosen response, or use fixes like Cal-DPO [@xiao2024cal] / AlphaPO [@gupta2025alphapo].
 
 
 |||
 
 ![Sketch of likelihood displacement in DPO.](assets/dpo_displacement.png)
+
+<!-- step -->
+
+**In a real run:** [Olmo 1B DPO](https://wandb.ai/rlhf-book/core/runs/fzy8k8go) — the chosen/rejected reward margin widens, yet the *chosen* log-prob itself can still drift down.
 
 
 ---
@@ -713,26 +717,42 @@ Online RL instead takes steps based on freshly sampled batches and a per-sample 
 
 ---
 
-<!-- columns: 50/50 -->
+<!-- valign: top -->
+<!-- title: center -->
 ## A zoo of direct alignment algorithms
 
-Each variant tweaks the loss to fix a limitation — usually a one-line change.
+Each variant tweaks the loss to fix a limitation — usually a one-line change. These two keep the reference model:
+
+<!-- step -->
 
 - **IPO** [@azar2024general] — softens the preference probability away from Bradley-Terry to curb overfitting.
+
+$$ \mathcal{L}_{\text{IPO}} = \mathbb{E}_{(x,y_w,y_l)}\!\left[\left(\log\tfrac{\pi_\theta(y_w\mid x)\,\pi_{\text{ref}}(y_l\mid x)}{\pi_\theta(y_l\mid x)\,\pi_{\text{ref}}(y_w\mid x)} - \tfrac{1}{2\beta}\right)^2\right] $$
+
+<!-- step -->
+
 - **cDPO** [@rafailov2024direct] **/ ODPO** [@amini2024direct] — assume label noise / require a margin offset, so not all pairs count equally.
-- **ORPO** [@hong2024reference] — adds an odds-ratio pull toward the chosen response and **drops the reference model**.
-- **SimPO** [@meng2025simpo] — length-normalizes the reward, also reference-free.
 
-|||
+---
 
-**SimPO loss**
+<!-- valign: top -->
+<!-- title: center -->
+## A zoo of direct alignment algorithms
 
-$$
-\mathcal{L}_{\text{SimPO}} = -\mathbb{E}\!\left[\log \sigma\!\left(\tfrac{\beta}{|y_w|}\log \pi_\theta(y_w\mid x) - \tfrac{\beta}{|y_l|}\log \pi_\theta(y_l\mid x) - \gamma\right)\right]
-$$
+Two more that **drop the reference model** entirely:
 
-- $\tfrac{1}{|y|}$ normalizes by length; $\gamma$ is a target margin; no $\pi_{\text{ref}}$.
-- The algorithm matters **far less** than the base model and the data.
+<!-- step -->
+
+- **ORPO** [@hong2024reference] — adds an odds-ratio pull toward the chosen response, folded directly into the SFT loss.
+
+<!-- step -->
+
+- **SimPO** [@meng2025simpo] — length-normalizes the reward into an average log-prob, with a target margin $\gamma$.
+
+$$ \mathcal{L}_{\text{SimPO}} = -\mathbb{E}\!\left[\log \sigma\!\left(\tfrac{\beta}{|y_w|}\log \pi_\theta(y_w\mid x) - \tfrac{\beta}{|y_l|}\log \pi_\theta(y_l\mid x) - \gamma\right)\right] $$
+
+  - $\tfrac{1}{|y|}$ normalizes by length; $\gamma$ is a target margin; no $\pi_{\text{ref}}$.
+  - The algorithm matters **far less** than the base model and the data.
 
 ---
 
@@ -751,8 +771,6 @@ losses = -F.logsigmoid(beta * logits)
 ```
 
 **Tip:** $\pi_{\text{ref}}$ is frozen, so precompute and cache its log-probs to cut peak memory ~50%. Reference code: `code/direct_alignment/`.
-
-**Reference run (Olmo 1B DPO):** [wandb.ai/natolambert/rlhf-book/runs/fzy8k8go](https://wandb.ai/natolambert/rlhf-book/runs/fzy8k8go) — the normal shape: loss falls, accuracy climbs, and the chosen/rejected reward margin widens.
 
 ---
 
