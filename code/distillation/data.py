@@ -23,7 +23,7 @@ CODE_PROMPT = (
 
 LCB_DATE_CUTOFF = datetime(2025, 2, 1)  # split: before = train, on/after = eval
 LCB_UNTIL = datetime(2025, 5, 1)
-TIME_LIMIT = 6
+TIME_LIMIT = 1
 
 INCORRECT_FORMAT = "Incorrect format"
 TIMEOUT = "Time out"

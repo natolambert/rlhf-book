@@ -83,15 +83,42 @@ def print_step_header(step: int, total: int) -> None:
     console.rule(f"[bold cyan]Step {step + 1}/{total}[/bold cyan]", style="cyan")
 
 
+def _fmt_metric(v) -> str:
+    """Format a metric value: scientific notation for small nonzero floats (e.g. LR)."""
+    if isinstance(v, float):
+        return f"{v:.2e}" if 0 < abs(v) < 1e-3 else f"{v:.4f}"
+    return f"{v}"
+
+
+def print_step_metrics(step: int, metrics: dict) -> None:
+    """Print the per-step training metrics (mirrors what is sent to W&B)."""
+    body = "    ".join(
+        f"[bold green]{k}:[/bold green] {_fmt_metric(v)}" for k, v in metrics.items()
+    )
+    console.print(
+        Panel(
+            body,
+            title=f"[bold cyan]Step {step + 1} Metrics[/bold cyan]",
+            border_style="cyan",
+        )
+    )
+
+
 def print_rollout_sample(
-    problem_id: str, reward: float, acc: float, feedback: str, completion: str
+    problem_id: str,
+    reward: float,
+    acc: float,
+    feedback: str,
+    completion: str,
+    idx: int = 0,
+    total: int = 1,
 ) -> None:
     """Print a rollout group's reward/accuracy plus one sampled completion."""
     console.print(
         Panel(
             f"[bold green]reward:[/bold green] {reward:.4f}    "
             f"[bold green]acc:[/bold green] {acc:.4f}",
-            title="[bold cyan]Rollout Results[/bold cyan]",
+            title=f"[bold cyan]Rollout Results — prompt {idx + 1}/{total}[/bold cyan]",
             border_style="cyan",
         )
     )

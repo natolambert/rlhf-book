@@ -15,6 +15,7 @@ from .utils import (
     load_model,
     print_model_info,
     print_step_header,
+    print_step_metrics,
     seed_everything,
 )
 
@@ -31,6 +32,16 @@ def main(cfg: Config):
     loader = build_dataloader(cfg.split, batch_size=cfg.prompts_per_step, shuffle=True)
     objective = get_loss_objective(cfg.loss, kl_top_k=cfg.kl_top_k).to(device)
     optimizer = optim.Adam(model.parameters(), lr=cfg.lr)
+    num_warmup_steps = int(cfg.num_steps * cfg.warmup_ratio)
+
+    def lr_lambda(step):
+        # Linear warmup to the target LR, then held constant.
+        if step < num_warmup_steps:
+            # Start at 1/(num_warmup_steps + 1) so the first step still moves.
+            return float(step + 1) / float(max(1, num_warmup_steps + 1))
+        return 1.0
+
+    scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
 
     wandb_entity = os.environ.get("WANDB_ENTITY", cfg.wandb_entity)
     wandb_project = os.environ.get("WANDB_PROJECT", cfg.wandb_project)
@@ -55,7 +66,10 @@ def main(cfg: Config):
 
         torch.cuda.empty_cache()
         model.eval()
-        batches = [generate_batch(model, tokenizer, entry, cfg) for entry in prompts]
+        batches = [
+            generate_batch(model, tokenizer, entry, cfg, idx=i, total=len(prompts))
+            for i, entry in enumerate(prompts)
+        ]
 
         model.train()
         optimizer.zero_grad(set_to_none=True)
@@ -68,17 +82,20 @@ def main(cfg: Config):
 
         grad_norm = clip_grad_norm_(model.parameters(), cfg.max_norm)
         optimizer.step()
+        scheduler.step()
         torch.cuda.empty_cache()
 
-        wandb.log(
-            {
-                "loss": accumulated_loss,
-                "grad_norm": float(grad_norm),
-                "avg_reward": torch.cat([b["reward"] for b in batches]).mean().item(),
-                "avg_acc": torch.cat([b["acc"] for b in batches]).mean().item(),
-                "hours": (time.time() - start_time) / 3600,
-            }
-        )
+        metrics = {
+            "step": step,
+            "loss": accumulated_loss,
+            "grad_norm": float(grad_norm),
+            "lr": scheduler.get_last_lr()[0],
+            "avg_reward": torch.cat([b["reward"] for b in batches]).mean().item(),
+            "avg_acc": torch.cat([b["acc"] for b in batches]).mean().item(),
+            "hours": (time.time() - start_time) / 3600,
+        }
+        wandb.log(metrics)
+        print_step_metrics(step, metrics)
         step += 1
 
 

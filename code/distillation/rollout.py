@@ -20,7 +20,7 @@ def build_teacher_prompt(prompt: str, demo: str, feedback: str) -> str:
     return "".join(parts)
 
 
-def generate_batch(model, tokenizer, entry: dict, cfg) -> dict:
+def generate_batch(model, tokenizer, entry: dict, cfg, idx: int = 0, total: int = 1) -> dict:
     """Generate and score ``num_rollouts`` rollouts for one problem."""
     device = model.device
     pad_id = tokenizer.pad_token_id
@@ -29,6 +29,7 @@ def generate_batch(model, tokenizer, entry: dict, cfg) -> dict:
         top_p=cfg.top_p,
         top_k=cfg.top_k,
         min_p=cfg.min_p,
+        repetition_penalty=cfg.repetition_penalty,
         do_sample=True,
         max_new_tokens=cfg.max_new_tokens,
         pad_token_id=pad_id,
@@ -98,6 +99,8 @@ def generate_batch(model, tokenizer, entry: dict, cfg) -> dict:
         acc=acc.mean().item(),
         feedback=next((f for f in feedbacks if f), ""),
         completion=random.choice(completions),
+        idx=idx,
+        total=total,
     )
     return {
         "s_ids": student_ids,
