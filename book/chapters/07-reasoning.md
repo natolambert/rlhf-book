@@ -12,6 +12,9 @@ search-title: "Chapter 7: Reasoning and Inference-Time Scaling"
 meta-description: "Reasoning training and inference-time scaling in post-training, including RLVR and thinking models."
 next-chapter: "Direct-Alignment Algorithms"
 next-url: "08-direct-alignment"
+lectures:
+  - video: "https://www.youtube.com/watch?v=o4AB5xHIDdM&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=7"
+    label: "Lecture 5: The Rise of Reasoning Models"
 ---
 
 # Reasoning and Inference-Time Scaling
