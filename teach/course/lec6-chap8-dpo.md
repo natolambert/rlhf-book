@@ -557,7 +557,7 @@ $$
 <!-- title: center -->
 ## The DPO loss
 
-Minimize the negative log-likelihood of the observed preferences ($y_c \succ y_r$):
+Minimize the negative log-likelihood of the observed preferences ($y_c \succ y_r$) -- this is making the probability more likely:
 
 $$
 \mathcal{L}_{\text{DPO}}(\pi_{\theta};\pi_{\text{ref}}) = -\,\mathbb{E}_{(x,y_c,y_r)\sim\mathcal{D}}\big[ \log p(y_c \succ y_r \mid x) \big]
@@ -571,13 +571,15 @@ $$
 \mathcal{L}_{\text{DPO}} = -\,\mathbb{E}_{(x,y_c,y_r)\sim\mathcal{D}}\Big[ \log \sigma\big(\beta \log \tfrac{\pi_{\theta}(y_c\mid x)}{\pi_{\text{ref}}(y_c\mid x)} - \beta \log \tfrac{\pi_{\theta}(y_r\mid x)}{\pi_{\text{ref}}(y_r\mid x)}\big) \Big]
 $$
 
-- Directly differentiable — **no reward model, no sampling, no RL loop.**
+This is directly differentiable — **no reward model, no sampling, no RL loop.**
 
 ---
 
 <!-- valign: top -->
 <!-- title: center -->
-## The gradient (every step)
+## The DPO gradient
+
+Start by taking the gradient of the previous loss function.
 
 $$
 \nabla_{\theta}\mathcal{L}_{\text{DPO}} = -\,\nabla_{\theta}\,\mathbb{E}_{(x,y_c,y_r)}\Big[ \log \sigma\big(\beta \log \tfrac{\pi_{\theta}(y_c\mid x)}{\pi_{\text{ref}}(y_c\mid x)} - \beta \log \tfrac{\pi_{\theta}(y_r\mid x)}{\pi_{\text{ref}}(y_r\mid x)}\big) \Big]
@@ -587,7 +589,7 @@ Let $u = \beta \log \tfrac{\pi_{\theta}(y_c\mid x)}{\pi_{\text{ref}}(y_c\mid x)}
 
 <!-- step -->
 
-Chain rule with $\tfrac{d}{dz}\log\sigma(z) = \tfrac{\sigma'(z)}{\sigma(z)}$:
+Chain rule, starting with $\tfrac{d}{dz}\log\sigma(z) = \tfrac{\sigma'(z)}{\sigma(z)}$ as the inner operation:
 
 $$
 \nabla_{\theta}\mathcal{L}_{\text{DPO}} = -\,\mathbb{E}_{(x,y_c,y_r)}\Big[ \tfrac{\sigma'(u)}{\sigma(u)}\,\nabla_{\theta} u \Big]
@@ -595,7 +597,39 @@ $$
 
 <!-- step -->
 
-Using $\sigma'(z) = \sigma(z)\big(1-\sigma(z)\big)$, $\ \tfrac{d}{dz}\log z = \tfrac{1}{z}$, and $\sigma(-z) = 1-\sigma(z)$:
+Substitute $\sigma'(u) = \sigma(u)\big(1-\sigma(u)\big)$ and cancel $\sigma(u)$:
+
+$$
+\nabla_{\theta}\mathcal{L}_{\text{DPO}} = -\,\mathbb{E}_{(x,y_c,y_r)}\Big[ \tfrac{\sigma(u)\big(1-\sigma(u)\big)}{\sigma(u)}\,\nabla_{\theta} u \Big] = -\,\mathbb{E}_{(x,y_c,y_r)}\Big[ \big(1-\sigma(u)\big)\,\nabla_{\theta} u \Big]
+$$
+
+---
+
+<!-- valign: top -->
+<!-- title: center -->
+## The DPO gradient
+
+$$
+\nabla_{\theta}\mathcal{L}_{\text{DPO}} = -\,\mathbb{E}_{(x,y_c,y_r)}\Big[ \big(1-\sigma(u)\big)\,\nabla_{\theta} u \Big]
+$$
+
+The reflection identity $1-\sigma(u) = \sigma(-u)$ flips the argument, giving the compact form:
+
+$$
+\nabla_{\theta}\mathcal{L}_{\text{DPO}} = -\,\mathbb{E}_{(x,y_c,y_r)}\Big[ \sigma(-u)\,\nabla_{\theta} u \Big]
+$$
+
+<!-- step -->
+
+Now differentiate $u$, where $-u = \beta\log\tfrac{\pi_{\theta}(y_r\mid x)}{\pi_{\text{ref}}(y_r\mid x)} - \beta\log\tfrac{\pi_{\theta}(y_c\mid x)}{\pi_{\text{ref}}(y_c\mid x)}$. Only $\pi_{\theta}$ depends on $\theta$ — $\pi_{\text{ref}}$ is frozen, so its $\log$ terms drop:
+
+$$
+\nabla_{\theta} u = \beta\big[\nabla_{\theta}\log\pi_{\theta}(y_c\mid x) - \nabla_{\theta}\log\pi_{\theta}(y_r\mid x)\big]
+$$
+
+<!-- step -->
+
+Substitute $\nabla_{\theta} u$ and write $\sigma(-u)$ out in full:
 
 $$
 \nabla_{\theta}\mathcal{L}_{\text{DPO}} = -\,\mathbb{E}_{(x,y_c,y_r)}\Big[ \beta\,\sigma\big(\beta\log\tfrac{\pi_{\theta}(y_r\mid x)}{\pi_{\text{ref}}(y_r\mid x)} - \beta\log\tfrac{\pi_{\theta}(y_c\mid x)}{\pi_{\text{ref}}(y_c\mid x)}\big)\,\big[\nabla_{\theta}\log\pi(y_c\mid x) - \nabla_{\theta}\log\pi(y_r\mid x)\big] \Big]
@@ -606,21 +640,24 @@ $$
 <!-- valign: top -->
 <!-- title: center -->
 <!-- animate: bullets -->
-## What the gradient does
+## The DPO gradient
 
 $$
-\nabla_{\theta}\mathcal{L}_{\text{DPO}} = -\,\beta\, \mathbb{E}_{(x,y_c,y_r)}\Big[\, \underbrace{w}_{\text{how wrong}} \cdot \big( \nabla_{\theta}\log\pi(y_c\mid x) - \nabla_{\theta}\log\pi(y_r\mid x) \big)\,\Big],\quad w = \sigma\big(r_\theta(x,y_r) - r_\theta(x,y_c)\big)
+\begin{aligned}
+\nabla_{\theta}\mathcal{L}_{\text{DPO}} &= -\,\beta\, \mathbb{E}_{(x,y_c,y_r)}\Big[\, \underbrace{w}_{\text{how wrong}} \cdot \big( \nabla_{\theta}\log\pi(y_c\mid x) - \nabla_{\theta}\log\pi(y_r\mid x) \big)\,\Big] \\[6pt]
+&\hspace{6em}\text{where}\quad w = \sigma\big(r_\theta(x,y_r) - r_\theta(x,y_c)\big)
+\end{aligned}
 $$
 
-- **Weight $w \in (0,1)$** is larger when the model is *more wrong* — when it ranks the rejected response above the chosen.
-- **The bracket** raises the likelihood of $y_c$ and lowers that of $y_r$.
-- **$\beta$** scales the step, trading correct ordering against drift from $\pi_{\text{ref}}$.
+- **Weight $w \in (0,1)$** is larger when the model is *more wrong* — when it ranks the rejected response above the chosen the loss is higher.
+- **The delta-gradient bracket** raises the likelihood of $y_c$ and lowers that of $y_r$.
+- **$\beta$** scales the step, trading correct ordering against drift from $\pi_{\text{ref}}$ (downstream of the KL penalty in the RLHF objective).
 
 ---
 
 <!-- rows: 55/45 -->
 <!-- title: center -->
-## Recap: the whole derivation on one slide
+## Recap: the DPO derivation
 
 $$
 \begin{aligned}
@@ -641,23 +678,26 @@ The reward model never had to be built — it was hiding inside the policy the w
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Weaknesses, variants, and practice
+## DPO weaknesses, variants, and implementation details
 
 ---
 
 <!-- columns: 55/45 -->
-## A subtle failure: the chosen probability can fall
+## A subtle risk: the chosen probability can fall
 
 The DPO loss only cares about the **margin** between the chosen and rejected log-ratios — not their absolute values.
-
 So the model can lower the loss by pushing the *rejected* probability down **faster** than the chosen, even while the **chosen probability also falls**.
+
+Mediated through the partition function $Z(x)$ in the derivation.
+
+- Called **likelihood displacement** [@razin2024unintentional] [@ren2024learning]; posited to push probability toward unaddressed, off-distribution behaviors.
+- A reason somepractitioners add an SFT term on the chosen response, or use fixes like Cal-DPO [@xiao2024cal] / AlphaPO [@gupta2025alphapo].
+
 
 |||
 
 ![Sketch of likelihood displacement in DPO.](assets/dpo_displacement.png)
 
-- Called **likelihood displacement** [@razin2024unintentional] [@ren2024learning]; posited to push probability toward unaddressed, off-distribution behaviors.
-- A reason practitioners add an SFT term on the chosen response, or use fixes like Cal-DPO [@xiao2024cal] / AlphaPO [@gupta2025alphapo].
 
 ---
 
@@ -668,7 +708,8 @@ $\beta$ sets the strength of the KL constraint relative to reward maximization:
 - **Large $\beta$** → policy stays close to $\pi_{\text{ref}}$; it barely moves.
 - **Small $\beta$** → policy is free to deviate; it can **over-optimize**.
 
-Crucially, DPO's KL is **static**: it steps directly to the *optimal* solution implied by the dataset and the chosen $\beta$. Online RL instead takes steps based on freshly sampled batches.
+Crucially, DPO's final KL distance is **static**: it steps directly to the *optimal* solution implied by the dataset and the chosen $\beta$. 
+Online RL instead takes steps based on freshly sampled batches and a per-sample KL penalty. Some RL runs even include dynamically adjusted KL controllers.
 
 ---
 
