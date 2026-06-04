@@ -55,6 +55,7 @@ def load_model(model_name: str, device_map: Any, gradient_checkpointing: bool = 
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "left"
+    tokenizer.truncation_side = "left"  # keep the generation-prompt header at the tail
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
         device_map=device_map,

@@ -45,7 +45,13 @@ def generate_batch(model, tokenizer, entry: dict, cfg) -> dict:
             **chat_kwargs,
         )
     ] * cfg.num_rollouts
-    inputs = tokenizer(prompts, return_tensors="pt", return_attention_mask=True).to(device)
+    inputs = tokenizer(
+        prompts,
+        return_tensors="pt",
+        return_attention_mask=True,
+        truncation=True,
+        max_length=cfg.max_prompt_len,
+    ).to(device)
     prompt_len = inputs["input_ids"].shape[1]
 
     with torch.no_grad():
@@ -77,7 +83,13 @@ def generate_batch(model, tokenizer, entry: dict, cfg) -> dict:
             )
         )
 
-    teacher_prompts = tokenizer(teacher_prompts, return_tensors="pt", padding=True).to(device)
+    teacher_prompts = tokenizer(
+        teacher_prompts,
+        return_tensors="pt",
+        padding=True,
+        truncation=True,
+        max_length=cfg.max_prompt_len,
+    ).to(device)
     teacher_ids = torch.cat([teacher_prompts["input_ids"], completion_ids], dim=1)
 
     print_rollout_sample(

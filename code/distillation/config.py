@@ -23,6 +23,7 @@ class Config(BaseModel):
     top_k: int = 20
     min_p: float = 0.0
     max_new_tokens: int = 1024
+    max_prompt_len: int = 2048  # left-truncation cap for student and teacher prompts
     enable_thinking: bool = True
 
     # Training

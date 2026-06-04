@@ -12,12 +12,13 @@ temperature: 0.6
 top_p: 0.95
 top_k: 20
 min_p: 0.0
-max_new_tokens: 4096
-enable_thinking: true
+max_new_tokens: 8192
+max_prompt_len: 2048
+enable_thinking: false
 
 # Training
-lr: 1.0e-6
-prompts_per_step: 4
+lr: 1.0e-5
+prompts_per_step: 8
 num_rollouts: 8
 num_steps: 200
 max_norm: 1.0
