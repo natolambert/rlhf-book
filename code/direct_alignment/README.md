@@ -11,14 +11,14 @@ As of 2026-02-08, ORPO/SimPO are still under investigation. See `direct_alignmen
 
 | Algorithm | wandb | Status |
 |-----------|-------|--------|
-| **DPO** | [dpo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/fzy8k8go) | ✅ Validated |
-| **DPO-Norm** | [dpo-norm-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/giyhitjw) | ✅ Validated |
-| **IPO** | [ipo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/5s29syo6) | ✅ Validated |
-| **SimPO** | [simpo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/ftv5rs3x) | ⚠️ Noisy - needs debugging |
-| **ORPO** | [orpo-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/o38ffli5) | ⚠️ Noisy - needs debugging |
-| **KTO** | [kto-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/hgqrkfi6) | ✅ Validated |
-| **APO Zero** | [apo-zero-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/3m2uiyw3) | ✅ Validated |
-| **APO Down** | [apo-down-olmo-1b](https://wandb.ai/natolambert/rlhf-book/runs/tqzkmyi6) | ✅ Validated |
+| **DPO** | [dpo-olmo-1b](https://wandb.ai/rlhf-book/core/runs/fzy8k8go) | ✅ Validated |
+| **DPO-Norm** | [dpo-norm-olmo-1b](https://wandb.ai/rlhf-book/core/runs/giyhitjw) | ✅ Validated |
+| **IPO** | [ipo-olmo-1b](https://wandb.ai/rlhf-book/core/runs/5s29syo6) | ✅ Validated |
+| **SimPO** | [simpo-olmo-1b](https://wandb.ai/rlhf-book/core/runs/ftv5rs3x) | ⚠️ Noisy - needs debugging |
+| **ORPO** | [orpo-olmo-1b](https://wandb.ai/rlhf-book/core/runs/o38ffli5) | ⚠️ Noisy - needs debugging |
+| **KTO** | [kto-olmo-1b](https://wandb.ai/rlhf-book/core/runs/hgqrkfi6) | ✅ Validated |
+| **APO Zero** | [apo-zero-olmo-1b](https://wandb.ai/rlhf-book/core/runs/3m2uiyw3) | ✅ Validated |
+| **APO Down** | [apo-down-olmo-1b](https://wandb.ai/rlhf-book/core/runs/tqzkmyi6) | ✅ Validated |
 
 ![Direct alignment accuracy curves for DPO, IPO, and KTO](../images/wandb_direct_alignment.png)
 
@@ -149,7 +149,7 @@ Other compatible datasets:
 **Note on DPO-Norm scale**: DPO-Norm uses per-token average log-ratios, so its logits
 are much smaller than summed DPO logits. A `beta` around `2.0` is a reasonable starting
 point (matching SimPO's range). It is directly supported by the SimPO author
-([GitHub #20](https://github.com/princeton-nlp/SimPO/issues/20)) and an AI2 open-instruct maintainer ([GitHub #237](https://github.com/allenai/open-instruct/pull/237))
+([GitHub #20](https://github.com/princeton-nlp/SimPO/issues/20)) and an AI2 open-instruct maintainer ([GitHub #237](https://github.com/allenai/open-instruct/pull/237)).
 
 ### In-Loop Generation Logging
 
@@ -349,6 +349,6 @@ These would be great contributions to make the implementations more complete:
 
 ## How This Was Made
 
-I used GPT 5.2 Pro to write a plan based on canonical implementations, and had Claude Code with Opus 4.5 write it, periodically getting feedback from Codex 5.2 xhigh, with manual tuning of the configs to make the configs have representative learning curves.
+I used GPT 5.2 Pro to write a plan based on canonical implementations, and had Claude Code with Opus 4.5 write it, periodically getting feedback from Codex 5.2 xhigh, with manual tuning to give the configs representative learning curves.
 
 Due to this, **community contributions are strongly encouraged**. I'm happy to test high-quality contributions on my Spark to continue making this a home for tinkerers interested in RLHF and post-training.

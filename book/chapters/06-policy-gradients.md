@@ -9,6 +9,7 @@ prev-chapter: "Reward Modeling"
 prev-url: "05-reward-models"
 page-title: Reinforcement Learning
 search-title: "Chapter 6: Reinforcement Learning"
+meta-description: "Policy gradient methods for RLHF and LLM post-training, including PPO, REINFORCE, RLOO, GRPO, and implementation details."
 next-chapter: "Reasoning and Inference-Time Scaling"
 next-url: "07-reasoning"
 lectures:
@@ -37,7 +38,7 @@ However, as with most modern AI models, the largest determining factor in its su
 ![Overview of the RLHF training loop. A prompt from the dataset is passed to the tuned policy, which generates a completion. The reward model scores this completion, while the frozen initial model (typically the instruction-tuned model before RL) computes log probabilities on the same text to calculate a KL penalty that prevents excessive drift. The combined reward signal then drives a reinforcement learning update to the policy parameters.](images/rlhf-overview.png){#fig:rlhf-overview}
 
 When RLHF came onto the scene with ChatGPT, it was largely known that they used a variant of PPO, and many initial efforts were built upon that.
-Over time, multiple research projects showed the promise of REINFORCE-style algorithms [@ahmadian2024back] [@wang2024helpsteer2p], touted for their simplicity over PPO without a reward model (saves memory and therefore the number of GPUs required) and with simpler value estimation (no Generalized Advantage Estimation, GAE, which is a method to compute advantages used for variance reduction in policy gradient algorithms).
+Over time, multiple research projects showed the promise of REINFORCE-style algorithms [@ahmadian2024back] [@wang2024helpsteer2p], touted for their simplicity over PPO without a separate value model (saves memory and therefore the number of GPUs required) and with simpler advantage estimation (no Generalized Advantage Estimation, GAE, which is a method to compute advantages used for variance reduction in policy gradient algorithms).
 More algorithms have emerged, including Group Relative Policy Optimization, which is particularly popular with reasoning tasks, but in general many of these algorithms can be tuned to fit a specific task.
 In this chapter, we cover the core policy gradient setup and the three algorithms mentioned above due to their central role in the establishment of a canonical RLHF literature.
 
@@ -80,7 +81,7 @@ $$G_{t} = \gamma{G_{t+1}} + R_{t+1}.$$ {#eq:recursive_return}
 
 This return is the basis for learning a value function $V(s)$ that is the estimated future return given a current state:
 
-$$V(s) = \mathbb{E}\big[G_t | S_t = s \big].$$ {#eq:value_function}
+$$V(s) = \mathbb{E}\left[G_t \mid S_t = s \right].$$ {#eq:value_function}
 
 All policy gradient algorithms optimize a policy $\pi_\theta(a\mid s)$ to maximize expected return; this objective can be expressed using the induced value function $V^{\pi_\theta}(s)$.
 
@@ -209,8 +210,8 @@ Where $\Psi_t$ can be the following (where the rewards can also often be discoun
 The *baseline* is a value used to reduce variance of policy updates (more on this below).
 
 For language models, some of these concepts do not make as much sense.
-For example, for a deterministic policy $\pi$ the state value is $V^{\pi}(s_t) = Q^{\pi}(s_t, \pi(s_t))$ (and for the optimal value function one has $V^*(s_t)=\max_{a_t} Q^*(s_t,a_t)$). For a stochastic policy, the analogous identity is $V^{\pi}(s_t) = \mathbb{E}_{a_t \sim \pi(\cdot\mid s_t)}[Q^{\pi}(s_t,a_t)]$.
-The Bellman equation relates Q to V: in general $Q^\pi(s_t,a_t) = \mathbb{E}[r_t + \gamma V^\pi(s_{t+1}) \mid s_t, a_t]$, but for language models where state transitions are deterministic, this simplifies to $Q(s_t,a_t) = r_t + \gamma V(s_{t+1})$.
+For example, for a deterministic policy $\pi$ the state value is $V^{\pi}(s_t) = Q^{\pi}(s_t, \pi(s_t))$ (and for the optimal value function one has $V^*(s_t)=\max_{a_t} Q^*(s_t,a_t)$). For a stochastic policy, the analogous identity is $V^{\pi}(s_t) = \mathbb{E}_{a_t \sim \pi(\cdot\mid s_t)}\!\left[Q^{\pi}(s_t,a_t)\right]$.
+The Bellman equation relates Q to V: in general $Q^\pi(s_t,a_t) = \mathbb{E}\!\left[r_t + \gamma V^\pi(s_{t+1}) \mid s_t, a_t\right]$, but for language models where state transitions are deterministic, this simplifies to $Q(s_t,a_t) = r_t + \gamma V(s_{t+1})$.
 The advantage function measures how much better action $a_t$ is compared to the average:
 
 $$A(s_t,a_t) = Q(s_t,a_t) - V(s_t) = r_t + \gamma V(s_{t+1}) - V(s_t)$$ {#eq:advantage_trick}
@@ -222,7 +223,7 @@ This final form is exactly the temporal difference (TD) residual (item 6 above) 
 The vanilla policy gradient implementation optimizes the above expression for $J(\theta)$ by differentiating with respect to the policy parameters.
 A simple version, with respect to the overall return, is:
 
-$$\nabla_\theta J(\theta) = \mathbb{E}_\tau \left[ \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t|s_t) R_t \right]$$ {#eq:vanilla_policy_gradient}
+$$\nabla_\theta J(\theta) = \mathbb{E}_\tau \left[ \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t|s_t) G_t \right]$$ {#eq:vanilla_policy_gradient}
 
 A common problem with vanilla policy gradient algorithms is the high variance in gradient updates, which can be mitigated in multiple ways.
 The high variance comes from the gradient updates being computed by estimating the return $G$ from an often small set of rollouts in the environment that tend to be susceptible to noise (e.g. the stochastic nature of generating from language models with temperature $>0$).
@@ -230,7 +231,7 @@ The variance across return estimates is higher in domains with sparse rewards, a
 In order to alleviate this, various techniques are used to normalize the value estimation, called *baselines*. 
 Baselines accomplish this in multiple ways, effectively normalizing by the value of the state relative to the downstream action (e.g. in the case of Advantage, which is the difference between the Q value and the value). 
 The simplest baselines are averages over the batch of rewards or a moving average.
-Even these action-independent baselines can reduce variance without changing the expected gradient, since $\mathbb{E}_{a \sim \pi(a|s)}[b(s) \nabla_\theta \log \pi_\theta(a|s)] = 0$ for any state-dependent $b(s)$, improving the learning signal substantially.
+Even these action-independent baselines can reduce variance without changing the expected gradient, since $\mathbb{E}_{a \sim \pi(a|s)}\!\left[b(s) \nabla_\theta \log \pi_\theta(a|s)\right] = 0$ for any state-dependent $b(s)$, improving the learning signal substantially.
 
 Many of the policy gradient algorithms discussed in this chapter build on the advantage formulation of policy gradient:
 
@@ -260,10 +261,10 @@ With more modern notation and the generalized return $G$, the REINFORCE operator
 $$
 \nabla_{\theta}\,J(\theta)
 \;=\;
-\mathbb{E}_{\tau \sim \pi_{\theta}}\!\Big[
+\mathbb{E}_{\tau \sim \pi_{\theta}}\!\left[
     \sum_{t=0}^{T}
     \nabla_{\theta} \log \pi_{\theta}(a_t \mid s_t)\,(G_t - b(s_t))
-\Big],
+\right],
 $$ {#eq:REINFORCE_with_baseline}
 
 Here, the value $G_t - b(s_t)$ is the *advantage* of the policy at the current state, so we can reformulate the policy gradient in a form that we continue later with the advantage, $A$:
@@ -271,10 +272,10 @@ Here, the value $G_t - b(s_t)$ is the *advantage* of the policy at the current s
 $$
 \nabla_{\theta}\,J(\theta)
 \;=\;
-\mathbb{E}_{\tau \sim \pi_{\theta}}\!\Big[
+\mathbb{E}_{\tau \sim \pi_{\theta}}\!\left[
     \sum_{t=0}^{T}
     \nabla_{\theta} \log \pi_{\theta}(a_t \mid s_t)\,A_t
-\Big],
+\right],
 $$ {#eq:REINFORCE_with_advantage}
 
 REINFORCE is a specific implementation of vanilla policy gradient that uses a Monte Carlo estimator of the gradient.
@@ -579,7 +580,7 @@ GRPO and its variants are particularly well-suited to modern language model tool
 The advantage computation for GRPO has trade-offs in its biases.
 The normalization by standard deviation rewards questions in a batch that have a low variation in answer correctness.
 For questions with either nearly all correct or all incorrect answers, the standard deviation will be lower and the advantage will be higher.
-Liu et al. 2025 [@liu2025understanding] proposes removing the standard deviation term given this bias, but this comes at the cost of down-weighing questions that were all incorrect with a few correct answers, which could be seen as valuable learning signal for the model.
+Liu et al. 2025 [@liu2025understanding] proposes removing the standard deviation term given this bias, but this comes at the cost of down-weighting questions that were all incorrect with a few correct answers, which could be seen as valuable learning signal for the model.
 Those high-variance prompts can be exactly the hardest cases, where only a few sampled completions find the correct answer and provide a strong training signal.
 
 @eq:GRPO_ADV is the implementation of GRPO when working with outcome supervision (either a standard reward model or a single verifiable reward) and a different implementation is needed with process supervision.
@@ -1261,7 +1262,7 @@ $$
 \hat{A}_t^{GAE(\gamma,\lambda)} = (1-\lambda)(\hat{A}_t^{(1)} + \lambda\hat{A}_t^{(2)} + \lambda^2\hat{A}_t^{(3)} + \cdots) \\
 = (1-\lambda)(\delta_t^V + \lambda(\delta_t^V + \gamma\delta_{t+1}^V) + \lambda^2(\delta_t^V + \gamma\delta_{t+1}^V + \gamma^2\delta_{t+2}^V) + \cdots) \\
 = (1-\lambda)(\delta_t^V(1 + \lambda + \lambda^2 + \cdots) + \gamma\delta_{t+1}^V(\lambda + \lambda^2 + \cdots) + \cdots) \\
-= (1-\lambda)(\delta_t^V\frac{1}{1-\lambda} + \gamma\delta_{t+1}^V\frac{\lambda}{1-\lambda} + \cdots) \\
+= (1-\lambda)\left(\delta_t^V\frac{1}{1-\lambda} + \gamma\delta_{t+1}^V\frac{\lambda}{1-\lambda} + \cdots\right) \\
 = \sum_{l=0}^{\infty}(\gamma\lambda)^l\delta_{t+l}^V
 \end{array}
 $$ {#eq:GAE_DFN}
@@ -1331,3 +1332,40 @@ Examples for further reading include:
 - Some foundation models, such as Apple Intelligence Foundation Models [@gunter2024apple] or Kimi k1.5 reasoning model [@team2025kimi], have used variants of **Mirror Descent Policy Optimization (MDPO)** [@tomar2020mirror]. Research is still developing further on the fundamentals here [@zhang2025improving], but Mirror Descent is an optimization method rather than directly a policy gradient algorithm. What is important here is that it is substituted in very similarly to existing RL infrastructure.
 - **Decoupled Clip and Dynamic sAmpling Policy Optimization (DAPO)** proposes 4 modifications to GRPO to better suit reasoning language models, where long traces are needed and new, underutilized tokens need to be increased in probability [@yu2025dapo]. The changes are: 1, have two different clip hyperparameters, $\varepsilon_\text{low}$ and $\varepsilon_\text{high}$, so clipping on the positive side of the logratio can take bigger steps for better exploration; 2, dynamic sampling, which removes all samples with reward = 0 or reward = 1 for all samples in the batch (no learning signal); 3, use the per-token loss as discussed above in Implementation: GRPO; and 4, a soft penalty on samples that are too long to avoid trying to learn from truncated answers.
 - **Value-based Augmented Proximal Policy Optimization (VAPO)** [@yuan2025vapo] combines optimizations from DAPO (including clip-higher, token-level policy-gradient, and different length normalization) with insights from Value-Calibrated PPO [@yuan2025s] to pretrain the value function and length-adaptive GAE to show the promise of value-based methods relative to GRPO.
+
+## Suggested Experiments
+
+The companion implementation in `code/policy_gradients/` is designed for small, observable RL runs.
+The default configs train `Qwen/Qwen3-1.7B` on the `spell_backward` procedural task from `reasoning-gym`, which is a good first exercise because failures and partial progress are easy to inspect.
+
+1. **Run the word reversal task with GRPO.**
+
+   ```bash
+   cd code/
+   uv run python -m policy_gradients.train --config policy_gradients/configs/grpo.yaml
+   ```
+
+   Track `avg_correctness`, `avg_format`, and `avg_binary`.
+   The useful first question is whether each prompt group contains contrast: if all sampled completions are right or all are wrong, a group-relative update has little learning signal.
+
+2. **Compare group-relative and single-sample estimators.**
+   Run the matched starting configs:
+
+   ```bash
+   cd code/
+   uv run python -m policy_gradients.train --config policy_gradients/configs/reinforce.yaml
+   uv run python -m policy_gradients.train --config policy_gradients/configs/rloo.yaml
+   uv run python -m policy_gradients.train --config policy_gradients/configs/grpo.yaml
+   ```
+
+   Compare how quickly the correctness signal improves and how noisy the loss is.
+   RLOO and GRPO should make the role of within-prompt baselines much more concrete than the equations alone.
+
+3. **Sweep the contrast knobs.**
+   Copy `policy_gradients/configs/grpo.yaml` and vary `num_rollouts`, `temperature`, `data.size`, and `format_weight`.
+   Small `num_rollouts` reduces group contrast; very low temperature can collapse samples; very high temperature can generate too many malformed answers.
+   This is the simplest way to see why RLVR recipes often spend so much effort on sampling settings before touching the optimizer.
+
+4. **Move from toy rewards toward math.**
+   For GSM8K-style experiments, start with the `code/reward_models/train_orm.py` and `code/rejection_sampling/` examples before adding a new online RL environment.
+   A good contribution would be a small `reasoning-gym` or GSM8K policy-gradient config that runs on a sub-1B Qwen model and reports the same group-contrast diagnostics.

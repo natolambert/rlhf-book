@@ -9,6 +9,7 @@ prev-chapter: "Rejection Sampling"
 prev-url: "09-rejection-sampling"
 page-title: The Nature of Preferences
 search-title: "Chapter 10: The Nature of Preferences"
+meta-description: "A conceptual chapter on human preferences, preference learning, and why RLHF can optimize hard-to-specify behaviors."
 next-chapter: "Preference Data"
 next-url: "11-preference-data"
 ---
@@ -16,7 +17,7 @@ next-url: "11-preference-data"
 # The Nature of Preferences
 
 Reinforcement learning from human feedback, also referred to as reinforcement learning from human preferences in early literature, emerged to optimize machine learning models in domains where specifically designing a reward function is hard.
-The word *preferences*, which was present in early literature, is at the center of the RLHF process -- human preferences are what is trying to be modeled and what fuels the data for training.
+The word *preferences*, which was present in early literature, is at the center of the RLHF process -- human preferences are what we are trying to model and what fuels the data for training.
 In order to understand the scope of the challenge in modeling and measuring human preferences, a broader context is needed in understanding what a preference is, how our understanding of preferences emerged, and how multiple fields of economics, psychology, philosophy, and more inform modern RLHF.
 
 ## When Preference Replaces Correctness

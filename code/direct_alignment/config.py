@@ -55,6 +55,7 @@ class Config:
     bf16: bool = True
 
     # Logging
+    wandb_entity: str | None = None
     wandb_project: str | None = None
     wandb_run_name: str | None = None
     log_every: int = 10
@@ -85,7 +86,7 @@ class Config:
         if self.loss == "cdpo":
             self.label_smoothing = 0.1
         elif self.loss in ["simpo", "dpo_norm"]:
-            # SimPO and DPO-Norm typically uses higher beta
+            # SimPO and DPO-Norm typically use higher beta
             if self.beta == 0.1:  # Only override if default
                 self.beta = 2.0
 

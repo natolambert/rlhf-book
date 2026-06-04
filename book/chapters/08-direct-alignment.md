@@ -9,6 +9,7 @@ prev-chapter: "Reasoning and Inference-Time Scaling"
 prev-url: "07-reasoning"
 page-title: Direct-Alignment Algorithms
 search-title: "Chapter 8: Direct-Alignment Algorithms"
+meta-description: "Direct alignment algorithms such as DPO that optimize preference objectives without an explicit reward model or RL loop."
 next-chapter: "Rejection Sampling"
 next-url: "09-rejection-sampling"
 ---
@@ -28,7 +29,7 @@ $$ \max_{\pi} \mathbb{E}_{x \sim \mathcal{D}}\mathbb{E}_{y \sim \pi(y|x)} \left[
 Since its release in May of 2023, after a brief delay where the community figured out the right data and hyperparameters to use DPO with (specifically, surprisingly low learning rates), many popular models have used DPO or its variants, from Zephyr-$\beta$ kickstarting it in October of 2023 [@tunstall2023zephyr], Llama 3 Instruct [@dubey2024llama], Tülu 2 [@ivison2023camels] and 3 [@lambert2024t], Nemotron 4 340B [@adler2024nemotron], and others.
 Technically, Sequence Likelihood Calibration (SLiC-HF) was the first modern direct alignment algorithm released [@zhao2023slic], but it did not catch on due to a combination of factors (unwinding the adoption of research methods is always a tricky task).
 
-The most impactful part of DPO and DAAs is lowering the barrier of entry to experimenting with language model post-training -- it uses less compute, is easier to implement from scratch, and is easier to get working on both toy and production examples.
+The most impactful part of DPO and DAAs is lowering the barrier to entry to experimenting with language model post-training -- it uses less compute, is easier to implement from scratch, and is easier to get working on both toy and production examples.
 
 *Throughout this chapter, we use $x$ to denote prompts and $y$ to denote completions. This notation is common in the language model literature, where methods operate on full prompt-completion pairs rather than individual tokens.*
 
@@ -62,7 +63,7 @@ Hence, DPO is increasing the gap in relative log-probabilities between the chose
 
 With the reward in @eq:dpo_reward, we can write the gradient of the loss to further interpret what is going on:
 
-$$\nabla_{\theta}\mathcal{L}_{\text{DPO}}(\pi_{\theta}; \pi_{\text{ref}}) = -\beta \mathbb{E}_{(x, y_c, y_r)\sim \mathcal{D}}\Big[ w \cdot \left(\nabla_{\theta}\log \pi(y_c \mid x) - \nabla_{\theta}\log \pi(y_r \mid x)\right) \Big]$$ {#eq:dpo_gradient}
+$$\nabla_{\theta}\mathcal{L}_{\text{DPO}}(\pi_{\theta}; \pi_{\text{ref}}) = -\beta \mathbb{E}_{(x, y_c, y_r)\sim \mathcal{D}}\left[ w \cdot \left(\nabla_{\theta}\log \pi(y_c \mid x) - \nabla_{\theta}\log \pi(y_r \mid x)\right) \right]$$ {#eq:dpo_gradient}
 
 where $w = \sigma\!\left(r_{\theta}(x, y_r) - r_{\theta}(x, y_c)\right)$.
 
@@ -92,7 +93,7 @@ It is far simpler than policy gradient methods.
 
 The DPO derivation takes two primary parts. 
 First, the authors show the form of the policy that optimally solved the RLHF objective used throughout this book.
-Next, they show how to arrive at that solution from pairwise preference data (i.e. a Bradley Terry model).
+Next, they show how to arrive at that solution from pairwise preference data (i.e. a Bradley-Terry model).
 
 #### Deriving the Optimal RLHF Solution
 
@@ -108,11 +109,11 @@ $$\max_{\pi} \mathbb{E}_{x \sim \mathcal{D}}\mathbb{E}_{y \sim \pi(y|x)}\left[r(
 
 Next, bring the negative sign out of the difference in brackets. To do this, split it into two terms:
 
-$$ = \max_{\pi}\left(\mathbb{E}_{x \sim \mathcal{D}}\mathbb{E}_{y \sim \pi(y|x)}[r(x,y)] - \beta\,\mathbb{E}_{x \sim \mathcal{D}}\mathbb{E}_{y \sim \pi(y|x)}\left[\log\frac{\pi(y|x)}{\pi_{\text{ref}}(y|x)}\right]\right) $$ {#eq:dpo_deriv_2}
+$$ = \max_{\pi}\left(\mathbb{E}_{x \sim \mathcal{D}}\mathbb{E}_{y \sim \pi(y|x)}\left[r(x,y)\right] - \beta\,\mathbb{E}_{x \sim \mathcal{D}}\mathbb{E}_{y \sim \pi(y|x)}\left[\log\frac{\pi(y|x)}{\pi_{\text{ref}}(y|x)}\right]\right) $$ {#eq:dpo_deriv_2}
 
 Then, multiply by $-1$ to convert the maximization into a minimization:
 
-$$ = \min_{\pi}\left(-\mathbb{E}_{x \sim \mathcal{D}}\mathbb{E}_{y \sim \pi(y|x)}[r(x,y)] + \beta\,\mathbb{E}_{x \sim \mathcal{D}}\mathbb{E}_{y \sim \pi(y|x)}\left[\log\frac{\pi(y|x)}{\pi_{\mathrm{ref}}(y|x)}\right]\right) $$ {#eq:dpo_deriv_3}
+$$ = \min_{\pi}\left(-\mathbb{E}_{x \sim \mathcal{D}}\mathbb{E}_{y \sim \pi(y|x)}\left[r(x,y)\right] + \beta\,\mathbb{E}_{x \sim \mathcal{D}}\mathbb{E}_{y \sim \pi(y|x)}\left[\log\frac{\pi(y|x)}{\pi_{\mathrm{ref}}(y|x)}\right]\right) $$ {#eq:dpo_deriv_3}
 
 Divide by $\beta$ and recombine:
 
@@ -188,7 +189,7 @@ We then can substitute the reward into the Bradley-Terry equation shown in @eq:b
 $$p^*(y_1 \succ y_2 \mid x) = \frac{\exp\left(\beta \log \frac{\pi^*(y_1 \mid x)}{\pi_{\text{ref}}(y_1 \mid x)} + \beta \log Z(x)\right)}
 {\exp\left(\beta \log \frac{\pi^*(y_1 \mid x)}{\pi_{\text{ref}}(y_1 \mid x)} + \beta \log Z(x)\right) + \exp\left(\beta \log \frac{\pi^*(y_2 \mid x)}{\pi_{\text{ref}}(y_2 \mid x)} + \beta \log Z(x)\right)} $$ {#eq:dpo_loss_deriv0}
 
-By decomposing the exponential expressions from $e^{a+b}$ to $e^a e^b$ and then cancelling out the terms $e^{\log(Z(x))}$, this simplifies to:
+By decomposing the exponential expressions from $e^{a+b}$ to $e^a e^b$ and then cancelling out the terms $e^{\beta \log Z(x)}$, this simplifies to:
 
 $$p^*(y_1 \succ y_2 \mid x) = \frac{\exp\left(\beta \log \frac{\pi^*(y_1 \mid x)}{\pi_{\text{ref}}(y_1 \mid x)}\right)}
 {\exp\left(\beta \log \frac{\pi^*(y_1 \mid x)}{\pi_{\text{ref}}(y_1 \mid x)}\right) + \exp\left(\beta \log \frac{\pi^*(y_2 \mid x)}{\pi_{\text{ref}}(y_2 \mid x)}\right)} $$ {#eq:dpo_loss_deriv1}
@@ -324,3 +325,44 @@ Even with this performance delta, DAAs are still used extensively in leading mod
 DAAs provide a controlled environment where iterations on training data and other configurations can be made rapidly, and given that data is often far more important than algorithms, using DPO can be fine.
 
 With the emergence of reasoning models that are primarily trained with RL, further investment will return to using RL for preference-tuning, which in the long-term will improve the robustness of RL infrastructure and cement this margin between DAAs and RL for optimizing from human feedback.
+
+## Suggested Experiments
+
+The companion code in `code/direct_alignment/` trains DPO and several related losses on preference data.
+This is the most accessible place to start experimenting with preference tuning because the setup is offline: no reward model server or rollout loop is required.
+
+1. **Train a small DPO run on UltraFeedback.**
+
+   ```bash
+   cd code/
+   uv run python -m direct_alignment.train --loss dpo --max_samples 1000
+   ```
+
+   Watch `loss`, `accuracy`, `margins`, `chosen_rewards`, and `rejected_rewards`.
+   The main sanity check is that the implicit reward margin should move in the desired direction without the model's sample generations collapsing.
+
+2. **Compare DPO, IPO, and length-normalized DPO.**
+
+   ```bash
+   cd code/
+   uv run python -m direct_alignment.train --config direct_alignment/configs/dpo.yaml
+   uv run python -m direct_alignment.train --config direct_alignment/configs/ipo.yaml
+   uv run python -m direct_alignment.train --config direct_alignment/configs/dpo_norm.yaml
+   ```
+
+   Compare the margin scale and the learning rate sensitivity.
+   IPO's loss is not on the same numeric scale as DPO, so read it through `accuracy` and margin behavior rather than raw loss alone.
+
+3. **Try the reference-free variants carefully.**
+   Run SimPO or ORPO from their configs, then inspect the generated samples that are logged during training.
+   These losses are more sensitive to log-probability scaling and learning rate, which makes them useful debugging exercises.
+
+   ```bash
+   cd code/
+   uv run python -m direct_alignment.train --config direct_alignment/configs/simpo.yaml
+   uv run python -m direct_alignment.train --config direct_alignment/configs/orpo.yaml
+   ```
+
+4. **Change the data before changing the loss.**
+   Keep the loss fixed and vary `--max_samples`, `--max_length`, or the preference dataset.
+   If the results move more than changing between DPO-like objectives, that is an empirical reminder of a central theme in preference tuning: data usually dominates small algorithmic differences.

@@ -3,7 +3,7 @@
 ## Claude Code Notes
 
 - **Always run Python commands with `uv run python`** (not bare `python`/`python3`) so the project environment is used consistently
-- **Always run training commands in background** using `run_in_background: true` to avoid blocking
+- **Always run training commands in the background** using `run_in_background: true` to avoid blocking or hitting interactive timeouts. Start a monitor for the background task and check it from the Claude Code status bar (e.g. `[1 background task] [1 monitor]`) until you see the first metrics or failure.
 - **Be careful with parallel jobs**: Only run one training job at a time unless you verify memory is available. Running too many can OOM the system.
 - **If using a DGX Spark**: ~120GB unified CPU/GPU memory — aim for <80GB usage to be safe. Flash Attention is not available on ARM64/Blackwell; the code automatically falls back to PyTorch SDPA.
 - **Before finalizing changes under `code/`**, run `uvx ruff@0.14.5 check .`, `uvx ruff@0.14.5 format --check .`, and `uv run --extra dev pytest` — all are enforced by CI on PRs that touch `code/` (see `.github/workflows/lint.yml`). Use `uvx ruff@0.14.5 check --fix .` and `uvx ruff@0.14.5 format .` to auto-fix. Pin the ruff version to match CI; unpinned `uvx ruff` can diverge.
@@ -18,10 +18,15 @@ See `CONTRIBUTING.md` for branch naming, PR conventions, and pre-submit checks.
 cd code/
 uv sync
 
-# Optional: log to wandb (public project for book examples)
+# Optional: log to your own/default W&B entity
 export WANDB_PROJECT=rlhf-book
 
+# Maintainers creating official reference runs should instead target the team project:
+# export WANDB_ENTITY=rlhf-book
+# export WANDB_PROJECT=core
+
 # Run training scripts
+uv run python -m instruction_tuning.train --config instruction_tuning/configs/sft_olmo2_1b.yaml
 uv run python -m policy_gradients.train --config policy_gradients/configs/grpo.yaml
 uv run python -m reward_models.train_preference_rm --samples 2000 --epochs 1
 uv run python -m reward_models.train_orm --samples 400 --epochs 2
@@ -29,6 +34,28 @@ uv run python -m reward_models.train_prm --samples 500 --epochs 2
 uv run python -m direct_alignment.train --config direct_alignment/configs/dpo.yaml
 uv run python -m rejection_sampling.train --config rejection_sampling/configs/top_per_prompt.yaml
 ```
+
+## Task Map
+
+When a user asks for a runnable experiment, start from the closest maintained example:
+
+| User goal | Start here | Notes |
+|-----------|------------|-------|
+| "Run SFT / instruction tuning" | `instruction_tuning/README.md` and `instruction_tuning/configs/sft_olmo2_1b.yaml` | Trains OLMo-2-1B base on No Robots; sanity check is the base→answer-and-stop transition on the fixed prompt pool. |
+| "Run RL / GRPO / PPO" | `policy_gradients/README.md` and `policy_gradients/configs/*.yaml` | Default task is `spell_backward`; watch `avg_correctness`, `avg_format`, and group contrast. |
+| "Train a reward model" | `reward_models/README.md` | Preference RM uses UltraFeedback; ORM uses GSM8K; PRM uses PRM800K. These are experimental and need tuning. |
+| "Train DPO / IPO / SimPO / KTO" | `direct_alignment/README.md` and `direct_alignment/configs/*.yaml` | DPO/IPO/KTO/APO are validated; SimPO/ORPO are implemented but still marked noisy. |
+| "Try rejection sampling / best-of-N" | `rejection_sampling/README.md` and `rejection_sampling/configs/*.yaml` | Always compare each reward-selection config to its matched random baseline. |
+| "Use an agent skill" | `.claude/skills/run-rlhf-code-experiment/SKILL.md` | Use this for planning and reporting a small experiment run. |
+
+## Experiment Workflow
+
+1. Read the module README and config before running anything.
+2. Start with the smallest command that can show signal (`--max_samples`, `--samples`, or a copied small YAML).
+3. Launch long-running training/eval commands in the background, then attach a monitor and keep checking it. Do not leave a silent background run without confirming that logs, W&B, or metrics are moving.
+4. Run one training job at a time unless GPU memory has been checked.
+5. Record the exact command, model, dataset slice, seed, changed config values, final metrics, and W&B link if enabled.
+6. If a run fails and the fix changes future workflow knowledge, update this file or the relevant skill so the next agent can find it.
 
 ## Changelog Process
 
@@ -70,7 +97,11 @@ If not installed, prompt user to install:
 
 ## Wandb
 
-Reference runs are published at https://wandb.ai/natolambert/rlhf-book (public, no login needed). When contributing new algorithms or configs, log runs to your own wandb project and include the link in your PR.
+Official runs are published at https://wandb.ai/rlhf-book/core. For ordinary
+contributor or reader runs, log to your own/default W&B entity with
+`WANDB_PROJECT=rlhf-book`. If the task is to publish, refresh, or validate
+official reference runs and you have access to the `rlhf-book` team, set
+`WANDB_ENTITY=rlhf-book` and `WANDB_PROJECT=core`.
 
 ## Memory Notes
 
@@ -79,7 +110,7 @@ Without LoRA (full fine-tune):
 - 1.7B model: ~10-15GB
 - 3B model: ~20-25GB
 
-With gradient checkpointing can reduce by ~30-40%.
+Gradient checkpointing can reduce memory use by ~30-40%.
 
 ## TODOs
 

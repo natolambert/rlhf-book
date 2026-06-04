@@ -3,7 +3,7 @@
 # top_per_prompt on dataset size and prompt coverage, so comparing the two
 # isolates whether reward-based filtering actually beats a coin flip.
 #
-# Generation params are identical across all three configs so they share a
+# Generation params are identical across all four configs so they share a
 # single rollout cache in rejection_sampling/output/rollouts/<hash>.jsonl.
 
 data:

@@ -34,6 +34,8 @@ class TokenStrip:
     annotation: str = ""
     # Optional: per-token labels to show above tokens
     token_labels: Optional[dict[int, str]] = None
+    highlight_label: str = "Supervised"
+    highlight_color_mode: str = "normal"  # "normal", "rejected", or "inference"
     # For multi-strip diagrams (e.g., chosen vs rejected, or training vs inference)
     secondary_strip: Optional["TokenStrip"] = None
     secondary_label: str = ""
@@ -190,6 +192,7 @@ def render_token_strip(
         y_offset=y_primary,
         box_w=box_w,
         box_h=box_h,
+        color_mode=strip.highlight_color_mode,
         label_prefix=strip.primary_label,
     )
 
@@ -243,7 +246,12 @@ def render_token_strip(
     legend_items = []
 
     if strip.highlight:
-        legend_items.append((COLOR_HIGHLIGHT, COLOR_BORDER_HIGHLIGHT, "Supervised"))
+        if strip.highlight_color_mode == "rejected":
+            legend_items.append((COLOR_REJECTED, COLOR_BORDER_REJECTED, strip.highlight_label))
+        elif strip.highlight_color_mode == "inference":
+            legend_items.append((COLOR_INFERENCE, COLOR_BORDER_INFERENCE, strip.highlight_label))
+        else:
+            legend_items.append((COLOR_HIGHLIGHT, COLOR_BORDER_HIGHLIGHT, strip.highlight_label))
     if strip.masked:
         legend_items.append((COLOR_MASKED, "#808080", "Masked"))
     if has_secondary:
@@ -350,11 +358,12 @@ STRIPS = [
     # Prompt masked, completion supervised
     TokenStrip(
         name="orm_inference",
-        title="Using an Outcome RM: Per-Token Correctness",
+        title="Using an Outcome RM: Per-Token Correctness Scores",
         tokens=["<|eos|>", "Joy", "can", "...", "?", "The", "answer", "is", "5", ".", "<|eos|>"],
         highlight={5, 6, 7, 8, 9, 10},  # completion tokens
         masked={0, 1, 2, 3, 4},  # prompt tokens
-        annotation="Loss: BCE per token  |  Prompt masked (e.g. label=-100), completion supervised",
+        annotation="Prompt ignored for scoring  |  Completion probabilities aggregate to a response score (mean p=.94)",
+        highlight_label="Scored",
         token_labels={
             5: "p=.92",
             6: "p=.88",

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Report any residual non-ASCII characters in a text file.
-Designed to match the diagnostics we emit in the arXiv latex build target.
+Designed to match the diagnostics we emit in the arXiv LaTeX build target.
 """
 
 from __future__ import annotations

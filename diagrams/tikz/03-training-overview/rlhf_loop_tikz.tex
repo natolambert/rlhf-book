@@ -1,0 +1,43 @@
+% RLHF feedback loop for LLMs.
+% Training data -> Agent -> completions -> Reward model -> scalar reward -> Agent.
+% Member of the "RL feedback loop" family (see rl_loop, rlvr_loop, tooluse_rl).
+\documentclass{article}
+\usepackage[margin=0.4cm, paperwidth=18cm, paperheight=12cm]{geometry}
+\usepackage{tikz}
+\usepackage{lmodern}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{xcolor}
+\usetikzlibrary{positioning, arrows.meta, calc}
+\input{styles_rl_loop.tex}
+\pagestyle{empty}
+
+\begin{document}
+\begin{tikzpicture}
+
+% --- nodes ---
+\node[agent]  (agent)  at (0,0)                          {Agent\\[4pt]{\LARGE$\pi_\theta(\cdot)$}};
+\node[data]   (data)   at (-5.8,0)                       {Training\\data};
+\node[scorer, minimum width=4.6cm] (reward) at (0,4.0) {Reward\\model};
+
+% --- prompts: training data -> agent (label above arrow, caption below, same x) ---
+\draw[loop] (data.east) -- (agent.west);
+\node[edgelbl] at (-3.2,0.5)   {$s_i$};
+\node[sublbl]  at (-3.2,-0.52) {Prompts};
+
+% --- scalar reward: reward model -> agent, straight down; r_i then Scalar Reward ---
+\draw[loop] (0,3.05) -- (0,1.1);
+\node[edgelbl] at (0.5,1.95)  {$r_i$};
+\node[sublbl]  at (1.75,1.9)  {Scalar\\Reward};
+
+% --- completions: agent -> reward model; up the right, entering the reward's
+% right side pointing left (vertical sits to the RIGHT of the captions) ---
+\draw[loop] (agent.east) -- (5.0,0) -- (5.0,4.0) -- (reward.east);
+\node[edgelbl] at (3.1,0.5)    {$a_i$};
+\node[sublbl]  at (3.35,-0.52) {Completions};
+
+% --- policy update caption (centered under the agent) ---
+\node[note]   at (0,-1.55) {$\theta_{t+1} = \theta_t + \alpha\,\nabla_\theta J(\pi_\theta)$};
+\node[sublbl] at (0,-2.05) {Policy Update};
+
+\end{tikzpicture}
+\end{document}

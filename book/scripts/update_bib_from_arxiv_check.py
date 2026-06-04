@@ -6,7 +6,7 @@ Reads the arxiv_check_results.json output and updates bib entries for papers
 that have been published in peer-reviewed venues.
 
 Usage:
-    python update_bib_from_arxiv_check.py [--results arxiv_check_results.json] [--bib-file bib.bib]
+    uv run python book/scripts/update_bib_from_arxiv_check.py [--results arxiv_check_results.json] [--bib-file bib.bib]
 """
 
 import argparse
@@ -102,7 +102,7 @@ def main():
         else:
             entry = re.sub(r"^@\w+\{", "@inproceedings{", entry)
 
-        # Remove arxiv-related fields
+        # Remove arXiv-related fields
         entry = re.sub(r"\s*journal\s*=\s*\{arXiv preprint[^}]*\},?\n?", "\n", entry)
         entry = re.sub(r"\s*eprint\s*=\s*\{[^}]*\},?\n?", "\n", entry)
         entry = re.sub(r"\s*archiveprefix\s*=\s*\{[^}]*\},?\n?", "\n", entry)

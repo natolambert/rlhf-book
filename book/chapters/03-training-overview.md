@@ -9,6 +9,7 @@ prev-chapter: "A Tiny History of RLHF"
 prev-url: "02-related-works"
 page-title: Training Overview
 search-title: "Chapter 3: Training Overview"
+meta-description: "A high-level map of modern post-training recipes, including instruction tuning, RLHF, RLVR, and direct alignment methods."
 next-chapter: "Instruction Fine-Tuning"
 next-url: "04-instruction-tuning"
 lectures:

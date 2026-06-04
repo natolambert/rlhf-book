@@ -50,5 +50,9 @@ uv run python -m policy_gradients.train --config policy_gradients/configs/sapo.y
 echo ""
 echo "=========================================="
 echo "All runs complete!"
-echo "Check wandb project: https://wandb.ai/natolambert/$WANDB_PROJECT"
+if [ -n "${WANDB_ENTITY:-}" ]; then
+  echo "Check wandb project: https://wandb.ai/${WANDB_ENTITY}/${WANDB_PROJECT}"
+else
+  echo "Check wandb project: ${WANDB_PROJECT}"
+fi
 echo "=========================================="

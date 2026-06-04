@@ -30,16 +30,23 @@ class Config(BaseModel):
 
     Attributes:
         data: Dataset configuration
-        loss: Loss function (reinforce, rloo, ppo, grpo, drgrpo, gspo, cispo, sapo)
+        loss: Loss function (reinforce, rloo, ppo, grpo, drgrpo, gspo, cispo, sapo,
+            dapo, maxrl)
         model_name: HuggingFace model identifier
 
-        # Clipping (GRPO, DrGRPO, GSPO, CISPO, PPO)
+        # Clipping (GRPO, DrGRPO, GSPO, CISPO, PPO, DAPO)
         clip_eps_lo: Lower clipping bound for policy ratio
         clip_eps_hi: Upper clipping bound for policy ratio
 
         # SAPO-specific
         sapo_temp_pos: Sigmoid temperature for positive advantages
         sapo_temp_neg: Sigmoid temperature for negative advantages
+
+        # DAPO-specific
+        l_cache: Overlong penalty cache length
+        l_max: Overlong penalty maximum length
+        accuracy_min_reward: Minimum correctness reward for dynamic filtering
+        accuracy_max_reward: Maximum correctness reward for dynamic filtering
 
         # PPO-specific
         clip_eps_val: Clipping bound for value function
@@ -124,6 +131,7 @@ class Config(BaseModel):
     model_device_id: int = 0
 
     # Logging
+    wandb_entity: str | None = None
     wandb_project: str | None = None
     wandb_run_name: str | None = None
 

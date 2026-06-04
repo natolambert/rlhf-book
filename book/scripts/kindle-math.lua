@@ -1,5 +1,5 @@
 -- kindle-math.lua
--- Pandoc Lua filter that renders Math nodes to PNG images for Kindle ePUB.
+-- Pandoc Lua filter that renders Math nodes to PNG images for Kindle EPUB.
 -- Kindle doesn't support MathML, so we convert each equation to a
 -- tight-cropped PNG via pdflatex (standalone class) + pdftoppm.
 --

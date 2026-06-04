@@ -34,6 +34,7 @@ rlhf-book/
 │   ├── scripts/            # Build utilities
 │   └── data/               # Library data
 ├── code/                   # Reference implementations
+│   ├── instruction_tuning/ # SFT a base model with chat templates
 │   ├── policy_gradients/   # PPO, REINFORCE, GRPO, RLOO
 │   ├── reward_models/      # Preference RM, ORM, PRM training
 │   ├── direct_alignment/   # DPO and variants
@@ -50,6 +51,7 @@ rlhf-book/
 ## Code Library
 
 Reference implementations for RLHF algorithms in `code/`:
+- Instruction tuning (SFT a base model with chat templates)
 - Policy gradient methods (PPO, REINFORCE, GRPO, RLOO, etc.)
 - Reward model training (preference RM, ORM, PRM)
 - Direct alignment methods (DPO and variants)

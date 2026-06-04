@@ -8,7 +8,16 @@
 
 from .buffer import Experience, ReplayBuffer
 from .config import Config, load_config
-from .loss import CISPOLoss, GRPOLoss, GSPOLoss, PPOLoss, ReinforceLoss
+from .loss import (
+    CISPOLoss,
+    DAPOLoss,
+    GRPOLoss,
+    GSPOLoss,
+    MaxRLLoss,
+    PPOLoss,
+    ReinforceLoss,
+    SAPOLoss,
+)
 
 
 __all__ = [
@@ -21,4 +30,7 @@ __all__ = [
     "PPOLoss",
     "ReinforceLoss",
     "CISPOLoss",
+    "SAPOLoss",
+    "DAPOLoss",
+    "MaxRLLoss",
 ]

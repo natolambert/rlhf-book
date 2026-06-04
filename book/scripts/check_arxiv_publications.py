@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-Check if arxiv preprints in a bib file have been published in peer-reviewed venues.
+Check if arXiv preprints in a bib file have been published in peer-reviewed venues.
 
 Uses DBLP API (free, no auth required) to find published versions.
 Generates a report of papers that may need updating.
 
 Usage:
-    python check_arxiv_publications.py [--bib-file path/to/bib.bib] [--delay 0.5]
-    python check_arxiv_publications.py --resume  # Resume interrupted run
+    uv run python book/scripts/check_arxiv_publications.py [--bib-file path/to/bib.bib] [--delay 0.5]
+    uv run python book/scripts/check_arxiv_publications.py --resume  # Resume interrupted run
 
 Output:
     Saves results to arxiv_check_results.json (or --output path) with structure:
@@ -188,7 +188,7 @@ def find_published_version(entry: BibEntry, hits: list[dict]) -> Publication | N
 
 
 def fetch_bibtex(url: str, timeout: int = 10) -> str | None:
-    """Fetch bibtex from DBLP."""
+    """Fetch BibTeX from DBLP."""
     req = urllib.request.Request(url, headers={"User-Agent": "BibUpdater/1.0"})
     try:
         with urllib.request.urlopen(req, timeout=timeout) as response:
@@ -220,7 +220,7 @@ def main():
     parser.add_argument(
         "--fetch-bibtex",
         action="store_true",
-        help="Fetch updated bibtex from DBLP for published papers",
+        help="Fetch updated BibTeX from DBLP for published papers",
     )
     parser.add_argument(
         "--output",
@@ -238,7 +238,7 @@ def main():
     # Parse bib file
     print(f"Parsing {args.bib_file}...")
     entries = parse_bib_file(args.bib_file)
-    print(f"Found {len(entries)} arxiv entries\n")
+    print(f"Found {len(entries)} arXiv entries\n")
 
     if args.batch_size > 0:
         entries = entries[: args.batch_size]
@@ -247,7 +247,7 @@ def main():
     # Load existing results if resuming
     results = {
         "published": [],  # Have a published version
-        "arxiv_only": [],  # Still arxiv only
+        "arxiv_only": [],  # Still arXiv only
         "not_found": [],  # No DBLP match
     }
     checked_keys = set()
@@ -296,7 +296,7 @@ def main():
             results["published"].append(result)
         elif hits:
             # Found matches but all are arxiv
-            print(f"  📄 Still arxiv only")
+            print(f"  📄 Still arXiv only")
             results["arxiv_only"].append({"key": entry.key, "title": entry.title})
         else:
             print(f"  ❓ No DBLP match")
@@ -311,7 +311,7 @@ def main():
     print("SUMMARY")
     print("=" * 60)
     print(f"  Published (need update): {len(results['published'])}")
-    print(f"  Arxiv only:              {len(results['arxiv_only'])}")
+    print(f"  arXiv only:              {len(results['arxiv_only'])}")
     print(f"  Not found in DBLP:       {len(results['not_found'])}")
 
     if results["published"]:

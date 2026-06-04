@@ -19,7 +19,7 @@ make files    # Copy assets to build output
 ### Known Conversion Issues
 
 With the nested structure used for the website the section links between chapters in the PDF are broken.
-We are opting for this in favor of a better web experience, but best practice is to not put any links to `rlhfbook.com` within the markdown files. Non-html versions will not be well suited to them.
+We are opting for this in favor of a better web experience, but best practice is to not put any links to `rlhfbook.com` within the Markdown files. Non-HTML versions will not be well suited to them.
 
 ### Common Failures When Editing with Coding Agents
 
@@ -32,7 +32,7 @@ Coding agents (Claude, Cursor, etc.) often introduce Unicode characters that bre
 
 To find these: `xxd book/chapters/filename.md | grep -i 'e2 80\|c2 a0'`
 
-To fix: `python3 -c "content = open('file.md').read(); content = content.replace('\u2019', \"'\").replace('\u2014', '--'); open('file.md', 'w').write(content)"`
+To fix: `uv run python -c "content = open('file.md').read(); content = content.replace('\u2019', \"'\").replace('\u2014', '--'); open('file.md', 'w').write(content)"`
 
 ## Installing
 
@@ -113,7 +113,7 @@ The arXiv target copies only images referenced by the generated `book.tex`.
 If arXiv reports an oversized image, resize the source file in `book/images`
 below arXiv's pixel-count limit and rebuild with `make -B latex`.
 
-Or, fork a process from the [github action](https://github.com/natolambert/rlhf-book/blob/main/.github/workflows/static.yml) that auto-builds new versions on MacOS.
+Or, reuse the [GitHub Actions workflow](https://github.com/natolambert/rlhf-book/blob/main/.github/workflows/static.yml) that auto-builds new versions on macOS.
 
 ## Folder Structure
 
@@ -167,7 +167,7 @@ chapters/04-references.md
 Pandoc and Make will join them automatically ordered by name; that's why the numeric prefixes are
 being used.
 
-All you need to specify for each chapter at least one title:
+For each chapter, specify at least one title:
 
 ```md
 # Introduction
@@ -305,16 +305,16 @@ Originally, this template used LaTeX labels for auto numbering on images, tables
 sections, like this:
 
 ```md
-Please, admire the gloriousnes of Figure \ref{seagull_image}.
+Please, admire the gloriousness of Figure \ref{seagull_image}.
 
 ![A cool seagull.\label{seagull_image}](images/seagull.png)
 ```
 
-**However, these references only works when exporting to a LaTeX-based format (i.e. PDF, LaTeX).**
+**However, these references only work when exporting to a LaTeX-based format (i.e. PDF, LaTeX).**
 
-In case you need cross references support on other formats, this template now support cross
-references using [Pandoc filters](https://pandoc.org/filters.html). If you want to use them, use a
-valid plugin and with its own syntax.
+In case you need cross-reference support in other formats, this template now supports
+cross-references using [Pandoc filters](https://pandoc.org/filters.html). If you want to use them,
+use a valid plugin with its own syntax.
 
 Using [pandoc-crossref](https://github.com/lierdakil/pandoc-crossref) is highly recommended, but
 there are other alternatives which use a similar syntax, like
@@ -376,8 +376,8 @@ CONTENT_FILTERS = \
 
 ## Output
 
-This template uses *Makefile* to automatize the building process. Instead of using the *pandoc cli
-util*, we're going to use some *make* commands.
+This template uses a *Makefile* to automate the build process. Instead of using the *Pandoc CLI
+utility*, we're going to use some *make* commands.
 
 ### Export to PDF
 
@@ -427,9 +427,9 @@ The generated file(s) will be placed in *build/docx*.
 
 ### Extra configuration
 
-If you want to configure the output, you'll probably have to look the
-[Pandoc Manual](http://pandoc.org/MANUAL.html) for further information about pdf (LaTeX) generation,
-custom styles, etc, and modify the Makefile file accordingly.
+If you want to configure the output, you'll probably have to look at the
+[Pandoc Manual](http://pandoc.org/MANUAL.html) for further information about PDF (LaTeX) generation,
+custom styles, etc., and modify the Makefile accordingly.
 
 ### Templates
 

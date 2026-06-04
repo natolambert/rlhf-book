@@ -22,10 +22,10 @@ Status: **Needs validation** — see [#358](https://github.com/natolambert/rlhf-
 cd code/
 
 # SimPO sanity run
-WANDB_PROJECT=rlhf-book ./direct_alignment/experiments/2026-02-08-orpo-simpo/run_simpo_small.sh
+WANDB_ENTITY=rlhf-book WANDB_PROJECT=core ./direct_alignment/experiments/2026-02-08-orpo-simpo/run_simpo_small.sh
 
 # ORPO sanity run
-WANDB_PROJECT=rlhf-book ./direct_alignment/experiments/2026-02-08-orpo-simpo/run_orpo_small.sh
+WANDB_ENTITY=rlhf-book WANDB_PROJECT=core ./direct_alignment/experiments/2026-02-08-orpo-simpo/run_orpo_small.sh
 ```
 
 ### Useful overrides

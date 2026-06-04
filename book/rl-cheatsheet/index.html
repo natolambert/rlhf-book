@@ -1,16 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="rl-cheatsheet-page">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+  <link rel="canonical" href="https://rlhfbook.com/rl-cheatsheet" />
+  <meta name="description" content="One-page RL and post-training loss reference for PPO, GRPO, RLOO, REINFORCE, DPO, and related RLHF methods." />
 
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="RLHF Book" />
   <meta property="og:image" content="https://rlhfbook.com/assets/rlhf-book-share.png" />
   <meta property="og:image:width" content="1920" />
   <meta property="og:image:height" content="1080" />
   <meta property="og:title" content="RL Cheatsheet | RLHF Book by Nathan Lambert" />
-  <meta property="og:description" content="One-page reference of core RL loss functions: Policy Gradient, REINFORCE, PPO, GRPO, DPO, and more." />
+  <meta property="og:description" content="One-page RL and post-training loss reference for PPO, GRPO, RLOO, REINFORCE, DPO, and related RLHF methods." />
   <meta property="og:url" content="https://rlhfbook.com/rl-cheatsheet" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="RL Cheatsheet | RLHF Book by Nathan Lambert" />
+  <meta name="twitter:description" content="One-page RL and post-training loss reference for PPO, GRPO, RLOO, REINFORCE, DPO, and related RLHF methods." />
+  <meta name="twitter:image" content="https://rlhfbook.com/assets/rlhf-book-share.png" />
 
   <title>RL Cheatsheet | RLHF Book by Nathan Lambert</title>
 
@@ -19,11 +27,22 @@
       text-align: center;
     }
 
+    html.rl-cheatsheet-page {
+      overflow-x: auto;
+    }
+
+    html.rl-cheatsheet-page body {
+      overflow-x: visible;
+    }
+
     .cheatsheet-section {
-      width: 80vw;
-      max-width: 60em;
+      width: min(92vw, 88rem);
+      max-width: none;
       margin-left: 50%;
       transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     .download-buttons {
@@ -51,6 +70,7 @@
     }
 
     .cheatsheet-section h2 {
+      width: 100%;
       font-size: 1.1em;
       text-align: center;
       margin-top: 3em;
@@ -58,6 +78,7 @@
     }
 
     .cheatsheet-section hr {
+      width: 100%;
       margin-bottom: 0.5em;
       border: none;
       border-top: 1px solid #ccc;
@@ -71,7 +92,8 @@
     }
 
     table.equations {
-      width: 92%;
+      width: auto;
+      min-width: 58em;
       margin: 0 auto 1em;
       border-collapse: collapse;
       border: none;
@@ -128,6 +150,10 @@
         max-width: 100%;
       }
 
+      .cheatsheet-section {
+        align-items: flex-start;
+      }
+
       table.equations td:first-child {
         width: auto;
         min-width: auto;
@@ -181,7 +207,7 @@
   <h1>RL Cheatsheet</h1>
 
   <p>
-    A one-page reference of all core RL loss functions used in language model post-training.
+    A one-page reference of core RL loss functions used in language model post-training.
     Covers policy gradient methods, reward modeling, and direct alignment.
     From the <a href="/c/06-policy-gradients.html">Reinforcement Learning</a> and <a href="/c/08-direct-alignment.html">Direct Alignment</a> chapters.
   </p>
@@ -211,7 +237,7 @@
       </tr>
       <tr>
         <td>
-          REINFORCE Leave One Out
+          REINFORCE Leave-One-Out
           <span class="subtitle">(RLOO)</span>
         </td>
         <td>\(\displaystyle -\;\frac{1}{K}\sum_{i=1}^{K}\sum_t \log \pi_\theta(a_{i,t}\mid s_{i,t})\!\left(R_i - \frac{1}{K\!-\!1}\sum_{j\neq i}R_j\right)\)</td>
@@ -221,7 +247,10 @@
           Proximal Policy Optimization
           <span class="subtitle">(PPO)</span>
         </td>
-        <td>\(\displaystyle -\;\frac{1}{T}\sum_{t=1}^{T}\min\!\left(\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)} A_t,\; \text{clip}\!\left(\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) A_t\right)\)</td>
+        <td>
+          \(\displaystyle -\;\frac{1}{T}\sum_{t=1}^{T}\min\!\left(\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)} A_t,\; \text{clip}\!\left(\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) A_t\right)\)
+          <p class="eq-note">PPO usually estimates \(A_t\) with GAE; other advantage estimates are possible.</p>
+        </td>
       </tr>
       <tr>
         <td>
@@ -322,8 +351,14 @@
       <tr>
         <td>\(r_\theta(y \mid x)\)</td>
         <td>Reward model score</td>
-        <td></td>
-        <td></td>
+        <td>\(T\)</td>
+        <td>Trajectory length / time horizon</td>
+      </tr>
+      <tr>
+        <td>\(K\)</td>
+        <td>Number of sampled completions</td>
+        <td>\(G\)</td>
+        <td>Group size for GRPO / GSPO</td>
       </tr>
     </table>
   </div>

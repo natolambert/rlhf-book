@@ -64,6 +64,7 @@ class Config(BaseModel):
     reward_model_device_id: int = 0
     output_dir: str = "./rejection_sampling/output"
     save_checkpoint: bool = False
+    wandb_entity: str | None = None
     wandb_project: str | None = None
     wandb_run_name: str | None = None
 

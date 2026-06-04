@@ -121,10 +121,12 @@ def init_wandb(
     Returns:
         True if wandb is enabled, False otherwise
     """
+    wandb_entity = os.environ.get("WANDB_ENTITY")
     wandb_project = os.environ.get("WANDB_PROJECT")
 
     if use_wandb and wandb_project:
         wandb.init(
+            entity=wandb_entity,
             project=wandb_project,
             name=os.environ.get("WANDB_RUN_NAME", default_run_name),
             config=config,

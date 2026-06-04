@@ -9,6 +9,7 @@ prev-chapter: "Synthetic Data"
 prev-url: "12-synthetic-data"
 page-title: Tool Use and Function Calling
 search-title: "Chapter 13: Tool Use and Function Calling"
+meta-description: "Tool use and function calling as post-training targets for building more capable language model products and agents."
 next-chapter: "Over-Optimization"
 next-url: "14-over-optimization"
 ---
@@ -69,7 +70,7 @@ print(str(compute_pi())[:52])
 
 This chapter provides an overview of the origins of tool-use in modern language models, its fundamentals and formatting, and current trade-offs in utilizing tools well in leading models.
 
-The exact origin of the term "tool use" is not clear, but the origins of the idea far predate the post ChatGPT world where RLHF proliferated.
+The exact origin of the term "tool use" is not clear, but the origins of the idea far predate the post-ChatGPT world where RLHF proliferated.
 Early examples circa 2015 attempted to build systems predating modern language models, such as Neural Programmer-Interpreters (NPI) [@reed2015neural], "a recurrent and compositional neural network that learns to represent and execute programs."
 As language models became more popular, many subfields were using integrations with external capabilities to boost performance. 
 To obtain information outside of just the weights many used retrieval augmented generation [@lewis2020retrieval] or web browsing [@nakano2021webgpt].
@@ -168,7 +169,7 @@ As with function calling, there are tags first for the code to execute (generate
 What is the 50th Fibonacci number? (Use the standard F_0=0, F_1=1 indexing.)</s>
 <|assistant|>
 <think>
-Okay, I will compute the 50-th Fibonacci number with a simple loop, then return the result.
+Okay, I will compute the 50th Fibonacci number with a simple loop, then return the result.
 
 <code>
 def fib(n):
@@ -185,7 +186,7 @@ fib(50)
 </output>
 </think>
 <answer>
-The 50-th Fibonacci number is 12 586 269 025.
+The 50th Fibonacci number is 12 586 269 025.
 </answer>
 ```
 
@@ -218,6 +219,9 @@ For example, ReAct [@yao2023react] showcased how actions and reasoning can be in
 > In this paper, we explore the use of LLMs to generate both reasoning traces and task-specific actions in an interleaved manner, allowing for greater synergy between the two: reasoning traces help the model induce, track, and update action plans as well as handle exceptions, while actions allow it to interface with and gather additional information from external sources such as knowledge bases or environments.
 
 With the solidification of tool-use capabilities and the take-off of reasoning models, multi-turn tool-use has grown into an exciting area of research [@wang2025ragenunderstandingselfevolutionllm].
+Training these multi-step behaviors with RL resembles classic reinforcement learning more than the per-sample RLHF loop: the agent interacts with an environment and its tools over a full trajectory before any reward is assigned, as shown in @fig:tool-use-rl.
+
+![Reinforcement learning for multi-step tool use. A prompt is sampled from the training data and the agent (policy $\pi_\theta$) interacts with the environment and its tools over a trajectory, alternating actions $a_t$ with observations $o_t$. The completed trajectory is graded or verified to produce a single reward $r_T$ at the end, which drives the policy update. Unlike the per-sample RLHF loop, the reward arrives only after a multi-step rollout -- closer to classic RL.](images/tool_use_rl_loop.png){#fig:tool-use-rl}
 
 ## Model Context Protocol
 

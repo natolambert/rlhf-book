@@ -1,4 +1,4 @@
-# Shared helpers: VRAM cleanup, cache-key hashing, GSM8k answer parsing.
+# Shared helpers: VRAM cleanup, cache-key hashing, GSM8K answer parsing.
 
 import gc
 import hashlib
@@ -153,7 +153,7 @@ def cache_key(cfg: Config) -> str:
 
 
 def format_gsm8k_gold(answer_field: str) -> str:
-    """GSM8k gold answers live after `####` at the end of the CoT."""
+    """GSM8K gold answers live after `####` at the end of the CoT."""
     gold = (
         answer_field.split("####", 1)[1].strip() if "####" in answer_field else answer_field.strip()
     )

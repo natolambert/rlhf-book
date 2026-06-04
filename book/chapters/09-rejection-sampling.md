@@ -9,6 +9,7 @@ prev-chapter: "Direct-Alignment Algorithms"
 prev-url: "08-direct-alignment"
 page-title: Rejection Sampling
 search-title: "Chapter 9: Rejection Sampling"
+meta-description: "Rejection sampling and best-of-n methods for improving post-trained language models with reward or preference signals."
 next-chapter: "The Nature of Preferences"
 next-url: "10-preferences"
 lectures:
@@ -93,7 +94,7 @@ To formalize the process of selecting the best completions based on our reward m
 
 The first potential selection function takes the max reward per prompt.
 
-$$S(R) = [\arg\max_{j} r_{1,j}, \arg\max_{j} r_{2,j}, ..., \arg\max_{j} r_{M,j}]$$ {#eq:rs_selection_per_prompt}
+$$S(R) = \left[\arg\max_{j} r_{1,j}, \arg\max_{j} r_{2,j}, ..., \arg\max_{j} r_{M,j}\right]$$ {#eq:rs_selection_per_prompt}
 
 This function $S$ returns a vector of indices, where each index corresponds to the column with the maximum reward for each row in $R$.
 We can then use these indices to select our chosen completions:
@@ -142,7 +143,7 @@ $$R = \begin{bmatrix}
 
 Using the argmax method, we select the best completion for each prompt:
 
-$$S(R) = [\arg\max_{j} r_{i,j} \text{ for } i \in [1,5]]$$ {#eq:rs_example_selection_formula}
+$$S(R) = \left[\arg\max_{j} r_{i,j} \text{ for } i \in [1,5]\right]$$ {#eq:rs_example_selection_formula}
 
 $$S(R) = [1, 2, 1, 3, 4]$$ {#eq:rs_example_selection_result}
 
@@ -244,3 +245,44 @@ Using the argmax method, we select the best completion for the prompt:
 $$S(R) = \arg\max_{j \in [1,N]} r_j$$ {#eq:selection_function}
 
 Using the top-K method with $K=1$ reduces to the same method, which is common practice.
+
+## Suggested Experiments
+
+The companion implementation in `code/rejection_sampling/` runs a complete GSM8K rejection-sampling pipeline: generate rollouts, score them with a reward model, select a training subset, fine-tune, and evaluate exact-match accuracy.
+The four configs are arranged as matched treatment/control pairs, so readers can ask whether the reward model is actually helping.
+
+1. **Build the rollout cache once.**
+
+   ```bash
+   cd code/
+   uv run python -m rejection_sampling.preprocess \
+       --config rejection_sampling/configs/top_per_prompt.yaml
+   ```
+
+   This generates and scores completions for the shared GSM8K slice.
+   Subsequent training configs reuse the cache as long as the generation and scoring settings stay unchanged.
+
+2. **Compare reward selection against random controls.**
+
+   ```bash
+   cd code/
+   uv run python -m rejection_sampling.train \
+       --config rejection_sampling/configs/top_per_prompt.yaml
+   uv run python -m rejection_sampling.train \
+       --config rejection_sampling/configs/random_per_prompt.yaml
+   uv run python -m rejection_sampling.train \
+       --config rejection_sampling/configs/top_k_overall.yaml
+   uv run python -m rejection_sampling.train \
+       --config rejection_sampling/configs/random_k_overall.yaml
+   ```
+
+   Read results in matched pairs: `top_per_prompt` versus `random_per_prompt`, and `top_k_overall` versus `random_k_overall`.
+   If the reward-selected run does not beat its random baseline, the reward model or sampled completions are not giving useful signal on that slice.
+
+3. **Vary how much choice the reward model gets.**
+   Copy one config and change `num_completions_per_prompt`, `temperature`, `top_p`, and `selection.top_k`.
+   More completions can improve the best available sample, but only if the reward model can separate good and bad answers.
+
+4. **Try a smaller policy model.**
+   Set `model_name` to a smaller compatible instruct model, reduce `max_train_samples`, and rerun the same matched pairs.
+   This makes the experiment cheaper and highlights whether rejection sampling is rescuing weak generations or merely selecting among already-good ones.

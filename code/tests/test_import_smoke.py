@@ -26,6 +26,10 @@ CORE_MODULES = [
     "direct_alignment.loss",
     "direct_alignment.profile_memory",
     "direct_alignment.train",
+    "instruction_tuning",
+    "instruction_tuning.config",
+    "instruction_tuning.train",
+    "instruction_tuning.utils",
     "policy_gradients",
     "policy_gradients.buffer",
     "policy_gradients.config",
@@ -48,6 +52,7 @@ CORE_MODULES = [
 
 CLI_MODULES = [
     "direct_alignment.train",
+    "instruction_tuning.train",
     "policy_gradients.train",
     "rejection_sampling.preprocess",
     "rejection_sampling.train",

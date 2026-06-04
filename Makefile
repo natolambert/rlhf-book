@@ -45,6 +45,7 @@ FILTER_ARGS = --filter pandoc-crossref
 ARGS = $(TOC) $(MATH_FORMULAS) $(METADATA_ARGS) $(FILTER_ARGS) $(DEBUG_ARGS) $(BIBLIOGRAPHY) $(DATE_ARG)
 EPUB_ARGS_BASE = $(TOC) $(EPUB_MATH_FORMULAS) $(METADATA_ARGS) $(FILTER_ARGS) $(DEBUG_ARGS) $(BIBLIOGRAPHY) $(DATE_ARG)
 KINDLE_ARGS_BASE = $(TOC) $(METADATA_ARGS) $(FILTER_ARGS) $(DEBUG_ARGS) $(BIBLIOGRAPHY) $(DATE_ARG) $(KINDLE_MATH_FILTER)
+HTML_JSONLD_FILTER = --lua-filter book/scripts/jsonld.lua
 	
 PANDOC_COMMAND = pandoc
 
@@ -52,7 +53,7 @@ PANDOC_COMMAND = pandoc
 
 DOCX_ARGS = --standalone --reference-doc book/templates/docx.docx
 EPUB_ARGS = --template book/templates/epub.html --epub-cover-image $(EPUB_COVER_IMAGE)
-HTML_ARGS = --template book/templates/html.html --standalone --to html5 --listings
+HTML_ARGS = $(HTML_JSONLD_FILTER) --template book/templates/html.html --standalone --to html5 --listings --wrap=none
 PDF_ARGS = --template book/templates/pdf.tex --pdf-engine pdflatex
 LATEX_ARGS = --template book/templates/pdf.tex --pdf-engine pdflatex
 NESTED_HTML_TEMPLATE = book/templates/chapter.html
@@ -66,7 +67,7 @@ JS_FILES = $(shell find book/templates -name '*.js')  # Restrict JS discovery to
 BASE_DEPENDENCIES = $(MAKEFILE) $(CHAPTERS) $(METADATA) $(IMAGES) $(TEMPLATES)
 DOCX_DEPENDENCIES = $(BASE_DEPENDENCIES)
 EPUB_DEPENDENCIES = $(BASE_DEPENDENCIES)
-HTML_DEPENDENCIES = $(BASE_DEPENDENCIES)
+HTML_DEPENDENCIES = $(BASE_DEPENDENCIES) book/scripts/jsonld.lua
 PDF_DEPENDENCIES = $(BASE_DEPENDENCIES)
 
 # Detected Operating System
@@ -111,7 +112,7 @@ $(info JS files found: $(JS_FILES))
 
 epub:	$(BUILD)/epub/$(OUTPUT_FILENAME).epub
 
-html:	nested_html $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html $(BUILD)/html/library.html $(BUILD)/html/course.html
+html:	nested_html $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html $(BUILD)/html/library.html $(BUILD)/html/course.html $(BUILD)/html/llms.txt $(BUILD)/html/llms-full.txt $(BUILD)/html/sitemap.xml $(BUILD)/html/robots.txt
 	
 pdf:	$(BUILD)/pdf/$(OUTPUT_FILENAME).pdf
 
@@ -172,6 +173,24 @@ $(BUILD)/html/course.html: book/templates/course.html $(FOOTER_PARTIAL)
 	$(MKDIR_CMD) $(BUILD)/html
 	$(INLINE_FOOTER) book/templates/course.html > $@
 
+LLMS_SOURCES = book/scripts/generate_llms.py $(CHAPTERS)
+SITEMAP_SOURCES = book/scripts/generate_sitemap.py book/scripts/generate_llms.py $(CHAPTERS) book/templates/course.html book/templates/library.html book/rl-cheatsheet/index.html $(wildcard teach/*/talk.md) $(wildcard teach/*/slides.md) $(wildcard teach/course/*.md)
+
+$(BUILD)/html/llms.txt: $(LLMS_SOURCES)
+	$(MKDIR_CMD) $(BUILD)/html
+	uv run python book/scripts/generate_llms.py --output-dir $(BUILD)/html
+
+$(BUILD)/html/llms-full.txt: $(BUILD)/html/llms.txt
+	@test -f $@ || uv run python book/scripts/generate_llms.py --output-dir $(BUILD)/html
+
+$(BUILD)/html/sitemap.xml: $(SITEMAP_SOURCES)
+	$(MKDIR_CMD) $(BUILD)/html
+	uv run python book/scripts/generate_sitemap.py --output $@
+
+$(BUILD)/html/robots.txt: book/robots.txt
+	$(MKDIR_CMD) $(BUILD)/html
+	cp book/robots.txt $@
+
 rl-cheatsheet: $(BUILD)/html/rl-cheatsheet/inside_cover_back.pdf
 
 $(BUILD)/html/rl-cheatsheet/inside_cover_back.pdf: book/rl-cheatsheet/inside_cover_back.tex book/rl-cheatsheet/index.html $(FOOTER_PARTIAL)
@@ -188,7 +207,7 @@ CHAPTER_HTMLS = $(patsubst book/chapters/%.md,$(NESTED_HTML_DIR)/%.html,$(CHAPTE
 # Rule to build each HTML file from each Markdown file
 $(NESTED_HTML_DIR)/%.html: book/chapters/%.md $(HTML_DEPENDENCIES)
 	$(MKDIR_CMD) $(NESTED_HTML_DIR)
-	$(PANDOC_COMMAND) $(ARGS) --template $(NESTED_HTML_TEMPLATE) --standalone --to html5 --resource-path=book -o $@ $< --mathjax
+	$(PANDOC_COMMAND) $(ARGS) $(HTML_JSONLD_FILTER) --metadata canonical-url="https://rlhfbook.com/c/$*" --template $(NESTED_HTML_TEMPLATE) --standalone --to html5 --wrap=none --resource-path=book -o $@ $< --mathjax
 	@echo "Built HTML for $<"
 
 # Aggregate target for nested chapter HTML files
@@ -253,7 +272,7 @@ $(BUILD)/pdf/$(OUTPUT_FILENAME).pdf:	$(PDF_DEPENDENCIES)
 # copy favicon.ico to build/ and into build/c/ with bash commands
 # also copy from build/pdf/book.pdf into build/html/
 # then copy images dir to build/html/chapters/
-files:
+files: $(BUILD)/html/sitemap.xml $(BUILD)/html/robots.txt $(BUILD)/html/llms.txt $(BUILD)/html/llms-full.txt
 	test -f book/favicon.ico || (echo "book/favicon.ico not found" && exit 1)
 	mkdir -p $(BUILD)/html/c/
 	cp book/favicon.ico $(BUILD)/html/ || echo "Failed to copy to $(BUILD)/html/"
@@ -302,6 +321,7 @@ COURSE_LECTURE_NAMES = $(basename $(notdir $(COURSE_LECTURE_SOURCES)))
 
 # Map from dir name to its .md source file (prefer talk.md over slides.md)
 teach_source = $(firstword $(wildcard teach/$(1)/talk.md teach/$(1)/slides.md))
+COLLOQUIUM = uv run --extra teach colloquium
 
 teach: $(foreach d,$(TEACH_DIRS),teach-$(d)) course-lectures
 
@@ -309,22 +329,22 @@ course-lectures: $(foreach l,$(COURSE_LECTURE_NAMES),course-lecture-$(l))
 
 teach-%:
 	@mkdir -p $(BUILD)/html/teach/$*
-	uv run colloquium build $(call teach_source,$*) -o $(BUILD)/html/teach/$*/
+	$(COLLOQUIUM) build $(call teach_source,$*) -o $(BUILD)/html/teach/$*/
 	@# Rename output to index.html so the directory URL works
 	@cd $(BUILD)/html/teach/$* && for f in *.html; do [ "$$f" != "index.html" ] && mv "$$f" index.html; done || true
 	@# Export PDF
-	uv run colloquium export $(call teach_source,$*) -o $(BUILD)/html/teach/$*/slides.pdf
+	$(COLLOQUIUM) export $(call teach_source,$*) -o $(BUILD)/html/teach/$*/slides.pdf
 	@# Copy talk assets (images) if present
 	@test -d teach/$*/assets && cp -r teach/$*/assets $(BUILD)/html/teach/$*/ || true
 	@echo "Built teach/$*"
 
 course-lecture-%:
 	@mkdir -p $(BUILD)/html/teach/course/$*
-	uv run colloquium build teach/course/$*.md -o $(BUILD)/html/teach/course/$*/
+	$(COLLOQUIUM) build teach/course/$*.md -o $(BUILD)/html/teach/course/$*/
 	@# Rename output to index.html so the directory URL works
 	@cd $(BUILD)/html/teach/course/$* && for f in *.html; do [ "$$f" != "index.html" ] && mv "$$f" index.html; done || true
 	@# Export PDF
-	uv run colloquium export teach/course/$*.md -o $(BUILD)/html/teach/course/$*/slides.pdf
+	$(COLLOQUIUM) export teach/course/$*.md -o $(BUILD)/html/teach/course/$*/slides.pdf
 	@# Copy course assets if present
 	@test -d teach/course/assets && cp -r teach/course/assets $(BUILD)/html/teach/course/$*/ || true
 	@echo "Built teach/course/$*"

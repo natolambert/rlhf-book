@@ -136,7 +136,9 @@ def get_steps_and_labels(example: Dict) -> tuple[List[str], List[int]]:
 
         # Fallback to other fields
         text = step.get("human_completion") or step.get("text") or step.get("completion")
-        rating = step.get("rating") or step.get("score")
+        rating = step.get("rating")
+        if rating is None or rating == "":
+            rating = step.get("score")
         if text and rating is not None:
             text = to_plain_text(text).strip()
             if text:

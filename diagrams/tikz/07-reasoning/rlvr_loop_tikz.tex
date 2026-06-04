@@ -1,0 +1,48 @@
+% RLVR (RL with Verifiable Rewards) feedback loop for LLMs.
+% Same loop as rlhf_loop, but the scorer is a verifiable reward function
+% (r = gamma if correct, else 0) instead of a learned reward model.
+% Member of the "RL feedback loop" family (see rl_loop, rlhf_loop, tooluse_rl).
+\documentclass{article}
+\usepackage[margin=0.4cm, paperwidth=18cm, paperheight=12cm]{geometry}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{lmodern}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{xcolor}
+\usetikzlibrary{positioning, arrows.meta, calc}
+\input{styles_rl_loop.tex}
+\pagestyle{empty}
+
+\begin{document}
+\begin{tikzpicture}
+
+% --- nodes ---
+% Taller scorer box to fit the cases formula; its bottom edge (y=3.05) matches
+% the rlhf_loop reward box, so the rest of the layout is unchanged.
+\node[agent]  (agent)  at (0,0)                          {Agent\\[4pt]{\LARGE$\pi_\theta(\cdot)$}};
+\node[data]   (data)   at (-5.8,0)                       {Training\\data};
+\node[scorer, minimum width=4.6cm, minimum height=2.6cm] (reward) at (0,4.35)
+    {Verifiable\\Reward\\[2pt]{\normalsize\mdseries$r=\begin{cases}\gamma & \text{if correct}\\[1pt] 0 & \text{otherwise}\end{cases}$}};
+
+% --- prompts: training data -> agent (label above arrow, caption below, same x) ---
+\draw[loop] (data.east) -- (agent.west);
+\node[edgelbl] at (-3.2,0.5)   {$s_i$};
+\node[sublbl]  at (-3.2,-0.52) {Prompts};
+
+% --- scalar reward: reward function -> agent, straight down; r_i then Scalar Reward ---
+\draw[loop] (0,3.05) -- (0,1.1);
+\node[edgelbl] at (0.5,1.95)  {$r_i$};
+\node[sublbl]  at (1.75,1.9)  {Scalar\\Reward};
+
+% --- completions: agent -> reward function; up the right, entering the box's
+% right side pointing left (vertical sits to the RIGHT of the captions) ---
+\draw[loop] (agent.east) -- (5.0,0) -- (5.0,4.35) -- (reward.east);
+\node[edgelbl] at (3.1,0.5)    {$a_i$};
+\node[sublbl]  at (3.35,-0.52) {Completions};
+
+% --- policy update caption (centered under the agent) ---
+\node[note]   at (0,-1.55) {$\theta_{t+1} = \theta_t + \alpha\,\nabla_\theta J(\pi_\theta)$};
+\node[sublbl] at (0,-2.05) {Policy Update};
+
+\end{tikzpicture}
+\end{document}

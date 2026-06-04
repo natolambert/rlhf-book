@@ -9,6 +9,7 @@ prev-chapter: "Introduction"
 prev-url: "01-introduction"
 page-title: A Tiny History of RLHF
 search-title: "Chapter 2: A Tiny History of RLHF"
+meta-description: "Key papers and historical milestones behind RLHF, reward modeling, preference learning, and post-training language models."
 next-chapter: "Training Overview"
 next-url: "03-training-overview"
 lectures:

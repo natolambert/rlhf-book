@@ -1,6 +1,33 @@
 # Chapter Reorganization Redirects (January 2026)
 # Note: #anchor fragments are preserved automatically (client-side)
 
+# Canonical extensionless URLs
+/index.html / 301
+/course.html /course 301
+/library.html /library 301
+/rl-cheatsheet/index.html /rl-cheatsheet 301
+/c/01-introduction.html /c/01-introduction 301
+/c/02-related-works.html /c/02-related-works 301
+/c/03-training-overview.html /c/03-training-overview 301
+/c/04-instruction-tuning.html /c/04-instruction-tuning 301
+/c/05-reward-models.html /c/05-reward-models 301
+/c/06-policy-gradients.html /c/06-policy-gradients 301
+/c/07-reasoning.html /c/07-reasoning 301
+/c/08-direct-alignment.html /c/08-direct-alignment 301
+/c/09-rejection-sampling.html /c/09-rejection-sampling 301
+/c/10-preferences.html /c/10-preferences 301
+/c/11-preference-data.html /c/11-preference-data 301
+/c/12-synthetic-data.html /c/12-synthetic-data 301
+/c/13-tools.html /c/13-tools 301
+/c/14-over-optimization.html /c/14-over-optimization 301
+/c/15-regularization.html /c/15-regularization 301
+/c/16-evaluation.html /c/16-evaluation 301
+/c/17-product.html /c/17-product 301
+/c/appendix-00-references.html /c/appendix-00-references 301
+/c/appendix-a-definitions.html /c/appendix-a-definitions 301
+/c/appendix-b-style.html /c/appendix-b-style 301
+/c/appendix-c-practical.html /c/appendix-c-practical 301
+
 # 03-setup -> appendix-a-definitions
 /c/03-setup /c/appendix-a-definitions 301
 /c/03-setup.html /c/appendix-a-definitions 301
