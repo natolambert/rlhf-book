@@ -718,10 +718,9 @@ Online RL instead takes steps based on freshly sampled batches and a per-sample 
 ---
 
 <!-- valign: top -->
-<!-- title: center -->
 ## A zoo of direct alignment algorithms
 
-Each variant tweaks the loss to fix a limitation — usually a one-line change. These two keep the reference model:
+Each variant tweaks the loss to fix a limitation — often a one-line change. I started calling all the variants Direct Alignment Algorithms (DAAs). Two to start:
 
 <!-- step -->
 
@@ -731,28 +730,34 @@ $$ \mathcal{L}_{\text{IPO}} = \mathbb{E}_{(x,y_w,y_l)}\!\left[\left(\log\tfrac{\
 
 <!-- step -->
 
-- **cDPO** [@rafailov2024direct] **/ ODPO** [@amini2024direct] — assume label noise / require a margin offset, so not all pairs count equally.
+- **cDPO** [@rafailov2024direct] (in the original DPO paper) — assumes the preference labels are noisy (flipped with probability $\varepsilon$) and softens the loss target accordingly.
+
+<!-- step -->
+
+- **ODPO** [@amini2024direct] — requires the chosen to beat the rejected by a margin offset, scaled by how strong the preference is.
 
 ---
 
 <!-- valign: top -->
-<!-- title: center -->
 ## A zoo of direct alignment algorithms
 
 Two more that **drop the reference model** entirely:
 
 <!-- step -->
 
-- **ORPO** [@hong2024reference] — adds an odds-ratio pull toward the chosen response, folded directly into the SFT loss.
+- **ORPO** [@hong2024reference] — adds an odds-ratio pull toward the chosen response, folded directly into the SFT loss. The odds ratio uses only $\pi_\theta$, which allows dropping the reference model.
+
+$$ \mathcal{L}_{\text{ORPO}} = \mathcal{L}_{\text{SFT}} - \lambda\,\mathbb{E}\!\left[\log \sigma\!\left(\log \tfrac{\text{odds}_\theta(y_w\mid x)}{\text{odds}_\theta(y_l\mid x)}\right)\right], \quad \text{odds}_\theta(y) = \tfrac{\pi_\theta(y)}{1-\pi_\theta(y)} $$
 
 <!-- step -->
 
-- **SimPO** [@meng2025simpo] — length-normalizes the reward into an average log-prob, with a target margin $\gamma$.
+- **SimPO** [@meng2025simpo] — length-normalizes the reward into an average log-prob, with a target margin $\gamma$. $\tfrac{1}{|y|}$ normalizes by length; $\gamma$ is a target margin; no $\pi_{\text{ref}}$.
 
 $$ \mathcal{L}_{\text{SimPO}} = -\mathbb{E}\!\left[\log \sigma\!\left(\tfrac{\beta}{|y_w|}\log \pi_\theta(y_w\mid x) - \tfrac{\beta}{|y_l|}\log \pi_\theta(y_l\mid x) - \gamma\right)\right] $$
 
-  - $\tfrac{1}{|y|}$ normalizes by length; $\gamma$ is a target margin; no $\pi_{\text{ref}}$.
-  - The algorithm matters **far less** than the base model and the data.
+<!-- step -->
+
+The algorithm matters **far less** than the base model and the data. Still, many papers continued to make minor algorithmic tweaks. Many more exist than were on these slides.
 
 ---
 
@@ -774,22 +779,21 @@ losses = -F.logsigmoid(beta * logits)
 
 ---
 
+<!-- animate: bullets -->
 ## DAAs work with synthetic preference data
 
-Direct alignment needs *feedback*, not necessarily *human* feedback — AI feedback works just as well.
+These algorithms needs *feedback* data, not necessarily *human* feedback data — AI feedback works just as well.
 
-- Most modern DPO uses preferences labeled by a strong model. **UltraFeedback** [@cui2023ultrafeedback] was the first prominent *open* synthetic preference dataset and helped kickstart the DPO era; Tülu 3 [@lambert2024t], SmolLM 3 [@bakouch2025smollm3], and Olmo 3 [@teamolmo2025olmo3] followed with larger synthetic-feedback recipes.
-- **On-policy data** (some completions from the model you are tuning) helps the contrastive loss optimize the right token space.
-- **Delta Learning** [@geng2025the]: later work argues the *gap* between chosen and rejected matters more than which models produced them (e.g. Qwen3-32B chosen vs Qwen3-0.6B rejected).
-
-Watch for judge biases — frontier labelers favor longer, self-similar outputs.
+- Most modern DPO uses preferences labeled by a strong model. **UltraFeedback** [@cui2023ultrafeedback] was the first prominent *open* synthetic preference dataset and helped kickstart the DPO era; Tülu 3 [@lambert2024t], SmolLM 2 [@allal2025smollm2], and others followed with larger synthetic-feedback recipes.
+- **On-policy data** (some completions from the model you are tuning) helps the contrastive loss optimize the right token space within a complex post-training recipe (studied this specifically in Tülu 3).
+- **Delta Learning** [@geng2025the]: later work argues the *gap* between chosen and rejected matters more than which models produced them (e.g. Qwen3-32B chosen vs Qwen3-0.6B rejected). Used this in Olmo 3!
 
 ---
 
 <!-- columns: 50/50 -->
 ## DPO vs. RL: offline vs. online
 
-**DPO and other DAAs are offline**
+**DPO and other DAAs**
 
 - Train on a fixed dataset collected ahead of time.
 - Simpler, more stable, fast to iterate on data.
@@ -801,9 +805,7 @@ Watch for judge biases — frontier labelers favor longer, self-similar outputs.
 
 - Generate fresh completions during training, score with a reward model.
 - Can explore new regions → often higher peak performance [@ivison2024unpacking] [@xu2024dpo] [@tajwar2024preference].
-- More compute, more moving parts (four models in memory).
-
-**Middle ground:** *online / iterative DPO* regenerates responses and relabels during training.
+- More compute, more moving parts (four models in memory), more engineering complexity.
 
 ---
 
@@ -822,7 +824,6 @@ Watch for judge biases — frontier labelers favor longer, self-similar outputs.
 - $\beta$ is often easier to tune than in online RL, but the best value depends on the model and the data.
 - Because data is offline, DPO solves for the policy implied by *that* dataset and *that* $\beta$ — a core difference from online policy-gradient methods.
 
-![When DPO was released it sparked a fierce debate about how to best do preference learning. Meme credit: Tom Goldstein.](assets/dpo_meme.jpeg)
 
 ---
 
