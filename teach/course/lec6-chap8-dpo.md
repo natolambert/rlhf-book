@@ -724,17 +724,17 @@ Each variant tweaks the loss to fix a limitation — often a one-line change. I 
 
 <!-- step -->
 
-- **IPO** [@azar2024general] — softens the preference probability away from Bradley-Terry to curb overfitting.
+- **Identity Preference Optimization (IPO)** [@azar2024general] — softens the preference probability away from Bradley-Terry to curb overfitting.
 
 $$ \mathcal{L}_{\text{IPO}} = \mathbb{E}_{(x,y_w,y_l)}\!\left[\left(\log\tfrac{\pi_\theta(y_w\mid x)\,\pi_{\text{ref}}(y_l\mid x)}{\pi_\theta(y_l\mid x)\,\pi_{\text{ref}}(y_w\mid x)} - \tfrac{1}{2\beta}\right)^2\right] $$
 
 <!-- step -->
 
-- **cDPO** [@rafailov2024direct] (in the original DPO paper) — assumes the preference labels are noisy (flipped with probability $\varepsilon$) and softens the loss target accordingly.
+- **Conservative DPO (cDPO)** [@rafailov2024direct] (in the original DPO paper) — assumes the preference labels are noisy (flipped with probability $\varepsilon$) and softens the loss target accordingly.
 
 <!-- step -->
 
-- **ODPO** [@amini2024direct] — requires the chosen to beat the rejected by a margin offset, scaled by how strong the preference is.
+- **Offset DPO (ODPO)** [@amini2024direct] — requires the chosen to beat the rejected by a margin offset, scaled by how strong the preference is.
 
 ---
 
@@ -745,13 +745,13 @@ Two more that **drop the reference model** entirely:
 
 <!-- step -->
 
-- **ORPO** [@hong2024reference] — adds an odds-ratio pull toward the chosen response, folded directly into the SFT loss. The odds ratio uses only $\pi_\theta$, which allows dropping the reference model.
+- **Odds Ratio Preference Optimization (ORPO)** [@hong2024reference] — adds an odds-ratio pull toward the chosen response, folded directly into the SFT loss. The odds ratio uses only $\pi_\theta$, which allows dropping the reference model.
 
 $$ \mathcal{L}_{\text{ORPO}} = \mathcal{L}_{\text{SFT}} - \lambda\,\mathbb{E}\!\left[\log \sigma\!\left(\log \tfrac{\text{odds}_\theta(y_w\mid x)}{\text{odds}_\theta(y_l\mid x)}\right)\right], \quad \text{odds}_\theta(y) = \tfrac{\pi_\theta(y)}{1-\pi_\theta(y)} $$
 
 <!-- step -->
 
-- **SimPO** [@meng2025simpo] — length-normalizes the reward into an average log-prob, with a target margin $\gamma$. $\tfrac{1}{|y|}$ normalizes by length; $\gamma$ is a target margin; no $\pi_{\text{ref}}$.
+- **Simple Preference Optimization (SimPO)** [@meng2025simpo] — length-normalizes the reward into an average log-prob, with a target margin $\gamma$. $\tfrac{1}{|y|}$ normalizes by length; $\gamma$ is a target margin; no $\pi_{\text{ref}}$.
 
 $$ \mathcal{L}_{\text{SimPO}} = -\mathbb{E}\!\left[\log \sigma\!\left(\tfrac{\beta}{|y_w|}\log \pi_\theta(y_w\mid x) - \tfrac{\beta}{|y_l|}\log \pi_\theta(y_l\mid x) - \gamma\right)\right] $$
 
@@ -809,45 +809,34 @@ These algorithms needs *feedback* data, not necessarily *human* feedback data �
 
 ---
 
-<!-- columns: 50/50 -->
-## Takeaways
+## Where does this leave us today?
 
-- DPO is **not** "just supervised fine-tuning on chosen responses." It optimizes the *same* KL-constrained RLHF objective — exactly, in closed form.
-- The optimal policy and the reward model are **two views of one object**; the log-ratio $\beta \log \frac{\pi_\theta}{\pi_{\text{ref}}}$ *is* the implicit reward.
-- The intractable partition function $Z(x)$ cancels because preferences are **pairwise**.
-
-|||
-
-**Why people care**
-
-- One loss, one model, no sampling loop — far simpler to implement than PPO.
-- $\beta$ is often easier to tune than in online RL, but the best value depends on the model and the data.
-- Because data is offline, DPO solves for the policy implied by *that* dataset and *that* $\beta$ — a core difference from online policy-gradient methods.
-
+If so many models have used DPO well and it's so simple, why does it seem like it comes up so infrequently -- especially at the frontier?
 
 ---
 
 <!-- columns: 52/48 -->
 ## Hypotheses for DPO's role today
 
-The frontier moved to RL with verifiable rewards for reasoning -- but DPO and DAAs did not disappear. They settled in as a **polish stage** inside larger pipelines.
-
-Why DPO persists:
-
-- Cheap, stable, offline -- fast iteration on preference, style, and safety data.
-- Slots in as one stage; frontier reasoning gains come from RLVR elsewhere.
-
-|||
-
-**Recent recipes still using a DAA**
-
+- **Olmo 3** (Nov 2025) / **SmolLM 3** (Jul 2025) -- used DPO over reasoning traces after SFT to boost preformance in a simple pipeline.
 - **NVIDIA Nemotron 3** (Dec 2025) -- *Mixed Preference Optimization*: DPO + Binary Classifier Optimization in one offline stage, over data scored by a generative reward model.
 - **LiquidAI LFM2** (Nov 2025) -- length-normalized DPO on semi-online data, before a final RLVR pass.
 
-*More thoughts to come.*
+|||
 
-DPO works well in wonky, distillation heavy recipes like Olmo -- e.g. a model with a spikier distribution
+---
 
-DPO still works in other settings, but most labs have the engineering resources to get around it
+<!-- columns: 52/48 -->
+## Hypotheses for DPO's role today
 
-DPO is a path to a good/solid model, but not to the best model
+- **Olmo 3** (Nov 2025) / **SmolLM 3** (Jul 2025) -- used DPO over reasoning traces after SFT to boost preformance in a simple pipeline.
+- **NVIDIA Nemotron 3** (Dec 2025) -- *Mixed Preference Optimization*: DPO + Binary Classifier Optimization in one offline stage, over data scored by a generative reward model.
+- **LiquidAI LFM2** (Nov 2025) -- length-normalized DPO on semi-online data, before a final RLVR pass.
+
+|||
+
+**How I see things:**
+
+- DPO works well in wonky, distillation heavy recipes like Olmo -- e.g. a model with a spikier distribution, with training data from many teacher models.
+- DPO still works in other settings, but most labs have the engineering resources to do other things with higher peak performance.
+- TLDR: DPO is a path to a good/solid model, but not to the best model. And DPO may do less in *cleaner* training recipes.
