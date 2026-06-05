@@ -395,6 +395,82 @@
       font-size: 0.82em;
       white-space: nowrap;
     }
+
+    /* ---- Dark-mode overrides (light rules above are unchanged) ---- */
+    :root[data-theme="dark"] .slides-toc a,
+    :root[data-theme="dark"] .talk-group li a {
+      color: var(--color-link);
+    }
+    :root[data-theme="dark"] .slides-toc .toc-meta,
+    :root[data-theme="dark"] .talk-group .when {
+      color: var(--color-text-faint);
+    }
+    :root[data-theme="dark"] .slides-section h2,
+    :root[data-theme="dark"] .other-lectures-section h2 {
+      border-bottom-color: var(--color-link);
+    }
+    :root[data-theme="dark"] .other-lectures-section h3,
+    :root[data-theme="dark"] .page-guide {
+      color: var(--color-heading);
+    }
+    :root[data-theme="dark"] .talk-entry,
+    :root[data-theme="dark"] .course-entry,
+    :root[data-theme="dark"] .welcome-video,
+    :root[data-theme="dark"] .resource-card {
+      border-color: var(--color-border);
+      background: var(--color-bg-section);
+      box-shadow: 0 4px 12px var(--color-shadow);
+    }
+    :root[data-theme="dark"] .talk-info {
+      border-top-color: var(--color-border);
+    }
+    :root[data-theme="dark"] .talk-info-left .meta,
+    :root[data-theme="dark"] .course-entry .meta,
+    :root[data-theme="dark"] .welcome-video .meta,
+    :root[data-theme="dark"] .resource-card .rc-meta {
+      color: var(--color-text-muted);
+    }
+    :root[data-theme="dark"] .course-entry.qa-entry {
+      background: var(--color-bg-subtle);
+    }
+    :root[data-theme="dark"] .talk-actions .tag,
+    :root[data-theme="dark"] .resource-card .rc-kind {
+      background: rgba(96, 165, 250, 0.14);
+      color: var(--color-link);
+    }
+    :root[data-theme="dark"] .btn {
+      border-color: var(--color-link);
+      background: rgba(96, 165, 250, 0.14);
+      color: var(--color-link);
+    }
+    :root[data-theme="dark"] .btn:hover {
+      background: rgba(96, 165, 250, 0.24);
+    }
+    :root[data-theme="dark"] .btn-watch,
+    :root[data-theme="dark"] .resource-card .rc-kind.course {
+      border-color: #f87171;
+      background: rgba(248, 113, 113, 0.14);
+      color: #f87171;
+    }
+    :root[data-theme="dark"] .btn-watch:hover {
+      background: rgba(248, 113, 113, 0.24);
+    }
+    :root[data-theme="dark"] .btn-source {
+      border-color: var(--color-border-strong);
+      background: rgba(148, 163, 184, 0.14);
+      color: var(--color-text);
+    }
+    :root[data-theme="dark"] .btn-source:hover {
+      background: rgba(148, 163, 184, 0.24);
+    }
+    :root[data-theme="dark"] .resource-card:hover {
+      border-color: var(--color-link);
+      background: rgba(96, 165, 250, 0.08);
+    }
+    :root[data-theme="dark"] .talk-group h4 {
+      color: var(--color-text-muted);
+      border-bottom-color: var(--color-border);
+    }
   </style>
 
   <!-- Privacy-friendly analytics by Plausible -->

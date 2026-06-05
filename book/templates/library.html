@@ -334,6 +334,60 @@
         grid-template-columns: 1fr;
       }
     }
+
+    /* ---- Dark-mode overrides (light rules above are unchanged) ---- */
+    :root[data-theme="dark"] .library-controls,
+    :root[data-theme="dark"] .completion-panel {
+      border-color: var(--color-border);
+      background: var(--color-bg-section);
+      box-shadow: 0 6px 18px var(--color-shadow);
+    }
+    :root[data-theme="dark"] .settings-header {
+      background: rgba(96, 165, 250, 0.08);
+      border-bottom-color: var(--color-border);
+    }
+    :root[data-theme="dark"] .settings-header:hover {
+      background: rgba(96, 165, 250, 0.14);
+    }
+    :root[data-theme="dark"] .settings-toggle,
+    :root[data-theme="dark"] .model-name a {
+      color: var(--color-link);
+    }
+    :root[data-theme="dark"] .button,
+    :root[data-theme="dark"] .filter-actions button,
+    :root[data-theme="dark"] .reroll-button,
+    :root[data-theme="dark"] .expand-toggle {
+      border-color: var(--color-link);
+      background: rgba(96, 165, 250, 0.14);
+      color: var(--color-link);
+    }
+    :root[data-theme="dark"] .filter-actions button:hover,
+    :root[data-theme="dark"] .reroll-button:hover,
+    :root[data-theme="dark"] .expand-toggle:hover {
+      background: rgba(96, 165, 250, 0.24);
+    }
+    :root[data-theme="dark"] .model-name,
+    :root[data-theme="dark"] .completion-meta {
+      color: var(--color-text-muted);
+    }
+    :root[data-theme="dark"] .completion-panel:focus-within {
+      box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.35);
+    }
+    :root[data-theme="dark"] .panel-divider {
+      background: linear-gradient(90deg, rgba(148, 163, 184, 0), rgba(148, 163, 184, 0.5), rgba(148, 163, 184, 0));
+    }
+    :root[data-theme="dark"] .copy-button {
+      background: var(--color-bg-elev);
+      border-color: var(--color-border-strong);
+      color: var(--color-text);
+    }
+    :root[data-theme="dark"] .copy-button:hover {
+      background: var(--color-border);
+    }
+    :root[data-theme="dark"] .empty-state {
+      border-color: var(--color-border);
+      background: rgba(96, 165, 250, 0.08);
+    }
   </style>
 
   <link rel="stylesheet" href="style.css" />
