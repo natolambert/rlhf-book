@@ -7,6 +7,17 @@
 \usetikzlibrary{positioning, arrows.meta, calc}
 \pagestyle{empty}
 
+% Dark-mode support (cf. tikz/_shared/styles_rlhf.tex). Compile with `\def\figdark{1}`
+% to recolor UNBOUNDED ink to the dark text color via \loose{}; boxes (filled,
+% with their in-box text) are untouched. Light builds are byte-for-byte identical.
+\providecommand{\figdark}{0}
+\ifnum\figdark=1
+  \definecolor{inkcolor}{HTML}{CBD5E1}
+  \newcommand{\loose}[1]{inkcolor}
+\else
+  \newcommand{\loose}[1]{#1}
+\fi
+
 \begin{document}
 
 \begin{tikzpicture}[
@@ -25,7 +36,7 @@
         ->,
         >=Stealth,
         line width=1.0pt,
-        color=black!50
+        color=\loose{black!50}
     },
     dasharrow/.style={
         ->,
@@ -36,7 +47,7 @@
     },
     lbl/.style={
         font=\normalsize,
-        color=black!70,
+        color=\loose{black!70},
         align=center
     },
     humanlbl/.style={
@@ -50,7 +61,7 @@
 \node[box] (rl)  at (0,   0)   {RL Algorithm};
 \node[box] (env) at (8, 0)   {Environment};
 \node[box] (rp)  at (4, 3.5) {Reward\\Predictor};
-\node[font=\small, color=black!60] at (4, 2.55) {(trained asynchronously)};
+\node[font=\small, color=\loose{black!60}] at (4, 2.55) {(trained asynchronously)};
 
 % RL <-> Environment arrows (action right, observation left — matching Christiano et al.)
 \draw[arrow] ([yshift=-3pt] rl.east)  -- node[lbl, below] {Action}

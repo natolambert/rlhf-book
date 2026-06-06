@@ -29,14 +29,14 @@
 
 % Prompts
 \node[plain, minimum width=1.6cm, minimum height=0.9cm] (prompts) at (1.5, 2.5) {$\{x_i\}$};
-\node[font=\tiny, text=black!60] at (1.5, 1.9) {prompts};
+\node[font=\tiny, text=\loose{black!60}] at (1.5, 1.9) {prompts};
 
 % Strong Model
 \node[frozen, minimum width=2.6cm, minimum height=1.1cm] (strong) at (5, 2.5) {Strong Model\\(e.g.\ GPT-4)};
 
 % Completions
 \node[plain, minimum width=1.6cm, minimum height=0.9cm] (completions) at (8.5, 2.5) {$\{y_i\}$};
-\node[font=\tiny, text=black!60] at (8.5, 1.9) {completions};
+\node[font=\tiny, text=\loose{black!60}] at (8.5, 1.9) {completions};
 
 % Synthetic Dataset
 \node[dataset, minimum width=3.2cm, minimum height=1.4cm] (dataset) at (12.5, 2.5) {Synthetic Dataset\\$\{(x_i, y_i)\}$};
@@ -47,7 +47,7 @@
 \draw[arrow] (completions) -- (dataset);
 
 % Note about usage - centered under dataset
-\node[font=\tiny\itshape, text=black!50, anchor=north] at (dataset.south) [yshift=-0.05cm] {used to train smaller models};
+\node[font=\tiny\itshape, text=\loose{black!50}, anchor=north] at (dataset.south) [yshift=-0.05cm] {used to train smaller models};
 
 \end{tikzpicture}
 \end{document}

@@ -27,11 +27,11 @@
 
 % Teacher logits
 \node[plain, minimum width=0.9cm] (zt) at (5.3, 1.8) {$z_T$};
-\node[font=\tiny, text=black!60] at (5.3, 1.35) {logits};
+\node[font=\tiny, text=\loose{black!60}] at (5.3, 1.35) {logits};
 
 % Student logits
 \node[plain, minimum width=0.9cm] (zs) at (5.3, -0.2) {$z_S$};
-\node[font=\tiny, text=black!60] at (5.3, -0.65) {logits};
+\node[font=\tiny, text=\loose{black!60}] at (5.3, -0.65) {logits};
 
 % Softmax with temperature (smaller boxes)
 \node[plain, minimum width=1.6cm, minimum height=0.7cm, font=\small] (softmax_t) at (7.3, 1.8) {$\text{softmax}(\frac{z}{\tau})$};
@@ -39,16 +39,16 @@
 
 % Probability outputs
 \node[plain, minimum width=0.9cm] (pt) at (9.5, 1.8) {$p_T$};
-\node[font=\tiny, text=black!60] at (9.5, 1.35) {soft probs};
+\node[font=\tiny, text=\loose{black!60}] at (9.5, 1.35) {soft probs};
 
 \node[plain, minimum width=0.9cm] (ps) at (9.5, -0.2) {$p_S$};
-\node[font=\tiny, text=black!60] at (9.5, -0.65) {soft probs};
+\node[font=\tiny, text=\loose{black!60}] at (9.5, -0.65) {soft probs};
 
 % KL Loss
 \node[plain, minimum width=1.2cm, minimum height=0.8cm] (loss) at (11.8, 0.8) {$\mathcal{L}_{KL}$};
 
 % Temperature note - moved near softmax boxes
-\node[font=\scriptsize\itshape, text=black!60] at (7.3, 0.8) {$\tau > 1$ softens};
+\node[font=\scriptsize\itshape, text=\loose{black!60}] at (7.3, 0.8) {$\tau > 1$ softens};
 
 % ============ ARROWS ============
 
@@ -89,13 +89,13 @@
 \node[font=\scriptsize\itshape, text=blue!70] at (8, -1.2) {$\nabla_{\theta_S} \mathcal{L}_{KL}$};
 
 % Legend - bottom left like RL diagrams (moved down slightly)
-\node[font=\scriptsize\itshape] (leg-key) at (1.2, -1.6) {Key};
+\node[font=\scriptsize\itshape, text=\loose{black}] (leg-key) at (1.2, -1.6) {Key};
 \node[legendbox, fill=blue!15, draw=blue!70] (leg-trained) at (2.2, -1.6) {Trained};
 \node[legendbox, fill=red!12, draw=red!50] (leg-frozen) at (3.5, -1.6) {Frozen};
-\node[draw=black!50, dotted, rounded corners=3pt, inner sep=6pt, fit=(leg-key)(leg-frozen)] {};
+\node[draw=\loose{black!50}, dotted, rounded corners=3pt, inner sep=6pt, fit=(leg-key)(leg-frozen)] {};
 
 % Equation - right side, same y as key
-\node[font=\small] at (10, -1.6) {$\mathcal{L}_{KL} = \sum_i p_T^{(i)} \log \frac{p_T^{(i)}}{p_S^{(i)}}$};
+\node[font=\small, text=\loose{black}] at (10, -1.6) {$\mathcal{L}_{KL} = \sum_i p_T^{(i)} \log \frac{p_T^{(i)}}{p_S^{(i)}}$};
 
 \end{tikzpicture}
 

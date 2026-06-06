@@ -14,6 +14,10 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch
 import matplotlib.patheffects as path_effects
 
+# Dark-mode ink for UNBOUNDED text (title, row labels) over the transparent
+# background. Matches the site's dark --color-text. Boxed text keeps its color.
+INK_DARK = "#cbd5e1"
+
 
 def draw_token_box(ax, x, y, w, h, text, style="normal", fontsize=9):
     """Draw a single token box with different styles."""
@@ -61,7 +65,8 @@ def draw_brace(ax, x1, x2, y, text="", color="#666666"):
             bbox=dict(facecolor='white', edgecolor='none', pad=1))
 
 
-def render_tool_use_diagram(output_path: Path, fmt: str = "png", dpi: int = 200):
+def render_tool_use_diagram(output_path: Path, fmt: str = "png", dpi: int = 200,
+                            transparent: bool = False):
     """
     Render tool use diagram with two-row layout.
     Top: prompt, Bottom: response with tool use.
@@ -102,19 +107,22 @@ def render_tool_use_diagram(output_path: Path, fmt: str = "png", dpi: int = 200)
     ax.text(
         x_offset + len(response_tokens) * box_w / 2, 4.1,
         "Tool Use: Interleaved Generation with External Execution",
-        ha="center", va="bottom", fontsize=14, fontweight="bold"
+        ha="center", va="bottom", fontsize=14, fontweight="bold",
+        color=INK_DARK if transparent else "black",
     )
 
     # === Draw prompt tokens (top row) ===
     ax.text(x_offset - 0.2, y_prompt + box_h/2, "Prompt",
-            ha="right", va="center", fontsize=10, fontweight="bold", color="#757575")
+            ha="right", va="center", fontsize=10, fontweight="bold",
+            color=INK_DARK if transparent else "#757575")
     for i, (tok, style) in enumerate(prompt_tokens):
         x = x_offset + i * box_w
         draw_token_box(ax, x, y_prompt, box_w - 0.1, box_h, tok, style=style)
 
     # Masked label
     ax.text(x_offset + len(prompt_tokens) * box_w + 0.2, y_prompt + box_h/2,
-            "(masked)", ha="left", va="center", fontsize=9, color="#9E9E9E", style="italic")
+            "(masked)", ha="left", va="center", fontsize=9,
+            color=INK_DARK if transparent else "#9E9E9E", style="italic")
 
     # === Draw response tokens (bottom row) ===
     ax.text(x_offset - 0.2, y_response + box_h/2, "Response",
@@ -159,7 +167,8 @@ def render_tool_use_diagram(output_path: Path, fmt: str = "png", dpi: int = 200)
     ax.set_aspect("equal")
     ax.axis("off")
 
-    fig.savefig(output_path, format=fmt, dpi=dpi, bbox_inches="tight", facecolor="white")
+    fig.savefig(output_path, format=fmt, dpi=dpi, bbox_inches="tight",
+                facecolor="none" if transparent else "white", transparent=transparent)
     plt.close(fig)
     print(f"Generated: {output_path}")
 
@@ -173,15 +182,23 @@ def main():
     )
     parser.add_argument("--format", choices=["png", "svg", "pdf"], default="png")
     parser.add_argument("--dpi", type=int, default=200)
+    parser.add_argument(
+        "--theme", choices=["light", "dark"], default="light",
+        help="light = white background; dark = transparent background for dark-mode pages",
+    )
     args = parser.parse_args()
+
+    dark = args.theme == "dark"
+    suffix = "-dark" if dark else ""
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     svg_dir = Path(__file__).parent.parent / "generated" / "svg"
     svg_dir.mkdir(parents=True, exist_ok=True)
 
-    render_tool_use_diagram(args.output_dir / f"tool_use_generation.{args.format}",
-                           fmt=args.format, dpi=args.dpi)
-    if args.format == "png":
+    render_tool_use_diagram(args.output_dir / f"tool_use_generation{suffix}.{args.format}",
+                           fmt=args.format, dpi=args.dpi, transparent=dark)
+    # SVG sidecar is for print/PDF (light only); skip it for the dark variant.
+    if args.format == "png" and not dark:
         render_tool_use_diagram(svg_dir / "tool_use_generation.svg", fmt="svg")
 
 

@@ -40,6 +40,29 @@
       }
     }
     updateButton(theme);
+    applyThemeImages(theme);
+  }
+
+  /*
+   * Theme-aware figures: any <img data-dark-src="..."> gets its source swapped
+   * to the dark asset in dark mode and back to its original (light) source
+   * otherwise. The light source stays in the HTML's `src`, so readers with
+   * JavaScript disabled simply keep the light figure -- a clean fallback.
+   */
+  function applyThemeImages(theme) {
+    var imgs = document.querySelectorAll('img[data-dark-src]');
+    for (var i = 0; i < imgs.length; i++) {
+      var img = imgs[i];
+      if (!img.getAttribute('data-light-src')) {
+        img.setAttribute('data-light-src', img.getAttribute('src'));
+      }
+      var next = theme === 'dark'
+        ? img.getAttribute('data-dark-src')
+        : img.getAttribute('data-light-src');
+      if (next && img.getAttribute('src') !== next) {
+        img.setAttribute('src', next);
+      }
+    }
   }
 
   function updateButton(theme) {
@@ -52,9 +75,14 @@
     btn.setAttribute('title', label);
   }
 
+  // Run as early as possible (this file is deferred, so the DOM is parsed):
+  // swap any theme-aware figures to match the theme set before first paint.
+  applyThemeImages(currentTheme());
+
   document.addEventListener('DOMContentLoaded', function () {
     var btn = document.getElementById('theme-toggle');
     updateButton(currentTheme());
+    applyThemeImages(currentTheme());
     if (btn) {
       btn.addEventListener('click', function () {
         setTheme(currentTheme() === 'dark' ? 'light' : 'dark', true);
