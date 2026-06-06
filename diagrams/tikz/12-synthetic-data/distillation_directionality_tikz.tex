@@ -61,7 +61,7 @@
 \draw[flow] (a1.east) -- (b1.west);
 \draw[flow] (a2.east) -- (b2.west);
 \draw[flow] (a3.east) -- (b3.west);
-\node[taglabel, fill=white, inner sep=1pt] at (2.9, \yB) {cross-entropy};
+\node[taglabel, fill=white, inner sep=1pt] at (2.9, \yB) {CE};
 
 \node[sub] at (2.9, 1.55) {teacher rollout is fixed;\\student matches it};
 
@@ -112,21 +112,22 @@
 \draw[gen] (g1) -- (g2);
 \draw[gen] (g2) -- (g3);
 
-% right column: TRAINING STEP -- same three tokens (slightly taller spacing); a short
-% orange hint sits on top of the middle token (inserted into its context = teacher view)
+% right column: TRAINING STEP -- three tokens aligned with Generation; the hint is
+% appended AFTER the last token, so all blue boxes line up and the KD line is horizontal
 \node[collabel, text=blue!70!black] at (18.6, 5.15) {Training step};
-\node[sbox] (r1) at (18.6, 4.55) {};
-\node[sbox] (r2) at (18.6, 3.25) {};
-\node[sbox] (r3) at (18.6, 2.10) {};
-\node[hintbox, minimum width=1.1cm, minimum height=0.32cm, font=\scriptsize, inner sep=1pt, anchor=south] (rh) at (r2.north) {hint};
-\draw[genfade] (r1) -- (rh);
+\node[sbox] (r1) at (18.6, \yA) {};
+\node[sbox] (r2) at (18.6, \yB) {};
+\node[sbox] (r3) at (18.6, \yC) {};
+\node[hintbox, minimum width=1.1cm, minimum height=0.34cm, font=\scriptsize, inner sep=1pt] (rh) at (18.6, 1.6) {hint};
+\draw[genfade] (r1) -- (r2);
 \draw[genfade] (r2) -- (r3);
+\draw[genfade] (r3) -- (rh);
 
-% localized reverse-KL KD: the no-hint generation is pulled toward the hint-conditioned step
+% reverse-KL between the aligned middle tokens -> perfectly horizontal
 \draw[kl] (g2.east) -- (r2.west);
-\node[taglabel, fill=white, inner sep=1pt] at (17.0, 3.3) {KD};
+\node[taglabel, fill=white, inner sep=1pt] at (17.0, \yB) {KL};
 
-\node[sub] at (17.0, 1.35) {the no-hint generation is trained toward the hint-conditioned\\training step, localized to the mistake (reverse KL)};
+\node[sub] at (17.0, 0.95) {the no-hint generation is trained toward\\the hint-conditioned training step (reverse KL)};
 
 \end{tikzpicture}
 
