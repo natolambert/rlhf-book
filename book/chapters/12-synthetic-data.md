@@ -246,7 +246,8 @@ The teacher log-prob gap acts like dense token-level feedback, providing potenti
 
 ### Modern OPD Variants
 
-This setup can even be expanded further, where multiple teacher models are used to teach one final model.
+This setup can even be expanded further, where multiple teacher models are used to teach one final model or additional information can be inserted into a generation to help a model identify a mistake.
+To begin, we will cover how to integrate multiple teachers into a single training run.
 These teachers can be specific specialist models, e.g. for a domain such as math or code, or a previous, intermediate training checkpoint.
 For each teacher, a contribution weight can be chosen per prompt or task type in the training batch, in order to create Multi-Teacher On-Policy Distillation (MOPD) [@mimo2025flash].
 For multiple teachers, let $\pi_{T_k}$ be teacher $k$ and let $w_k(s)$ be its prompt-dependent mixture weight (with $\sum_k w_k(s) = 1$) within the reverse KL loss:
@@ -262,7 +263,16 @@ Multiple groups can work on high-quality expert models, which can serve as teach
 
 There are many ways to combine OPD with other areas investigated in this book, such as using the reverse KL as an advantage in addition to other forms of advantage computation, such as GRPO's group-level normalization, which enables more complex reward shaping.
 KD methods are unusual among post-training methods because they often require the student and teacher to share a tokenizer, since the supervision can be per-token feedback from another LLM.
-Extended approaches, such as On-Policy Self-Distillation (OPSD), have a language model verify a completion either itself or with external tools to act as a teacher with privileged information, so it can train a weaker version of itself [@zhao2026selfdistilled].
+
+Extended approaches, such as On-Policy Self-Distillation (OPSD), have a language model verify a completion either itself or with external tools to act as a teacher with privileged information, so it can improve its own performance without an explicitly stronger teacher [@zhao2026selfdistilled].
+For example, Cursor used self-distillation in the form of targeted textual feedback on RL trajectories to train its Composer 2.5 coding model [@cursor2026composer25], finetuned from Kimi K2.5. 
+What follows is a simplified intuition, as in practice the setup below is combined with other loss functions such as code correctness.
+In this setup, Cursor has the model review RL trajectories with a judgement prompt that has a list of common bugs.
+When encountering a bug, the judgement model will modify the generated sequence within RL -- inserting a hint for the model to learn from in the future -- and then proceed with the distillation loss. 
+This entails a loop of first generating a completion with standard language model generation in RL, then running the judge model and optionally inserting a hint token, and finally generating the logprobs for the new completion to deploy the knowledge distillation loss.
+The hint in the token-space for the model is enough to help the model correct its own outputs, even when improving at the absolute frontier of performance (there's meaningful ongoing work on how to best structure and use these hints, often referred to as *privileged information* [@penaloza2026privileged]).
+
+This leaves on-policy distillation as a core post-training method, useful for combining multiple skills into one general model or pushing the frontier in a specialized deployment.
 
 ## AI Feedback
 
