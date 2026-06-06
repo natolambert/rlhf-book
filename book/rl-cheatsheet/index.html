@@ -91,11 +91,9 @@
       border-top: 1px solid #ccc;
     }
 
-    .equations-scroll {
+    .equations-wrap {
       width: 100%;
       max-width: 100%;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
       margin: 0 auto 1em;
     }
 
@@ -107,11 +105,11 @@
     }
 
     table.equations {
-      width: auto;
-      min-width: 58em;
-      margin: 0 auto 1em;
+      width: 100%;
+      margin: 0 auto;
       border-collapse: collapse;
       border: none;
+      table-layout: fixed;
     }
 
     table.equations td {
@@ -141,6 +139,28 @@
 
     table.equations td:last-child {
       font-size: 1.05em;
+      min-width: 0;
+    }
+
+    .equation-scroll {
+      max-width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 0.15em;
+    }
+
+    .equation-scroll::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    .equation-scroll::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+    }
+
+    .equation-scroll::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
     }
 
     table.equations .eq-note {
@@ -170,8 +190,8 @@
       }
 
       table.equations td:first-child {
-        width: auto;
-        min-width: auto;
+        width: 10rem;
+        min-width: 0;
       }
 
       .download-buttons {
@@ -242,25 +262,25 @@
     <h2>Core loss \(\mathcal{L}(\theta)\) per RL algorithm</h2>
     <hr>
 
-    <div class="equations-scroll" tabindex="0" aria-label="Core loss equations">
+    <div class="equations-wrap">
       <table class="equations">
         <tr>
           <td>Policy Gradient</td>
-          <td>\(\displaystyle -\;\mathbb{E}_\tau\!\left[\sum_{t=0}^{T} \log \pi_\theta(a_t\mid s_t)\, A^{\pi_\theta}(s_t, a_t)\right]\)</td>
+          <td><div class="equation-scroll" tabindex="0">\(\displaystyle -\;\mathbb{E}_\tau\!\left[\sum_{t=0}^{T} \log \pi_\theta(a_t\mid s_t)\, A^{\pi_\theta}(s_t, a_t)\right]\)</div></td>
         </tr>
         <tr>
           <td>
             REINFORCE
             <span class="subtitle">(REward Increment = Nonnegative Factor &times; Offset Reinforcement &times; Characteristic Eligibility)</span>
           </td>
-          <td>\(\displaystyle -\;\frac{1}{T}\sum_{t=1}^{T}\log \pi_\theta(a_t\mid s_t)\,(G_t - b(s_t))\)</td>
+          <td><div class="equation-scroll" tabindex="0">\(\displaystyle -\;\frac{1}{T}\sum_{t=1}^{T}\log \pi_\theta(a_t\mid s_t)\,(G_t - b(s_t))\)</div></td>
         </tr>
         <tr>
           <td>
             REINFORCE Leave-One-Out
             <span class="subtitle">(RLOO)</span>
           </td>
-          <td>\(\displaystyle -\;\frac{1}{K}\sum_{i=1}^{K}\sum_t \log \pi_\theta(a_{i,t}\mid s_{i,t})\!\left(R_i - \frac{1}{K\!-\!1}\sum_{j\neq i}R_j\right)\)</td>
+          <td><div class="equation-scroll" tabindex="0">\(\displaystyle -\;\frac{1}{K}\sum_{i=1}^{K}\sum_t \log \pi_\theta(a_{i,t}\mid s_{i,t})\!\left(R_i - \frac{1}{K\!-\!1}\sum_{j\neq i}R_j\right)\)</div></td>
         </tr>
         <tr>
           <td>
@@ -268,8 +288,10 @@
             <span class="subtitle">(PPO)</span>
           </td>
           <td>
-            \(\displaystyle -\;\frac{1}{T}\sum_{t=1}^{T}\min\!\left(\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)} A_t,\; \text{clip}\!\left(\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) A_t\right)\)
-            <p class="eq-note">PPO usually estimates \(A_t\) with GAE; other advantage estimates are possible.</p>
+            <div class="equation-scroll" tabindex="0">
+              \(\displaystyle -\;\frac{1}{T}\sum_{t=1}^{T}\min\!\left(\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)} A_t,\; \text{clip}\!\left(\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) A_t\right)\)
+              <p class="eq-note">PPO usually estimates \(A_t\) with GAE; other advantage estimates are possible.</p>
+            </div>
           </td>
         </tr>
         <tr>
@@ -278,8 +300,10 @@
             <span class="subtitle">(GRPO)</span>
           </td>
           <td>
-            \(\displaystyle -\;\frac{1}{G}\sum_{i=1}^{G}\frac{1}{|a_i|}\sum_{t=1}^{|a_i|}\min\!\left(\frac{\pi_\theta(a_{i,t}\mid s_{i,t})}{\pi_{\theta_{\text{old}}}(a_{i,t}\mid s_{i,t})} \hat{A}_i,\; \text{clip}\!\left(\frac{\pi_\theta(a_{i,t}\mid s_{i,t})}{\pi_{\theta_{\text{old}}}(a_{i,t}\mid s_{i,t})},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) \hat{A}_i\right)\)
-            <p class="eq-note">where \(\hat{A}_i = \dfrac{r_i - \overline{r}}{\text{std}(r)}\)</p>
+            <div class="equation-scroll" tabindex="0">
+              \(\displaystyle -\;\frac{1}{G}\sum_{i=1}^{G}\frac{1}{|a_i|}\sum_{t=1}^{|a_i|}\min\!\left(\frac{\pi_\theta(a_{i,t}\mid s_{i,t})}{\pi_{\theta_{\text{old}}}(a_{i,t}\mid s_{i,t})} \hat{A}_i,\; \text{clip}\!\left(\frac{\pi_\theta(a_{i,t}\mid s_{i,t})}{\pi_{\theta_{\text{old}}}(a_{i,t}\mid s_{i,t})},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) \hat{A}_i\right)\)
+              <p class="eq-note">where \(\hat{A}_i = \dfrac{r_i - \overline{r}}{\text{std}(r)}\)</p>
+            </div>
           </td>
         </tr>
         <tr>
@@ -287,7 +311,7 @@
             Group Sequence Policy<br>Optimization
             <span class="subtitle">(GSPO)</span>
           </td>
-          <td>\(\displaystyle -\;\frac{1}{G}\sum_{i=1}^{G}\min\!\left(\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)}\right)^{\!\frac{1}{|a_i|}} A_i,\; \text{clip}\!\left(\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)}\right)^{\!\frac{1}{|a_i|}},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) A_i\right)\)</td>
+          <td><div class="equation-scroll" tabindex="0">\(\displaystyle -\;\frac{1}{G}\sum_{i=1}^{G}\min\!\left(\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)}\right)^{\!\frac{1}{|a_i|}} A_i,\; \text{clip}\!\left(\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)}\right)^{\!\frac{1}{|a_i|}},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) A_i\right)\)</div></td>
         </tr>
         <tr>
           <td>
@@ -295,8 +319,10 @@
             <span class="subtitle">(CISPO)</span>
           </td>
           <td>
-            \(\displaystyle -\;\frac{1}{\sum_i |a_i|}\sum_{i=1}^{K}\sum_{t=1}^{|a_i|} \text{sg}\!\Big(\text{clip}\big(\tfrac{\pi_\theta(a_{i,t}\mid s)}{\pi_{\theta_{\text{old}}}(a_{i,t}\mid s)},\, 1\!-\!\varepsilon_{\text{low}},\, 1\!+\!\varepsilon_{\text{high}}\big)\Big)\, A_{i,t} \log \pi_\theta(a_{i,t}\mid s)\)
-            <p class="eq-note">where \(\text{sg}(\cdot)\) = stop gradient</p>
+            <div class="equation-scroll" tabindex="0">
+              \(\displaystyle -\;\frac{1}{\sum_i |a_i|}\sum_{i=1}^{K}\sum_{t=1}^{|a_i|} \text{sg}\!\Big(\text{clip}\big(\tfrac{\pi_\theta(a_{i,t}\mid s)}{\pi_{\theta_{\text{old}}}(a_{i,t}\mid s)},\, 1\!-\!\varepsilon_{\text{low}},\, 1\!+\!\varepsilon_{\text{high}}\big)\Big)\, A_{i,t} \log \pi_\theta(a_{i,t}\mid s)\)
+              <p class="eq-note">where \(\text{sg}(\cdot)\) = stop gradient</p>
+            </div>
           </td>
         </tr>
       </table>
@@ -307,24 +333,24 @@
     <h2>Other core equations</h2>
     <hr>
 
-    <div class="equations-scroll" tabindex="0" aria-label="Other core equations">
+    <div class="equations-wrap">
       <table class="equations">
         <tr>
           <td>RLHF Objective</td>
-          <td>\(\displaystyle J(\theta) = \max_{\pi}\; \mathbb{E}_{x \sim \mathcal{D}}\,\mathbb{E}_{y \sim \pi(y|x)} \Big[r_\theta(x, y)\Big] - \beta\, \mathcal{D}_{\text{KL}}\!\Big(\pi(y|x) \,\|\, \pi_{\text{ref}}(y|x)\Big)\)</td>
+          <td><div class="equation-scroll" tabindex="0">\(\displaystyle J(\theta) = \max_{\pi}\; \mathbb{E}_{x \sim \mathcal{D}}\,\mathbb{E}_{y \sim \pi(y|x)} \Big[r_\theta(x, y)\Big] - \beta\, \mathcal{D}_{\text{KL}}\!\Big(\pi(y|x) \,\|\, \pi_{\text{ref}}(y|x)\Big)\)</div></td>
         </tr>
         <tr>
           <td>
             Bradley&ndash;Terry<br>Reward Model
           </td>
-          <td>\(\displaystyle \mathcal{L}(\theta) = -\log \sigma\!\Big( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) \Big)\)</td>
+          <td><div class="equation-scroll" tabindex="0">\(\displaystyle \mathcal{L}(\theta) = -\log \sigma\!\Big( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) \Big)\)</div></td>
         </tr>
         <tr>
           <td>
             Direct Preference<br>Optimization
             <span class="subtitle">(DPO)</span>
           </td>
-          <td>\(\displaystyle \mathcal{L}(\theta) = -\;\mathbb{E}\!\left[ \log \sigma\!\left( \beta \log \frac{\pi_{\theta}(y_c \mid x)}{\pi_{\text{ref}}(y_c \mid x)} - \beta \log \frac{\pi_{\theta}(y_r \mid x)}{\pi_{\text{ref}}(y_r \mid x)} \right) \right]\)</td>
+          <td><div class="equation-scroll" tabindex="0">\(\displaystyle \mathcal{L}(\theta) = -\;\mathbb{E}\!\left[ \log \sigma\!\left( \beta \log \frac{\pi_{\theta}(y_c \mid x)}{\pi_{\text{ref}}(y_c \mid x)} - \beta \log \frac{\pi_{\theta}(y_r \mid x)}{\pi_{\text{ref}}(y_r \mid x)} \right) \right]\)</div></td>
         </tr>
       </table>
     </div>
