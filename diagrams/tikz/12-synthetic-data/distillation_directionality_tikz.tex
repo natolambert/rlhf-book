@@ -2,12 +2,14 @@
 % Compares, left to right, WHO generates the rollout and WHERE supervision flows:
 %   Seq KD : teacher generates offline; cross-entropy pushes the student to match
 %   OPD    : student generates on-policy (RL); teacher supervises per token (reverse KL)
-%   OPSD   : student generates; a judge inserts textual feedback (a hint) AFTER inference,
-%            then a KD loss pulls the student toward its own hinted continuation
+%   OPSD   : ONE model in two roles -- a teacher conditioned on an inserted hint
+%            (privileged info added to its context) and a student with the original
+%            context; a localized reverse-KL pulls the student (no hint) toward the
+%            hinted teacher, so it learns to behave well without the hint at inference.
 % Mockup for iteration -- not pixel perfect.
 
 \documentclass{article}
-\usepackage[margin=0.3cm, paperwidth=30cm, paperheight=12cm]{geometry}
+\usepackage[margin=0.3cm, paperwidth=24cm, paperheight=11cm]{geometry}
 \usepackage{tikz}
 \usepackage{amsmath}
 \usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, calc, backgrounds}
@@ -18,9 +20,10 @@
 
 \begin{tikzpicture}[
   seqbox/.style={rectangle, rounded corners=2pt, minimum width=1.5cm, minimum height=0.6cm, font=\footnotesize, align=center},
-  tbox/.style={seqbox, draw=red!55, fill=red!12},            % teacher (frozen)
+  tbox/.style={seqbox, draw=red!55, fill=red!12},            % teacher (separate, frozen)
   sbox/.style={seqbox, draw=blue!70, fill=blue!16},          % student (trained)
-  hintbox/.style={seqbox, draw=orange!80!black, fill=orange!22, minimum width=1.5cm},
+  selfbox/.style={seqbox, draw=blue!70, dashed, fill=blue!8},% same model, hint-conditioned
+  hintbox/.style={seqbox, draw=orange!80!black, fill=orange!22, minimum width=1.0cm},
   gen/.style={->, >=Stealth, semithick, draw=black!80},       % active generation
   genfade/.style={->, >=Stealth, semithick, draw=black!30},   % passive / scored column
   flow/.style={->, >=Stealth, semithick, draw=black!75},
@@ -32,7 +35,6 @@
 ]
 
 % row y-coordinates (shared across panels)
-\def\ry{{4.2, 3.35, 2.5}}
 \def\yA{4.2} \def\yB{3.35} \def\yC{2.5}
 
 % ===================================================================== PANEL 1: Sequence KD
@@ -81,7 +83,7 @@
 \draw[gen] (c1) -- (c2);
 \draw[gen] (c2) -- (c3);
 
-% teacher scores each visited state (faded), right column
+% separate teacher scores each visited state (faded), right column
 \node[tbox] (d1) at (11.4, \yA) {};
 \node[tbox] (d2) at (11.4, \yB) {};
 \node[tbox] (d3) at (11.4, \yC) {};
@@ -100,38 +102,28 @@
 \draw[dashed, black!35] (13.55, 1.2) -- (13.55, 6.6);
 
 % ===================================================================== PANEL 3: OPSD
-\node[paneltitle] at (18.9, 6.4) {On-policy self-distillation};
-\node[sub] at (18.9, 5.85) {student generates; hint inserted in the rollout};
+\node[paneltitle] at (17.4, 6.4) {On-policy self-distillation};
+\node[sub] at (17.4, 5.85) {one model: teacher sees the hint, student does not};
 
-\node[collabel, text=blue!70!black] at (18.9, 5.15) {Student (RL)};
+% student rollout (NO hint) -- single column on the left of the panel
+\node[collabel, text=blue!70!black] at (15.9, 5.15) {Student (no hint)};
+\node[sbox] (e1) at (15.9, \yA) {};
+\node[sbox] (e2) at (15.9, \yB) {};
+\node[sbox] (e3) at (15.9, \yC) {};
+\draw[gen] (e1) -- (e2);
+\draw[gen] (e2) -- (e3);
 
-% student rollout with the hint inserted mid-sequence -- the hint lives INSIDE inference
-\node[sbox]    (e1)   at (18.9, \yA) {};
-\node[hintbox] (hint) at (18.9, \yB) {hint};
-\node[sbox]    (e3)   at (18.9, \yC) {};
-\draw[gen] (e1) -- (hint);
-\draw[gen] (hint) -- (e3);
+% same model, but with a hint inserted into its context = the teacher (privileged info)
+\node[hintbox] (hint) at (18.3, 4.5) {hint};
+\node[selfbox, minimum width=1.9cm, minimum height=0.9cm, align=center] (teach) at (18.3, \yB) {Teacher\\\scriptsize(self\,+\,hint)};
+\draw[feedbackarrow, draw=orange!80!black] (hint) -- (teach);
+\node[sub, text=orange!75!black] at (19.85, 4.5) {into\\context};
 
-% judge (same model + privileged info) inserts the hint after reviewing the rollout
-\node[sbox, draw=blue!70, fill=blue!8, minimum width=2.1cm, minimum height=1.0cm, align=center] (judge) at (15.2, \yB) {Judge\\\scriptsize(text feedback)};
-\draw[feedbackarrow, draw=orange!80!black] (judge.east) -- (hint.west);
-\node[taglabel, text=orange!75!black, fill=white, inner sep=1pt] at (17.2, \yB) {insert hint};
+% localized reverse-KL: student (no hint) pulled toward the hinted teacher AT the mistake
+\draw[kl] (e2.east) -- (teach.west);
+\node[taglabel, fill=white, inner sep=1pt] at (17.05, \yB) {KD};
 
-% KD loss pulls the student toward its own hinted continuation (right side, clear of judge)
-\draw[flow, draw=blue!70, dashed] (e3.east) to[out=0, in=0, looseness=1.7] (e1.east);
-\node[taglabel, text=blue!70!black] at (20.5, \yB) {KD loss};
-
-\node[sub] at (18.9, 1.55) {the hint becomes part of the rollout;\\the student takes a KD loss toward it};
-
-% ===================================================================== shared footer
-% legend
-\node[font=\scriptsize\itshape] (lk) at (0.9, 0.5) {Key};
-\node[legendbox, minimum width=2.7cm, fill=blue!16, draw=blue!70] (lt) at (2.95, 0.5) {Student (trained)};
-\node[legendbox, minimum width=2.7cm, fill=red!12, draw=red!55] (lf) at (5.85, 0.5) {Teacher (frozen)};
-\node[legendbox, minimum width=2.4cm, fill=orange!22, draw=orange!80!black] (lh) at (8.55, 0.5) {Inserted hint};
-\node[draw=black!40, dotted, rounded corners=3pt, inner sep=5pt, fit=(lk)(lh)] {};
-
-% (the "left -> right" explanation lives in the chapter/talk figure caption, not the image)
+\node[sub] at (17.4, 1.5) {student (no hint) matches the hint-conditioned\\teacher, localized to the mistake (reverse KL)};
 
 \end{tikzpicture}
 
