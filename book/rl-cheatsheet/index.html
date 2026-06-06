@@ -42,6 +42,14 @@
       text-align: center;
     }
 
+    html.rl-cheatsheet-page {
+      overflow-x: auto;
+    }
+
+    html.rl-cheatsheet-page body {
+      overflow-x: visible;
+    }
+
     .cheatsheet-section {
       width: min(92vw, 88rem);
       max-width: none;
@@ -105,11 +113,11 @@
     }
 
     table.equations {
-      width: 100%;
-      margin: 0 auto;
+      width: auto;
+      min-width: 58em;
+      margin: 0 auto 1em;
       border-collapse: collapse;
       border: none;
-      table-layout: fixed;
     }
 
     table.equations td {
@@ -139,28 +147,10 @@
 
     table.equations td:last-child {
       font-size: 1.05em;
-      min-width: 0;
     }
 
     .equation-scroll {
-      max-width: 100%;
-      overflow-x: auto;
-      overflow-y: hidden;
-      -webkit-overflow-scrolling: touch;
-      padding-bottom: 0.15em;
-    }
-
-    .equation-scroll::-webkit-scrollbar {
-      height: 8px;
-    }
-
-    .equation-scroll::-webkit-scrollbar-thumb {
-      background-color: rgba(0, 0, 0, 0.2);
-      border-radius: 4px;
-    }
-
-    .equation-scroll::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.05);
+      display: contents;
     }
 
     table.equations .eq-note {
@@ -181,6 +171,14 @@
     }
 
     @media (max-width: 720px) {
+      html.rl-cheatsheet-page {
+        overflow-x: hidden;
+      }
+
+      html.rl-cheatsheet-page body {
+        overflow-x: hidden;
+      }
+
       body {
         max-width: 100%;
       }
@@ -189,9 +187,46 @@
         align-items: flex-start;
       }
 
+      table.equations {
+        width: 100%;
+        min-width: 0;
+        table-layout: fixed;
+      }
+
       table.equations td:first-child {
         width: 10rem;
         min-width: 0;
+      }
+
+      table.equations td:last-child {
+        min-width: 0;
+      }
+
+      .equation-scroll {
+        display: block;
+        max-width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 0.15em;
+        white-space: nowrap;
+      }
+
+      .equation-scroll .eq-note {
+        white-space: normal;
+      }
+
+      .equation-scroll::-webkit-scrollbar {
+        height: 8px;
+      }
+
+      .equation-scroll::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 4px;
+      }
+
+      .equation-scroll::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.05);
       }
 
       .download-buttons {
