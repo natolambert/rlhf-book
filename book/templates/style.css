@@ -936,9 +936,3 @@ thead {
         display: none !important;
     }
 }
-
-/* The footer GitHub mark is a dark PNG; invert it so it stays visible on a
-   dark background. */
-:root[data-theme="dark"] footer img[alt="GitHub"] {
-    filter: invert(1);
-}
