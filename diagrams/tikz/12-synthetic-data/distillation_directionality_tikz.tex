@@ -100,32 +100,28 @@
 \draw[dashed, black!35] (13.55, 1.2) -- (13.55, 6.6);
 
 % ===================================================================== PANEL 3: OPSD
-\node[paneltitle] at (18.7, 6.4) {On-policy self-distillation};
-\node[sub] at (18.7, 5.85) {student generates, then text feedback};
+\node[paneltitle] at (18.9, 6.4) {On-policy self-distillation};
+\node[sub] at (18.9, 5.85) {student generates; hint inserted in the rollout};
 
 \node[collabel, text=blue!70!black] at (18.9, 5.15) {Student (RL)};
 
-% student generates on-policy (solid downward)
-\node[sbox] (e1) at (18.9, \yA) {};
-\node[sbox] (e2) at (18.9, \yB) {};
-\node[sbox] (e3) at (18.9, \yC) {};
-\draw[gen] (e1) -- (e2);
-\draw[gen] (e2) -- (e3);
+% student rollout with the hint inserted mid-sequence -- the hint lives INSIDE inference
+\node[sbox]    (e1)   at (18.9, \yA) {};
+\node[hintbox] (hint) at (18.9, \yB) {hint};
+\node[sbox]    (e3)   at (18.9, \yC) {};
+\draw[gen] (e1) -- (hint);
+\draw[gen] (hint) -- (e3);
 
-% judge / text feedback node (same model, with privileged info) -- to the left
-\node[sbox, draw=blue!70, fill=blue!8, minimum width=2.1cm, minimum height=1.0cm, align=center] (judge) at (15.7, 3.05) {Judge\\\scriptsize(text feedback)};
+% judge (same model + privileged info) inserts the hint after reviewing the rollout
+\node[sbox, draw=blue!70, fill=blue!8, minimum width=2.1cm, minimum height=1.0cm, align=center] (judge) at (15.2, \yB) {Judge\\\scriptsize(text feedback)};
+\draw[feedbackarrow, draw=orange!80!black] (judge.east) -- (hint.west);
+\node[taglabel, text=orange!75!black, fill=white, inner sep=1pt] at (17.2, \yB) {insert hint};
 
-% the rollout continues into an inserted hint token (token-space feedback)
-\node[hintbox] (hint) at (18.9, 1.55) {hint};
-\draw[genfade] (e3) -- (hint);
+% KD loss pulls the student toward its own hinted continuation (right side, clear of judge)
+\draw[flow, draw=blue!70, dashed] (e3.east) to[out=0, in=0, looseness=1.7] (e1.east);
+\node[taglabel, text=blue!70!black] at (20.5, \yB) {KD loss};
 
-% AFTER inference: judge reviews the rollout and inserts the hint
-\draw[feedbackarrow, draw=orange!80!black] (judge.east) to[out=0, in=180] (hint.west);
-\node[sub, text=orange!75!black] at (16.7, 2.05) {insert hint\\\emph{after} inference};
-
-% KD loss pulls the student toward its own hinted continuation
-\draw[flow, draw=blue!70, dashed] (hint.east) to[out=0, in=-25, looseness=1.0] (e2.east);
-\node[taglabel, text=blue!70!black, fill=white, inner sep=1pt] at (21.0, 2.6) {KD loss};
+\node[sub] at (18.9, 1.55) {the hint becomes part of the rollout;\\the student takes a KD loss toward it};
 
 % ===================================================================== shared footer
 % legend
@@ -135,9 +131,7 @@
 \node[legendbox, minimum width=2.4cm, fill=orange!22, draw=orange!80!black] (lh) at (8.55, 0.5) {Inserted hint};
 \node[draw=black!40, dotted, rounded corners=3pt, inner sep=5pt, fit=(lk)(lh)] {};
 
-% takeaway
-\node[font=\small, text=black!78, align=center, text width=17cm] at (20.5, 0.5)
-  {Left $\rightarrow$ right: the rollout's source shifts \emph{teacher} (offline) $\rightarrow$ \emph{student} (on-policy) $\rightarrow$ \emph{student supervising itself} with inserted feedback.};
+% (the "left -> right" explanation lives in the chapter/talk figure caption, not the image)
 
 \end{tikzpicture}
 
