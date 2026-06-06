@@ -102,7 +102,7 @@
 
 % ===================================================================== PANEL 3: OPSD
 \node[paneltitle] at (17.0, 6.4) {On-policy self-distillation};
-\node[sub] at (17.0, 5.85) {same model: generation has no hint; the training step inserts hints};
+\node[sub] at (17.0, 5.85) {Privileged information creates the teacher trajectory};
 
 % left column: GENERATION -- the on-policy rollout, no hint
 \node[collabel, text=blue!70!black] at (15.4, 5.15) {Generation};
@@ -112,22 +112,21 @@
 \draw[gen] (g1) -- (g2);
 \draw[gen] (g2) -- (g3);
 
-% right column: TRAINING STEP -- top two tokens aligned with Generation (KL stays
-% horizontal); the hint is inserted just before the last token, where it takes effect
-\node[collabel, text=blue!70!black] at (18.6, 5.15) {Training step};
+% right column: SAME MODEL with added context (both blue). Top two tokens aligned with
+% Generation (KL stays horizontal); the hint sits directly on top of the last token (no arrow).
+\node[collabel, text=blue!70!black] at (18.6, 5.15) {+ Added Context};
 \node[sbox] (r1) at (18.6, \yA) {};
 \node[sbox] (r2) at (18.6, \yB) {};
-\node[hintbox, minimum width=1.1cm, minimum height=0.34cm, font=\scriptsize, inner sep=1pt] (rh) at (18.6, 2.4) {hint};
-\node[sbox] (r3) at (18.6, 1.7) {};
+\node[sbox] (r3) at (18.6, 1.95) {};
+\node[hintbox, minimum width=1.1cm, minimum height=0.34cm, font=\scriptsize, inner sep=1pt, anchor=south] (rh) at (r3.north) {hint};
 \draw[genfade] (r1) -- (r2);
 \draw[genfade] (r2) -- (rh);
-\draw[genfade] (rh) -- (r3);
 
 % reverse-KL between the aligned middle tokens -> perfectly horizontal
 \draw[kl] (g2.east) -- (r2.west);
 \node[taglabel, fill=white, inner sep=1pt] at (17.0, \yB) {KL};
 
-\node[sub] at (17.0, 0.95) {the no-hint generation is trained toward\\the hint-conditioned training step (reverse KL)};
+\node[sub] at (17.0, 1.05) {On-policy distillation loss with no separate teacher};
 
 \end{tikzpicture}
 
