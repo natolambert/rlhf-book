@@ -22,7 +22,6 @@
   seqbox/.style={rectangle, rounded corners=2pt, minimum width=1.5cm, minimum height=0.6cm, font=\footnotesize, align=center},
   tbox/.style={seqbox, draw=red!55, fill=red!12},            % teacher (separate, frozen)
   sbox/.style={seqbox, draw=blue!70, fill=blue!16},          % student (trained)
-  selfbox/.style={seqbox, draw=blue!70, dashed, fill=blue!8},% same model, hint-conditioned
   hintbox/.style={seqbox, draw=orange!80!black, fill=orange!22, minimum width=1.0cm},
   gen/.style={->, >=Stealth, semithick, draw=black!80},       % active generation
   genfade/.style={->, >=Stealth, semithick, draw=black!30},   % passive / scored column
@@ -71,9 +70,9 @@
 
 % ===================================================================== PANEL 2: OPD
 \node[paneltitle] at (9.9, 6.4) {On-policy distillation};
-\node[sub] at (9.9, 5.85) {on-policy $\cdot$ student generates (RL)};
+\node[sub] at (9.9, 5.85) {on-policy $\cdot$ student generates (e.g. RL)};
 
-\node[collabel, text=blue!70!black] at (8.4, 5.15) {Student (RL)};
+\node[collabel, text=blue!70!black] at (8.4, 5.15) {Student (e.g. RL)};
 \node[collabel, text=red!55!black] at (11.4, 5.15) {Teacher};
 
 % student generates on-policy (solid downward), left column
@@ -102,28 +101,30 @@
 \draw[dashed, black!35] (13.55, 1.2) -- (13.55, 6.6);
 
 % ===================================================================== PANEL 3: OPSD
-\node[paneltitle] at (17.4, 6.4) {On-policy self-distillation};
-\node[sub] at (17.4, 5.85) {one model: teacher sees the hint, student does not};
+\node[paneltitle] at (17.0, 6.4) {On-policy self-distillation};
+\node[sub] at (17.0, 5.85) {same model: generation has no hint; the training step inserts hints};
 
-% student rollout (NO hint) -- single column on the left of the panel
-\node[collabel, text=blue!70!black] at (15.9, 5.15) {Student (no hint)};
-\node[sbox] (e1) at (15.9, \yA) {};
-\node[sbox] (e2) at (15.9, \yB) {};
-\node[sbox] (e3) at (15.9, \yC) {};
-\draw[gen] (e1) -- (e2);
-\draw[gen] (e2) -- (e3);
+% left column: GENERATION -- the on-policy rollout, no hint
+\node[collabel, text=blue!70!black] at (15.4, 5.15) {Generation};
+\node[sbox] (g1) at (15.4, \yA) {};
+\node[sbox] (g2) at (15.4, \yB) {};
+\node[sbox] (g3) at (15.4, \yC) {};
+\draw[gen] (g1) -- (g2);
+\draw[gen] (g2) -- (g3);
 
-% same model, but with a hint inserted into its context = the teacher (privileged info)
-\node[hintbox] (hint) at (18.3, 4.5) {hint};
-\node[selfbox, minimum width=1.9cm, minimum height=0.9cm, align=center] (teach) at (18.3, \yB) {Teacher\\\scriptsize(self\,+\,hint)};
-\draw[feedbackarrow, draw=orange!80!black] (hint) -- (teach);
-\node[sub, text=orange!75!black] at (19.85, 4.5) {into\\context};
+% right column: TRAINING STEP -- the same stream with hint token(s) spliced in (teacher context)
+\node[collabel, text=blue!70!black] at (18.6, 5.15) {Training step};
+\node[sbox]    (r1) at (18.6, \yA) {};
+\node[hintbox, minimum width=1.5cm] (rh) at (18.6, \yB) {hint};
+\node[sbox]    (r3) at (18.6, \yC) {};
+\draw[genfade] (r1) -- (rh);
+\draw[genfade] (rh) -- (r3);
 
-% localized reverse-KL: student (no hint) pulled toward the hinted teacher AT the mistake
-\draw[kl] (e2.east) -- (teach.west);
-\node[taglabel, fill=white, inner sep=1pt] at (17.05, \yB) {KD};
+% localized reverse-KL KD: the no-hint generation is pulled toward the hint-conditioned step
+\draw[kl] (g2.east) -- (rh.west);
+\node[taglabel, fill=white, inner sep=1pt] at (17.0, \yB) {KD};
 
-\node[sub] at (17.4, 1.5) {student (no hint) matches the hint-conditioned\\teacher, localized to the mistake (reverse KL)};
+\node[sub] at (17.0, 1.5) {the no-hint generation is trained toward the hint-conditioned\\training step, localized to the mistake (reverse KL)};
 
 \end{tikzpicture}
 
