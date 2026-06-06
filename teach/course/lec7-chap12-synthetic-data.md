@@ -448,12 +448,24 @@ At scale, this lets a growing org divide labor: many groups train expert teacher
 
 ---
 
+<!-- valign: top -->
 <!-- animate: bullets -->
-## Self-distillation, GRPO, and the tokenizer constraint
+## Self-distillation: pushing the frontier
+
+At the **absolute frontier** there is no stronger model to distill from. **On-Policy Self-Distillation (OPSD)** sidesteps this: the teacher is the *same model conditioned on privileged information* -- a hint it won't have at inference [@zhao2026selfdistilled]. **Cursor's Composer 2.5** (from Kimi K2.5) trained this way [@cursor2026composer25]:
+
+- A judge reviews RL trajectories against a list of **common bugs**.
+- On a bug, it **inserts a hint** into the sequence -- privileged information the model wouldn't see at test time.
+- The model takes a **KD loss** toward its own hinted continuation, learning to reach it *unaided*.
+- A hint in token space is enough to self-correct -- *how* to structure that signal is an active area ("privileged information") [@penaloza2026privileged].
+
+---
+
+<!-- animate: bullets -->
+## Combining OPD with RL, and the tokenizer constraint
 
 - The reverse-KL advantage **layers onto** other RL machinery -- e.g. add it alongside GRPO's group-level normalization for richer reward shaping.
 - **Shared-tokenizer requirement:** KD is unusual among post-training methods -- per-token supervision needs the student and teacher to share a tokenizer.
-- **On-Policy Self-Distillation (OPSD):** a model verifies its own completion (itself, or with external tools) to act as a *privileged* teacher, then trains a weaker version of itself [@zhao2026selfdistilled].
 
 ---
 
