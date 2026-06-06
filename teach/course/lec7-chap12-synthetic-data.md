@@ -483,6 +483,30 @@ Distillation is growing into its own post-training method -- alongside SFT and R
 
 ---
 
+<!-- img-align: center -->
+<!-- valign: center -->
+## From offline KD to self-distillation
+
+![](assets/distillation_directionality_1.png)
+
+---
+
+<!-- img-align: center -->
+<!-- valign: center -->
+## From offline KD to self-distillation
+
+![](assets/distillation_directionality_2.png)
+
+---
+
+<!-- img-align: center -->
+<!-- valign: center -->
+## From offline KD to self-distillation
+
+![](assets/distillation_directionality_3.png)
+
+---
+
 <!-- rows: 55/45 -->
 <!-- title: center -->
 ## Recap: the path to on-policy distillation

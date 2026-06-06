@@ -15,6 +15,10 @@
 \usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, calc, backgrounds}
 \pagestyle{empty}
 
+% \reveal controls how many panels are drawn (1, 2, or 3); defaults to all three.
+% Progressive-reveal variants for slides:  pdflatex "\def\reveal{2}\input{<thisfile>}"
+\ifdefined\reveal\else\def\reveal{3}\fi
+
 \begin{document}
 \input{styles_rlhf.tex}
 
@@ -65,7 +69,8 @@
 
 \node[sub] at (2.9, 1.55) {teacher rollout is fixed;\\student matches it};
 
-% divider
+\ifnum\reveal>1
+% divider after panel 1
 \draw[dashed, black!35] (6.35, 1.2) -- (6.35, 6.6);
 
 % ===================================================================== PANEL 2: OPD
@@ -96,8 +101,10 @@
 \node[taglabel, fill=white, inner sep=1pt] at (9.9, \yB) {KL};
 
 \node[sub] at (9.9, 1.55) {student rollout; teacher scores\\each token: $D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_T)$};
+\fi
 
-% divider
+\ifnum\reveal>2
+% divider after panel 2
 \draw[dashed, black!35] (13.55, 1.2) -- (13.55, 6.6);
 
 % ===================================================================== PANEL 3: OPSD
@@ -127,6 +134,7 @@
 \node[taglabel, fill=white, inner sep=1pt] at (17.0, \yB) {KL};
 
 \node[sub] at (17.0, 1.35) {On-policy distillation loss with no separate teacher};
+\fi
 
 \end{tikzpicture}
 
