@@ -98,7 +98,7 @@ In domains like mathematics, a single ground truth answer is available to verify
 In other domains, such as code generation or precise instruction following, answers can be verified with a checking function (e.g., a unit test), even when there are multiple correct solutions rather than just a single ground truth answer.
 The core of progress on RLVR is having a variety and depth of these verifiable problems, even if the exact solution isn't known a priori.
 
-![RLVR in the form of an RL feedback loop. Instead of a reward model, a verification function is used.](images/rlvr-system.png){#fig:rlvr}
+![RLVR in the form of an RL feedback loop. Instead of a reward model, a verification function is used.](images/rlvr-system.png){#fig:rlvr data-dark-src="images/rlvr-system-dark.png"}
 
 The first models to successfully deploy this type of training were OpenAI's o1 [@openai2024o1] and the open-weight model DeepSeek R1 [@guo2025deepseek]. 
 Soon after, the entire AI industry prioritized this training process and model style.

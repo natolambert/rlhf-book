@@ -14,6 +14,31 @@
 \definecolor{datagray}{RGB}{171,171,171}
 \definecolor{arrownavy}{RGB}{46,49,146}
 
+% Dark-mode support: compile with `\def\figdark{1}` (before \input) to recolor
+% UNBOUNDED ink (loop arrows, edge labels, sub-labels, notes) over the
+% transparent background to the site's dark --color-text. The filled boxes
+% (with their black in-box text) are unchanged. Light builds are identical.
+\providecommand{\figdark}{0}
+\ifnum\figdark=1
+  \definecolor{inkcolor}{HTML}{CBD5E1}
+  \colorlet{loopcolor}{inkcolor}
+  \colorlet{edgeink}{inkcolor}
+  \colorlet{subink}{inkcolor!75}
+  \colorlet{noteink}{inkcolor!80}
+\else
+  \colorlet{loopcolor}{arrownavy}
+  \colorlet{edgeink}{black}
+  \colorlet{subink}{black!42}
+  \colorlet{noteink}{black!55}
+\fi
+% \loose{<color>} wraps INLINE loose ink so individual color specs can opt into
+% the dark recolor: original color in light builds, inkcolor in dark builds.
+\ifnum\figdark=1
+  \providecommand{\loose}[1]{inkcolor}
+\else
+  \providecommand{\loose}[1]{#1}
+\fi
+
 \tikzset{
     % --- nodes ---
     agent/.style={                 % the policy being trained
@@ -40,11 +65,11 @@
     % Flush at the source, slight gap at the target end.
     loop/.style={
         -{Stealth[length=4.5mm, width=4mm]},
-        line width=1.5pt, color=arrownavy,
+        line width=1.5pt, color=loopcolor,
         shorten >=3pt
     },
     % --- labels ---
-    edgelbl/.style={font=\LARGE},                                  % s_t, a_i, r_i
-    sublbl/.style={font=\normalsize, text=black!42, align=center},  % Prompts, Completions
-    note/.style={font=\normalsize, text=black!55, align=center}     % policy-update caption
+    edgelbl/.style={font=\LARGE, text=edgeink},                      % s_t, a_i, r_i
+    sublbl/.style={font=\normalsize, text=subink, align=center},     % Prompts, Completions
+    note/.style={font=\normalsize, text=noteink, align=center}      % policy-update caption
 }

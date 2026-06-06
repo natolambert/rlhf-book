@@ -6,16 +6,105 @@
  * Substantial modifications made by natolambert
  */
 
+/* ---------------------------------------------------------------------------
+ * Theme color tokens.
+ *
+ * Light values live in :root. Dark values live in :root[data-theme="dark"].
+ * A tiny inline script in each page <head> sets data-theme on <html> BEFORE
+ * first paint (from localStorage, falling back to the OS prefers-color-scheme
+ * setting), which avoids a flash of the wrong theme. The theme toggle button
+ * (theme.js) flips data-theme and persists the choice. With JavaScript
+ * disabled the page renders in the light theme.
+ * ------------------------------------------------------------------------- */
+:root {
+    --color-bg: #fefefe;
+    --color-bg-elev: #f6f6f6;
+    --color-bg-section: #ffffff;
+    --color-bg-subtle: #f8f8f8;
+    --color-code-inline-bg: #f0f0f0;
+    --color-th-bg: #eeeeee;
+    --color-thead-bg: #f5f5f5;
+    --color-text: #444444;
+    --color-heading: #111111;
+    --color-text-muted: #666666;
+    --color-text-faint: #888888;
+    --color-code-text: #000000;
+    --color-link: #0645ad;
+    --color-link-visited: #0b0080;
+    --color-link-hover: #0066ee;
+    --color-link-active: #faa700;
+    --color-section-link: #0066cc;
+    --color-border: #dddddd;
+    --color-border-strong: #aaaaaa;
+    --color-border-light: #eeeeee;
+    --color-pre-border: #e8e8e8;
+    --color-shadow: rgba(0, 0, 0, 0.12);
+    --color-selection-bg: rgba(255, 255, 0, 0.3);
+    --color-tooltip-bg: #ffffff;
+    --color-tooltip-text: #333333;
+    --color-btn-bg: #ffffff;
+    --color-conv-user-bg: #0f3460;
+    --color-conv-user-text: #ffffff;
+    --color-conv-assistant-bg: #f4f4f8;
+    --color-conv-assistant-text: #333333;
+    --color-thinking-border: rgba(0, 0, 0, 0.1);
+    --color-thinking-bg: rgba(0, 0, 0, 0.03);
+    color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+    /* Slate/blue palette adopted from segyges.github.io (Blowfish theme).
+       Values map onto Tailwind "slate" neutrals + "blue" primaries. */
+    --color-bg: #1e293b;            /* neutral-800 */
+    --color-bg-elev: #334155;       /* neutral-700 */
+    --color-bg-section: #2a3a52;    /* between 800/700 */
+    --color-bg-subtle: #243044;     /* between 900/800 */
+    --color-code-inline-bg: #334155;/* neutral-700 */
+    --color-th-bg: #334155;         /* neutral-700 */
+    --color-thead-bg: #2a3a52;
+    --color-text: #cbd5e1;          /* neutral-300 */
+    --color-heading: #f1f5f9;       /* neutral-100 */
+    --color-text-muted: #94a3b8;    /* neutral-400 */
+    --color-text-faint: #64748b;    /* neutral-500 */
+    --color-code-text: #e2e8f0;     /* neutral-200 */
+    --color-link: #60a5fa;          /* primary-400 */
+    --color-link-visited: #b89cff;
+    --color-link-hover: #93c5fd;    /* primary-300 */
+    --color-link-active: #f5c542;
+    --color-section-link: #60a5fa;  /* primary-400 */
+    --color-border: #334155;        /* neutral-700 */
+    --color-border-strong: #475569; /* neutral-600 */
+    --color-border-light: #2a3a52;
+    --color-pre-border: #334155;    /* neutral-700 */
+    --color-shadow: rgba(0, 0, 0, 0.5);
+    --color-selection-bg: rgba(255, 255, 0, 0.18);
+    --color-tooltip-bg: #0f172a;    /* neutral-900 */
+    --color-tooltip-text: #cbd5e1;
+    --color-btn-bg: #334155;        /* neutral-700 */
+    --color-conv-user-bg: #1e3a5f;
+    --color-conv-user-text: #e8eef6;
+    --color-conv-assistant-bg: #2a3a52;
+    --color-conv-assistant-text: #cbd5e1;
+    --color-thinking-border: rgba(255, 255, 255, 0.12);
+    --color-thinking-bg: rgba(255, 255, 255, 0.04);
+    color-scheme: dark;
+}
+
 html {
     font-size: 100%;
     overflow-y: scroll;
     overflow-x: hidden;
     -webkit-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
+    /* Set here (not just on body) so the viewport canvas/side margins follow the
+       theme. Pandoc's default stylesheet gives <html> a light background, which
+       would otherwise leave light gutters around the dark body strip. */
+    background: var(--color-bg);
+    color: var(--color-text);
 }
 
 body {
-    color: #444;
+    color: var(--color-text);
     font-family: Georgia, Palatino, 'Palatino Linotype', Times, 'Times New Roman', serif;
     font-size: 12px;
     line-height: 1.7;
@@ -23,24 +112,24 @@ body {
     margin: auto;
     max-width: 42em;
     overflow-x: hidden;
-    background: #fefefe;
+    background: var(--color-bg);
 }
 
 a {
-    color: #0645ad;
+    color: var(--color-link);
     text-decoration: none;
 }
 
 a:visited {
-    color: #0b0080;
+    color: var(--color-link-visited);
 }
 
 a:hover {
-    color: #06e;
+    color: var(--color-link-hover);
 }
 
 a:active {
-    color: #faa700;
+    color: var(--color-link-active);
 }
 
 a:focus {
@@ -48,23 +137,23 @@ a:focus {
 }
 
 *::-moz-selection {
-    background: rgba(255, 255, 0, 0.3);
+    background: var(--color-selection-bg);
     color: #000;
 }
 
 *::selection {
-    background: rgba(255, 255, 0, 0.3);
+    background: var(--color-selection-bg);
     color: #000;
 }
 
 a::-moz-selection {
-    background: rgba(255, 255, 0, 0.3);
-    color: #0645ad;
+    background: var(--color-selection-bg);
+    color: var(--color-link);
 }
 
 a::selection {
-    background: rgba(255, 255, 0, 0.3);
-    color: #0645ad;
+    background: var(--color-selection-bg);
+    color: var(--color-link);
 }
 
 p {
@@ -81,7 +170,7 @@ h3,
 h4,
 h5,
 h6 {
-    color: #111;
+    color: var(--color-heading);
     line-height: 125%;
     margin-top: 2em;
     font-weight: normal;
@@ -118,7 +207,7 @@ h1 {
 
 .title {
     font-size: 2.5em;
-    color: #111;
+    color: var(--color-heading);
     line-height: 125%;
     margin-top: 2em;
     font-weight: normal;
@@ -150,18 +239,18 @@ h6 {
 }
 
 blockquote {
-    color: #666666;
+    color: var(--color-text-muted);
     margin: 0;
     padding-left: 3em;
-    border-left: 0.5em #EEE solid;
+    border-left: 0.5em var(--color-border-light) solid;
 }
 
 hr {
     display: block;
     height: 2px;
     border: 0;
-    border-top: 1px solid #aaa;
-    border-bottom: 1px solid #eee;
+    border-top: 1px solid var(--color-border-strong);
+    border-bottom: 1px solid var(--color-border-light);
     margin: 1em 0;
     padding: 0;
 }
@@ -170,7 +259,7 @@ pre,
 code,
 kbd,
 samp {
-    color: #000;
+    color: var(--color-code-text);
     font-family: monospace, monospace;
     _font-family: 'courier new', monospace;
     font-size: 0.85em;
@@ -180,8 +269,8 @@ pre {
     white-space: pre;
     line-height: 1.4;
     padding: 1em 1.2em;
-    background-color: #f6f6f6;
-    border: 1px solid #e8e8e8;
+    background-color: var(--color-bg-elev);
+    border: 1px solid var(--color-pre-border);
     border-radius: 4px;
     overflow-x: auto;
 }
@@ -192,7 +281,7 @@ pre.sourceCode {
 }
 
 p code, li code {
-    background-color: #f0f0f0;
+    background-color: var(--color-code-inline-bg);
     padding: 0.15em 0.35em;
     border-radius: 3px;
 }
@@ -294,8 +383,8 @@ figcaption {
 /* for html tables */
 table {
     margin-bottom: 2em;
-    border-bottom: 1px solid #ddd;
-    border-right: 1px solid #ddd;
+    border-bottom: 1px solid var(--color-border);
+    border-right: 1px solid var(--color-border);
     border-spacing: 0;
     box-shadow: none;
     border: none;
@@ -309,14 +398,14 @@ table {
 th {
     padding: 12px;
     text-align: center;
-    background-color: #eee;
-    border: 1px solid #ddd;
+    background-color: var(--color-th-bg);
+    border: 1px solid var(--color-border);
 }
 
 td {
     padding: 12px;
     text-align: left; /* Keeps data cells left-aligned */
-    border: 1px solid #ddd;
+    border: 1px solid var(--color-border);
     vertical-align: top;
 }
 
@@ -459,7 +548,7 @@ div.abstract {
 
 
 thead {
-    background-color: #f5f5f5;
+    background-color: var(--color-thead-bg);
 }
 
 
@@ -476,9 +565,9 @@ thead {
         padding: 0.5rem;
         max-width: 1200px;
         text-align: left;
-    }  
+    }
     .section {
-        background-color: #ffffff;
+        background-color: var(--color-bg-section);
         padding-top: 5px;
         padding-right: 12px;
         padding-bottom: 8px;
@@ -490,20 +579,21 @@ thead {
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s ease-out;
-    background: #f8f8f8;  /* Unified with section background */
+    background: var(--color-bg-subtle);  /* Unified with section background */
   }
   /* dropdown row */
   .dropdown-button {
     width: 100%;
     text-align: left;
     padding: 0.5rem;
-    background: #f8f8f8;
+    background: var(--color-bg-subtle);
     display: flex;
     align-items: center;
     gap: 0.5rem;
     cursor: pointer;
     border: none;
     font-size: 0.9rem;
+    color: inherit;
   }
   /* caret button */
   .dropdown-button .chevron {
@@ -533,7 +623,7 @@ thead {
     text-align: left;
   }
   .section a {
-    color: #0066cc;
+    color: var(--color-section-link);
     text-decoration: none;
   }
   .section a[aria-current="page"] {
@@ -564,14 +654,14 @@ thead {
   position: absolute;
   max-width: 350px;
   padding: 8px 12px;
-  background: #fff;
-  color: #333;
+  background: var(--color-tooltip-bg);
+  color: var(--color-tooltip-text);
   font-family: Georgia, Palatino, 'Palatino Linotype', Times, 'Times New Roman', serif;
   font-size: 0.85em;
   line-height: 1.5;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 2px 8px var(--color-shadow);
   z-index: 1000;
   pointer-events: none;
   opacity: 0;
@@ -610,10 +700,10 @@ thead {
   top: 8px;
   right: 8px;
   padding: 4px 6px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
-  background: #fff;
-  color: #666;
+  background: var(--color-btn-bg);
+  color: var(--color-text-muted);
   cursor: pointer;
   opacity: 0;
   transition: opacity 0.15s ease-in;
@@ -631,8 +721,8 @@ thead {
   padding: 2px 5px;
   border: 1px solid transparent;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.92);
-  color: #666;
+  background: var(--color-btn-bg);
+  color: var(--color-text-muted);
   cursor: pointer;
   opacity: 0;
   transition: opacity 0.15s ease-in, color 0.15s ease-in, border-color 0.15s ease-in;
@@ -644,14 +734,14 @@ thead {
 }
 .copy-code-button:hover {
   opacity: 1 !important;
-  border-color: #bbb;
-  color: #333;
+  border-color: var(--color-border-strong);
+  color: var(--color-tooltip-text);
 }
 .copy-math-button:hover,
 .copy-math-button:focus-visible {
   opacity: 1 !important;
-  border-color: #d0d0d0;
-  color: #333;
+  border-color: var(--color-border-strong);
+  color: var(--color-tooltip-text);
 }
 .copy-code-button.copied {
   opacity: 1 !important;
@@ -670,7 +760,7 @@ thead {
   list-style: none;
 }
 .toc-view-source a {
-  color: #888 !important;
+  color: var(--color-text-faint) !important;
   font-size: 0.9em;
 }
 
@@ -689,19 +779,19 @@ thead {
 }
 .conversation-message--user {
     align-self: flex-end;
-    background: #0f3460;
-    color: #fff;
+    background: var(--color-conv-user-bg);
+    color: var(--color-conv-user-text);
 }
 .conversation-message--assistant {
     align-self: flex-start;
-    background: #f4f4f8;
-    color: #333;
+    background: var(--color-conv-assistant-bg);
+    color: var(--color-conv-assistant-text);
 }
 .conversation-message--system {
     align-self: center;
-    border: 1px solid #ddd;
+    border: 1px solid var(--color-border);
     background: transparent;
-    color: #666;
+    color: var(--color-text-muted);
     font-style: italic;
     font-size: 0.9em;
     max-width: 90%;
@@ -772,10 +862,10 @@ thead {
 /* Thinking token collapsible block */
 .thinking-block {
     margin: 0.4em 1.5em 0.4em 0;
-    border: 1px solid rgba(0,0,0,0.1);
+    border: 1px solid var(--color-thinking-border);
     border-radius: 6px;
     padding: 0.4em 0.7em;
-    background: rgba(0,0,0,0.03);
+    background: var(--color-thinking-bg);
     font-size: 0.92em;
 }
 .thinking-block summary {
@@ -784,11 +874,65 @@ thead {
     font-size: 0.8em;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: #888;
+    color: var(--color-text-faint);
     user-select: none;
 }
 .thinking-content {
     margin-top: 0.3em;
-    color: #555;
+    color: var(--color-text-muted);
     font-style: italic;
+}
+
+/* ---------------------------------------------------------------------------
+ * Theme toggle button (light/dark). Fixed to the top-right of the viewport so
+ * it is available on every page. Wired up by theme.js.
+ * ------------------------------------------------------------------------- */
+.theme-toggle {
+    position: fixed;
+    top: 0.7em;
+    right: 0.7em;
+    z-index: 1100;
+    width: 2.2em;
+    height: 2.2em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    background: var(--color-btn-bg);
+    color: var(--color-text-muted);
+    cursor: pointer;
+    box-shadow: 0 2px 6px var(--color-shadow);
+    transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.theme-toggle:hover {
+    color: var(--color-heading);
+    border-color: var(--color-border-strong);
+}
+.theme-toggle:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 2px;
+}
+.theme-toggle svg {
+    width: 1.15em;
+    height: 1.15em;
+}
+/* Show the moon in light mode (click -> dark), the sun in dark mode. */
+.theme-toggle .theme-icon-sun {
+    display: none;
+}
+.theme-toggle .theme-icon-moon {
+    display: inline;
+}
+:root[data-theme="dark"] .theme-toggle .theme-icon-sun {
+    display: inline;
+}
+:root[data-theme="dark"] .theme-toggle .theme-icon-moon {
+    display: none;
+}
+@media print {
+    .theme-toggle {
+        display: none !important;
+    }
 }

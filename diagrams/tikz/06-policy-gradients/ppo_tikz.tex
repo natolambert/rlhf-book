@@ -17,10 +17,10 @@
 \node[plain] (st) at (1.5, 0) {$s_t$};
 
 % Legend (below input/policy area)
-\node[font=\scriptsize\itshape] (leg-key) at (1.6, -1.4) {Key};
+\node[font=\scriptsize\itshape, text=\loose{black}] (leg-key) at (1.6, -1.4) {Key};
 \node[legendbox, fill=blue!15, draw=blue!70] (leg-trained) at (2.6, -1.4) {Trained};
 \node[legendbox, fill=red!12, draw=red!50] (leg-frozen) at (3.9, -1.4) {Frozen};
-\node[draw=black!50, dotted, rounded corners=3pt, inner sep=6pt, fit=(leg-key)(leg-frozen)] {};
+\node[draw=\loose{black!50}, dotted, rounded corners=3pt, inner sep=6pt, fit=(leg-key)(leg-frozen)] {};
 
 % Policy Model (trained)
 \node[trained] (policy) at (3.5, 0) {Policy\\Model};

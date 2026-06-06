@@ -13,10 +13,21 @@
 \definecolor{annotblue}{HTML}{4A90D9}
 \definecolor{arrowgray}{HTML}{7F8C8D}
 
+% Dark-mode support (cf. tikz/_shared/styles_rlhf.tex). \figdark=1 recolors
+% UNBOUNDED ink to the dark text color via \loose{}; light builds unchanged.
+\providecommand{\figdark}{0}
+\ifnum\figdark=1
+  \definecolor{inkcolor}{HTML}{CBD5E1}
+  \newcommand{\loose}[1]{inkcolor}
+\else
+  \newcommand{\loose}[1]{#1}
+\fi
+
 \begin{document}
 \begin{tikzpicture}[
+    every node/.style={text=\loose{black}},
     annot/.style={font=\small\itshape, text=annotblue, align=center},
-    arrw/.style={-{Stealth[length=5pt]}, arrowgray, thick}
+    arrw/.style={-{Stealth[length=5pt]}, color=\loose{arrowgray}, thick}
 ]
 
 % Place each equation term as a separate node for precise arrow targeting

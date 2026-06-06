@@ -17,6 +17,11 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
 import matplotlib.patheffects as path_effects
 
+# Dark-mode ink for UNBOUNDED text (titles, lane labels, loose annotations) that
+# sits over the transparent background. Matches the site's dark --color-text.
+# Text inside filled boxes keeps its original color.
+INK_DARK = "#cbd5e1"
+
 
 def draw_token_box(ax, x, y, w, h, text, highlighted=False, masked=False):
     """Draw a single token box."""
@@ -60,7 +65,8 @@ def draw_label_circle(ax, x, y, label, color="#4CAF50"):
     ax.text(x, y, label, ha="center", va="center", fontsize=7, color="white", fontweight="bold")
 
 
-def render_orm_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
+def render_orm_diagram(output_path: Path, fmt: str = "png", dpi: int = 150,
+                       transparent: bool = False):
     """
     Render ORM diagram with 3 lanes - cleaner layout.
     Uses realistic tokenization based on GSM8K example.
@@ -83,7 +89,8 @@ def render_orm_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
     ax.text(
         x_offset + n_tokens * box_w / 2, 4.2,
         "Training Outcome RM: Offline Labels → Per-Token BCE",
-        ha="center", va="bottom", fontsize=14, fontweight="bold"
+        ha="center", va="bottom", fontsize=14, fontweight="bold",
+        color=INK_DARK if transparent else "black",
     )
     # Source indicator as subtitle
     ax.text(
@@ -94,7 +101,7 @@ def render_orm_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
 
     # === Lane 1: Tokens ===
     ax.text(x_offset - 0.2, y_tokens + box_h/2, "Tokens", ha="right", va="center",
-            fontsize=10, fontweight="bold")
+            fontsize=10, fontweight="bold", color=INK_DARK if transparent else "black")
     for i, tok in enumerate(tokens):
         x = x_offset + i * box_w
         masked = i < prompt_end
@@ -104,12 +111,13 @@ def render_orm_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
 
     # === Lane 2: Labels ===
     ax.text(x_offset - 0.2, y_labels + 0.1, r"Labels $z_t$", ha="right", va="center",
-            fontsize=10, fontweight="bold")
+            fontsize=10, fontweight="bold", color=INK_DARK if transparent else "black")
 
     # Masked indicator for prompt
     prompt_center = x_offset + prompt_end * box_w / 2 - 0.05
     ax.text(prompt_center, y_labels + 0.1, "masked",
-            ha="center", va="center", fontsize=8, color="#808080", style="italic")
+            ha="center", va="center", fontsize=8,
+            color=INK_DARK if transparent else "#808080", style="italic")
 
     # Label circles for completion tokens
     for i in range(prompt_end, n_tokens):
@@ -175,12 +183,14 @@ def render_orm_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
     ax.set_aspect("equal")
     ax.axis("off")
 
-    fig.savefig(output_path, format=fmt, dpi=dpi, bbox_inches="tight", facecolor="white")
+    fig.savefig(output_path, format=fmt, dpi=dpi, bbox_inches="tight",
+                facecolor="none" if transparent else "white", transparent=transparent)
     plt.close(fig)
     print(f"Generated: {output_path}")
 
 
-def render_value_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
+def render_value_diagram(output_path: Path, fmt: str = "png", dpi: int = 150,
+                         transparent: bool = False):
     """
     Render Value Function diagram with 4 lanes - cleaner layout.
     Uses realistic tokenization based on GSM8K example.
@@ -204,7 +214,8 @@ def render_value_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
     ax.text(
         x_offset + n_tokens * box_w / 2, 5.2,
         "Value Function: On-Policy Rollouts → Regression → Advantage",
-        ha="center", va="bottom", fontsize=14, fontweight="bold"
+        ha="center", va="bottom", fontsize=14, fontweight="bold",
+        color=INK_DARK if transparent else "black",
     )
     # Source indicator as subtitle
     ax.text(
@@ -215,7 +226,7 @@ def render_value_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
 
     # === Lane 1: Tokens ===
     ax.text(x_offset - 0.2, y_tokens + box_h/2, "Tokens", ha="right", va="center",
-            fontsize=10, fontweight="bold")
+            fontsize=10, fontweight="bold", color=INK_DARK if transparent else "black")
     for i, tok in enumerate(tokens):
         x = x_offset + i * box_w
         masked = i < prompt_end
@@ -232,13 +243,13 @@ def render_value_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
 
     # === Lane 2: Rewards (sparse) ===
     ax.text(x_offset - 0.2, y_rewards + 0.1, r"Rewards $r_t$", ha="right", va="center",
-            fontsize=10, fontweight="bold")
+            fontsize=10, fontweight="bold", color=INK_DARK if transparent else "black")
 
     # Sparse rewards
     for i in range(prompt_end, n_tokens - 1):
         x = x_offset + i * box_w + box_w/2 - 0.05
         ax.text(x, y_rewards + 0.1, "0", ha="center", va="center",
-                fontsize=8, color="#909090")
+                fontsize=8, color=INK_DARK if transparent else "#909090")
 
     # Final reward
     x_final = x_offset + (n_tokens - 1) * box_w + box_w/2 - 0.05
@@ -249,7 +260,7 @@ def render_value_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
 
     # === Lane 3: Return targets (GAE computed) ===
     ax.text(x_offset - 0.2, y_targets + 0.1, r"Target $\hat{V}_t$", ha="right", va="center",
-            fontsize=10, fontweight="bold")
+            fontsize=10, fontweight="bold", color=INK_DARK if transparent else "black")
 
     # Return values (with γ=1, equal to final R)
     returns = [".73", ".73", ".73", ".73", ".73", ".73"]  # 6 completion tokens
@@ -319,7 +330,8 @@ def render_value_diagram(output_path: Path, fmt: str = "png", dpi: int = 150):
     ax.set_aspect("equal")
     ax.axis("off")
 
-    fig.savefig(output_path, format=fmt, dpi=dpi, bbox_inches="tight", facecolor="white")
+    fig.savefig(output_path, format=fmt, dpi=dpi, bbox_inches="tight",
+                facecolor="none" if transparent else "white", transparent=transparent)
     plt.close(fig)
     print(f"Generated: {output_path}")
 
@@ -337,12 +349,23 @@ def main():
         choices=["png", "svg", "pdf"],
         default="png",
     )
+    parser.add_argument(
+        "--theme",
+        choices=["light", "dark"],
+        default="light",
+        help="light = white background; dark = transparent background for dark-mode pages",
+    )
     args = parser.parse_args()
+
+    dark = args.theme == "dark"
+    suffix = "-dark" if dark else ""
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
-    render_orm_diagram(args.output_dir / f"orm_training.{args.format}", fmt=args.format)
-    render_value_diagram(args.output_dir / f"value_fn_training.{args.format}", fmt=args.format)
+    render_orm_diagram(args.output_dir / f"orm_training{suffix}.{args.format}",
+                       fmt=args.format, transparent=dark)
+    render_value_diagram(args.output_dir / f"value_fn_training{suffix}.{args.format}",
+                         fmt=args.format, transparent=dark)
 
     print(f"\nGenerated multi-lane diagrams in {args.output_dir}")
 

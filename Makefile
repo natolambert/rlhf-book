@@ -92,7 +92,7 @@ ECHO_BUILT = @echo "$@ was built\n"
 # Basic actions
 ####################################################################################################
 
-.PHONY: all book clean epub html pdf docx nested_html latex kindle rl-cheatsheet pagefind teach
+.PHONY: all book clean epub html pdf docx nested_html latex kindle rl-cheatsheet pagefind teach serve
 
 all:	book
 
@@ -153,6 +153,7 @@ $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html:	$(HTML_DEPENDENCIES)
 	$(COPY_CMD) book/templates/citation-tooltips.js $(BUILD)/html/
 	$(COPY_CMD) book/templates/copy-code.js $(BUILD)/html/
 	$(COPY_CMD) book/templates/conversation.js $(BUILD)/html/
+	$(COPY_CMD) book/templates/theme.js $(BUILD)/html/
 	$(COPY_CMD) book/templates/nav.js $(BUILD)/html/c/
 	$(COPY_CMD) book/templates/header-anchors.js $(BUILD)/html/c/
 	$(COPY_CMD) book/templates/table-scroll.js $(BUILD)/html/c/
@@ -160,6 +161,7 @@ $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html:	$(HTML_DEPENDENCIES)
 	$(COPY_CMD) book/templates/copy-code.js $(BUILD)/html/c/
 	cp book/templates/view-source.js $(BUILD)/html/c/
 	$(COPY_CMD) book/templates/conversation.js $(BUILD)/html/c/
+	$(COPY_CMD) book/templates/theme.js $(BUILD)/html/c/
 	cp book/templates/style.css $(BUILD)/html/style.css || echo "Failed to copy style.css"
 	@mkdir -p $(BUILD)/html/data
 	@test -f book/data/library.json && cp book/data/library.json $(BUILD)/html/data/library.json || echo "No library data to copy"
@@ -300,14 +302,26 @@ files: $(BUILD)/html/sitemap.xml $(BUILD)/html/robots.txt $(BUILD)/html/llms.txt
 	cp ./book/templates/view-source.js $(BUILD)/html/c/ || echo "Failed to copy view-source.js to $(BUILD)/html/c/"
 	cp ./book/templates/conversation.js $(BUILD)/html/ || echo "Failed to copy conversation.js to $(BUILD)/html/"
 	cp ./book/templates/conversation.js $(BUILD)/html/c/ || echo "Failed to copy conversation.js to $(BUILD)/html/c/"
+	cp ./book/templates/theme.js $(BUILD)/html/ || echo "Failed to copy theme.js to $(BUILD)/html/"
+	cp ./book/templates/theme.js $(BUILD)/html/c/ || echo "Failed to copy theme.js to $(BUILD)/html/c/"
 	mkdir -p $(BUILD)/html/rl-cheatsheet
 	cp book/favicon.ico $(BUILD)/html/rl-cheatsheet/ || echo "Failed to copy favicon to rl-cheatsheet"
 	cp book/templates/style.css $(BUILD)/html/rl-cheatsheet/style.css || echo "Failed to copy style.css to rl-cheatsheet"
 	cp ./book/templates/nav.js $(BUILD)/html/rl-cheatsheet/ || echo "Failed to copy nav.js to rl-cheatsheet"
+	cp ./book/templates/theme.js $(BUILD)/html/rl-cheatsheet/ || echo "Failed to copy theme.js to rl-cheatsheet"
 	cp -r book/assets $(BUILD)/html/rl-cheatsheet/ || echo "Failed to copy assets to rl-cheatsheet"
+	$(INLINE_FOOTER) book/rl-cheatsheet/index.html > $(BUILD)/html/rl-cheatsheet/index.html || echo "Failed to inline cheatsheet index.html"
 
 pagefind: html files
 	npx --yes pagefind --site $(BUILD)/html --glob "c/**/*.html"
+
+# Build the HTML site (only rebuilds what changed) and serve it locally with
+# clean-URL + absolute-path support, so previewing matches the live site.
+# Override the port with `make serve PORT=9000`. Note: full-text search needs
+# the pagefind index — run `make pagefind` first if you want search locally.
+PORT ?= 8000
+serve: html files
+	uv run python book/scripts/serve.py --dir $(BUILD)/html --port $(PORT)
 
 ####################################################################################################
 # Teaching slides (built with colloquium)
