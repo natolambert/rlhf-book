@@ -112,19 +112,21 @@
 \draw[gen] (g1) -- (g2);
 \draw[gen] (g2) -- (g3);
 
-% right column: TRAINING STEP -- the same stream with hint token(s) spliced in (teacher context)
+% right column: TRAINING STEP -- same three tokens (slightly taller spacing); a short
+% orange hint sits on top of the middle token (inserted into its context = teacher view)
 \node[collabel, text=blue!70!black] at (18.6, 5.15) {Training step};
-\node[sbox]    (r1) at (18.6, \yA) {};
-\node[hintbox, minimum width=1.5cm] (rh) at (18.6, \yB) {hint};
-\node[sbox]    (r3) at (18.6, \yC) {};
+\node[sbox] (r1) at (18.6, 4.55) {};
+\node[sbox] (r2) at (18.6, 3.25) {};
+\node[sbox] (r3) at (18.6, 2.10) {};
+\node[hintbox, minimum width=1.1cm, minimum height=0.32cm, font=\scriptsize, inner sep=1pt, anchor=south] (rh) at (r2.north) {hint};
 \draw[genfade] (r1) -- (rh);
-\draw[genfade] (rh) -- (r3);
+\draw[genfade] (r2) -- (r3);
 
 % localized reverse-KL KD: the no-hint generation is pulled toward the hint-conditioned step
-\draw[kl] (g2.east) -- (rh.west);
-\node[taglabel, fill=white, inner sep=1pt] at (17.0, \yB) {KD};
+\draw[kl] (g2.east) -- (r2.west);
+\node[taglabel, fill=white, inner sep=1pt] at (17.0, 3.3) {KD};
 
-\node[sub] at (17.0, 1.5) {the no-hint generation is trained toward the hint-conditioned\\training step, localized to the mistake (reverse KL)};
+\node[sub] at (17.0, 1.35) {the no-hint generation is trained toward the hint-conditioned\\training step, localized to the mistake (reverse KL)};
 
 \end{tikzpicture}
 
