@@ -42,14 +42,6 @@
       text-align: center;
     }
 
-    html.rl-cheatsheet-page {
-      overflow-x: auto;
-    }
-
-    html.rl-cheatsheet-page body {
-      overflow-x: visible;
-    }
-
     .cheatsheet-section {
       width: min(92vw, 88rem);
       max-width: none;
@@ -97,6 +89,14 @@
       margin-bottom: 0.5em;
       border: none;
       border-top: 1px solid #ccc;
+    }
+
+    .equations-scroll {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 0 auto 1em;
     }
 
     .desktop-note {
@@ -242,88 +242,92 @@
     <h2>Core loss \(\mathcal{L}(\theta)\) per RL algorithm</h2>
     <hr>
 
-    <table class="equations">
-      <tr>
-        <td>Policy Gradient</td>
-        <td>\(\displaystyle -\;\mathbb{E}_\tau\!\left[\sum_{t=0}^{T} \log \pi_\theta(a_t\mid s_t)\, A^{\pi_\theta}(s_t, a_t)\right]\)</td>
-      </tr>
-      <tr>
-        <td>
-          REINFORCE
-          <span class="subtitle">(REward Increment = Nonnegative Factor &times; Offset Reinforcement &times; Characteristic Eligibility)</span>
-        </td>
-        <td>\(\displaystyle -\;\frac{1}{T}\sum_{t=1}^{T}\log \pi_\theta(a_t\mid s_t)\,(G_t - b(s_t))\)</td>
-      </tr>
-      <tr>
-        <td>
-          REINFORCE Leave-One-Out
-          <span class="subtitle">(RLOO)</span>
-        </td>
-        <td>\(\displaystyle -\;\frac{1}{K}\sum_{i=1}^{K}\sum_t \log \pi_\theta(a_{i,t}\mid s_{i,t})\!\left(R_i - \frac{1}{K\!-\!1}\sum_{j\neq i}R_j\right)\)</td>
-      </tr>
-      <tr>
-        <td>
-          Proximal Policy Optimization
-          <span class="subtitle">(PPO)</span>
-        </td>
-        <td>
-          \(\displaystyle -\;\frac{1}{T}\sum_{t=1}^{T}\min\!\left(\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)} A_t,\; \text{clip}\!\left(\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) A_t\right)\)
-          <p class="eq-note">PPO usually estimates \(A_t\) with GAE; other advantage estimates are possible.</p>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          Group Relative Policy<br>Optimization
-          <span class="subtitle">(GRPO)</span>
-        </td>
-        <td>
-          \(\displaystyle -\;\frac{1}{G}\sum_{i=1}^{G}\frac{1}{|a_i|}\sum_{t=1}^{|a_i|}\min\!\left(\frac{\pi_\theta(a_{i,t}\mid s_{i,t})}{\pi_{\theta_{\text{old}}}(a_{i,t}\mid s_{i,t})} \hat{A}_i,\; \text{clip}\!\left(\frac{\pi_\theta(a_{i,t}\mid s_{i,t})}{\pi_{\theta_{\text{old}}}(a_{i,t}\mid s_{i,t})},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) \hat{A}_i\right)\)
-          <p class="eq-note">where \(\hat{A}_i = \dfrac{r_i - \overline{r}}{\text{std}(r)}\)</p>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          Group Sequence Policy<br>Optimization
-          <span class="subtitle">(GSPO)</span>
-        </td>
-        <td>\(\displaystyle -\;\frac{1}{G}\sum_{i=1}^{G}\min\!\left(\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)}\right)^{\!\frac{1}{|a_i|}} A_i,\; \text{clip}\!\left(\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)}\right)^{\!\frac{1}{|a_i|}},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) A_i\right)\)</td>
-      </tr>
-      <tr>
-        <td>
-          Clipped Importance Sampling<br>Policy Optimization
-          <span class="subtitle">(CISPO)</span>
-        </td>
-        <td>
-          \(\displaystyle -\;\frac{1}{\sum_i |a_i|}\sum_{i=1}^{K}\sum_{t=1}^{|a_i|} \text{sg}\!\Big(\text{clip}\big(\tfrac{\pi_\theta(a_{i,t}\mid s)}{\pi_{\theta_{\text{old}}}(a_{i,t}\mid s)},\, 1\!-\!\varepsilon_{\text{low}},\, 1\!+\!\varepsilon_{\text{high}}\big)\Big)\, A_{i,t} \log \pi_\theta(a_{i,t}\mid s)\)
-          <p class="eq-note">where \(\text{sg}(\cdot)\) = stop gradient</p>
-        </td>
-      </tr>
-    </table>
+    <div class="equations-scroll" tabindex="0" aria-label="Core loss equations">
+      <table class="equations">
+        <tr>
+          <td>Policy Gradient</td>
+          <td>\(\displaystyle -\;\mathbb{E}_\tau\!\left[\sum_{t=0}^{T} \log \pi_\theta(a_t\mid s_t)\, A^{\pi_\theta}(s_t, a_t)\right]\)</td>
+        </tr>
+        <tr>
+          <td>
+            REINFORCE
+            <span class="subtitle">(REward Increment = Nonnegative Factor &times; Offset Reinforcement &times; Characteristic Eligibility)</span>
+          </td>
+          <td>\(\displaystyle -\;\frac{1}{T}\sum_{t=1}^{T}\log \pi_\theta(a_t\mid s_t)\,(G_t - b(s_t))\)</td>
+        </tr>
+        <tr>
+          <td>
+            REINFORCE Leave-One-Out
+            <span class="subtitle">(RLOO)</span>
+          </td>
+          <td>\(\displaystyle -\;\frac{1}{K}\sum_{i=1}^{K}\sum_t \log \pi_\theta(a_{i,t}\mid s_{i,t})\!\left(R_i - \frac{1}{K\!-\!1}\sum_{j\neq i}R_j\right)\)</td>
+        </tr>
+        <tr>
+          <td>
+            Proximal Policy Optimization
+            <span class="subtitle">(PPO)</span>
+          </td>
+          <td>
+            \(\displaystyle -\;\frac{1}{T}\sum_{t=1}^{T}\min\!\left(\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)} A_t,\; \text{clip}\!\left(\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) A_t\right)\)
+            <p class="eq-note">PPO usually estimates \(A_t\) with GAE; other advantage estimates are possible.</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            Group Relative Policy<br>Optimization
+            <span class="subtitle">(GRPO)</span>
+          </td>
+          <td>
+            \(\displaystyle -\;\frac{1}{G}\sum_{i=1}^{G}\frac{1}{|a_i|}\sum_{t=1}^{|a_i|}\min\!\left(\frac{\pi_\theta(a_{i,t}\mid s_{i,t})}{\pi_{\theta_{\text{old}}}(a_{i,t}\mid s_{i,t})} \hat{A}_i,\; \text{clip}\!\left(\frac{\pi_\theta(a_{i,t}\mid s_{i,t})}{\pi_{\theta_{\text{old}}}(a_{i,t}\mid s_{i,t})},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) \hat{A}_i\right)\)
+            <p class="eq-note">where \(\hat{A}_i = \dfrac{r_i - \overline{r}}{\text{std}(r)}\)</p>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            Group Sequence Policy<br>Optimization
+            <span class="subtitle">(GSPO)</span>
+          </td>
+          <td>\(\displaystyle -\;\frac{1}{G}\sum_{i=1}^{G}\min\!\left(\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)}\right)^{\!\frac{1}{|a_i|}} A_i,\; \text{clip}\!\left(\!\left(\frac{\pi_\theta(a_i\mid s)}{\pi_{\theta_{\text{old}}}(a_i\mid s)}\right)^{\!\frac{1}{|a_i|}},\, 1\!-\!\varepsilon,\, 1\!+\!\varepsilon\right) A_i\right)\)</td>
+        </tr>
+        <tr>
+          <td>
+            Clipped Importance Sampling<br>Policy Optimization
+            <span class="subtitle">(CISPO)</span>
+          </td>
+          <td>
+            \(\displaystyle -\;\frac{1}{\sum_i |a_i|}\sum_{i=1}^{K}\sum_{t=1}^{|a_i|} \text{sg}\!\Big(\text{clip}\big(\tfrac{\pi_\theta(a_{i,t}\mid s)}{\pi_{\theta_{\text{old}}}(a_{i,t}\mid s)},\, 1\!-\!\varepsilon_{\text{low}},\, 1\!+\!\varepsilon_{\text{high}}\big)\Big)\, A_{i,t} \log \pi_\theta(a_{i,t}\mid s)\)
+            <p class="eq-note">where \(\text{sg}(\cdot)\) = stop gradient</p>
+          </td>
+        </tr>
+      </table>
+    </div>
   </div>
 
   <div class="cheatsheet-section">
     <h2>Other core equations</h2>
     <hr>
 
-    <table class="equations">
-      <tr>
-        <td>RLHF Objective</td>
-        <td>\(\displaystyle J(\theta) = \max_{\pi}\; \mathbb{E}_{x \sim \mathcal{D}}\,\mathbb{E}_{y \sim \pi(y|x)} \Big[r_\theta(x, y)\Big] - \beta\, \mathcal{D}_{\text{KL}}\!\Big(\pi(y|x) \,\|\, \pi_{\text{ref}}(y|x)\Big)\)</td>
-      </tr>
-      <tr>
-        <td>
-          Bradley&ndash;Terry<br>Reward Model
-        </td>
-        <td>\(\displaystyle \mathcal{L}(\theta) = -\log \sigma\!\Big( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) \Big)\)</td>
-      </tr>
-      <tr>
-        <td>
-          Direct Preference<br>Optimization
-          <span class="subtitle">(DPO)</span>
-        </td>
-        <td>\(\displaystyle \mathcal{L}(\theta) = -\;\mathbb{E}\!\left[ \log \sigma\!\left( \beta \log \frac{\pi_{\theta}(y_c \mid x)}{\pi_{\text{ref}}(y_c \mid x)} - \beta \log \frac{\pi_{\theta}(y_r \mid x)}{\pi_{\text{ref}}(y_r \mid x)} \right) \right]\)</td>
-      </tr>
-    </table>
+    <div class="equations-scroll" tabindex="0" aria-label="Other core equations">
+      <table class="equations">
+        <tr>
+          <td>RLHF Objective</td>
+          <td>\(\displaystyle J(\theta) = \max_{\pi}\; \mathbb{E}_{x \sim \mathcal{D}}\,\mathbb{E}_{y \sim \pi(y|x)} \Big[r_\theta(x, y)\Big] - \beta\, \mathcal{D}_{\text{KL}}\!\Big(\pi(y|x) \,\|\, \pi_{\text{ref}}(y|x)\Big)\)</td>
+        </tr>
+        <tr>
+          <td>
+            Bradley&ndash;Terry<br>Reward Model
+          </td>
+          <td>\(\displaystyle \mathcal{L}(\theta) = -\log \sigma\!\Big( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) \Big)\)</td>
+        </tr>
+        <tr>
+          <td>
+            Direct Preference<br>Optimization
+            <span class="subtitle">(DPO)</span>
+          </td>
+          <td>\(\displaystyle \mathcal{L}(\theta) = -\;\mathbb{E}\!\left[ \log \sigma\!\left( \beta \log \frac{\pi_{\theta}(y_c \mid x)}{\pi_{\text{ref}}(y_c \mid x)} - \beta \log \frac{\pi_{\theta}(y_r \mid x)}{\pi_{\text{ref}}(y_r \mid x)} \right) \right]\)</td>
+        </tr>
+      </table>
+    </div>
   </div>
 
   <div class="cheatsheet-section">
