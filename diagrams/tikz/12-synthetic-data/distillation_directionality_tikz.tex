@@ -112,16 +112,16 @@
 \draw[gen] (g1) -- (g2);
 \draw[gen] (g2) -- (g3);
 
-% right column: TRAINING STEP -- three tokens aligned with Generation; the hint is
-% appended AFTER the last token, so all blue boxes line up and the KD line is horizontal
+% right column: TRAINING STEP -- top two tokens aligned with Generation (KL stays
+% horizontal); the hint is inserted just before the last token, where it takes effect
 \node[collabel, text=blue!70!black] at (18.6, 5.15) {Training step};
 \node[sbox] (r1) at (18.6, \yA) {};
 \node[sbox] (r2) at (18.6, \yB) {};
-\node[sbox] (r3) at (18.6, \yC) {};
-\node[hintbox, minimum width=1.1cm, minimum height=0.34cm, font=\scriptsize, inner sep=1pt] (rh) at (18.6, 1.6) {hint};
+\node[hintbox, minimum width=1.1cm, minimum height=0.34cm, font=\scriptsize, inner sep=1pt] (rh) at (18.6, 2.4) {hint};
+\node[sbox] (r3) at (18.6, 1.7) {};
 \draw[genfade] (r1) -- (r2);
-\draw[genfade] (r2) -- (r3);
-\draw[genfade] (r3) -- (rh);
+\draw[genfade] (r2) -- (rh);
+\draw[genfade] (rh) -- (r3);
 
 % reverse-KL between the aligned middle tokens -> perfectly horizontal
 \draw[kl] (g2.east) -- (r2.west);
