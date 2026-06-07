@@ -39,6 +39,16 @@ Key directives (HTML comments before or after the heading):
 - `<!-- valign: center -->` — vertically center content
 - `<!-- img-align: center -->` — center images
 
+## Images
+
+Colloquium auto-sizes images to fit their slide/column/row container — you do **not** need a custom CSS class (e.g. `{.recipe-fig}`) or a `max-height` rule to keep a figure from overflowing. Just reference the image normally:
+
+```markdown
+![Caption](assets/diagram.png)
+```
+
+Only add sizing when you want to deviate from the default fit (e.g. `{width=60%}` to shrink a figure). Don't add empty wrapper classes "just in case."
+
 ## Heading Parsing
 
 Titles must be bare `## Heading` at line start. Wrapping in `<div>` breaks colloquium's heading extraction.
