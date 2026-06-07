@@ -155,7 +155,7 @@ The rest of the talk: who does this, who doesn't, and what they did instead.
 
 ## MAI-Thinking-1 — the counter-example
 
-<!-- rows: 56/44 -->
+<!-- rows: 48/52 -->
 ![MAI-Thinking-1: specialist RL climbs → trace-distillation SFT → consolidate → final climb](assets/mai-thinking1-recipe.png)
 
 ===
@@ -164,7 +164,9 @@ The rest of the talk: who does this, who doesn't, and what they did instead.
 
 **Novel — deliberately *not* MOPD:** built "from scratch on clean enterprise data, **without distillation from third-party models**." Teachers are *its own* specialists; consolidation is **SFT on traces**, not on-policy reverse-KL. RL is tuned for **sustained log-linear climbs over thousands of steps**.
 
-<!-- footnote-right: Source: [Microsoft AI — MAI-Thinking-1](https://microsoft.ai/news/introducing-mai-thinking-1/) -->
+**Same family — DeepSeek v3.2:** also trains its *own* per-domain RL specialists, then distills their **generated data** into the final model (offline SFT, not on-policy reverse-KL) plus a single **mixed RL** stage — the same "specialist → data-distill → consolidating RL" shape, the offline counterpoint to MOPD.
+
+<!-- footnote-right: Sources: [MAI-Thinking-1](https://microsoft.ai/news/introducing-mai-thinking-1/) · [DeepSeek v3.2 §Post-Training (arXiv:2512.02556)](https://arxiv.org/abs/2512.02556) -->
 
 ---
 
