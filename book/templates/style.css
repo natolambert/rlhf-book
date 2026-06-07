@@ -683,7 +683,12 @@ thead {
 #search .pagefind-ui__result {
     text-align: left;
 }
+#search .pagefind-ui__message,
+#search .pagefind-ui__result-link {
+    color: var(--color-heading);
+}
 #search .pagefind-ui__result-excerpt {
+    color: var(--color-text);
     text-align: left;
 }
 
