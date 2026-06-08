@@ -1,0 +1,161 @@
+% PPO / GRPO clipped surrogate objective vs. policy ratio.
+% Split layout: top = positive advantage, bottom = negative advantage.
+% Each panel shows all THREE regions: below / inside / above the trust region.
+\documentclass[border=8pt]{standalone}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{amsmath}
+\pgfplotsset{compat=1.16}
+\usepgfplotslibrary{groupplots,fillbetween}
+\usetikzlibrary{arrows.meta, calc, backgrounds}
+
+% ---- palette ----
+\definecolor{posgreen}{HTML}{0E9D6E}
+\definecolor{negred}{HTML}{E24A3B}
+\definecolor{clipgray}{HTML}{8A93A0}
+\definecolor{clipdark}{HTML}{535C68}
+\definecolor{guide}{HTML}{C2C8D0}
+\definecolor{ink}{HTML}{1E2630}
+
+\begin{document}
+
+\tikzset{
+  card/.style 2 args={
+    draw=#1, line width=0.9pt, rounded corners=4pt,
+    fill=#2, inner sep=6pt, align=left, font=\footnotesize, text=ink,
+  },
+  kink/.style={circle, fill=#1, draw=white, line width=1pt,
+               inner sep=0pt, minimum size=7pt},
+}
+
+\begin{tikzpicture}
+
+\begin{groupplot}[
+  group style={group size=1 by 2, vertical sep=3.3cm},
+  width=22cm, height=8cm,
+  scale only axis,
+  xmin=0.25, xmax=1.75,
+  axis lines=left,
+  axis line style={ink, line width=1pt, -{Stealth[length=7pt]}},
+  x axis line style={shorten >=-3pt},
+  y axis line style={shorten >=-3pt},
+  tick style={ink, line width=0.8pt},
+  ytick=\empty,
+  xtick={0.75,1.25},
+  xticklabels={$1-\varepsilon$,$1+\varepsilon$},
+  xticklabel style={font=\normalsize, text=ink, yshift=-1pt},
+  extra x ticks={1.0},
+  extra x tick labels={$1$},
+  extra x tick style={grid=none},
+  xmajorgrids=true,
+  grid style={guide, dashed, line width=0.8pt},
+  ylabel style={font=\normalsize, text=ink},
+  clip=false,
+]
+
+% ================= TOP: positive advantage =================
+\nextgroupplot[ymin=-0.02, ymax=1.55, ylabel={$J(\theta)$},
+  title={Positive advantage \ $A_t>0$},
+  title style={font=\bfseries\large, text=posgreen, yshift=1pt},
+  xlabel={$\rho(\theta)=\pi_\theta(a\mid s)\,/\,\pi_{\theta_{\mathrm{old}}}(a\mid s)$},
+  xlabel style={font=\normalsize, text=ink, yshift=3pt}]
+
+  \fill[posgreen, opacity=0.06] (axis cs:0.25,-0.02) rectangle (axis cs:1.25,1.55);
+  \fill[clipgray, opacity=0.11] (axis cs:1.25,-0.02) rectangle (axis cs:1.75,1.55);
+
+  \addplot[posgreen, line width=3pt, domain=0.25:1.25, samples=2] {0.4*x};
+  \addplot[clipgray, line width=3pt, dash pattern=on 7pt off 5pt,
+           domain=1.25:1.75, samples=2] {0.5};
+  \node[kink=posgreen] at (axis cs:1.25,0.5) {};
+  \node[text=posgreen, font=\small, rotate=8] at (axis cs:0.75,0.36) {$\nabla_\theta J(\theta)\neq 0$};
+  \node[text=clipdark, font=\small] at (axis cs:1.5,0.5625) {$\nabla_\theta J(\theta)=0$};
+
+  % --- region 1: rho < 1-eps ---
+  \node[card={posgreen}{posgreen!7}, anchor=center] at (axis cs:0.5,1.12)
+    {\textcolor{posgreen}{\bfseries Unclipped $\rightarrow$ gradient flows}\\[2pt]
+     \begin{tabular}{@{}l@{\hspace{7pt}}l@{}}
+       unclipped & $\rho(\theta)\,A_t$\\[1pt]
+       clipped & $\mathrm{clip}\big(\rho(\theta),1{-}\varepsilon,1{+}\varepsilon\big)A_t=(1-\varepsilon)A_t$\\[3pt]
+       $J(\theta)$ & $\min\!\big(\rho(\theta)A_t,\,(1-\varepsilon)A_t\big)=\rho(\theta)A_t$\\[1pt]
+       $\nabla_\theta J(\theta)$ & $\nabla_\theta\,\rho(\theta)\,A_t \neq 0$
+     \end{tabular}};
+
+  % --- region 2: 1-eps <= rho <= 1+eps ---
+  \node[card={posgreen}{posgreen!7}, anchor=center] at (axis cs:1.0,1.12)
+    {\textcolor{posgreen}{\bfseries Unclipped $\rightarrow$ gradient flows}\\[2pt]
+     \begin{tabular}{@{}l@{\hspace{7pt}}l@{}}
+       unclipped & $\rho(\theta)\,A_t$\\[1pt]
+       clipped & $\mathrm{clip}\big(\rho(\theta),1{-}\varepsilon,1{+}\varepsilon\big)A_t=\rho(\theta)A_t$\\[3pt]
+       $J(\theta)$ & $\min\!\big(\rho(\theta)A_t,\,\rho(\theta)A_t\big)=\rho(\theta)A_t$\\[1pt]
+       $\nabla_\theta J(\theta)$ & $\nabla_\theta\,\rho(\theta)\,A_t \neq 0$
+     \end{tabular}};
+
+  % --- region 3: rho > 1+eps ---
+  \node[card={clipgray}{clipgray!9}, anchor=center] at (axis cs:1.5,1.12)
+    {\textcolor{clipdark}{\bfseries Clipped $\rightarrow$ no update}\\[2pt]
+     \begin{tabular}{@{}l@{\hspace{7pt}}l@{}}
+       unclipped & $\rho(\theta)\,A_t$\\[1pt]
+       clipped & $\mathrm{clip}\big(\rho(\theta),1{-}\varepsilon,1{+}\varepsilon\big)A_t=(1+\varepsilon)A_t$\\[3pt]
+       $J(\theta)$ & $\min\!\big(\rho(\theta)A_t,\,(1+\varepsilon)A_t\big)=(1+\varepsilon)A_t$\\[1pt]
+       $\nabla_\theta J(\theta)$ & $\nabla_\theta\,(1+\varepsilon)\,A_t = 0$
+     \end{tabular}};
+
+  \node[text=black, font=\small] at (axis cs:0.5,0.08) {$\rho<1-\varepsilon$};
+  \node[text=black, font=\small] at (axis cs:1.0,0.08) {$1-\varepsilon<\rho<1+\varepsilon$};
+  \node[text=black, font=\small] at (axis cs:1.5,0.08) {$1+\varepsilon<\rho$};
+
+% ================= BOTTOM: negative advantage =================
+\nextgroupplot[ymin=-1.55, ymax=0.1, ylabel={$J(\theta)$},
+  title={Negative advantage \ $A_t<0$},
+  title style={font=\bfseries\large, text=negred, yshift=1pt},
+  xlabel={$\rho(\theta)=\pi_\theta(a\mid s)\,/\,\pi_{\theta_{\mathrm{old}}}(a\mid s)$},
+  xlabel style={font=\normalsize, text=ink, yshift=3pt}]
+
+  \fill[clipgray, opacity=0.11] (axis cs:0.25,-1.55) rectangle (axis cs:0.75,0.1);
+  \fill[negred, opacity=0.06] (axis cs:0.75,-1.55) rectangle (axis cs:1.75,0.1);
+
+  \addplot[clipgray, line width=3pt, dash pattern=on 7pt off 5pt,
+           domain=0.25:0.75, samples=2] {-1.0};
+  \addplot[negred, line width=3pt, domain=0.75:1.75, samples=2] {-0.4*x - 0.7};
+  \node[kink=negred] at (axis cs:0.75,-1.0) {};
+  \node[text=negred, font=\small, rotate=-8] at (axis cs:1.25,-1.14) {$\nabla_\theta J(\theta)\neq 0$};
+  \node[text=clipdark, font=\small] at (axis cs:0.5,-0.94) {$\nabla_\theta J(\theta)=0$};
+
+  % --- region 1: rho < 1-eps ---
+  \node[card={clipgray}{clipgray!9}, anchor=center] at (axis cs:0.5,-0.40)
+    {\textcolor{clipdark}{\bfseries Clipped $\rightarrow$ no update}\\[2pt]
+     \begin{tabular}{@{}l@{\hspace{7pt}}l@{}}
+       unclipped & $\rho(\theta)\,A_t$\\[1pt]
+       clipped & $\mathrm{clip}\big(\rho(\theta),1{-}\varepsilon,1{+}\varepsilon\big)A_t=(1-\varepsilon)A_t$\\[3pt]
+       $J(\theta)$ & $\min\!\big(\rho(\theta)A_t,\,(1-\varepsilon)A_t\big)=(1-\varepsilon)A_t$\\[1pt]
+       $\nabla_\theta J(\theta)$ & $\nabla_\theta\,(1-\varepsilon)\,A_t = 0$
+     \end{tabular}};
+
+  % --- region 2: 1-eps <= rho <= 1+eps ---
+  \node[card={negred}{negred!7}, anchor=center] at (axis cs:1.0,-0.40)
+    {\textcolor{negred}{\bfseries Unclipped $\rightarrow$ gradient flows}\\[2pt]
+     \begin{tabular}{@{}l@{\hspace{7pt}}l@{}}
+       unclipped & $\rho(\theta)\,A_t$\\[1pt]
+       clipped & $\mathrm{clip}\big(\rho(\theta),1{-}\varepsilon,1{+}\varepsilon\big)A_t=\rho(\theta)A_t$\\[3pt]
+       $J(\theta)$ & $\min\!\big(\rho(\theta)A_t,\,\rho(\theta)A_t\big)=\rho(\theta)A_t$\\[1pt]
+       $\nabla_\theta J(\theta)$ & $\nabla_\theta\,\rho(\theta)\,A_t \neq 0$
+     \end{tabular}};
+
+  % --- region 3: rho > 1+eps ---
+  \node[card={negred}{negred!7}, anchor=center] at (axis cs:1.5,-0.40)
+    {\textcolor{negred}{\bfseries Unclipped $\rightarrow$ gradient flows}\\[2pt]
+     \begin{tabular}{@{}l@{\hspace{7pt}}l@{}}
+       unclipped & $\rho(\theta)\,A_t$\\[1pt]
+       clipped & $\mathrm{clip}\big(\rho(\theta),1{-}\varepsilon,1{+}\varepsilon\big)A_t=(1+\varepsilon)A_t$\\[3pt]
+       $J(\theta)$ & $\min\!\big(\rho(\theta)A_t,\,(1+\varepsilon)A_t\big)=\rho(\theta)A_t$\\[1pt]
+       $\nabla_\theta J(\theta)$ & $\nabla_\theta\,\rho(\theta)\,A_t \neq 0$
+     \end{tabular}};
+
+  \node[text=black, font=\small] at (axis cs:0.5,-1.48) {$\rho<1-\varepsilon$};
+  \node[text=black, font=\small] at (axis cs:1.0,-1.48) {$1-\varepsilon<\rho<1+\varepsilon$};
+  \node[text=black, font=\small] at (axis cs:1.5,-1.48) {$1+\varepsilon<\rho$};
+
+\end{groupplot}
+
+\end{tikzpicture}
+\end{document}
