@@ -184,7 +184,7 @@ Curated prompts → **SFT** → **DPO** → **RLVR**
 
 ---
 
-## MiMo Flash v2 — where MOPD started
+## MiMo Flash v2 (Jan. 2026) — where MOPD started
 
 <!-- rows: 64/36 -->
 ![MiMo Flash v2 post-training: SFT → domain teachers → multi-teacher on-policy distillation](assets/mimo-v2-flash-recipe.png)
@@ -199,7 +199,7 @@ First clean articulation of **multi-teacher on-policy distillation** as the cons
 
 ---
 
-## Nemotron 3 Ultra — two rounds, many teachers
+## Nemotron 3 Ultra (Jun. 2026) — two rounds, many teachers
 
 <!-- columns: 58/42 -->
 
@@ -215,7 +215,7 @@ First clean articulation of **multi-teacher on-policy distillation** as the cons
 
 ---
 
-## MAI-Thinking-1 — closer to R1 than V4
+## MAI-Thinking-1 (Jun. 2026) — closer to R1 than V4
 
 <!-- rows: 48/52 -->
 ![MAI-Thinking-1: specialist RL climbs → trace-distillation SFT → consolidate → final climb](assets/mai-thinking1-recipe.png)
@@ -231,7 +231,7 @@ First clean articulation of **multi-teacher on-policy distillation** as the cons
 
 ---
 
-## Kimi K2.5 — agentic, multimodal
+## Kimi K2.5 (Jan. 2026) — agentic, multimodal
 
 <!-- columns: 56/44 -->
 
@@ -247,7 +247,7 @@ First clean articulation of **multi-teacher on-policy distillation** as the cons
 
 ---
 
-## GLM-5 — staged RL by capability
+## GLM-5 (Feb. 2026) — staged RL by capability
 
 <!-- columns: 58/42 -->
 
@@ -266,6 +266,4 @@ MOPD isn't universal yet but it's surging!
 <!-- layout: section-break -->
 <!-- title: center -->
 
-## So, where are we going?
-
----
+## So, where are we going from here?
