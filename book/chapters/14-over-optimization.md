@@ -9,6 +9,7 @@ prev-chapter: "Tool Use and Function Calling"
 prev-url: "13-tools"
 page-title: Over-Optimization
 search-title: "Chapter 14: Over-Optimization"
+meta-description: "How RLHF over-optimization and reward hacking happen, and why they matter for post-training and alignment."
 next-chapter: "Regularization"
 next-url: "15-regularization"
 ---

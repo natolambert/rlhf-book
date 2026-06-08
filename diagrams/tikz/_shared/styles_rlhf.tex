@@ -1,0 +1,113 @@
+% Shared TikZ styles for RLHF algorithm diagrams
+% Include with: \input{styles_rlhf.tex} BEFORE tikzpicture
+% Requires: \usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, calc, backgrounds}
+
+% Dark-mode support: compile with `\def\figdark{1}` (before \input) to recolor
+% UNBOUNDED ink (arrows, notes, section labels) that sits over the transparent
+% background to the site's dark --color-text. Boxes (filled, with their in-box
+% black text) are left untouched. Light builds are byte-for-byte unchanged.
+\providecommand{\figdark}{0}
+\ifnum\figdark=1
+  \definecolor{inkcolor}{HTML}{CBD5E1}
+  \colorlet{arrowink}{inkcolor}
+  \colorlet{noteink}{inkcolor!85}
+\else
+  \colorlet{arrowink}{black}
+  \colorlet{noteink}{black!70}
+\fi
+% \loose{<color>} wraps INLINE loose ink (legend keys, sub-labels, bare nodes)
+% so a diagram can opt individual color specs into the dark recolor: it returns
+% the original color in light builds and inkcolor in dark builds.
+\ifnum\figdark=1
+  \providecommand{\loose}[1]{inkcolor}
+\else
+  \providecommand{\loose}[1]{#1}
+\fi
+
+\tikzset{
+    % Node styles
+    trained/.style={
+        rectangle,
+        draw=blue!70,
+        fill=blue!15,
+        minimum width=1.8cm,
+        minimum height=0.8cm,
+        font=\footnotesize,
+        rounded corners=3pt,
+        align=center
+    },
+    frozen/.style={
+        rectangle,
+        draw=red!50,
+        fill=red!12,
+        minimum width=1.8cm,
+        minimum height=0.8cm,
+        font=\footnotesize,
+        rounded corners=3pt,
+        align=center
+    },
+    plain/.style={
+        rectangle,
+        draw=black!70,
+        fill=white,
+        minimum width=0.8cm,
+        minimum height=0.6cm,
+        font=\footnotesize,
+        rounded corners=3pt
+    },
+    plainwide/.style={
+        rectangle,
+        draw=black!70,
+        fill=white,
+        minimum width=1.6cm,
+        minimum height=0.8cm,
+        font=\footnotesize,
+        rounded corners=3pt,
+        align=center
+    },
+    groupbox/.style={
+        rectangle,
+        draw=black!30,
+        fill=black!5,
+        rounded corners=4pt,
+        inner sep=8pt
+    },
+    operator/.style={
+        circle,
+        draw=black!70,
+        fill=white,
+        minimum size=0.6cm,
+        font=\footnotesize
+    },
+    seclabel/.style={
+        font=\bfseries\Large,
+        text=arrowink
+    },
+    arrow/.style={
+        ->,
+        >=Stealth,
+        thick,
+        color=arrowink
+    },
+    feedbackarrow/.style={
+        ->,
+        >=Stealth,
+        thick,
+        draw=arrowink,
+        dashed
+    },
+    legendbox/.style={
+        rectangle,
+        draw=arrowink,
+        minimum width=1.2cm,
+        minimum height=0.5cm,
+        font=\scriptsize,
+        rounded corners=2pt,
+        align=center,
+        inner sep=2pt
+    },
+    note/.style={
+        font=\scriptsize\itshape,
+        text=noteink
+    }
+}

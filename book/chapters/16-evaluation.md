@@ -9,6 +9,7 @@ prev-chapter: "Regularization"
 prev-url: "15-regularization"
 page-title: Evaluation
 search-title: "Chapter 16: Evaluation"
+meta-description: "Evaluation methods for measuring RLHF, post-training, reward models, open-ended generation, and model behavior."
 next-chapter: "Crafting Model Character and Products"
 next-url: "17-product"
 ---

@@ -1,0 +1,57 @@
+% Tool-use RL loop for LLMs.
+% A prompt is fed in; the agent and the environment/tools exchange actions and
+% observations over a multi-step TRAJECTORY; a single reward is emitted at the
+% END of the trajectory (closer to classic RL than the per-sample RLHF loop).
+% Member of the "RL feedback loop" family (see rl_loop, rlhf_loop, rlvr_loop).
+\documentclass{article}
+\usepackage[margin=0.4cm, paperwidth=21cm, paperheight=11cm]{geometry}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{lmodern}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{xcolor}
+\usetikzlibrary{positioning, arrows.meta, calc, decorations.pathreplacing}
+\input{styles_rl_loop.tex}
+\pagestyle{empty}
+
+\begin{document}
+\begin{tikzpicture}
+
+% --- nodes ---
+\node[agent] (agent) at (0,0)    {Agent\\[4pt]{\LARGE$\pi_\theta(\cdot)$}};
+\node[data]  (data)  at (-5.8,0) {Training\\data};
+\node[env]   (env)   at (6.0,0)  {Environment\\\& Tools};
+
+% --- prompt: training data -> agent (label above, caption below, same x) ---
+\draw[loop] (data.east) -- (agent.west);
+\node[edgelbl] at (-3.2,0.5)   {$s_i$};
+\node[sublbl]  at (-3.2,-0.52) {Prompts};
+
+% --- trajectory: agent <-> environment, two stacked arrows over many steps ---
+% action / tool call (agent -> env, top)
+\draw[loop] (1.9,0.5) -- (3.7,0.5);
+\node[edgelbl] at (2.6,0.85) {$a_t$};
+% observation / tool response (env -> agent, bottom)
+\draw[loop] (3.7,-0.5) -- (1.9,-0.5);
+\node[edgelbl] at (2.6,-1.0) {$o_t$};
+% brace marking the repeated exchange as one trajectory
+\draw[decorate, decoration={brace, amplitude=6pt}, color=\loose{black!42}, line width=1pt]
+    (3.7,1.35) -- (1.9,1.35);
+\node[sublbl] at (2.8,1.92) {Trajectory ($t = 1,\dots,T$)};
+
+% --- grading / verification: the completed trajectory is scored, and the
+% resulting reward is sent back to the agent (arcing over the top) ---
+\node[scorer, minimum width=4.2cm, minimum height=1.3cm] (grader) at (3.3,3.2)
+    {Grading /\\Verification};
+% completed trajectory -> grader (up the right, into the grader's right side)
+\draw[loop] (env.north) -- (6.0,3.2) -- (grader.east);
+% reward at end of trajectory: grader -> agent, down the center
+\draw[loop] (grader.west) -- (0,3.2) -- (agent.north);
+\node[edgelbl] at (-0.6,2.05) {$r_T$};
+
+% --- policy update caption (centered under the agent) ---
+\node[note]   at (0,-1.55) {$\theta_{t+1} = \theta_t + \alpha\,\nabla_\theta J(\pi_\theta)$};
+\node[sublbl] at (0,-2.05) {Policy Update};
+
+\end{tikzpicture}
+\end{document}

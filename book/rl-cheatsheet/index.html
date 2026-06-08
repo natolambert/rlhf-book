@@ -2,15 +2,38 @@
 <html lang="en" class="rl-cheatsheet-page">
 <head>
   <meta charset="utf-8" />
+  <!-- Set the theme before first paint to avoid a flash of the wrong theme. -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('theme');
+        if (t !== 'light' && t !== 'dark') {
+          t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
+  <script src="theme.js" defer></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+  <link rel="canonical" href="https://rlhfbook.com/rl-cheatsheet" />
+  <meta name="description" content="One-page RL and post-training loss reference for PPO, GRPO, RLOO, REINFORCE, DPO, and related RLHF methods." />
 
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="RLHF Book" />
   <meta property="og:image" content="https://rlhfbook.com/assets/rlhf-book-share.png" />
   <meta property="og:image:width" content="1920" />
   <meta property="og:image:height" content="1080" />
   <meta property="og:title" content="RL Cheatsheet | RLHF Book by Nathan Lambert" />
-  <meta property="og:description" content="One-page reference of core RL loss functions: Policy Gradient, REINFORCE, PPO, GRPO, DPO, and more." />
+  <meta property="og:description" content="One-page RL and post-training loss reference for PPO, GRPO, RLOO, REINFORCE, DPO, and related RLHF methods." />
   <meta property="og:url" content="https://rlhfbook.com/rl-cheatsheet" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="RL Cheatsheet | RLHF Book by Nathan Lambert" />
+  <meta name="twitter:description" content="One-page RL and post-training loss reference for PPO, GRPO, RLOO, REINFORCE, DPO, and related RLHF methods." />
+  <meta name="twitter:image" content="https://rlhfbook.com/assets/rlhf-book-share.png" />
 
   <title>RL Cheatsheet | RLHF Book by Nathan Lambert</title>
 
@@ -189,6 +212,10 @@
   </script>
 </head>
 <body>
+<button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch to dark mode" aria-pressed="false">
+  <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+  <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+</button>
   <header id="title-block-header">
     <h1 class="title"><a href="https://rlhfbook.com/" style="color: inherit; text-decoration: none;">Reinforcement Learning from Human Feedback</a></h1>
     <p class="subtitle">A short introduction to RLHF and post-training focused on language models.</p>

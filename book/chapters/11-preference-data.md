@@ -9,6 +9,7 @@ prev-chapter: "The Nature of Preferences"
 prev-url: "10-preferences"
 page-title: Preference Data
 search-title: "Chapter 11: Preference Data"
+meta-description: "How preference datasets are designed, collected, filtered, and used for RLHF and post-training language models."
 next-chapter: "Synthetic Data"
 next-url: "12-synthetic-data"
 ---

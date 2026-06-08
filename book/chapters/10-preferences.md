@@ -9,6 +9,7 @@ prev-chapter: "Rejection Sampling"
 prev-url: "09-rejection-sampling"
 page-title: The Nature of Preferences
 search-title: "Chapter 10: The Nature of Preferences"
+meta-description: "A conceptual chapter on human preferences, preference learning, and why RLHF can optimize hard-to-specify behaviors."
 next-chapter: "Preference Data"
 next-url: "11-preference-data"
 ---

@@ -2,19 +2,41 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="$lang$" xml:lang="$lang$"$if(dir)$ dir="$dir$"$endif$>
 <head>
   <meta charset="utf-8" />
+  <!-- Set the theme before first paint to avoid a flash of the wrong theme. -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('theme');
+        if (t !== 'light' && t !== 'dark') {
+          t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+  <link rel="canonical" href="$if(canonical-url)$$canonical-url$$else$https://rlhfbook.com/$endif$" />
+  <meta name="description" content="$if(description)$$description$$else$A free online book and course on RLHF, preference tuning, reward models, RLVR, and post-training language models.$endif$" />
 
   <!-- Add Open Graph meta tags for share image -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="RLHF Book" />
   <meta property="og:image" content="https://rlhfbook.com/assets/rlhf-book-share.png" />
   <meta property="og:image:width" content="1920" />
   <meta property="og:image:height" content="1080" />
 
   <!-- <meta property="og:title" content="$if(title-prefix)$$title-prefix$ – $endif$$pagetitle$" /> -->
-  <meta property="og:title" content="RLHF Book by Nathan Lambert" />
-  <meta property="og:description" content="The Reinforcement Learning from Human Feedback Book" />
-  <meta property="og:url" content="https://rlhfbook.com" />
+  <meta property="og:title" content="$if(seo-title)$$seo-title$$else$RLHF Book: Reinforcement Learning from Human Feedback and LLM Post-Training$endif$" />
+  <meta property="og:description" content="$if(description)$$description$$else$A free online book and course on RLHF, preference tuning, reward models, RLVR, and post-training language models.$endif$" />
+  <meta property="og:url" content="$if(canonical-url)$$canonical-url$$else$https://rlhfbook.com/$endif$" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="$if(seo-title)$$seo-title$$else$RLHF Book: Reinforcement Learning from Human Feedback and LLM Post-Training$endif$" />
+  <meta name="twitter:description" content="$if(description)$$description$$else$A free online book and course on RLHF, preference tuning, reward models, RLVR, and post-training language models.$endif$" />
+  <meta name="twitter:image" content="https://rlhfbook.com/assets/rlhf-book-share.png" />
 
   $for(author-meta)$
   <meta name="author" content="$author-meta$" />
@@ -27,9 +49,11 @@ $if(keywords)$
 $endif$
   <!-- <title>$if(title-prefix)$$title-prefix$ – $endif$$pagetitle$</title> -->
    <!-- SEO and Open Graph titles -->
-  <title>
-    RLHF Book by Nathan Lambert
-  </title>
+  <title>$if(seo-title)$$seo-title$$else$RLHF Book: Reinforcement Learning from Human Feedback and LLM Post-Training$endif$</title>
+
+  <script type="application/ld+json">
+$book-jsonld$
+  </script>
 
   <style>
     $styles.html()$
@@ -84,6 +108,7 @@ $endfor$
 <script src="nav.js" defer></script>
 <script src="table-scroll.js" defer></script>
 <script src="copy-code.js" defer></script>
+<script src="theme.js" defer></script>
 
 <!-- Privacy-friendly analytics by Plausible -->
 <script async src="https://plausible.io/js/pa-Rr3_iGtVZcPHhxkdbyDIb.js"></script>
@@ -94,6 +119,10 @@ $endfor$
 
 </head>
 <body>
+<button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch to dark mode" aria-pressed="false">
+  <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+  <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+</button>
 $for(include-before)$
 $include-before$
 $endfor$
@@ -116,10 +145,10 @@ $if(abstract)$
 $endif$
 </header>
 $endif$
-  <div style="display: flex; align-items: center; justify-content: space-between; gap: 1em; flex-wrap: wrap; margin: 1.5em 20px 0; padding: 0.8em 1.2em; border: 1px solid #e2e2e2; border-radius: 0.35em; background: #fff; box-shadow: 0 4px 12px rgba(17,17,17,0.06);">
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 1em; flex-wrap: wrap; margin: 1.5em 20px 0; padding: 0.8em 1.2em; border: 1px solid var(--color-border); border-radius: 0.35em; background: var(--color-bg-section); box-shadow: 0 4px 12px var(--color-shadow);">
     <div>
       <h3 style="margin: 0 0 0.15em 0; font-size: 1.05em;">Welcome to the Course</h3>
-      <p style="font-size: 0.88em; color: #666; margin: 0;">Video introduction and overview of the RLHF Book</p>
+      <p style="font-size: 0.88em; color: var(--color-text-muted); margin: 0;">Video introduction and overview of the RLHF Book</p>
     </div>
     <a href="https://www.youtube.com/watch?v=jQPiH-KB4B0&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 0.4em; font-size: 0.85em; padding: 0.35em 0.7em; border-radius: 0.3em; border: 1px solid #c0392b; background: rgba(192,57,43,0.1); color: #c0392b; text-decoration: none; white-space: nowrap;">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>

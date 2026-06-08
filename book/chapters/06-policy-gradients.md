@@ -9,6 +9,7 @@ prev-chapter: "Reward Modeling"
 prev-url: "05-reward-models"
 page-title: Reinforcement Learning
 search-title: "Chapter 6: Reinforcement Learning"
+meta-description: "Policy gradient methods for RLHF and LLM post-training, including PPO, REINFORCE, RLOO, GRPO, and implementation details."
 next-chapter: "Reasoning and Inference-Time Scaling"
 next-url: "07-reasoning"
 lectures:
@@ -80,7 +81,7 @@ $$G_{t} = \gamma{G_{t+1}} + R_{t+1}.$$ {#eq:recursive_return}
 
 This return is the basis for learning a value function $V(s)$ that is the estimated future return given a current state:
 
-$$V(s) = \mathbb{E}\big[G_t | S_t = s \big].$$ {#eq:value_function}
+$$V(s) = \mathbb{E}\left[G_t \mid S_t = s \right].$$ {#eq:value_function}
 
 All policy gradient algorithms optimize a policy $\pi_\theta(a\mid s)$ to maximize expected return; this objective can be expressed using the induced value function $V^{\pi_\theta}(s)$.
 
@@ -209,8 +210,8 @@ Where $\Psi_t$ can be the following (where the rewards can also often be discoun
 The *baseline* is a value used to reduce variance of policy updates (more on this below).
 
 For language models, some of these concepts do not make as much sense.
-For example, for a deterministic policy $\pi$ the state value is $V^{\pi}(s_t) = Q^{\pi}(s_t, \pi(s_t))$ (and for the optimal value function one has $V^*(s_t)=\max_{a_t} Q^*(s_t,a_t)$). For a stochastic policy, the analogous identity is $V^{\pi}(s_t) = \mathbb{E}_{a_t \sim \pi(\cdot\mid s_t)}[Q^{\pi}(s_t,a_t)]$.
-The Bellman equation relates Q to V: in general $Q^\pi(s_t,a_t) = \mathbb{E}[r_t + \gamma V^\pi(s_{t+1}) \mid s_t, a_t]$, but for language models where state transitions are deterministic, this simplifies to $Q(s_t,a_t) = r_t + \gamma V(s_{t+1})$.
+For example, for a deterministic policy $\pi$ the state value is $V^{\pi}(s_t) = Q^{\pi}(s_t, \pi(s_t))$ (and for the optimal value function one has $V^*(s_t)=\max_{a_t} Q^*(s_t,a_t)$). For a stochastic policy, the analogous identity is $V^{\pi}(s_t) = \mathbb{E}_{a_t \sim \pi(\cdot\mid s_t)}\!\left[Q^{\pi}(s_t,a_t)\right]$.
+The Bellman equation relates Q to V: in general $Q^\pi(s_t,a_t) = \mathbb{E}\!\left[r_t + \gamma V^\pi(s_{t+1}) \mid s_t, a_t\right]$, but for language models where state transitions are deterministic, this simplifies to $Q(s_t,a_t) = r_t + \gamma V(s_{t+1})$.
 The advantage function measures how much better action $a_t$ is compared to the average:
 
 $$A(s_t,a_t) = Q(s_t,a_t) - V(s_t) = r_t + \gamma V(s_{t+1}) - V(s_t)$$ {#eq:advantage_trick}
@@ -222,7 +223,7 @@ This final form is exactly the temporal difference (TD) residual (item 6 above) 
 The vanilla policy gradient implementation optimizes the above expression for $J(\theta)$ by differentiating with respect to the policy parameters.
 A simple version, with respect to the overall return, is:
 
-$$\nabla_\theta J(\theta) = \mathbb{E}_\tau \left[ \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t|s_t) R_t \right]$$ {#eq:vanilla_policy_gradient}
+$$\nabla_\theta J(\theta) = \mathbb{E}_\tau \left[ \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t|s_t) G_t \right]$$ {#eq:vanilla_policy_gradient}
 
 A common problem with vanilla policy gradient algorithms is the high variance in gradient updates, which can be mitigated in multiple ways.
 The high variance comes from the gradient updates being computed by estimating the return $G$ from an often small set of rollouts in the environment that tend to be susceptible to noise (e.g. the stochastic nature of generating from language models with temperature $>0$).
@@ -230,7 +231,7 @@ The variance across return estimates is higher in domains with sparse rewards, a
 In order to alleviate this, various techniques are used to normalize the value estimation, called *baselines*. 
 Baselines accomplish this in multiple ways, effectively normalizing by the value of the state relative to the downstream action (e.g. in the case of Advantage, which is the difference between the Q value and the value). 
 The simplest baselines are averages over the batch of rewards or a moving average.
-Even these action-independent baselines can reduce variance without changing the expected gradient, since $\mathbb{E}_{a \sim \pi(a|s)}[b(s) \nabla_\theta \log \pi_\theta(a|s)] = 0$ for any state-dependent $b(s)$, improving the learning signal substantially.
+Even these action-independent baselines can reduce variance without changing the expected gradient, since $\mathbb{E}_{a \sim \pi(a|s)}\!\left[b(s) \nabla_\theta \log \pi_\theta(a|s)\right] = 0$ for any state-dependent $b(s)$, improving the learning signal substantially.
 
 Many of the policy gradient algorithms discussed in this chapter build on the advantage formulation of policy gradient:
 
@@ -260,10 +261,10 @@ With more modern notation and the generalized return $G$, the REINFORCE operator
 $$
 \nabla_{\theta}\,J(\theta)
 \;=\;
-\mathbb{E}_{\tau \sim \pi_{\theta}}\!\Big[
+\mathbb{E}_{\tau \sim \pi_{\theta}}\!\left[
     \sum_{t=0}^{T}
     \nabla_{\theta} \log \pi_{\theta}(a_t \mid s_t)\,(G_t - b(s_t))
-\Big],
+\right],
 $$ {#eq:REINFORCE_with_baseline}
 
 Here, the value $G_t - b(s_t)$ is the *advantage* of the policy at the current state, so we can reformulate the policy gradient in a form that we continue later with the advantage, $A$:
@@ -271,15 +272,15 @@ Here, the value $G_t - b(s_t)$ is the *advantage* of the policy at the current s
 $$
 \nabla_{\theta}\,J(\theta)
 \;=\;
-\mathbb{E}_{\tau \sim \pi_{\theta}}\!\Big[
+\mathbb{E}_{\tau \sim \pi_{\theta}}\!\left[
     \sum_{t=0}^{T}
     \nabla_{\theta} \log \pi_{\theta}(a_t \mid s_t)\,A_t
-\Big],
+\right],
 $$ {#eq:REINFORCE_with_advantage}
 
 REINFORCE is a specific implementation of vanilla policy gradient that uses a Monte Carlo estimator of the gradient.
 
-![Basic REINFORCE architecture for language models. The shaped reward combines the reward model score with a KL penalty from the reference model. We build on this structure throughout the chapter.](images/reinforce_tikz.png){#fig:reinforce-arch}
+![Basic REINFORCE architecture for language models. The shaped reward combines the reward model score with a KL penalty from the reference model. We build on this structure throughout the chapter.](images/reinforce_tikz.png){#fig:reinforce-arch data-dark-src="images/reinforce_tikz-dark.png"}
 
 ### REINFORCE Leave One Out (RLOO)
 
@@ -319,7 +320,7 @@ PPO subtracts a per-token KL from the per-token reward before computing $A_t$, g
 GRPO typically retains a sequence-level advantage but adds a separate per-token term to the loss, rather than subtracting it from the reward.
 These details and trade-offs are discussed later in the chapter.
 
-![REINFORCE Leave-One-Out (RLOO) architecture. Multiple completions per prompt provide a leave-one-out baseline for advantage estimation without learning a value function.](images/rloo_tikz.png){#fig:rloo-arch}
+![REINFORCE Leave-One-Out (RLOO) architecture. Multiple completions per prompt provide a leave-one-out baseline for advantage estimation without learning a value function.](images/rloo_tikz.png){#fig:rloo-arch data-dark-src="images/rloo_tikz-dark.png"}
 
 <!-- A nice formulation of LM RL loss functions is found here https://arxiv.org/pdf/2502.01600 -->
 
@@ -364,7 +365,7 @@ $$ J(\theta) = \frac{1}{|a|} \sum_{t=0}^{|a|} \min\left(\frac{\pi_\theta(a_{t}|s
 This is the per-token version of PPO, which also applies to other policy-gradient methods, but is explored further later in the implementation section of this chapter.
 Here, the term for averaging by the number of tokens in the action, $\frac{1}{|a|}$, comes from common implementation practices, but is not in a formal derivation of the loss (shown in [@liu2025understanding]).
 
-![PPO framework. A learned value function enables Generalized Advantage Estimation (GAE) for per-token advantages, used with a clipped surrogate objective.](images/ppo_tikz.png){#fig:ppo-arch}
+![PPO framework. A learned value function enables Generalized Advantage Estimation (GAE) for per-token advantages, used with a clipped surrogate objective.](images/ppo_tikz.png){#fig:ppo-arch data-dark-src="images/ppo_tikz-dark.png"}
 
 Here we will explain the different cases this loss function triggers given various advantages and policy ratios.
 At an implementation level, the inner computations for PPO involve two main terms: 1) a standard policy gradient with a learned advantage and 2) a clipped policy gradient based on a maximum step size.
@@ -481,7 +482,7 @@ Generalized Advantage Estimation (GAE) is considered the state-of-the-art and ca
 A value function can also be learned with Monte Carlo estimates from the rollouts used to update the policy. 
 PPO has two losses -- one to learn the value function and another to use that value function to update the policy.
 
-![Value function training uses on-policy rollouts to compute targets. The model predicts $V_t$ at each token, which is trained via MSE against the target return $\hat{V}_t$. The advantage $A_t = \hat{V}_t - V_t$ then weights the policy gradient update.](images/value_fn_training.png){#fig:value_fn_training}
+![Value function training uses on-policy rollouts to compute targets. The model predicts $V_t$ at each token, which is trained via MSE against the target return $\hat{V}_t$. The advantage $A_t = \hat{V}_t - V_t$ then weights the policy gradient update.](images/value_fn_training.png){#fig:value_fn_training data-dark-src="images/value_fn_training-dark.png"}
 
 A simple example implementation of a value network loss is shown below.
 
@@ -566,7 +567,7 @@ With the advantage computation for the completion index $i$:
 
 $$A_i = \frac{r_i - \text{mean}({r_1, r_2, \cdots, r_G})}{\text{std}({r_1, r_2, \cdots, r_G})}.$$ {#eq:GRPO_ADV}
 
-![GRPO architecture. Advantages are normalized relative to the group mean and standard deviation. The KL penalty is applied directly in the loss rather than shaping the reward.](images/grpo_tikz.png){#fig:grpo-arch}
+![GRPO architecture. Advantages are normalized relative to the group mean and standard deviation. The KL penalty is applied directly in the loss rather than shaping the reward.](images/grpo_tikz.png){#fig:grpo-arch data-dark-src="images/grpo_tikz-dark.png"}
 
 Intuitively, the GRPO update is comparing multiple answers to a single question within a batch.
 The model learns to become more like the answers marked as correct and less like the others. 
@@ -1261,7 +1262,7 @@ $$
 \hat{A}_t^{GAE(\gamma,\lambda)} = (1-\lambda)(\hat{A}_t^{(1)} + \lambda\hat{A}_t^{(2)} + \lambda^2\hat{A}_t^{(3)} + \cdots) \\
 = (1-\lambda)(\delta_t^V + \lambda(\delta_t^V + \gamma\delta_{t+1}^V) + \lambda^2(\delta_t^V + \gamma\delta_{t+1}^V + \gamma^2\delta_{t+2}^V) + \cdots) \\
 = (1-\lambda)(\delta_t^V(1 + \lambda + \lambda^2 + \cdots) + \gamma\delta_{t+1}^V(\lambda + \lambda^2 + \cdots) + \cdots) \\
-= (1-\lambda)(\delta_t^V\frac{1}{1-\lambda} + \gamma\delta_{t+1}^V\frac{\lambda}{1-\lambda} + \cdots) \\
+= (1-\lambda)\left(\delta_t^V\frac{1}{1-\lambda} + \gamma\delta_{t+1}^V\frac{\lambda}{1-\lambda} + \cdots\right) \\
 = \sum_{l=0}^{\infty}(\gamma\lambda)^l\delta_{t+l}^V
 \end{array}
 $$ {#eq:GAE_DFN}

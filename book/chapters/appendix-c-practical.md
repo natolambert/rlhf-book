@@ -9,6 +9,7 @@ prev-chapter: "Beyond \"Just Style\""
 prev-url: "appendix-b-style"
 page-title: "Appendix C: Practical Issues"
 search-title: "Appendix C: Practical Issues"
+meta-description: "Practical advice for running RLHF and post-training experiments, from engineering constraints to debugging."
 next-chapter: "Home"
 next-url: "https://rlhfbook.com/"
 ---

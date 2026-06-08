@@ -28,8 +28,11 @@ python book/scripts/some_script.py
 
 ## Agent Skills
 
+`AGENTS.md` is intentionally a symlink to `CLAUDE.md` for Codex compatibility. If you are Codex and the symlink is present, edit `CLAUDE.md` directly; do not replace, unlink, or edit through `AGENTS.md`.
+
 The repo includes Claude Code skills under `.claude/skills/`.
 For code experiments, use `.claude/skills/run-rlhf-code-experiment/SKILL.md`; it maps reader goals to the maintained examples under `code/` and specifies what metrics to report.
+For live preview of teaching slides, use `.claude/skills/serve-course-lecture/SKILL.md`; course lecture HTML must be served from `teach/course/` or images referenced as `assets/...` will break.
 
 ## Directory Structure
 
@@ -121,8 +124,11 @@ The Citation block (which has a different heading level across pages — h3 on i
 
 - Keep diagrams simple and artist-friendly
 - Use consistent visual grammar across related figures
-- Prefer SVG for scalability, PNG for final book assets
+- **Arrows: flush at the source, slight gap at the target** (`shorten >=5pt` in TikZ) — reads as a more dynamic connection than edge-to-edge arrows
+- **Don't waste vertical space** — keep boxes/rows close so a figure reads as one compact unit, not floating in whitespace (`-trim` only crops the outer canvas, not layout gaps)
+- Prefer SVG for scalability, PNG for final book assets; TikZ PNGs rasterize at `TIKZ_DENSITY` dpi (default 800)
 - Mockups are iterative - not pixel-perfect
+- See `diagrams/README.md` for the full diagram style conventions and `tikz/` topic-folder layout
 - Trailing whitespace at the end of Markdown lines is acceptable; do not remove it during cleanup or typo-only edits.
 
 ## Next Steps (Diagrams PR)

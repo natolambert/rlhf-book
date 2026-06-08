@@ -9,6 +9,7 @@ prev-chapter: "Instruction Fine-Tuning"
 prev-url: "04-instruction-tuning"
 page-title: Reward Modeling
 search-title: "Chapter 5: Reward Modeling"
+meta-description: "How reward models are trained from preference data and used as the learned objective in RLHF post-training pipelines."
 next-chapter: "Reinforcement Learning"
 next-url: "06-policy-gradients"
 lectures:
@@ -87,7 +88,7 @@ $$\mathcal{L}(\theta) = \log \left( 1 + e^{r_{\theta}(y_r \mid x) - r_{\theta}(y
 These are equivalent by letting $\Delta = r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x)$ and using $\sigma(\Delta) = \frac{1}{1 + e^{-\Delta}}$, which implies $-\log\sigma(\Delta) = \log(1 + e^{-\Delta}) = \log\left(1 + e^{r_{\theta}(y_r \mid x) - r_{\theta}(y_c \mid x)}\right)$.
 They both appear in the RLHF literature.
 
-![Training a preference reward model requires pairs of chosen and rejected completions. The model computes a scalar score for each completion from a sequence-level representation, often the end-of-sequence (EOS) token's hidden state, and the contrastive loss depends only on the score difference between the two.](images/pref_rm_training.png){#fig:pref_rm_training}
+![Training a preference reward model requires pairs of chosen and rejected completions. The model computes a scalar score for each completion from a sequence-level representation, often the end-of-sequence (EOS) token's hidden state, and the contrastive loss depends only on the score difference between the two.](images/pref_rm_training.png){#fig:pref_rm_training data-dark-src="images/pref_rm_training-dark.png"}
 
 ## The Default Reward Model Architecture
 
@@ -241,7 +242,7 @@ are language models, with a small scalar head that outputs predictions on a per-
 To translate, this is implemented as a language modeling head that can predict two classes per token (1 for correct, 0 for incorrect), rather than a classification head of a traditional RM that outputs one logit for the entire sequence.
 Formally, following [@lyu2025exploring] this is a per-token binary cross-entropy loss:
 
-$$\mathcal{L}_{\text{CE}}(\theta) = -\mathbb{E}_{(s,r)\sim \mathcal{D}}[r\log p_\theta(s) + (1-r)\log(1-p_\theta(s))]$$ {#eq:orm_loss}
+$$\mathcal{L}_{\text{CE}}(\theta) = -\mathbb{E}_{(s,r)\sim \mathcal{D}}\left[r\log p_\theta(s) + (1-r)\log(1-p_\theta(s))\right]$$ {#eq:orm_loss}
 
 where $r \in \{0,1\}$ is a binary label where 1 applies to a correct answer to a given prompt and 0 applies to an incorrect answer, and $p_\theta(s)$ is the scalar proportional to the predicted probability of correctness from the model being trained.
 In code, this outcome label is copied onto every completion token, while prompt tokens are masked with `-100` so they do not contribute to the loss.
@@ -316,9 +317,9 @@ loss = F.binary_cross_entropy_with_logits(
 The important intuition here is that an ORM will output a probability of correctness at every token in the sequence (judged only by the final answer -- reasoning errors are not captured in the ORM training process).
 This can be a noisy process, as the updates and loss propagate per token depending on outcomes and attention mappings.
 
-![At inference time, an outcome reward model outputs per-token correctness probabilities over completion tokens. Prompt tokens are ignored for scoring, and the completion probabilities can be aggregated into a response-level score for verification, filtering, or reranking.](images/orm_inference.png){#fig:orm_inference}
+![At inference time, an outcome reward model outputs per-token correctness probabilities over completion tokens. Prompt tokens are ignored for scoring, and the completion probabilities can be aggregated into a response-level score for verification, filtering, or reranking.](images/orm_inference.png){#fig:orm_inference data-dark-src="images/orm_inference-dark.png"}
 
-![Training an outcome reward model uses offline labels from a verifier or dataset (e.g., all 1s for correct completions). Each completion token is trained with binary cross-entropy against the outcome label, and per-token probabilities are aggregated into a final score for verification, filtering, or reranking.](images/orm_training.png){#fig:orm_training}
+![Training an outcome reward model uses offline labels from a verifier or dataset (e.g., all 1s for correct completions). Each completion token is trained with binary cross-entropy against the outcome label, and per-token probabilities are aggregated into a final score for verification, filtering, or reranking.](images/orm_training.png){#fig:orm_training data-dark-src="images/orm_training-dark.png"}
 
 These models have continued to be used, but are less supported in open-source RLHF tools. 
 For example, the same type of ORM was used in the seminal work *Let's Verify Step by Step* [@lightman2023let], but without the language modeling prediction piece of the loss.
@@ -355,7 +356,7 @@ Traditionally PRMs are trained with a language modeling head that outputs a toke
 These predictions tend to be -1 for incorrect, 0 for neutral, and 1 for correct.
 These labels do not necessarily tie to whether or not the model is on the right path, but rather to whether the step is correct.
 
-![Process reward models provide supervision only at step boundaries (e.g., newline tokens). Each step receives a 3-class label: correct (+1), neutral (0), or incorrect (-1). All other tokens are masked during training.](images/prm_training_inference.png){#fig:prm_training_inference}
+![Process reward models provide supervision only at step boundaries (e.g., newline tokens). Each step receives a 3-class label: correct (+1), neutral (0), or incorrect (-1). All other tokens are masked during training.](images/prm_training_inference.png){#fig:prm_training_inference data-dark-src="images/prm_training_inference-dark.png"}
 
 An example construction of a PRM is shown below.
 
@@ -447,7 +448,7 @@ This is technically still a Bradley-Terry model and would fall in the first clas
 ORMs and value functions can appear similar since both produce per-token outputs with the same head architecture, but they differ in *what they predict* and *where targets come from*:
 
 - **ORMs** predict an immediate, token-local quantity: $p(\text{correct}_t)$ or $r_t$. Targets come from *offline labels* (a verifier or dataset marking tokens/sequences as correct or incorrect).
-- **Value functions** predict the expected *remaining* return: $V(s_t) = \mathbb{E}[\sum_{k \geq t} \gamma^{k-t} r_k \mid s_t]$. Targets are typically *computed from on-policy rollouts* under the current policy $\pi_\theta$, and change as the policy changes (technically, value functions can also be off-policy, but this is not established for work in language modeling).
+- **Value functions** predict the expected *remaining* return: $V(s_t) = \mathbb{E}\left[\sum_{k \geq t} \gamma^{k-t} r_k \mid s_t\right]$. Targets are typically *computed from on-policy rollouts* under the current policy $\pi_\theta$, and change as the policy changes (technically, value functions can also be off-policy, but this is not established for work in language modeling).
 
 If you define a dense token reward $r_t = \mathbb{1}[\text{token is correct}]$ and use $\gamma = 1$, then an ORM is learning $r_t$ (or $p(r_t = 1)$) while the value head is learning the remaining-sum $\sum_{k \geq t} r_k$.
 They can share the same base model and head dimensions, but the *semantics and supervision pipeline* differ: ORMs are trained offline from fixed labels, while value functions are trained on-policy and used to compute advantages $A_t = \hat{R}_t - V_t$ for policy gradients.

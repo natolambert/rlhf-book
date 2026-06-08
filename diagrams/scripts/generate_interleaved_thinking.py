@@ -62,7 +62,8 @@ def draw_arrow(ax, x1, x2, y, color="#9E9E9E"):
     )
 
 
-def render_interleaved_thinking(output_path: Path, fmt: str = "png", dpi: int = 200):
+def render_interleaved_thinking(output_path: Path, fmt: str = "png", dpi: int = 200,
+                                transparent: bool = False):
     """Render the two-panel interleaved thinking diagram."""
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(16, 6),
                                     gridspec_kw={"height_ratios": [1, 1],
@@ -224,7 +225,8 @@ def render_interleaved_thinking(output_path: Path, fmt: str = "png", dpi: int = 
                  va="center", fontsize=9, color="#505050")
         cursor_x = lx - 0.25
 
-    fig.savefig(output_path, format=fmt, dpi=dpi, bbox_inches="tight", facecolor="white")
+    fig.savefig(output_path, format=fmt, dpi=dpi, bbox_inches="tight",
+                facecolor="none" if transparent else "white", transparent=transparent)
     plt.close(fig)
     print(f"Generated: {output_path}")
 
@@ -238,17 +240,25 @@ def main():
     )
     parser.add_argument("--format", choices=["png", "svg", "pdf"], default="png")
     parser.add_argument("--dpi", type=int, default=200)
+    parser.add_argument(
+        "--theme", choices=["light", "dark"], default="light",
+        help="light = white background; dark = transparent background for dark-mode pages",
+    )
     args = parser.parse_args()
+
+    dark = args.theme == "dark"
+    suffix = "-dark" if dark else ""
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     svg_dir = Path(__file__).parent.parent / "generated" / "svg"
     svg_dir.mkdir(parents=True, exist_ok=True)
 
     render_interleaved_thinking(
-        args.output_dir / f"interleaved_thinking.{args.format}",
-        fmt=args.format, dpi=args.dpi,
+        args.output_dir / f"interleaved_thinking{suffix}.{args.format}",
+        fmt=args.format, dpi=args.dpi, transparent=dark,
     )
-    if args.format == "png":
+    # SVG sidecar is for print/PDF (light only); skip it for the dark variant.
+    if args.format == "png" and not dark:
         render_interleaved_thinking(svg_dir / "interleaved_thinking.svg", fmt="svg")
 
 

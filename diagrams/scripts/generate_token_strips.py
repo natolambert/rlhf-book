@@ -54,6 +54,11 @@ COLOR_BORDER_REJECTED = "#DC143C"  # crimson border
 COLOR_INFERENCE = "#ADD8E6"  # light blue for inference
 COLOR_BORDER_INFERENCE = "#1E90FF"  # dodger blue border
 
+# Dark-mode ink for UNBOUNDED text (titles, row labels, annotations, legend
+# text) that sits over the transparent background. Matches the site's dark
+# --color-text. Text inside filled boxes keeps its original color.
+INK_DARK = "#cbd5e1"
+
 
 def render_single_strip(
     ax,
@@ -64,6 +69,7 @@ def render_single_strip(
     show_legend: bool = True,
     color_mode: str = "normal",  # "normal", "rejected", or "inference"
     label_prefix: str = "",
+    transparent: bool = False,
 ):
     """Render a single token strip on the given axes."""
     n_tokens = len(strip.tokens)
@@ -78,7 +84,7 @@ def render_single_strip(
             va="center",
             fontsize=9,
             fontweight="bold",
-            color="#404040",
+            color=INK_DARK if transparent else "#404040",
         )
 
     for i, tok in enumerate(strip.tokens):
@@ -162,6 +168,7 @@ def render_token_strip(
     box_w: float = 1.0,
     box_h: float = 0.6,
     dpi: int = 150,
+    transparent: bool = False,
 ) -> None:
     """Render a token strip visualization to file."""
 
@@ -194,6 +201,7 @@ def render_token_strip(
         box_h=box_h,
         color_mode=strip.highlight_color_mode,
         label_prefix=strip.primary_label,
+        transparent=transparent,
     )
 
     # Render secondary strip if present
@@ -206,6 +214,7 @@ def render_token_strip(
             box_h=box_h,
             color_mode=strip.secondary_color_mode,
             label_prefix=strip.secondary_label,
+            transparent=transparent,
         )
 
     # Title
@@ -220,6 +229,7 @@ def render_token_strip(
         va="bottom",
         fontsize=13,
         fontweight="bold",
+        color=INK_DARK if transparent else "black",
     )
 
     # Annotation below
@@ -235,7 +245,7 @@ def render_token_strip(
         va="top",
         fontsize=9,
         style="italic",
-        color="#505050",
+        color=INK_DARK if transparent else "#505050",
     )
 
     # Legend - only show items that are used
@@ -273,7 +283,8 @@ def render_token_strip(
         )
         ax.add_patch(legend_rect)
         ax.text(
-            legend_x + 0.4, y, label, va="center", fontsize=8, color="#404040"
+            legend_x + 0.4, y, label, va="center", fontsize=8,
+            color=INK_DARK if transparent else "#404040",
         )
 
     # Adjust axes
@@ -286,7 +297,8 @@ def render_token_strip(
     ax.axis("off")
 
     # Save
-    fig.savefig(output_path, format=fmt, dpi=dpi, bbox_inches="tight", facecolor="white")
+    fig.savefig(output_path, format=fmt, dpi=dpi, bbox_inches="tight",
+                facecolor="none" if transparent else "white", transparent=transparent)
     plt.close(fig)
     print(f"Generated: {output_path}")
 
@@ -409,13 +421,22 @@ def main():
         default="png",
         help="Output format",
     )
+    parser.add_argument(
+        "--theme",
+        choices=["light", "dark"],
+        default="light",
+        help="light = white background; dark = transparent background for dark-mode pages",
+    )
     args = parser.parse_args()
+
+    dark = args.theme == "dark"
+    suffix = "-dark" if dark else ""
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
     for strip in STRIPS:
-        output_path = args.output_dir / f"{strip.name}.{args.format}"
-        render_token_strip(strip, output_path, fmt=args.format)
+        output_path = args.output_dir / f"{strip.name}{suffix}.{args.format}"
+        render_token_strip(strip, output_path, fmt=args.format, transparent=dark)
 
     print(f"\nGenerated {len(STRIPS)} token strip diagrams in {args.output_dir}")
 

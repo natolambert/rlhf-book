@@ -1,0 +1,75 @@
+% Shared styles for the "RL feedback loop" diagram family:
+%   rl_loop, rlhf_loop, rlvr_loop, tooluse_rl.
+% Input with \input{styles_rl_loop.tex} (found via TEXINPUTS = tikz/_shared).
+% Requires: xcolor, \usetikzlibrary{arrows.meta}.
+%
+% Conventions:
+%   - boxes share a consistent palette and font (Latin Modern Sans bold)
+%   - loop arrows are FLUSH at their source and leave a SLIGHT GAP at the
+%     target (shorten >=), which reads as a cleaner, more dynamic connection.
+
+\definecolor{agentorange}{RGB}{245,166,35}
+\definecolor{envgreen}{RGB}{39,174,96}
+\definecolor{scorerblue}{RGB}{174,214,241}
+\definecolor{datagray}{RGB}{171,171,171}
+\definecolor{arrownavy}{RGB}{46,49,146}
+
+% Dark-mode support: compile with `\def\figdark{1}` (before \input) to recolor
+% UNBOUNDED ink (loop arrows, edge labels, sub-labels, notes) over the
+% transparent background to the site's dark --color-text. The filled boxes
+% (with their black in-box text) are unchanged. Light builds are identical.
+\providecommand{\figdark}{0}
+\ifnum\figdark=1
+  \definecolor{inkcolor}{HTML}{CBD5E1}
+  \colorlet{loopcolor}{inkcolor}
+  \colorlet{edgeink}{inkcolor}
+  \colorlet{subink}{inkcolor!75}
+  \colorlet{noteink}{inkcolor!80}
+\else
+  \colorlet{loopcolor}{arrownavy}
+  \colorlet{edgeink}{black}
+  \colorlet{subink}{black!42}
+  \colorlet{noteink}{black!55}
+\fi
+% \loose{<color>} wraps INLINE loose ink so individual color specs can opt into
+% the dark recolor: original color in light builds, inkcolor in dark builds.
+\ifnum\figdark=1
+  \providecommand{\loose}[1]{inkcolor}
+\else
+  \providecommand{\loose}[1]{#1}
+\fi
+
+\tikzset{
+    % --- nodes ---
+    agent/.style={                 % the policy being trained
+        rectangle, rounded corners=20pt, fill=agentorange,
+        minimum width=3.8cm, minimum height=2.2cm,
+        align=center, font=\large\bfseries, text=black
+    },
+    scorer/.style={                % reward model / verifiable reward
+        rectangle, fill=scorerblue,
+        minimum width=3.6cm, minimum height=1.9cm,
+        align=center, font=\large\bfseries, text=black
+    },
+    data/.style={                  % training data / prompt source
+        rectangle, rounded corners=10pt, fill=datagray,
+        minimum width=2.9cm, minimum height=1.9cm,
+        align=center, font=\large\bfseries, text=black
+    },
+    env/.style={                   % target environment
+        rectangle, fill=envgreen,
+        minimum width=4.6cm, minimum height=1.9cm,
+        align=center, font=\large\bfseries, text=black
+    },
+    % --- arrows ---
+    % Flush at the source, slight gap at the target end.
+    loop/.style={
+        -{Stealth[length=4.5mm, width=4mm]},
+        line width=1.5pt, color=loopcolor,
+        shorten >=3pt
+    },
+    % --- labels ---
+    edgelbl/.style={font=\LARGE, text=edgeink},                      % s_t, a_i, r_i
+    sublbl/.style={font=\normalsize, text=subink, align=center},     % Prompts, Completions
+    note/.style={font=\normalsize, text=noteink, align=center}      % policy-update caption
+}

@@ -45,6 +45,7 @@ FILTER_ARGS = --filter pandoc-crossref
 ARGS = $(TOC) $(MATH_FORMULAS) $(METADATA_ARGS) $(FILTER_ARGS) $(DEBUG_ARGS) $(BIBLIOGRAPHY) $(DATE_ARG)
 EPUB_ARGS_BASE = $(TOC) $(EPUB_MATH_FORMULAS) $(METADATA_ARGS) $(FILTER_ARGS) $(DEBUG_ARGS) $(BIBLIOGRAPHY) $(DATE_ARG)
 KINDLE_ARGS_BASE = $(TOC) $(METADATA_ARGS) $(FILTER_ARGS) $(DEBUG_ARGS) $(BIBLIOGRAPHY) $(DATE_ARG) $(KINDLE_MATH_FILTER)
+HTML_JSONLD_FILTER = --lua-filter book/scripts/jsonld.lua
 	
 PANDOC_COMMAND = pandoc
 
@@ -52,7 +53,7 @@ PANDOC_COMMAND = pandoc
 
 DOCX_ARGS = --standalone --reference-doc book/templates/docx.docx
 EPUB_ARGS = --template book/templates/epub.html --epub-cover-image $(EPUB_COVER_IMAGE)
-HTML_ARGS = --template book/templates/html.html --standalone --to html5 --listings
+HTML_ARGS = $(HTML_JSONLD_FILTER) --template book/templates/html.html --standalone --to html5 --listings --wrap=none
 PDF_ARGS = --template book/templates/pdf.tex --pdf-engine pdflatex
 LATEX_ARGS = --template book/templates/pdf.tex --pdf-engine pdflatex
 NESTED_HTML_TEMPLATE = book/templates/chapter.html
@@ -66,7 +67,7 @@ JS_FILES = $(shell find book/templates -name '*.js')  # Restrict JS discovery to
 BASE_DEPENDENCIES = $(MAKEFILE) $(CHAPTERS) $(METADATA) $(IMAGES) $(TEMPLATES)
 DOCX_DEPENDENCIES = $(BASE_DEPENDENCIES)
 EPUB_DEPENDENCIES = $(BASE_DEPENDENCIES)
-HTML_DEPENDENCIES = $(BASE_DEPENDENCIES)
+HTML_DEPENDENCIES = $(BASE_DEPENDENCIES) book/scripts/jsonld.lua
 PDF_DEPENDENCIES = $(BASE_DEPENDENCIES)
 
 # Detected Operating System
@@ -91,7 +92,7 @@ ECHO_BUILT = @echo "$@ was built\n"
 # Basic actions
 ####################################################################################################
 
-.PHONY: all book clean epub html pdf docx nested_html latex kindle rl-cheatsheet pagefind teach
+.PHONY: all book clean epub html pdf docx nested_html latex kindle rl-cheatsheet pagefind teach serve
 
 all:	book
 
@@ -111,7 +112,7 @@ $(info JS files found: $(JS_FILES))
 
 epub:	$(BUILD)/epub/$(OUTPUT_FILENAME).epub
 
-html:	nested_html $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html $(BUILD)/html/library.html $(BUILD)/html/course.html
+html:	nested_html $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html $(BUILD)/html/library.html $(BUILD)/html/course.html $(BUILD)/html/llms.txt $(BUILD)/html/llms-full.txt $(BUILD)/html/sitemap.xml $(BUILD)/html/robots.txt
 	
 pdf:	$(BUILD)/pdf/$(OUTPUT_FILENAME).pdf
 
@@ -152,6 +153,7 @@ $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html:	$(HTML_DEPENDENCIES)
 	$(COPY_CMD) book/templates/citation-tooltips.js $(BUILD)/html/
 	$(COPY_CMD) book/templates/copy-code.js $(BUILD)/html/
 	$(COPY_CMD) book/templates/conversation.js $(BUILD)/html/
+	$(COPY_CMD) book/templates/theme.js $(BUILD)/html/
 	$(COPY_CMD) book/templates/nav.js $(BUILD)/html/c/
 	$(COPY_CMD) book/templates/header-anchors.js $(BUILD)/html/c/
 	$(COPY_CMD) book/templates/table-scroll.js $(BUILD)/html/c/
@@ -159,6 +161,7 @@ $(BUILD)/html/$(OUTPUT_FILENAME_HTML).html:	$(HTML_DEPENDENCIES)
 	$(COPY_CMD) book/templates/copy-code.js $(BUILD)/html/c/
 	cp book/templates/view-source.js $(BUILD)/html/c/
 	$(COPY_CMD) book/templates/conversation.js $(BUILD)/html/c/
+	$(COPY_CMD) book/templates/theme.js $(BUILD)/html/c/
 	cp book/templates/style.css $(BUILD)/html/style.css || echo "Failed to copy style.css"
 	@mkdir -p $(BUILD)/html/data
 	@test -f book/data/library.json && cp book/data/library.json $(BUILD)/html/data/library.json || echo "No library data to copy"
@@ -171,6 +174,24 @@ $(BUILD)/html/library.html: book/templates/library.html $(FOOTER_PARTIAL)
 $(BUILD)/html/course.html: book/templates/course.html $(FOOTER_PARTIAL)
 	$(MKDIR_CMD) $(BUILD)/html
 	$(INLINE_FOOTER) book/templates/course.html > $@
+
+LLMS_SOURCES = book/scripts/generate_llms.py $(CHAPTERS)
+SITEMAP_SOURCES = book/scripts/generate_sitemap.py book/scripts/generate_llms.py $(CHAPTERS) book/templates/course.html book/templates/library.html book/rl-cheatsheet/index.html $(wildcard teach/*/talk.md) $(wildcard teach/*/slides.md) $(wildcard teach/course/*.md)
+
+$(BUILD)/html/llms.txt: $(LLMS_SOURCES)
+	$(MKDIR_CMD) $(BUILD)/html
+	uv run python book/scripts/generate_llms.py --output-dir $(BUILD)/html
+
+$(BUILD)/html/llms-full.txt: $(BUILD)/html/llms.txt
+	@test -f $@ || uv run python book/scripts/generate_llms.py --output-dir $(BUILD)/html
+
+$(BUILD)/html/sitemap.xml: $(SITEMAP_SOURCES)
+	$(MKDIR_CMD) $(BUILD)/html
+	uv run python book/scripts/generate_sitemap.py --output $@
+
+$(BUILD)/html/robots.txt: book/robots.txt
+	$(MKDIR_CMD) $(BUILD)/html
+	cp book/robots.txt $@
 
 rl-cheatsheet: $(BUILD)/html/rl-cheatsheet/inside_cover_back.pdf
 
@@ -188,7 +209,7 @@ CHAPTER_HTMLS = $(patsubst book/chapters/%.md,$(NESTED_HTML_DIR)/%.html,$(CHAPTE
 # Rule to build each HTML file from each Markdown file
 $(NESTED_HTML_DIR)/%.html: book/chapters/%.md $(HTML_DEPENDENCIES)
 	$(MKDIR_CMD) $(NESTED_HTML_DIR)
-	$(PANDOC_COMMAND) $(ARGS) --template $(NESTED_HTML_TEMPLATE) --standalone --to html5 --resource-path=book -o $@ $< --mathjax
+	$(PANDOC_COMMAND) $(ARGS) $(HTML_JSONLD_FILTER) --metadata canonical-url="https://rlhfbook.com/c/$*" --template $(NESTED_HTML_TEMPLATE) --standalone --to html5 --wrap=none --resource-path=book -o $@ $< --mathjax
 	@echo "Built HTML for $<"
 
 # Aggregate target for nested chapter HTML files
@@ -253,7 +274,7 @@ $(BUILD)/pdf/$(OUTPUT_FILENAME).pdf:	$(PDF_DEPENDENCIES)
 # copy favicon.ico to build/ and into build/c/ with bash commands
 # also copy from build/pdf/book.pdf into build/html/
 # then copy images dir to build/html/chapters/
-files:
+files: $(BUILD)/html/sitemap.xml $(BUILD)/html/robots.txt $(BUILD)/html/llms.txt $(BUILD)/html/llms-full.txt
 	test -f book/favicon.ico || (echo "book/favicon.ico not found" && exit 1)
 	mkdir -p $(BUILD)/html/c/
 	cp book/favicon.ico $(BUILD)/html/ || echo "Failed to copy to $(BUILD)/html/"
@@ -281,14 +302,26 @@ files:
 	cp ./book/templates/view-source.js $(BUILD)/html/c/ || echo "Failed to copy view-source.js to $(BUILD)/html/c/"
 	cp ./book/templates/conversation.js $(BUILD)/html/ || echo "Failed to copy conversation.js to $(BUILD)/html/"
 	cp ./book/templates/conversation.js $(BUILD)/html/c/ || echo "Failed to copy conversation.js to $(BUILD)/html/c/"
+	cp ./book/templates/theme.js $(BUILD)/html/ || echo "Failed to copy theme.js to $(BUILD)/html/"
+	cp ./book/templates/theme.js $(BUILD)/html/c/ || echo "Failed to copy theme.js to $(BUILD)/html/c/"
 	mkdir -p $(BUILD)/html/rl-cheatsheet
 	cp book/favicon.ico $(BUILD)/html/rl-cheatsheet/ || echo "Failed to copy favicon to rl-cheatsheet"
 	cp book/templates/style.css $(BUILD)/html/rl-cheatsheet/style.css || echo "Failed to copy style.css to rl-cheatsheet"
 	cp ./book/templates/nav.js $(BUILD)/html/rl-cheatsheet/ || echo "Failed to copy nav.js to rl-cheatsheet"
+	cp ./book/templates/theme.js $(BUILD)/html/rl-cheatsheet/ || echo "Failed to copy theme.js to rl-cheatsheet"
 	cp -r book/assets $(BUILD)/html/rl-cheatsheet/ || echo "Failed to copy assets to rl-cheatsheet"
+	$(INLINE_FOOTER) book/rl-cheatsheet/index.html > $(BUILD)/html/rl-cheatsheet/index.html || echo "Failed to inline cheatsheet index.html"
 
 pagefind: html files
 	npx --yes pagefind --site $(BUILD)/html --glob "c/**/*.html"
+
+# Build the HTML site (only rebuilds what changed) and serve it locally with
+# clean-URL + absolute-path support, so previewing matches the live site.
+# Override the port with `make serve PORT=9000`. Note: full-text search needs
+# the pagefind index — run `make pagefind` first if you want search locally.
+PORT ?= 8000
+serve: html files
+	uv run python book/scripts/serve.py --dir $(BUILD)/html --port $(PORT)
 
 ####################################################################################################
 # Teaching slides (built with colloquium)

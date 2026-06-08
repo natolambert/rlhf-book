@@ -1,0 +1,31 @@
+% Standard RL loop for LLMs — agent <-> environment.
+% Root of the "RL feedback loop" family (see rlhf_loop, rlvr_loop, tooluse_rl).
+\documentclass{article}
+\usepackage[margin=0.4cm, paperwidth=15cm, paperheight=8.5cm]{geometry}
+\usepackage{tikz}
+\usepackage{lmodern}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{xcolor}
+\usetikzlibrary{positioning, arrows.meta, calc}
+\input{styles_rl_loop.tex}
+\pagestyle{empty}
+
+\begin{document}
+\begin{tikzpicture}
+
+% --- nodes (shared centerline at x=0; compact vertical gap) ---
+\node[agent] (agent) at (0,0)    {Agent\\[4pt]{\LARGE$\pi_\theta(\cdot)$}};
+\node[env]   (env)   at (0,-2.8) {Target\\Environment};
+
+% --- action: agent -> environment (right side, down) ---
+\draw[loop] (agent.east) -- (3.6,0) -- (3.6,-2.8) -- (env.east);
+\node[edgelbl] at (4.05,-1.4) {$a_t$};
+
+% --- state + reward: environment -> agent (left side, up) ---
+% labels centered on the vertical segment midpoint (y=-1.4)
+\draw[loop] (env.west) -- (-3.6,-2.8) -- (-3.6,0) -- (agent.west);
+\node[edgelbl] at (-4.05,-1.1) {$s_t$};
+\node[edgelbl] at (-4.05,-1.7) {$r_t$};
+
+\end{tikzpicture}
+\end{document}
