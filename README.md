@@ -38,7 +38,8 @@ rlhf-book/
 │   ├── policy_gradients/   # PPO, REINFORCE, GRPO, RLOO
 │   ├── reward_models/      # Preference RM, ORM, PRM training
 │   ├── direct_alignment/   # DPO and variants
-│   └── rejection_sampling/ # Best-of-N rejection sampling
+│   ├── rejection_sampling/ # Best-of-N rejection sampling
+│   └── distillation/       # On-policy distillation (SDPO)
 ├── diagrams/               # Diagram source files
 │   ├── scripts/            # Python generation scripts
 │   ├── tikz/               # LaTeX/TikZ sources
@@ -56,6 +57,7 @@ Reference implementations for RLHF algorithms in `code/`:
 - Reward model training (preference RM, ORM, PRM)
 - Direct alignment methods (DPO and variants)
 - Rejection sampling (best-of-N)
+- On-policy distillation (SDPO)
 
 See [code/README.md](code/README.md) for setup and usage.
 

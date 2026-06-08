@@ -1,0 +1,32 @@
+model_name: Qwen/Qwen3-1.7B
+loss: sdpo
+split: train
+max_tests: 2
+
+# SDPO
+kl_top_k: 100
+success_reward_threshold: 1.0
+
+# Generation — thinking disabled for faster iteration on Spark
+temperature: 0.6
+top_p: 0.95
+top_k: 20
+min_p: 0.0
+max_new_tokens: 2048
+enable_thinking: false
+
+# Training — tuned for DGX Spark (119GB unified memory)
+# Peak memory: ~44GB GPU during loss backward
+# Step time: ~1-2 min avg (varies by problem difficulty)
+lr: 1.0e-6
+prompts_per_step: 2
+num_rollouts: 8
+num_steps: 50
+max_norm: 1.0
+seed: 42
+model_device_id: 0
+
+# Logging
+wandb_entity: null
+wandb_project: null
+wandb_run_name: null

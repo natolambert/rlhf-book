@@ -26,6 +26,13 @@ CORE_MODULES = [
     "direct_alignment.loss",
     "direct_alignment.profile_memory",
     "direct_alignment.train",
+    "distillation",
+    "distillation.config",
+    "distillation.data",
+    "distillation.loss",
+    "distillation.rollout",
+    "distillation.train",
+    "distillation.utils",
     "instruction_tuning",
     "instruction_tuning.config",
     "instruction_tuning.train",
@@ -52,6 +59,7 @@ CORE_MODULES = [
 
 CLI_MODULES = [
     "direct_alignment.train",
+    "distillation.train",
     "instruction_tuning.train",
     "policy_gradients.train",
     "rejection_sampling.preprocess",

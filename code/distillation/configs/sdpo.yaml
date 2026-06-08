@@ -1,0 +1,33 @@
+model_name: Qwen/Qwen3-1.7B
+loss: sdpo
+split: train
+max_tests: 8
+
+# SDPO
+kl_top_k: 100
+success_reward_threshold: 1.0
+
+# Generation (Qwen non-thinking recommended sampling params)
+temperature: 0.7
+top_p: 0.8
+top_k: 20
+min_p: 0.0
+repetition_penalty: 1.0
+max_new_tokens: 4096
+max_prompt_len: 2048
+enable_thinking: false
+
+# Training
+lr: 1.0e-5
+warmup_ratio: 0.05  # linear LR warmup over the first 5% of steps, then held constant
+prompts_per_step: 8
+num_rollouts: 8
+num_steps: 200
+max_norm: 1.0
+seed: 42
+model_device_id: 0
+
+# Logging (set wandb_project or the WANDB_PROJECT env var to enable)
+wandb_entity: null
+wandb_project: null
+wandb_run_name: null

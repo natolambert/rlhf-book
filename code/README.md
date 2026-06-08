@@ -287,6 +287,31 @@ On the reference 1k-train / 200-test GSM8K slice, `top_k_overall` beat its
 matched random baseline, while `top_per_prompt` and `random_per_prompt` were
 effectively tied.
 
+## On-Policy Distillation
+
+Train with SDPO (Self-Distillation Policy Optimization), an on-policy distillation
+method for code and reasoning tasks. The model acts as its own teacher: it samples
+rollouts on [LiveCodeBench](https://livecodebench.github.io/) problems, then a
+feedback-conditioned copy of the same model — given a correct sibling solution and/or
+the execution feedback from a failed attempt — supplies better next-token targets that
+are distilled back into the student via a top-K forward KL.
+See `distillation/README.md` for the full walk-through.
+
+```bash
+# SDPO on LiveCodeBench
+uv run python -m distillation.train --config distillation/configs/sdpo.yaml
+```
+
+### Training Results
+
+> **TODO:** add the wandb training-results image (`images/wandb_distillation.png`) once reference runs are published.
+
+### Example Run
+
+| Algorithm | Description | Example Run |
+|-----------|-------------|-------------|
+| SDPO | Self-Distillation Policy Optimization on LiveCodeBench ([Hübotter et al., 2026](https://arxiv.org/abs/2601.20802)) | _TODO_ |
+
 ## Configuration
 
 ### Weights & Biases Logging
