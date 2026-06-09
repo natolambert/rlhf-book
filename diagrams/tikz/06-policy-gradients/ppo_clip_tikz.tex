@@ -72,7 +72,7 @@
 
   % --- region 1: rho < 1-eps ---
   \node[card={posgreen}{posgreen!7}, anchor=center] at (axis cs:0.5,1.12)
-    {\textcolor{posgreen}{\bfseries Unclipped $\rightarrow$ gradient flows}\\[2pt]
+    {\textcolor{posgreen}{\bfseries Unclipped loss $\rightarrow$ gradient flows}\\[2pt]
      \begin{tabular}{@{}l@{\hspace{7pt}}l@{}}
        unclipped & $\rho(\theta)\,A_t$\\[1pt]
        clipped & $\mathrm{clip}\big(\rho(\theta),1{-}\varepsilon,1{+}\varepsilon\big)A_t=(1-\varepsilon)A_t$\\[3pt]
@@ -82,7 +82,7 @@
 
   % --- region 2: 1-eps <= rho <= 1+eps ---
   \node[card={posgreen}{posgreen!7}, anchor=center] at (axis cs:1.0,1.12)
-    {\textcolor{posgreen}{\bfseries Unclipped $\rightarrow$ gradient flows}\\[2pt]
+    {\textcolor{posgreen}{\bfseries Unclipped loss $\rightarrow$ gradient flows}\\[2pt]
      \begin{tabular}{@{}l@{\hspace{7pt}}l@{}}
        unclipped & $\rho(\theta)\,A_t$\\[1pt]
        clipped & $\mathrm{clip}\big(\rho(\theta),1{-}\varepsilon,1{+}\varepsilon\big)A_t=\rho(\theta)A_t$\\[3pt]
@@ -92,7 +92,7 @@
 
   % --- region 3: rho > 1+eps ---
   \node[card={clipgray}{clipgray!9}, anchor=center] at (axis cs:1.5,1.12)
-    {\textcolor{clipdark}{\bfseries Clipped $\rightarrow$ no update}\\[2pt]
+    {\textcolor{clipdark}{\bfseries Clipped loss $\rightarrow$ no update}\\[2pt]
      \begin{tabular}{@{}l@{\hspace{7pt}}l@{}}
        unclipped & $\rho(\theta)\,A_t$\\[1pt]
        clipped & $\mathrm{clip}\big(\rho(\theta),1{-}\varepsilon,1{+}\varepsilon\big)A_t=(1+\varepsilon)A_t$\\[3pt]
@@ -100,9 +100,9 @@
        $\nabla_\theta J(\theta)$ & $\nabla_\theta\,(1+\varepsilon)\,A_t = 0$
      \end{tabular}};
 
-  \node[text=black, font=\small] at (axis cs:0.5,0.08) {$\rho<1-\varepsilon$};
-  \node[text=black, font=\small] at (axis cs:1.0,0.08) {$1-\varepsilon<\rho<1+\varepsilon$};
-  \node[text=black, font=\small] at (axis cs:1.5,0.08) {$1+\varepsilon<\rho$};
+  \node[text=black, font=\small] at (axis cs:0.5,0.04) {$\rho<1-\varepsilon$};
+  \node[text=black, font=\small] at (axis cs:1.0,0.04) {$1-\varepsilon<\rho<1+\varepsilon$};
+  \node[text=black, font=\small] at (axis cs:1.5,0.04) {$1+\varepsilon<\rho$};
 
 % ================= BOTTOM: negative advantage =================
 \nextgroupplot[ymin=-1.55, ymax=0.1, ylabel={$J(\theta)$},
@@ -123,7 +123,7 @@
 
   % --- region 1: rho < 1-eps ---
   \node[card={clipgray}{clipgray!9}, anchor=center] at (axis cs:0.5,-0.40)
-    {\textcolor{clipdark}{\bfseries Clipped $\rightarrow$ no update}\\[2pt]
+    {\textcolor{clipdark}{\bfseries Clipped loss $\rightarrow$ no update}\\[2pt]
      \begin{tabular}{@{}l@{\hspace{7pt}}l@{}}
        unclipped & $\rho(\theta)\,A_t$\\[1pt]
        clipped & $\mathrm{clip}\big(\rho(\theta),1{-}\varepsilon,1{+}\varepsilon\big)A_t=(1-\varepsilon)A_t$\\[3pt]
@@ -133,7 +133,7 @@
 
   % --- region 2: 1-eps <= rho <= 1+eps ---
   \node[card={negred}{negred!7}, anchor=center] at (axis cs:1.0,-0.40)
-    {\textcolor{negred}{\bfseries Unclipped $\rightarrow$ gradient flows}\\[2pt]
+    {\textcolor{negred}{\bfseries Unclipped loss $\rightarrow$ gradient flows}\\[2pt]
      \begin{tabular}{@{}l@{\hspace{7pt}}l@{}}
        unclipped & $\rho(\theta)\,A_t$\\[1pt]
        clipped & $\mathrm{clip}\big(\rho(\theta),1{-}\varepsilon,1{+}\varepsilon\big)A_t=\rho(\theta)A_t$\\[3pt]
@@ -143,7 +143,7 @@
 
   % --- region 3: rho > 1+eps ---
   \node[card={negred}{negred!7}, anchor=center] at (axis cs:1.5,-0.40)
-    {\textcolor{negred}{\bfseries Unclipped $\rightarrow$ gradient flows}\\[2pt]
+    {\textcolor{negred}{\bfseries Unclipped loss $\rightarrow$ gradient flows}\\[2pt]
      \begin{tabular}{@{}l@{\hspace{7pt}}l@{}}
        unclipped & $\rho(\theta)\,A_t$\\[1pt]
        clipped & $\mathrm{clip}\big(\rho(\theta),1{-}\varepsilon,1{+}\varepsilon\big)A_t=(1+\varepsilon)A_t$\\[3pt]
