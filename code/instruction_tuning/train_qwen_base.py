@@ -49,6 +49,16 @@ def main(cfg: Config):
         eos_token="<|im_end|>",
         generation_eos_ids=[151643, 151645],  # <|endoftext|>, <|im_end|>
     )
+
+    # Warm-start the stop token. <|im_end|> is untrained in the base model (embedding
+    # row norm ~0.38 vs ~1.6 typical) and at lr 5e-6 SFT cannot train it from scratch:
+    # the first run of this script ended with P(<|im_end|>)~1e-4 at supervised stop
+    # positions while actively suppressing the base's natural <|endoftext|> stop.
+    # Copying the well-trained document-EOS row means SFT only re-purposes an existing
+    # direction (embeddings are tied, so this also fixes the output logit).
+    with torch.no_grad():
+        emb = model.get_input_embeddings().weight
+        emb[151645] = emb[151643]  # <|im_end|> := <|endoftext|>
     dataloader = create_dataloader(cfg, tokenizer)
 
     accum = cfg.gradient_accumulation_steps

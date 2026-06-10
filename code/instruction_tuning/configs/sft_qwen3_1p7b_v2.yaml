@@ -1,0 +1,8 @@
+# v2 of the Qwen3-1.7B-Base ChatML SFT: identical to sft_qwen3_1p7b.yaml except
+# the run name/output; the script now warm-starts <|im_end|> from <|endoftext|>.
+# v1 (no warm start) reference: wandb run sft-qwen3-1.7b-base-chatml / cytwravi —
+# learned content but P(<|im_end|>)~1e-4 at stop positions after 3 epochs.
+model_name: Qwen/Qwen3-1.7B-Base
+chat_template_source: null
+wandb_run_name: sft-qwen3-1.7b-base-chatml-v2-warmstart
+output_dir: /home/ghoti/rlhf-runs/sft-qwen3-1.7b-base-chatml-v2-warmstart
