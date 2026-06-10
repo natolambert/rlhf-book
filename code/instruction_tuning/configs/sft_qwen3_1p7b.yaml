@@ -1,0 +1,9 @@
+# SFT of Qwen3-1.7B-Base on No Robots with a custom minimal ChatML template.
+# The template, EOS, and generate() stop ids are set in train_qwen_base.py;
+# everything else inherits the defaults from config.py (same as the OLMo run).
+model_name: Qwen/Qwen3-1.7B-Base
+chat_template_source: null
+wandb_run_name: sft-qwen3-1.7b-base-chatml
+# Absolute ext4 path: the repo lives on /mnt/c (OneDrive, slow 9P filesystem),
+# so keep the ~3.5 GB checkpoint off it.
+output_dir: /home/ghoti/rlhf-runs/sft-qwen3-1.7b-base-chatml
