@@ -35,6 +35,11 @@ diagnostics = [
     "pandas>=2.1.0",
 ]
 
+# Chat UI for instruction_tuning.chat_app
+ui = [
+    "gradio>=5.0.0",
+]
+
 # Development dependencies
 dev = [
     "pytest>=8.0.0",
