@@ -42,14 +42,15 @@ jobs:
         if: github.event_name != 'workflow_dispatch'
         continue-on-error: true
         with:
+          # 'every' makes a file count only when it matches the union pattern
+          # AND the negation (i.e. is not the course template). The default
+          # 'some' quantifier matches each pattern independently, where a bare
+          # negation matches every file and exclusions silently do nothing.
+          predicate-quantifier: 'every'
           filters: |
             book:
-              - 'book/**'
+              - '{book/**,Makefile,pyproject.toml,uv.lock,.github/workflows/static.yml}'
               - '!book/templates/course.html'
-              - 'Makefile'
-              - 'pyproject.toml'
-              - 'uv.lock'
-              - '.github/workflows/static.yml'
 
       - name: Setup Pandoc
         uses: pandoc/actions/setup@main
