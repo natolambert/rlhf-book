@@ -62,11 +62,11 @@ The pattern is that synthetic data dominates where models exceed human reliabili
 The term distillation has been the most powerful form of discussion around the role of synthetic data in language models.
 Distillation as a term comes from a technical definition of teacher-student Knowledge Distillation (KD) from the deep learning literature [@hinton2015distilling].
 
-![Traditional knowledge distillation trains a smaller student model to match the soft probability distribution of a larger teacher model using KL divergence loss. Both models process the same input simultaneously, and temperature scaling ($\tau > 1$) softens the distributions to reveal more information about class relationships.](images/knowledge_distillation_tikz.png){#fig:knowledge-distillation}
+![Traditional knowledge distillation trains a smaller student model to match the soft probability distribution of a larger teacher model using KL divergence loss. Both models process the same input simultaneously, and temperature scaling ($\tau > 1$) softens the distributions to reveal more information about class relationships.](images/knowledge_distillation_tikz.png){#fig:knowledge-distillation data-dark-src="images/knowledge_distillation_tikz-dark.png"}
 
 Distillation colloquially refers to using the outputs from a stronger model to train a smaller model.
 
-![Synthetic data generation in LLM post-training: prompts are passed through a strong model to generate completions, which are paired to create a training dataset. This dataset is then used to fine-tune smaller models via standard supervised learning. More complex pipelines may involve multiple models editing completions, generating preference pairs, or filtering for quality.](images/synthetic_data_distillation_tikz.png){#fig:synthetic-data-generation}
+![Synthetic data generation in LLM post-training: prompts are passed through a strong model to generate completions, which are paired to create a training dataset. This dataset is then used to fine-tune smaller models via standard supervised learning. More complex pipelines may involve multiple models editing completions, generating preference pairs, or filtering for quality.](images/synthetic_data_distillation_tikz.png){#fig:synthetic-data-generation data-dark-src="images/synthetic_data_distillation_tikz-dark.png"}
 In post-training, this general notion of distillation takes two common forms:
 
 1. As a data engine to use across wide swaths of the post-training process: Completions for instructions, preference data (or Constitutional AI), or verification for RL.
@@ -274,7 +274,7 @@ The hint in the token-space for the model is enough to help the model correct it
 
 This leaves on-policy distillation as a core post-training method, useful for combining multiple skills into one general model or pushing the frontier in a specialized deployment.
 
-![Three distillation regimes, compared by where the rollout comes from and how supervision flows. **Sequence KD** (left): the teacher generates an output offline and the student is trained to match it with a cross-entropy (CE) loss. **On-policy distillation (OPD)** (center): the student generates the rollout on-policy (e.g. within a RL framework) and a separate teacher scores each visited token, training the student with a per-token KL divergence (KL). **On-policy self-distillation (OPSD)** (right): one model plays both roles -- privileged information (a hint) added to the context creates a teacher trajectory, and the no-hint generation is distilled toward it with a KL loss, with no separate teacher model.](images/distillation_directionality_tikz.png){#fig:distillation-directionality}
+![Three distillation regimes, compared by where the rollout comes from and how supervision flows. **Sequence KD** (left): the teacher generates an output offline and the student is trained to match it with a cross-entropy (CE) loss. **On-policy distillation (OPD)** (center): the student generates the rollout on-policy (e.g. within a RL framework) and a separate teacher scores each visited token, training the student with a per-token KL divergence (KL). **On-policy self-distillation (OPSD)** (right): one model plays both roles -- privileged information (a hint) added to the context creates a teacher trajectory, and the no-hint generation is distilled toward it with a KL loss, with no separate teacher model.](images/distillation_directionality_tikz.png){#fig:distillation-directionality data-dark-src="images/distillation_directionality_tikz-dark.png"}
 
 ## AI Feedback
 

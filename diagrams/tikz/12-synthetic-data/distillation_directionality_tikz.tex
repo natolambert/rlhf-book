@@ -22,18 +22,33 @@
 \begin{document}
 \input{styles_rlhf.tex}
 
+% Loose-ink recolors for dark builds (see styles_rlhf.tex). The faded column and
+% panel dividers mix toward the dark page background instead of white so they
+% stay visually subdued; column labels lighten their semantic colors.
+\ifnum\figdark=1
+  \colorlet{fadeink}{inkcolor!35!black}
+  \colorlet{sepink}{inkcolor!40!black}
+  \colorlet{teacherlbl}{red!55}
+  \colorlet{studentlbl}{blue!55}
+\else
+  \colorlet{fadeink}{black!30}
+  \colorlet{sepink}{black!35}
+  \colorlet{teacherlbl}{red!55!black}
+  \colorlet{studentlbl}{blue!70!black}
+\fi
+
 \begin{tikzpicture}[
   seqbox/.style={rectangle, rounded corners=2pt, minimum width=1.5cm, minimum height=0.6cm, font=\footnotesize, align=center},
   tbox/.style={seqbox, draw=red!55, fill=red!12},            % teacher (separate, frozen)
   sbox/.style={seqbox, draw=blue!70, fill=blue!16},          % student (trained)
   hintbox/.style={seqbox, draw=orange!80!black, fill=orange!22, minimum width=1.0cm},
-  gen/.style={->, >=Stealth, semithick, draw=black!80},       % active generation
-  genfade/.style={->, >=Stealth, semithick, draw=black!30},   % passive / scored column
-  flow/.style={->, >=Stealth, semithick, draw=black!75},
-  kl/.style={<->, >=Stealth, thin, draw=black!55},
-  paneltitle/.style={font=\bfseries\large},
+  gen/.style={->, >=Stealth, semithick, draw=\loose{black!80}},       % active generation
+  genfade/.style={->, >=Stealth, semithick, draw=fadeink},   % passive / scored column
+  flow/.style={->, >=Stealth, semithick, draw=\loose{black!75}},
+  kl/.style={<->, >=Stealth, thin, draw=\loose{black!55}},
+  paneltitle/.style={font=\bfseries\large, text=\loose{black}},
   collabel/.style={font=\footnotesize\bfseries},
-  sub/.style={font=\scriptsize\itshape, text=black!65, align=center},
+  sub/.style={font=\scriptsize\itshape, text=\loose{black!65}, align=center},
   taglabel/.style={font=\scriptsize\bfseries, text=black!80}
 ]
 
@@ -44,8 +59,8 @@
 \node[paneltitle] at (2.9, 6.4) {Sequence KD};
 \node[sub] at (2.9, 5.85) {offline $\cdot$ teacher generates};
 
-\node[collabel, text=red!55!black] at (1.5, 5.15) {Teacher};
-\node[collabel, text=blue!70!black] at (4.3, 5.15) {Student};
+\node[collabel, text=teacherlbl] at (1.5, 5.15) {Teacher};
+\node[collabel, text=studentlbl] at (4.3, 5.15) {Student};
 
 % teacher generates (solid downward), left column
 \node[tbox] (a1) at (1.5, \yA) {};
@@ -71,14 +86,14 @@
 
 \ifnum\reveal>1
 % divider after panel 1
-\draw[dashed, black!35] (6.35, 1.2) -- (6.35, 6.6);
+\draw[dashed, sepink] (6.35, 1.2) -- (6.35, 6.6);
 
 % ===================================================================== PANEL 2: OPD
 \node[paneltitle] at (9.9, 6.4) {On-policy distillation};
 \node[sub] at (9.9, 5.85) {on-policy $\cdot$ student generates (e.g. RL)};
 
-\node[collabel, text=blue!70!black] at (8.4, 5.15) {Student (e.g. RL)};
-\node[collabel, text=red!55!black] at (11.4, 5.15) {Teacher};
+\node[collabel, text=studentlbl] at (8.4, 5.15) {Student (e.g. RL)};
+\node[collabel, text=teacherlbl] at (11.4, 5.15) {Teacher};
 
 % student generates on-policy (solid downward), left column
 \node[sbox] (c1) at (8.4, \yA) {};
@@ -105,14 +120,14 @@
 
 \ifnum\reveal>2
 % divider after panel 2
-\draw[dashed, black!35] (13.55, 1.2) -- (13.55, 6.6);
+\draw[dashed, sepink] (13.55, 1.2) -- (13.55, 6.6);
 
 % ===================================================================== PANEL 3: OPSD
 \node[paneltitle] at (17.0, 6.4) {On-policy self-distillation};
 \node[sub] at (17.0, 5.85) {Privileged information creates the teacher trajectory};
 
 % left column: GENERATION -- the on-policy rollout, no hint
-\node[collabel, text=blue!70!black] at (15.4, 5.15) {Generation};
+\node[collabel, text=studentlbl] at (15.4, 5.15) {Generation};
 \node[sbox] (g1) at (15.4, \yA) {};
 \node[sbox] (g2) at (15.4, \yB) {};
 \node[sbox] (g3) at (15.4, \yC) {};
@@ -121,7 +136,7 @@
 
 % right column: SAME MODEL with added context (both blue). Top two tokens aligned with
 % Generation (KL stays horizontal); the hint sits directly on top of the last token (no arrow).
-\node[collabel, text=blue!70!black] at (18.6, 5.15) {+ Added Context};
+\node[collabel, text=studentlbl] at (18.6, 5.15) {+ Added Context};
 \node[sbox] (r1) at (18.6, \yA) {};
 \node[sbox] (r2) at (18.6, \yB) {};
 \node[sbox] (r3) at (18.6, 1.95) {};

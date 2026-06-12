@@ -47,7 +47,7 @@ The expected return for a given policy is often denoted $J(\pi)$, with the optim
 For continuing tasks, one often takes $T\to\infty$ and relies on discounting ($\gamma<1$) to keep the objective well-defined.
 Multiple methods for optimizing this expression are discussed in Chapter 6.
 
-![Standard RL loop](images/rl.png){#fig:rl width=320px .center}
+![Standard RL loop](images/rl.png){#fig:rl width=320px .center data-dark-src="images/rl-dark.png"}
 
 A standard illustration of the RL loop is shown in @fig:rl (compare this to the RLHF loop in @fig:rlhf).
 
@@ -66,7 +66,7 @@ $$\pi(a_t = \text{on} \mid s_t) = \begin{cases} 1 & \text{if } s_t < 70^{\circ}\
 
 - **Transition**: the room warms when the heater is on and cools when it is off. The agent influences these dynamics through its actions, but the underlying physics -- how fast the room heats or cools -- are outside its control.
 
-![Each term in the trajectory distribution (@eq:rl_dynam) mapped to the thermostat RL example.](images/thermostat_equation.png){#fig:thermostat-equation .center}
+![Each term in the trajectory distribution (@eq:rl_dynam) mapped to the thermostat RL example.](images/thermostat_equation.png){#fig:thermostat-equation .center data-dark-src="images/thermostat_equation-dark.png"}
 
 Initially, the thermostat's policy is essentially random -- it flips the heater on and off with no regard for the current temperature, and the room's temperature swings wildly.
 Over many episodes of trial and error, the agent discovers that turning the heater on when the room is cold and off when it is warm leads to more reward, and gradually converges on a sensible policy.
@@ -77,7 +77,7 @@ This is the core RL loop: observe a state, choose an action, receive a reward, a
 For a richer example with continuous dynamics, consider the classic *CartPole* (inverted pendulum) control task, which appears in many RL textbooks, courses, and even research papers.
 Whereas the thermostat had a single state variable and a binary action, CartPole involves four continuous state variables and physics-based transitions -- making it a standard benchmark for RL algorithms.
 
-![CartPole environment showing state variables ($x$, $\dot{x}$, $\theta$, $\dot{\theta}$) and actions ($\pm F$).](images/cartpole.png){#fig:cartpole width=400px .center}
+![CartPole environment showing state variables ($x$, $\dot{x}$, $\theta$, $\dot{\theta}$) and actions ($\pm F$).](images/cartpole.png){#fig:cartpole width=400px .center data-dark-src="images/cartpole-dark.png"}
 
 - **State ($s_t$)**: the cart position/velocity and pole angle/angular velocity:
 
@@ -127,7 +127,7 @@ $$\max_\pi \; \mathbb{E}_{\tau \sim \pi} \left[r_\theta(s_t, a_t) \right].$$ {#e
 
 In many ways, the result is that while RLHF is heavily inspired by RL optimizers and problem formulations, the actual implementation is very distinct from traditional RL.
 
-![Standard RLHF loop](images/rlhf.png){#fig:rlhf}
+![Standard RLHF loop](images/rlhf.png){#fig:rlhf data-dark-src="images/rlhf-dark.png"}
 
 ### Fine-Tuning and Regularization
 

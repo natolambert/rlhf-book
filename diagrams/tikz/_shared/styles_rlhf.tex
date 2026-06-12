@@ -2,6 +2,28 @@
 % Include with: \input{styles_rlhf.tex} BEFORE tikzpicture
 % Requires: \usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, calc, backgrounds}
 
+% Dark-mode support: compile with `\def\figdark{1}` (before \input) to recolor
+% UNBOUNDED ink (arrows, notes, section labels) that sits over the transparent
+% background to the site's dark --color-text. Boxes (filled, with their in-box
+% black text) are left untouched. Light builds are byte-for-byte unchanged.
+\providecommand{\figdark}{0}
+\ifnum\figdark=1
+  \definecolor{inkcolor}{HTML}{CBD5E1}
+  \colorlet{arrowink}{inkcolor}
+  \colorlet{noteink}{inkcolor!85}
+\else
+  \colorlet{arrowink}{black}
+  \colorlet{noteink}{black!70}
+\fi
+% \loose{<color>} wraps INLINE loose ink (legend keys, sub-labels, bare nodes)
+% so a diagram can opt individual color specs into the dark recolor: it returns
+% the original color in light builds and inkcolor in dark builds.
+\ifnum\figdark=1
+  \providecommand{\loose}[1]{inkcolor}
+\else
+  \providecommand{\loose}[1]{#1}
+\fi
+
 \tikzset{
     % Node styles
     trained/.style={
@@ -58,23 +80,25 @@
         font=\footnotesize
     },
     seclabel/.style={
-        font=\bfseries\Large
+        font=\bfseries\Large,
+        text=arrowink
     },
     arrow/.style={
         ->,
         >=Stealth,
-        thick
+        thick,
+        color=arrowink
     },
     feedbackarrow/.style={
         ->,
         >=Stealth,
         thick,
-        draw=black,
+        draw=arrowink,
         dashed
     },
     legendbox/.style={
         rectangle,
-        draw=black,
+        draw=arrowink,
         minimum width=1.2cm,
         minimum height=0.5cm,
         font=\scriptsize,
@@ -84,6 +108,6 @@
     },
     note/.style={
         font=\scriptsize\itshape,
-        text=black!70
+        text=noteink
     }
 }

@@ -5,10 +5,19 @@
 \usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, calc, backgrounds, decorations.pathreplacing}
 \usepackage{amsmath, amssymb}
 
+% --- Dark-mode switch (web only; compile with \def\figdark{1}) ---
+\providecommand{\figdark}{0}
+\ifnum\figdark=1
+  \definecolor{inkcolor}{HTML}{CBD5E1}
+  \newcommand{\loose}[1]{inkcolor}   % loose (unbounded) ink -> dark text color
+\else
+  \newcommand{\loose}[1]{#1}         % light: identity, leaves figure untouched
+\fi
+
 \begin{document}
 
 \begin{tikzpicture}[
-    arr/.style={->, >=Stealth, thick, draw=black!70},
+    arr/.style={->, >=Stealth, thick, draw=\loose{black!70}},
     evilcompl/.style={
         rectangle, rounded corners=5pt,
         draw=red!50, fill=red!12, densely dashed,
@@ -43,7 +52,7 @@
         circle, draw=black!60, fill=white,
         minimum size=0.9cm, font=\large
     },
-    annot/.style={font=\small, text=black!70},
+    annot/.style={font=\small, text=\loose{black!70}},
     layer/.style={
         rectangle, rounded corners=3pt,
         draw=violet!60, fill=violet!15,
@@ -161,7 +170,7 @@
 
 % Top section background
 \begin{scope}[on background layer]
-    \fill[black!4, rounded corners=8pt] (0.5, -11.5) rectangle (22.0, 0.8);
+    \ifnum\figdark=0\fill[black!4, rounded corners=8pt] (0.5, -11.5) rectangle (22.0, 0.8);\fi
 \end{scope}
 
 
@@ -179,8 +188,8 @@
 % ============================================================
 
 \begin{scope}[on background layer]
-    \fill[white, rounded corners=6pt] (6.0, -20.0) rectangle (21.5, -13.0);
-    \draw[black!20, rounded corners=6pt] (6.0, -20.0) rectangle (21.5, -13.0);
+    \ifnum\figdark=0\fill[white, rounded corners=6pt] (6.0, -20.0) rectangle (21.5, -13.0);\fi
+    \draw[\loose{black!20}, rounded corners=6pt] (6.0, -20.0) rectangle (21.5, -13.0);
 \end{scope}
 
 
@@ -194,7 +203,7 @@
 \node[rectangle, rounded corners=3pt, draw=blue!50, fill=blue!10,
       minimum width=0.9cm, minimum height=2.4cm, font=\small, align=center] (l5t) at (14.0, -17.5) {\rotatebox{90}{\small Layer 5}};
 
-\draw[decorate, decoration={brace, mirror, amplitude=5pt}, thick, black!40]
+\draw[decorate, decoration={brace, mirror, amplitude=5pt}, thick, \loose{black!40}]
     (7.5, -19.0) -- (14.5, -19.0) node[midway, below=6pt, font=\small\bfseries] {With Persona Vector Intervention};
 
 % Input arrow to top path
@@ -231,8 +240,8 @@
 % ============================================================
 
 \begin{scope}[on background layer]
-    \fill[white, rounded corners=6pt] (6.0, -25.5) rectangle (21.5, -20.0);
-    \draw[black!20, rounded corners=6pt] (6.0, -25.5) rectangle (21.5, -20.0);
+    \ifnum\figdark=0\fill[white, rounded corners=6pt] (6.0, -25.5) rectangle (21.5, -20.0);\fi
+    \draw[\loose{black!20}, rounded corners=6pt] (6.0, -25.5) rectangle (21.5, -20.0);
 \end{scope}
 
 
@@ -243,7 +252,7 @@
 \node[layer] (l4b) at (12.5, -23.0) {\rotatebox{90}{\small Layer 4}};
 \node[layer] (l5b) at (14.0, -23.0) {\rotatebox{90}{\small Layer 5}};
 
-\draw[decorate, decoration={brace, mirror, amplitude=5pt}, thick, black!40]
+\draw[decorate, decoration={brace, mirror, amplitude=5pt}, thick, \loose{black!40}]
     (7.5, -24.5) -- (14.5, -24.5) node[midway, below=6pt, font=\small\bfseries] {Without Intervention};
 
 % Input arrow to bottom path
@@ -268,7 +277,7 @@
 
 % Bottom section background
 \begin{scope}[on background layer]
-    \fill[black!4, rounded corners=8pt] (0.5, -26.0) rectangle (22.0, -12.75);
+    \ifnum\figdark=0\fill[black!4, rounded corners=8pt] (0.5, -26.0) rectangle (22.0, -12.75);\fi
 \end{scope}
 
 % ============================================================

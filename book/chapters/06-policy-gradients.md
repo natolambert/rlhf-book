@@ -280,7 +280,7 @@ $$ {#eq:REINFORCE_with_advantage}
 
 REINFORCE is a specific implementation of vanilla policy gradient that uses a Monte Carlo estimator of the gradient.
 
-![Basic REINFORCE architecture for language models. The shaped reward combines the reward model score with a KL penalty from the reference model. We build on this structure throughout the chapter.](images/reinforce_tikz.png){#fig:reinforce-arch}
+![Basic REINFORCE architecture for language models. The shaped reward combines the reward model score with a KL penalty from the reference model. We build on this structure throughout the chapter.](images/reinforce_tikz.png){#fig:reinforce-arch data-dark-src="images/reinforce_tikz-dark.png"}
 
 ### REINFORCE Leave One Out (RLOO)
 
@@ -320,7 +320,7 @@ PPO subtracts a per-token KL from the per-token reward before computing $A_t$, g
 GRPO typically retains a sequence-level advantage but adds a separate per-token term to the loss, rather than subtracting it from the reward.
 These details and trade-offs are discussed later in the chapter.
 
-![REINFORCE Leave-One-Out (RLOO) architecture. Multiple completions per prompt provide a leave-one-out baseline for advantage estimation without learning a value function.](images/rloo_tikz.png){#fig:rloo-arch}
+![REINFORCE Leave-One-Out (RLOO) architecture. Multiple completions per prompt provide a leave-one-out baseline for advantage estimation without learning a value function.](images/rloo_tikz.png){#fig:rloo-arch data-dark-src="images/rloo_tikz-dark.png"}
 
 <!-- A nice formulation of LM RL loss functions is found here https://arxiv.org/pdf/2502.01600 -->
 
@@ -365,7 +365,7 @@ $$ J(\theta) = \frac{1}{|a|} \sum_{t=0}^{|a|} \min\left(\frac{\pi_\theta(a_{t}|s
 This is the per-token version of PPO, which also applies to other policy-gradient methods, but is explored further later in the implementation section of this chapter.
 Here, the term for averaging by the number of tokens in the action, $\frac{1}{|a|}$, comes from common implementation practices, but is not in a formal derivation of the loss (shown in [@liu2025understanding]).
 
-![PPO framework. A learned value function enables Generalized Advantage Estimation (GAE) for per-token advantages, used with a clipped surrogate objective.](images/ppo_tikz.png){#fig:ppo-arch}
+![PPO framework. A learned value function enables Generalized Advantage Estimation (GAE) for per-token advantages, used with a clipped surrogate objective.](images/ppo_tikz.png){#fig:ppo-arch data-dark-src="images/ppo_tikz-dark.png"}
 
 Here we will explain the different cases this loss function triggers given various advantages and policy ratios.
 At an implementation level, the inner computations for PPO involve two main terms: 1) a standard policy gradient with a learned advantage and 2) a clipped policy gradient based on a maximum step size.
@@ -482,7 +482,7 @@ Generalized Advantage Estimation (GAE) is considered the state-of-the-art and ca
 A value function can also be learned with Monte Carlo estimates from the rollouts used to update the policy. 
 PPO has two losses -- one to learn the value function and another to use that value function to update the policy.
 
-![Value function training uses on-policy rollouts to compute targets. The model predicts $V_t$ at each token, which is trained via MSE against the target return $\hat{V}_t$. The advantage $A_t = \hat{V}_t - V_t$ then weights the policy gradient update.](images/value_fn_training.png){#fig:value_fn_training}
+![Value function training uses on-policy rollouts to compute targets. The model predicts $V_t$ at each token, which is trained via MSE against the target return $\hat{V}_t$. The advantage $A_t = \hat{V}_t - V_t$ then weights the policy gradient update.](images/value_fn_training.png){#fig:value_fn_training data-dark-src="images/value_fn_training-dark.png"}
 
 A simple example implementation of a value network loss is shown below.
 
@@ -567,7 +567,7 @@ With the advantage computation for the completion index $i$:
 
 $$A_i = \frac{r_i - \text{mean}({r_1, r_2, \cdots, r_G})}{\text{std}({r_1, r_2, \cdots, r_G})}.$$ {#eq:GRPO_ADV}
 
-![GRPO architecture. Advantages are normalized relative to the group mean and standard deviation. The KL penalty is applied directly in the loss rather than shaping the reward.](images/grpo_tikz.png){#fig:grpo-arch}
+![GRPO architecture. Advantages are normalized relative to the group mean and standard deviation. The KL penalty is applied directly in the loss rather than shaping the reward.](images/grpo_tikz.png){#fig:grpo-arch data-dark-src="images/grpo_tikz-dark.png"}
 
 Intuitively, the GRPO update is comparing multiple answers to a single question within a batch.
 The model learns to become more like the answers marked as correct and less like the others. 

@@ -6,7 +6,18 @@
 \usepackage{tikz}
 \usetikzlibrary{positioning, arrows.meta, calc, backgrounds}
 \pagestyle{empty}
-\pagecolor{white}
+
+% Dark-mode support (cf. tikz/_shared/styles_rlhf.tex). \figdark=1 recolors
+% UNBOUNDED ink to the dark text color via \loose{} and drops the white page
+% fill so the PNG is transparent. Light builds are byte-for-byte identical.
+\providecommand{\figdark}{0}
+\ifnum\figdark=1
+  \definecolor{inkcolor}{HTML}{CBD5E1}
+  \newcommand{\loose}[1]{inkcolor}
+\else
+  \newcommand{\loose}[1]{#1}
+  \pagecolor{white}
+\fi
 
 % Era colors
 \definecolor{era1}{HTML}{1565C0}   % blue
@@ -23,10 +34,10 @@
         circle, fill=#1, inner sep=2.5pt
     },
     row1lbl/.style={
-        font=\small, align=center, anchor=south, color=black!80
+        font=\small, align=center, anchor=south, color=\loose{black!80}
     },
     row2lbl/.style={
-        font=\small, align=center, anchor=south, color=black!80
+        font=\small, align=center, anchor=south, color=\loose{black!80}
     },
     eralbl/.style={
         font=\small\bfseries, color=#1
@@ -47,17 +58,17 @@
 \end{scope}
 
 % Timeline axis — left segment, break, right segment with arrow
-\draw[line width=1.2pt, color=black!30] (-0.5, 0) -- (1.2, 0);
+\draw[line width=1.2pt, color=\loose{black!30}] (-0.5, 0) -- (1.2, 0);
 % Break zigzag
-\draw[line width=1.0pt, color=black!30]
+\draw[line width=1.0pt, color=\loose{black!30}]
     (1.2, 0) -- (1.4, 0.12) -- (1.6, -0.12) -- (1.8, 0.12) -- (2.0, 0);
-\draw[-{Stealth[length=6pt]}, line width=1.2pt, color=black!30]
+\draw[-{Stealth[length=6pt]}, line width=1.2pt, color=\loose{black!30}]
     (2.0, 0) -- (15.0, 0);
 
 % Year ticks (lines only — labels drawn after milestones so they appear on top)
-\draw[color=black!30, line width=0.8pt] (0, -0.1) -- (0, 0.1);
+\draw[color=\loose{black!30}, line width=0.8pt] (0, -0.1) -- (0, 0.1);
 \foreach \x in {3, 4.2, 5.4, 6.6, 7.8, 9, 10.2, 11.4, 12.6, 13.8} {
-    \draw[color=black!30, line width=0.8pt] (\x, -0.1) -- (\x, 0.1);
+    \draw[color=\loose{black!30}, line width=0.8pt] (\x, -0.1) -- (\x, 0.1);
 }
 
 % -- Milestones (all above, alternating row 1 and row 2) --
@@ -100,17 +111,17 @@
 % ChatGPT (Nov 2022) — row 1 above, x=10.1 (drawn after DPO so label is on top)
 \node[milestone=era3] (chatgpt) at (10.1, 0) {};
 \draw[era3, line width=0.6pt, opacity=0.5] (chatgpt.north) -- ++(0, 0.45);
-\node[row1lbl, fill=white, inner sep=2pt] at (10.1, 0.5) {ChatGPT};
+\node[row1lbl, fill=white, text=black, inner sep=2pt] at (10.1, 0.5) {ChatGPT};
 
 % Constitutional AI (Dec 2022) — below row 2, x=10.3
 \node[milestone=era3] (cai) at (10.3, 0) {};
 \draw[era3, line width=0.6pt, opacity=0.5] (cai.south) -- ++(0, -1.1);
-\node[font=\small, align=center, anchor=north, color=black!80] at (10.3, -1.15) {Constitutional AI};
+\node[font=\small, align=center, anchor=north, color=\loose{black!80}] at (10.3, -1.15) {Constitutional AI};
 
 % Llama 2 (Jul 2023) — below, x=10.2+0.7=10.9
 \node[milestone=era3] (llama) at (10.9, 0) {};
 \draw[era3, line width=0.6pt, opacity=0.5] (llama.south) -- ++(0, -0.55);
-\node[font=\small, align=center, anchor=north, color=black!80] at (10.9, -0.6) {Llama 2};
+\node[font=\small, align=center, anchor=north, color=\loose{black!80}] at (10.9, -0.6) {Llama 2};
 
 % DeepSeek R1 (Jan 2025) — row 3, x=12.7 (drawn before o1 so stem is behind)
 \node[milestone=era3] (r1) at (12.7, 0) {};
@@ -120,7 +131,7 @@
 % OpenAI o1 (Sep 2024) — row 1, x=12.3 (drawn after DeepSeek so label covers stem)
 \node[milestone=era3] (o1) at (12.3, 0) {};
 \draw[era3, line width=0.6pt, opacity=0.5] (o1.north) -- ++(0, 0.45);
-\node[row1lbl, fill=white, inner sep=2pt] at (12.3, 0.5) {OpenAI o1};
+\node[row1lbl, fill=white, text=black, inner sep=2pt] at (12.3, 0.5) {OpenAI o1};
 
 % Year labels (drawn last so they appear in front of stems)
 \node[yearlbl, below] at (0, -0.35) {2008};

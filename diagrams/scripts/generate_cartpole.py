@@ -262,7 +262,8 @@ def draw_action_box(ax, x, y):
             ha="left", va="center")
 
 
-def render_diagram(output_path: Path, fmt: str = "png", dpi: int = 300):
+def render_diagram(output_path: Path, fmt: str = "png", dpi: int = 300,
+                   transparent: bool = False):
     """Render the complete CartPole diagram."""
 
     fig, ax = plt.subplots(figsize=(7, 5))
@@ -294,9 +295,11 @@ def render_diagram(output_path: Path, fmt: str = "png", dpi: int = 300):
     ax.set_aspect("equal")
     ax.axis("off")
 
-    # Save - no padding
+    # Save - no padding. Dark variant: transparent background for dark-mode pages.
     fig.savefig(output_path, format=fmt, dpi=dpi, bbox_inches="tight",
-                pad_inches=0, facecolor=COLOR_BG, edgecolor="none")
+                pad_inches=0,
+                facecolor="none" if transparent else COLOR_BG,
+                edgecolor="none", transparent=transparent)
     plt.close(fig)
     print(f"Generated: {output_path}")
 
@@ -317,11 +320,20 @@ def main():
         default="png",
         help="Output format",
     )
+    parser.add_argument(
+        "--theme",
+        choices=["light", "dark"],
+        default="light",
+        help="light = white background; dark = transparent background for dark-mode pages",
+    )
     args = parser.parse_args()
 
+    dark = args.theme == "dark"
+    suffix = "-dark" if dark else ""
+
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    output_path = args.output_dir / f"cartpole.{args.format}"
-    render_diagram(output_path, fmt=args.format)
+    output_path = args.output_dir / f"cartpole{suffix}.{args.format}"
+    render_diagram(output_path, fmt=args.format, transparent=dark)
 
 
 if __name__ == "__main__":
