@@ -65,7 +65,10 @@ jobs:
         id: cache-texlive
         with:
           path: /usr/local/texlive
-          key: texlive-macos-${{ hashFiles('.github/workflows/static.yml') }}
+          # Manual version: bump when changing the tlmgr package list below.
+          # (Previously keyed on a hash of this file, which re-installed TeX
+          # Live on every workflow edit.)
+          key: texlive-macos-v1
 
       - name: Install brew dependencies
         run: |
