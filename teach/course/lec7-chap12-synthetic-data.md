@@ -38,7 +38,7 @@ custom_css: |
 <p class="colloquium-title-name">Nathan Lambert</p>
 </div>
 
-<p class="colloquium-title-note">Course on RLHF and post-training. Chapter 12 on Synthetic Data. General rules, constitutional AI, and on-policy distillation.</p>
+<p class="colloquium-title-note">Course on RLHF and post-training. Chapter 12 on Synthetic Data: distillation and on-policy distillation, AI feedback, constitutional AI, and rubrics.</p>
 
 ---
 
@@ -50,45 +50,6 @@ When the first models were trained with RLHF, human data was *the only* way to g
 - **Cheaper, faster iteration** -- synthetic data lowered the price of an RLHF experiment, opening the field to everyone who was priced out of human-data pipelines.
 - **A capability threshold** -- this only worked once GPT-4-class models arrived. Llama 2 and GPT-3.5-Turbo were not reliable enough to generate *or* supervise data; the LLM-as-a-judge ability emerged in the GPT-3.5 → GPT-4 jump.
 - **The center of gravity of post-training** -- today, leading models *need* synthetic data to reach the frontier. It is no longer a budget substitute; it is the recipe.
-
----
-
-<!-- columns: 55/45 -->
-## Model collapse, and why it's avoidable in practice
-
-The common criticism: repeatedly training on a model's own generations can narrow the effective training distribution [@shumailov2024ai].
-
-As diversity drops, rare facts and styles are underrepresented and small mistakes compound across iterations.
-
-|||
-
-But this is mostly a failure of *unfiltered, single-model, self-training* loops. In practice it is avoided by:
-
-- mixing in real / human data,
-- using **diverse teachers**,
-- deduplication,
-- strong quality filters.
-
-Evidence suggests synthetic data can -- and should -- be used at scale without the catastrophic regressions of the strongest collapse story [@gerstgrasser2024model] [@feng2024beyond].
-
----
-
-<!-- columns: 50/50 -->
-## Where synthetic data wins, and where humans stay
-
-Synthetic data has **not** replaced human data uniformly across the pipeline.
-
-- **Instruction data (SFT):** synthetic has largely *won* -- distillation beats most human writers at scale.
-- **Preference data (RLHF):** *mixed* -- academic work shows it performs comparably, yet frontier labs treat human preference data as a competitive moat.
-- **Evaluation:** LLM-as-a-judge scales *scoring* cheaply, but benchmarks and ground-truth labels still need humans.
-
-|||
-
-**The pattern:**
-
-> Synthetic data dominates where models exceed human reliability.
->
-> Humans remain essential at capability frontiers, for establishing ground truth, and for guiding training.
 
 ---
 
@@ -156,18 +117,55 @@ This lecture is about the methods that fill those boxes with model outputs.
 
 ---
 
+<!-- columns: 50/50 -->
+## Where synthetic data wins, and where humans stay
+
+Synthetic data has **not** replaced human data uniformly across the pipeline.
+
+- **Instruction data (SFT):** synthetic has largely *won* -- distillation beats most human writers at scale.
+- **Preference data (RLHF):** *mixed* -- academic work shows it performs comparably, yet frontier labs treat human preference data as a competitive moat.
+- **Evaluation:** LLM-as-a-judge scales *scoring* cheaply, but benchmarks and ground-truth labels still need humans.
+
+|||
+
+**The pattern:**
+
+> Synthetic data dominates where models exceed human reliability.
+>
+> Humans remain essential at capability frontiers, for establishing ground truth, and for guiding training.
+
+---
+
+<!-- columns: 55/45 -->
+## Model collapse, and why it's avoidable in practice
+
+The common criticism: repeatedly training on a model's own generations can narrow the effective training distribution [@shumailov2024ai].
+
+As diversity drops, rare facts and styles are underrepresented and small mistakes compound across iterations.
+
+|||
+
+But this is mostly a failure of *unfiltered, single-model, self-training* loops. In practice it is avoided by:
+
+- mixing in real / human data,
+- using **diverse teachers**,
+- deduplication,
+- strong quality filters.
+
+Evidence suggests synthetic data can -- and should -- be used at scale without the catastrophic regressions of the strongest collapse story [@gerstgrasser2024model] [@feng2024beyond].
+
+---
+
 <!-- valign: center -->
 ## Canonical datasets and their scale
 
 A few datasets defined each era: **UltraFeedback** [@cui2023ultrafeedback] (kickstarted the DPO revolution), **Stanford Alpaca** (early chat SFT), **Tülu 3** [@lambert2024t] (skill-focused), and **OpenThoughts 3** [@guha2025openthoughts] (reasoning).
 
-$$
-\textbf{Alpaca } 52\text{K prompts} \;\big(\sim 10\text{M tokens}\big)
-\;\longrightarrow\;
-\textbf{Tülu 3 } 1\text{M}^{+} \;\big(\sim 500\text{M}\big)
-\;\longrightarrow\;
-\textbf{OpenThoughts 3 } \big(\sim 10\text{B tokens}\big)
-$$
+| | Prompts | Tokens (approx.) |
+| :--- | :---: | :---: |
+| **Stanford Alpaca** (2023) | 52K | ~10M |
+| **Tülu 3** (2024) | 1M+ | ~500M |
+| **OpenThoughts 3** (2025) | — | ~10B |
 
 Quickstart guides still begin with small, fast datasets like Alpaca; industrial recipes reach for Tülu 3 / OpenThoughts 3. Datasets grew in **both** prompt count and response length.
 
@@ -224,7 +222,7 @@ So far, completions are *fixed text*. Next we go **inside** the token distributi
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## On-policy distillation P1/4: Adapting KD to language models
+## Part 3 · OPD 1/4: Adapting KD to language models
 
 ---
 
@@ -269,9 +267,9 @@ Matching the student to the teacher over *full sequences* $\mathcal{U}$ is intra
 $$
 \begin{aligned}
 \mathcal{L}_{\mathrm{SEQ\text{-}KD}}(s)
-&= -\sum_{u \in \mathcal{U}} q(u \mid s)\log p(u \mid s)
-\;\approx\; -\log p(\hat{u} \mid s) \\[4pt]
-&= -\sum_{j=1}^{|\hat{u}|}\log p(\hat{u}_j \mid s, \hat{u}_{<j}).
+&= -\sum_{u \in \mathcal{U}} q(u \mid s)\log p(u \mid s) && \text{sum over all sequences: intractable}\\[4pt]
+&\approx -\log p(\hat{u} \mid s) && \text{teacher} \approx \text{point mass on } \hat{u}\\[4pt]
+&= -\sum_{j=1}^{|\hat{u}|}\log p(\hat{u}_j \mid s, \hat{u}_{<j}) && \text{autoregressive factorization}
 \end{aligned}
 $$
 
@@ -285,19 +283,31 @@ Call this **offline KD** -- the generations are produced *a priori*. (DistilBERT
 
 Cross-entropy of a teacher $q$ and student $p$ -- the same form as the KD losses above:
 
-$$ H(q,p) = -\sum_z q(z)\log p(z). $$
+$$
+\begin{aligned}
+H(q,p) &= -\sum_z q(z)\log p(z) && \text{definition}
+\end{aligned}
+$$
 
 <!-- step -->
 
-It decomposes into the teacher's entropy and a KL divergence:
+Add and subtract the teacher's own log-probabilities, $\sum_z q(z)\log q(z)$ -- a quantity that does not involve $p$ at all:
 
-$$ H(q,p) = H(q) + D_{\mathrm{KL}}(q\|p). $$
+$$
+\begin{aligned}
+H(q,p) &= \underbrace{-\sum_z q(z)\log q(z)}_{H(q)} \;+\; \sum_z q(z)\log q(z) - \sum_z q(z)\log p(z) && \text{add and subtract}
+\end{aligned}
+$$
 
 <!-- step -->
 
-Written out:
+The last two sums share the weight $q(z)$, so they fold into one log-ratio (log rules):
 
-$$ H(q,p) = -\sum_z q(z)\log q(z) \;+\; \sum_z q(z)\log\frac{q(z)}{p(z)}. $$
+$$
+\begin{aligned}
+H(q,p) &= H(q) \;+\; \sum_z q(z)\log\frac{q(z)}{p(z)} = H(q) + D_{\mathrm{KL}}(q\|p) && \text{definition of KL}
+\end{aligned}
+$$
 
 <!-- step -->
 
@@ -310,7 +320,7 @@ $$ \boxed{\ \min_p H(q,p)\ \equiv\ \min_p D_{\mathrm{KL}}(q\|p)\quad\text{(forwa
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## On-policy distillation P2/4: From offline to on-policy
+## Part 3 · OPD 2/4: From offline to on-policy
 
 ---
 
@@ -348,6 +358,10 @@ $$ \mathbb{E}_{s_t \sim d_{\pi_T}}\!\left[\mathbb{I}\!\left(\pi_\theta(s_t) \neq
 
 <!-- step -->
 
+**Why quadratic?** One error at step $t$ pushes the prefix off the teacher's distribution -- where the bound no longer protects the student -- so it can pay for that mistake on *all* $L-t$ remaining steps: $\sum_{t=1}^{L} \epsilon\,(L-t) \sim \epsilon L^2$.
+
+<!-- step -->
+
 Then loss along a length-$L$ student rollout can scale **quadratically**:
 
 $$ \mathbb{E}_{a \sim \pi_\theta(\cdot \mid s)}\!\left[\sum_{t=1}^{L} \ell\!\left(s, a_{<t}\right)\right] \leq O(\epsilon L^2). $$
@@ -369,7 +383,7 @@ For LLMs this is an **analogy, not a guarantee** -- token losses are distributio
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## On-policy distillation P3/4: The reverse-KL objective
+## Part 3 · OPD 3/4: The reverse-KL objective
 
 ---
 
@@ -378,17 +392,17 @@ For LLMs this is an **analogy, not a guarantee** -- token losses are distributio
 
 **Offline KD / SFT** -- sample from the *teacher*, $q = \pi_T$ on the left:
 
-$$ D_{\mathrm{KL}}(\pi_T \,\|\, \pi_\theta) $$
+$$ D_{\mathrm{KL}}(\pi_T \,\|\, \pi_\theta) = \sum_z \pi_T(z)\log\frac{\pi_T(z)}{\pi_\theta(z)} $$
 
-*Mass-covering* -- can push the student to overestimate low-probability regions of the teacher.
+*Mass-covering* -- read it off the formula: wherever the **teacher** has mass, $\pi_\theta \to 0$ makes the log-ratio explode, so the student must spread probability over *everything* the teacher might say -- even regions it can't model well.
 
 |||
 
 **On-policy distillation** -- sample from the *student*, $\pi_\theta$ on the left:
 
-$$ D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_T) $$
+$$ D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_T) = \sum_z \pi_\theta(z)\log\frac{\pi_\theta(z)}{\pi_T(z)} $$
 
-*Mode-seeking* -- this is the **reverse** KL. Sampling from $\pi_\theta$ is exactly what puts it on the left. (Why reverse KL is often better: Chapter 15.)
+*Mode-seeking* -- now the weight is the **student's** own mass: it is only penalized where *it* puts probability the teacher dislikes, so it retreats to the teacher's modes. Sampling from $\pi_\theta$ is exactly what puts it on the left. (Why reverse KL is often better: Chapter 15.)
 
 ---
 
@@ -422,13 +436,14 @@ $$ A_t^{\mathrm{OPD}} = \log \pi_T(a_t \mid s_t) - \log \pi_\theta(a_t \mid s_t)
 
 - Tokens the teacher rates **above** the student → positive advantage; **below** → negative.
 - The teacher log-prob gap is **dense, token-level feedback** -- potentially richer than a sparse verifiable reward or a single scalar reward-model score.
+- This **layers onto other RL machinery** -- e.g. add it alongside GRPO's group-level normalization for more complex reward shaping.
 
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## On-policy distillation P4/4: Modern variants
+## Part 3 · OPD 4/4: Modern variants
 
 ---
 
@@ -461,14 +476,6 @@ At the **absolute frontier** there is no stronger model to distill from. **On-Po
 
 ---
 
-<!-- animate: bullets -->
-## Combining OPD with RL, and the tokenizer constraint
-
-- The reverse-KL advantage **layers onto** other RL machinery -- e.g. add it alongside GRPO's group-level normalization for richer reward shaping.
-- **Shared-tokenizer requirement:** KD is unusual among post-training methods -- per-token supervision needs the student and teacher to share a tokenizer.
-
----
-
 <!-- valign: center -->
 ## Who uses this today
 
@@ -479,7 +486,9 @@ A resurgence of teacher-student KD has accompanied the shift toward reasoning an
 - **GLM-5** (Zhipu AI) [@glm5team2026glm5]
 - **DeepSeek-V4-Pro** [@deepseekai2026deepseekv4]
 
-Distillation is growing into its own post-training method -- alongside SFT and RL.
+One caveat: per-token KD needs the student and teacher to **share a tokenizer** -- unusual among post-training methods, and part of why it thrives inside a lab's own model family.
+
+Distillation is growing into its own post-training method -- alongside SFT and RL. For how these recipes fit together at the frontier, see **Conversation 1** on the [course page](https://rlhfbook.com/course).
 
 ---
 
@@ -487,7 +496,7 @@ Distillation is growing into its own post-training method -- alongside SFT and R
 <!-- valign: center -->
 ## From offline KD to self-distillation
 
-![](assets/distillation_directionality_1.png)
+![**Sequence KD**: the teacher generates the rollout offline, and the student is trained to match those fixed targets with a cross-entropy loss.](assets/distillation_directionality_1.png)
 
 ---
 
@@ -495,7 +504,7 @@ Distillation is growing into its own post-training method -- alongside SFT and R
 <!-- valign: center -->
 ## From offline KD to self-distillation
 
-![](assets/distillation_directionality_2.png)
+![**On-policy distillation** flips who generates: the rollout comes from the student (e.g. inside an RL loop), and a separate teacher scores every visited token with a per-token KL.](assets/distillation_directionality_2.png)
 
 ---
 
@@ -503,7 +512,7 @@ Distillation is growing into its own post-training method -- alongside SFT and R
 <!-- valign: center -->
 ## From offline KD to self-distillation
 
-![](assets/distillation_directionality_3.png)
+![**On-policy self-distillation**: one model plays both roles -- privileged information (a hint) added to the context creates the teacher trajectory, with no separate teacher model.](assets/distillation_directionality_3.png)
 
 ---
 
@@ -744,8 +753,8 @@ Synthetic data didn't remove humans from the loop -- it moved them to the **fron
 <!-- columns: 52/48 -->
 ## Where this fits in modern post-training
 
-- **Qwen3 / MiMo-V2-Flash / GLM-5 / DeepSeek-V4-Pro** -- lean on new (often on-policy, multi-teacher) knowledge distillation.
-- **Tülu 3 / Olmo 3 / SmolLM 3** -- synthetic SFT + (often DPO) preferences.
+- **Frontier recipes** lean on new (often on-policy, multi-teacher) knowledge distillation -- Conversation 1 surveys these recipes model by model.
+- **Open recipes** (Tülu 3 / Olmo 3 / SmolLM 3) -- synthetic SFT + (often DPO) preferences.
 - **Claude** -- Constitutional AI for principle-driven alignment.
 
 |||
@@ -767,3 +776,22 @@ Synthetic data didn't remove humans from the loop -- it moved them to the **fron
 - **Self-preference bias** in judge-driven loops -- how much does it compound?
 - **Rubric cost vs. coverage** -- per-prompt generation is expensive.
 - **Go deeper:** Chapter 6 (RL / policy-gradient framing), Chapter 15 (forward vs. reverse KL), Chapter 16 (evaluation), Chapter 7 (RL with verifiable rewards).
+
+---
+
+<!-- rows: 85/15 -->
+## Thank you
+
+Questions / discussion
+
+Contact: nathan@natolambert.com
+
+Newsletter: [interconnects.ai](https://www.interconnects.ai/)
+
+**rlhfbook.com**
+
+===
+
+```builtwith
+repo: natolambert/colloquium
+```
