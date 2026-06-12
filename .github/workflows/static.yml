@@ -27,6 +27,7 @@ jobs:
     permissions:
       contents: read
       deployments: write
+      pull-requests: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
