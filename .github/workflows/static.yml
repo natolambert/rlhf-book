@@ -30,14 +30,14 @@ jobs:
       pull-requests: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # Course-only changes (teach/** and the course page template) skip the
       # slow PDF/EPUB/TeX path and reuse the published book artifacts instead.
       # If this step is skipped (workflow_dispatch), outputs are empty and the
       # full build runs.
       - name: Detect changed paths
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@v4
         id: changes
         if: github.event_name != 'workflow_dispatch'
         with:
@@ -61,7 +61,7 @@ jobs:
 
       - name: Cache TeX Live
         if: steps.changes.outputs.book != 'false'
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: cache-texlive
         with:
           path: /usr/local/texlive
@@ -99,7 +99,7 @@ jobs:
           echo "/Library/TeX/texbin" >> $GITHUB_PATH
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v8
 
       - name: Clean build directory
         run: |
@@ -137,7 +137,7 @@ jobs:
 
       - name: Deploy preview to Cloudflare Pages
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -146,7 +146,7 @@ jobs:
 
       - name: Deploy production to Cloudflare Pages
         if: github.event_name != 'pull_request'
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
