@@ -12,6 +12,9 @@ search-title: "Chapter 8: Direct-Alignment Algorithms"
 meta-description: "Direct alignment algorithms such as DPO that optimize preference objectives without an explicit reward model or RL loop."
 next-chapter: "Rejection Sampling"
 next-url: "09-rejection-sampling"
+lectures:
+  - video: "https://www.youtube.com/watch?v=6g6b4gvO-y0&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=8"
+    label: "Lecture 6: Direct Preference Optimization"
 ---
 
 # Direct-Alignment Algorithms
