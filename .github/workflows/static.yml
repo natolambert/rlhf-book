@@ -99,7 +99,7 @@ jobs:
           echo "/Library/TeX/texbin" >> $GITHUB_PATH
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v8
+        uses: astral-sh/setup-uv@v8.2.0
 
       - name: Clean build directory
         run: |
