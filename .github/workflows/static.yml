@@ -34,12 +34,13 @@ jobs:
 
       # Course-only changes (teach/** and the course page template) skip the
       # slow PDF/EPUB/TeX path and reuse the published book artifacts instead.
-      # If this step is skipped (workflow_dispatch), outputs are empty and the
-      # full build runs.
+      # If this step is skipped (workflow_dispatch) or fails, outputs are empty
+      # and the full build runs — change detection must never block a deploy.
       - name: Detect changed paths
         uses: dorny/paths-filter@v4
         id: changes
         if: github.event_name != 'workflow_dispatch'
+        continue-on-error: true
         with:
           filters: |
             book:
