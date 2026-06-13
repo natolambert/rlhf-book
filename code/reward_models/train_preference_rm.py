@@ -69,6 +69,33 @@ def format_conversation(messages: List[Dict]) -> str:
     return "\n".join(result)
 
 
+def tokenize_messages(
+    tokenizer: AutoTokenizer,
+    messages: List[Dict],
+    max_length: int,
+    return_tensors: str | None = None,
+) -> Dict:
+    """Tokenize messages with the tokenizer chat template when available."""
+    if tokenizer.chat_template is not None:
+        return tokenizer.apply_chat_template(
+            messages,
+            tokenize=True,
+            add_generation_prompt=False,
+            max_length=max_length,
+            truncation=True,
+            return_dict=True,
+            return_tensors=return_tensors,
+        )
+
+    return tokenizer(
+        format_conversation(messages),
+        max_length=max_length,
+        truncation=True,
+        add_special_tokens=True,
+        return_tensors=return_tensors,
+    )
+
+
 def build_preference_dataset(
     tokenizer: AutoTokenizer,
     dataset_name: str = DEFAULT_DATASET,
@@ -100,27 +127,22 @@ def build_preference_dataset(
         # Handle different dataset formats
         if isinstance(chosen, list) and len(chosen) > 0:
             # Conversation format
-            chosen_text = format_conversation(chosen)
-            rejected_text = format_conversation(rejected)
+            chosen_messages = chosen
+            rejected_messages = rejected
         elif isinstance(chosen, str):
-            chosen_text = f"user: {prompt}\nassistant: {chosen}"
-            rejected_text = f"user: {prompt}\nassistant: {rejected}"
+            chosen_messages = [
+                {"role": "user", "content": prompt},
+                {"role": "assistant", "content": chosen},
+            ]
+            rejected_messages = [
+                {"role": "user", "content": prompt},
+                {"role": "assistant", "content": rejected},
+            ]
         else:
             continue
 
-        # Tokenize
-        chosen_tokens = tokenizer(
-            chosen_text,
-            max_length=max_length,
-            truncation=True,
-            add_special_tokens=True,
-        )
-        rejected_tokens = tokenizer(
-            rejected_text,
-            max_length=max_length,
-            truncation=True,
-            add_special_tokens=True,
-        )
+        chosen_tokens = tokenize_messages(tokenizer, chosen_messages, max_length)
+        rejected_tokens = tokenize_messages(tokenizer, rejected_messages, max_length)
 
         records.append(
             {
@@ -386,13 +408,24 @@ for certain problems like breaking codes or simulating molecules."""
     bad_response = """Quantum computing is complicated. It uses physics.
 Computers are electronic devices. I don't really know much about it."""
 
-    # Format as conversations
-    good_text = f"user: {prompt}\nassistant: {good_response}"
-    bad_text = f"user: {prompt}\nassistant: {bad_response}"
-
-    # Tokenize
-    good_tokens = tokenizer(good_text, return_tensors="pt", max_length=512, truncation=True)
-    bad_tokens = tokenizer(bad_text, return_tensors="pt", max_length=512, truncation=True)
+    good_tokens = tokenize_messages(
+        tokenizer,
+        [
+            {"role": "user", "content": prompt},
+            {"role": "assistant", "content": good_response},
+        ],
+        max_length=512,
+        return_tensors="pt",
+    )
+    bad_tokens = tokenize_messages(
+        tokenizer,
+        [
+            {"role": "user", "content": prompt},
+            {"role": "assistant", "content": bad_response},
+        ],
+        max_length=512,
+        return_tensors="pt",
+    )
 
     with torch.no_grad():
         good_reward = model.get_reward(
