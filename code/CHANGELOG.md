@@ -5,6 +5,7 @@ On release, entries get moved under a version heading.
 
 ## Unreleased
 
+- 2026-06-13: [PR #450](https://github.com/natolambert/rlhf-book/pull/450) updated preference reward model tokenization to apply tokenizer chat templates when available, including the demo reward comparison path. This changes tokenization for the default `Qwen3-0.6B-Base` run (which ships a chat template), so loss scale is not directly comparable to prior runs; the chosen/rejected formatting stays symmetric, so the Bradley-Terry objective is unaffected.
 - 2026-05-15: [PR #425](https://github.com/natolambert/rlhf-book/pull/425) added `[code]` link to `code/instruction_tuning` in the site navbar and listed Chapter 4 (Instruction Tuning) under the Book Chapters section of `code/README.md`.
 - 2026-05-15: [PR #424](https://github.com/natolambert/rlhf-book/pull/424) documented the instruction-tuning reference run in `code/README.md` and `code/instruction_tuning/README.md` — added a new SFT section with the wandb training-results image (`code/images/wandb_instruction_tuning.png`) and an example-run table linking to [wandb run `nybj8sdx`](https://wandb.ai/rlhf-book/core/runs/nybj8sdx), illustrated the base→assistant transition with step-100 vs step-650 sample panels, and dropped the placeholder `TODO(@natolambert)` from the reader experiment table.
 - 2026-05-13: [PR #421](https://github.com/natolambert/rlhf-book/pull/421) added optional `WANDB_ENTITY` support across the code examples and migrated verified reference links to the `rlhf-book/core` team project.
