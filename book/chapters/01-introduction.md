@@ -255,11 +255,11 @@ A common phrase -- "instruction tuning is enough for alignment" -- was so popula
 This doubt about RLHF lasted, especially in the open where groups cannot afford data budgets on the order of \$100K to \$1M.
 The companies that embraced it early ended up winning out.
 Anthropic published extensive research on RLHF through 2022 and now has arguably the best post-training [@askell2021general] [@bai2022training] [@bai2022constitutional].
-The delta between open groups, struggling to reproduce or even know basic closed techniques, and leading closed models is a common theme.
+The delta between open groups, struggling to reproduce or even knowing basic closed techniques, and leading closed models is a common theme.
 
 The first shift in open alignment methods and post-training was the story of Direct Preference Optimization (DPO) [@rafailov2024direct], which showed that you can solve the same optimization problem as RLHF with fewer moving parts by taking gradient steps directly on pairwise preference data. 
 The DPO paper, posted in May of 2023, didn't have any clearly impactful models trained with it through the fall of 2023.
-This changed with the releases of a few breakthrough DPO models -- all contingent on finding a better, lower learning rate. 
+This changed with the releases of a few breakthrough DPO models -- all contingent on finding a better, lower, learning rate. 
 Zephyr-Beta [@tunstall2023zephyr], Tülu 2 [@ivison2023camels], and many other models showed that the DPO era of post-training had begun. 
 Chris Manning literally thanked me for "saving DPO." 
 

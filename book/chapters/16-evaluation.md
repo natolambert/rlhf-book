@@ -161,7 +161,7 @@ A: The cafeteria had 23 apples originally. They..
 
 ### Zero-Shot Instruction Following
 
-Over time, as language models became stronger, they evolved into zero-shot learners [@wei2021finetuned].
+Over time, as language models became stronger, they evolved to zero-shot evaluation, a.k.a. "zero-shot learners" [@wei2021finetuned].
 The Finetuned Language Net (FLAN) showed that language models fine-tuned on specific tasks, as a precursor to modern instruction tuning, could generalize to zero-shot questions they were not trained on [@wei2021finetuned] (similar results are also found in T0 [@sanh2021multitask]).
 This is the emergence of instruction fine-tuning (IFT), an important precursor to RLHF and post-training.
 A zero-shot question would look like:

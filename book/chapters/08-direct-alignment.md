@@ -244,7 +244,7 @@ Multiple algorithms have been proposed to re-balance the optimization away from 
 
 - **REgression to RElative REward Based RL (REBEL)** adds signal from a reward model, as a margin between chosen and rejected responses, rather than solely the pairwise preference data, to more accurately solve the RLHF problem [@gao2024rebel].
 - **Conservative DPO (cDPO) and Identity Preference Optimization (IPO)** address overfitting by assuming noise in the preference data. cDPO assumes N percent of the data is incorrectly labeled [@rafailov2024direct] and IPO changes the optimization to soften the probability of preference rather than optimize directly from a label [@azar2024general]. Practically, IPO changes the preference probability to a nonlinear function, moving away from the Bradley-Terry assumption, with $\Psi(q) = \log\left(\frac{q}{1-q}\right)$.
-- **DPO with an offset (ODPO)** requires the difference between the likelihood of the preferred and dispreferred response to be greater than an offset value [@amini2024direct]. It does not treat every data pair equally, but this can come at the cost of a more difficult labeling environment.
+- **DPO with an offset (ODPO)** "requires the difference between the likelihood of the preferred and dispreferred response to be greater than an offset value" [@amini2024direct] -- do not treat every data pair equally, but this can come at the cost of a more difficult labeling environment.
 
 Some variants of DPO attempt to either improve the learning signal by making small changes to the loss or make the application more efficient by reducing memory usage.
 
@@ -254,7 +254,7 @@ Some variants of DPO attempt to either improve the learning signal by making sma
 ![Sketch of preference displacement in DPO.](images/dpo_displacement.png){#fig:dpo_issue .center}
 
 One of the core issues *apparent* in DPO is that the optimization drives only to increase the margin between the probability of the chosen and rejected responses.
-Numerically, the model reduces the probability of both the chosen and rejected responses, but the *rejected response is reduced to a greater extent* as shown in @fig:dpo_issue.
+Numerically, the model reduces the probability of both the chosen and rejected responses, but the *rejected response is reduced by a greater extent* as shown in @fig:dpo_issue.
 Intuitively, it is not clear how this generalizes, but work has posited that it increases the probability of unaddressed behaviors -- i.e. tokens that the language model could generate, but are not in the distribution of the post-training datasets [@razin2024unintentional] [@ren2024learning]. 
 Simple methods---such as Cal-DPO [@xiao2024cal], which adjusts the optimization process, and AlphaPO [@gupta2025alphapo], which modifies the reward shape---mitigate this **preference displacement**.
 In practice, the exact impact of this is not well known, but points to a potential reason why online methods can outperform vanilla DPO.
