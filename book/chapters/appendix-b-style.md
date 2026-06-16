@@ -126,7 +126,7 @@ An early, good example of this tradeoff done right is a model like Starling Beta
 It's a model that was fine-tuned from another chat model, OpenChat [@wang2023openchat] (which was in fact trained by an entire other organization). 
 Its training entirely focuses on k-wise reward model training and PPO optimization, and moves it up 10 places in Arena.
 The average response length of the model increases, but in a way that's good enough to actually help the human raters.
-Later examples, such as OLMo 3, are documented as undergoing substantial chat training, but with the authors preferring a final model checkpoint with higher math, coding, and reasoning scores instead of potential checkpoints that are highest on LLM-as-a-judge-based chat benchmarks [@teamolmo2025olmo3].
+Later examples, such as Olmo 3, are documented as undergoing substantial chat training, but with the authors preferring a final model checkpoint with higher math, coding, and reasoning scores instead of potential checkpoints that are highest on LLM-as-a-judge-based chat benchmarks [@teamolmo2025olmo3].
 
 A natural question is: Why does RLHF make model responses longer?
 Fundamentally, evaluations like Arena have shown us that average users of models often like longer, complete answers when compared with terse responses. 

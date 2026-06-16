@@ -204,7 +204,7 @@ Evaluation is moving to where the models are tested to respond in a generative m
 ## Why Many External Evaluation Comparisons Are Unreliable
 
 Language model evaluations within model announcements from AI companies can only be compared to other press releases with large error bars -- i.e. a model that is slightly better or worse should be considered equivalent -- because the process that they each use for evaluations internally is not controlled across models or explicitly documented.
-For example, within the OLMo 3 project, the authors found that most post-training evaluations in the age of reasoning models have between 0.25 and 1.5 point standard deviations when the evaluation setup is held constant [@teamolmo2025olmo3] -- bigger changes in scores can come from using different prompts or sampling parameters.
+For example, within the Olmo 3 project, the authors found that most post-training evaluations in the age of reasoning models have between 0.25 and 1.5 point standard deviations when the evaluation setup is held constant [@teamolmo2025olmo3] -- bigger changes in scores can come from using different prompts or sampling parameters.
 Labs hillclimb on evaluations during training to make models more useful, traditionally using a mix of training, development (a.k.a. validation set), and held-out evaluation sets (a.k.a. test set).
 Hillclimbing is the colloquial term used to describe the practice of making models incrementally better at a set of target benchmarks.
 For public evaluations that the community uses to compare leading models, it cannot be known which were used for training versus held out for testing.
@@ -299,6 +299,6 @@ Some include:
 - Inspect AI from the UK Safety Institute [@inspectAI2024], 
 - HuggingFace's LightEval [@fourrier2023lighteval] that powered the Open LLM Leaderboard [@open-llm-leaderboard-v2], 
 - EleutherAI's evaluation harness [@gao2023evalharness] built on top of the infrastructure from their GPT-Neo-X model (this contains a good GPT-3 era evaluation setup and configuration) [@gpt-neox-20b], 
-- AI2's library based on OLMES [@gu2024olmes], 
+- Ai2's library based on OLMES [@gu2024olmes], 
 - Stanford's Center for Research on Foundation Models' HELM [@liang2023helm], 
 - Mosaic's (now Databricks') Eval Gauntlet [@mosaicml2024gauntlet], and more.
