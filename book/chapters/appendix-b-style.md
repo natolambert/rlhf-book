@@ -31,7 +31,7 @@ The Llama 3 Instruct models scored extremely high on Arena, and it's accepted as
 Regardless of the benchmark scores that many LLM users are obsessed with, if RLHF is going to make language models simply more fun, that is delivered value.
 
 Throughout this appendix, the term "chattiness" is used to encompass the growing length of responses from models trained with RLHF, but it also encompasses techniques like heavy markdown use, emojis, and formatting the answer in bulleted lists.
-To ground the discussion in this appendix, an example completion for two models in the same Tülu 3 family are shown below -- one with only instruction fine-tuning and the second with preference fine-tuning applied via length-controlled DPO.
+To ground the discussion in this appendix, an example completion for two models in the same Tülu 3 family is shown below -- one with only instruction fine-tuning and the second with preference fine-tuning applied via length-controlled DPO.
 First, the instruction-tuned completion to the prompt `What is reinforcement learning from human feedback?` (the exact model is [Llama 3.1 Tulu 3 70B SFT](https://huggingface.co/allenai/Llama-3.1-Tulu-3-70B-SFT)) [@lambert2024t]:
 
 ```text
@@ -126,7 +126,7 @@ An early, good example of this tradeoff done right is a model like Starling Beta
 It's a model that was fine-tuned from another chat model, OpenChat [@wang2023openchat] (which was in fact trained by an entire other organization). 
 Its training entirely focuses on k-wise reward model training and PPO optimization, and moves it up 10 places in Arena.
 The average response length of the model increases, but in a way that's good enough to actually help the human raters.
-Later examples, such as Olmo 3, are documented as undergoing substantial chat training, but with the authors preferring a final model checkpoint with higher math, coding, and reasoning scores instead of potential checkpoints that are highest on LLM-as-a-judge-based chat benchmarks [@teamolmo2025olmo3].
+Later examples, such as OLMo 3, are documented as undergoing substantial chat training, but with the authors preferring a final model checkpoint with higher math, coding, and reasoning scores instead of potential checkpoints that are highest on LLM-as-a-judge-based chat benchmarks [@teamolmo2025olmo3].
 
 A natural question is: Why does RLHF make model responses longer?
 Fundamentally, evaluations like Arena have shown us that average users of models often like longer, complete answers when compared with terse responses. 

@@ -106,7 +106,7 @@ The core change here is more a reallocation of the stages of training and the pr
 Reasoning models brought an era where scaling RL training is expected.
 
 As for the type of behavior these models exhibit, consider the following example with DeepSeek V3 0325 versus their reasoning model, DeepSeek R1, on the query `Write me a short poem about a goldfish`.
-DeepSeek V3 is very to the point:
+DeepSeek V3 is very much to the point:
 
 > **Response**: Goldfish Dreams
 >

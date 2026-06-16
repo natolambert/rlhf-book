@@ -161,7 +161,7 @@ A: The cafeteria had 23 apples originally. They..
 
 ### Zero-Shot Instruction Following
 
-Over time, as language models became stronger, they evolved to zero-shot evaluation, a.k.a. "zero-shot learners" [@wei2021finetuned].
+Over time, as language models became stronger, they evolved into zero-shot learners [@wei2021finetuned].
 The Finetuned Language Net (FLAN) showed that language models fine-tuned on specific tasks, as a precursor to modern instruction tuning, could generalize to zero-shot questions they were not trained on [@wei2021finetuned] (similar results are also found in T0 [@sanh2021multitask]).
 This is the emergence of instruction fine-tuning (IFT), an important precursor to RLHF and post-training.
 A zero-shot question would look like:
@@ -204,13 +204,13 @@ Evaluation is moving to where the models are tested to respond in a generative m
 ## Why Many External Evaluation Comparisons Are Unreliable
 
 Language model evaluations within model announcements from AI companies can only be compared to other press releases with large error bars -- i.e. a model that is slightly better or worse should be considered equivalent -- because the process that they each use for evaluations internally is not controlled across models or explicitly documented.
-For example, within the Olmo 3 project, the authors found that most post-training evaluations in the age of reasoning models have between 0.25 and 1.5 point standard deviations when the evaluation setup is held constant [@teamolmo2025olmo3] -- bigger changes in scores can come from using different prompts or sampling parameters.
+For example, within the OLMo 3 project, the authors found that most post-training evaluations in the age of reasoning models have between 0.25 and 1.5 point standard deviations when the evaluation setup is held constant [@teamolmo2025olmo3] -- bigger changes in scores can come from using different prompts or sampling parameters.
 Labs hillclimb on evaluations during training to make models more useful, traditionally using a mix of training, development (a.k.a. validation set), and held-out evaluation sets (a.k.a. test set).
 Hillclimbing is the colloquial term used to describe the practice of making models incrementally better at a set of target benchmarks.
 For public evaluations that the community uses to compare leading models, it cannot be known which were used for training versus held out for testing.
 
 As evaluation scores have become central components of corporate marketing schemes, their implementations within companies have drifted. 
-There are rumors of major AI labs using "custom prompts" for important evaluations like GSM8k or MATH. 
+There are rumors of major AI labs using "custom prompts" for important evaluations like GSM8K or MATH. 
 These practices evolve rapidly.
 
 Language model evaluation stacks are perceived as marketing because the evaluations have no hard source of truth. 
@@ -246,7 +246,7 @@ As each benchmark approaches 100%, a model's progress begins to slow as there ar
 Evaluation of frontier language models is every bit as much an art today as it is a science; prescribing exactly how different groups use evaluations to understand cutting-edge language models would be a textbook of its own.
 
 Different groups choose different evaluations to maintain independence on, i.e. making them a true test set, but no one discloses which ones they choose. 
-For example, popular reasoning evaluations MATH and GSM8k both have training sets with prompts that can easily be used to improve performance. 
+For example, popular reasoning evaluations MATH and GSM8K both have training sets with prompts that can easily be used to improve performance. 
 Improving performance with the prompts from the same distribution is very different than generalizing to these tasks by training on general math data.
 
 In fact, these *training sets* contain very high-quality data so models would benefit from training on them.
@@ -298,7 +298,7 @@ Some include:
 
 - Inspect AI from the UK Safety Institute [@inspectAI2024], 
 - HuggingFace's LightEval [@fourrier2023lighteval] that powered the Open LLM Leaderboard [@open-llm-leaderboard-v2], 
-- Eleuther AI's evaluation harness [@gao2023evalharness] built on top of the infrastructure from their GPT-Neo-X model (this contains a good GPT-3 era evaluation setup and configuration) [@gpt-neox-20b], 
+- EleutherAI's evaluation harness [@gao2023evalharness] built on top of the infrastructure from their GPT-Neo-X model (this contains a good GPT-3 era evaluation setup and configuration) [@gpt-neox-20b], 
 - AI2's library based on OLMES [@gu2024olmes], 
-- Stanford's Center for Research on Foundation Model's HELM [@liang2023helm], 
+- Stanford's Center for Research on Foundation Models' HELM [@liang2023helm], 
 - Mosaic's (now Databricks') Eval Gauntlet [@mosaicml2024gauntlet], and more.

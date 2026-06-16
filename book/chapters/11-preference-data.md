@@ -116,7 +116,7 @@ For example, a 5-point Likert scale would look like the following (note that, ye
 
 Table: An example 5-point Likert scale between two responses, A and B. {#tbl:likert5}
 
-Some early RLHF for language modeling works use an 8-step Likert scale with levels of preference between the two responses [@bai2022training]. 
+Some early RLHF for language modeling works use an 8-point Likert scale with levels of preference between the two responses [@bai2022training]. 
 An even scale removes the possibility of ties:
 
 
@@ -249,7 +249,7 @@ These biases are so common, e.g. prefix bias (where the beginning of a completio
 These issues are often subtle, and the effectiveness of interventions varies widely across them.
 For many, such as sycophancy (over-agreeing with the user’s stated beliefs or flattering them, even when it reduces truthfulness) [@sharma2023towards], they reflect issues within humans that are often outside of the labeling criteria that one will think of providing to the annotation partner or labelers.
 Others, such as verbosity [@singhal2023long] [@bu2025beyond] or formatting habits [@zhang2024lists], emerge for a similar reason, but they are easier to detect and mitigate in training.
-Mitigating these subtle biases in data is the difference between good or great preference data, and therefore good or great RLHF training.
+Mitigating these subtle biases in data is the difference between good and great preference data, and therefore good and great RLHF training.
 
 ## Open Questions in RLHF Preference Data
 

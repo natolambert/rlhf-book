@@ -214,7 +214,7 @@ The challenge of post-training is to reshape models from next-token prediction t
 
 A related idea to this theory is the Superficial Alignment Hypothesis, coined in the paper LIMA: Less is More for Alignment [@zhou2023lima]. This paper is getting some important intuitions right but for the wrong reasons in the big picture. The authors state:
 
-> A model's knowledge and capabilities are learnt almost entirely during pretraining, while alignment teaches it which subdistribution of formats should be used when interacting with users. If this hypothesis is correct, and alignment is largely about learning style, then a corollary of the Superficial Alignment Hypothesis is that one could sufficiently tune a pretrained language model with a rather small set of examples [Kirstain et al., 2021].
+> A model's knowledge and capabilities are learnt almost entirely during pretraining, while alignment teaches it which subdistribution of formats should be used when interacting with users. If this hypothesis is correct, and alignment is largely about learning style, then a corollary of the Superficial Alignment Hypothesis is that one could sufficiently tune a pretrained language model with a rather small set of examples.
 
 All of the successes of deep learning should have taught you that scaling data is important to performance. Here, the major difference is that the authors are discussing alignment and style, the focus of academic post-training at the time. With a few thousand samples for instruction fine-tuning, you can change a model substantially and improve a narrow set of evaluations, such as AlpacaEval, MT Bench, Arena (formerly ChatBotArena, a platform where users compare anonymous model responses head-to-head), and the like. These do not always translate to more challenging capabilities, which is why Meta wouldn't train its Llama Chat models on just this dataset. Academic results have lessons, but need to be interpreted carefully if you are trying to understand the big picture of the technological arc.
 
@@ -255,11 +255,11 @@ A common phrase -- "instruction tuning is enough for alignment" -- was so popula
 This doubt about RLHF lasted, especially in the open where groups cannot afford data budgets on the order of \$100K to \$1M.
 The companies that embraced it early ended up winning out.
 Anthropic published extensive research on RLHF through 2022 and now has arguably the best post-training [@askell2021general] [@bai2022training] [@bai2022constitutional].
-The delta between open groups, struggling to reproduce or even knowing basic closed techniques, and leading closed models is a common theme.
+The delta between open groups, struggling to reproduce or even know basic closed techniques, and leading closed models is a common theme.
 
 The first shift in open alignment methods and post-training was the story of Direct Preference Optimization (DPO) [@rafailov2024direct], which showed that you can solve the same optimization problem as RLHF with fewer moving parts by taking gradient steps directly on pairwise preference data. 
 The DPO paper, posted in May of 2023, didn't have any clearly impactful models trained with it through the fall of 2023.
-This changed with the releases of a few breakthrough DPO models -- all contingent on finding a better, lower, learning rate. 
+This changed with the releases of a few breakthrough DPO models -- all contingent on finding a better, lower learning rate. 
 Zephyr-Beta [@tunstall2023zephyr], Tülu 2 [@ivison2023camels], and many other models showed that the DPO era of post-training had begun. 
 Chris Manning literally thanked me for "saving DPO." 
 

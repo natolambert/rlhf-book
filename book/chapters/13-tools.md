@@ -77,7 +77,7 @@ To obtain information outside of just the weights many used retrieval augmented 
 Soon after, others were exploring language models integrated with programs [@gao2023pal] or tools [@parisi2022talm].
 
 As the field matured, these models gained more complex abilities in addition to the vast improvements to the underlying language modeling.
-For example, ToolFormer could use "a calculator, a Q&A system, two different search engines, a translation system, and a calendar" [@schick2023toolformerlanguagemodelsteach].
+For example, Toolformer could use "a calculator, a Q&A system, two different search engines, a translation system, and a calendar" [@schick2023toolformerlanguagemodelsteach].
 Soon after, Gorilla was trained to use 1645 APIs (from PyTorch Hub, TensorFlow Hub v2, and Hugging Face) and its evaluation APIBench became a foundation of the popular Berkeley Function Calling Leaderboard [@patil2023gorilla].
 Since these early models, the diversity of actions called has grown substantially.
 

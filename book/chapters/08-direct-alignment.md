@@ -244,7 +244,7 @@ Multiple algorithms have been proposed to re-balance the optimization away from 
 
 - **REgression to RElative REward Based RL (REBEL)** adds signal from a reward model, as a margin between chosen and rejected responses, rather than solely the pairwise preference data, to more accurately solve the RLHF problem [@gao2024rebel].
 - **Conservative DPO (cDPO) and Identity Preference Optimization (IPO)** address overfitting by assuming noise in the preference data. cDPO assumes N percent of the data is incorrectly labeled [@rafailov2024direct] and IPO changes the optimization to soften the probability of preference rather than optimize directly from a label [@azar2024general]. Practically, IPO changes the preference probability to a nonlinear function, moving away from the Bradley-Terry assumption, with $\Psi(q) = \log\left(\frac{q}{1-q}\right)$.
-- **DPO with an offset (ODPO)** "requires the difference between the likelihood of the preferred and dispreferred response to be greater than an offset value" [@amini2024direct] -- do not treat every data pair equally, but this can come at the cost of a more difficult labeling environment.
+- **DPO with an offset (ODPO)** requires the difference between the likelihood of the preferred and dispreferred response to be greater than an offset value [@amini2024direct]. It does not treat every data pair equally, but this can come at the cost of a more difficult labeling environment.
 
 Some variants of DPO attempt to either improve the learning signal by making small changes to the loss or make the application more efficient by reducing memory usage.
 
@@ -254,7 +254,7 @@ Some variants of DPO attempt to either improve the learning signal by making sma
 ![Sketch of preference displacement in DPO.](images/dpo_displacement.png){#fig:dpo_issue .center}
 
 One of the core issues *apparent* in DPO is that the optimization drives only to increase the margin between the probability of the chosen and rejected responses.
-Numerically, the model reduces the probability of both the chosen and rejected responses, but the *rejected response is reduced by a greater extent* as shown in @fig:dpo_issue.
+Numerically, the model reduces the probability of both the chosen and rejected responses, but the *rejected response is reduced to a greater extent* as shown in @fig:dpo_issue.
 Intuitively, it is not clear how this generalizes, but work has posited that it increases the probability of unaddressed behaviors -- i.e. tokens that the language model could generate, but are not in the distribution of the post-training datasets [@razin2024unintentional] [@ren2024learning]. 
 Simple methods---such as Cal-DPO [@xiao2024cal], which adjusts the optimization process, and AlphaPO [@gupta2025alphapo], which modifies the reward shape---mitigate this **preference displacement**.
 In practice, the exact impact of this is not well known, but points to a potential reason why online methods can outperform vanilla DPO.
@@ -297,12 +297,12 @@ In most ways, DAAs are simpler and a quality of life improvement, but they also 
 ## DAAs with Synthetic Preference Data
 
 Most of the popular datasets for performing preference fine-tuning with DAAs these days are synthetic preferences where a frontier model rates outputs from other models as the winner or the loser. 
-Prominent examples include UltraFeedback (the first of this category) [@cui2023ultrafeedback], Tülu 3 (built with an expanded UltraFeedback methodology) [@lambert2024t], SmolLM 3's data [@bakouch2025smollm3], or the Dolci Pref dataset released with Olmo 3 [@teamolmo2025olmo3].
+Prominent examples include UltraFeedback (the first of this category) [@cui2023ultrafeedback], Tülu 3 (built with an expanded UltraFeedback methodology) [@lambert2024t], SmolLM 3's data [@bakouch2025smollm3], or the Dolci Pref dataset released with OLMo 3 [@teamolmo2025olmo3].
 
 The best practices for constructing these datasets are still evolving.
 Tülu 3 and datasets around its release in November of 2024 demonstrated that synthetic, pairwise preference data needs to be "on-policy" in a sense that some completions are generated from the model you're fine-tuning (while being mixed in a bigger model pool).
 This on-policy nature of the data ensured that the DAA would optimize the correct token space within which the model generates -- as the loss functions are contrastive and less direct than instruction fine-tuning.
-Later, with the release of Olmo 3 and SmolLM 3 in 2025, other works supported a different theory called Delta Learning, which argues that the difference between the chosen and rejected completions is more important to learning than exactly which models are used for the completions [@geng2025the].
+Later, with the release of OLMo 3 and SmolLM 3 in 2025, other works supported a different theory called Delta Learning, which argues that the difference between the chosen and rejected completions is more important to learning than exactly which models are used for the completions [@geng2025the].
 For example, in both of these two referenced models, the chosen responses are from Qwen 3 32B and the rejected responses are from Qwen 3 0.6B -- both authors developed this pairing concurrently and independently.
 
 Overall, training models on synthetic preference data with DAAs is the place most practitioners should start, given the simplicity of implementation and strong performance relative to preference fine-tuning with reinforcement learning based methods.

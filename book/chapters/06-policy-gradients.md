@@ -326,7 +326,7 @@ These details and trade-offs are discussed later in the chapter.
 
 ### Proximal Policy Optimization (PPO)
 
-Proximal Policy Optimization (PPO) [@schulman2017proximal] is one of the foundational algorithms behind Deep RL's successes (such as OpenAI's Five, which mastered DOTA 2 [@berner2019dota] and large amounts of research).
+Proximal Policy Optimization (PPO) [@schulman2017proximal] is one of the foundational algorithms behind Deep RL's successes (such as OpenAI Five, which mastered Dota 2 [@berner2019dota] and large amounts of research).
 The objective that PPO maximizes, with respect to the advantages and the policy probabilities, is as follows:
 
 $$J(\theta) = \min\left(\frac{\pi_\theta(a|s)}{\pi_{\theta_{\text{old}}}(a|s)}A, \text{clip} \left( \frac{\pi_\theta(a|s)}{\pi_{\theta_{\text{old}}}(a|s)}, 1-\varepsilon, 1+\varepsilon \right) A \right).$$ {#eq:PPO_EQN}
@@ -1301,7 +1301,7 @@ advantages = advantages.detach()   # for policy loss
 The backward loop accumulates temporal-difference (TD) errors ($\delta_t = r_t + \gamma V(s_{t+1}) - V(s_t)$), which measure how much better or worse the actual outcome was compared to the value function's prediction, with exponential decay $(\gamma\lambda)^l$.
 At terminal tokens, `not_done=0` prevents bootstrapping from future states and resets the GAE accumulator, so each episode's advantages are computed independently (since the loop runs backward, the terminal token cleanly stops the exponentially-weighted accumulation at episode boundaries—this makes the implementation packing-friendly, correctly handling multiple sequences concatenated into one).
 The final `targets` serve as regression targets for the separate value function learned outside this GAE loop, while the detached `advantages` weight the policy gradient—detached so that policy updates don't backpropagate through the value network.
-In RLHF for language models, $\gamma=1.0$ is common because episodes are short token sequences where undiscounted credit assignment is preferred (and often all of the tokens in one).
+In RLHF for language models, $\gamma=1.0$ is common because episodes are short token sequences where undiscounted credit assignment is preferred across all tokens in the completion.
 
 *For further reading, see [@seita2017gae].*
 
