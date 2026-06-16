@@ -43,7 +43,7 @@ MODELS: list[tuple[str, str, str]] = [
     ("minimax", "MiniMax-M1", "Jun 16, 2025"),
     ("kimi", "Kimi K2", "Jul 11, 2025"),
     ("zhipu", "GLM-4.5", "Jul 28, 2025"),
-    ("ai2", "OLMo 3 Think", "Nov 20, 2025"),
+    ("ai2", "Olmo 3 Think", "Nov 20, 2025"),
     ("deepseek", "DeepSeek V3.2", "Dec 1, 2025"),
     ("nvidia", "Nemotron 3 Nano", "Dec 15, 2025"),
     ("xiaomi", "MiMo-V2-Flash", "Dec 16, 2025"),

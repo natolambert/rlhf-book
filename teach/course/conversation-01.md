@@ -134,14 +134,14 @@ Curated prompts → **SFT** → **DPO** → **RLVR**
 
 ---
 
-## OLMo 3 (Dec. 2025) — a reasoning update to the Tülu 3 recipe
+## Olmo 3 (Dec. 2025) — a reasoning update to the Tülu 3 recipe
 
 <!-- rows: 60/40 -->
-![OLMo 3 model flow: Pretraining → Midtraining → Long context, then Think / Instruct / RL-Zero branches each SFT → DPO → RLVR](assets/olmo3-recipe.png)
+![Olmo 3 model flow: Pretraining → Midtraining → Long context, then Think / Instruct / RL-Zero branches each SFT → DPO → RLVR](assets/olmo3-recipe.png)
 
 ===
 
-<!-- footnote-right: Source: [OLMo 3 (arXiv:2512.13961)](https://arxiv.org/abs/2512.13961) -->
+<!-- footnote-right: Source: [Olmo 3 (arXiv:2512.13961)](https://arxiv.org/abs/2512.13961) -->
 
 ---
 

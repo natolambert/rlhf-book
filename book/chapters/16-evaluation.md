@@ -210,7 +210,7 @@ Hillclimbing is the colloquial term used to describe the practice of making mode
 For public evaluations that the community uses to compare leading models, it cannot be known which were used for training versus held out for testing.
 
 As evaluation scores have become central components of corporate marketing schemes, their implementations within companies have drifted. 
-There are rumors of major AI labs using "custom prompts" for important evaluations like GSM8k or MATH. 
+There are rumors of major AI labs using "custom prompts" for important evaluations like GSM8K or MATH. 
 These practices evolve rapidly.
 
 Language model evaluation stacks are perceived as marketing because the evaluations have no hard source of truth. 
@@ -246,7 +246,7 @@ As each benchmark approaches 100%, a model's progress begins to slow as there ar
 Evaluation of frontier language models is every bit as much an art today as it is a science; prescribing exactly how different groups use evaluations to understand cutting-edge language models would be a textbook of its own.
 
 Different groups choose different evaluations to maintain independence on, i.e. making them a true test set, but no one discloses which ones they choose. 
-For example, popular reasoning evaluations MATH and GSM8k both have training sets with prompts that can easily be used to improve performance. 
+For example, popular reasoning evaluations MATH and GSM8K both have training sets with prompts that can easily be used to improve performance. 
 Improving performance with the prompts from the same distribution is very different than generalizing to these tasks by training on general math data.
 
 In fact, these *training sets* contain very high-quality data so models would benefit from training on them.
@@ -298,7 +298,7 @@ Some include:
 
 - Inspect AI from the UK Safety Institute [@inspectAI2024], 
 - HuggingFace's LightEval [@fourrier2023lighteval] that powered the Open LLM Leaderboard [@open-llm-leaderboard-v2], 
-- Eleuther AI's evaluation harness [@gao2023evalharness] built on top of the infrastructure from their GPT-Neo-X model (this contains a good GPT-3 era evaluation setup and configuration) [@gpt-neox-20b], 
-- AI2's library based on OLMES [@gu2024olmes], 
-- Stanford's Center for Research on Foundation Model's HELM [@liang2023helm], 
+- EleutherAI's evaluation harness [@gao2023evalharness] built on top of the infrastructure from their GPT-Neo-X model (this contains a good GPT-3 era evaluation setup and configuration) [@gpt-neox-20b], 
+- Ai2's library based on OLMES [@gu2024olmes], 
+- Stanford's Center for Research on Foundation Models' HELM [@liang2023helm], 
 - Mosaic's (now Databricks') Eval Gauntlet [@mosaicml2024gauntlet], and more.
