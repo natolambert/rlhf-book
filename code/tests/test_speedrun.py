@@ -11,6 +11,7 @@ from rich.console import Console
 from policy_gradients.config import Config, DataConfig, DatasetSpec
 from policy_gradients.speedrun import SpeedrunTracker
 
+
 console = Console(record=True)
 
 

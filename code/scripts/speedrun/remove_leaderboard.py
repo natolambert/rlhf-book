@@ -12,6 +12,7 @@ import argparse
 import sys
 from pathlib import Path
 
+
 RUN_ID_COL = 6  # 0-indexed column position of run_id in the table
 
 
@@ -31,9 +32,7 @@ def find_rows_by_run_id(lines: list[str], run_id: str) -> list[int]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Remove a record from LEADERBOARD.md by run_id"
-    )
+    parser = argparse.ArgumentParser(description="Remove a record from LEADERBOARD.md by run_id")
     parser.add_argument("run_id", help="run_id of the record to remove")
     parser.add_argument(
         "--leaderboard",

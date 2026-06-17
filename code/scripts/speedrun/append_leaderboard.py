@@ -13,9 +13,20 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+
 MIN_COLUMNS = 13
-_UNIT_TO_SEC = {"h": 3600, "hr": 3600, "hours": 3600, "min": 60, "mins": 60, "minutes": 60,
-                "sec": 1, "s": 1, "secs": 1, "seconds": 1}
+_UNIT_TO_SEC = {
+    "h": 3600,
+    "hr": 3600,
+    "hours": 3600,
+    "min": 60,
+    "mins": 60,
+    "minutes": 60,
+    "sec": 1,
+    "s": 1,
+    "secs": 1,
+    "seconds": 1,
+}
 
 
 def load_metrics(json_path: str) -> dict:
@@ -55,17 +66,26 @@ def format_beta(value) -> str:
         return ""
 
 
-def row_sort_key(dataset: str, model: str, target: float | None,
-                 time_sec: int | None, step: int | None, date_str: str) -> tuple:
+def row_sort_key(
+    dataset: str,
+    model: str,
+    target: float | None,
+    time_sec: int | None,
+    step: int | None,
+    date_str: str,
+) -> tuple:
     try:
         date_ord = datetime.strptime(date_str.strip(), "%Y-%m-%d").toordinal()
     except ValueError:
         date_ord = 0
-    return (dataset, model,
-            -(target if target is not None else -999999.0),
-            time_sec if time_sec is not None else 999999999,
-            step if step is not None else 999999999,
-            -date_ord)
+    return (
+        dataset,
+        model,
+        -(target if target is not None else -999999.0),
+        time_sec if time_sec is not None else 999999999,
+        step if step is not None else 999999999,
+        -date_ord,
+    )
 
 
 def _parse_table(lines: list[str]) -> tuple[int | None, int | None, list[str]]:
@@ -96,8 +116,9 @@ def _rebuild_content(lines: list[str], separator_idx: int, sorted_rows: list[str
     return before + "\n" + "\n".join(sorted_rows) + ("\n\n" + after if after else "")
 
 
-def _sort_key_for_row(row: str, target_val: float | None = None,
-                      goal_wt: int | None = None) -> tuple:
+def _sort_key_for_row(
+    row: str, target_val: float | None = None, goal_wt: int | None = None
+) -> tuple:
     cells = [c.strip() for c in row.split("|")[1:-1]]
     if len(cells) < MIN_COLUMNS:
         return ("", "", 0.0, 999999999, 999999999, 0)
@@ -110,9 +131,13 @@ def _sort_key_for_row(row: str, target_val: float | None = None,
     return row_sort_key(cells[3], cells[2], target_r, time_sec, step, cells[0])
 
 
-def _sort_and_write(leaderboard_path: Path, rows: list[str],
-                    target_val: float | None = None, goal_wt: int | None = None,
-                    new_row_idx: int | None = None) -> str:
+def _sort_and_write(
+    leaderboard_path: Path,
+    rows: list[str],
+    target_val: float | None = None,
+    goal_wt: int | None = None,
+    new_row_idx: int | None = None,
+) -> str:
     """Sort rows and write to file. Returns rebuilt content."""
     lines = leaderboard_path.read_text(encoding="utf-8").split("\n")
     header_idx, separator_idx, _ = _parse_table(lines)
@@ -139,8 +164,10 @@ def _build_wandb_cell(d: dict) -> str:
     if run_id and entity and project:
         return f"[run](https://wandb.ai/{entity}/{project}/runs/{run_id})"
     if run_id:
-        print("Warning: wandb_entity or wandb_project missing in JSON; cannot generate wandb link.",
-              file=sys.stderr)
+        print(
+            "Warning: wandb_entity or wandb_project missing in JSON; cannot generate wandb link.",
+            file=sys.stderr,
+        )
     return ""
 
 
@@ -152,7 +179,12 @@ def _find_latest_json(directory: str = "logs/speedrun") -> str | None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Append a record to LEADERBOARD.md")
-    parser.add_argument("json_path", nargs="?", default=None, help="Path to speedrun JSON (default: latest in logs/speedrun/)")
+    parser.add_argument(
+        "json_path",
+        nargs="?",
+        default=None,
+        help="Path to speedrun JSON (default: latest in logs/speedrun/)",
+    )
     parser.add_argument("--recorder", default="", help="Runner name")
     parser.add_argument("--leaderboard", default="scripts/speedrun/LEADERBOARD.md")
     parser.add_argument("--notes", default="", help="Optional notes")
@@ -202,7 +234,9 @@ def main() -> None:
     goal_wt = d.get("goal_walltime_sec")
     goal_display = ""
     if goal_step is not None:
-        goal_display = f"goal({target})@step{goal_step}" if target != "" else f"goal@step{goal_step}"
+        goal_display = (
+            f"goal({target})@step{goal_step}" if target != "" else f"goal@step{goal_step}"
+        )
     ttt_display = format_walltime(goal_wt) if goal_wt is not None else ""
 
     final_r = d.get("final_reward")
@@ -214,12 +248,14 @@ def main() -> None:
     except (ValueError, TypeError):
         target_val = None
 
-    new_row = (f"| {datetime.now():%Y-%m-%d} | {args.recorder} "
-               f"| {d.get('model_name', '')} | {d.get('dataset', '')} "
-               f"| {goal_display} | {ttt_display} | {run_id} "
-               f"| {format_walltime(d.get('walltime_sec') or 0)} "
-               f"| {f'{float(final_r):.4f}' if final_r is not None else ''} "
-               f"| {d.get('algorithm', '')} | {beta_display} | {wandb_cell} | {args.notes} |")
+    new_row = (
+        f"| {datetime.now():%Y-%m-%d} | {args.recorder} "
+        f"| {d.get('model_name', '')} | {d.get('dataset', '')} "
+        f"| {goal_display} | {ttt_display} | {run_id} "
+        f"| {format_walltime(d.get('walltime_sec') or 0)} "
+        f"| {f'{float(final_r):.4f}' if final_r is not None else ''} "
+        f"| {d.get('algorithm', '')} | {beta_display} | {wandb_cell} | {args.notes} |"
+    )
 
     content = leaderboard_path.read_text(encoding="utf-8")
     placeholder = r"\| \(add entries here\)[\s|]*"
@@ -229,8 +265,9 @@ def main() -> None:
     else:
         _, _, table_rows = _parse_table(content.split("\n"))
         table_rows.append(new_row)
-        _sort_and_write(leaderboard_path, table_rows, target_val, goal_wt,
-                        new_row_idx=len(table_rows) - 1)
+        _sort_and_write(
+            leaderboard_path, table_rows, target_val, goal_wt, new_row_idx=len(table_rows) - 1
+        )
 
     print(f"Appended record to {args.leaderboard}:")
     print(new_row)

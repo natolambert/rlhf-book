@@ -60,9 +60,7 @@ class SpeedrunTracker:
     def _elapsed_sec(self) -> int:
         """Return elapsed seconds since start()."""
         if self.start_time is None:
-            raise RuntimeError(
-                "SpeedrunTracker.start() must be called before recording metrics."
-            )
+            raise RuntimeError("SpeedrunTracker.start() must be called before recording metrics.")
         return int(time.time() - self.start_time)
 
     def record_step(self, avg_reward: float) -> None:

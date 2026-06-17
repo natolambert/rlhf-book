@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pytest
 
+
 CODE_ROOT = Path(__file__).resolve().parents[1]
 APPEND_LB_PATH = CODE_ROOT / "scripts" / "speedrun" / "append_leaderboard.py"
 
@@ -133,7 +134,7 @@ def test_legacy_empty_beta_and_new_beta_row_share_schema(tmp_path, monkeypatch, 
     for row in rows:
         assert len(_row_cells(row)) == append_lb.MIN_COLUMNS
 
-    by_run_id = { _row_cells(row)[6]: row for row in rows }
+    by_run_id = {_row_cells(row)[6]: row for row in rows}
     assert _row_cells(by_run_id["legacy_run"])[10] == ""
     assert _row_cells(by_run_id["new_beta_run"])[10] == "0.1"
 
