@@ -18,6 +18,7 @@ class SpeedrunTracker:
     Usage in train.py::
 
         tracker = SpeedrunTracker(target_reward=1.35)
+        tracker.start(start_time)  # align with training loop boundary
 
         for replay_buffer in rollout_engine:
             avg_total = ...
@@ -35,7 +36,7 @@ class SpeedrunTracker:
     ):
         self.target_reward = target_reward
         self.metrics_file = metrics_file
-        self.start_time = time.time()
+        self.start_time: float | None = None
 
         self.reward_history: list[float] = []
         self.reward_100step_history: list[float | None] = []
@@ -52,10 +53,22 @@ class SpeedrunTracker:
             return sum(self.reward_history[-100:]) / 100
         return None
 
+    def start(self, start_time: float | None = None) -> None:
+        """Begin walltime tracking from the training loop boundary."""
+        self.start_time = time.time() if start_time is None else start_time
+
+    def _elapsed_sec(self) -> int:
+        """Return elapsed seconds since start()."""
+        if self.start_time is None:
+            raise RuntimeError(
+                "SpeedrunTracker.start() must be called before recording metrics."
+            )
+        return int(time.time() - self.start_time)
+
     def record_step(self, avg_reward: float) -> None:
         """Record one rollout-buffer iteration's reward and walltime."""
         self.reward_history.append(avg_reward)
-        self.walltime_at_step.append(int(time.time() - self.start_time))
+        self.walltime_at_step.append(self._elapsed_sec())
         self.reward_100step_history.append(self.reward_100avg)
 
     def check_goal(self, console: Console) -> None:
@@ -87,7 +100,7 @@ class SpeedrunTracker:
             "reward_history": self.reward_history,
             "reward_100step_history": self.reward_100step_history,
             "walltime_at_step": self.walltime_at_step,
-            "walltime_sec": int(time.time() - self.start_time),
+            "walltime_sec": self._elapsed_sec(),
             "algorithm": cfg.loss,
             "seed": cfg.seed,
             "model_name": cfg.model_name,

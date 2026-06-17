@@ -94,6 +94,9 @@ def main(cfg: Config, *, speedrun_tracker: SpeedrunTracker | None = None):
     print_model_info(model)
 
     start_time = time.time()
+    if speedrun_tracker:
+        speedrun_tracker.start(start_time)
+
     for replay_buffer in rollout_engine:
         avg = lambda key: torch.stack([e.rewards[key] for e in replay_buffer.buffer]).mean().item()
         reward_log = {f"avg_{key}": avg(key) for key in replay_buffer.buffer[0].rewards.keys()}
