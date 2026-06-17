@@ -20,9 +20,11 @@ from torch.utils.data import DataLoader
 from .buffer import Experience, join_experiences_batch
 from .config import Config, load_config
 from .rollout import RolloutEngine
+from .speedrun import SpeedrunTracker
 from .utils import (
     compute_log_probs,
     compute_values,
+    console,
     create_dataset,
     get_loss_objective,
     get_ref_model,
@@ -34,7 +36,7 @@ from .utils import (
 )
 
 
-def main(cfg: Config):
+def main(cfg: Config, *, speedrun_tracker: SpeedrunTracker | None = None):
     seed_everything(cfg.seed)
 
     cpu_device = torch.device("cpu")
@@ -85,12 +87,21 @@ def main(cfg: Config):
             name=wandb_run_name,
             config=vars(cfg),
         )
+
+    wandb_run_id = getattr(wandb.run, "id", None) if wandb.run else None
+    wandb_project_name = getattr(wandb.run, "project", None) if wandb.run else None
+
     print_model_info(model)
 
     start_time = time.time()
     for replay_buffer in rollout_engine:
         avg = lambda key: torch.stack([e.rewards[key] for e in replay_buffer.buffer]).mean().item()
         reward_log = {f"avg_{key}": avg(key) for key in replay_buffer.buffer[0].rewards.keys()}
+
+        if speedrun_tracker:
+            speedrun_tracker.record_step(avg("total"))
+            speedrun_tracker.check_goal(console)
+
         wandb.log({**reward_log, "hours": (time.time() - start_time) / 3600})
 
         torch.cuda.empty_cache()
@@ -141,13 +152,46 @@ def main(cfg: Config):
                 else:
                     progress.update(task, advance=1)
 
+    if speedrun_tracker:
+        speedrun_tracker.write_metrics(
+            cfg=cfg,
+            wandb_run_id=wandb_run_id,
+            wandb_entity=wandb_entity,
+            wandb_project=wandb_project_name,
+        )
+
 
 def main_cli():
     parser = argparse.ArgumentParser(description="Train policy gradient models for RLHF")
     parser.add_argument("--config", type=str, required=True, help="Path to YAML config file")
+    parser.add_argument(
+        "--speedrun",
+        action="store_true",
+        help="Enable speedrun metrics (JSON output, 100-step avg goal)",
+    )
+    parser.add_argument(
+        "--speedrun-target-reward",
+        type=float,
+        default=None,
+        help="Target reward for goal detection (100-step avg)",
+    )
+    parser.add_argument(
+        "--speedrun-metrics-file",
+        type=str,
+        default="logs/speedrun/speedrun_metrics.json",
+        help="Output path for speedrun JSON",
+    )
     args = parser.parse_args()
     cfg = load_config(args.config)
-    main(cfg)
+
+    tracker = None
+    if args.speedrun:
+        tracker = SpeedrunTracker(
+            target_reward=args.speedrun_target_reward,
+            metrics_file=args.speedrun_metrics_file,
+        )
+
+    main(cfg, speedrun_tracker=tracker)
 
 
 if __name__ == "__main__":

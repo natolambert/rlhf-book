@@ -35,6 +35,7 @@ CORE_MODULES = [
     "policy_gradients.config",
     "policy_gradients.loss",
     "policy_gradients.rollout",
+    "policy_gradients.speedrun",
     "policy_gradients.train",
     "policy_gradients.utils",
     "rejection_sampling",
