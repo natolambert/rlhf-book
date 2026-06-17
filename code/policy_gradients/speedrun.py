@@ -102,6 +102,7 @@ class SpeedrunTracker:
             "walltime_at_step": self.walltime_at_step,
             "walltime_sec": self._elapsed_sec(),
             "algorithm": cfg.loss,
+            "beta": cfg.beta,
             "seed": cfg.seed,
             "model_name": cfg.model_name,
             "dataset": "+".join(s.name for s in cfg.data.specs),

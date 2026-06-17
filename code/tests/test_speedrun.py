@@ -134,6 +134,7 @@ def test_write_metrics_writes_json(tmp_path) -> None:
     payload = json.loads(metrics_file.read_text())
     assert payload["goal_reached_at_step"] == 100
     assert payload["algorithm"] == "grpo"
+    assert payload["beta"] == 0.0
     assert payload["seed"] == 42
     assert len(payload["reward_history"]) == 100
     assert len(payload["reward_100step_history"]) == 100
