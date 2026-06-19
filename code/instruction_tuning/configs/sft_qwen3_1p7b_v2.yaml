@@ -1,0 +1,48 @@
+# v2 of the Qwen3-1.7B-Base ChatML SFT. Identical hyperparameters to
+# sft_qwen3_1p7b.yaml; the script now also warm-starts the <|im_end|> embedding
+# from <|endoftext|> before training (see train_qwen_base.py), which is the fix
+# for v1's failure to learn the stop token (P(<|im_end|>)~1e-4 after 3 epochs:
+# the row is untrained in the base model, norm 0.38 vs 1.6 typical, and lr 5e-6
+# cannot train a token identity from random init).
+# v1 reference: wandb run sft-qwen3-1.7b-base-chatml / cytwravi.
+
+# Model
+model_name: Qwen/Qwen3-1.7B-Base
+chat_template_source: null  # base ships a template, and the script overrides it anyway
+
+# Dataset (CC BY-NC 4.0; educational use only)
+dataset_name: HuggingFaceH4/no_robots
+dataset_split: train
+max_samples: null  # use all ~9.5K rows
+max_length: 2048
+
+# Training
+lr: 5.0e-6
+num_epochs: 3
+batch_size: 4
+gradient_accumulation_steps: 8  # effective batch = 32
+warmup_ratio: 0.1
+weight_decay: 0.0
+max_grad_norm: 1.0
+seed: 42
+
+# Hardware
+bf16: true
+gradient_checkpointing: true
+model_device_id: 0
+
+# In-loop generation logging
+sample_every: 50
+sample_max_tokens: 128
+sample_max_input_tokens: 512
+sample_temperature: 0.7
+sample_top_p: 0.9
+sample_do_sample: true
+
+# Logging
+wandb_project: null  # set via WANDB_PROJECT env var or change here
+wandb_run_name: sft-qwen3-1.7b-base-chatml-v2-warmstart
+
+# Output — absolute ext4 path: the repo lives on /mnt/c (OneDrive, slow 9P
+# filesystem), so keep the ~3.5 GB checkpoint off it.
+output_dir: /home/ghoti/rlhf-runs/sft-qwen3-1.7b-base-chatml-v2-warmstart

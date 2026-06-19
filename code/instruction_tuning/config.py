@@ -65,6 +65,9 @@ class Config(BaseModel):
     wandb_project: str | None = None
     wandb_run_name: str | None = None
 
+    # Output
+    output_dir: str | None = None
+
 
 def load_config(config_path: str) -> Config:
     """Load configuration from a YAML file."""

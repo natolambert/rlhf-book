@@ -1,0 +1,46 @@
+# SFT of Qwen3-1.7B-Base on No Robots with a custom minimal ChatML template.
+# The template, eos=<|im_end|>, and generate() stop ids [151643, 151645] are set
+# in train_qwen_base.py (use that entry point, not instruction_tuning.train).
+# v1 result: wandb run cytwravi — content learned, but <|im_end|> failed to
+# consolidate (untrained embedding row); see sft_qwen3_1p7b_v2.yaml.
+
+# Model
+model_name: Qwen/Qwen3-1.7B-Base
+chat_template_source: null  # base ships a template, and the script overrides it anyway
+
+# Dataset (CC BY-NC 4.0; educational use only)
+dataset_name: HuggingFaceH4/no_robots
+dataset_split: train
+max_samples: null  # use all ~9.5K rows
+max_length: 2048
+
+# Training
+lr: 5.0e-6
+num_epochs: 3
+batch_size: 4
+gradient_accumulation_steps: 8  # effective batch = 32
+warmup_ratio: 0.1
+weight_decay: 0.0
+max_grad_norm: 1.0
+seed: 42
+
+# Hardware
+bf16: true
+gradient_checkpointing: true
+model_device_id: 0
+
+# In-loop generation logging
+sample_every: 50
+sample_max_tokens: 128
+sample_max_input_tokens: 512
+sample_temperature: 0.7
+sample_top_p: 0.9
+sample_do_sample: true
+
+# Logging
+wandb_project: null  # set via WANDB_PROJECT env var or change here
+wandb_run_name: sft-qwen3-1.7b-base-chatml
+
+# Output — absolute ext4 path: the repo lives on /mnt/c (OneDrive, slow 9P
+# filesystem), so keep the ~3.5 GB checkpoint off it.
+output_dir: /home/ghoti/rlhf-runs/sft-qwen3-1.7b-base-chatml

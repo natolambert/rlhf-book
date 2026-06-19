@@ -35,6 +35,11 @@ diagnostics = [
     "pandas>=2.1.0",
 ]
 
+# Chat UI for instruction_tuning.chat_app
+ui = [
+    "gradio>=5.0.0",
+]
+
 # Development dependencies
 dev = [
     "pytest>=8.0.0",
@@ -67,7 +72,8 @@ package = true
 [tool.uv.extra-build-dependencies]
 flash-attn = [{ requirement = "torch", match-runtime = true }]
 
-# PyTorch CUDA wheels - only use cu126 on x86_64 Linux
+# PyTorch CUDA wheels - cu130 everywhere on Linux: cu126 wheels lack sm_120
+# (Blackwell / RTX 50-series) kernels and fail with "no kernel image" on a 5090.
 # aarch64 (DGX Spark) uses system PyTorch or cu130 wheels
 [[tool.uv.index]]
 name = "pytorch-cu126"
@@ -81,7 +87,7 @@ explicit = true
 
 [tool.uv.sources]
 torch = [
-    { index = "pytorch-cu126", marker = "platform_system == 'Linux' and platform_machine == 'x86_64'" },
+    { index = "pytorch-cu130", marker = "platform_system == 'Linux' and platform_machine == 'x86_64'" },
     { index = "pytorch-cu130", marker = "platform_system == 'Linux' and platform_machine == 'aarch64'" },
 ]
 

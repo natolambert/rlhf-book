@@ -1,7 +1,8 @@
 """Base classes and utilities for reward model training.
 
 This module provides common functionality shared across ORM, PRM, and Preference RM:
-- BaseRewardModel: Full fine-tuning setup (frozen backbone, trainable head)
+- BaseRewardModel: shared LM backbone + linear reward head. Full fine-tune by
+  default (freeze_backbone=False); pass freeze_backbone=True to train head-only.
 - Training utilities: wandb init, optimizer, training loop helpers
 - Data utilities: collate functions
 

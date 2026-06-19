@@ -75,9 +75,22 @@ def get_attn_implementation() -> str:
         return "sdpa"
 
 
-def load_model(cfg: Config, device: torch.device):
+def load_model(
+    cfg: Config,
+    device: torch.device,
+    *,
+    chat_template: str | None = None,
+    eos_token: str | None = None,
+    generation_eos_ids: list[int] | None = None,
+):
     attn_impl = get_attn_implementation()
     tokenizer = AutoTokenizer.from_pretrained(cfg.model_name, trust_remote_code=False)
+    if chat_template is not None:
+        tokenizer.chat_template = chat_template
+    if eos_token is not None:
+        # Metadata for vLLM/third-party stacks and the pad fallback below; HF
+        # generate() stopping is controlled by generation_eos_ids instead.
+        tokenizer.eos_token = eos_token
 
     if tokenizer.chat_template is None and cfg.chat_template_source:
         donor = AutoTokenizer.from_pretrained(cfg.chat_template_source, trust_remote_code=False)
@@ -100,6 +113,14 @@ def load_model(cfg: Config, device: torch.device):
 
     if cfg.gradient_checkpointing:
         model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
+
+    if generation_eos_ids is not None:
+        # generate() stops on model.generation_config.eos_token_id, NOT on
+        # tokenizer.eos_token (QwenLM/Qwen3#927). Base models ship only the
+        # document EOS; after SFT the model emits the template's turn closer,
+        # so it must be in this list or sampling never terminates.
+        model.generation_config.eos_token_id = generation_eos_ids
+        console.print(f"[dim]generate() stop ids set to {generation_eos_ids}[/dim]")
 
     return model, tokenizer
 
@@ -139,6 +160,16 @@ def _encode_row(
     if not messages or messages[-1]["role"] != "assistant":
         return None
 
+    # Two renders of the SAME conversation (truncated vs. full), so prompt_ids is an
+    # exact token prefix of full_ids and everything past len(prompt_ids) is the answer.
+    # add_generation_prompt=True puts the '<|assistant|>\n' header inside the masked
+    # prompt — matching inference, where the header is input, not generated.
+    # Don't render/tokenize messages[-1] separately and concatenate instead: the Jinja
+    # template re-runs from the top on every call (OLMo's leading '{{ bos_token }}'
+    # would inject a mid-sequence <|endoftext|>, which doubles as EOS), the template
+    # owns the answer's trailing EOS (the token that teaches stopping), and BPE isn't
+    # concatenation-safe at boundaries. return_dict=False: newer transformers returns
+    # a BatchEncoding dict by default, not a plain id list.
     prompt_ids = tokenizer.apply_chat_template(
         messages[:-1], tokenize=True, add_generation_prompt=True, return_dict=False
     )
@@ -253,7 +284,7 @@ def generate_samples(
         kwargs = dict(
             **inputs,
             max_new_tokens=new_tokens,
-            do_sample=cfg.sample_do_sample,
+            do_sample=cfg.sample_do_sample,  # true: sample from the distribution; false: greedy decoding
             pad_token_id=tokenizer.pad_token_id or tokenizer.eos_token_id,
         )
         if cfg.sample_do_sample:

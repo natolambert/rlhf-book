@@ -45,7 +45,9 @@ from reward_models.base import (
 # =============================================================================
 
 DEFAULT_MODEL_ID = "Qwen/Qwen3-1.7B-Base"
-DEFAULT_DATASET = "gsm8k"
+# Canonical namespaced id. `datasets>=5.0` dropped the legacy bare-name redirect,
+# so the old "gsm8k" raises HfUriError ("Repository id must be 'namespace/name'").
+DEFAULT_DATASET = "openai/gsm8k"
 DEFAULT_SAMPLES = 2000
 DEFAULT_BATCH_SIZE = 2
 DEFAULT_GRAD_ACCUM = 16
@@ -125,10 +127,15 @@ def build_orm_dataset(
         if value is None:
             continue
 
-        # Correct example
+        # Correct example: the gold solution, every completion token labeled 1.
         rows.append(pack_example(prompt, answer, 1, tokenizer))
 
-        # Incorrect example (add random offset to answer)
+        # Incorrect example: the SAME gold solution with a contradictory final
+        # sentence appended, every completion token labeled 0. This is a crude,
+        # noisy negative: the shared reasoning prefix appears under both labels,
+        # so the only genuinely label-distinguishing signal is the trailing wrong
+        # answer. A stronger ORM dataset would use real wrong model rollouts
+        # (e.g. verifier-labeled samples) rather than a synthetic offset.
         wrong = value + random.randint(1, 9)
         wrong_solution = answer + f"\nTherefore, the answer is {wrong}."
         rows.append(pack_example(prompt, wrong_solution, 0, tokenizer))
