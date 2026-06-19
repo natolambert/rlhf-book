@@ -27,9 +27,30 @@ jobs:
     permissions:
       contents: read
       deployments: write
+      pull-requests: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+
+      # Course-only changes (teach/** and the course page template) skip the
+      # slow PDF/EPUB/TeX path and reuse the published book artifacts instead.
+      # If this step is skipped (workflow_dispatch) or fails, outputs are empty
+      # and the full build runs — change detection must never block a deploy.
+      - name: Detect changed paths
+        uses: dorny/paths-filter@v4
+        id: changes
+        if: github.event_name != 'workflow_dispatch'
+        continue-on-error: true
+        with:
+          # 'every' makes a file count only when it matches the union pattern
+          # AND the negation (i.e. is not the course template). The default
+          # 'some' quantifier matches each pattern independently, where a bare
+          # negation matches every file and exclusions silently do nothing.
+          predicate-quantifier: 'every'
+          filters: |
+            book:
+              - '{book/**,Makefile,pyproject.toml,uv.lock,.github/workflows/static.yml}'
+              - '!book/templates/course.html'
 
       - name: Setup Pandoc
         uses: pandoc/actions/setup@main
@@ -37,14 +58,19 @@ jobs:
           version: 3.7.0.2
 
       - name: Prepare TeX Live cache directory
+        if: steps.changes.outputs.book != 'false'
         run: sudo mkdir -p /usr/local/texlive && sudo chown -R $(whoami) /usr/local/texlive
 
       - name: Cache TeX Live
-        uses: actions/cache@v4
+        if: steps.changes.outputs.book != 'false'
+        uses: actions/cache@v5
         id: cache-texlive
         with:
           path: /usr/local/texlive
-          key: texlive-macos-${{ hashFiles('.github/workflows/static.yml') }}
+          # Manual version: bump when changing the tlmgr package list below.
+          # (Previously keyed on a hash of this file, which re-installed TeX
+          # Live on every workflow edit.)
+          key: texlive-macos-v1
 
       - name: Install brew dependencies
         run: |
@@ -52,8 +78,8 @@ jobs:
           brew install make
           brew install pandoc-crossref
           brew install poppler
-          # Only install TeX if not cached
-          if [ "${{ steps.cache-texlive.outputs.cache-hit }}" != "true" ]; then
+          # Only install TeX if not cached (and skip entirely for course-only changes)
+          if [ "${{ steps.changes.outputs.book }}" != "false" ] && [ "${{ steps.cache-texlive.outputs.cache-hit }}" != "true" ]; then
             echo "Cache miss - installing TeX Live..."
             brew install --cask basictex
             eval "$(/usr/libexec/path_helper)"
@@ -65,6 +91,7 @@ jobs:
           fi
 
       - name: Set up LaTeX PATH
+        if: steps.changes.outputs.book != 'false'
         run: |
           # Find the actual texlive bin directory (varies by year/arch)
           TEXLIVE_BIN=$(find /usr/local/texlive -type d -name "bin" -exec find {} -type d -name "*-darwin" \; 2>/dev/null | head -1)
@@ -74,7 +101,7 @@ jobs:
           echo "/Library/TeX/texbin" >> $GITHUB_PATH
 
       - name: Set up uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v8.2.0
 
       - name: Clean build directory
         run: |
@@ -82,9 +109,25 @@ jobs:
           mkdir -p build/html
 
       - name: Build book (HTML, PDF, EPUB, Kindle)
+        if: steps.changes.outputs.book != 'false'
         run: |
           make
           make files
+
+      # Cloudflare Pages deploys are full-site snapshots, so the book artifacts
+      # must exist in build/html even when we don't rebuild them. Reuse the
+      # currently published ones.
+      - name: Build site (course-only change, reuse published book artifacts)
+        if: steps.changes.outputs.book == 'false'
+        run: |
+          make html
+          make files
+          mkdir -p build/html/rl-cheatsheet
+          curl -fsSL https://rlhfbook.com/book.pdf -o build/html/book.pdf
+          curl -fsSL https://rlhfbook.com/book.epub -o build/html/book.epub
+          curl -fsSL https://rlhfbook.com/book.kindle.epub -o build/html/book.kindle.epub
+          curl -fsSL https://rlhfbook.com/rl-cheatsheet/ -o build/html/rl-cheatsheet/index.html
+          curl -fsSL https://rlhfbook.com/rl-cheatsheet/inside_cover_back.pdf -o build/html/rl-cheatsheet/inside_cover_back.pdf
 
       - name: Build teaching slides
         run: |
@@ -96,7 +139,7 @@ jobs:
 
       - name: Deploy preview to Cloudflare Pages
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -105,7 +148,7 @@ jobs:
 
       - name: Deploy production to Cloudflare Pages
         if: github.event_name != 'pull_request'
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

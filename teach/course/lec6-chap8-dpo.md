@@ -632,7 +632,7 @@ $$
 Substitute $\nabla_{\theta} u$ and write $\sigma(-u)$ out in full:
 
 $$
-\nabla_{\theta}\mathcal{L}_{\text{DPO}} = -\,\beta\,\mathbb{E}_{(x,y_c,y_r)}\Big[ \sigma\big(\beta\log\tfrac{\pi_{\theta}(y_r\mid x)}{\pi_{\text{ref}}(y_r\mid x)} - \beta\log\tfrac{\pi_{\theta}(y_c\mid x)}{\pi_{\text{ref}}(y_c\mid x)}\big)\,\big[\nabla_{\theta}\log\pi(y_c\mid x) - \nabla_{\theta}\log\pi(y_r\mid x)\big] \Big]
+\nabla_{\theta}\mathcal{L}_{\text{DPO}} = -\,\beta\,\mathbb{E}_{(x,y_c,y_r)}\Big[ \sigma\big(\beta\log\tfrac{\pi_{\theta}(y_r\mid x)}{\pi_{\text{ref}}(y_r\mid x)} - \beta\log\tfrac{\pi_{\theta}(y_c\mid x)}{\pi_{\text{ref}}(y_c\mid x)}\big)\,\big[\nabla_{\theta}\log\pi_{\theta}(y_c\mid x) - \nabla_{\theta}\log\pi_{\theta}(y_r\mid x)\big] \Big]
 $$
 
 ---
@@ -644,7 +644,7 @@ $$
 
 $$
 \begin{aligned}
-\nabla_{\theta}\mathcal{L}_{\text{DPO}} &= -\,\beta\, \mathbb{E}_{(x,y_c,y_r)}\Big[\, \underbrace{w}_{\text{how wrong}} \cdot \big( \nabla_{\theta}\log\pi(y_c\mid x) - \nabla_{\theta}\log\pi(y_r\mid x) \big)\,\Big] \\[6pt]
+\nabla_{\theta}\mathcal{L}_{\text{DPO}} &= -\,\beta\, \mathbb{E}_{(x,y_c,y_r)}\Big[\, \underbrace{w}_{\text{how wrong}} \cdot \big( \nabla_{\theta}\log\pi_{\theta}(y_c\mid x) - \nabla_{\theta}\log\pi_{\theta}(y_r\mid x) \big)\,\Big] \\[6pt]
 &\hspace{6em}\text{where}\quad w = \sigma\big(r_\theta(x,y_r) - r_\theta(x,y_c)\big)
 \end{aligned}
 $$

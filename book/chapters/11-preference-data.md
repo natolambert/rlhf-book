@@ -116,7 +116,7 @@ For example, a 5-point Likert scale would look like the following (note that, ye
 
 Table: An example 5-point Likert scale between two responses, A and B. {#tbl:likert5}
 
-Some early RLHF for language modeling works use an 8-step Likert scale with levels of preference between the two responses [@bai2022training]. 
+Some early RLHF for language modeling works use an 8-point Likert scale with levels of preference between the two responses [@bai2022training]. 
 An even scale removes the possibility of ties:
 
 
