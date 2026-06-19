@@ -216,38 +216,32 @@ Around the launch of ChatGPT, human data was a central driver of progress.
 
 ---
 
-<!-- rows: 70/30 -->
-## Model collapse, and why it's avoidable in practice
+<!-- img-align: center -->
+<!-- valign: center -->
+## Model collapse: the canonical worry
 
-<!-- row-columns: 55/45 -->
+![Training a model recursively on its own generations narrows the learned distribution each round -- the low-probability tails vanish first. Source: Shumailov et al. (2024).](assets/model-collapse-shumailov.png)
+
+---
+
+<!-- columns: 58/42 -->
+## Model collapse: the canonical worry
+
+![Recursive self-training narrows the distribution over generations; the tails go first. Source: Shumailov et al. (2024).](assets/model-collapse-shumailov.png)
+
+|||
+
 A common criticism: repeatedly training on a model's own generations can narrow the effective training distribution [@shumailov2024ai].
 
 The argument follows as:
 *As diversity drops, rare facts and styles are underrepresented and small mistakes compound across iterations.*
-
-|||
-
-But this is mostly a failure of *unfiltered, single-model, self-training* loops. In practice it is avoided by:
-
-- mixing in real / human data,
-- using **diverse teachers**,
-- deduplication,
-- strong quality filters.
 
 ---
 
 <!-- rows: 70/30 -->
 ## Model collapse, and why it's avoidable in practice
 
-<!-- row-columns: 55/45 -->
-A common criticism: repeatedly training on a model's own generations can narrow the effective training distribution [@shumailov2024ai].
-
-The argument follows as:
-*As diversity drops, rare facts and styles are underrepresented and small mistakes compound across iterations.*
-
-|||
-
-But this is mostly a failure of *unfiltered, single-model, self-training* loops. In practice it is avoided by:
+But collapse is mostly a failure of *unfiltered, single-model, self-training* loops. In practice it is avoided by:
 
 - mixing in real / human data,
 - using **diverse teachers**,
@@ -343,7 +337,7 @@ Let:
 <!-- valign: top -->
 ## Word-level (per-token) distillation
 
-Kim & Rush (2016) applied KD so a student learns from teacher *sequences* [@kim-rush-2016-sequence]:
+**Standard teacher-student distillation for an LLM** [@kim-rush-2016-sequence] -- the classic Hinton soft-label idea applied at every token position:
 
 $$
 \mathcal{L}_{\mathrm{WORD\text{-}KD}}
@@ -351,14 +345,27 @@ $$
 q(u_j = k \mid s, u_{<j})\,\log p(u_j = k \mid s, u_{<j}).
 $$
 
-This is the ordinary cross-entropy form $-\sum_z q(z)\log p(z)$, applied at *every* position over the *whole* vocabulary: the student is penalized for putting low probability on tokens the teacher thinks are likely. (Read "word-level" as per-token over the tokenizer.)
+At **each position**, this matches the teacher's *full* next-token distribution over the **entire vocabulary on a pre-existing training corpus** $\mathcal{V}$ -- soft labels, not the one-hot target. The inner $\sum_{k=1}^{|\mathcal{V}|}$ runs over *every possible next token*.
+
+Matching a distribution over every token sounds expensive, but it is **tractable**: it is just $|\mathcal{V}|$ probabilities per position -- the same $O(J\,|\mathcal{V}|)$ cost as ordinary cross-entropy. Matching over whole *sequences* is the hard part (next slide).
+
+<!-- footnote-right: Read "word-level" as per-token over the tokenizer. -->
 
 ---
 
 <!-- valign: top -->
 ## Sequence-level distillation
 
-Matching the student to the teacher over *full sequences* $\mathcal{U}$ is intractable, so Kim & Rush approximate the teacher with a point mass on one high-probability beam-search output $\hat{u} = \mathrm{BeamSearch}_q(s)$:
+Word-level KD gives **soft per-token distributions**. The goal of sequence-level distillation from the paper is to be apply to apply this to data that the teacher generated, providing fresh training data/signal, and improving performance!
+
+(WORD-KD is the baseline in the Kim & Rush paper.)
+
+---
+
+<!-- valign: top -->
+## Sequence-level distillation
+
+Sequence-level KD instead approximates the teacher's distribution over *whole sequences* $\mathcal{U}$ -- an intractable sum over **exponentially many** sequences -- by its mode: the *teacher* generates one high-probability output $\hat{u} = \mathrm{BeamSearch}_q(s)$ and the student trains on it with plain NLL:
 
 $$
 \begin{aligned}
@@ -369,14 +376,19 @@ $$
 \end{aligned}
 $$
 
-Call this **offline KD** -- the generations are produced *a priori*. (DistilBERT, TinyBERT used offline KD -- though as classifiers, not sequence distillation.)
+```box
+title: Aside
+tone: muted
+content: |
+  A first wave of offline-KD models were **classifiers** -- DistilBERT [@sanh2019distilbert] and TinyBERT [@jiao2020tinybert] -- pairing offline distillation with other LM advances. Not *sequence* distillation because these are embedding models, but building on related momentum in the area.
+```
 
 ---
 
 <!-- valign: top -->
-## Cross-entropy is entropy plus a forward KL
+## Finding a connection between SEQ-KD and SFT
 
-Cross-entropy of a teacher $q$ and student $p$ -- the same form as the KD losses above:
+To start, recalle the cross-entropy of a teacher $q$ and student $p$ -- the same form as the KD losses:
 
 $$
 \begin{aligned}
@@ -386,7 +398,7 @@ $$
 
 <!-- step -->
 
-Add and subtract the teacher's own log-probabilities, $\sum_z q(z)\log q(z)$ -- a quantity that does not involve $p$ at all:
+Add and subtract the teacher's own log-probabilities, $\sum_z q(z)\log q(z)$ -- does not involve $p$ at all:
 
 $$
 \begin{aligned}
@@ -407,20 +419,27 @@ $$
 ---
 
 <!-- valign: top -->
-## Recall: minimizing cross-entropy is forward KL
+## Finding a connection between SEQ-KD and SFT
 
 We just showed cross-entropy decomposes into the teacher's entropy plus a KL:
 
 $$ H(q,p) = H(q) + D_{\mathrm{KL}}(q\|p) $$
 
+<!-- step -->
+
 $H(q)$ depends only on the **fixed** teacher, so minimizing cross-entropy *is* minimizing the forward KL:
 
 $$ \boxed{\ \min_p H(q,p)\ \equiv\ \min_p D_{\mathrm{KL}}(q\|p)\quad\text{(forward KL: the direction of offline KD and SFT)}\ } $$
 
+<!-- step -->
+
+So sequence-level KD reduces to **SFT on the teacher's generated text** -- "offline KD," generations produced often ahead of time by a teacher model.
+
+
 ---
 
 <!-- valign: top -->
-## Exposure bias: the train / test mismatch
+## Exposure bias in offline KD: the train / test mismatch
 
 Offline KD samples **teacher** trajectories $u \sim \pi_T$ and matches per-token (here $q = \pi_T$, $p = \pi_\theta$):
 
@@ -430,21 +449,21 @@ $$
 \sum_t D_{\mathrm{KL}}\!\left(\pi_T(\cdot \mid s, u_{<t}) \,\|\, \pi_\theta(\cdot \mid s, u_{<t})\right).
 $$
 
-But at test time the student rolls out under **its own** policy:
+But at test time the student rolls out under **its own** policy ($\ell_{\mathrm{task}}(s, a)$ is the loss function for that test-time domain):
 
 $$
 \mathcal{L}_{\mathrm{eval}}(\theta)
 = \mathbb{E}_{s \sim \mathcal{D}_{\mathrm{test}},\, a \sim \pi_\theta(\cdot \mid s)}\ \ell_{\mathrm{task}}(s, a).
 $$
 
-Since $\pi_T \neq \pi_\theta$, training and test prefixes come from **different** state distributions -- **exposure bias** [@arora-etal-2022-exposure] [@song2026surveyonpolicydistillationlarge].
+Since $\pi_T \neq \pi_\theta$, training and test prefixes come from **different** state distributions -- **exposure bias** is the propensity for the student to accumulate errors [@arora-etal-2022-exposure] [@song2026surveyonpolicydistillationlarge].
 
 ---
 
 <!-- valign: top -->
 ## The DAgger analogy: compounding error
 
-On-policy distillation connects to **imitation learning**: DAgger trains an agent on its own states, with an oracle (teacher) labeling the action it *should* have taken [@ross2011reduction].
+On-policy distillation connects to **imitation learning**: DAgger trains an agent on its own rollouts, with an oracle (teacher) labeling the action it *should* have taken [@ross2011reduction].
 
 Suppose the student matches the teacher within per-step error $\epsilon$ on teacher-induced states:
 
@@ -452,44 +471,26 @@ $$ \mathbb{E}_{s_t \sim d_{\pi_T}}\!\left[\mathbb{I}\!\left(\pi_\theta(s_t) \neq
 
 <!-- step -->
 
-**Why quadratic?** One error at step $t$ pushes the prefix off the teacher's distribution -- where the bound no longer protects the student -- so it can pay for that mistake on *all* $L-t$ remaining steps: $\sum_{t=1}^{L} \epsilon\,(L-t) \sim \epsilon L^2$.
+The supervised imitation-learning analysis [@ross2011reduction] shows that the expected loss accumulated along a length-$L$ trajectory sampled from the student can scale quadratically in $L$ [@song2026surveyonpolicydistillationlarge]:
+
+$$
+\mathbb{E}_{a \sim \pi_\theta(\cdot \mid s)}\!\left[\sum_{t=1}^{L} \ell\!\left(s, a_{<t}\right)\right] \leq O(\epsilon L^2).
+$$
 
 <!-- step -->
 
-Then loss along a length-$L$ student rollout can scale **quadratically**:
-
-$$ \mathbb{E}_{a \sim \pi_\theta(\cdot \mid s)}\!\left[\sum_{t=1}^{L} \ell\!\left(s, a_{<t}\right)\right] \leq O(\epsilon L^2). $$
-
-For LLMs this is an **analogy, not a guarantee** -- token losses are distributional (KL), not 0-1 action disagreement.
+For LLMs this is more of an analogy -- token losses are distributional (KL), not 0-1 action disagreement (indicator function in the first equation on this slide returns 0 or 1).
 
 ---
 
 <!-- animate: bullets -->
-## Why on-policy fixes it
+## From off-policy to on-policy
 
-- A single suboptimal token nudges the prefix slightly **out-of-distribution**; the model, never having seen that prefix, is more likely to err again -- cascading over **thousands** of tokens.
-- On-policy distillation **iteratively samples from the student** and supervises it with the teacher at *its own* visited states. The student confronts its mistakes and learns recovery.
+**Sampling from the student rather than the teacher** minimizes a lot of the distributional errors we've covered.
+- In offline KD, a single suboptimal token can nudge the student generation slightly **out-of-distribution**; the model, never having seen that token in training, is more likely to err again.
+- On-policy distillation **iteratively samples from the student** and supervises it with the teacher at *its own* visited states.
 - Under DAgger's interactive analysis, this drops compounding from $O(\epsilon L^2)$ to $O(\epsilon L)$ [@ross2011reduction].
-- **MiniLLM** introduced a reverse-KL objective inside a policy-gradient frame [@gu2024minillm]; concurrent work connected on-policy KD to imitation learning [@agarwal2024policy].
-
----
-
-<!-- columns: 50/50 -->
-## Forward vs. reverse KL
-
-**Offline KD / SFT** -- sample from the *teacher*, $q = \pi_T$ on the left:
-
-$$ D_{\mathrm{KL}}(\pi_T \,\|\, \pi_\theta) = \sum_z \pi_T(z)\log\frac{\pi_T(z)}{\pi_\theta(z)} $$
-
-*Mass-covering* -- read it off the formula: wherever the **teacher** has mass, $\pi_\theta \to 0$ makes the log-ratio explode, so the student must spread probability over *everything* the teacher might say -- even regions it can't model well.
-
-|||
-
-**On-policy distillation** -- sample from the *student*, $\pi_\theta$ on the left:
-
-$$ D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_T) = \sum_z \pi_\theta(z)\log\frac{\pi_\theta(z)}{\pi_T(z)} $$
-
-*Mode-seeking* -- now the weight is the **student's** own mass: it is only penalized where *it* puts probability the teacher dislikes, so it retreats to the teacher's modes. Sampling from $\pi_\theta$ is exactly what puts it on the left. (Why reverse KL is often better: Chapter 15.)
+- **MiniLLM** introduced a reverse-KL objective inside a policy-gradient frame [@gu2024minillm]; concurrent work connected on-policy KD to imitation learning [@agarwal2024policy] (this paper is closer to the modern distillation form used today).
 
 ---
 
@@ -506,7 +507,31 @@ $$
 \ }
 $$
 
-This is now in the **sampling / expectation framework** of Chapter 6 (policy gradients) -- a natural bridge to modern RL training infrastructure that alternates generate-and-update.
+This is now in the **sampling / expectation framework** of Chapter 6 (policy gradients) -- a natural bridge to modern RL training infrastructure that alternates generate-and-update. Sampling from the *student* is also what flips the KL direction we minimize -- next.
+
+---
+
+<!-- rows: 18/82 -->
+## Forward vs. reverse KL
+
+Sampling completions from the student (the OPD objective) is what puts $\pi_\theta$ on the **left** of the KL -- which flips its direction:
+
+===
+
+<!-- row-columns: 50/50 -->
+**Offline KD / SFT** -- the expectation is over the *teacher*, $z \sim \pi_T$ (**off-policy**: a fixed teacher dataset):
+
+$$ D_{\mathrm{KL}}(\pi_T \,\|\, \pi_\theta) = \mathbb{E}_{z \sim \pi_T}\!\left[\log\frac{\pi_T(z)}{\pi_\theta(z)}\right] $$
+
+*Mass-covering* -- weighted by **teacher** mass: wherever the teacher has mass and $\pi_\theta \to 0$, the log-ratio blows up, so the student must cover *everything* the teacher might say.
+
+|||
+
+**On-policy distillation** -- the expectation is over the *student*, $z \sim \pi_\theta$ (**on-policy**: you sample the model you're training):
+
+$$ D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_T) = \mathbb{E}_{z \sim \pi_\theta}\!\left[\log\frac{\pi_\theta(z)}{\pi_T(z)}\right] $$
+
+*Mode-seeking* -- weighted by the **student's** own mass: penalized only where *it* puts probability the teacher dislikes, so it collapses onto the teacher's modes. (Why reverse KL is often better: Chapter 15.)
 
 ---
 

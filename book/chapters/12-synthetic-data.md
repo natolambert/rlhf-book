@@ -112,6 +112,8 @@ $$
 q(u_j = k \mid s, u_{<j})\log p(u_j = k \mid s, u_{<j}).
 $$ {#eq:word_kd}
 
+WORD-KD is an application of the classic, Hinton inspired teacher-student knowledge distillation to a language model. This would generally be done over a static piece of text already in the training corpus.
+
 This has the ordinary cross-entropy form $-\sum_z q(z)\log p(z)$.
 At each position $j$, the teacher distribution $q$ assigns probability to every possible next token $k \in \mathcal{V}$, and the student is penalized when its distribution $p$ puts low probability on tokens the teacher considers likely.
 
@@ -128,6 +130,7 @@ $$
 \end{aligned}
 $$ {#eq:sequence_kd}
 
+SEQ-KD takes a step towards modern methods, where the teacher model is generating tokens as signal for the student. This is a core step to unlock future styles of on-policy distillation we will see, and is needed to make the computation over all possible sequences tractable. 
 As we transition to the popular variants of KD with modern models, we'll refer to this style of training as *offline* KD -- as in the generations for training the student model are generated a priori.
 
 Before proceeding, two connections are useful.
