@@ -508,6 +508,9 @@
     <navigation-dropdown expanded="false"></navigation-dropdown>
   </header>
 
+  <!-- Pagefind only indexes pages carrying data-pagefind-body once any indexed
+       page uses it (the chapter template does), so mark the course content. -->
+  <div data-pagefind-body data-pagefind-meta="title:Course">
   <h1>Course</h1>
 
   <p>
@@ -755,6 +758,7 @@
       </div>
     </div>
   </section>
+  </div><!-- /data-pagefind-body -->
 
   <section id="citation" style="padding: 0 20px;">
     <h4 style="text-align: left; font-weight: normal;">Citation</h4>
