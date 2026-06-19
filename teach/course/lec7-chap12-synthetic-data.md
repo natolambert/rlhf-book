@@ -47,7 +47,7 @@ custom_css: |
 
 When the first models were trained with RLHF, human data was *the only* way to get high-quality responses and reliable feedback. As models got better, that assumption broke down fast.
 
-- **Cheaper, faster iteration** -- synthetic data lowered the price of an post-training experiment, opening the field to everyone who was priced out of human-data pipelines. The time is also well faster, enabling RSI arguments we hear today.
+- **Cheaper, faster iteration** -- synthetic data lowered the price of a post-training experiment, opening the field to everyone who was priced out of human-data pipelines. The time-to-collect it is also far faster, enabling the RSI arguments we hear today.
 - **A capability threshold** -- synthetic data in post-training only worked once GPT-4-class models arrived. Llama 2 and GPT-3.5-Turbo were not reliable enough to generate *or* supervise data; the LLM-as-a-judge ability emerged in the GPT-3.5 → GPT-4 jump.
 - **The center of gravity of post-training** -- today, leading models *need* synthetic data to reach the frontier. Distillation is the general word for how to transfer capabilities from a stronger model to a student.
 
@@ -274,7 +274,7 @@ A few datasets defined each era: **UltraFeedback** [@cui2023ultrafeedback] (kick
 
 |||
 
-**Colloquial (today's usage):** "train a weaker model on the outputs of a stronger model." Is what people mean when they say something like "Chinese models distill from GPT/Claude."
+**Colloquial (today's usage):** "train a weaker model on the outputs of a stronger model." It's what people mean when they say something like "Chinese models distill from GPT/Claude."
 
 
 ---
@@ -507,14 +507,16 @@ $$
 \ }
 $$
 
-This is now in the **sampling / expectation framework** of Chapter 6 (policy gradients) -- a natural bridge to modern RL training infrastructure that alternates generate-and-update. Sampling from the *student* is also what flips the KL direction we minimize -- next.
+This is now in the **sampling / expectation framework** of Chapter 6 (policy gradients) -- a natural bridge to modern RL training infrastructure that alternates generate-and-update. 
+
+Sampling from the *student* is also what flips the KL direction we minimize ()).
 
 ---
 
 <!-- rows: 18/82 -->
 ## Forward vs. reverse KL
 
-Sampling completions from the student (the OPD objective) is what puts $\pi_\theta$ on the **left** of the KL -- which flips its direction:
+Sampling completions from the student is what puts $\pi_\theta$ on the **left** of the KL -- which flips its direction (estimating the KL and its direction relies on which distribution you sample from):
 
 ===
 
@@ -540,13 +542,15 @@ $$ D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_T) = \mathbb{E}_{z \sim \pi_\theta}\!\l
 
 Recent implementations take the KD distance **directly as a reward**: substitute the negative per-token reverse-KL contribution as the advantage [@lu2025onpolicy]. For a sampled token $a_t$ at state $s_t$:
 
+$$ A_t^{\mathrm{OPD}} = -D_{\mathrm{KL}}\!\left(\pi_\theta(\cdot \mid s_t) \,\|\, \pi_T(\cdot \mid s_t)\right) = - (\log \pi_\theta(a_t \mid s_t) - \log \pi_T(a_t \mid s_t)).$$
+
 $$ A_t^{\mathrm{OPD}} = \log \pi_T(a_t \mid s_t) - \log \pi_\theta(a_t \mid s_t). $$
 
 <!-- step -->
 
-- Tokens the teacher rates **above** the student → positive advantage; **below** → negative.
+- Tokens more likely for the teacher → positive advantage; less likely → negative.
 - The teacher log-prob gap is **dense, token-level feedback** -- potentially richer than a sparse verifiable reward or a single scalar reward-model score.
-- This **layers onto other RL machinery** -- e.g. add it alongside GRPO's group-level normalization for more complex reward shaping.
+- This **layers into modern RL machinery** -- e.g. add it alongside GRPO's group-level normalization for more complex reward shaping.
 
 ---
 
@@ -563,7 +567,7 @@ $$
 
 At scale, this lets a growing org divide labor: many groups train expert teachers that later distill into one final student (DeepSeek-V4-Pro [@deepseekai2026deepseekv4], MiMo-V2-Flash [@mimo2025flash]).
 
-*Going deeper:* **Conversation 1** with Finbarr Timbers traces MOPD across the 2026 frontier recipes -- [rlhfbook.com/course](https://rlhfbook.com/course).
+For more, see the [conversation](https://www.youtube.com/watch?v=sbXEPxIazqY&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=9) I had with Finbarr Timbers that maps MOPD across the 2026 frontier recipes.
 
 ---
 
@@ -571,7 +575,9 @@ At scale, this lets a growing org divide labor: many groups train expert teacher
 <!-- animate: bullets -->
 ## Self-distillation: pushing the frontier
 
-At the **absolute frontier** there is no stronger model to distill from. **On-Policy Self-Distillation (OPSD)** sidesteps this: the teacher is the *same model conditioned on privileged information* -- a hint it won't have at inference [@zhao2026selfdistilled]. **Cursor's Composer 2.5** (from Kimi K2.5) trained this way [@cursor2026composer25]:
+At the **absolute frontier** there is no stronger model to distill from. **On-Policy Self-Distillation (OPSD)** sidesteps this: the teacher is the *same model conditioned on privileged information* -- a hint the student model won't have at inference [@zhao2026selfdistilled]. The self-distillation gradients will teach the model that tokens after the hint were a mistake, absorbing the lesson with an OPD-style loss.
+
+**Cursor's Composer 2.5** (from Kimi K2.5) trained this way [@cursor2026composer25]:
 
 - A judge reviews RL trajectories against a list of **common bugs**.
 - On a bug, it **inserts a hint** into the sequence -- privileged information the model wouldn't see at test time.
@@ -581,18 +587,15 @@ At the **absolute frontier** there is no stronger model to distill from. **On-Po
 ---
 
 <!-- valign: center -->
-## Who uses this today
+## On-policy distillation is becoming very popular
 
-A resurgence of teacher-student KD has accompanied the shift toward reasoning and agentic models. Leading models trained with new forms of knowledge distillation:
+A resurgence of teacher-student KD has accompanied the shift toward reasoning and agentic models. Leading models trained with new forms of knowledge distillation include:
 
 - **Qwen3** (Alibaba) [@yang2025qwen3]
-- **MiMo-V2-Flash** (Xiaomi) [@mimo2025flash]
-- **GLM-5** (Zhipu AI) [@glm5team2026glm5]
+- **MiMo-V2-Flash** (Xiaomi) [@mimo2025flash] (introduced MOPD)
 - **DeepSeek-V4-Pro** [@deepseekai2026deepseekv4]
 
 One caveat: per-token KD needs the student and teacher to **share a tokenizer** -- unusual among post-training methods, and part of why it thrives inside a lab's own model family.
-
-Distillation is growing into its own post-training method -- alongside SFT and RL. For how these recipes fit together at the frontier, see **Conversation 1** on the [course page](https://rlhfbook.com/course).
 
 ---
 
@@ -617,25 +620,6 @@ Distillation is growing into its own post-training method -- alongside SFT and R
 ## From offline KD to self-distillation
 
 ![**On-policy self-distillation**: one model plays both roles -- privileged information (a hint) added to the context creates the teacher trajectory, with no separate teacher model.](assets/distillation_directionality_3.png)
-
----
-
-<!-- rows: 55/45 -->
-## Recap: the path to on-policy distillation
-
-$$
-\begin{aligned}
-\textbf{Per-token KD} \;&:\; \min H(q,p) = H(q) + D_{\mathrm{KL}}(q\|p)\ \Rightarrow\ \text{forward KL} \\[4pt]
-\textbf{Exposure bias} \;&:\; \pi_T \neq \pi_\theta\ \Rightarrow\ O(\epsilon L^2)\ \text{compounding error} \\[4pt]
-\textbf{On-policy} \;&:\; \text{sample } a \sim \pi_\theta\ \Rightarrow\ \text{reverse KL } D_{\mathrm{KL}}(\pi_\theta\|\pi_T),\ \ O(\epsilon L) \\[4pt]
-\textbf{As RL} \;&:\; A_t^{\mathrm{OPD}} = \log \pi_T - \log \pi_\theta\ \ (\text{dense token reward}) \\[4pt]
-\textbf{At scale} \;&:\; \textstyle\sum_k w_k(s)\, D_{\mathrm{KL}}(\pi_\theta\|\pi_{T_k})\ \ (\text{multi-teacher})
-\end{aligned}
-$$
-
-===
-
-Distillation stopped being a compression trick and became a way to pour many expert models into one student.
 
 ---
 
@@ -891,6 +875,8 @@ Synthetic data didn't remove humans from the loop -- it moved them to the **fron
 6. Direct Alignment Algorithms -- Chapter 8
 7. Synethic Data -- Chapter 12
 8. Preferences & Preference Data -- Chapters 10/11
+
+...
 
 ---
 
