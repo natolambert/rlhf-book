@@ -492,34 +492,44 @@ def score_trace(
     return results
 
 
-def demo_scoring(model: ProcessRewardModel, tokenizer: AutoTokenizer, seed: int = DEFAULT_SEED):
-    """Demo: Score an unseen PRM800K test trace."""
-    device = next(model.parameters()).device
+def _fetch_demo_trace(seed: int):
+    """Fetch one (problem, steps, labels) example to score in the demo.
+
+    Prefers an unseen `test` example. But `datasets>=5.0` infers a JSON shard's
+    schema lazily while streaming, and tasksource/PRM800K's *test* JSON trips it
+    with "Couldn't cast array of type int64 to null" partway through iteration.
+    The *train* split streams cleanly (it is what build_prm_dataset uses), so we
+    catch the cast error and fall back to a train example (which may overlap the
+    training slice — fine for a qualitative scoring demo). Returns the split used
+    so the caller can be honest about provenance.
+    """
     random.seed(seed)
+    for split, skip in (("test", random.randint(0, 200)), ("train", 0)):
+        try:
+            stream = load_dataset(DEFAULT_PRM_DATASET, split=split, streaming=True)
+            for idx, item in enumerate(stream):
+                if idx < skip:
+                    continue
+                problem = get_problem_text(item).strip()
+                steps, labels = get_steps_and_labels(item)
+                if problem and steps and labels:
+                    return problem, steps, labels, split
+        except Exception as e:  # noqa: BLE001 - datasets schema-cast drift, etc.
+            print(f"[demo] '{split}' split unavailable ({type(e).__name__}: {e}); falling back")
+    return None, None, None, None
 
-    # Get a random test example
-    test_stream = load_dataset(DEFAULT_PRM_DATASET, split="test", streaming=True)
-    target_idx = random.randint(0, 500)
 
-    sample = None
-    for idx, item in enumerate(test_stream):
-        if idx == target_idx:
-            sample = item
-            break
+def demo_scoring(model: ProcessRewardModel, tokenizer: AutoTokenizer, seed: int = DEFAULT_SEED):
+    """Demo: score every reasoning step of one PRM800K trace."""
+    device = next(model.parameters()).device
 
-    if sample is None:
-        print("Could not fetch test example")
-        return
-
-    problem = get_problem_text(sample).strip()
-    steps, labels = get_steps_and_labels(sample)
-
+    problem, steps, labels, split = _fetch_demo_trace(seed)
     if not steps:
-        print("No steps found in example")
+        print("Could not fetch a PRM example to score")
         return
 
     print("=" * 60)
-    print("Problem:", problem[:300] + "..." if len(problem) > 300 else problem)
+    print(f"[{split} split] Problem:", problem[:300] + "..." if len(problem) > 300 else problem)
     print("=" * 60)
 
     scores = score_trace(model, tokenizer, problem, steps, device)
