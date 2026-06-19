@@ -38,7 +38,7 @@ custom_css: |
 <p class="colloquium-title-name">Nathan Lambert</p>
 </div>
 
-<p class="colloquium-title-note">Course on RLHF and post-training. Chapter 12 on Synthetic Data: distillation and on-policy distillation, AI feedback, constitutional AI, and rubrics.</p>
+<p class="colloquium-title-note">Course on RLHF and post-training. Chapter 12 on Synthetic Data.</p>
 
 ---
 
@@ -47,48 +47,133 @@ custom_css: |
 
 When the first models were trained with RLHF, human data was *the only* way to get high-quality responses and reliable feedback. As models got better, that assumption broke down fast.
 
-- **Cheaper, faster iteration** -- synthetic data lowered the price of an RLHF experiment, opening the field to everyone who was priced out of human-data pipelines.
-- **A capability threshold** -- this only worked once GPT-4-class models arrived. Llama 2 and GPT-3.5-Turbo were not reliable enough to generate *or* supervise data; the LLM-as-a-judge ability emerged in the GPT-3.5 → GPT-4 jump.
-- **The center of gravity of post-training** -- today, leading models *need* synthetic data to reach the frontier. It is no longer a budget substitute; it is the recipe.
+- **Cheaper, faster iteration** -- synthetic data lowered the price of an post-training experiment, opening the field to everyone who was priced out of human-data pipelines. The time is also well faster, enabling RSI arguments we hear today.
+- **A capability threshold** -- synthetic data in post-training only worked once GPT-4-class models arrived. Llama 2 and GPT-3.5-Turbo were not reliable enough to generate *or* supervise data; the LLM-as-a-judge ability emerged in the GPT-3.5 → GPT-4 jump.
+- **The center of gravity of post-training** -- today, leading models *need* synthetic data to reach the frontier. Distillation is the general word for how to transfer capabilities from a stronger model to a student.
 
 ---
 
 <!-- columns: 50/50 -->
 ## This lecture
 
-We survey how synthetic data has **replaced or expanded much of the RLHF pipeline** -- then derive **on-policy distillation** from scratch as the technical core.
-
-Chapter 12 is, secretly, a *training-methods* chapter.
+We survey how synthetic data has **replaced or expanded much of the post-training pipeline** -- then derive **on-policy distillation** from scratch as the technical core.
 
 |||
 
-The plan, in six parts:
-
-1. The **roles** of synthetic data
-2. **Distillation** with synthetic data
-3. The path to **on-policy distillation** (the technical core)
-4. **AI feedback** -- replacing and augmenting humans
-5. **Constitutional AI**
-6. **Rubrics** -- prompt-specific AI feedback
+```box
+title: The plan, roughly
+tone: accent
+content: |
+  1. The **roles** of synthetic data
+  2. **General distillation** with synthetic data
+  3. The path to **on-policy distillation** (the technical core)
+  4. **AI feedback** & **Constitutional AI**
+  5. **Rubrics** -- prompt-specific AI feedback
+```
 
 ---
 
-<!-- rows: 60/40 -->
-## Recall: where synthetic data sits in the pipeline
+<!-- rows: 50/50 -->
+## Lecture 7: Where it sits
 
-<!-- row-columns: 48/52 -->
-The RLHF pipeline is a few moving parts:
+<!-- row-columns: 32/36/32 -->
 
-1. Collect / generate **prompts**
-2. Generate **completions**
-3. Collect **preferences** (or rewards)
-4. **Optimize** the policy
+```box
+title: Overview
+tone: muted
+compact: true
+content: |
+  1. Introduction
+  2. Key Related Works
+  3. Training Overview
+```
 
 |||
 
-Language models now feed **every box**: writing prompts from seeds, generating completions, labeling preferences, and verifying answers for RL.
+```box
+title: Core Training Pipeline
+tone: muted
+compact: true
+content: |
+  4. Instruction Tuning
+  5. Reward Models
+  6. Reinforcement Learning
+  7. Reasoning
+  8. Direct Alignment
+  9. Rejection Sampling
+```
 
-This lecture is about the methods that fill those boxes with model outputs.
+|||
+
+```box
+title: Data & Preferences
+tone: accent
+compact: true
+content: |
+  10. What are Preferences
+  11. Preference Data
+  12. **Synthetic Data & CAI**
+```
+
+===
+
+<!-- row-columns: 32/36/32 -->
+
+```box
+title: Practical Considerations
+tone: muted
+compact: true
+content: |
+  13. Tool Use
+  14. Over-optimization
+  15. Regularization
+  16. Evaluation
+  17. Product & Character
+```
+
+|||
+
+```box
+title: Appendices
+tone: surface
+compact: true
+content: |
+  - A. Definitions
+  - B. Style & Information
+  - C. Practical Issues
+```
+
+|||
+
+```box
+title: Course Home
+tone: surface
+compact: true
+content: |
+  - [rlhfbook.com](https://rlhfbook.com)
+  - [GitHub repo](https://github.com/natolambert/rlhf-book)
+```
+
+---
+
+
+<!-- rows: 60/40 -->
+## Recall: where synthetic data sits in a pipeline
+
+<!-- row-columns: 48/52 -->
+The post-training pipeline is many moving parts:
+
+1. Collect / generate **prompts**
+2. Generate **completions** for SFT
+3. Collect **preferences** for RLHF
+4. Score **rewards** for RLVR
+5. Filtering, cleaning, all of the above
+
+|||
+
+Synthetic data from other language models now feed **every box**: writing prompts from seeds, generating completions, labeling preferences, and verifying answers for RL.
+
+We will cover a few training methods that emerged around these ideas too.
 
 ===
 
@@ -117,31 +202,28 @@ This lecture is about the methods that fill those boxes with model outputs.
 
 ---
 
-<!-- columns: 50/50 -->
-## Where synthetic data wins, and where humans stay
+## The balance between human and synthetic data
 
 Synthetic data has **not** replaced human data uniformly across the pipeline.
 
 - **Instruction data (SFT):** synthetic has largely *won* -- distillation beats most human writers at scale.
 - **Preference data (RLHF):** *mixed* -- academic work shows it performs comparably, yet frontier labs treat human preference data as a competitive moat.
-- **Evaluation:** LLM-as-a-judge scales *scoring* cheaply, but benchmarks and ground-truth labels still need humans.
+- **Evaluation:** LLM-as-a-judge scales *scoring* cheaply, but benchmarks and ground-truth labels still need human grounding/correlation.
 
-|||
+Human data curation is heavily involved at determining the frontier of models and seeding initial progress, then synthetic data is used to scale it.
 
-**The pattern:**
-
-> Synthetic data dominates where models exceed human reliability.
->
-> Humans remain essential at capability frontiers, for establishing ground truth, and for guiding training.
+Around the launch of ChatGPT, human data was a central driver of progress.
 
 ---
 
-<!-- columns: 55/45 -->
+<!-- rows: 70/30 -->
 ## Model collapse, and why it's avoidable in practice
 
-The common criticism: repeatedly training on a model's own generations can narrow the effective training distribution [@shumailov2024ai].
+<!-- row-columns: 55/45 -->
+A common criticism: repeatedly training on a model's own generations can narrow the effective training distribution [@shumailov2024ai].
 
-As diversity drops, rare facts and styles are underrepresented and small mistakes compound across iterations.
+The argument follows as:
+*As diversity drops, rare facts and styles are underrepresented and small mistakes compound across iterations.*
 
 |||
 
@@ -152,14 +234,36 @@ But this is mostly a failure of *unfiltered, single-model, self-training* loops.
 - deduplication,
 - strong quality filters.
 
+---
+
+<!-- rows: 70/30 -->
+## Model collapse, and why it's avoidable in practice
+
+<!-- row-columns: 55/45 -->
+A common criticism: repeatedly training on a model's own generations can narrow the effective training distribution [@shumailov2024ai].
+
+The argument follows as:
+*As diversity drops, rare facts and styles are underrepresented and small mistakes compound across iterations.*
+
+|||
+
+But this is mostly a failure of *unfiltered, single-model, self-training* loops. In practice it is avoided by:
+
+- mixing in real / human data,
+- using **diverse teachers**,
+- deduplication,
+- strong quality filters.
+
+===
+
 Evidence suggests synthetic data can -- and should -- be used at scale without the catastrophic regressions of the strongest collapse story [@gerstgrasser2024model] [@feng2024beyond].
 
 ---
 
 <!-- valign: center -->
-## Canonical datasets and their scale
+## Canonical, early synthetic datasets and their scale
 
-A few datasets defined each era: **UltraFeedback** [@cui2023ultrafeedback] (kickstarted the DPO revolution), **Stanford Alpaca** (early chat SFT), **Tülu 3** [@lambert2024t] (skill-focused), and **OpenThoughts 3** [@guha2025openthoughts] (reasoning).
+A few datasets defined each era: **UltraFeedback** [@cui2023ultrafeedback] (kickstarted the DPO revolution), **Stanford Alpaca** (early chat SFT), **Tülu 3** [@lambert2024t] (pre RLVR SFT set), and **OpenThoughts 3** [@guha2025openthoughts] (general reasoning set).
 
 | | Prompts | Tokens (approx.) |
 | :--- | :---: | :---: |
@@ -167,69 +271,63 @@ A few datasets defined each era: **UltraFeedback** [@cui2023ultrafeedback] (kick
 | **Tülu 3** (2024) | 1M+ | ~500M |
 | **OpenThoughts 3** (2025) | — | ~10B |
 
-Quickstart guides still begin with small, fast datasets like Alpaca; industrial recipes reach for Tülu 3 / OpenThoughts 3. Datasets grew in **both** prompt count and response length.
-
----
-
-<!-- layout: section-break -->
-<!-- align: center -->
-
-## Part 2: Distillation with synthetic data
-
 ---
 
 <!-- columns: 50/50 -->
 ## Two meanings of "distillation"
 
-**Technical (Knowledge Distillation):** train a smaller *student* to match a stronger *teacher's* full output distribution -- *soft* labels, not one-hot targets [@hinton2015distilling].
+**Technical (Knowledge Distillation):** train a smaller *student* to match a stronger *teacher's* full output distribution -- *soft* labels, not one-hot targets [@hinton2015distilling]. More on this later in the lecture.
 
 |||
 
-**Colloquial (today's usage):** "train a weaker model on the outputs of a stronger model."
+**Colloquial (today's usage):** "train a weaker model on the outputs of a stronger model." Is what people mean when they say something like "Chinese models distill from GPT/Claude."
 
-Most of the chapter uses the colloquial sense -- but the on-policy methods later in this lecture *earn back* the technical one.
+
+---
+
+<!-- valign: center -->
+## Aside: distillation on Interconnects this year
+
+```box
+title: Further reading
+tone: surface
+content: |
+  - [**How much does distillation really matter for Chinese LLMs?**](https://www.interconnects.ai/p/how-much-does-distillation-really) (Feb 2026) - how much of Chinese open models' gains actually trace to distilling frontier APIs.
+  - [**The distillation panic**](https://www.interconnects.ai/p/the-distillation-panic) (May 2026) - why reacting quickly to frontier lab's fear-based messaging on distillation could be bad for the broader AI ecosystem.
+```
 
 ---
 
 <!-- img-align: center -->
 <!-- valign: center -->
 <!-- cite-right: hinton2015distilling -->
-## Classic knowledge distillation
+## Distillation 1: Classic knowledge distillation
 
 ![Knowledge distillation trains a student to match the soft probability distribution of a larger teacher via KL divergence. Both models see the same input, and temperature scaling ($\tau > 1$) softens the distributions to expose relationships between classes.](assets/knowledge_distillation_tikz.png)
 
 ---
 
-<!-- animate: bullets -->
-## Two forms of distillation in post-training
-
-- **As a data engine** across the whole pipeline -- completions for instructions, preference data (or Constitutional AI), verification for RL.
-- **To transfer a specific skill** from a stronger to a weaker model -- math, code, instruction-following. Limited high-quality data can go a long way (LIMA, "less is more for alignment") [@zhou2023lima].
-- **The industry pattern:** a lab trains a large *internal* teacher (e.g. Claude Opus, Gemini Ultra), never released, used only to make stronger public models. Open models distill closed APIs into open weights [@tunstall2023zephyr].
-
----
-
 <!-- img-align: center -->
 <!-- valign: center -->
-## The synthetic-data generation pipeline
+## Distillation 2: The synthetic-data generation pipeline
 
 ![Prompts are passed through a strong model to generate completions, which are paired into a training dataset and used to fine-tune smaller models with standard supervised learning. More complex pipelines edit completions, generate preference pairs, or filter for quality.](assets/synthetic_data_distillation_tikz.png)
 
-So far, completions are *fixed text*. Next we go **inside** the token distribution.
+Yes, this is intentionally very simple as a diagram.
 
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 3 · OPD 1/4: Adapting KD to language models
+## Part 2: The path to on-policy distillation (OPD)
 
 ---
 
 <!-- valign: top -->
 ## Setup and notation
 
-Knowledge distillation uses **soft** labels -- the full distribution over next tokens -- rather than the one-hot target of next-token prediction. To apply it to autoregressive LMs, decompose the loss per token.
+Knowledge distillation, introduced by Hinton, Vinyals & Dean [@hinton2015distilling], in its original form uses **soft** labels -- the full distribution over next tokens -- rather than the one-hot target of next-token prediction. To apply it to autoregressive LMs, decompose the loss per token.
 
 Let:
 
@@ -243,7 +341,6 @@ Let:
 ---
 
 <!-- valign: top -->
-<!-- title: center -->
 ## Word-level (per-token) distillation
 
 Kim & Rush (2016) applied KD so a student learns from teacher *sequences* [@kim-rush-2016-sequence]:
@@ -259,7 +356,6 @@ This is the ordinary cross-entropy form $-\sum_z q(z)\log p(z)$, applied at *eve
 ---
 
 <!-- valign: top -->
-<!-- title: center -->
 ## Sequence-level distillation
 
 Matching the student to the teacher over *full sequences* $\mathcal{U}$ is intractable, so Kim & Rush approximate the teacher with a point mass on one high-probability beam-search output $\hat{u} = \mathrm{BeamSearch}_q(s)$:
@@ -278,7 +374,6 @@ Call this **offline KD** -- the generations are produced *a priori*. (DistilBERT
 ---
 
 <!-- valign: top -->
-<!-- title: center -->
 ## Cross-entropy is entropy plus a forward KL
 
 Cross-entropy of a teacher $q$ and student $p$ -- the same form as the KD losses above:
@@ -309,23 +404,22 @@ H(q,p) &= H(q) \;+\; \sum_z q(z)\log\frac{q(z)}{p(z)} = H(q) + D_{\mathrm{KL}}(q
 \end{aligned}
 $$
 
-<!-- step -->
+---
 
-$H(q)$ depends only on the **fixed** teacher, so:
+<!-- valign: top -->
+## Recall: minimizing cross-entropy is forward KL
+
+We just showed cross-entropy decomposes into the teacher's entropy plus a KL:
+
+$$ H(q,p) = H(q) + D_{\mathrm{KL}}(q\|p) $$
+
+$H(q)$ depends only on the **fixed** teacher, so minimizing cross-entropy *is* minimizing the forward KL:
 
 $$ \boxed{\ \min_p H(q,p)\ \equiv\ \min_p D_{\mathrm{KL}}(q\|p)\quad\text{(forward KL: the direction of offline KD and SFT)}\ } $$
 
 ---
 
-<!-- layout: section-break -->
-<!-- align: center -->
-
-## Part 3 · OPD 2/4: From offline to on-policy
-
----
-
 <!-- valign: top -->
-<!-- title: center -->
 ## Exposure bias: the train / test mismatch
 
 Offline KD samples **teacher** trajectories $u \sim \pi_T$ and matches per-token (here $q = \pi_T$, $p = \pi_\theta$):
@@ -380,13 +474,6 @@ For LLMs this is an **analogy, not a guarantee** -- token losses are distributio
 
 ---
 
-<!-- layout: section-break -->
-<!-- align: center -->
-
-## Part 3 · OPD 3/4: The reverse-KL objective
-
----
-
 <!-- columns: 50/50 -->
 ## Forward vs. reverse KL
 
@@ -407,7 +494,6 @@ $$ D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_T) = \sum_z \pi_\theta(z)\log\frac{\pi_
 ---
 
 <!-- valign: top -->
-<!-- title: center -->
 ## The on-policy distillation objective
 
 Let $a = (a_1, \ldots, a_L)$ be a completion sampled from the **student** $\pi_\theta(\cdot \mid s)$, with token-level state $s_t = (s, a_{<t})$. The teacher $\pi_T$ is fixed:
@@ -425,7 +511,6 @@ This is now in the **sampling / expectation framework** of Chapter 6 (policy gra
 ---
 
 <!-- valign: top -->
-<!-- title: center -->
 ## KD as an RL advantage
 
 Recent implementations take the KD distance **directly as a reward**: substitute the negative per-token reverse-KL contribution as the advantage [@lu2025onpolicy]. For a sampled token $a_t$ at state $s_t$:
@@ -440,15 +525,7 @@ $$ A_t^{\mathrm{OPD}} = \log \pi_T(a_t \mid s_t) - \log \pi_\theta(a_t \mid s_t)
 
 ---
 
-<!-- layout: section-break -->
-<!-- align: center -->
-
-## Part 3 · OPD 4/4: Modern variants
-
----
-
 <!-- valign: top -->
-<!-- title: center -->
 ## Multi-teacher on-policy distillation (MOPD)
 
 Use **several** teachers -- domain specialists (math, code) or earlier checkpoints -- each with a per-prompt mixture weight $w_k(s)$ (with $\sum_k w_k(s) = 1$) [@mimo2025flash]:
@@ -460,6 +537,8 @@ $$
 $$
 
 At scale, this lets a growing org divide labor: many groups train expert teachers that later distill into one final student (DeepSeek-V4-Pro [@deepseekai2026deepseekv4], MiMo-V2-Flash [@mimo2025flash]).
+
+*Going deeper:* **Conversation 1** with Finbarr Timbers traces MOPD across the 2026 frontier recipes -- [rlhfbook.com/course](https://rlhfbook.com/course).
 
 ---
 
@@ -517,7 +596,6 @@ Distillation is growing into its own post-training method -- alongside SFT and R
 ---
 
 <!-- rows: 55/45 -->
-<!-- title: center -->
 ## Recap: the path to on-policy distillation
 
 $$
@@ -539,7 +617,7 @@ Distillation stopped being a compression trick and became a way to pour many exp
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 4: AI feedback -- replacing and augmenting humans
+## Part 3: AI feedback & Constitutional AI
 
 ---
 
@@ -598,7 +676,7 @@ Easier to start with, but can carry tricky second-order effects that are *system
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 5: Constitutional AI
+## Constitutional AI
 
 ---
 
@@ -616,7 +694,6 @@ It generates synthetic data in **two** ways -- one for instructions, one for pre
 ---
 
 <!-- valign: top -->
-<!-- title: center -->
 ## Stage 1: critique and revise → SFT data
 
 A **constitution** $\mathcal{C}$ is a human-written set of principles (e.g. *"Is the answer encouraging violence?"*, *"Is the answer truthful?"*).
@@ -665,7 +742,7 @@ The "rules-driven alignment" thread runs well beyond Anthropic:
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 6: Rubrics -- prompt-specific AI feedback
+## Part 4: Rubrics -- prompt-specific AI feedback
 
 ---
 
@@ -776,6 +853,19 @@ Synthetic data didn't remove humans from the loop -- it moved them to the **fron
 - **Self-preference bias** in judge-driven loops -- how much does it compound?
 - **Rubric cost vs. coverage** -- per-prompt generation is expensive.
 - **Go deeper:** Chapter 6 (RL / policy-gradient framing), Chapter 15 (forward vs. reverse KL), Chapter 16 (evaluation), Chapter 7 (RL with verifiable rewards).
+
+---
+
+## Course outline
+
+1. Introduction & Training Overview -- Chapters 1-3
+2. IFT, Reward Models, Rejection Sampling -- Chapters 4, 5, 9
+3. RL Theory -- Chapter 6 (Part 1)
+4. RL Implementation & Practice -- Chapter 6 (Part 2)
+5. Reasoning -- Chapter 7
+6. Direct Alignment Algorithms -- Chapter 8
+7. Synethic Data -- Chapter 12
+8. Preferences & Preference Data -- Chapters 10/11
 
 ---
 
