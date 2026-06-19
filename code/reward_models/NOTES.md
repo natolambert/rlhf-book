@@ -114,6 +114,45 @@ and only differences are meaningful — negative absolute values are fine.)
 > pairs from one prompt in one batch to avoid overfitting), **Plackett-Luce
 > K-wise** (Starling). BT is the `K=2` special case.
 
+### `tokenize_messages` — two branches, why the flags differ (`train_preference_rm.py:72-96`)
+
+An RM **scores finished text** (prompt **+** the assistant answer that's already
+present); it never generates. So tokenization just has to turn a *complete*
+conversation into `input_ids` / `attention_mask`. Two branches by whether the
+tokenizer ships a chat template:
+
+**Branch 1 — instruct model, has a chat template** (`apply_chat_template`):
+
+```
+<|im_start|>user\nWhat is 2+2?<|im_end|>\n<|im_start|>assistant\n4<|im_end|>
+```
+
+- `add_generation_prompt=False` — this flag appends a **trailing empty assistant
+  header** (`<|im_start|>assistant\n`) that primes generation. That's an
+  *inference* cue, used when you only have the user turn. Here the answer is
+  **already in `messages`**; setting `True` would tack on a dangling empty turn,
+  and since the reward is read from the **last token**, you'd be scoring an empty
+  generation prompt instead of the real end of the answer (`<|im_end|>`). So
+  `False` keeps the sequence ending on the actual response. Cross-ref Q3.
+- No `add_special_tokens` arg here: the **template already injects** every special
+  token (`<|im_start|>`/`<|im_end|>`, BOS if defined). Passing it would double up.
+
+**Branch 2 — base model, `chat_template is None`** (the one this experiment
+actually takes — Qwen3 *base*): falls back to `format_conversation`'s plain
+`user:/assistant:` string, then a bare `tokenizer(...)`:
+
+- `add_special_tokens=True` — nothing has inserted structural tokens yet, so this
+  asks the tokenizer to add its **defaults (BOS/EOS)**. It's the **parallel** of
+  the template owning specials in Branch 1 — same job, two regimes. (`__call__`
+  already defaults this to `True`, so the line also just *documents intent*: yes,
+  we want BOS/EOS here, unlike the template branch where the template decides.)
+  Per the preflight, **Qwen3 base has no BOS**, so in practice this adds nothing —
+  but it's the correct, model-agnostic flag to set.
+
+So: Branch 1 suppresses a trailing token (`add_generation_prompt=False`); Branch 2
+adds leading/trailing specials (`add_special_tokens=True`). Both return a dict
+with `input_ids` + `attention_mask` → `chosen_ids`/`rejected_ids`, padded per-batch.
+
 ---
 
 ## 3. ORM — Outcome Reward Model (`train_orm.py`)
@@ -195,6 +234,44 @@ long (`max_tokens=5500`, traces chunked at `max_steps=20`).
 step acc `~0.36`; demo prints per-step `-1/0/1` probabilities across a full trace.
 Barely-trained model defaults to predicting class `1` everywhere — expected; the
 *path* (per-step 3-class scoring) works ✅.
+
+### Why this shape — separator, build-by-parts, terminator scoring
+
+**`\n<step>\n` is a plain-text separator, not a `[CLS]` special token.** `[CLS]`
+isn't in Qwen3-base's vocab, so using it would mean `add_special_tokens` +
+`resize_token_embeddings` → a **randomly-initialized** embedding trained from
+scratch (the same cold-start that needed embedding warm-starting in the SFT
+`<|im_end|>` work). `\n<step>\n` reuses already-trained token embeddings
+(`\n`,`<`,`step`,`>`), needs zero tokenizer surgery, is model-agnostic and
+printable/debuggable. A *causal* decoder also wants the marker **after** each step
+(a leading `[CLS]` can't see the step yet), recurring once per step — not BERT's
+single global token. Tradeoff: a real special token is unambiguous + 1 token, but
+must be trained; production PRMs sometimes do it, overkill for this educational run.
+
+**Built by parts with `add_special_tokens=False` (`train_prm.py:183, 202`).** Each
+`step + separator` is tokenized separately and concatenated as id lists. This is the
+deliberate escape from the SFT hazard, where `apply_chat_template` injects
+`<|im_end|>`/role markers you don't control, so `tok(a)+tok(b) ≠ tok(template(a+b))`
+and label masks shift. No template + no auto-specials → concatenation is exactly what
+the model sees, and `label_ids` is grown **in lockstep** with `input_ids`, so each
+terminator label lands at the right index *by construction* (no post-hoc boundary
+search). Newline-delimited separators tokenize cleanly, so seams don't merge.
+
+**Terminator scoring is train/inference-consistent + prefix-causal.** The label sits
+on the **last token of `step + sep`** (the preflight decodes it to `'>\n'`);
+`score_trace` reads the head at that *same* index — identical wrapping in both
+regimes, so no train/inference mismatch. The separator is a constant "emit the rating
+now" cue; the discriminative signal comes from the step content the terminator
+attends back over (causal). Because it's causal, a step's score depends only on its
+prefix — **future steps don't leak** — so a single forward pass scores every step
+(`score_trace` reads all `boundaries` at once), matching how a PRM scores *partial*
+traces in tree search / best-of-N.
+
+**`to_plain_text` (`train_prm.py:71-82`)** — defensive normalizer for PRM800K's
+heterogeneous fields: `str`→as-is; `dict`→first of `text`/`value`/`content` that's a
+str, else space-join its values; `list`→space-join; else `str()`. Guarantees the
+tokenizer always receives a `str`, so a row that wraps its text in a dict/list can't
+crash `build_prm_dataset`.
 
 ---
 

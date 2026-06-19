@@ -197,7 +197,7 @@ class PreferenceRewardModel(BaseRewardModel):
         last_hidden = hidden[batch_indices, seq_lengths]
 
         reward = self.head(last_hidden).squeeze(-1)
-        return reward
+        return reward # a single scalar per sequence
 
     def forward(
         self,

@@ -141,6 +141,21 @@ numerically stable form `ℓ = max(x,0) − x·y + log(1 + e^{−|x|})`, avoidin
 `log(0)` overflow for large `|x|`. So you must pass **raw logits, never
 pre-sigmoided probabilities** (doing both = double sigmoid = wrong math).
 
+**The `else: logits.sum() * 0` branch — a graph-connected zero, and who needs it.**
+When `mask.any()` is `False`, `logits[mask]` is empty and `cross_entropy`/`BCE`
+returns `nan`. You can't fall back to a plain `0.0` (no `.backward()`) or a fresh
+`torch.tensor(0.0)` (no `grad_fn` → *"does not require grad"* on backward).
+`logits.sum() * 0` is a tensor still wired to the params: value `0`, gradient `0`, so
+`loss.backward()` runs cleanly and the optimizer step is a no-op. **PRM has the
+identical guard** (`train_prm.py:289-292`, `cross_entropy`). **Preference RM has none
+and needs none** (`train_preference_rm.py:220`): Bradley-Terry reads exactly one
+guaranteed token per sequence (last non-pad) and reduces `.mean()` over a non-empty
+batch — no maskable subset, so no empty-subset / `nan` failure mode. So the guard
+tracks the *loss shape*: per-token masked (ORM, PRM) needs it; per-sequence pairwise
+scalar (pref RM) doesn't. It's **defensive** — the dataset builders `continue`-skip
+label-less records, making it near-unreachable; the realistic trigger is *truncation*
+dropping every labeled token and leaving an all-`-100` row.
+
 ---
 
 ## 5. The generic training loop's metric accumulation
