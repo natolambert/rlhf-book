@@ -465,7 +465,7 @@ Interesting DPO findings and more fun stuff. See [this talk](https://www.youtube
 
 |||
 
-![OLMo 3.1 Think extended RL training lifecycle from the model report.](assets/olmo31-extended-rl.jpeg)
+![Olmo 3.1 Think extended RL training lifecycle from the model report.](assets/olmo31-extended-rl.jpeg)
 
 ---
 
@@ -569,9 +569,9 @@ The frontier moved fast -- from "reasoning model" to **long-horizon, tool-using 
 
 <!-- animate: bullets -->
 
-1. **Offline difficulty filtering** -- pre-sample $N$ completions/prompt, keep prompts at ~20-80% pass rate (where the gradient lives). *Seed-Thinking 1.5 [@seed2025seed], Open-Reasoner-Zero [@hu2025openreasonerzero], Phi-4 Reasoning [@abdin2025phi4], INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained], MiMo [@xia2025mimo], Skywork OR-1 [@he2025skyworkor1], OLMo 3 [@teamolmo2025olmo3]*
+1. **Offline difficulty filtering** -- pre-sample $N$ completions/prompt, keep prompts at ~20-80% pass rate (where the gradient lives). *Seed-Thinking 1.5 [@seed2025seed], Open-Reasoner-Zero [@hu2025openreasonerzero], Phi-4 Reasoning [@abdin2025phi4], INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained], MiMo [@xia2025mimo], Skywork OR-1 [@he2025skyworkor1], Olmo 3 [@teamolmo2025olmo3]*
 2. **Online filtering and curriculum** -- skip prompts now too easy/hard; save harder problems for later. *Kimi 1.5 [@team2025kimi], Magistral [@mistral2025magistral], Llama-Nemotron [@bercovich2025llamanemotron], INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained], MiMo [@xia2025mimo]*
-3. **Zero-gradient filtering + active sampling** -- drop groups where all $G$ completions pass or fail (advantage 0), then refill the batch. *OLMo 3 [@teamolmo2025olmo3]*. Makes loss nice and very stable!
+3. **Zero-gradient filtering + active sampling** -- drop groups where all $G$ completions pass or fail (advantage 0), then refill the batch. *Olmo 3 [@teamolmo2025olmo3]*. Makes loss nice and very stable!
 4. **KL penalty: dropped, now creeping back** -- single-turn math RLVR usually sets $\beta=0$ (verifiable rewards resist over-optimization). *Magistral [@mistral2025magistral], Open-Reasoner-Zero [@hu2025openreasonerzero], Skywork OR-1 [@he2025skyworkor1]* But long-horizon, off-policy agentic training is reviving a KL/reference term for stability -- e.g. Cursor [Composer 2](https://cursor.com/blog/composer-2-technical-report).
 5. **Relaxed / asymmetric clipping** -- widen the upper clip bound to keep exploratory updates (DAPO [@yu2025dapo]). *Magistral [@mistral2025magistral], INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained]*
 
@@ -596,8 +596,8 @@ The frontier moved fast -- from "reasoning model" to **long-horizon, tool-using 
 
 <!-- animate: bullets -->
 
-11. **Inference is the bottleneck** -- long, variable completions; OLMo 3 learner GPUs idle ~**75%**, **5-14x** more inference than training compute.
-12. **Off-policy / async updates** -- actors generate continuously, the learner consumes; rollouts go slightly stale but throughput jumps. *Seed-Thinking 1.5 [@seed2025seed], INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained]* -- deep dive: OLMo 3 [slides](https://docs.google.com/presentation/d/17Evr5AqnwjtSZ4H5vpnoEvGmI9fRBO19SN2dGHg7tPE/edit), [recording](https://www.youtube.com/watch?v=uaZ3yRdYg8A)
+11. **Inference is the bottleneck** -- long, variable completions; Olmo 3 learner GPUs idle ~**75%**, **5-14x** more inference than training compute.
+12. **Off-policy / async updates** -- actors generate continuously, the learner consumes; rollouts go slightly stale but throughput jumps. *Seed-Thinking 1.5 [@seed2025seed], INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained]* -- deep dive: Olmo 3 [slides](https://docs.google.com/presentation/d/17Evr5AqnwjtSZ4H5vpnoEvGmI9fRBO19SN2dGHg7tPE/edit), [recording](https://www.youtube.com/watch?v=uaZ3yRdYg8A)
 13. **Test-time scaling** -- majority voting (DeepSeek R1 [@guo2025deepseek], Phi-4 [@abdin2025phi4]); selector model (DeepSeek-GRM [@liu2025inference]); the pass@K vs pass@1 gap shows the headroom.
 
 |||

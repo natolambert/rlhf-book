@@ -326,7 +326,7 @@ These details and trade-offs are discussed later in the chapter.
 
 ### Proximal Policy Optimization (PPO)
 
-Proximal Policy Optimization (PPO) [@schulman2017proximal] is one of the foundational algorithms behind Deep RL's successes (such as OpenAI's Five, which mastered DOTA 2 [@berner2019dota] and large amounts of research).
+Proximal Policy Optimization (PPO) [@schulman2017proximal] is one of the foundational algorithms behind Deep RL's successes (such as OpenAI Five, which mastered Dota 2 [@berner2019dota] and large amounts of research).
 The objective that PPO maximizes, with respect to the advantages and the policy probabilities, is as follows:
 
 $$J(\theta) = \min\left(\frac{\pi_\theta(a|s)}{\pi_{\theta_{\text{old}}}(a|s)}A, \text{clip} \left( \frac{\pi_\theta(a|s)}{\pi_{\theta_{\text{old}}}(a|s)}, 1-\varepsilon, 1+\varepsilon \right) A \right).$$ {#eq:PPO_EQN}

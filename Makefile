@@ -313,7 +313,7 @@ files: $(BUILD)/html/sitemap.xml $(BUILD)/html/robots.txt $(BUILD)/html/llms.txt
 	$(INLINE_FOOTER) book/rl-cheatsheet/index.html > $(BUILD)/html/rl-cheatsheet/index.html || echo "Failed to inline cheatsheet index.html"
 
 pagefind: html files
-	npx --yes pagefind --site $(BUILD)/html --glob "c/**/*.html"
+	npx --yes pagefind --site $(BUILD)/html --glob "{c/**/*.html,course.html}"
 
 # Build the HTML site (only rebuilds what changed) and serve it locally with
 # clean-URL + absolute-path support, so previewing matches the live site.

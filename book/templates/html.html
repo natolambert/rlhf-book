@@ -145,18 +145,88 @@ $if(abstract)$
 $endif$
 </header>
 $endif$
-  <div style="display: flex; align-items: center; justify-content: space-between; gap: 1em; flex-wrap: wrap; margin: 1.5em 20px 0; padding: 0.8em 1.2em; border: 1px solid var(--color-border); border-radius: 0.35em; background: var(--color-bg-section); box-shadow: 0 4px 12px var(--color-shadow);">
+  <h3 style="padding: 0 20px; margin-top: 1.5em;">RLHF Book Ecosystem</h3>
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 1em; flex-wrap: wrap; margin: 0.5em 20px 0; padding: 0.8em 1.2em; border: 1px solid var(--color-border); border-radius: 0.35em; background: var(--color-bg-section); box-shadow: 0 4px 12px var(--color-shadow);">
     <div>
       <h3 style="margin: 0 0 0.15em 0; font-size: 1.05em;">Welcome to the Course</h3>
       <p style="font-size: 0.88em; color: var(--color-text-muted); margin: 0;">Video introduction and overview of the RLHF Book</p>
     </div>
+    <div style="display: flex; align-items: center; gap: 0.5em;">
     <a href="https://www.youtube.com/watch?v=jQPiH-KB4B0&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 0.4em; font-size: 0.85em; padding: 0.35em 0.7em; border-radius: 0.3em; border: 1px solid #c0392b; background: rgba(192,57,43,0.1); color: #c0392b; text-decoration: none; white-space: nowrap;">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
       Watch
     </a>
+    <a href="https://rlhfbook.com/course" class="home-card-btn home-card-btn-grey" aria-label="Go to the course page" title="Course page">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </a>
+    </div>
   </div>
-  <section id="changelog" style="padding: 0 20px;">
-    <h3>Changelog</h3>
+  <style>
+    .home-card-btn {
+      display: inline-flex; align-items: center; gap: 0.4em;
+      font-size: 0.85em; padding: 0.35em 0.7em; border-radius: 0.3em;
+      text-decoration: none; white-space: nowrap; border: 1px solid;
+    }
+    .home-card-btn-code { border-color: #24292f; background: #24292f; }
+    .home-card-btn-view { border-color: #2563eb; background: rgba(37,99,235,0.1); }
+    .home-card-btn-grey { border-color: var(--color-border); background: transparent; }
+    /* Set color on :link/:visited so the global a:visited rule can't override it. */
+    .home-card-btn-code:link, .home-card-btn-code:visited { color: #fff; }
+    .home-card-btn-view:link, .home-card-btn-view:visited { color: #2563eb; }
+    .home-card-btn-grey:link, .home-card-btn-grey:visited { color: var(--color-text-muted); }
+    :root[data-theme="dark"] .home-card-btn-code { border-color: #6e7681; background: #30363d; }
+    :root[data-theme="dark"] .home-card-btn-view { border-color: #60a5fa; background: rgba(96,165,250,0.14); }
+    :root[data-theme="dark"] .home-card-btn-code:link, :root[data-theme="dark"] .home-card-btn-code:visited { color: #fff; }
+    :root[data-theme="dark"] .home-card-btn-view:link, :root[data-theme="dark"] .home-card-btn-view:visited { color: #60a5fa; }
+  </style>
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 1em; flex-wrap: wrap; margin: 0.8em 20px 0; padding: 0.8em 1.2em; border: 1px solid var(--color-border); border-radius: 0.35em; background: var(--color-bg-section); box-shadow: 0 4px 12px var(--color-shadow);">
+    <div>
+      <h3 style="margin: 0 0 0.15em 0; font-size: 1.05em;">Run the code</h3>
+      <p style="font-size: 0.88em; color: var(--color-text-muted); margin: 0;">A codebase to get started with the algorithms in this book</p>
+    </div>
+    <a href="https://github.com/natolambert/rlhf-book/tree/main/code" target="_blank" rel="noopener noreferrer" class="home-card-btn home-card-btn-code">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+      Code
+    </a>
+  </div>
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 1em; flex-wrap: wrap; margin: 0.8em 20px 0; padding: 0.8em 1.2em; border: 1px solid var(--color-border); border-radius: 0.35em; background: var(--color-bg-section); box-shadow: 0 4px 12px var(--color-shadow);">
+    <div>
+      <h3 style="margin: 0 0 0.15em 0; font-size: 1.05em;">Example RLHF'd model completions</h3>
+      <p style="font-size: 0.88em; color: var(--color-text-muted); margin: 0;">Compare model completions at different post-training stages</p>
+    </div>
+    <a href="https://rlhfbook.com/library" target="_blank" rel="noopener noreferrer" class="home-card-btn home-card-btn-view">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      View
+    </a>
+  </div>
+  <section id="acknowledgements" style="padding: 0 20px; margin-top: 2em;">
+    <h3>Acknowledgements</h3>
+    <p>I would like to thank the following people who helped me directly with this project: Costa Huang, Ross Taylor, Hamish Ivison, John Schulman, Valentina Pyatkin, Daniel Han, Shane Gu, Joanne Jang, LJ Miranda, Sharan Maiya, Andrew Carr, Cameron R. Wolfe, and others in my RL sphere (and of course Claude).</p>
+    <p>Additionally, thank you to the <a href="https://github.com/natolambert/rlhf-book/graphs/contributors">contributors on GitHub</a> who helped improve this project.</p>
+  </section>
+  <style>
+    #changelog summary {
+      list-style: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4em;
+    }
+    #changelog summary::-webkit-details-marker { display: none; }
+    #changelog summary h3 { display: inline; margin: 0; }
+    #changelog .changelog-caret {
+      color: var(--color-text-muted);
+      transition: transform 0.15s ease;
+    }
+    #changelog details[open] .changelog-caret { transform: rotate(90deg); }
+    #acknowledgements > h3 { margin-top: 0.4em; }
+  </style>
+  <section id="changelog" style="padding: 0 20px; margin-top: 2em;">
+    <details>
+    <summary>
+      <h3>Changelog</h3>
+      <svg class="changelog-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+    </summary>
     <p><em>Last built: $date$</em></p>
     <p><strong>April 2026</strong>: Final editorial polish for print &mdash; ported Manning edition improvements, clarity pass on equations and terminology, typo/grammar fixes across all chapters, product chapter expansions. The book is heading to print, so expect fewer content changes going forward.</p>
     <p><strong>March 2026</strong>: Launch <a href="https://rlhfbook.com/course">course page</a> with lecture videos; PDF syntax highlighting; product chapter expansions (Ch. 17).</p>
@@ -169,11 +239,12 @@ $endif$
     <p><strong>April 2025</strong>: Finish v0; overoptimization, open questions, etc.; evaluation section; RLHF x Product research, improving website, reasoning section.</p>
     <p><strong>March 2025</strong>: Improving policy gradient section; finish DPO, major cleaning; start DPO chapter, improve intro.</p>
     <p><strong>February 2025</strong>: Improve SEO, add IFT chapter; RM additions, preference data, policy gradient finalization; PPO and GAE; added changelog, revamped introduction.</p>
-  </section>
-  <section id="acknowledgements" style="padding: 20px;">
-    <h3>Acknowledgements</h3>
-    <p>I would like to thank the following people who helped me directly with this project: Costa Huang, Ross Taylor, Hamish Ivison, John Schulman, Valentina Pyatkin, Daniel Han, Shane Gu, Joanne Jang, LJ Miranda, Sharan Maiya, Andrew Carr, Cameron R. Wolfe, and others in my RL sphere (and of course Claude).</p>
-    <p>Additionally, thank you to the <a href="https://github.com/natolambert/rlhf-book/graphs/contributors">contributors on GitHub</a> who helped improve this project.</p>
+    <p><strong>January 2025</strong>: Policy gradients (REINFORCE, PPO, GRPO); overoptimization content; discussion content merged from the blog; navigation and code-listing improvements.</p>
+    <p><strong>December 2024</strong>: Preferences chapter; continued cleaning and additions.</p>
+    <p><strong>October 2024</strong>: Regularization, preferences, and reward modeling chapters; figures and formatting.</p>
+    <p><strong>August 2024</strong>: First chapters drafted (rejection sampling, bibliography); automated site builds set up.</p>
+    <p><strong>May 2024</strong>: rlhfbook.com domain purchased; project started.</p>
+    </details>
   </section>
   <section id="citation" style="padding: 0 20px;">
     <h3>Citation</h3>
