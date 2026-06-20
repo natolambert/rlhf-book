@@ -46,7 +46,7 @@ custom_css: |
 Most of post-training so far has had a notion of *correct* -- a math answer, a passing test, a verifiable reward. Preferences are what we reach for when there is **no right answer**.
 
 - Which poem is better? Which explanation is clearer? Which tone is kinder?
-- There is no closed-form reward for "good" here -- so we ask **humans** (or models) to compare.
+- There is no closed-form reward for "good" here -- so we ask humans (or models) to compare.
 - That single move -- *replace correctness with preference* -- is the foundation of RLHF, and the source of most of its messiness.
 
 ---
@@ -234,7 +234,7 @@ Almost as soon as utility was formalized, social choice and economics found its 
 From psychology and behavioral economics:
 
 - Preferences **drift** -- they change with time, mood, and experience [@pettigrew2019choosing]
-- Choices are shaped by **situation and framing**, not just an inner ranking [@gilbert2022choices]
+- Choices are shaped by situation and framing, not just an inner ranking [@gilbert2022choices]
 
 Already a problem for "collect a label, fit a fixed reward."
 
@@ -403,7 +403,7 @@ As of 2026, **no open model** ships fully open human preference data *with* the 
 
 |||
 
-In practice almost everyone **trains on pairwise rankings**, binarized to chosen/rejected for the Bradley-Terry loss -- and keeps ratings on the side.
+In practice almost everyone trains on pairwise rankings, binarized to chosen/rejected for the Bradley-Terry loss -- and keeps ratings on the side.
 
 The Likert granularity (5-point with ties vs 8-point without) is itself a design choice that changes the data.
 
@@ -412,12 +412,12 @@ The Likert granularity (5-point with ties vs 8-point without) is itself a design
 <!-- valign: top -->
 ## Structured (synthetic) preference data
 
-In domains with structure, you can **build** preference pairs automatically:
+In domains with structure, you can build preference pairs automatically:
 
 - **Math**: a correct solution ≻ an incorrect one.
 - **Instruction following (IFEval-style)**: prompt twice -- with the constraint and without -- and prefer the one that obeys it.
 
-In these narrow domains, structured pairs **beat** quality-judged preferences [@lambert2024t]. This is *synthetic* preference data -- more in chapter 12.
+In these narrow domains, structured pairs beat quality-judged preferences [@lambert2024t]. This is *synthetic* preference data -- more in chapter 12.
 
 ---
 
@@ -440,7 +440,7 @@ Richer signal, harder collection.
 
 ===
 
-Getting data is a **who-you-know** game -- vendors are supply-limited and favor big budgets and brand names. Millions get spent and partly **wasted**; few teams have the bandwidth to fully use human data. Contracts hide non-open clauses in the fine print.
+Getting data is a **who-you-know** game -- vendors are supply-limited and favor big budgets and brand names. Millions get spent and partly wasted; few teams have the bandwidth to fully use human data. Contracts hide non-open clauses in the fine print.
 
 ---
 

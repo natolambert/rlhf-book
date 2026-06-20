@@ -56,7 +56,7 @@ When the first models were trained with RLHF, human data was *the only* way to g
 <!-- columns: 50/50 -->
 ## This lecture
 
-We survey how synthetic data has **replaced or expanded much of the post-training pipeline** -- then derive **on-policy distillation** from scratch as the technical core.
+We survey how synthetic data has replaced or expanded much of the post-training pipeline -- then derive **on-policy distillation** from scratch as the technical core.
 
 |||
 
@@ -171,7 +171,7 @@ The post-training pipeline is many moving parts:
 
 |||
 
-Synthetic data from other language models now feed **every box**: writing prompts from seeds, generating completions, labeling preferences, and verifying answers for RL.
+Synthetic data from other language models now feed every box: writing prompts from seeds, generating completions, labeling preferences, and verifying answers for RL.
 
 We will cover a few training methods that emerged around these ideas too.
 
@@ -204,7 +204,7 @@ We will cover a few training methods that emerged around these ideas too.
 
 ## The balance between human and synthetic data
 
-Synthetic data has **not** replaced human data uniformly across the pipeline.
+Synthetic data has not replaced human data uniformly across the pipeline.
 
 - **Instruction data (SFT):** synthetic has largely *won* -- distillation beats most human writers at scale.
 - **Preference data (RLHF):** *mixed* -- academic work shows it performs comparably, yet frontier labs treat human preference data as a competitive moat.
@@ -216,16 +216,8 @@ Around the launch of ChatGPT, human data was a central driver of progress.
 
 ---
 
-<!-- img-align: center -->
-<!-- valign: center -->
-## Model collapse: the canonical worry
-
-![Training a model recursively on its own generations narrows the learned distribution each round -- the low-probability tails vanish first. Source: Shumailov et al. (2024).](assets/model-collapse-shumailov.png)
-
----
-
 <!-- columns: 58/42 -->
-## Model collapse: the canonical worry
+## Model collapse: an outdated worry
 
 ![Recursive self-training narrows the distribution over generations; the tails go first. Source: Shumailov et al. (2024).](assets/model-collapse-shumailov.png)
 
@@ -238,17 +230,14 @@ The argument follows as:
 
 ---
 
-<!-- rows: 70/30 -->
-## Model collapse, and why it's avoidable in practice
+## Model collapse: an outdated worry
 
 But collapse is mostly a failure of *unfiltered, single-model, self-training* loops. In practice it is avoided by:
 
 - mixing in real / human data,
-- using **diverse teachers**,
+- using diverse teachers,
 - deduplication,
 - strong quality filters.
-
-===
 
 Evidence suggests synthetic data can -- and should -- be used at scale without the catastrophic regressions of the strongest collapse story [@gerstgrasser2024model] [@feng2024beyond].
 
@@ -345,7 +334,7 @@ $$
 q(u_j = k \mid s, u_{<j})\,\log p(u_j = k \mid s, u_{<j}).
 $$
 
-At **each position**, this matches the teacher's *full* next-token distribution over the **entire vocabulary on a pre-existing training corpus** $\mathcal{V}$ -- soft labels, not the one-hot target. The inner $\sum_{k=1}^{|\mathcal{V}|}$ runs over *every possible next token*.
+At each position, this matches the teacher's *full* next-token distribution over the entire vocabulary on a pre-existing training corpus $\mathcal{V}$ -- soft labels, not the one-hot target. The inner $\sum_{k=1}^{|\mathcal{V}|}$ runs over *every possible next token*.
 
 Matching a distribution over every token sounds expensive, but it is **tractable**: it is just $|\mathcal{V}|$ probabilities per position -- the same $O(J\,|\mathcal{V}|)$ cost as ordinary cross-entropy. Matching over whole *sequences* is the hard part (next slide).
 
@@ -356,7 +345,7 @@ Matching a distribution over every token sounds expensive, but it is **tractable
 <!-- valign: top -->
 ## Sequence-level distillation
 
-Word-level KD gives **soft per-token distributions**. The goal of sequence-level distillation from the paper is to be apply to apply this to data that the teacher generated, providing fresh training data/signal, and improving performance!
+Word-level KD gives soft per-token distributions. The goal of sequence-level distillation from the paper is to be apply to apply this to data that the teacher generated, providing fresh training data/signal, and improving performance!
 
 (WORD-KD is the baseline in the Kim & Rush paper.)
 
@@ -365,7 +354,7 @@ Word-level KD gives **soft per-token distributions**. The goal of sequence-level
 <!-- valign: top -->
 ## Sequence-level distillation
 
-Sequence-level KD instead approximates the teacher's distribution over *whole sequences* $\mathcal{U}$ -- an intractable sum over **exponentially many** sequences -- by its mode: the *teacher* generates one high-probability output $\hat{u} = \mathrm{BeamSearch}_q(s)$ and the student trains on it with plain NLL:
+Sequence-level KD instead approximates the teacher's distribution over *whole sequences* $\mathcal{U}$ -- an intractable sum over exponentially many sequences -- by its mode: the *teacher* generates one high-probability output $\hat{u} = \mathrm{BeamSearch}_q(s)$ and the student trains on it with plain NLL:
 
 $$
 \begin{aligned}
@@ -377,10 +366,9 @@ $$
 $$
 
 ```box
-title: Aside
 tone: muted
 content: |
-  A first wave of offline-KD models were **classifiers** -- DistilBERT [@sanh2019distilbert] and TinyBERT [@jiao2020tinybert] -- pairing offline distillation with other LM advances. Not *sequence* distillation because these are embedding models, but building on related momentum in the area.
+  **Aside**: A first wave of offline-KD models were classifiers -- DistilBERT [@sanh2019distilbert] and TinyBERT [@jiao2020tinybert] -- pairing offline distillation with other LM advances. Not *sequence* distillation because these are embedding models, but building on related momentum in the area.
 ```
 
 ---
@@ -427,13 +415,13 @@ $$ H(q,p) = H(q) + D_{\mathrm{KL}}(q\|p) $$
 
 <!-- step -->
 
-$H(q)$ depends only on the **fixed** teacher, so minimizing cross-entropy *is* minimizing the forward KL:
+$H(q)$ depends only on the fixed teacher, so minimizing cross-entropy *is* minimizing the forward KL:
 
 $$ \boxed{\ \min_p H(q,p)\ \equiv\ \min_p D_{\mathrm{KL}}(q\|p)\quad\text{(forward KL: the direction of offline KD and SFT)}\ } $$
 
 <!-- step -->
 
-So sequence-level KD reduces to **SFT on the teacher's generated text** -- "offline KD," generations produced often ahead of time by a teacher model.
+So sequence-level KD reduces to SFT on the teacher's generated text -- "offline KD," generations produced often ahead of time by a teacher model.
 
 
 ---
@@ -449,14 +437,14 @@ $$
 \sum_t D_{\mathrm{KL}}\!\left(\pi_T(\cdot \mid s, u_{<t}) \,\|\, \pi_\theta(\cdot \mid s, u_{<t})\right).
 $$
 
-But at test time the student rolls out under **its own** policy ($\ell_{\mathrm{task}}(s, a)$ is the loss function for that test-time domain):
+But at test time the student rolls out under its own policy ($\ell_{\mathrm{task}}(s, a)$ is the loss function for that test-time domain):
 
 $$
 \mathcal{L}_{\mathrm{eval}}(\theta)
 = \mathbb{E}_{s \sim \mathcal{D}_{\mathrm{test}},\, a \sim \pi_\theta(\cdot \mid s)}\ \ell_{\mathrm{task}}(s, a).
 $$
 
-Since $\pi_T \neq \pi_\theta$, training and test prefixes come from **different** state distributions -- **exposure bias** is the propensity for the student to accumulate errors [@arora-etal-2022-exposure] [@song2026surveyonpolicydistillationlarge].
+Since $\pi_T \neq \pi_\theta$, training and test prefixes come from different state distributions -- **exposure bias** is the propensity for the student to accumulate errors [@arora-etal-2022-exposure] [@song2026surveyonpolicydistillationlarge].
 
 ---
 
@@ -486,9 +474,9 @@ For LLMs this is more of an analogy -- token losses are distributional (KL), not
 <!-- animate: bullets -->
 ## From off-policy to on-policy
 
-**Sampling from the student rather than the teacher** minimizes a lot of the distributional errors we've covered.
+Sampling from the student rather than the teacher minimizes a lot of the distributional errors we've covered.
 - In offline KD, a single suboptimal token can nudge the student generation slightly **out-of-distribution**; the model, never having seen that token in training, is more likely to err again.
-- On-policy distillation **iteratively samples from the student** and supervises it with the teacher at *its own* visited states.
+- On-policy distillation iteratively samples from the student and supervises it with the teacher at *its own* visited states.
 - Under DAgger's interactive analysis, this drops compounding from $O(\epsilon L^2)$ to $O(\epsilon L)$ [@ross2011reduction].
 - **MiniLLM** introduced a reverse-KL objective inside a policy-gradient frame [@gu2024minillm]; concurrent work connected on-policy KD to imitation learning [@agarwal2024policy] (this paper is closer to the modern distillation form used today).
 
@@ -507,7 +495,7 @@ $$
 \ }
 $$
 
-This is now in the **sampling / expectation framework** of Chapter 6 (policy gradients) -- a natural bridge to modern RL training infrastructure that alternates generate-and-update. 
+This is now in the sampling / expectation framework of Chapter 6 (policy gradients) -- a natural bridge to modern RL training infrastructure that alternates generate-and-update. 
 
 Sampling from the *student* is also what flips the KL direction we minimize ()).
 
@@ -540,7 +528,7 @@ $$ D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_T) = \mathbb{E}_{z \sim \pi_\theta}\!\l
 <!-- valign: top -->
 ## KD as an RL advantage
 
-Recent implementations take the KD distance **directly as a reward**: substitute the negative per-token reverse-KL contribution as the advantage [@lu2025onpolicy]. For a sampled token $a_t$ at state $s_t$:
+Recent implementations take the KD distance directly as a reward: substitute the negative per-token reverse-KL contribution as the advantage [@lu2025onpolicy]. For a sampled token $a_t$ at state $s_t$:
 
 $$ A_t^{\mathrm{OPD}} = -D_{\mathrm{KL}}\!\left(\pi_\theta(\cdot \mid s_t) \,\|\, \pi_T(\cdot \mid s_t)\right) = - (\log \pi_\theta(a_t \mid s_t) - \log \pi_T(a_t \mid s_t)).$$
 
@@ -549,15 +537,15 @@ $$ A_t^{\mathrm{OPD}} = \log \pi_T(a_t \mid s_t) - \log \pi_\theta(a_t \mid s_t)
 <!-- step -->
 
 - Tokens more likely for the teacher → positive advantage; less likely → negative.
-- The teacher log-prob gap is **dense, token-level feedback** -- potentially richer than a sparse verifiable reward or a single scalar reward-model score.
-- This **layers into modern RL machinery** -- e.g. add it alongside GRPO's group-level normalization for more complex reward shaping.
+- The teacher log-prob gap is dense, token-level feedback -- potentially richer than a sparse verifiable reward or a single scalar reward-model score.
+- This layers into modern RL machinery -- e.g. add it alongside GRPO's group-level normalization for more complex reward shaping.
 
 ---
 
 <!-- valign: top -->
 ## Multi-teacher on-policy distillation (MOPD)
 
-Use **several** teachers -- domain specialists (math, code) or earlier checkpoints -- each with a per-prompt mixture weight $w_k(s)$ (with $\sum_k w_k(s) = 1$) [@mimo2025flash]:
+Use several teachers -- domain specialists (math, code) or earlier checkpoints -- each with a per-prompt mixture weight $w_k(s)$ (with $\sum_k w_k(s) = 1$) [@mimo2025flash]:
 
 $$
 \mathcal{L}_{\mathrm{MOPD}}(\theta)
@@ -575,13 +563,13 @@ For more, see the [conversation](https://www.youtube.com/watch?v=sbXEPxIazqY&lis
 <!-- animate: bullets -->
 ## Self-distillation: pushing the frontier
 
-At the **absolute frontier** there is no stronger model to distill from. **On-Policy Self-Distillation (OPSD)** sidesteps this: the teacher is the *same model conditioned on privileged information* -- a hint the student model won't have at inference [@zhao2026selfdistilled]. The self-distillation gradients will teach the model that tokens after the hint were a mistake, absorbing the lesson with an OPD-style loss.
+At the absolute frontier there is no stronger model to distill from. **On-Policy Self-Distillation (OPSD)** sidesteps this: the teacher is the *same model conditioned on privileged information* -- a hint the student model won't have at inference [@zhao2026selfdistilled]. The self-distillation gradients will teach the model that tokens after the hint were a mistake, absorbing the lesson with an OPD-style loss.
 
 **Cursor's Composer 2.5** (from Kimi K2.5) trained this way [@cursor2026composer25]:
 
-- A judge reviews RL trajectories against a list of **common bugs**.
-- On a bug, it **inserts a hint** into the sequence -- privileged information the model wouldn't see at test time.
-- The model takes a **KD loss** toward its own hinted continuation, learning to reach it *unaided*.
+- A judge reviews RL trajectories against a list of common bugs.
+- On a bug, it inserts a hint into the sequence -- privileged information the model wouldn't see at test time.
+- The model takes a KD loss toward its own hinted continuation, learning to reach it *unaided*.
 - A hint in token space is enough to self-correct -- *how* to structure that signal is an active area ("privileged information") [@penaloza2026privileged].
 
 ---
@@ -595,7 +583,7 @@ A resurgence of teacher-student KD has accompanied the shift toward reasoning an
 - **MiMo-V2-Flash** (Xiaomi) [@mimo2025flash] (introduced MOPD)
 - **DeepSeek-V4-Pro** [@deepseekai2026deepseekv4]
 
-One caveat: per-token KD needs the student and teacher to **share a tokenizer** -- unusual among post-training methods, and part of why it thrives inside a lab's own model family.
+One caveat: per-token KD needs the student and teacher to share a tokenizer -- unusual among post-training methods, and part of why it thrives inside a lab's own model family.
 
 ---
 
@@ -630,30 +618,28 @@ One caveat: per-token KD needs the student and teacher to **share a tokenizer** 
 
 ---
 
-<!-- columns: 55/45 -->
-## RLAIF and the cost argument
+## Reinforcement learning from ai feedback (RLAIF)
 
 Soon after RLHF took off, **RL from AI Feedback (RLAIF)** emerged -- using AIs to approximate the human-data step, starting with pairwise preferences [@lee2023rlaif] [@sharma2024critical] [@castricato2024suppressing].
 
-|||
-
-**The hook is cost.** As of 2026:
+After initial debates if this worked well, eventually it became the default. Cost was one of the obvious advantages (estimates):
 
 - One piece of *human* preference data: **\$1 -- \$10+** per prompt.
 - *AI* feedback (e.g. GPT-4o): **< \$0.01** per prompt.
 
-Human labor cost is roughly flat; model price-per-performance keeps dropping. This opened RLHF experimentation to a population previously priced out.
+Human labor cost is roughly flat; model price-per-performance keeps dropping. 
+This opened RLHF experimentation to a population previously priced out.
 
 ---
 
-<!-- columns: 50/50 -->
-## The noise / bias tradeoff
+## The bias-variance tradeoff
+
+I've heard a colloquial rule of thumb in early RLHF v RLAIF debates. There's an intuitive nature to it.
 
 **Human data** -- *high-noise, low-bias.*
 
 Harder to collect and filter, but when wrangled it gives a very reliable signal.
 
-|||
 
 **Synthetic preference data** -- *low-noise, high-bias.*
 
@@ -661,44 +647,47 @@ Easier to start with, but can carry tricky second-order effects that are *system
 
 ---
 
-<!-- animate: bullets -->
 ## Balancing human and AI feedback
 
-- Early RLAIF claimed AI feedback could **fully replace** human data -- especially on chat tasks [@lee2023rlaif] [@cui2023ultrafeedback].
-- Later work is more nuanced: on broader evaluations (incl. reasoning), the best mix **routes hard data points to humans** while sending most to AI [@miranda2024hybrid] [@xu2025rlthf].
-- No study has mapped the human/AI balance across *all* domains, but many reports show RLHF improves broad evals -- via DPO (Tülu 3, Olmo 3, SmolLM 3) or online RLHF (the Nemotron / HelpSteer line).
-- **Industry reality:** human preference data is still treated as a substantial moat.
-- **Practical advice:** start with AI feedback; add human data as you scale.
+No clear literature on the ultimate limits between human and AI preference data. Some context includes:
+
+- Early RLAIF literature claimed AI feedback could fully replace human data -- especially on chat tasks [@lee2023rlaif] [@cui2023ultrafeedback].
+- Later work is more nuanced: on broader evaluations (incl. reasoning), the best mix routes hard data points to humans while sending most to AI [@miranda2024hybrid] [@xu2025rlthf].
+- No study has mapped the human/AI balance across *all* domains, highlighting a general limitation of open academic work to wrangle high-quality human data.
+- **Industry reality:** human preference data is still treated as a substantial moat. Could be more from prompt distributions, implicit feedback, etc. Human data still is used.
 
 ---
 
-<!-- animate: bullets -->
-## Building judge models -- and why labs mostly don't
+## Building specialized judge models
 
-- LLMs are **inconsistent evaluators** [@wang2023large] and show **self-preference bias** -- they favor their own generations [@panickssery2024llm].
-- Dedicated judge / critic models exist -- Prometheus [@kim2023prometheus], Prometheus 2 [@kim2024prometheus], and others -- but are **not widely adopted** in documented recipes.
-- Alternatives that help: repeated sampling, self-refinement, tournament ranking, or **co-evolving** generation and judgment [@wu2024meta].
-- **Consensus:** frontier models are already trained hard for judging, so you rarely need your own -- *unless* your task has private data not on the public internet.
+If you're using substantial AI feedback or LLM-as-a-judge evaluations, the question arises as to if you should have a specialized model for that purpose. The question is -- how well do they work?
 
----
-
-<!-- layout: section-break -->
-<!-- align: center -->
-
-## Constitutional AI
+- Some research is done understand the performance of LLMs in these feedback domains. Results include how LLMs are inconsistent evaluators [@wang2023large] and show **self-preference bias** -- they favor their own generations [@panickssery2024llm].
+- Dedicated judge / critic models exist -- Prometheus [@kim2023prometheus], Prometheus 2 [@kim2024prometheus], and others -- but are not widely adopted in documented post-training recipes.
+- Equilibirum: Frontier models are already trained hard for judging, so you rarely need your own -- *unless* your task has private data not on the public internet.
 
 ---
 
 <!-- valign: center -->
 ## CAI: the earliest large-scale synthetic RLHF data
 
-Constitutional AI (CAI) -- Anthropic's method for the Claude models -- is the **earliest documented, large-scale** use of synthetic data for RLHF [@bai2022constitutional].
+Constitutional AI (CAI) -- Anthropic's post-training method for the Claude models -- is the earliest documented, large-scale use of synthetic data for RLHF [@bai2022constitutional]. CAI refers to a specific set of techniques for their early Claude models, and definitely has shifted substantially (though Anthropic still uses a constitution -- yes, confusing).
 
-The term **RLAIF** was coined in this paper's title (*"Harmlessness from AI Feedback"*), which caused early confusion. The right reading:
+The term **RLAIF** was coined in this paper as well, prompting confusion on the relation of the two.
 
-> CAI is the example that **kickstarted** the broader field of RLAIF. CAI ⊂ RLAIF.
+> CAI is the example that kickstarted the broader field of RLAIF. CAI ⊂ RLAIF.
 
-It generates synthetic data in **two** ways -- one for instructions, one for preferences.
+CAI generates synthetic data in two ways -- one for instructions, one for preferences. 
+The well-known and more influential part of it is preferences.
+
+---
+
+<!-- img-align: center -->
+<!-- valign: center -->
+<!-- cite-right: bai2022constitutional -->
+## Constitutional AI: The original diagram
+
+![Two stages. Supervised (top): the model critiques and revises its own red-teamed responses against a constitution, fine-tuning into SL-CAI. RL (bottom, RLAIF): a preference model trained on AI comparisons drives RL into the final RL-CAI model. Source: Bai et al. (2022).](assets/cai-overview.png)
 
 ---
 
@@ -707,9 +696,9 @@ It generates synthetic data in **two** ways -- one for instructions, one for pre
 
 A **constitution** $\mathcal{C}$ is a human-written set of principles (e.g. *"Is the answer encouraging violence?"*, *"Is the answer truthful?"*).
 
-The model repeatedly samples a principle $c_i \in \mathcal{C}$ and revises its latest output $y^i$ to the prompt $x$ to align with $c_i$:
-
 <!-- step -->
+
+The model repeatedly samples a principle $c_i \in \mathcal{C}$ and revises its latest output $y^i$ to the prompt $x$ to align with $c_i$:
 
 $$
 \{c_0, c_1, \ldots, c_{n-1}\}\ \longrightarrow\ \{y^0, y^1, \ldots, y^n\}
@@ -717,34 +706,27 @@ $$
 \text{SFT point } (x, y^n).
 $$
 
-The model is then fine-tuned on the refined dataset. These critique methods are also used broadly for **data filtering** and synthetic-data generation.
+The model is then fine-tuned on the refined dataset. 
+These critique methods are also used broadly for data filtering and synthetic-data generation.
 
 ---
 
 <!-- valign: top -->
 ## Stage 2: AI preference labels → RLAIF
 
-Construct preferences by giving a **feedback model**:
+Construct preferences by giving a feedback model:
 
 - a prompt $x$,
 - a subset of principles $\{c_0, \ldots, c_n\}$,
 - two completions $y_0, y_1$ labeled (A) / (B).
 
-The model selects which answer is **higher quality and more aligned** with the principle. Then RLHF proceeds as normal -- hence *RLAIF*.
+The model selects which answer is higher quality and more aligned with the principle. Then RLHF proceeds as normal -- hence *RLAIF*.
 
+<!-- step -->
+
+Also linked to literature like generative reward models and progression in the LLM-as-a-judge field. See Chapter 5 / Lecture 2.
 - **Earlier:** prompt with `The answer is: ` and read which of A / B has higher token probability.
 - **Modern:** a **generative reward model** explains its reasoning, then selects [@mahan2024generative] (cf. principle-guided reward models [@sun2024salmon]).
-
----
-
-<!-- animate: bullets -->
-## CAI's lineage and open replications
-
-The "rules-driven alignment" thread runs well beyond Anthropic:
-
-- **OpenAI Model Spec** [@openai2024modelspec] -- a document of intended behavior the model can reference directly; reasoning models like o1 trained via **Deliberative Alignment** [@guan2024deliberative].
-- **Anthropic** continues to update Claude's constitution and experiment with collectively-authored principles.
-- **Open-source replications** apply CAI to open datasets and LM-dialogue generation [@lambert2024self].
 
 ---
 
@@ -755,12 +737,12 @@ The "rules-driven alignment" thread runs well beyond Anthropic:
 
 ---
 
-<!-- animate: bullets -->
-## Why rubrics
+## Why did rubrics become popular?
 
-- A way to **extend RL with verifiable rewards** (Chapter 7) to tasks *without* clearly verifiable answers.
-- Write **nearly-verifiable criteria** for a prompt, generate multiple answers, and RL-update toward the best ones.
-- Emerged in late 2024 → 2025 as LLM judges and synthetic-data practices matured.
+Rubrics became a popular tool for scaling RL on the long-tail of domains. They're also used to help with domain-specific evaluations and any other place domain expertise needs to be "trained into" the models.
+- A way to extend ideas from RL with verifiable rewards (Chapter 7) to tasks *without* clearly verifiable answers.
+- Write nearly-verifiable criteria for a prompt, generate multiple answers, and RL-update toward the best ones.
+- Emerged in late 2024 → 2025 as LLM judges and synthetic-data practices matured. Also likely a function of making RL more broadly accesible to frontier post-training.
 - Already delivering gains in scientific reasoning and factuality [@gunjal2025rubrics] [@viswanathan2025checklists] [@rezaei2025onlinerubrics] [@liu2025openrubrics].
 
 ---
@@ -768,7 +750,7 @@ The "rules-driven alignment" thread runs well beyond Anthropic:
 <!-- valign: top -->
 ## A rubric example
 
-For a prompt with no single right answer, score against tagged criteria [@liu2025openrubrics]:
+For a prompt with no single right answer, score against tagged criteria [@liu2025openrubrics]. An example, abbreviated rubric is below:
 
 ```text
 Prompt: As a museum curator, suggest five obscure artifacts for a
@@ -782,14 +764,14 @@ Rubric:
 8. Uses engaging language that stimulates curiosity.    [Principle]
 ```
 
-`[Hard Rule]` = atomic, must-pass checklist items; `[Principle]` = softer quality criteria. The tags encode **priority** (numbers also work).
+`[Hard Rule]` = atomic, must-pass checklist items; `[Principle]` = softer quality criteria. The tags encode priority (numbers also work). Subcomponents of a rubric contribute to the score.
 
 ---
 
 <!-- valign: top -->
 ## Per-prompt generation via a meta-prompt
 
-Rubrics are generated **per prompt** -- a real synthetic-data cost. Mitigation: a per-domain **base rubric**, refined per-prompt by a supervising LM [@gunjal2025rubrics].
+Rubrics are generated per prompt to ensure quality and robustness to over-optimization. E.g. a per-domain base rubric, refined per-prompt by a supervising LM [@gunjal2025rubrics].
 
 ```text
 You are an expert rubric writer for science questions ...
@@ -807,7 +789,6 @@ Output: a JSON array of {title, description, weight}.
 
 ---
 
-<!-- animate: bullets -->
 ## Where rubrics are going
 
 Rubric-based RL is a frontier of AI-feedback-driven training, expanding beyond its early uses:
@@ -817,51 +798,22 @@ Rubric-based RL is a frontier of AI-feedback-driven training, expanding beyond i
 - **Evaluating** research agents [@sharma2025researchrubrics]
 - **Long-form generation** with structured checklists [@ruan2025expertlongbench]
 
+Very general tool!
+
 ---
+<!-- layout: section-break -->
 
-<!-- rows: 55/45 -->
-## Recap: synthetic data across the pipeline
-
-Five tools, one theme -- model outputs used *directly* inside training:
-
-- **Distillation / OPD** -- pour expert teachers into a student; on-policy fixes exposure bias.
-- **AI feedback (RLAIF)** -- cheap preference labels; route hard cases to humans.
-- **Constitutional AI** -- principles → critiques (SFT) + AI preferences (RLAIF).
-- **Rubrics** -- extend verifiable-reward RL to open-ended tasks.
-- **Scale** -- 52K → 10B+ tokens of synthetic data.
-
-===
-
-Synthetic data didn't remove humans from the loop -- it moved them to the **frontier** and the **ground truth**.
+## Conclusions
 
 ---
 
-<!-- columns: 52/48 -->
-## Where this fits in modern post-training
+## Synthetic data is the single most common tool used by researchers (other than building infra) to make great models
 
-- **Frontier recipes** lean on new (often on-policy, multi-teacher) knowledge distillation -- Conversation 1 surveys these recipes model by model.
-- **Open recipes** (Tülu 3 / Olmo 3 / SmolLM 3) -- synthetic SFT + (often DPO) preferences.
-- **Claude** -- Constitutional AI for principle-driven alignment.
+The techniques surveyed here will continue to grow in complexity, and it's super fun to see.
+When I started writing this book, it was still a struggle to set up some synthetic data workflows!
+Knifecuts can happen, but overall it's a well-known workflow now.
 
-|||
-
-**How I see things:**
-
-- On-policy distillation is becoming a **first-class training tool** -- the chapter even flags a possible future standalone chapter on it.
-- AI feedback and rubrics are pushing RL into domains that used to have no reward signal.
-- Human data hasn't vanished -- it concentrates where models are still unreliable.
-
----
-
-<!-- animate: bullets -->
-## Open questions
-
-- **Model collapse** at extreme self-training ratios -- where is the real boundary?
-- The **human / AI-feedback equilibrium** across domains -- still largely unstudied.
-- Does human data give **finer control** -- e.g. character training (Chapter 17)?
-- **Self-preference bias** in judge-driven loops -- how much does it compound?
-- **Rubric cost vs. coverage** -- per-prompt generation is expensive.
-- **Go deeper:** Chapter 6 (RL / policy-gradient framing), Chapter 15 (forward vs. reverse KL), Chapter 16 (evaluation), Chapter 7 (RL with verifiable rewards).
+There are many, minute open questions on how best to do this, but it often is a domain specific reflection of the technial problem at hand.
 
 ---
 
