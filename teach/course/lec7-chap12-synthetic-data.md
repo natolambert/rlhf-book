@@ -58,6 +58,8 @@ When the first models were trained with RLHF, human data was *the only* way to g
 
 We survey how synthetic data has replaced or expanded much of the post-training pipeline -- then derive **on-policy distillation** from scratch as the technical core.
 
+**Definition:** Synthetic data is any training data used for an AI model that is generated in some part from another AI model. This is very broad!
+
 |||
 
 ```box
@@ -251,8 +253,8 @@ A few datasets defined each era: **UltraFeedback** [@cui2023ultrafeedback] (kick
 | | Prompts | Tokens (approx.) |
 | :--- | :---: | :---: |
 | **Stanford Alpaca** (2023) | 52K | ~10M |
-| **Tülu 3** (2024) | 1M+ | ~500M |
-| **OpenThoughts 3** (2025) | — | ~10B |
+| **Tülu 3** (2024) | ~1M | ~500M |
+| **OpenThoughts 3** (2025) | 1.2M | ~10B |
 
 ---
 
@@ -290,13 +292,27 @@ content: |
 
 ---
 
-<!-- img-align: center -->
+<!-- columns: 52/48 -->
 <!-- valign: center -->
 ## Distillation 2: The synthetic-data generation pipeline
 
 ![Prompts are passed through a strong model to generate completions, which are paired into a training dataset and used to fine-tune smaller models with standard supervised learning. More complex pipelines edit completions, generate preference pairs, or filter for quality.](assets/synthetic_data_distillation_tikz.png)
 
 Yes, this is intentionally very simple as a diagram.
+
+|||
+
+```box
+title: What changed with reasoning models
+tone: muted
+content: |
+  Early on this was simple: train on a strong model's API outputs.
+
+  Reasoning models made it harder -- you want the *reasoning traces*, and closed APIs stopped returning them. Distillation shifted to:
+
+  - **More aggressive jailbreaking** to recover hidden traces (controversial).
+  - **Open models** more often -- having the weights lets you get the full trace.
+```
 
 ---
 
@@ -497,7 +513,7 @@ $$
 
 This is now in the sampling / expectation framework of Chapter 6 (policy gradients) -- a natural bridge to modern RL training infrastructure that alternates generate-and-update. 
 
-Sampling from the *student* is also what flips the KL direction we minimize ()).
+Sampling from the *student* is also what flips the KL direction we minimize (forward $D_{\mathrm{KL}}(\pi_T \,\|\, \pi_\theta)$ → reverse $D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_T)$ -- next slide).
 
 ---
 
@@ -509,7 +525,7 @@ Sampling completions from the student is what puts $\pi_\theta$ on the **left** 
 ===
 
 <!-- row-columns: 50/50 -->
-**Offline KD / SFT** -- the expectation is over the *teacher*, $z \sim \pi_T$ (**off-policy**: a fixed teacher dataset):
+**Offline KD / SFT** (forward KL) -- the expectation is over the *teacher*, $z \sim \pi_T$ (**off-policy**: a fixed teacher dataset):
 
 $$ D_{\mathrm{KL}}(\pi_T \,\|\, \pi_\theta) = \mathbb{E}_{z \sim \pi_T}\!\left[\log\frac{\pi_T(z)}{\pi_\theta(z)}\right] $$
 
@@ -517,7 +533,7 @@ $$ D_{\mathrm{KL}}(\pi_T \,\|\, \pi_\theta) = \mathbb{E}_{z \sim \pi_T}\!\left[\
 
 |||
 
-**On-policy distillation** -- the expectation is over the *student*, $z \sim \pi_\theta$ (**on-policy**: you sample the model you're training):
+**On-policy distillation** (reverse KL) -- the expectation is over the *student*, $z \sim \pi_\theta$ (**on-policy**: you sample the model you're training):
 
 $$ D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_T) = \mathbb{E}_{z \sim \pi_\theta}\!\left[\log\frac{\pi_\theta(z)}{\pi_T(z)}\right] $$
 
@@ -565,7 +581,7 @@ For more, see the [conversation](https://www.youtube.com/watch?v=sbXEPxIazqY&lis
 
 At the absolute frontier there is no stronger model to distill from. **On-Policy Self-Distillation (OPSD)** sidesteps this: the teacher is the *same model conditioned on privileged information* -- a hint the student model won't have at inference [@zhao2026selfdistilled]. The self-distillation gradients will teach the model that tokens after the hint were a mistake, absorbing the lesson with an OPD-style loss.
 
-**Cursor's Composer 2.5** (from Kimi K2.5) trained this way [@cursor2026composer25]:
+**Cursor's Composer 2.5** (from Kimi K2.5) trained this way [@cursor2026composer25] (highly recommend watching [this video](https://x.com/dwarkesh_sp/status/2062353335529935114)!):
 
 - A judge reviews RL trajectories against a list of common bugs.
 - On a bug, it inserts a hint into the sequence -- privileged information the model wouldn't see at test time.
@@ -724,9 +740,14 @@ The model selects which answer is higher quality and more aligned with the princ
 
 <!-- step -->
 
-Also linked to literature like generative reward models and progression in the LLM-as-a-judge field. See Chapter 5 / Lecture 2.
-- **Earlier:** prompt with `The answer is: ` and read which of A / B has higher token probability.
-- **Modern:** a **generative reward model** explains its reasoning, then selects [@mahan2024generative] (cf. principle-guided reward models [@sun2024salmon]).
+```box
+tone: muted
+content: |
+  Aside: Also linked to literature like generative reward models and progression in the LLM-as-a-judge field. See Chapter 5 / Lecture 2.
+
+  - **Earlier:** prompt with `The answer is: ` and read which of A / B has higher token probability.
+  - **Modern:** a **generative reward model** explains its reasoning, then selects [@mahan2024generative] (cf. principle-guided reward models [@sun2024salmon]).
+```
 
 ---
 
