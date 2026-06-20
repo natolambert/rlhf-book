@@ -12,6 +12,9 @@ search-title: "Chapter 12: Synthetic Data"
 meta-description: "Synthetic data, distillation, Constitutional AI, and AI feedback methods used throughout modern post-training."
 next-chapter: "Tool Use and Function Calling"
 next-url: "13-tools"
+lectures:
+  - video: "https://www.youtube.com/watch?v=6nyJ8y8ghsE&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=10"
+    label: "Lecture 7: Synthetic Data and Modern Post-training Methods"
 ---
 
 # Synthetic Data
