@@ -1,0 +1,156 @@
+% Distillation directionality: Sequence-KD vs OPD vs OPSD
+% Compares, left to right, WHO generates the rollout and WHERE supervision flows:
+%   Seq KD : teacher generates offline; cross-entropy pushes the student to match
+%   OPD    : student generates on-policy (RL); teacher supervises per token (reverse KL)
+%   OPSD   : ONE model in two roles -- a teacher conditioned on an inserted hint
+%            (privileged info added to its context) and a student with the original
+%            context; a localized reverse-KL pulls the student (no hint) toward the
+%            hinted teacher, so it learns to behave well without the hint at inference.
+% Mockup for iteration -- not pixel perfect.
+
+\documentclass{article}
+\usepackage[margin=0.3cm, paperwidth=24cm, paperheight=11cm]{geometry}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, calc, backgrounds}
+\pagestyle{empty}
+
+% \reveal controls how many panels are drawn (1, 2, or 3); defaults to all three.
+% Progressive-reveal variants for slides:  pdflatex "\def\reveal{2}\input{<thisfile>}"
+\ifdefined\reveal\else\def\reveal{3}\fi
+
+\begin{document}
+\input{styles_rlhf.tex}
+
+% Loose-ink recolors for dark builds (see styles_rlhf.tex). The faded column and
+% panel dividers mix toward the dark page background instead of white so they
+% stay visually subdued; column labels lighten their semantic colors.
+\ifnum\figdark=1
+  \colorlet{fadeink}{inkcolor!35!black}
+  \colorlet{sepink}{inkcolor!40!black}
+  \colorlet{teacherlbl}{red!55}
+  \colorlet{studentlbl}{blue!55}
+\else
+  \colorlet{fadeink}{black!30}
+  \colorlet{sepink}{black!35}
+  \colorlet{teacherlbl}{red!55!black}
+  \colorlet{studentlbl}{blue!70!black}
+\fi
+
+\begin{tikzpicture}[
+  seqbox/.style={rectangle, rounded corners=2pt, minimum width=1.5cm, minimum height=0.6cm, font=\footnotesize, align=center},
+  tbox/.style={seqbox, draw=red!55, fill=red!12},            % teacher (separate, frozen)
+  sbox/.style={seqbox, draw=blue!70, fill=blue!16},          % student (trained)
+  hintbox/.style={seqbox, draw=orange!80!black, fill=orange!22, minimum width=1.0cm},
+  gen/.style={->, >=Stealth, semithick, draw=\loose{black!80}},       % active generation
+  genfade/.style={->, >=Stealth, semithick, draw=fadeink},   % passive / scored column
+  flow/.style={->, >=Stealth, semithick, draw=\loose{black!75}},
+  kl/.style={<->, >=Stealth, thin, draw=\loose{black!55}},
+  paneltitle/.style={font=\bfseries\large, text=\loose{black}},
+  collabel/.style={font=\footnotesize\bfseries},
+  sub/.style={font=\scriptsize\itshape, text=\loose{black!65}, align=center},
+  taglabel/.style={font=\scriptsize\bfseries, text=black!80}
+]
+
+% row y-coordinates (shared across panels)
+\def\yA{4.2} \def\yB{3.35} \def\yC{2.5}
+
+% ===================================================================== PANEL 1: Sequence KD
+\node[paneltitle] at (2.9, 6.4) {Sequence KD};
+\node[sub] at (2.9, 5.85) {offline $\cdot$ teacher generates};
+
+\node[collabel, text=teacherlbl] at (1.5, 5.15) {Teacher};
+\node[collabel, text=studentlbl] at (4.3, 5.15) {Student};
+
+% teacher generates (solid downward), left column
+\node[tbox] (a1) at (1.5, \yA) {};
+\node[tbox] (a2) at (1.5, \yB) {};
+\node[tbox] (a3) at (1.5, \yC) {};
+\draw[gen] (a1) -- (a2);
+\draw[gen] (a2) -- (a3);
+
+% student receives (faded), right column
+\node[sbox] (b1) at (4.3, \yA) {};
+\node[sbox] (b2) at (4.3, \yB) {};
+\node[sbox] (b3) at (4.3, \yC) {};
+\draw[genfade] (b1) -- (b2);
+\draw[genfade] (b2) -- (b3);
+
+% cross-entropy: teacher tokens are fixed targets for the student
+\draw[flow] (a1.east) -- (b1.west);
+\draw[flow] (a2.east) -- (b2.west);
+\draw[flow] (a3.east) -- (b3.west);
+\node[taglabel, fill=white, inner sep=1pt] at (2.9, \yB) {CE};
+
+\node[sub] at (2.9, 1.55) {teacher rollout is fixed;\\student matches it};
+
+\ifnum\reveal>1
+% divider after panel 1
+\draw[dashed, sepink] (6.35, 1.2) -- (6.35, 6.6);
+
+% ===================================================================== PANEL 2: OPD
+\node[paneltitle] at (9.9, 6.4) {On-policy distillation};
+\node[sub] at (9.9, 5.85) {on-policy $\cdot$ student generates (e.g. RL)};
+
+\node[collabel, text=studentlbl] at (8.4, 5.15) {Student (e.g. RL)};
+\node[collabel, text=teacherlbl] at (11.4, 5.15) {Teacher};
+
+% student generates on-policy (solid downward), left column
+\node[sbox] (c1) at (8.4, \yA) {};
+\node[sbox] (c2) at (8.4, \yB) {};
+\node[sbox] (c3) at (8.4, \yC) {};
+\draw[gen] (c1) -- (c2);
+\draw[gen] (c2) -- (c3);
+
+% separate teacher scores each visited state (faded), right column
+\node[tbox] (d1) at (11.4, \yA) {};
+\node[tbox] (d2) at (11.4, \yB) {};
+\node[tbox] (d3) at (11.4, \yC) {};
+\draw[genfade] (d1) -- (d2);
+\draw[genfade] (d2) -- (d3);
+
+% per-token KL between student-visited state and teacher distribution
+\draw[kl] (c1.east) -- (d1.west);
+\draw[kl] (c2.east) -- (d2.west);
+\draw[kl] (c3.east) -- (d3.west);
+\node[taglabel, fill=white, inner sep=1pt] at (9.9, \yB) {KL};
+
+\node[sub] at (9.9, 1.55) {student rollout; teacher scores\\each token: $D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_T)$};
+\fi
+
+\ifnum\reveal>2
+% divider after panel 2
+\draw[dashed, sepink] (13.55, 1.2) -- (13.55, 6.6);
+
+% ===================================================================== PANEL 3: OPSD
+\node[paneltitle] at (17.0, 6.4) {On-policy self-distillation};
+\node[sub] at (17.0, 5.85) {Privileged information creates the teacher trajectory};
+
+% left column: GENERATION -- the on-policy rollout, no hint
+\node[collabel, text=studentlbl] at (15.4, 5.15) {Generation};
+\node[sbox] (g1) at (15.4, \yA) {};
+\node[sbox] (g2) at (15.4, \yB) {};
+\node[sbox] (g3) at (15.4, \yC) {};
+\draw[gen] (g1) -- (g2);
+\draw[gen] (g2) -- (g3);
+
+% right column: SAME MODEL with added context (both blue). Top two tokens aligned with
+% Generation (KL stays horizontal); the hint sits directly on top of the last token (no arrow).
+\node[collabel, text=studentlbl] at (18.6, 5.15) {+ Added Context};
+\node[sbox] (r1) at (18.6, \yA) {};
+\node[sbox] (r2) at (18.6, \yB) {};
+\node[sbox] (r3) at (18.6, 1.95) {};
+\node[hintbox, minimum width=1.1cm, minimum height=0.34cm, font=\scriptsize, inner sep=1pt, anchor=south] (rh) at (r3.north) {hint};
+\draw[genfade] (r1) -- (r2);
+\draw[genfade] (r2) -- (rh);
+
+% reverse-KL between the aligned middle tokens -> perfectly horizontal
+\draw[kl] (g2.east) -- (r2.west);
+\node[taglabel, fill=white, inner sep=1pt] at (17.0, \yB) {KL};
+
+\node[sub] at (17.0, 1.35) {On-policy distillation loss with no separate teacher};
+\fi
+
+\end{tikzpicture}
+
+\end{document}
