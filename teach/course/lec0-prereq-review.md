@@ -1,5 +1,5 @@
 ---
-title: "Prerequisite Review"
+title: "The ML Foundations of LLM Post-Training"
 author: "Nathan Lambert"
 fonts:
   heading: "Rubik"
@@ -8,7 +8,7 @@ bibliography: refs.bib
 figure_captions: true
 footer:
   left: "rlhfbook.com/course"
-  center: "Prerequisite Review"
+  center: "ML Foundations of LLM Post-Training"
   right: "Lambert {n}/{N}"
 custom_css: |
   .slide--section-break { background: #84A98C; }
@@ -24,7 +24,7 @@ custom_css: |
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
 
-# Prerequisite Review
+# The ML Foundations of LLM Post-Training
 
 <div class="colloquium-title-eyebrow">rlhfbook.com</div>
 
@@ -32,7 +32,7 @@ custom_css: |
 <p class="colloquium-title-name">Nathan Lambert</p>
 </div>
 
-<p class="colloquium-title-note">A 20–30 minute refresher on language models, optimization, probability, and RL framing — before Lecture 1.</p>
+<p class="colloquium-title-note">From cross-entropy to preferences and reinforcement learning — a 20–30 minute refresher before Lecture 1.</p>
 
 <p class="colloquium-title-note" style="font-size: 0.6em; opacity: 0.7;">This deck was drafted with assistance from GLM 5.2.</p>
 
@@ -282,6 +282,23 @@ A human preference (or a verifier) is a single scalar at the *end* of a response
 So there is no cross-entropy target for "preferred." Policy gradients optimize the expected evaluator score anyway — first by *learning* that signal as a reward model, then by *optimizing* it. That is the whole motivation for RLHF.
 
 > **Lecture 3 derives the policy-gradient math; Lecture 4 turns it into code.** This deck stops at the framing.
+
+---
+
+## These tools become post-training
+
+Everything in this deck is the basic machinery — **probabilities, losses, gradients, and sampling**. Post-training is what you get when you point that machinery at a pretrained model with richer feedback than raw next-token prediction:
+
+- **Demonstrations** ("produce this response") → supervised fine-tuning
+- **Preferences** ("make this response more likely than that one") → reward modeling or preference optimization (DPO)
+- **Rewards** ("sample responses that score highly") → reinforcement learning (PPO, GRPO, RLVR)
+- **Constraints** ("don't drift too far from where you started") → regularization, especially the KL penalty
+
+Different data and different objectives; the same underlying goal:
+
+> **Change the model's distribution over responses toward behavior we want.**
+
+That is what the rest of this course is about.
 
 ---
 
