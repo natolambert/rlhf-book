@@ -32,7 +32,7 @@ custom_css: |
 <p class="colloquium-title-name">Nathan Lambert</p>
 </div>
 
-<p class="colloquium-title-note">From cross-entropy to preferences and reinforcement learning — a 20–30 minute refresher before Lecture 1.</p>
+<p class="colloquium-title-note">From cross-entropy to preferences and reinforcement learning — a short, optional refresher before Lecture 1.</p>
 
 <p class="colloquium-title-note" style="font-size: 0.6em; opacity: 0.7;">This deck was drafted with assistance from GLM 5.2.</p>
 
@@ -40,14 +40,12 @@ custom_css: |
 
 ## What this review covers
 
-**No prior reinforcement learning is assumed.** We assume intro-ML comfort with losses, gradients, and probability, plus basic PyTorch tensor fluency for the implementation lectures (Lecture 4 onward). This deck refreshes autoregressive language models and the handful of ideas the course *uses* without re-teaching them:
+**No prior reinforcement learning is assumed.** We assume intro-ML comfort with losses, gradients, and probability, plus basic PyTorch tensor fluency. This deck is a refresher on autoregressive language models and the handful of ideas the course uses:
 
-- **Language models** — autoregressive factorization, the LM head, softmax, cross-entropy, and the tensor-shape anatomy of one training example
+- **Language models** — autoregressive factorization of log-probs, the LM head, softmax, cross-entropy, and the tensor-shape anatomy
 - **Optimization** — gradient descent, the training loop, pretraining → SFT
 - **Probability** — KL divergence (with entropy), sigmoid and pairwise likelihood
-- **Reinforcement learning framing** — the MDP setup and the goal of RL; the course derives the algorithms themselves
-
-This is a refresher, not a gate — chase what excites you and skip what you already know.
+- **Reinforcement learning framing** — the MDP setup and the goal of RL
 
 ---
 
@@ -89,13 +87,15 @@ The same backbone can carry **different heads** for different jobs. In this cour
 
 ## Softmax & log-probabilities
 
-**Softmax** turns logits $z$ into a distribution:
+**Softmax** turns the logits $z^{(t)}$ at step $t$ into the next-token distribution — producing each per-token probability:
 
-$$\mathrm{softmax}(z)_i = \frac{e^{z_i}}{\sum_j e^{z_j}}.$$
+$$P_\theta(x_t \mid x_{<t}) = \mathrm{softmax}(z^{(t)})_{x_t} = \frac{e^{z^{(t)}_{x_t}}}{\sum_j e^{z^{(t)}_j}}.$$
 
-In practice we almost always work in **log-space**. The log-probability of a sequence is the sum of per-token log-probs:
+A whole sequence is the **product** of these terms (chain rule), and in **log-space** the product becomes a sum:
 
-$$\log P_\theta(x) = \sum_{t=1}^{T} \log P_\theta(x_t \mid x_{<t}).$$
+$$\log P_\theta(x) = \log \prod_{t=1}^{T} P_\theta(x_t \mid x_{<t}) = \sum_{t=1}^{T} \log P_\theta(x_t \mid x_{<t}).$$
+
+So every term in the sum is a `log_softmax` of the logits read off at the true token — which is exactly the (negative) cross-entropy loss at that position.
 
 Why log-probs? **Numerical stability** (products of many small probabilities underflow), and sums are easier to differentiate than products.
 
@@ -103,64 +103,133 @@ Why log-probs? **Numerical stability** (products of many small probabilities und
 
 ## Anatomy of one LM training example
 
-Lecture 4 jumps straight into shifting logits, gathering target log-probs, and masking. Here is the whole path once, up front:
+Lectures discuss shifting logits, gathering target log-probs, and masking. Here is the whole path once, at the level of tensor shapes:
 
 ```text
-input_ids  ∈ ℕ^{B × L}          # token IDs, batch B, length L
+input_ids  ∈ ℕ^{B × L}          # INPUT TO MODEL -- token IDs, batch B, length L
    → model(input_ids).logits ∈ ℝ^{B × L × V}     # one vector per position, V = vocab
    → log_softmax + gather    ∈ ℝ^{B × (L-1)}     # log-prob of each observed token
    → (× completion_mask).sum ∈ ℝ^{B}             # one completion log-prob per sequence
 ```
 
+Next: the same path in PyTorch, one line at a time.
+
+---
+
+## Anatomy of one LM training example
+
 ```python
-logits = model(input_ids).logits            # (B, L, V)
-logits = logits[:, :-1, :]                  # shift: logit at t predicts token at t+1
-labels = input_ids[:, 1:]                   # (B, L-1)
-completion_mask = completion_mask[:, 1:]    # (B, L-1) — shift the mask to match labels
-log_probs = logits.log_softmax(dim=-1)
-token_log_probs = log_probs.gather(-1, labels.unsqueeze(-1)).squeeze(-1)  # (B, L-1)
-seq_log_probs = (token_log_probs * completion_mask).sum(dim=-1)           # (B,)
+logits = model(input_ids).logits            # (B, L, V): a score for every vocab token, at every position
+```
+
+---
+
+## Anatomy of one LM training example
+
+```python
+logits = model(input_ids).logits            # (B, L, V): a score for every vocab token, at every position
+logits = logits[:, :-1, :]                  # drop the last position — its prediction has no next token to score
+```
+
+---
+
+## Anatomy of one LM training example
+
+```python
+logits = model(input_ids).logits            # (B, L, V): a score for every vocab token, at every position
+logits = logits[:, :-1, :]                  # drop the last position — its prediction has no next token to score
+labels = input_ids[:, 1:]                   # the target at each position is just the actual next token (the shift)
+```
+
+---
+
+## Anatomy of one LM training example
+
+```python
+logits = model(input_ids).logits            # (B, L, V): a score for every vocab token, at every position
+logits = logits[:, :-1, :]                  # drop the last position — its prediction has no next token to score
+labels = input_ids[:, 1:]                   # the target at each position is just the actual next token (the shift)
+completion_mask = completion_mask[:, 1:]    # shift the mask the same way so it lines up with labels (1 = completion)
+```
+
+---
+
+## Anatomy of one LM training example
+
+```python
+logits = model(input_ids).logits            # (B, L, V): a score for every vocab token, at every position
+logits = logits[:, :-1, :]                  # drop the last position — its prediction has no next token to score
+labels = input_ids[:, 1:]                   # the target at each position is just the actual next token (the shift)
+completion_mask = completion_mask[:, 1:]    # shift the mask the same way so it lines up with labels (1 = completion)
+log_probs = logits.log_softmax(dim=-1)      # normalize logits into log-probabilities over the vocab -> (B, L-1, V)
+```
+
+---
+
+## Anatomy of one LM training example
+
+```python
+logits = model(input_ids).logits            # (B, L, V): a score for every vocab token, at every position
+logits = logits[:, :-1, :]                  # drop the last position — its prediction has no next token to score
+labels = input_ids[:, 1:]                   # the target at each position is just the actual next token (the shift)
+completion_mask = completion_mask[:, 1:]    # shift the mask the same way so it lines up with labels (1 = completion)
+log_probs = logits.log_softmax(dim=-1)      # normalize logits into log-probabilities over the vocab -> (B, L-1, V)
+token_log_probs = log_probs.gather(-1, labels.unsqueeze(-1)).squeeze(-1)  # read off the log-prob of each TRUE next token -> (B, L-1)
+```
+
+---
+
+## Anatomy of one LM training example
+
+```python
+logits = model(input_ids).logits            # (B, L, V): a score for every vocab token, at every position
+logits = logits[:, :-1, :]                  # drop the last position — its prediction has no next token to score
+labels = input_ids[:, 1:]                   # the target at each position is just the actual next token (the shift)
+completion_mask = completion_mask[:, 1:]    # shift the mask the same way so it lines up with labels (1 = completion)
+log_probs = logits.log_softmax(dim=-1)      # normalize logits into log-probabilities over the vocab -> (B, L-1, V)
+token_log_probs = log_probs.gather(-1, labels.unsqueeze(-1)).squeeze(-1)  # read off the log-prob of each TRUE next token -> (B, L-1)
+seq_log_probs = (token_log_probs * completion_mask).sum(dim=-1)           # zero out prompt/pad, then sum per sequence -> (B,)
 ```
 
 The **one-token shift** is the autoregressive step made literal: position $t$'s logits predict token $t+1$. Sum the per-token log-probs and `loss.backward()` — autodiff turns that sum into the corresponding sum of per-token gradients.
 
 ---
 
-## Three masks — don't confuse them
+## Three masks commonly come up in post-training code
 
-Masking is where silent bugs live. Three different masks do three different jobs:
+Masking is where silent bugs live in LLM code. Three different masks do three different jobs:
 
 - **Causal mask** (built into decoder attention) — position $t$ cannot attend to positions $> t$. This is what makes the model autoregressive; you never touch it in training code.
 - **Attention / padding mask** — tells attention to ignore padding tokens (variable-length sequences batched together). Shape `(B, L)`.
 - **Completion / loss mask** — `1` only on completion tokens; the loss is multiplied by it before summing. **Prompt tokens condition the prediction but contribute no loss.**
 
-> Get the completion mask wrong and you either train on the prompt (wastes gradient on tokens you can't change) or on padding (trains on noise). Lecture 4 lists exactly these as the most common silent failures.
+> Get the completion mask wrong and you either train on the prompt (wastes gradient on tokens you can't change) or on padding (trains on noise).
 
 ---
 
-## Teacher forcing vs generation
+## A small decoding review
 
-How the sequence you score gets into the model determines what kind of training you're doing:
+Generation **samples/searches over** $\pi_\theta$ — same weights, many ways to pick each token:
 
-- **SFT** — score a **supplied** target under *teacher forcing*: the model always sees the correct prefix, one token off from the label.
-- **RL** — **sample** a new sequence from the current policy, then score *that sampled* sequence. The model sees its own prefixes, which may be wrong.
-- **Preference optimization** — score **supplied** chosen and rejected sequences (no sampling).
+- **Greedy** — take $\arg\max_v P_\theta(v \mid x_{<t})$ each step. Deterministic but myopic: a locally best token can doom the sequence.
+- **Beam search** — keep the top-$b$ partial sequences by cumulative log-prob, expand and prune to $b$. Great for low-entropy tasks (translation), bland for open-ended text.
+- **Temperature sampling** — $y_t \sim \mathrm{softmax}(z_t / T)$. Higher $T$ → more diverse, lower $T$ → sharper toward greedy.
+- **Truncated sampling** — sample only from the top-$k$ tokens, or the smallest set with cumulative mass $\ge p$ (top-$p$ / nucleus).
+- **Lookahead search (MCTS & friends)** — score simulated future continuations (often with a value/reward model) before committing — decode-time cousin of inference-time reasoning.
 
-A small decoding review:
-
-$$y_t \sim \mathrm{softmax}(z_t / T)$$
-
-with $T$ a temperature (high $T$ → flatter, more random) and truncation methods (top-$k$, top-$p$) shaping the sample. The key distinction: **the model distribution** ($\pi_\theta$) vs **the sampling procedure** applied to it. Teacher-forced training never encounters the model's own errors; rollout training does — this is the root of *on-policy data*, *distribution shift*, and why RL infrastructure is different.
+Key split: **the distribution** $\pi_\theta$ vs **the procedure** that samples it.
 
 ---
 
 ## Training an LM: cross-entropy
 
-To fit the model we **maximize the likelihood** of the training data — equivalently, minimize the **negative log-likelihood (NLL)**, a.k.a. cross-entropy:
+At each position, cross-entropy compares the model's predicted distribution to the **true** next-token label $q_t$. That label is a *one-hot* at the actual token $x_t$, so the sum over the vocabulary collapses to a single term:
+
+$$H(q_t,\, P_\theta) = -\sum_{v \in \mathcal{V}} q_t(v)\,\log P_\theta(v \mid x_{<t}) = -\log P_\theta(x_t \mid x_{<t}).$$
+
+So the "comparison to the true token" is just the one-hot picking out one log-prob. Summing over positions and averaging over data gives the LM loss — equivalently, the **negative log-likelihood (NLL)**:
 
 $$\mathcal{L}_{\text{LM}}(\theta) = -\,\mathbb{E}_{x \sim \mathcal{D}}\left[\sum_{t=1}^{T} \log P_\theta(x_t \mid x_{<t})\right].$$
-
-Read it simply: for each position, compare the model's predicted next-token distribution to the *true* token; penalize putting low probability on it.
 
 "Predict the next token" **is** supervised learning — the label is just the next token in the sequence.
 
@@ -188,10 +257,10 @@ The basic backprop loop is shared across pretraining, mid-training, and fine-tun
 
 ## Pretraining → mid-training → SFT
 
-The boundary at the *end* of pretraining is fuzzy and worth naming:
+The boundary at the *end* of pretraining is fuzzy and very important to post-training:
 
 - **Pretraining** — next-token cross-entropy on massive raw web/code data; **every** token contributes to the loss.
-- **Mid-training** — the annealing / high-quality-data phase at the very end of pretraining, before any instruction data. Quality ramps up here.
+- **Mid-training** — the annealing / high-quality-data phase at the very end of pretraining, before any instruction data. Quality ramps up here. Could be considered part of post-training, but often isn't discussed.
 - **SFT (supervised fine-tuning)** — still cross-entropy, but now on **instruction–response** pairs with a **completion mask**: only the response tokens contribute to the loss, the prompt merely conditions. The model learns to *respond*, not just continue text.
 
 Modern post-training pipelines start from a **mid-trained** checkpoint, so this is where the course's story effectively begins.
@@ -216,9 +285,39 @@ Three things to remember:
 - **Non-negative**, and $0$ only when $p = q$
 - **The** central object of alignment: the RLHF KL penalty (Lectures 3–4) keeps the policy close to its SFT start, and the DPO loss (Lecture 6) is derived from a **KL-regularized reward-maximization** objective
 
-> **Entropy** $H(p) = -\sum_i p_i \log p_i$ is the uncertainty of a distribution (uniform = high, peaked = low). It shows up here as a regularizer that keeps an RLHF'd policy from collapsing onto a single mode, and in Lecture 8's preference distributions.
+Related: **Entropy** $H(p) = -\sum_i p_i \log p_i$ is the uncertainty of a distribution (uniform = high, peaked = low). It shows up in definitions, derivations, and understanding of these systems. Very similar computation.
 
 You will see KL in essentially every alignment lecture.
+
+---
+
+## KL divergence (and entropy)
+
+Three quantities, one information-theoretic picture (measured in *nats* with $\ln$, *bits* with $\log_2$):
+
+- **Entropy** $H(p) = -\sum_i p_i \log p_i$ — the average surprise of samples from $p$; the irreducible cost to encode them. Uniform = high, peaked = low.
+- **Cross-entropy** $H(p, q) = -\sum_i p_i \log q_i$ — the cost of encoding samples from $p$ using a code built for the *wrong* distribution $q$.
+- **KL divergence** $\mathcal{D}_{\text{KL}}(p \,\|\, q) = \sum_i p_i \log \frac{p_i}{q_i}$ — precisely that *extra* cost of using $q$ instead of $p$.
+
+They are one identity:
+
+$$H(p, q) = H(p) + \mathcal{D}_{\text{KL}}(p \,\|\, q).$$
+
+So minimizing cross-entropy **is** minimizing KL to the truth — $H(p)$ is fixed by the data. In LM training the label $p$ is one-hot, so $H(p)=0$ and **cross-entropy = KL = NLL**. In RLHF the KL term is instead added *on purpose*, to keep the policy near its reference.
+
+---
+
+## KL divergence (and entropy)
+
+Over sequences the sum behind KL is intractable — but KL is an **expectation**, so estimate it by **Monte Carlo**: average the log-ratio over samples drawn from the policy.
+
+$$\mathcal{D}_{\text{KL}}(\pi_\theta \,\|\, \pi_{\text{ref}}) = \mathbb{E}_{x \sim \pi_\theta}\!\left[\log \frac{\pi_\theta(x)}{\pi_{\text{ref}}(x)}\right] \approx \frac{1}{N}\sum_{i=1}^{N} \log \frac{\pi_\theta(x_i)}{\pi_{\text{ref}}(x_i)}.$$
+
+- The integrand is just the **log-probability ratio** on each rollout you already generate.
+- The naive average ($\hat k_1 = \log\frac{\pi_\theta}{\pi_{\text{ref}}}$) is unbiased but high-variance and can go negative on a finite sample.
+- RLHF uses the low-variance, always-$\ge 0$ **$k_3$ estimator** $\hat k_3 = r - 1 - \log r$, with $r = \tfrac{\pi_{\text{ref}}}{\pi_\theta}$ [@schulman2020klapprox].
+
+This is the practical face of the information theory: **approximate a target distribution from samples**, paying for the estimate in variance rather than an intractable sum.
 
 ---
 
@@ -234,7 +333,7 @@ Three things to recognize:
 - only **relative** reward differences matter — shifting both rewards by a constant changes nothing
 - $-\log \sigma(\cdot)$ is just **binary negative log-likelihood**
 
-**Lecture 2 derives this Bradley–Terry model in full** to train a reward model; **Lecture 6 reuses the exact same $\sigma(\Delta r)$ shape** inside DPO. This slide is "recognize the pattern" — the derivations come later.
+**Lecture 2 derives this Bradley–Terry model in full** to train a reward model; **Lecture 6 reuses the exact same $\sigma(\Delta r)$ shape** inside DPO.
 
 ---
 
@@ -246,7 +345,7 @@ Three things to recognize:
 
 ## Language models as an MDP
 
-Reinforcement learning studies an agent acting in a **Markov decision process** $(\mathcal{S}, \mathcal{A}, P, r, \gamma)$: states, actions, a transition function, a reward, and a discount. Generation maps cleanly onto one:
+Reinforcement learning studies an agent acting in a **Markov decision process** $(\mathcal{S}, \mathcal{A}, P, r, \gamma)$:
 
 | MDP concept | Language model |
 |-------------|---------------|
@@ -260,10 +359,6 @@ Reinforcement learning studies an agent acting in a **Markov decision process** 
 The policy is the LM, factorized over tokens:
 
 $$\pi_\theta(y \mid x) = \prod_t \pi_\theta(y_t \mid x, y_{<t}).$$
-
-> **The supervision is usually response-level, but the gradient and KL bookkeeping are token-level.** That single distinction explains a large fraction of the notation the course uses later — far more useful than memorizing the bare five-tuple.
-
-**Lecture 3 develops policy gradients, baselines, and PPO/GRPO from this setup; Lecture 4 turns them into code.** More on the algorithms there.
 
 ---
 
@@ -280,8 +375,6 @@ A human preference (or a verifier) is a single scalar at the *end* of a response
 - **No token-level target** — and ordinary gradients can't pass back through the discrete sampled token
 
 So there is no cross-entropy target for "preferred." Policy gradients optimize the expected evaluator score anyway — first by *learning* that signal as a reward model, then by *optimizing* it. That is the whole motivation for RLHF.
-
-> **Lecture 3 derives the policy-gradient math; Lecture 4 turns it into code.** This deck stops at the framing.
 
 ---
 
@@ -302,18 +395,7 @@ That is what the rest of this course is about.
 
 ---
 
-## You are ready if…
-
-You can do all of the following (or know which one to come back to):
-
-- **Shift and gather** — explain why `logits[:, :-1]` predicts `input_ids[:, 1:]` and what `gather` does
-- **Name the three masks** — causal, attention/padding, completion/loss — and which one the loss multiplies by
-- **Distinguish teacher forcing from rollout** — and say why RL infrastructure is different
-- **Read $\mathcal{D}_{\text{KL}}(p \| q)$** — asymmetric, non-negative, and central to alignment
-- **Read a sigmoid score difference** — $P(y_w \succ y_l) = \sigma(r_w - r_l)$, and know only the *difference* matters
-- **State the LM-as-MDP mapping** — and the response-level-vs-token-level takeaway
-
-If any felt rusty:
+## If any felt rusty:
 
 - **RL** — Sutton & Barto, *Reinforcement Learning: An Introduction*; David Silver's UCL course; UC Berkeley CS285
 - **Language models from scratch** — Sebastian Raschka, *Build a Large Language Model (From Scratch)*
