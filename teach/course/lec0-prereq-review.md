@@ -24,7 +24,7 @@ custom_css: |
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
 
-# The ML Foundations of LLM Post-Training
+# Course Prereqs: The ML Foundations of LLM Post-Training
 
 <div class="colloquium-title-eyebrow">rlhfbook.com</div>
 
