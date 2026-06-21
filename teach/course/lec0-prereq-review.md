@@ -116,8 +116,10 @@ input_ids  ∈ ℕ^{B × L}          # token IDs, batch B, length L
 logits = model(input_ids).logits            # (B, L, V)
 logits = logits[:, :-1, :]                  # shift: logit at t predicts token at t+1
 labels = input_ids[:, 1:]                   # (B, L-1)
+completion_mask = completion_mask[:, 1:]    # (B, L-1) — shift the mask to match labels
 log_probs = logits.log_softmax(dim=-1)
 token_log_probs = log_probs.gather(-1, labels.unsqueeze(-1)).squeeze(-1)  # (B, L-1)
+seq_log_probs = (token_log_probs * completion_mask).sum(dim=-1)           # (B,)
 ```
 
 The **one-token shift** is the autoregressive step made literal: position $t$'s logits predict token $t+1$. Sum the per-token log-probs and `loss.backward()` — autodiff turns that sum into the corresponding sum of per-token gradients.
