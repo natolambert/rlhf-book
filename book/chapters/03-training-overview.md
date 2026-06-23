@@ -13,6 +13,8 @@ meta-description: "A high-level map of modern post-training recipes, including i
 next-chapter: "Instruction Fine-Tuning"
 next-url: "04-instruction-tuning"
 lectures:
+  - video: "https://www.youtube.com/watch?v=MMDNaeIFVy8&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=2"
+    label: "Lecture 0: Prerequisites"
   - video: "https://www.youtube.com/watch?v=o6l6tJQgUg4&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=2"
     label: "Lecture 1: Overview (Chapters 1–3)"
 ---
