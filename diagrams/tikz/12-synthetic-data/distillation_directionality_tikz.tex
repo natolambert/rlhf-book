@@ -144,9 +144,10 @@
 \draw[genfade] (r1) -- (r2);
 \draw[genfade] (r2) -- (rh);
 
-% reverse-KL between the aligned middle tokens -> perfectly horizontal
-\draw[kl] (g2.east) -- (r2.west);
-\node[taglabel, fill=white, inner sep=1pt] at (17.0, \yB) {KL};
+% reverse-KL only at the post-hint token: the context matches through r2, so the
+% two distributions diverge only AFTER the hint -- compare the last tokens g3 / r3.
+\draw[kl] (g3.east) -- (r3.west);
+\node[taglabel, fill=white, inner sep=1pt] at (17.0, 2.225) {KL};
 
 \node[sub] at (17.0, 1.35) {On-policy distillation loss with no separate teacher};
 \fi
