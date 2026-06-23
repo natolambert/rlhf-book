@@ -528,15 +528,18 @@ $$ D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_T) = \mathbb{E}_{z \sim \pi_\theta}\!\l
 <!-- valign: top -->
 ## KD as an RL advantage
 
-Recent implementations take the KD distance directly as a reward: substitute the negative per-token reverse-KL contribution as the advantage [@lu2025onpolicy]. For a sampled token $a_t$ at state $s_t$:
+Recent implementations take the KD distance directly as a reward: substitute the negative per-token reverse-KL contribution as the advantage [@lu2025onpolicy]. The reverse KL at state $s_t$ is an expectation over *student*-sampled tokens:
 
-$$ A_t^{\mathrm{OPD}} = -D_{\mathrm{KL}}\!\left(\pi_\theta(\cdot \mid s_t) \,\|\, \pi_T(\cdot \mid s_t)\right) = - (\log \pi_\theta(a_t \mid s_t) - \log \pi_T(a_t \mid s_t)).$$
+$$ D_{\mathrm{KL}}\!\left(\pi_\theta(\cdot \mid s_t) \,\|\, \pi_T(\cdot \mid s_t)\right) = \mathbb{E}_{a_t \sim \pi_\theta(\cdot \mid s_t)}\!\left[\log \pi_\theta(a_t \mid s_t) - \log \pi_T(a_t \mid s_t)\right]. $$
 
-$$ A_t^{\mathrm{OPD}} = \log \pi_T(a_t \mid s_t) - \log \pi_\theta(a_t \mid s_t). $$
+For a single sampled token $a_t$, the advantage is the negative of that integrand (the expectation is supplied by on-policy sampling):
+
+$$ A_t^{\mathrm{OPD}} = -\left(\log \pi_\theta(a_t \mid s_t) - \log \pi_T(a_t \mid s_t)\right) = \log \pi_T(a_t \mid s_t) - \log \pi_\theta(a_t \mid s_t). $$
 
 <!-- step -->
 
 - Tokens more likely for the teacher → positive advantage; less likely → negative.
+- Same form, opposite KL: $\log \pi_T - \log \pi_\theta$ *looks* like a forward-KL term -- what makes it **reverse** KL is sampling $a_t \sim \pi_\theta$ (the student), not the sign.
 - The teacher log-prob gap is dense, token-level feedback -- potentially richer than a sparse verifiable reward or a single scalar reward-model score.
 - This layers into modern RL machinery -- e.g. add it alongside GRPO's group-level normalization for more complex reward shaping.
 
