@@ -536,8 +536,14 @@ In practice you never sum over the vocabulary: the single sampled token is an un
 
 $$ A_t^{\mathrm{OPD}} = -\hat{D}_{\mathrm{KL}} = -\left(\log \pi_\theta(a_t \mid s_t) - \log \pi_T(a_t \mid s_t)\right) = \log \pi_T(a_t \mid s_t) - \log \pi_\theta(a_t \mid s_t). $$
 
-<!-- step -->
+---
 
+## KD as an RL advantage
+In practice you never sum over the vocabulary: the single sampled token is an unbiased estimate $\hat{D}_{\mathrm{KL}}$ of that KL [@schulman2020klapprox], and the per-token advantage is its negative:
+
+$$ A_t^{\mathrm{OPD}} = \log \pi_T(a_t \mid s_t) - \log \pi_\theta(a_t \mid s_t). $$
+
+<!-- step -->
 - Tokens more likely for the teacher → positive advantage; less likely → negative.
 - Same form, opposite KL: $\log \pi_T - \log \pi_\theta$ *looks* like a forward-KL term -- what makes it **reverse** KL is sampling $a_t \sim \pi_\theta$ (the student), not the sign.
 - The teacher log-prob gap is dense, token-level feedback -- potentially richer than a sparse verifiable reward or a single scalar reward-model score.
