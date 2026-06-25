@@ -24,7 +24,10 @@ class Config(BaseModel):
     min_p: float = 0.0
     repetition_penalty: float = 1.0
     max_new_tokens: int = 1024
-    max_prompt_len: int = 2048  # left-truncation cap for student and teacher prompts
+    max_prompt_len: int = 2048  # left-truncation cap for the student prompt
+    max_reprompt_len: int = (
+        10240  # left-truncation cap for the teacher reprompt (problem + full demo + feedback)
+    )
     enable_thinking: bool = True
 
     # Training

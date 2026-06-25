@@ -3,7 +3,7 @@ import random
 import torch
 from transformers import GenerationConfig
 
-from .data import compute_score, extract_code
+from .data import compute_score
 from .utils import print_rollout_sample
 
 
@@ -70,11 +70,9 @@ def generate_batch(model, tokenizer, entry: dict, cfg, idx: int = 0, total: int 
     teacher_prompts = []
     for i in range(cfg.num_rollouts):
         others = [j for j in success_idx if j != i]
-        demo = ""
-        if others:
-            code = extract_code(completions[others[0]])
-            if code:
-                demo = f"```python\n{code}\n```"
+        # Use the full successful sibling completion as the demonstration (no code
+        # extraction), matching the reference SDPO reprompt.
+        demo = completions[others[0]] if others else ""
         feedback = feedbacks[i]
         if not demo and not feedback:
             action_mask[i] = 0.0
@@ -93,7 +91,7 @@ def generate_batch(model, tokenizer, entry: dict, cfg, idx: int = 0, total: int 
         return_tensors="pt",
         padding=True,
         truncation=True,
-        max_length=cfg.max_prompt_len,
+        max_length=cfg.max_reprompt_len,
     ).to(device)
     teacher_ids = torch.cat([teacher_prompts["input_ids"], completion_ids], dim=1)
 
