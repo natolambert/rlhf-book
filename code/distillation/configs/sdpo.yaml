@@ -20,7 +20,7 @@ enable_thinking: false
 # Training
 lr: 1.0e-5
 warmup_ratio: 0.05  # linear LR warmup over the first 5% of steps, then held constant
-prompts_per_step: 4
+prompts_per_step: 8
 num_rollouts: 16
 num_steps: 200
 max_norm: 1.0
