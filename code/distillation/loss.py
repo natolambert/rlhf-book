@@ -21,8 +21,11 @@ class SDPOLoss(nn.Module):
         A = action_mask.shape[1]
 
         s_logits = model(
-            input_ids=batch["s_ids"], attention_mask=batch["s_mask"], use_cache=False
-        ).logits[:, -A - 1 : -1, :]
+            input_ids=batch["s_ids"],
+            attention_mask=batch["s_mask"],
+            use_cache=False,
+            logits_to_keep=A + 1,
+        ).logits[:, :-1, :]
         s_topk, idx = s_logits.topk(self.kl_top_k, dim=-1)
         s_logp = s_topk - s_logits.logsumexp(dim=-1, keepdim=True)
 
@@ -54,8 +57,11 @@ class SDPOLoss(nn.Module):
         chunks = []
         for i in range(0, t_ids.shape[0], self.teacher_chunk):
             sl = slice(i, i + self.teacher_chunk)
-            logits = model(input_ids=t_ids[sl], attention_mask=t_mask[sl], use_cache=False).logits[
-                :, -A - 1 : -1, :
-            ]
+            logits = model(
+                input_ids=t_ids[sl],
+                attention_mask=t_mask[sl],
+                use_cache=False,
+                logits_to_keep=A + 1,
+            ).logits[:, :-1, :]
             chunks.append(logits.gather(-1, idx[sl]) - logits.logsumexp(dim=-1, keepdim=True))
         return torch.cat(chunks, dim=0)
