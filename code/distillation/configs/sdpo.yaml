@@ -14,13 +14,13 @@ top_k: 20
 min_p: 0.0
 repetition_penalty: 1.0
 max_new_tokens: 8192
-max_prompt_len: 2048
+max_prompt_len: 4096
 enable_thinking: false
 
 # Training
 lr: 1.0e-5
 warmup_ratio: 0.05  # linear LR warmup over the first 5% of steps, then held constant
-prompts_per_step: 8
+prompts_per_step: 4
 num_rollouts: 16
 num_steps: 200
 max_norm: 1.0

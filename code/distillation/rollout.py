@@ -3,7 +3,7 @@ import random
 import torch
 from transformers import GenerationConfig
 
-from .data import compute_score
+from .data import compute_score, extract_code
 from .utils import print_rollout_sample
 
 
@@ -70,7 +70,11 @@ def generate_batch(model, tokenizer, entry: dict, cfg, idx: int = 0, total: int 
     teacher_prompts = []
     for i in range(cfg.num_rollouts):
         others = [j for j in success_idx if j != i]
-        demo = completions[others[0]] if others else ""
+        demo = ""
+        if others:
+            code = extract_code(completions[others[0]])
+            if code:
+                demo = f"```python\n{code}\n```"
         feedback = feedbacks[i]
         if not demo and not feedback:
             action_mask[i] = 0.0
