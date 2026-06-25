@@ -30,7 +30,9 @@ def main(cfg: Config):
 
     model, tokenizer = load_model(cfg.model_name, device)
     loader = build_dataloader(cfg.split, batch_size=cfg.prompts_per_step, shuffle=True)
-    objective = get_loss_objective(cfg.loss, kl_top_k=cfg.kl_top_k).to(device)
+    objective = get_loss_objective(
+        cfg.loss, kl_top_k=cfg.kl_top_k, rollout_chunk=cfg.rollout_chunk
+    ).to(device)
     optimizer = optim.Adam(model.parameters(), lr=cfg.lr)
     num_warmup_steps = int(cfg.num_steps * cfg.warmup_ratio)
 
@@ -75,10 +77,7 @@ def main(cfg: Config):
         optimizer.zero_grad(set_to_none=True)
         accumulated_loss = 0.0
         for b in batches:
-            loss = objective(model, b) / len(batches)
-            if loss.isfinite():
-                loss.backward()
-                accumulated_loss += loss.item()
+            accumulated_loss += objective.backward_loss(model, b, scale=1.0 / len(batches))
 
         grad_norm = clip_grad_norm_(model.parameters(), cfg.max_norm)
         optimizer.step()

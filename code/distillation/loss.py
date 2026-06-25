@@ -11,18 +11,33 @@ def add_tail(log_probs: torch.Tensor) -> torch.Tensor:
 
 
 class SDPOLoss(nn.Module):
-    def __init__(self, kl_top_k: int, teacher_chunk: int = 4) -> None:
+    def __init__(self, kl_top_k: int, rollout_chunk: int = 4) -> None:
         super().__init__()
         self.kl_top_k = kl_top_k
-        self.teacher_chunk = teacher_chunk
+        self.rollout_chunk = rollout_chunk
 
-    def forward(self, model, batch: dict) -> torch.Tensor:
-        action_mask = batch["action_mask"]
-        A = action_mask.shape[1]
+    def _chunk_loss(
+        self, model, batch: dict, sl: slice, A: int, denom: torch.Tensor
+    ) -> torch.Tensor:
+        """SDPO top-K KL for one rollout slice, normalized by the global token count.
 
+        Only ``logits_to_keep = A + 1`` positions are projected through the LM head, so
+        the materialized logits cover exactly the completion tokens the loss reads.
+
+        Args:
+            model: Shared teacher/student model.
+            batch: Rollout batch from ``generate_batch``.
+            sl: Slice selecting the rollouts in this chunk.
+            A: Number of completion (action) positions.
+            denom: Global action-token count to divide by, so the chunk losses sum to
+                the full-group loss.
+
+        Returns:
+            Scalar loss contribution for this chunk.
+        """
         s_logits = model(
-            input_ids=batch["s_ids"],
-            attention_mask=batch["s_mask"],
+            input_ids=batch["s_ids"][sl],
+            attention_mask=batch["s_mask"][sl],
             use_cache=False,
             logits_to_keep=A + 1,
         ).logits[:, :-1, :]
@@ -30,38 +45,62 @@ class SDPOLoss(nn.Module):
         s_logp = s_topk - s_logits.logsumexp(dim=-1, keepdim=True)
 
         with torch.no_grad():
-            t_logp = self._teacher_logp(model, batch, A, idx)
-
-        s_logp, t_logp = add_tail(s_logp), add_tail(t_logp)
-        kl = F.kl_div(s_logp, t_logp, reduction="none", log_target=True).sum(-1)
-
-        return (kl * action_mask).sum() / action_mask.sum().clamp_min(1.0)
-
-    def _teacher_logp(self, model, batch: dict, A: int, idx: torch.Tensor) -> torch.Tensor:
-        """Top-K teacher log-probs, computed in rollout chunks to bound peak logit memory.
-
-        The full-vocab teacher logits are the dominant memory cost. Processing the
-        rollout batch in chunks lets each chunk's logits free before the next, so the
-        peak is ``teacher_chunk`` rollouts wide instead of the whole batch.
-
-        Args:
-            model: The shared teacher/student model.
-            batch: Rollout batch with ``t_ids`` and ``t_mask``.
-            A: Number of action (completion) positions to keep.
-            idx: Student top-K vocab indices to gather teacher log-probs at.
-
-        Returns:
-            Teacher top-K log-probs aligned with ``idx``.
-        """
-        t_ids, t_mask = batch["t_ids"], batch["t_mask"]
-        chunks = []
-        for i in range(0, t_ids.shape[0], self.teacher_chunk):
-            sl = slice(i, i + self.teacher_chunk)
-            logits = model(
-                input_ids=t_ids[sl],
-                attention_mask=t_mask[sl],
+            t_logits = model(
+                input_ids=batch["t_ids"][sl],
+                attention_mask=batch["t_mask"][sl],
                 use_cache=False,
                 logits_to_keep=A + 1,
             ).logits[:, :-1, :]
-            chunks.append(logits.gather(-1, idx[sl]) - logits.logsumexp(dim=-1, keepdim=True))
-        return torch.cat(chunks, dim=0)
+            t_logp = t_logits.gather(-1, idx) - t_logits.logsumexp(dim=-1, keepdim=True)
+
+        s_logp, t_logp = add_tail(s_logp), add_tail(t_logp)
+        kl = F.kl_div(s_logp, t_logp, reduction="none", log_target=True).sum(-1)
+        return (kl * batch["action_mask"][sl]).sum() / denom
+
+    def backward_loss(self, model, batch: dict, scale: float = 1.0) -> float:
+        """Accumulate SDPO gradients over rollout chunks, running backward per chunk.
+
+        The student logits ``[R, A, V]`` and their gradient are the dominant memory
+        cost. Splitting the ``R`` rollouts into ``rollout_chunk``-sized groups and
+        backpropagating each group before the next frees those tensors between chunks,
+        bounding peak memory to one chunk instead of the whole group. Because the loss
+        is a sum over rollouts divided by the global token count, the chunk gradients
+        accumulate to exactly the full-group gradient. Gradients add into the model
+        parameters; this neither zeroes nor steps the optimizer.
+
+        Args:
+            model: Shared teacher/student model.
+            batch: Rollout batch from ``generate_batch``.
+            scale: Factor applied before backward, e.g. ``1 / prompts_per_step`` for
+                gradient accumulation across prompts.
+
+        Returns:
+            The scaled loss value summed over chunks, as a float.
+        """
+        action_mask = batch["action_mask"]
+        A = action_mask.shape[1]
+        denom = action_mask.sum().clamp_min(1.0)
+        total = 0.0
+        for i in range(0, action_mask.shape[0], self.rollout_chunk):
+            loss = (
+                self._chunk_loss(model, batch, slice(i, i + self.rollout_chunk), A, denom) * scale
+            )
+            if not loss.isfinite():
+                continue
+            if loss.requires_grad:
+                loss.backward()
+            total += float(loss.detach())
+        return total
+
+    @torch.no_grad()
+    def forward(self, model, batch: dict) -> torch.Tensor:
+        """Full SDPO loss value (no backward), computed in chunks; for eval/logging."""
+        action_mask = batch["action_mask"]
+        A = action_mask.shape[1]
+        denom = action_mask.sum().clamp_min(1.0)
+        total = action_mask.new_zeros((), dtype=torch.float32)
+        for i in range(0, action_mask.shape[0], self.rollout_chunk):
+            total = total + self._chunk_loss(
+                model, batch, slice(i, i + self.rollout_chunk), A, denom
+            )
+        return total
