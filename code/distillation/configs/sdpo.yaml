@@ -4,7 +4,7 @@ split: train
 max_tests: 8
 
 # SDPO
-kl_top_k: 100
+kl_top_k: 20
 success_reward_threshold: 1.0
 
 # Generation (Qwen non-thinking recommended sampling params)

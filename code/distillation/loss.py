@@ -54,7 +54,9 @@ class SDPOLoss(nn.Module):
             t_logp = t_logits.gather(-1, idx) - t_logits.logsumexp(dim=-1, keepdim=True)
 
         s_logp, t_logp = add_tail(s_logp), add_tail(t_logp)
-        kl = F.kl_div(s_logp, t_logp, reduction="none", log_target=True).sum(-1)
+        # Reverse KL = KL(student || teacher): target is the student, so the gradient
+        # flows through s_logp while the teacher (input) stays detached.
+        kl = F.kl_div(t_logp, s_logp, reduction="none", log_target=True).sum(-1)
         return (kl * batch["action_mask"][sl]).sum() / denom
 
     def backward_loss(self, model, batch: dict, scale: float = 1.0) -> float:
