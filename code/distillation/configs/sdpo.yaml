@@ -18,8 +18,8 @@ max_prompt_len: 4096
 enable_thinking: false
 
 # Training
-lr: 1.0e-5
-warmup_ratio: 0.05  # linear LR warmup over the first 5% of steps, then held constant
+lr: 1.0e-6
+warmup_ratio: 0.0  # constant LR (no warmup), matching the feedback-conditioned SDPO regime
 prompts_per_step: 8
 num_rollouts: 16
 num_steps: 200
