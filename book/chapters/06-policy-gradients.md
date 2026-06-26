@@ -390,81 +390,20 @@ This is by design! The trust region is a concept used to cap the maximum step si
 The idea of a "trust region" comes from the numerical optimization literature [@nocedal2006numerical], but was popularized within Deep RL from the algorithm Trust Region Policy Optimization (TRPO), which is accepted as the predecessor to PPO [@schulman2015trust].
 The trust region is the area where the full policy-gradient steps are applied, as the updates are not "clipped" by the max/min operations of the PPO objective.
 
-![Visualization of the different regions of the PPO objective for a hypothetical advantage. The "trust region" would be described as the region where the policy ratio $\rho$ is within $1\pm\varepsilon$.](images/ppo-viz-4x.png){#fig:ppo-obj}
+![Visualization of the PPO objective $J(\theta)$ as a function of the policy ratio $\rho(\theta)$, for both positive and negative advantage. Within each panel, the three ratio regions are annotated with their unclipped term, clipped term, resulting objective, and gradient.](images/ppo-clip-viz.png){#fig:ppo-obj}
 
-The policy ratio and advantage together can occur in a few different configurations. We will split the cases into two groups: positive and negative advantage.
+The policy ratio and advantage together can occur in a few different configurations, which @fig:ppo-obj enumerates by the sign of the advantage $A_t$ and by which of the three regions the policy ratio $\rho(\theta)$ falls into. Two facts determine the outcome in every region: the sign of the advantage sets whether we want to make the action more or less likely, and the $\min$ operation selects either the unclipped term $\rho(\theta) A_t$ or its clipped counterpart.
 
-#### Positive Advantage ($A_t > 0$)
+The clipping only zeroes out the gradient in the two regions where the policy has *already* moved the sampled action in the desired direction, past the edge of the trust region:
 
-This means that the action taken was beneficial according to the value function, and we want to increase the likelihood of taking that action in the future. Now, let's look at different cases for the policy ratio $\rho(\theta)$:
+- **Positive advantage and $\rho(\theta) > 1+\varepsilon$**: the action is already substantially more likely under $\pi_\theta$ than under $\pi_{\theta_{\text{old}}}$. The objective saturates at $(1+\varepsilon)A_t$, its gradient is zero, and no update is made — we avoid over-reinforcing an action that is already more expressed.
+- **Negative advantage and $\rho(\theta) < 1-\varepsilon$**: the action is already substantially less likely under $\pi_\theta$. The objective saturates at $(1-\varepsilon)A_t$, its gradient is again zero, and no update is made — we avoid over-suppressing an action that is already discouraged.
 
-1. $\rho(\theta) < 1 - \varepsilon$:
+Everywhere else the unclipped term $\rho(\theta) A_t$ is active and PPO takes a standard policy-gradient step: increasing the action's probability when $A_t > 0$ and decreasing it when $A_t < 0$. We can read off @fig:ppo-obj in terms of what each region asks of the updated policy $\pi_\theta$:
 
-    - **Interpretation**: Action is less likely with the new policy than the old policy
-    - **Unclipped Term**: $\rho(\theta) A_t$
-    - **Clipped Term**: $(1 - \varepsilon) A_t$
-    - **Objective**: $\rho(\theta) A_t$
-    - **Gradient**: $\nabla_\theta \rho(\theta) A_t \neq 0$
-    - **What happens**: Normal policy-gradient update - increase likelihood of action
-
-2. $1 - \varepsilon \leq \rho(\theta) \leq 1 + \varepsilon$:
-
-    - **Interpretation**: Action is almost equally likely with the new policy as the old policy
-    - **Unclipped Term**: $\rho(\theta) A_t$
-    - **Clipped Term**: $\rho(\theta) A_t$
-    - **Objective**: $\rho(\theta) A_t$
-    - **Gradient**: $\nabla_\theta \rho(\theta) A_t \neq 0$
-    - **What happens**: Normal policy-gradient update - increase likelihood of action
-
-3. $1 + \varepsilon < \rho(\theta)$:
-
-    - **Interpretation**: Action is more likely with the new policy than the old policy
-    - **Unclipped Term**: $\rho(\theta) A_t$
-    - **Clipped Term**: $(1 + \varepsilon) A_t$
-    - **Objective**: $(1 + \varepsilon) A_t$
-    - **Gradient**: $\nabla_\theta (1 + \varepsilon) A_t = 0$
-    - **What happens**: NO UPDATE - action is already more likely under the new policy
-
-To summarize, when the advantage is positive ($A_t>0$), we want to boost the probability of the action. Therefore:
-
-- We perform gradient steps only in the case when $\pi_{\text{new}}(a) \leq (1+\varepsilon) \pi_{\text{old}}(a)$. Intuitively, we want to boost the probability of the action, since the advantage was positive, but not boost it so much that we have made it substantially more likely.
-- Crucially, when $\pi_{\text{new}}(a) > (1+\varepsilon) \pi_{\text{old}}(a)$, then we don't perform any update, and the gradient of the clipped objective is $0$. Intuitively, the action is already more expressed with the new policy, so we don't want to over-reinforce it.
-
-#### Negative Advantage ($A_t < 0$)
-
-This means that the action taken was detrimental according to the value function, and we want to decrease the likelihood of taking that action in the future. Now, let's look at different cases for the policy ratio $\rho(\theta)$:
-
-1. $\rho(\theta) < 1 - \varepsilon$:
-
-    - **Interpretation**: Action is less likely with the new policy than the old policy
-    - **Unclipped Term**: $\rho(\theta) A_t$
-    - **Clipped Term**: $(1 - \varepsilon) A_t$
-    - **Objective**: $(1 - \varepsilon) A_t$
-    - **Gradient**: $\nabla_\theta (1 - \varepsilon) A_t = 0$
-    - **What happens**: NO UPDATE - action is already less likely under the new policy
-
-2. $1 - \varepsilon \leq \rho(\theta) \leq 1 + \varepsilon$:
-
-    - **Interpretation**: Action is almost equally likely with the new policy as the old policy
-    - **Unclipped Term**: $\rho(\theta) A_t$
-    - **Clipped Term**: $\rho(\theta) A_t$
-    - **Objective**: $\rho(\theta) A_t$
-    - **Gradient**: $\nabla_\theta \rho(\theta) A_t \neq 0$
-    - **What happens**: Normal policy-gradient update - decrease likelihood of action
-
-3. $1 + \varepsilon < \rho(\theta)$:
-
-    - **Interpretation**: Action is more likely with the new policy than the old policy
-    - **Unclipped Term**: $\rho(\theta) A_t$
-    - **Clipped Term**: $(1 + \varepsilon) A_t$
-    - **Objective**: $\rho(\theta) A_t$
-    - **Gradient**: $\nabla_\theta \rho(\theta) A_t \neq 0$
-    - **What happens**: Normal policy-gradient update - decrease likelihood of action
-
-To summarize, when the advantage is negative ($A_t < 0$), we want to decrease the probability of the action. Therefore:
-
-- We perform gradient steps only in the case when $\pi_{\text{new}}(a) \geq (1-\varepsilon) \pi_{\text{old}}(a)$. Intuitively, we want to decrease the probability of the action, since the advantage was negative, and we do so proportional to the advantage.
-- Crucially, when $\pi_{\text{new}}(a) < (1-\varepsilon) \pi_{\text{old}}(a)$, then we don't perform any update, and the gradient of the clipped objective is $0$. Intuitively, the action is already less likely under the new policy, so we don't want to over-suppress it.
+- the sloped, unclipped region under a positive advantage (green) **increases** the probability of the sampled action;
+- the sloped, unclipped region under a negative advantage (red) **decreases** it;
+- the flat, clipped region (grey) leaves the policy **unchanged**, since its gradient is zero.
 
 It is crucial to remember that PPO within the trust region is roughly the same as standard forms of policy gradient.
 
