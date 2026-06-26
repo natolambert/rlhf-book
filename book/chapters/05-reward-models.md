@@ -52,6 +52,7 @@ It is common to reparametrize the Bradley-Terry model with unbounded scores, whe
 
 $$P(i > j) = \frac{e^{r_i}}{e^{r_i} + e^{r_j}} = \sigma(r_i-r_j).$$ {#eq:bradterry_unbounded}
 
+Here $\sigma(z) = \frac{1}{1 + e^{-z}}$ is the logistic (sigmoid) function, so the preference probability depends only on the score difference $r_i - r_j$.
 Only differences in scores matter: adding the same constant $c$ to every $r_k$ leaves $P(i > j)$ unchanged.
 These forms are not a law of nature, but a useful approximation of human preferences that often works well in RLHF.
 
@@ -66,20 +67,29 @@ $$P(y_1 > y_2 \mid x) = \frac{\exp\left(r_\theta(y_1 \mid x)\right)}{\exp\left(r
 We denote the preferred completion as $y_c$ (chosen) and the rejected completion as $y_r$.
 
 The resulting loss encourages the reward model to assign a higher score to the human-preferred completion than the rejected one, using a sigmoid to convert the score difference into a probability.
-The preference likelihood in @eq:bradterryrm is the starting point. We first rewrite that likelihood into sigmoid form, and only in the last step convert it into the equivalent negative log-likelihood loss used to train the reward model:
+The preference likelihood in @eq:bradterryrm is the starting point. We first rewrite that likelihood into sigmoid form by dividing the numerator and denominator by $\exp\left(r_\theta(y_c \mid x)\right)$:
 
 $$
 \begin{aligned}
-\theta^* = \arg\max_\theta P(y_c > y_r \mid x) &= \arg\max_\theta \frac{\exp\left(r_\theta(y_c \mid x)\right)}{\exp\left(r_\theta(y_c \mid x)\right) + \exp\left(r_\theta(y_r \mid x)\right)} \\
-&= \arg\max_\theta \frac{\exp\left(r_\theta(y_c \mid x)\right)}{\exp\left(r_\theta(y_c \mid x)\right)\left(1 + \frac{\exp\left(r_\theta(y_r \mid x)\right)}{\exp\left(r_\theta(y_c \mid x)\right)}\right)} \\
-&= \arg\max_\theta \frac{1}{1 + \frac{\exp\left(r_\theta(y_r \mid x)\right)}{\exp\left(r_\theta(y_c \mid x)\right)}} \\ 
-&= \arg\max_\theta \frac{1}{1 + \exp\left(-(r_\theta(y_c \mid x) - r_\theta(y_r \mid x))\right)} \\
-&= \arg\max_\theta \sigma \left( r_\theta(y_c \mid x) - r_\theta(y_r \mid x) \right) \\
-&= \arg\min_\theta - \log \left( \sigma \left(r_\theta(y_c \mid x) - r_\theta(y_r \mid x)\right) \right)
+P(y_c > y_r \mid x)
+&= \frac{\exp\left(r_\theta(y_c \mid x)\right)}{\exp\left(r_\theta(y_c \mid x)\right) + \exp\left(r_\theta(y_r \mid x)\right)} \\
+&= \frac{\exp\left(r_\theta(y_c \mid x)\right)}{\exp\left(r_\theta(y_c \mid x)\right)\left(1 + \frac{\exp\left(r_\theta(y_r \mid x)\right)}{\exp\left(r_\theta(y_c \mid x)\right)}\right)} \\
+&= \frac{1}{1 + \frac{\exp\left(r_\theta(y_r \mid x)\right)}{\exp\left(r_\theta(y_c \mid x)\right)}} \\
+&= \frac{1}{1 + \exp\left(-(r_\theta(y_c \mid x) - r_\theta(y_r \mid x))\right)} \\
+&= \sigma \left( r_\theta(y_c \mid x) - r_\theta(y_r \mid x) \right).
 \end{aligned}
+$$ {#eq:bradterryrm_sigmoid}
+
+The reward model is then fit by maximum likelihood over the preference dataset $D$, maximizing the expected log-likelihood of the observed preferences. Because the logarithm is monotonic, this is equivalent to minimizing the expected negative log-likelihood:
+
+$$
+\theta^* = \arg\max_\theta \mathbb{E}_{(x, y_c, y_r) \sim D}\left[ \log P(y_c > y_r \mid x) \right]
+= \arg\min_\theta \mathbb{E}_{(x, y_c, y_r) \sim D}\left[ -\log \sigma \left( r_\theta(y_c \mid x) - r_\theta(y_r \mid x) \right) \right].
 $$ {#eq:bradterryrm_deriv}
 
-The first form is the log-sigmoid expression derived above, as in [@ouyang2022training] and other works:
+Taking the logarithm *before* averaging over the dataset is what makes the negative-log-likelihood loss the right objective: maximizing the expected probability $\mathbb{E}[P]$ is not the same as maximizing the expected log-probability $\mathbb{E}[\log P]$.
+
+The per-example loss is the log-sigmoid expression inside the expectation above, as in [@ouyang2022training] and other works:
 $$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) \right) \right)$$ {#eq:rewardmodeling1}
 
 The second is a mathematically equivalent form expressed using the softplus function $\log(1+e^x)$, as in [@askell2021general] and other works:
