@@ -54,7 +54,7 @@ $$P(i > j) = \frac{e^{r_i}}{e^{r_i} + e^{r_j}} = \sigma(r_i-r_j).$$ {#eq:bradter
 
 Here $\sigma(z) = \frac{1}{1 + e^{-z}}$ is the logistic (sigmoid) function, so the preference probability depends only on the score difference $r_i - r_j$.
 Only differences in scores matter: adding the same constant $c$ to every $r_k$ leaves $P(i > j)$ unchanged.
-These forms are not a law of nature, but a useful approximation of human preferences that often works well in RLHF.
+These forms are a useful approximation of human preferences that often works well in RLHF.
 
 To train a reward model, we must formulate a loss function that satisfies the above relation.
 In practice, this is done by converting a language model into a model that outputs a scalar score, often via a small linear head that produces a single reward value from the model's final hidden state.
