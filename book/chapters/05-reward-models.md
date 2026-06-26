@@ -83,8 +83,10 @@ $$ {#eq:bradterryrm_sigmoid}
 The reward model is then fit by maximum likelihood over the preference dataset $D$, maximizing the expected log-likelihood of the observed preferences. Because the logarithm is monotonic, this is equivalent to minimizing the expected negative log-likelihood:
 
 $$
-\theta^* = \arg\max_\theta \mathbb{E}_{(x, y_c, y_r) \sim D}\left[ \log P(y_c > y_r \mid x) \right]
-= \arg\min_\theta \mathbb{E}_{(x, y_c, y_r) \sim D}\left[ -\log \sigma \left( r_\theta(y_c \mid x) - r_\theta(y_r \mid x) \right) \right].
+\begin{aligned}
+\theta^* &= \arg\max_\theta \mathbb{E}_{(x, y_c, y_r) \sim D}\left[ \log P(y_c > y_r \mid x) \right] \\
+&= \arg\min_\theta \mathbb{E}_{(x, y_c, y_r) \sim D}\left[ -\log \sigma \left( r_\theta(y_c \mid x) - r_\theta(y_r \mid x) \right) \right].
+\end{aligned}
 $$ {#eq:bradterryrm_deriv}
 
 Taking the logarithm *before* averaging over the dataset is what makes the negative-log-likelihood loss the right objective: maximizing the expected probability $\mathbb{E}[P]$ is not the same as maximizing the expected log-probability $\mathbb{E}[\log P]$.
