@@ -235,7 +235,7 @@ Same policy gradient algorithms, different reward source. We will cover tricks f
 
 **Classical RL**: agent in an MDP $(\mathcal{S}, \mathcal{A}, P, r, \gamma)$
 - Reward is a known function from the environment per step
-- Optimize cumulative return: $J(\pi) = \mathbb{E}_{\tau \sim \pi}\!\left[\sum_{t} \gamma^t r(s_t, a_t)\right]$
+- Optimize cumulative return: $J(\pi) = \mathbb{E}_{\tau \sim p_\pi}\!\left[\sum_{t} \gamma^t r(s_t, a_t)\right]$
 
 **RLHF**: prompts from a dataset, no environment
 - Reward is **learned** from human preferences
@@ -293,11 +293,13 @@ Two views of this MDP: **token-level** (each token is a separate action, used in
 
 Choose policy parameters $\theta$ that maximize reward **on average** under the current policy.
 
-$$J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}[R(\tau)]$$
+Let $p_\theta(\tau)$ be the trajectory distribution induced by the current policy.
+
+$$J(\theta) = \mathbb{E}_{\tau \sim p_\theta}[R(\tau)]$$
 
 In practice, we estimate this expectation with sampled rollouts:
 
-$$J(\theta) \approx \frac{1}{N}\sum_{i=1}^{N} R(\tau_i), \qquad \tau_i \sim \pi_\theta$$
+$$J(\theta) \approx \frac{1}{N}\sum_{i=1}^{N} R(\tau_i), \qquad \tau_i \sim p_\theta$$
 
 We craft a gradient/derivative that lets us optimize this.
 
@@ -348,7 +350,7 @@ The rest of this section is about choosing a smart $\Psi_t$ — different choice
 
 A preview of where we end up:
 
-$$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}\!\left[\sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot \Psi_t\right]$$
+$$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim p_\theta}\!\left[\sum_{t=0}^{T} \Psi_t \nabla_\theta \log \pi_\theta(a_t \mid s_t)\right]$$
 
 The core idea is that we *sample over trials in the environment* and **estimate** the gradient.
 
@@ -363,7 +365,7 @@ Three quantities appear throughout this lecture:
 
 **Value function** $V(s)$: expected future return from state $s$
 
-$$V(s) = \mathbb{E}\big[G_t \mid S_t = s\big] \quad \text{where } G_t = \sum_{k=0}^{\infty} \gamma^k R_{t+k+1}$$
+$$V(s) = \mathbb{E}\big[G_t \mid S_t = s\big] \quad \text{where } G_t = \sum_{k=0}^{\infty} \gamma^k r_{t+k}$$
 
 **Action-value** $Q(s, a)$: expected return after taking action $a$ in state $s$
 
@@ -407,7 +409,7 @@ Ideally, we want $\nabla_\theta J(\theta)$, but we can't do that (the state samp
 
 Written as an integral, the objective is:
 
-$$J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}[R(\tau)] = \int_\tau p_\theta(\tau) R(\tau) \, d\tau$$
+$$J(\theta) = \mathbb{E}_{\tau \sim p_\theta}[R(\tau)] = \int_\tau p_\theta(\tau) R(\tau) \, d\tau$$
 
 ---
 
@@ -417,7 +419,7 @@ Ideally, we want $\nabla_\theta J(\theta)$, but we can't do that (the state samp
 
 Written as an integral, the objective is:
 
-$$J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}[R(\tau)] = \int_\tau p_\theta(\tau) R(\tau) \, d\tau$$
+$$J(\theta) = \mathbb{E}_{\tau \sim p_\theta}[R(\tau)] = \int_\tau p_\theta(\tau) R(\tau) \, d\tau$$
 
 Taking the gradient directly:
 
@@ -438,9 +440,9 @@ $$
 \nabla_\theta J(\theta)
 &= \int_\tau \nabla_\theta p_\theta(\tau) R(\tau) \, d\tau
 && \text{differentiate the objective} \\
-&= \int_\tau p_\theta(\tau) \nabla_\theta \log p_\theta(\tau) R(\tau) \, d\tau
+&= \int_\tau p_\theta(\tau) R(\tau) \nabla_\theta \log p_\theta(\tau) \, d\tau
 && \text{log-derivative identity (chain rule)} \\
-&= \mathbb{E}_{\tau \sim \pi_\theta}\!\left[\nabla_\theta \log p_\theta(\tau) \cdot R(\tau)\right]
+&= \mathbb{E}_{\tau \sim p_\theta}\!\left[R(\tau) \nabla_\theta \log p_\theta(\tau)\right]
 && \text{expectation form}
 \end{aligned}
 $$
@@ -491,11 +493,11 @@ At a high level, rollout generation handles the sampling, and the loss code hand
 
 The trajectory probability factorizes:
 
-$$p_\theta(\tau) = p(s_0) \prod_{t=0}^{T} \pi_\theta(a_t \mid s_t) \, p(s_{t+1} \mid s_t, a_t)$$
+$$p_\theta(\tau) = d_0(s_0) \prod_{t=0}^{T} \pi_\theta(a_t \mid s_t) \, p(s_{t+1} \mid s_t, a_t)$$
 
 Taking the log:
 
-$$\log p_\theta(\tau) = \log p(s_0) + \sum_{t=0}^{T} \log \pi_\theta(a_t \mid s_t) + \sum_{t=0}^{T} \log p(s_{t+1} \mid s_t, a_t)$$
+$$\log p_\theta(\tau) = \log d_0(s_0) + \sum_{t=0}^{T} \log \pi_\theta(a_t \mid s_t) + \sum_{t=0}^{T} \log p(s_{t+1} \mid s_t, a_t)$$
 
 For language models, this is the familiar autoregressive pattern: a sequence log-probability becomes a sum of token log-probabilities.
 
@@ -505,11 +507,11 @@ For language models, this is the familiar autoregressive pattern: a sequence log
 
 <div class="text-sm">
 
-$$\log p_\theta(\tau) = \log p(s_0) + \sum_{t=0}^{T} \log \pi_\theta(a_t \mid s_t) + \sum_{t=0}^{T} \log p(s_{t+1} \mid s_t, a_t)$$
+$$\log p_\theta(\tau) = \log d_0(s_0) + \sum_{t=0}^{T} \log \pi_\theta(a_t \mid s_t) + \sum_{t=0}^{T} \log p(s_{t+1} \mid s_t, a_t)$$
 
 Now take the gradient w.r.t. $\theta$:
 
-- $\nabla_\theta \log p(s_0) = 0$ — initial state doesn't depend on $\theta$
+- $\nabla_\theta \log d_0(s_0) = 0$ — initial state distribution doesn't depend on $\theta$
 - $\nabla_\theta \log p(s_{t+1} \mid s_t, a_t) = 0$ — environment dynamics don't depend on $\theta$
 - Only $\nabla_\theta \log \pi_\theta(a_t \mid s_t)$ survives!
 
@@ -522,11 +524,11 @@ $$\nabla_\theta \log p_\theta(\tau) = \sum_{t=0}^{T} \nabla_\theta \log \pi_\the
 
 <div class="text-sm">
 
-$$\log p_\theta(\tau) = \log p(s_0) + \sum_{t=0}^{T} \log \pi_\theta(a_t \mid s_t) + \sum_{t=0}^{T} \log p(s_{t+1} \mid s_t, a_t)$$
+$$\log p_\theta(\tau) = \log d_0(s_0) + \sum_{t=0}^{T} \log \pi_\theta(a_t \mid s_t) + \sum_{t=0}^{T} \log p(s_{t+1} \mid s_t, a_t)$$
 
 Now take the gradient w.r.t. $\theta$:
 
-- $\nabla_\theta \log p(s_0) = 0$ — initial state doesn't depend on $\theta$
+- $\nabla_\theta \log d_0(s_0) = 0$ — initial state distribution doesn't depend on $\theta$
 - $\nabla_\theta \log p(s_{t+1} \mid s_t, a_t) = 0$ — environment dynamics don't depend on $\theta$
 - Only $\nabla_\theta \log \pi_\theta(a_t \mid s_t)$ survives!
 
@@ -548,11 +550,11 @@ Autodiff turns that summed log-probability into the corresponding sum of per-tok
 
 An action at time $t$ can't affect past rewards. So instead of weighting by the full trajectory reward $R(\tau)$:
 
-$$\nabla_\theta J = \mathbb{E}\!\left[\sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot R(\tau)\right]$$
+$$\nabla_\theta J = \mathbb{E}_{\tau \sim p_\theta}\!\left[\sum_{t=0}^{T} R(\tau) \nabla_\theta \log \pi_\theta(a_t \mid s_t)\right]$$
 
-We can replace $R(\tau)$ with the **return-to-go** $G_t = \sum_{t'=t}^{T} R_{t'}$ — only future rewards from $t$ onward:
+We can replace $R(\tau)$ with the **return-to-go** $G_t = \sum_{t'=t}^{T} r_{t'}$ — only future rewards from $t$ onward:
 
-$$\nabla_\theta J = \mathbb{E}\!\left[\sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot G_t\right]$$
+$$\nabla_\theta J = \mathbb{E}_{\tau \sim p_\theta}\!\left[\sum_{t=0}^{T} G_t \nabla_\theta \log \pi_\theta(a_t \mid s_t)\right]$$
 
 This doesn't change the expected gradient, but removes noise from past rewards that the current action couldn't have influenced. This is the step from $\Psi_t$ option 1 → option 2 in our taxonomy.
 
@@ -594,16 +596,16 @@ Use a centered return, $\Psi_t = G_t - b(s_t)$.
 Subtracting this baseline doesn't change the expected gradient:
 
 $$
-\mathbb{E}[\nabla_\theta \log \pi_\theta(a \mid s) \cdot (G_t - b(s))]
-= \mathbb{E}[\nabla_\theta \log \pi_\theta(a \mid s) \cdot G_t]
-- \mathbb{E}[\nabla_\theta \log \pi_\theta(a \mid s) \cdot b(s)]
+\mathbb{E}[(G_t - b(s)) \nabla_\theta \log \pi_\theta(a \mid s)]
+= \mathbb{E}[G_t \nabla_\theta \log \pi_\theta(a \mid s)]
+- \mathbb{E}[b(s) \nabla_\theta \log \pi_\theta(a \mid s)]
 $$
 
 The first term is the original estimator. The second vanishes:
 
 $$
 \begin{aligned}
-\mathbb{E}[\nabla_\theta \log \pi_\theta(a \mid s) \cdot b(s)]
+\mathbb{E}[b(s) \nabla_\theta \log \pi_\theta(a \mid s)]
 &= b(s) \cdot \sum_a \nabla_\theta \pi_\theta(a \mid s) \\
 &= b(s) \cdot \nabla_\theta \underbrace{\sum_a \pi_\theta(a \mid s)}_{= 1} \\
 &= 0
@@ -640,7 +642,7 @@ A *baseline* $b(s_t)$ is any value subtracted from the reward signal to reduce v
 
 Combining the log-derivative trick, return-to-go, and baseline subtraction:
 
-$$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}\!\left[\sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot \Psi_t\right]$$
+$$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim p_\theta}\!\left[\sum_{t=0}^{T} \Psi_t \nabla_\theta \log \pi_\theta(a_t \mid s_t)\right]$$
 
 This is the **policy gradient theorem**. Every algorithm in this lecture is an instantiation with a specific choice of $\Psi_t$ and regularization.
 
@@ -653,14 +655,14 @@ For language models, this means the sum runs over generated tokens in the comple
 $$
 \begin{aligned}
 J(\theta)
-&= \mathbb{E}_{\tau \sim \pi_\theta}[R(\tau)]
+&= \mathbb{E}_{\tau \sim p_\theta}[R(\tau)]
 && \text{objective} \\
 &= \int_\tau p_\theta(\tau) R(\tau)\, d\tau
 && \text{integral form} \\
 \nabla_\theta J(\theta)
 &= \int_\tau \nabla_\theta p_\theta(\tau) R(\tau)\, d\tau
 && \text{differentiate} \\
-&= \mathbb{E}_{\tau \sim \pi_\theta}\!\left[\sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot \Psi_t\right]
+&= \mathbb{E}_{\tau \sim p_\theta}\!\left[\sum_{t=0}^{T} \Psi_t \nabla_\theta \log \pi_\theta(a_t \mid s_t)\right]
 && \text{final estimator}
 \end{aligned}
 $$
@@ -808,7 +810,7 @@ Three components:
 
 The update rule:
 
-$$\Delta\theta = \alpha \, \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot (G_t - b(s_t))$$
+$$\Delta\theta = \alpha \, (G_t - b(s_t)) \nabla_\theta \log \pi_\theta(a_t \mid s_t)$$
 
 
 ---
@@ -825,7 +827,7 @@ The gradient is high variance because the raw return mixes the quality of the ac
 
 Subtracting a baseline $b(s)$ centers the signal: now the gradient weight is $(G_t - b)$, which answers "was this action better or worse than expected from this state?"
 
-$$\mathbb{E}_{a \sim \pi(\cdot \mid s)}[\nabla_\theta \log \pi_\theta(a \mid s) \cdot b(s)] = b(s) \cdot \mathbb{E}_{a \sim \pi(\cdot \mid s)}[\nabla_\theta \log \pi_\theta(a \mid s)] = 0$$
+$$\mathbb{E}_{a \sim \pi(\cdot \mid s)}[b(s) \nabla_\theta \log \pi_\theta(a \mid s)] = b(s) \cdot \mathbb{E}_{a \sim \pi(\cdot \mid s)}[\nabla_\theta \log \pi_\theta(a \mid s)] = 0$$
 
 Because $b(s)$ does not depend on which action was sampled, it factors out and cancels. The expected gradient is unchanged — but the variance drops dramatically.
 
@@ -835,7 +837,7 @@ Because $b(s)$ does not depend on which action was sampled, it factors out and c
 
 The full REINFORCE gradient:
 
-$$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}\!\left[\sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t)(G_t - b(s_t))\right]$$
+$$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim p_\theta}\!\left[\sum_{t=0}^{T} (G_t - b(s_t)) \nabla_\theta \log \pi_\theta(a_t \mid s_t)\right]$$
 
 Here, $G_t - b(s_t)$ is already an advantage estimate: how much better the realized return was than expected from state $s_t$.
 
@@ -1120,7 +1122,7 @@ This Monte Carlo estimate is simple and unbiased, but it can be high variance. T
 
 The temporal difference (TD) residual measures how much the actual reward exceeded the value prediction:
 
-$$\delta_t^V = R_t + \gamma V_\phi(s_{t+1}) - V_\phi(s_t)$$
+$$\delta_t^V = r_t + \gamma V_\phi(s_{t+1}) - V_\phi(s_t)$$
 
 This is the **1-step advantage estimate**: low variance (uses learned $V_\phi$) but potentially high bias (if $V_\phi$ is inaccurate).
 
@@ -1337,7 +1339,7 @@ $$\hat{\rho}_{i,t} = \text{clip}\!\left(\frac{\pi_\theta(a_{i,t} \mid s_t)}{\pi_
 
 **In most RLHF setups, data quality and reward signal quality dominate; algorithm choice mostly determines stability, efficiency, and engineering burden.** All methods optimize the **same** policy gradient objective:
 
-$$\nabla_\theta J(\theta) = \mathbb{E}\!\left[\sum_t \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot \Psi_t\right]$$
+$$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim p_\theta}\!\left[\sum_t \Psi_t \nabla_\theta \log \pi_\theta(a_t \mid s_t)\right]$$
 
 They differ in:
 
