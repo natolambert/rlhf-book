@@ -119,7 +119,7 @@ The core implementation detail is how to compute said gradient.
 
 ### Deriving the Policy Gradient
 
-Let $p_\theta(\tau)$ denote the trajectory distribution induced by the initial-state distribution $d_0$, the policy $\pi_\theta$, and the environment transition dynamics.
+Let $p_\theta(\tau)$ denote the trajectory distribution induced by the initial-state distribution $d_0$, the policy $\pi_\theta$, and the environment transition dynamics, as expanded in @eq:trajectory_probability below.
 Another way to pose the RL objective we want to maximize is as follows:
 $$
 J(\theta) = \mathbb{E}_{\tau \sim p_\theta} \left[ R(\tau) \right],
