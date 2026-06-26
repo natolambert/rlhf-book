@@ -94,7 +94,9 @@ $$ {#eq:policy_objective}
 
 In a finite MDP this is a sum over possible starting states, but in practice we never compute it exactly.
 Instead, we estimate it from data by sampling rollouts from the current policy.
-In RLHF this typically means sampling prompts $x_i$ from a dataset and generating completions $y_i \sim \pi_\theta(\cdot\mid x_i)$, then taking an empirical average such as:
+In RLHF this typically means sampling prompts $x_i$ from a dataset and generating completions $y_i \sim \pi_\theta(\cdot\mid x_i)$.
+Let $R(x_i, y_i)$ denote the scalar sequence-level reward assigned to that prompt-completion pair; if $\tau_i$ is the corresponding episode, this is the trajectory reward $R(\tau_i)$.
+We then take an empirical average such as:
 
 $$
 \hat{J}(\theta) = \frac{1}{B}\sum_{i=1}^{B} R(x_i, y_i),
