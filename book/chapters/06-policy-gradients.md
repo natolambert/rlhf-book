@@ -343,7 +343,7 @@ Without constraints, optimizing this importance-weighted objective can lead to d
 PPO addresses this by clipping the ratio to the range $[1-\varepsilon, 1+\varepsilon]$, ensuring that the policy cannot change too drastically in a single update.
 
 Note that, as we move to PPO and its peer algorithms, we often work with the *objective* rather than an explicit gradient.
-This is because the PPO objective does *not* have a closed, analytical gradient once the $\min$ and clipping operations are included; writing the objective is simply the clearer way to convey these algorithms.
+This is because the PPO objective does *not* have an easily interpretable analytical gradient once the $\min$ and clipping operations are included (the gradient has ~4 terms corresponding to the regions in @fig:ppo-obj, depending on how it is written); writing the objective is simply the clearer way to convey these algorithms.
 
 For completeness, PPO is typically written as an *expected* clipped surrogate objective over timesteps:
 
