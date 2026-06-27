@@ -345,6 +345,9 @@ To correct for this distribution mismatch, we multiply by the importance weight 
 Without constraints, optimizing this importance-weighted objective can lead to destructively large policy updates when the ratio diverges far from 1.
 PPO addresses this by clipping the ratio to the range $[1-\varepsilon, 1+\varepsilon]$, ensuring that the policy cannot change too drastically in a single update.
 
+Note that, as we move to PPO and its peer algorithms, we often work with the *objective* rather than an explicit gradient.
+This is because the PPO objective does *not* have an easily interpretable analytical gradient once the $\min$ and clipping operations are included (the gradient has ~4 terms corresponding to the regions in @fig:ppo-obj, depending on how it is written); writing the objective is simply the clearer way to convey these algorithms.
+
 For completeness, PPO is typically written as an *expected* clipped surrogate objective over timesteps:
 
 $$
@@ -393,9 +396,22 @@ This is by design! The trust region is a concept used to cap the maximum step si
 The idea of a "trust region" comes from the numerical optimization literature [@nocedal2006numerical], but was popularized within Deep RL from the algorithm Trust Region Policy Optimization (TRPO), which is accepted as the predecessor to PPO [@schulman2015trust].
 The trust region is the area where the full policy-gradient steps are applied, as the updates are not "clipped" by the max/min operations of the PPO objective.
 
-![Visualization of the different regions of the PPO objective for a hypothetical advantage. The "trust region" would be described as the region where the policy ratio $\rho$ is within $1\pm\varepsilon$.](images/ppo-viz-4x.png){#fig:ppo-obj}
+![Visualization of the PPO objective $J(\theta)$ as a function of the policy ratio $\rho(\theta)$, for both positive and negative advantage. Within each panel, the three ratio regions are annotated with their unclipped term, clipped term, resulting objective, and gradient.](images/ppo-clip-viz.png){#fig:ppo-obj}
 
-The policy ratio and advantage together can occur in a few different configurations. We will split the cases into two groups: positive and negative advantage.
+The policy ratio and advantage together can occur in a few different configurations, which @fig:ppo-obj enumerates by the sign of the advantage $A_t$ and by which of the three regions the policy ratio $\rho(\theta)$ falls into. Two facts determine the outcome in every region: the sign of the advantage sets whether we want to make the action more or less likely, and the $\min$ operation selects either the unclipped term $\rho(\theta) A_t$ or its clipped counterpart.
+
+The clipping only zeroes out the gradient in the two regions where the policy has *already* moved the sampled action in the desired direction, past the edge of the trust region:
+
+- **Positive advantage and $\rho(\theta) > 1+\varepsilon$**: the action is already substantially more likely under $\pi_\theta$ than under $\pi_{\theta_{\text{old}}}$. The objective saturates at $(1+\varepsilon)A_t$, its gradient is zero, and no update is made — we avoid over-reinforcing an action that is already more expressed.
+- **Negative advantage and $\rho(\theta) < 1-\varepsilon$**: the action is already substantially less likely under $\pi_\theta$. The objective saturates at $(1-\varepsilon)A_t$, its gradient is again zero, and no update is made — we avoid over-suppressing an action that is already discouraged.
+
+Everywhere else the unclipped term $\rho(\theta) A_t$ is active and PPO takes a standard policy-gradient step: increasing the action's probability when $A_t > 0$ and decreasing it when $A_t < 0$. We can read off @fig:ppo-obj in terms of what each region asks of the updated policy $\pi_\theta$:
+
+- the sloped, unclipped region under a positive advantage (green) **increases** the probability of the sampled action;
+- the sloped, unclipped region under a negative advantage (red) **decreases** it;
+- the flat, clipped region (grey) leaves the policy **unchanged**, since its gradient is zero.
+
+The same regions, written out term by term:
 
 #### Positive Advantage ($A_t > 0$)
 
