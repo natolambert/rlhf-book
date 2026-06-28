@@ -107,17 +107,15 @@ def print_step_metrics(step: int, metrics: dict) -> None:
 def print_rollout_sample(
     problem_id: str,
     reward: float,
-    acc: float,
-    feedback: str,
     completion: str,
     idx: int = 0,
     total: int = 1,
+    skipped: bool = False,
 ) -> None:
-    """Print a rollout group's reward/accuracy plus one sampled completion."""
+    note = "  [bold yellow](skipped — no correct demonstration)[/bold yellow]" if skipped else ""
     console.print(
         Panel(
-            f"[bold green]reward:[/bold green] {reward:.4f}    "
-            f"[bold green]acc:[/bold green] {acc:.4f}",
+            f"[bold green]reward:[/bold green] {reward:.4f}{note}",
             title=f"[bold cyan]Rollout Results — prompt {idx + 1}/{total}[/bold cyan]",
             border_style="cyan",
         )
@@ -129,8 +127,7 @@ def print_rollout_sample(
     table = Table(show_header=False, box=None, padding=(0, 1), show_edge=False)
     table.add_column("Label", style="dim", width=12)
     table.add_column("Content")
-    table.add_row("Problem:", str(problem_id))
-    table.add_row("Feedback:", preview(feedback) or "[dim](none)[/dim]")
+    table.add_row("Problem:", preview(str(problem_id)))
     table.add_row("Completion:", preview(completion))
     console.print(Panel(table, title="[bold cyan]Sample[/bold cyan]", border_style="dim"))
     console.print()

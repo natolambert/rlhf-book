@@ -8,7 +8,7 @@ import wandb
 from torch.nn.utils import clip_grad_norm_
 
 from .config import Config, load_config
-from .data import build_dataloader
+from .data import build_dataloader, create_dataset
 from .rollout import generate_batch
 from .utils import (
     get_loss_objective,
@@ -29,7 +29,8 @@ def main(cfg: Config):
     )
 
     model, tokenizer = load_model(cfg.model_name, device)
-    loader = build_dataloader(cfg.split, batch_size=cfg.prompts_per_step, shuffle=True)
+    dataset = create_dataset(cfg)
+    loader = build_dataloader(dataset, batch_size=cfg.prompts_per_step, shuffle=True)
     objective = get_loss_objective(
         cfg.loss, kl_top_k=cfg.kl_top_k, rollout_chunk=cfg.rollout_chunk
     ).to(device)
@@ -69,9 +70,12 @@ def main(cfg: Config):
         torch.cuda.empty_cache()
         model.eval()
         batches = [
-            generate_batch(model, tokenizer, entry, cfg, idx=i, total=len(prompts))
+            generate_batch(model, tokenizer, dataset, entry, cfg, idx=i, total=len(prompts))
             for i, entry in enumerate(prompts)
         ]
+        batches = [b for b in batches if b is not None]
+        if not batches:
+            continue
 
         model.train()
         optimizer.zero_grad(set_to_none=True)
@@ -90,7 +94,6 @@ def main(cfg: Config):
             "grad_norm": float(grad_norm),
             "lr": scheduler.get_last_lr()[0],
             "avg_reward": torch.cat([b["reward"] for b in batches]).mean().item(),
-            "avg_acc": torch.cat([b["acc"] for b in batches]).mean().item(),
             "hours": (time.time() - start_time) / 3600,
         }
         wandb.log(metrics)

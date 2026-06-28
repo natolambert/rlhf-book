@@ -1,27 +1,46 @@
 import random
 
 import torch
+from reasoning_gym.dataset import ProceduralDataset
 from transformers import GenerationConfig
 
 from .data import compute_score
 from .utils import print_rollout_sample
 
 
-def build_teacher_prompt(prompt: str, demo: str, feedback: str) -> str:
-    """Build the teacher's feedback-conditioned reprompt around the original problem."""
-    parts = [prompt]
-    if demo:
-        parts.append(f"\nCorrect solution:\n\n{demo}\n")
-    if feedback:
-        parts.append(
-            f"\nThe following is feedback from your unsuccessful earlier attempt:\n\n{feedback}\n"
-        )
-    parts.append("\nCorrectly solve the original question.\n")
-    return "".join(parts)
+SYSTEM_PROMPT = (
+    "A conversation between User and Assistant. The user asks a question, and the "
+    "Assistant solves it. The Assistant provides the final solution enclosed within "
+    "<answer> </answer> tags, i.e., <answer> solution here </answer>. Provide only the "
+    "final answer inside the tags. When an example is provided, you should strictly "
+    "follow the format of the output/answer in that example."
+)
 
 
-def generate_batch(model, tokenizer, entry: dict, cfg, idx: int = 0, total: int = 1) -> dict:
-    """Generate and score ``num_rollouts`` rollouts for one problem."""
+def build_teacher_prompt(question: str, demo: str) -> str:
+    parts = [
+        question,
+        f"Correct solution:\n\n{demo}",
+        "Correctly solve the original question.",
+    ]
+    return "\n\n".join(parts)
+
+
+def _apply_template(tokenizer, content: str, chat_kwargs: dict) -> str:
+    return tokenizer.apply_chat_template(
+        [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": content},
+        ],
+        tokenize=False,
+        add_generation_prompt=True,
+        **chat_kwargs,
+    )
+
+
+def generate_batch(
+    model, tokenizer, dataset: ProceduralDataset, entry: dict, cfg, idx: int = 0, total: int = 1
+) -> dict | None:
     device = model.device
     pad_id = tokenizer.pad_token_id
     gen_config = GenerationConfig(
@@ -38,14 +57,7 @@ def generate_batch(model, tokenizer, entry: dict, cfg, idx: int = 0, total: int 
     chat_kwargs = {}
     if not cfg.enable_thinking:
         chat_kwargs["enable_thinking"] = False
-    prompts = [
-        tokenizer.apply_chat_template(
-            [{"role": "user", "content": entry["prompt"]}],
-            tokenize=False,
-            add_generation_prompt=True,
-            **chat_kwargs,
-        )
-    ] * cfg.num_rollouts
+    prompts = [_apply_template(tokenizer, entry["question"], chat_kwargs)] * cfg.num_rollouts
     inputs = tokenizer(
         prompts,
         return_tensors="pt",
@@ -60,46 +72,37 @@ def generate_batch(model, tokenizer, entry: dict, cfg, idx: int = 0, total: int 
     completion_ids = student_ids[:, prompt_len:]
     completions = tokenizer.batch_decode(completion_ids, skip_special_tokens=True)
 
-    scored = [compute_score(c, entry["tests"], cfg.max_tests) for c in completions]
-    reward = torch.tensor([s["reward"] for s in scored], device=device)
-    acc = torch.tensor([s["acc"] for s in scored], device=device)
-    feedbacks = [s["feedback"] for s in scored]
+    reward = torch.tensor([compute_score(c, dataset, entry) for c in completions], device=device)
     success_idx = [i for i, r in enumerate(reward) if r >= cfg.success_reward_threshold]
 
-    action_mask = (completion_ids != pad_id).float()
-    teacher_prompts = []
-    for i in range(cfg.num_rollouts):
-        others = [j for j in success_idx if j != i]
-        # Use the full successful sibling completion as the demonstration (no code
-        # extraction), matching the reference SDPO reprompt.
-        demo = completions[others[0]] if others else ""
-        feedback = feedbacks[i]
-        if not demo and not feedback:
-            action_mask[i] = 0.0
-        prompt = build_teacher_prompt(entry["prompt"], demo, feedback)
-        teacher_prompts.append(
-            tokenizer.apply_chat_template(
-                [{"role": "user", "content": prompt}],
-                tokenize=False,
-                add_generation_prompt=True,
-                **chat_kwargs,
-            )
+    # No correct demonstration in the group: nothing to distil from, skip the prompt.
+    if not success_idx:
+        print_rollout_sample(
+            problem_id=entry["question"],
+            reward=reward.mean().item(),
+            completion=random.choice(completions),
+            idx=idx,
+            total=total,
+            skipped=True,
         )
+        return None
 
-    teacher_prompts = tokenizer(
-        teacher_prompts,
+    action_mask = (completion_ids != pad_id).float()
+    demo = completions[success_idx[0]]
+    teacher_prompt = _apply_template(
+        tokenizer, build_teacher_prompt(entry["question"], demo), chat_kwargs
+    )
+    teacher_prefix = tokenizer(
+        teacher_prompt,
         return_tensors="pt",
-        padding=True,
         truncation=True,
         max_length=cfg.max_reprompt_len,
-    ).to(device)
-    teacher_ids = torch.cat([teacher_prompts["input_ids"], completion_ids], dim=1)
+    ).to(device)["input_ids"]
+    teacher_ids = torch.cat([teacher_prefix.expand(cfg.num_rollouts, -1), completion_ids], dim=1)
 
     print_rollout_sample(
-        problem_id=entry["id"],
+        problem_id=entry["question"],
         reward=reward.mean().item(),
-        acc=acc.mean().item(),
-        feedback=next((f for f in feedbacks if f), ""),
         completion=random.choice(completions),
         idx=idx,
         total=total,
@@ -111,5 +114,4 @@ def generate_batch(model, tokenizer, entry: dict, cfg, idx: int = 0, total: int 
         "t_mask": (teacher_ids != pad_id).long(),
         "action_mask": action_mask,
         "reward": reward,
-        "acc": acc,
     }

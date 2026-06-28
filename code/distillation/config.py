@@ -1,11 +1,23 @@
+from typing import Any
+
 import yaml
 from pydantic import BaseModel
 
 
+class DatasetSpec(BaseModel):
+    name: str
+    weight: int = 1
+    config: dict[str, Any] = {}
+
+
+class DataConfig(BaseModel):
+    specs: list[DatasetSpec]
+    size: int = 3000
+
+
 class Config(BaseModel):
     # Data
-    split: str = "train"
-    max_tests: int | None = None
+    data: DataConfig
 
     # Model
     model_name: str = "Qwen/Qwen3-1.7B"
