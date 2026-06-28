@@ -15,16 +15,16 @@ data:
 kl_top_k: 20
 success_reward_threshold: 1.0
 
-# Generation (Qwen non-thinking recommended sampling params)
-temperature: 0.7
-top_p: 0.8
+# Generation (Qwen thinking recommended sampling params)
+temperature: 0.6
+top_p: 0.95
 top_k: 20
 min_p: 0.0
 repetition_penalty: 1.0
 max_new_tokens: 512
 max_prompt_len: 512  # student prompt cap
-max_reprompt_len: 1024  # teacher reprompt cap (problem + full sibling demo + feedback)
-enable_thinking: false
+max_reprompt_len: 1024  # teacher reprompt cap (problem + full sibling demo)
+enable_thinking: true
 
 # Training
 lr: 1.0e-6

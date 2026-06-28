@@ -2,16 +2,13 @@ import random
 
 import torch
 from reasoning_gym.dataset import ProceduralDataset
+from reasoning_gym.utils import SYSTEM_PROMPTS
 from transformers import GenerationConfig
 
 from .data import compute_score
 
 
-SYSTEM_PROMPT = (
-    "You are a helpful assistant. Reason through the problem step by step, then give "
-    "your final answer enclosed in <answer> </answer> tags, e.g. <answer> answer here "
-    "</answer>. Put only the final answer inside the tags."
-)
+SYSTEM_PROMPT = SYSTEM_PROMPTS["DeepSeekZero"]
 
 
 def build_teacher_prompt(question: str, demo: str) -> str:
