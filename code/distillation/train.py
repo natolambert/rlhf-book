@@ -88,15 +88,14 @@ def main(cfg: Config):
         torch.cuda.empty_cache()
 
         metrics = {
-            "step": step,
+            "reward": torch.cat([b["reward"] for b in batches]).mean().item(),
             "loss": accumulated_loss,
             "grad_norm": float(grad_norm),
             "lr": scheduler.get_last_lr()[0],
-            "avg_reward": torch.cat([b["reward"] for b in batches]).mean().item(),
             "skipped": len(prompts) - len(batches),
             "hours": (time.time() - start_time) / 3600,
         }
-        wandb.log(metrics)
+        wandb.log(metrics, step=step)
         print_step_metrics(metrics)
         print_rollout_sample(**random.choice(batches)["sample"])
         step += 1
