@@ -9,7 +9,7 @@ See the parent [`code/README.md`](../README.md) for installation, configuration,
 
 | Algorithm | Config | Key Idea |
 |-----------|--------|----------|
-| **SDPO** | `sdpo.yaml` | Self-Distillation Policy Optimization — distill a feedback-conditioned self-teacher into the student via top-K forward KL ([Hübotter et al., 2026](https://arxiv.org/abs/2601.20802)) |
+| **SDPO** | `sdpo.yaml` | Self-Distillation Policy Optimization — distill a feedback-conditioned self-teacher into the student via top-K reverse KL ([Hübotter et al., 2026](https://arxiv.org/abs/2601.20802)) |
 
 ## Reference Runs
 

@@ -4,22 +4,25 @@ split: train
 max_tests: 8
 
 # SDPO
-kl_top_k: 100
+kl_top_k: 20
 success_reward_threshold: 1.0
 
-# Generation
-temperature: 0.6
-top_p: 0.95
+# Generation (Qwen non-thinking recommended sampling params)
+temperature: 0.7
+top_p: 0.8
 top_k: 20
 min_p: 0.0
+repetition_penalty: 1.0
 max_new_tokens: 8192
-max_prompt_len: 2048
+max_prompt_len: 2048  # student prompt cap
+max_reprompt_len: 10240  # teacher reprompt cap (problem + full sibling demo + feedback)
 enable_thinking: false
 
 # Training
-lr: 1.0e-5
+lr: 1.0e-6
+warmup_ratio: 0.0  # constant LR (no warmup), matching the feedback-conditioned SDPO regime
 prompts_per_step: 8
-num_rollouts: 8
+num_rollouts: 16
 num_steps: 200
 max_norm: 1.0
 seed: 42

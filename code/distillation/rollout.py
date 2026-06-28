@@ -20,7 +20,7 @@ def build_teacher_prompt(prompt: str, demo: str, feedback: str) -> str:
     return "".join(parts)
 
 
-def generate_batch(model, tokenizer, entry: dict, cfg) -> dict:
+def generate_batch(model, tokenizer, entry: dict, cfg, idx: int = 0, total: int = 1) -> dict:
     """Generate and score ``num_rollouts`` rollouts for one problem."""
     device = model.device
     pad_id = tokenizer.pad_token_id
@@ -29,6 +29,7 @@ def generate_batch(model, tokenizer, entry: dict, cfg) -> dict:
         top_p=cfg.top_p,
         top_k=cfg.top_k,
         min_p=cfg.min_p,
+        repetition_penalty=cfg.repetition_penalty,
         do_sample=True,
         max_new_tokens=cfg.max_new_tokens,
         pad_token_id=pad_id,
@@ -69,6 +70,8 @@ def generate_batch(model, tokenizer, entry: dict, cfg) -> dict:
     teacher_prompts = []
     for i in range(cfg.num_rollouts):
         others = [j for j in success_idx if j != i]
+        # Use the full successful sibling completion as the demonstration (no code
+        # extraction), matching the reference SDPO reprompt.
         demo = completions[others[0]] if others else ""
         feedback = feedbacks[i]
         if not demo and not feedback:
@@ -88,7 +91,7 @@ def generate_batch(model, tokenizer, entry: dict, cfg) -> dict:
         return_tensors="pt",
         padding=True,
         truncation=True,
-        max_length=cfg.max_prompt_len,
+        max_length=cfg.max_reprompt_len,
     ).to(device)
     teacher_ids = torch.cat([teacher_prompts["input_ids"], completion_ids], dim=1)
 
@@ -98,6 +101,8 @@ def generate_batch(model, tokenizer, entry: dict, cfg) -> dict:
         acc=acc.mean().item(),
         feedback=next((f for f in feedbacks if f), ""),
         completion=random.choice(completions),
+        idx=idx,
+        total=total,
     )
     return {
         "s_ids": student_ids,
