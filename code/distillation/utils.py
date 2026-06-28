@@ -80,54 +80,31 @@ def print_model_info(model) -> None:
 
 
 def print_step_header(step: int, total: int) -> None:
-    console.rule(f"[bold cyan]Step {step + 1}/{total}[/bold cyan]", style="cyan")
+    console.rule(f"[bold cyan]Step {step}/{total}[/bold cyan]", style="cyan")
 
 
 def _fmt_metric(v) -> str:
-    """Format a metric value: scientific notation for small nonzero floats (e.g. LR)."""
     if isinstance(v, float):
         return f"{v:.2e}" if 0 < abs(v) < 1e-3 else f"{v:.4f}"
     return f"{v}"
 
 
-def print_step_metrics(step: int, metrics: dict) -> None:
-    """Print the per-step training metrics (mirrors what is sent to W&B)."""
+def print_step_metrics(metrics: dict) -> None:
     body = "    ".join(
         f"[bold green]{k}:[/bold green] {_fmt_metric(v)}" for k, v in metrics.items()
     )
-    console.print(
-        Panel(
-            body,
-            title=f"[bold cyan]Step {step + 1} Metrics[/bold cyan]",
-            border_style="cyan",
-        )
-    )
+    console.print(Panel(body, title="[bold cyan]Metrics[/bold cyan]", border_style="cyan"))
 
 
-def print_rollout_sample(
-    problem_id: str,
-    reward: float,
-    completion: str,
-    idx: int = 0,
-    total: int = 1,
-    skipped: bool = False,
-) -> None:
-    note = "  [bold yellow](skipped — no correct demonstration)[/bold yellow]" if skipped else ""
-    console.print(
-        Panel(
-            f"[bold green]reward:[/bold green] {reward:.4f}{note}",
-            title=f"[bold cyan]Rollout Results — prompt {idx + 1}/{total}[/bold cyan]",
-            border_style="cyan",
-        )
-    )
-
-    def preview(text: str, limit: int = 5000) -> str:
+def print_rollout_sample(question: str, answer: str, completion: str) -> None:
+    def preview(text: str, limit: int = 1000) -> str:
         return text if len(text) <= limit else text[:limit] + "[dim]... (truncated)[/dim]"
 
     table = Table(show_header=False, box=None, padding=(0, 1), show_edge=False)
     table.add_column("Label", style="dim", width=12)
     table.add_column("Content")
-    table.add_row("Problem:", preview(str(problem_id)))
+    table.add_row("Question:", question)
+    table.add_row("Oracle:", str(answer))
     table.add_row("Completion:", preview(completion))
     console.print(Panel(table, title="[bold cyan]Sample[/bold cyan]", border_style="dim"))
     console.print()

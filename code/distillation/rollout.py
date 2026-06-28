@@ -5,15 +5,12 @@ from reasoning_gym.dataset import ProceduralDataset
 from transformers import GenerationConfig
 
 from .data import compute_score
-from .utils import print_rollout_sample
 
 
 SYSTEM_PROMPT = (
-    "A conversation between User and Assistant. The user asks a question, and the "
-    "Assistant solves it. The Assistant provides the final solution enclosed within "
-    "<answer> </answer> tags, i.e., <answer> solution here </answer>. Provide only the "
-    "final answer inside the tags. When an example is provided, you should strictly "
-    "follow the format of the output/answer in that example."
+    "You are a helpful assistant. Reason through the problem step by step, then give "
+    "your final answer enclosed in <answer> </answer> tags, e.g. <answer> answer here "
+    "</answer>. Put only the final answer inside the tags."
 )
 
 
@@ -38,9 +35,7 @@ def _apply_template(tokenizer, content: str, chat_kwargs: dict) -> str:
     )
 
 
-def generate_batch(
-    model, tokenizer, dataset: ProceduralDataset, entry: dict, cfg, idx: int = 0, total: int = 1
-) -> dict | None:
+def generate_batch(model, tokenizer, dataset: ProceduralDataset, entry: dict, cfg) -> dict | None:
     device = model.device
     pad_id = tokenizer.pad_token_id
     gen_config = GenerationConfig(
@@ -77,14 +72,6 @@ def generate_batch(
 
     # No correct demonstration in the group: nothing to distil from, skip the prompt.
     if not success_idx:
-        print_rollout_sample(
-            problem_id=entry["question"],
-            reward=reward.mean().item(),
-            completion=random.choice(completions),
-            idx=idx,
-            total=total,
-            skipped=True,
-        )
         return None
 
     action_mask = (completion_ids != pad_id).float()
@@ -100,13 +87,6 @@ def generate_batch(
     ).to(device)["input_ids"]
     teacher_ids = torch.cat([teacher_prefix.expand(cfg.num_rollouts, -1), completion_ids], dim=1)
 
-    print_rollout_sample(
-        problem_id=entry["question"],
-        reward=reward.mean().item(),
-        completion=random.choice(completions),
-        idx=idx,
-        total=total,
-    )
     return {
         "s_ids": student_ids,
         "s_mask": (student_ids != pad_id).long(),
@@ -114,4 +94,9 @@ def generate_batch(
         "t_mask": (teacher_ids != pad_id).long(),
         "action_mask": action_mask,
         "reward": reward,
+        "sample": {
+            "question": entry["question"],
+            "answer": entry["answer"],
+            "completion": random.choice(completions),
+        },
     }

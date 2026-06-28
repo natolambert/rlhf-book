@@ -1,5 +1,6 @@
 import argparse
 import os
+import random
 import time
 
 import torch
@@ -14,6 +15,7 @@ from .utils import (
     get_loss_objective,
     load_model,
     print_model_info,
+    print_rollout_sample,
     print_step_header,
     print_step_metrics,
     seed_everything,
@@ -65,17 +67,14 @@ def main(cfg: Config):
     for prompts in loader:
         if step >= cfg.num_steps:
             break
-        print_step_header(step=step, total=cfg.num_steps)
 
         torch.cuda.empty_cache()
         model.eval()
-        batches = [
-            generate_batch(model, tokenizer, dataset, entry, cfg, idx=i, total=len(prompts))
-            for i, entry in enumerate(prompts)
-        ]
+        batches = [generate_batch(model, tokenizer, dataset, entry, cfg) for entry in prompts]
         batches = [b for b in batches if b is not None]
         if not batches:
             continue
+        print_step_header(step=step, total=cfg.num_steps)
 
         model.train()
         optimizer.zero_grad(set_to_none=True)
@@ -94,10 +93,12 @@ def main(cfg: Config):
             "grad_norm": float(grad_norm),
             "lr": scheduler.get_last_lr()[0],
             "avg_reward": torch.cat([b["reward"] for b in batches]).mean().item(),
+            "skipped": len(prompts) - len(batches),
             "hours": (time.time() - start_time) / 3600,
         }
         wandb.log(metrics)
-        print_step_metrics(step, metrics)
+        print_step_metrics(metrics)
+        print_rollout_sample(**random.choice(batches)["sample"])
         step += 1
 
 
