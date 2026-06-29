@@ -15,7 +15,7 @@ data:
 kl_top_k: 20
 success_reward_threshold: 1.0
 
-# Generation (Qwen thinking recommended sampling params)
+# Generation
 temperature: 0.6
 top_p: 0.95
 top_k: 20
