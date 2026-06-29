@@ -3,7 +3,7 @@ loss: sdpo
 
 # Data (Reasoning Gym — string reversal)
 data:
-  size: 3000
+  size: 10000
   specs:
     - name: spell_backward
       weight: 1
@@ -29,7 +29,7 @@ enable_thinking: true
 # Training
 lr: 1.0e-6
 warmup_ratio: 0.0  # constant LR (no warmup), matching the feedback-conditioned SDPO regime
-prompts_per_step: 16
+prompts_per_step: 8
 num_rollouts: 8
 num_steps: 200
 max_norm: 1.0

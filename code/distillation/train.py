@@ -62,18 +62,24 @@ def main(cfg: Config):
         )
     print_model_info(model)
 
-    start_time = time.time()
-    step = 0
-    for prompts in loader:
-        if step >= cfg.num_steps:
-            break
+    def _prompt_stream():
+        while True:
+            for prompts in loader:
+                yield from prompts
 
+    prompts = _prompt_stream()
+    start_time = time.time()
+    for step in range(cfg.num_steps):
         torch.cuda.empty_cache()
         model.eval()
-        batches = [generate_batch(model, tokenizer, dataset, entry, cfg) for entry in prompts]
-        batches = [b for b in batches if b is not None]
-        if not batches:
-            continue
+
+        # Poll the inference engine until prompts_per_step prompts each yield a correct rollout.
+        batches, polled = [], 0
+        while len(batches) < cfg.prompts_per_step:
+            batch = generate_batch(model, tokenizer, dataset, next(prompts), cfg)
+            polled += 1
+            if batch is not None:
+                batches.append(batch)
         print_step_header(step=step, total=cfg.num_steps)
 
         model.train()
@@ -92,13 +98,12 @@ def main(cfg: Config):
             "loss": accumulated_loss,
             "grad_norm": float(grad_norm),
             "lr": scheduler.get_last_lr()[0],
-            "skipped": len(prompts) - len(batches),
+            "skipped": polled - len(batches),
             "hours": (time.time() - start_time) / 3600,
         }
         wandb.log(metrics, step=step)
         print_step_metrics(metrics)
         print_rollout_sample(**random.choice(batches)["sample"])
-        step += 1
 
 
 def main_cli():
