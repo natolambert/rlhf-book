@@ -29,7 +29,7 @@ enable_thinking: true
 # Training
 lr: 1.0e-6
 warmup_ratio: 0.0  # constant LR (no warmup), matching the feedback-conditioned SDPO regime
-prompts_per_step: 8
+prompts_per_step: 16
 num_rollouts: 8
 num_steps: 200
 max_norm: 1.0

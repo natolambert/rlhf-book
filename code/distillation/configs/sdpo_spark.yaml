@@ -27,7 +27,7 @@ enable_thinking: false
 # Peak memory: ~44GB GPU during loss backward
 # Step time: ~1-2 min avg (varies by problem difficulty)
 lr: 1.0e-6
-prompts_per_step: 8
+prompts_per_step: 16
 num_rollouts: 8
 num_steps: 50
 max_norm: 1.0
