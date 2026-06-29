@@ -5,6 +5,7 @@ On release, entries get moved under a version heading.
 
 ## Unreleased
 
+- 2026-06-17: [PR #328](https://github.com/natolambert/rlhf-book/pull/328) updated speedrun mode for policy-gradient training to record `avg_total` per rollout-buffer iteration in JSON, detect goal crossing on a 100-iteration rolling average, and document the leaderboard workflow (`SPEEDRUN.md`, `scripts/speedrun/LEADERBOARD.md`).
 - 2026-06-16: [PR #453](https://github.com/natolambert/rlhf-book/pull/453) updated direct-alignment docs to use the current Ai2 casing.
 - 2026-06-13: [PR #450](https://github.com/natolambert/rlhf-book/pull/450) updated preference reward model tokenization to apply tokenizer chat templates when available, including the demo reward comparison path. This changes tokenization for the default `Qwen3-0.6B-Base` run (which ships a chat template), so loss scale is not directly comparable to prior runs; the chosen/rejected formatting stays symmetric, so the Bradley-Terry objective is unaffected.
 - 2026-05-15: [PR #425](https://github.com/natolambert/rlhf-book/pull/425) added `[code]` link to `code/instruction_tuning` in the site navbar and listed Chapter 4 (Instruction Tuning) under the Book Chapters section of `code/README.md`.

@@ -48,6 +48,7 @@ uv.lock
 checkpoints/
 outputs/
 rejection_sampling/output/
+logs/speedrun/
 wandb/
 *.pt
 *.pth
