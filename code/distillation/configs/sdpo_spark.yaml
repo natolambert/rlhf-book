@@ -3,7 +3,7 @@ loss: sdpo
 
 # Data (Reasoning Gym — string reversal)
 data:
-  size: 3000
+  size: 10000
   specs:
     - name: spell_backward
       weight: 1
@@ -27,7 +27,7 @@ enable_thinking: false
 # Peak memory: ~44GB GPU during loss backward
 # Step time: ~1-2 min avg (varies by problem difficulty)
 lr: 1.0e-6
-prompts_per_step: 16
+prompts_per_step: 8
 num_rollouts: 8
 num_steps: 50
 max_norm: 1.0
