@@ -1,5 +1,7 @@
 # Self-Distillation (SDPO)
 
+![SDPO: the policy is run twice over completions sampled from the question-only student — once conditioned on the question plus a correct sibling demonstration (self-teacher) and once on the question alone (student) — and trained by the per-token reverse KL between the two dense next-token distributions.](../../book/images/sdpo_tikz.png)
+
 Educational implementation of **SDPO — Self-Distillation Policy Optimization** for
 [RLHF Book](https://rlhfbook.com), an on-policy distillation method for reasoning
 tasks ([Hübotter et al., 2026](https://arxiv.org/abs/2601.20802)).
