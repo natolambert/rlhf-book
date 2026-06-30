@@ -12,6 +12,9 @@ search-title: "Chapter 12: Synthetic Data"
 meta-description: "Synthetic data, distillation, Constitutional AI, and AI feedback methods used throughout modern post-training."
 next-chapter: "Tool Use and Function Calling"
 next-url: "13-tools"
+lectures:
+  - video: "https://www.youtube.com/watch?v=6nyJ8y8ghsE&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=10"
+    label: "Lecture 7: Synthetic Data and Modern Post-training Methods"
 ---
 
 # Synthetic Data
@@ -112,6 +115,8 @@ $$
 q(u_j = k \mid s, u_{<j})\log p(u_j = k \mid s, u_{<j}).
 $$ {#eq:word_kd}
 
+WORD-KD is an application of the classic, Hinton inspired teacher-student knowledge distillation to a language model. This would generally be done over a static piece of text already in the training corpus.
+
 This has the ordinary cross-entropy form $-\sum_z q(z)\log p(z)$.
 At each position $j$, the teacher distribution $q$ assigns probability to every possible next token $k \in \mathcal{V}$, and the student is penalized when its distribution $p$ puts low probability on tokens the teacher considers likely.
 
@@ -128,6 +133,7 @@ $$
 \end{aligned}
 $$ {#eq:sequence_kd}
 
+SEQ-KD takes a step towards modern methods, where the teacher model is generating tokens as signal for the student. This is a core step to unlock future styles of on-policy distillation we will see, and is needed to make the computation over all possible sequences tractable. 
 As we transition to the popular variants of KD with modern models, we'll refer to this style of training as *offline* KD -- as in the generations for training the student model are generated a priori.
 
 Before proceeding, two connections are useful.
@@ -246,7 +252,8 @@ The teacher log-prob gap acts like dense token-level feedback, providing potenti
 
 ### Modern OPD Variants
 
-This setup can even be expanded further, where multiple teacher models are used to teach one final model.
+This setup can even be expanded further, where multiple teacher models are used to teach one final model or additional information can be inserted into a generation to help a model identify a mistake.
+To begin, we will cover how to integrate multiple teachers into a single training run.
 These teachers can be specific specialist models, e.g. for a domain such as math or code, or a previous, intermediate training checkpoint.
 For each teacher, a contribution weight can be chosen per prompt or task type in the training batch, in order to create Multi-Teacher On-Policy Distillation (MOPD) [@mimo2025flash].
 For multiple teachers, let $\pi_{T_k}$ be teacher $k$ and let $w_k(s)$ be its prompt-dependent mixture weight (with $\sum_k w_k(s) = 1$) within the reverse KL loss:
@@ -262,7 +269,18 @@ Multiple groups can work on high-quality expert models, which can serve as teach
 
 There are many ways to combine OPD with other areas investigated in this book, such as using the reverse KL as an advantage in addition to other forms of advantage computation, such as GRPO's group-level normalization, which enables more complex reward shaping.
 KD methods are unusual among post-training methods because they often require the student and teacher to share a tokenizer, since the supervision can be per-token feedback from another LLM.
-Extended approaches, such as On-Policy Self-Distillation (OPSD), have a language model verify a completion either itself or with external tools to act as a teacher with privileged information, so it can train a weaker version of itself [@zhao2026selfdistilled].
+
+Extended approaches, such as On-Policy Self-Distillation (OPSD), have a language model verify a completion either itself or with external tools to act as a teacher with privileged information, so it can improve its own performance without an explicitly stronger teacher [@zhao2026selfdistilled].
+For example, Cursor used self-distillation in the form of targeted textual feedback on RL trajectories to train its Composer 2.5 coding model [@cursor2026composer25], finetuned from Kimi K2.5. 
+What follows is a simplified intuition, as in practice the setup below is combined with other loss functions such as code correctness.
+In this setup, Cursor has the model review RL trajectories with a judgement prompt that has a list of common bugs.
+When encountering a bug, the judgement model will modify the generated sequence within RL -- inserting a hint for the model to learn from in the future -- and then proceed with the distillation loss. 
+This entails a loop of first generating a completion with standard language model generation in RL, then running the judge model and optionally inserting a hint token, and finally generating the logprobs for the new completion to deploy the knowledge distillation loss.
+The hint in the token-space for the model is enough to help the model correct its own outputs, even when improving at the absolute frontier of performance (there's meaningful ongoing work on how to best structure and use these hints, often referred to as *privileged information* [@penaloza2026privileged]).
+
+This leaves on-policy distillation as a core post-training method, useful for combining multiple skills into one general model or pushing the frontier in a specialized deployment.
+
+![Three distillation regimes, compared by where the rollout comes from and how supervision flows. **Sequence KD** (left): the teacher generates an output offline and the student is trained to match it with a cross-entropy (CE) loss. **On-policy distillation (OPD)** (center): the student generates the rollout on-policy (e.g. within a RL framework) and a separate teacher scores each visited token, training the student with a per-token KL divergence (KL). **On-policy self-distillation (OPSD)** (right): one model plays both roles -- privileged information (a hint) added to the context creates a teacher trajectory, and the no-hint generation is distilled toward it with a KL loss, with no separate teacher model.](images/distillation_directionality_tikz.png){#fig:distillation-directionality data-dark-src="images/distillation_directionality_tikz-dark.png"}
 
 ## AI Feedback
 
@@ -289,7 +307,7 @@ The exact domains and applications -- i.e. chat, safety, reasoning, mathematics,
 Some early work in RLAIF shows that AI feedback can completely replace human data, touting it as an effective replacement [@lee2023rlaif], especially when evaluated solely on chat tasks [@cui2023ultrafeedback] [@yuan2025selfrewardinglanguagemodels].
 Early literature studying RLHF after ChatGPT had narrow evaluation suites focused on the "alignment" of models that act as helpful assistants across a variety of domains (discussed further in Chapter 17).
 Later work takes a more nuanced picture, where the optimal equilibrium on a broader evaluation set, e.g. including some reasoning tasks, involves routing a set of challenging data points to humans for accurate labeling, while most of the data is sent for AI feedback [@miranda2024hybrid] [@xu2025rlthf].
-Although no studies have focused on the balance between human and AI feedback data for RLHF across broader domains, there are many technical reports that show RLHF generally can improve this broad suite of evaluations, some that use DPO, such as Ai2's Tülu 3 [@lambert2024t] and Olmo 3 [@teamolmo2025olmo3], or Hugging Face's SmolLM 3 [@bakouch2025smollm3], and others that use online RLHF pipelines, such as Nvidia's work that uses a mix of human preference data from Scale AI and LLM-based feedback (through the helpsteer line of work [@wang2024helpsteer] [@wang2024helpsteer2] [@wang2024helpsteer2p] [@wang2025helpsteer3]): Nemotron Nano 3 [@nvidia2025nemotron3nano], Nemotron-Cascade [@wang2025nemotron], or Llama-Nemotron reasoning models [@bercovich2025llamanemotron].
+Although no studies have focused on the balance between human and AI feedback data for RLHF across broader domains, there are many technical reports that show RLHF generally can improve this broad suite of evaluations, some that use DPO, such as Ai2's Tülu 3 [@lambert2024t] and Olmo 3 [@teamolmo2025olmo3], or Hugging Face's SmolLM 3 [@bakouch2025smollm3], and others that use online RLHF pipelines, such as NVIDIA's work that uses a mix of human preference data from Scale AI and LLM-based feedback (through the HelpSteer line of work [@wang2024helpsteer] [@wang2024helpsteer2] [@wang2024helpsteer2p] [@wang2025helpsteer3]): Nemotron Nano 3 [@nvidia2025nemotron3nano], Nemotron-Cascade [@wang2025nemotron], or Llama-Nemotron reasoning models [@bercovich2025llamanemotron].
 
 Overall, although AI feedback and related methods are obviously extremely useful to the field, it is clear that human data has not been completely replaced by these cheaper alternatives.
 Many hypotheses exist, but whether human data allows finer control of the models in real-world product settings or for newer training methods such as character training (an emerging set of techniques that allow you to precisely control the personality of a model, covered in Chapter 17) has not been studied.

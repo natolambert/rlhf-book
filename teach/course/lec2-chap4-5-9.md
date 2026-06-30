@@ -749,11 +749,11 @@ $$= \arg\max_\theta \; \sigma\!\left( r_\theta(y_c \mid x) - r_\theta(y_r \mid x
 
 $$\theta^* = \arg\max_\theta \; \sigma\!\left( r_\theta(y_c \mid x) - r_\theta(y_r \mid x) \right)$$
 
-$\log$ is monotonic, so $\arg\max \sigma(\cdot) = \arg\max \log \sigma(\cdot)$:
+Training maximizes the **log**-likelihood over the dataset -- take $\log$ *before* averaging, since $\mathbb{E}[\log P] \neq \mathbb{E}[P]$:
 
-$$= \arg\max_\theta \; \log \sigma\!\left( r_\theta(y_c \mid x) - r_\theta(y_r \mid x) \right)$$
+$$\theta^* = \arg\max_\theta \; \mathbb{E}_{(x, y_c, y_r) \sim D}\left[\log \sigma\!\left( r_\theta(y_c \mid x) - r_\theta(y_r \mid x) \right)\right]$$
 
-Flip the sign to turn maximization into minimization (a loss):
+Flip the sign for the (per-example) loss:
 
 $$\mathcal{L}(\theta) = - \log \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) \right)$$
 

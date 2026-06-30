@@ -17,6 +17,8 @@ Colloquium has built-in HTML fragment support. Prefer fragments over duplicate s
 - `<!-- animate: blocks -->` reveals each top-level block one at a time.
 - `<!-- step -->` reveals the content after the marker on the next click. Add multiple markers for multiple reveal points.
 
+**Put no content after the animated list.** With `<!-- animate: bullets -->`, only the list items become fragments — any paragraph *after* the list is not a fragment, so it renders immediately at step 0 and appears **before** the bullets it should follow (out of order). Keep lead-in prose *above* the list and end the slide on the final bullet; if a trailing line matters, fold it into the last bullet (or move it to a separate slide). The same applies to a trailing block under `<!-- animate: blocks -->` only when it is not itself a top-level block.
+
 **Math derivation unrolls**: For step-by-step derivations, add `<!-- step -->` before each new derivation step so the audience sees one manipulation at a time. Repeat a full slide only when separate static slides are intentionally needed, such as a handout or export workflow that should preserve each intermediate frame.
 
 **Never skip steps in derivations.** Every algebraic manipulation must be shown explicitly — if a term cancels, show it cancelling; if an expression is rewritten, show the intermediate form. Assume the audience cannot fill in gaps. For example, when dividing numerator and denominator by the same term, first show the division applied, then show the numerator simplifying to 1, then show the denominator simplifying. Each of these can be a separate slide.

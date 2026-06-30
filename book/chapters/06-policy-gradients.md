@@ -72,12 +72,12 @@ The rest of this chapter goes very deep on the different ways to do this, and wh
 
 Now, let us formalize this a bit further.
 Reinforcement learning algorithms are designed to maximize the future, discounted reward across a trajectory of states, $s \in \mathcal{S}$, and actions, $a \in \mathcal{A}$ (for more notation, see Appendix A, Definitions).
-The objective of the agent, often called the *return*, is the sum of discounted future rewards (where $\gamma\in [0,1]$ is a factor that prioritizes near-term rewards) at a given time $t$:
+The objective of the agent, often called the *return*, is the sum of discounted rewards starting at a given time $t$ (where $\gamma\in [0,1]$ is a factor that prioritizes near-term rewards):
 
-$$G_t = R_{t+1} + \gamma R_{t+2} + \cdots = \sum_{k=0}^\infty \gamma^k R_{t+k+1}.$$ {#eq:return_definition}
+$$G_t = r_t + \gamma r_{t+1} + \cdots = \sum_{k=0}^\infty \gamma^k r_{t+k}.$$ {#eq:return_definition}
 
-The return definition can also be estimated as:
-$$G_{t} = \gamma{G_{t+1}} + R_{t+1}.$$ {#eq:recursive_return}
+The return definition can also be written recursively as:
+$$G_{t} = r_t + \gamma G_{t+1}.$$ {#eq:recursive_return}
 
 This return is the basis for learning a value function $V(s)$ that is the estimated future return given a current state:
 
@@ -85,16 +85,18 @@ $$V(s) = \mathbb{E}\left[G_t \mid S_t = s \right].$$ {#eq:value_function}
 
 All policy gradient algorithms optimize a policy $\pi_\theta(a\mid s)$ to maximize expected return; this objective can be expressed using the induced value function $V^{\pi_\theta}(s)$.
 
-Where $d^{\pi_\theta}(s)$ is the state-visitation distribution induced by policy $\pi_\theta(a \mid s)$, the objective we maximize can be written as:
+Let $d_0(s)$ be the initial-state distribution. The episodic objective we maximize can be written as:
 $$
 J(\theta)
 \;=\;
-\sum_{s} d^{\pi_\theta}(s) V^{\pi_\theta}(s),
+\sum_{s} d_0(s) V^{\pi_\theta}(s),
 $$ {#eq:policy_objective}
 
-In a finite MDP this is a sum over all states, but in practice we never compute it exactly.
+In a finite MDP this is a sum over possible starting states, but in practice we never compute it exactly.
 Instead, we estimate it from data by sampling rollouts from the current policy.
-In RLHF this typically means sampling prompts $x_i$ from a dataset and generating completions $y_i \sim \pi_\theta(\cdot\mid x_i)$, then taking an empirical average such as:
+In RLHF this typically means sampling prompts $x_i$ from a dataset and generating completions $y_i \sim \pi_\theta(\cdot\mid x_i)$.
+Let $R(x_i, y_i)$ denote the scalar sequence-level reward assigned to that prompt-completion pair; if $\tau_i$ is the corresponding episode, this is the trajectory reward $R(\tau_i)$.
+We then take an empirical average such as:
 
 $$
 \hat{J}(\theta) = \frac{1}{B}\sum_{i=1}^{B} R(x_i, y_i),
@@ -117,9 +119,10 @@ The core implementation detail is how to compute said gradient.
 
 ### Deriving the Policy Gradient
 
+Let $p_\theta(\tau)$ denote the trajectory distribution induced by the initial-state distribution $d_0$, the policy $\pi_\theta$, and the environment transition dynamics, as expanded in @eq:trajectory_probability below.
 Another way to pose the RL objective we want to maximize is as follows:
 $$
-J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta} \left[ R(\tau) \right],
+J(\theta) = \mathbb{E}_{\tau \sim p_\theta} \left[ R(\tau) \right],
 $$ {#eq:policy_objective_expectation}
 
 where $\tau = (s_0, a_0, s_1, a_1, \ldots)$ is a trajectory and $R(\tau) = \sum_{t=0}^\infty r_t$ is the total reward of the trajectory. Alternatively, we can write the expectation as an integral over all possible trajectories:
@@ -127,9 +130,9 @@ $$
 J(\theta) = \int_\tau p_\theta (\tau) R(\tau) d\tau
 $$ {#eq:policy_objective_integral}
 
-Notice that we can express the trajectory probability as follows, where $\pi_\theta(a_t|s_t) p(s_{t+1}|s_t, a_t)$ is the transition probability to a group of next states from one state and action:
+Notice that we can express the trajectory probability as follows, where $\pi_\theta(a_t|s_t) p(s_{t+1}|s_t, a_t)$ combines the policy probability with the environment transition probability from one state-action pair to the next state:
 $$
-p_\theta (\tau) = p(s_0) \prod_{t=0}^\infty \pi_\theta(a_t|s_t) p(s_{t+1}|s_t, a_t),
+p_\theta (\tau) = d_0(s_0) \prod_{t=0}^\infty \pi_\theta(a_t|s_t) p(s_{t+1}|s_t, a_t),
 $$ {#eq:trajectory_probability}
 
 If we take the gradient of the objective (@eq:policy_objective_expectation) with respect to the policy parameters $\theta$: 
@@ -149,23 +152,23 @@ Using this log-derivative trick:
 $$
 \begin{aligned}
 \nabla_\theta J(\theta) &= \int_\tau \nabla_\theta p_\theta (\tau) R(\tau) d\tau \\
-&= \int_\tau p_\theta (\tau) \nabla_\theta \log p_\theta (\tau) R(\tau) d\tau \\
-&= \mathbb{E}_{\tau \sim \pi_\theta} \left[ \nabla_\theta \log p_\theta (\tau) R(\tau) \right]
+&= \int_\tau p_\theta (\tau) R(\tau) \nabla_\theta \log p_\theta (\tau) d\tau \\
+&= \mathbb{E}_{\tau \sim p_\theta} \left[ R(\tau) \nabla_\theta \log p_\theta (\tau) \right]
 \end{aligned}
 $$ {#eq:policy_gradient_expectation}
 
 Where the final step uses the definition of an expectation under the trajectory distribution $p_\theta(\tau)$: for any function $f$, $\mathbb{E}_{\tau \sim p_\theta}[f(\tau)] = \int_\tau f(\tau)\,p_\theta(\tau)\,d\tau$ (or a sum in the discrete case). 
-Writing it as an expectation is useful because we can approximate it with Monte Carlo rollouts, e.g., $\frac{1}{B}\sum_{i=1}^{B} f(\tau_i)$ for trajectories $\tau_i \sim \pi_\theta$.
+Writing it as an expectation is useful because we can approximate it with Monte Carlo rollouts, e.g., $\frac{1}{B}\sum_{i=1}^{B} f(\tau_i)$ for trajectories $\tau_i \sim p_\theta$ induced by the current policy.
 
 Back to the derivation, expanding the log probability of the trajectory:
 
 $$
-\log p_\theta (\tau) = \log p(s_0) + \sum_{t=0}^\infty \log \pi_\theta(a_t|s_t) + \sum_{t=0}^\infty \log p(s_{t+1}|s_t, a_t)
+\log p_\theta (\tau) = \log d_0(s_0) + \sum_{t=0}^\infty \log \pi_\theta(a_t|s_t) + \sum_{t=0}^\infty \log p(s_{t+1}|s_t, a_t)
 $$ {#eq:trajectory_log_prob}
 
 Now, if we take the gradient of the above, we get:  
 
-- $\nabla_\theta \log p(s_0) = 0$ (initial state doesn't depend on $\theta$)
+- $\nabla_\theta \log d_0(s_0) = 0$ (initial state distribution doesn't depend on $\theta$)
 - $\nabla_\theta \log p(s_{t+1}|s_t, a_t) = 0$ (environment transition dynamics don't depend on $\theta$)
 - only $\nabla_\theta \log \pi_\theta(a_t|s_t)$ survives
 
@@ -190,18 +193,18 @@ You'll see this throughout the chapter. Now, back to the formal policy gradient 
 
 Substituting this back in @eq:policy_gradient_expectation, we get:
 $$
-\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum_{t=0}^\infty \nabla_\theta \log \pi_\theta(a_t|s_t) R(\tau) \right]
+\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim p_\theta} \left[ \sum_{t=0}^\infty R(\tau) \nabla_\theta \log \pi_\theta(a_t|s_t) \right]
 $$ {#eq:policy_gradient_returns}
 
 Quite often, people use a more general formulation of the policy gradient: 
 $$
-g = \nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum_{t=0}^\infty \nabla_\theta \log \pi_\theta(a_t|s_t) \Psi_t \right]
+g = \nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim p_\theta} \left[ \sum_{t=0}^\infty \Psi_t \nabla_\theta \log \pi_\theta(a_t|s_t) \right]
 $$ {#eq:general_gradient}
 
 Where $\Psi_t$ can be the following (where the rewards can also often be discounted by $\gamma$), a taxonomy adopted from Schulman et al. 2015 [@schulman2015high]:
 
 1. $R(\tau) = \sum_{t=0}^{\infty} r_t$: total reward of the trajectory.
-2. $\sum_{t'=t}^{\infty} r_{t'}$: reward following action $a_t$, also described as the return, $G$.
+2. $\sum_{t'=t}^{\infty} r_{t'}$: reward following action $a_t$, also described as the return from time $t$, $G_t$.
 3. $\sum_{t'=t}^{\infty} r_{t'} - b(s_t)$: baselined version of previous formula.
 4. $Q^{\pi}(s_t, a_t)$: state-action value function.
 5. $A^{\pi}(s_t, a_t)$: advantage function, which yields the lowest possible theoretical variance if it can be computed accurately.
@@ -221,9 +224,9 @@ This final form is exactly the temporal difference (TD) residual (item 6 above) 
 ### Vanilla Policy Gradient
 
 The vanilla policy gradient implementation optimizes the above expression for $J(\theta)$ by differentiating with respect to the policy parameters.
-A simple version, with respect to the overall return, is:
+A simple version, with respect to the time-$t$ return, is:
 
-$$\nabla_\theta J(\theta) = \mathbb{E}_\tau \left[ \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t|s_t) G_t \right]$$ {#eq:vanilla_policy_gradient}
+$$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim p_\theta} \left[ \sum_{t=0}^T G_t \nabla_\theta \log \pi_\theta(a_t|s_t) \right]$$ {#eq:vanilla_policy_gradient}
 
 A common problem with vanilla policy gradient algorithms is the high variance in gradient updates, which can be mitigated in multiple ways.
 The high variance comes from the gradient updates being computed by estimating the return $G$ from an often small set of rollouts in the environment that tend to be susceptible to noise (e.g. the stochastic nature of generating from language models with temperature $>0$).
@@ -235,7 +238,7 @@ Even these action-independent baselines can reduce variance without changing the
 
 Many of the policy gradient algorithms discussed in this chapter build on the advantage formulation of policy gradient:
 
-$$\nabla_\theta J(\theta) = \mathbb{E}_\tau \left[ \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t|s_t) A^{\pi_\theta}(s_t, a_t) \right]$$ {#eq:advantage_policy_gradient}
+$$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim p_\theta} \left[ \sum_{t=0}^T A^{\pi_\theta}(s_t, a_t) \nabla_\theta \log \pi_\theta(a_t|s_t) \right]$$ {#eq:advantage_policy_gradient}
 
 
 ### REINFORCE
@@ -261,9 +264,9 @@ With more modern notation and the generalized return $G$, the REINFORCE operator
 $$
 \nabla_{\theta}\,J(\theta)
 \;=\;
-\mathbb{E}_{\tau \sim \pi_{\theta}}\!\left[
+\mathbb{E}_{\tau \sim p_{\theta}}\!\left[
     \sum_{t=0}^{T}
-    \nabla_{\theta} \log \pi_{\theta}(a_t \mid s_t)\,(G_t - b(s_t))
+    (G_t - b(s_t))\,\nabla_{\theta} \log \pi_{\theta}(a_t \mid s_t)
 \right],
 $$ {#eq:REINFORCE_with_baseline}
 
@@ -272,9 +275,9 @@ Here, the value $G_t - b(s_t)$ is the *advantage* of the policy at the current s
 $$
 \nabla_{\theta}\,J(\theta)
 \;=\;
-\mathbb{E}_{\tau \sim \pi_{\theta}}\!\left[
+\mathbb{E}_{\tau \sim p_{\theta}}\!\left[
     \sum_{t=0}^{T}
-    \nabla_{\theta} \log \pi_{\theta}(a_t \mid s_t)\,A_t
+    A_t\,\nabla_{\theta} \log \pi_{\theta}(a_t \mid s_t)
 \right],
 $$ {#eq:REINFORCE_with_advantage}
 
@@ -326,7 +329,7 @@ These details and trade-offs are discussed later in the chapter.
 
 ### Proximal Policy Optimization (PPO)
 
-Proximal Policy Optimization (PPO) [@schulman2017proximal] is one of the foundational algorithms behind Deep RL's successes (such as OpenAI's Five, which mastered DOTA 2 [@berner2019dota] and large amounts of research).
+Proximal Policy Optimization (PPO) [@schulman2017proximal] is one of the foundational algorithms behind Deep RL's successes (such as OpenAI Five, which mastered Dota 2 [@berner2019dota] and large amounts of research).
 The objective that PPO maximizes, with respect to the advantages and the policy probabilities, is as follows:
 
 $$J(\theta) = \min\left(\frac{\pi_\theta(a|s)}{\pi_{\theta_{\text{old}}}(a|s)}A, \text{clip} \left( \frac{\pi_\theta(a|s)}{\pi_{\theta_{\text{old}}}(a|s)}, 1-\varepsilon, 1+\varepsilon \right) A \right).$$ {#eq:PPO_EQN}
@@ -335,12 +338,15 @@ Here, $\pi_\theta(a|s)$ is the current policy being optimized and $\pi_{\theta_{
 The ratio between these two policies emerges from *importance sampling*, which allows us to reuse data collected under an old policy to estimate gradients for a new policy.
 
 Recall from the advantage formulation of the policy gradient (@eq:advantage_policy_gradient) that we have:
-$$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta} \left[ \sum_{t=0}^T \nabla_\theta \log \pi_\theta(a_t|s_t) A^{\pi_\theta}(s_t, a_t) \right].$$ {#eq:advantage_policy_gradient_recall}
+$$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim p_\theta} \left[ \sum_{t=0}^T A^{\pi_\theta}(s_t, a_t) \nabla_\theta \log \pi_\theta(a_t|s_t) \right].$$ {#eq:advantage_policy_gradient_recall}
 
-This expectation is taken over trajectories sampled from $\pi_\theta$, but in practice we want to take multiple gradient steps on a batch of data that was collected from a fixed policy $\pi_{\theta_{\text{old}}}$.
+This expectation is taken over trajectories sampled from the trajectory distribution induced by $\pi_\theta$, but in practice we want to take multiple gradient steps on a batch of data that was collected from a fixed policy $\pi_{\theta_{\text{old}}}$.
 To correct for this distribution mismatch, we multiply by the importance weight $\frac{\pi_\theta(a|s)}{\pi_{\theta_{\text{old}}}(a|s)}$, which reweights samples to account for how much more or less likely they are under the current policy versus the data-collection policy.
 Without constraints, optimizing this importance-weighted objective can lead to destructively large policy updates when the ratio diverges far from 1.
 PPO addresses this by clipping the ratio to the range $[1-\varepsilon, 1+\varepsilon]$, ensuring that the policy cannot change too drastically in a single update.
+
+Note that, as we move to PPO and its peer algorithms, we often work with the *objective* rather than an explicit gradient.
+This is because the PPO objective does *not* have an easily interpretable analytical gradient once the $\min$ and clipping operations are included (the gradient has ~4 terms corresponding to the regions in @fig:ppo-obj, depending on how it is written); writing the objective is simply the clearer way to convey these algorithms.
 
 For completeness, PPO is typically written as an *expected* clipped surrogate objective over timesteps:
 
@@ -390,9 +396,22 @@ This is by design! The trust region is a concept used to cap the maximum step si
 The idea of a "trust region" comes from the numerical optimization literature [@nocedal2006numerical], but was popularized within Deep RL from the algorithm Trust Region Policy Optimization (TRPO), which is accepted as the predecessor to PPO [@schulman2015trust].
 The trust region is the area where the full policy-gradient steps are applied, as the updates are not "clipped" by the max/min operations of the PPO objective.
 
-![Visualization of the different regions of the PPO objective for a hypothetical advantage. The "trust region" would be described as the region where the policy ratio $\rho$ is within $1\pm\varepsilon$.](images/ppo-viz-4x.png){#fig:ppo-obj}
+![Visualization of the PPO objective $J(\theta)$ as a function of the policy ratio $\rho(\theta)$, for both positive and negative advantage. Within each panel, the three ratio regions are annotated with their unclipped term, clipped term, resulting objective, and gradient.](images/ppo-clip-viz.png){#fig:ppo-obj}
 
-The policy ratio and advantage together can occur in a few different configurations. We will split the cases into two groups: positive and negative advantage.
+The policy ratio and advantage together can occur in a few different configurations, which @fig:ppo-obj enumerates by the sign of the advantage $A_t$ and by which of the three regions the policy ratio $\rho(\theta)$ falls into. Two facts determine the outcome in every region: the sign of the advantage sets whether we want to make the action more or less likely, and the $\min$ operation selects either the unclipped term $\rho(\theta) A_t$ or its clipped counterpart.
+
+The clipping only zeroes out the gradient in the two regions where the policy has *already* moved the sampled action in the desired direction, past the edge of the trust region:
+
+- **Positive advantage and $\rho(\theta) > 1+\varepsilon$**: the action is already substantially more likely under $\pi_\theta$ than under $\pi_{\theta_{\text{old}}}$. The objective saturates at $(1+\varepsilon)A_t$, its gradient is zero, and no update is made — we avoid over-reinforcing an action that is already more expressed.
+- **Negative advantage and $\rho(\theta) < 1-\varepsilon$**: the action is already substantially less likely under $\pi_\theta$. The objective saturates at $(1-\varepsilon)A_t$, its gradient is again zero, and no update is made — we avoid over-suppressing an action that is already discouraged.
+
+Everywhere else the unclipped term $\rho(\theta) A_t$ is active and PPO takes a standard policy-gradient step: increasing the action's probability when $A_t > 0$ and decreasing it when $A_t < 0$. We can read off @fig:ppo-obj in terms of what each region asks of the updated policy $\pi_\theta$:
+
+- the sloped, unclipped region under a positive advantage (green) **increases** the probability of the sampled action;
+- the sloped, unclipped region under a negative advantage (red) **decreases** it;
+- the flat, clipped region (grey) leaves the policy **unchanged**, since its gradient is zero.
+
+The same regions, written out term by term:
 
 #### Positive Advantage ($A_t > 0$)
 

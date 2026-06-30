@@ -167,9 +167,9 @@ content: |
 
 The objective and its gradient:
 
-$$J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}[R(\tau)]$$
+$$J(\theta) = \mathbb{E}_{\tau \sim p_\theta}[R(\tau)]$$
 
-$$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}\!\left[\sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t) \cdot \Psi_t\right]$$
+$$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim p_\theta}\!\left[\sum_{t=0}^{T} \Psi_t \nabla_\theta \log \pi_\theta(a_t \mid s_t)\right]$$
 
 The gradient says: for each token, compute the direction that makes it more likely ($\nabla \log \pi$), then scale by how good it was ($\Psi_t$).
 
@@ -207,7 +207,7 @@ In code, we compute the **log-probs** and let autodiff handle the gradient:
 ```python
 seq_log_probs = (token_log_probs * completion_mask).sum(dim=-1)
 loss = -(seq_log_probs * advantages).mean()
-loss.backward()  # autodiff gives ∑ ∇ log π · Ψ_t
+loss.backward()  # autodiff gives ∑ Ψ_t ∇ log π
 ```
 
 Every loss function in this lecture is a variation on this pattern.

@@ -18,6 +18,5 @@ skills = [
     "google-genai>=1.63.0",
 ]
 teach = [
-    # TODO: pin back to a PyPI release when colloquium development slows down.
-    "colloquium @ git+https://github.com/natolambert/colloquium.git@01ca3c97a0530bea739fde9b9469c6a475ab8980",
+    "colloquium==0.2.2",
 ]

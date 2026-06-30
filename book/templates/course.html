@@ -508,11 +508,16 @@
     <navigation-dropdown expanded="false"></navigation-dropdown>
   </header>
 
+  <!-- Pagefind only indexes pages carrying data-pagefind-body once any indexed
+       page uses it (the chapter template does), so mark the course content. -->
+  <div data-pagefind-body data-pagefind-meta="title:Course">
   <h1>Course</h1>
 
   <p>
-    A full course accompanying <a href="https://rlhfbook.com">the book</a> with added resources and other lectures I've given.
+    A full course accompanying the book with added resources and other lectures I've given.
   </p>
+
+  <p class="meta">The slide decks are usually built with Claude Opus, with substantial human revisions. (Exceptions are noted on the deck itself.)</p>
 
   <div class="welcome-video">
     <div>
@@ -528,10 +533,36 @@
   </div>
 
   <ul class="page-guide">
+    <li><a href="#prerequisites"><strong>Prerequisites</strong></a> &mdash; what to know before starting.</li>
     <li><a href="#lectures"><strong>Primary Material</strong></a> &mdash; the core lecture series that follows the book chapter by chapter, with recordings, slides, PDFs, and source.</li>
     <li><a href="#extra-resources"><strong>Extra Resources</strong></a> &mdash; recommended books, external RL courses, and Nathan's own talks paired with the chapters they go with.</li>
     <li><a href="#other-lectures"><strong>Other Guest Lectures and Talks</strong></a> &mdash; invited talks and standalone presentations.</li>
   </ul>
+
+  <section class="slides-section" id="prerequisites">
+    <h2>Prerequisites</h2>
+
+    <p>This course is roughly aimed at early AI PhD or master's students, but it is designed to be accessible to anyone willing to put in the work.</p>
+
+    <p>You do <strong>not</strong> need prior reinforcement learning or language modeling background to start. A motivated learner who studies hard &mdash; leaning on today's top LLMs as a tutor to unpack unfamiliar math, code, and jargon &mdash; can follow the entire course. I encourage you to go down rabbit holes, skip or reorder videos, and chase what excites you.</p>
+
+    <p>If you prefer the traditional coursework path, the usual background is the basics of language modeling / NLP plus basic machine learning (e.g. an intro to AI course and an intro to ML course).</p>
+
+    <div class="course-entry" id="prerequisite-review">
+      <div>
+        <h3>The ML Foundations of LLM Post-Training</h3>
+        <p class="meta">A refresher on the ML prerequisites of post-training — language modeling, KL, cross-entropy, & other math — to acclimate to the series</p>
+      </div>
+      <div class="talk-actions">
+        <a href="https://www.youtube.com/watch?v=MMDNaeIFVy8&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=2" class="btn btn-watch" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-watch"/></svg> Watch</a>
+        <a href="/teach/course/lec0-prereq-review/slides.pdf" class="btn" download><svg width="14" height="14"><use href="#icon-pdf"/></svg> PDF</a>
+        <a href="/teach/course/lec0-prereq-review/" class="btn" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-slides"/></svg> Slides</a>
+        <a href="https://github.com/natolambert/rlhf-book/blob/main/teach/course/lec0-prereq-review.md?plain=1" class="btn btn-source" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-github"/></svg> Source</a>
+      </div>
+    </div>
+
+    <p class="meta"><a href="#extra-resources" style="display: inline-flex; align-items: center; gap: 0.4em;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>Additional learning material</a></p>
+  </section>
 
   <section class="slides-section" id="lectures">
     <h2>Primary Material</h2>
@@ -614,6 +645,7 @@
           <p class="meta">Chapter 8 &middot; Deriving DPO step by step, plus variants and practice</p>
         </div>
         <div class="talk-actions">
+          <a href="https://www.youtube.com/watch?v=6g6b4gvO-y0&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=8" class="btn btn-watch" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-watch"/></svg> Watch</a>
           <a href="/teach/course/lec6-chap8-dpo/slides.pdf" class="btn" download><svg width="14" height="14"><use href="#icon-pdf"/></svg> PDF</a>
           <a href="/teach/course/lec6-chap8-dpo/" class="btn" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-slides"/></svg> Slides</a>
           <a href="https://github.com/natolambert/rlhf-book/blob/main/teach/course/lec6-chap8-dpo.md?plain=1" class="btn btn-source" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-github"/></svg> Source</a>
@@ -624,9 +656,43 @@
           <h3>Conversation 1: Frontier post-training recipes in 2026 (w/ Finbarr Timbers)</h3>
         </div>
         <div class="talk-actions">
+          <a href="https://www.youtube.com/watch?v=sbXEPxIazqY&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=9" class="btn btn-watch" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-watch"/></svg> Watch</a>
           <a href="/teach/course/conversation-01/slides.pdf" class="btn" download><svg width="14" height="14"><use href="#icon-pdf"/></svg> PDF</a>
           <a href="/teach/course/conversation-01/" class="btn" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-slides"/></svg> Slides</a>
           <a href="https://github.com/natolambert/rlhf-book/blob/main/teach/course/conversation-01.md?plain=1" class="btn btn-source" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-github"/></svg> Source</a>
+        </div>
+      </div>
+      <div class="course-entry" id="lecture-7-synthetic-data">
+        <div>
+          <h3>Lecture 7: Synthetic Data and Modern Post-training Methods</h3>
+          <p class="meta">Chapter 12 &middot; On-policy distillation, AI feedback, Constitutional AI, and rubrics</p>
+        </div>
+        <div class="talk-actions">
+          <a href="https://www.youtube.com/watch?v=6nyJ8y8ghsE&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=10" class="btn btn-watch" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-watch"/></svg> Watch</a>
+          <a href="/teach/course/lec7-chap12-synthetic-data/slides.pdf" class="btn" download><svg width="14" height="14"><use href="#icon-pdf"/></svg> PDF</a>
+          <a href="/teach/course/lec7-chap12-synthetic-data/" class="btn" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-slides"/></svg> Slides</a>
+          <a href="https://github.com/natolambert/rlhf-book/blob/main/teach/course/lec7-chap12-synthetic-data.md?plain=1" class="btn btn-source" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-github"/></svg> Source</a>
+        </div>
+      </div>
+      <div class="course-entry qa-entry" id="qa-02">
+        <div>
+          <h3>Q&amp;A 2: Reader questions, lec. 5-7</h3>
+        </div>
+        <div class="talk-actions">
+          <a href="/teach/course/qa-02/slides.pdf" class="btn" download><svg width="14" height="14"><use href="#icon-pdf"/></svg> PDF</a>
+          <a href="/teach/course/qa-02/" class="btn" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-slides"/></svg> Slides</a>
+          <a href="https://github.com/natolambert/rlhf-book/blob/main/teach/course/qa-02.md?plain=1" class="btn btn-source" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-github"/></svg> Source</a>
+        </div>
+      </div>
+      <div class="course-entry" id="lecture-8-preferences">
+        <div>
+          <h3>[Draft] Lecture 8: Preferences and Preference Data</h3>
+          <p class="meta">Chapters 10 &amp; 11 &middot; A history of preferences, the preference-data engine, and unanswerable questions</p>
+        </div>
+        <div class="talk-actions">
+          <a href="/teach/course/lec8-chap10-11-preferences/slides.pdf" class="btn" download><svg width="14" height="14"><use href="#icon-pdf"/></svg> PDF</a>
+          <a href="/teach/course/lec8-chap10-11-preferences/" class="btn" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-slides"/></svg> Slides</a>
+          <a href="https://github.com/natolambert/rlhf-book/blob/main/teach/course/lec8-chap10-11-preferences.md?plain=1" class="btn btn-source" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-github"/></svg> Source</a>
         </div>
       </div>
     </div>
@@ -740,6 +806,7 @@
       </div>
     </div>
   </section>
+  </div><!-- /data-pagefind-body -->
 
   <section id="citation" style="padding: 0 20px;">
     <h4 style="text-align: left; font-weight: normal;">Citation</h4>
