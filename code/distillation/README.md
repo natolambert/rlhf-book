@@ -21,13 +21,15 @@ entirely** for that step.
 
 ## Reference Runs
 
-> **TODO:** add validated wandb run IDs and training-result plots once reference runs are published.
+![SDPO Training Results](../images/wandb_distillation.png)
+
+`Qwen/Qwen3-1.7B` on the default `spell_backward` task, trained in under 20 hours on a
+single 24 GB consumer GPU: `reward` rises from ~0.55 to ~0.8 while `loss` and
+`grad_norm` trend down.
 
 | Algorithm | wandb | Status |
 |-----------|-------|--------|
-| **SDPO** | _TODO_ | ⏳ Pending validation |
-
-<!-- TODO: add training-results plot, e.g. ![SDPO Training Results](../images/wandb_distillation.png) -->
+| **SDPO** | _pending maintainer run_ | ✅ Trains; reference run ID pending publication |
 
 ## Quick Start
 

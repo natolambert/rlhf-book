@@ -290,27 +290,33 @@ effectively tied.
 ## On-Policy Distillation
 
 Train with SDPO (Self-Distillation Policy Optimization), an on-policy distillation
-method for code and reasoning tasks. The model acts as its own teacher: it samples
-rollouts on [LiveCodeBench](https://livecodebench.github.io/) problems, then a
-feedback-conditioned copy of the same model — given a correct sibling solution and/or
-the execution feedback from a failed attempt — supplies better next-token targets that
-are distilled back into the student via a top-K forward KL.
+method for reasoning tasks. The model acts as its own teacher: it samples rollouts on a
+[Reasoning Gym](https://github.com/open-thought/reasoning-gym) task (default
+`spell_backward`, a string-reversal problem), then a demonstration-conditioned copy of
+the same model — given a correct sibling rollout from the same group — supplies better
+next-token targets that are distilled back into the student via a top-K KL. Prompts
+whose rollout group has no correct sample are skipped, so every update has a
+demonstration to learn from.
 See `distillation/README.md` for the full walk-through.
 
 ```bash
-# SDPO on LiveCodeBench
+# SDPO on the Reasoning Gym string-reversal task
 uv run python -m distillation.train --config distillation/configs/sdpo.yaml
 ```
 
 ### Training Results
 
-> **TODO:** add the wandb training-results image (`images/wandb_distillation.png`) once reference runs are published.
+![SDPO Training Results](images/wandb_distillation.png)
+
+The reference run trained `Qwen/Qwen3-1.7B` on `spell_backward` in under 20 hours on a
+single 24 GB consumer GPU: `reward` climbs from ~0.55 to ~0.8 while the distillation
+`loss` and `grad_norm` trend down.
 
 ### Example Run
 
 | Algorithm | Description | Example Run |
 |-----------|-------------|-------------|
-| SDPO | Self-Distillation Policy Optimization on LiveCodeBench ([Hübotter et al., 2026](https://arxiv.org/abs/2601.20802)) | _TODO_ |
+| SDPO | Self-Distillation Policy Optimization on Reasoning Gym ([Hübotter et al., 2026](https://arxiv.org/abs/2601.20802)) | _pending maintainer run_ |
 
 ## Configuration
 
