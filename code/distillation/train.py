@@ -74,8 +74,17 @@ def main(cfg: Config):
         model.eval()
 
         # Poll the inference engine until prompts_per_step prompts each yield a correct rollout.
+        # Bound the polling so a task the model never solves fails fast with a clear message
+        # instead of hanging forever (the limit is generous and never hit by a healthy run).
+        max_polls = cfg.prompts_per_step * 100
         batches, polled = [], 0
         while len(batches) < cfg.prompts_per_step:
+            if polled >= max_polls:
+                raise RuntimeError(
+                    f"Polled {polled} prompts but only {len(batches)}/{cfg.prompts_per_step} "
+                    "yielded a correct rollout; the task may be too hard for the current model "
+                    "(lower success_reward_threshold or change data.specs)."
+                )
             batch = generate_batch(model, tokenizer, dataset, next(prompts), cfg)
             polled += 1
             if batch is not None:
