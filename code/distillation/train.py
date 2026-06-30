@@ -86,7 +86,7 @@ def main(cfg: Config):
         optimizer.zero_grad(set_to_none=True)
         accumulated_loss = 0.0
         for b in batches:
-            accumulated_loss += objective.backward_loss(model, b, scale=1.0 / len(batches))
+            accumulated_loss += objective(model, b, scale=1.0 / len(batches))
 
         grad_norm = clip_grad_norm_(model.parameters(), cfg.max_norm)
         optimizer.step()

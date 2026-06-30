@@ -59,7 +59,7 @@ class SDPOLoss(nn.Module):
         kl = F.kl_div(t_logp, s_logp, reduction="none", log_target=True).sum(-1)
         return (kl * batch["action_mask"][sl]).sum() / denom
 
-    def backward_loss(self, model, batch: dict, scale: float = 1.0) -> float:
+    def forward(self, model, batch: dict, scale: float = 1.0) -> float:
         """Accumulate SDPO gradients over rollout chunks, running backward per chunk.
 
         The student logits ``[R, A, V]`` and their gradient are the dominant memory
@@ -92,17 +92,4 @@ class SDPOLoss(nn.Module):
             if loss.requires_grad:
                 loss.backward()
             total += float(loss.detach())
-        return total
-
-    @torch.no_grad()
-    def forward(self, model, batch: dict) -> torch.Tensor:
-        """Full SDPO loss value (no backward), computed in chunks; for eval/logging."""
-        action_mask = batch["action_mask"]
-        A = action_mask.shape[1]
-        denom = action_mask.sum().clamp_min(1.0)
-        total = action_mask.new_zeros((), dtype=torch.float32)
-        for i in range(0, action_mask.shape[0], self.rollout_chunk):
-            total = total + self._chunk_loss(
-                model, batch, slice(i, i + self.rollout_chunk), A, denom
-            )
         return total
