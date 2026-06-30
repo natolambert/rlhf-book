@@ -270,7 +270,7 @@ Multiple groups can work on high-quality expert models, which can serve as teach
 There are many ways to combine OPD with other areas investigated in this book, such as using the reverse KL as an advantage in addition to other forms of advantage computation, such as GRPO's group-level normalization, which enables more complex reward shaping.
 KD methods are unusual among post-training methods because they often require the student and teacher to share a tokenizer, since the supervision can be per-token feedback from another LLM.
 
-Extended approaches, such as On-Policy Self-Distillation (OPSD), have a language model verify a completion either itself or with external tools to act as a teacher with privileged information, so it can improve its own performance without an explicitly stronger teacher [@zhao2026selfdistilled].
+Extended approaches, such as On-Policy Self-Distillation (OPSD), have a language model verify a completion either itself or with external tools to act as a teacher with privileged information, so it can improve its own performance without an explicitly stronger teacher [@zhao2026selfdistilled] (an overview of OPSD training is shown in @fig:sdpo).
 For example, Cursor used self-distillation in the form of targeted textual feedback on RL trajectories to train its Composer 2.5 coding model [@cursor2026composer25], finetuned from Kimi K2.5. 
 What follows is a simplified intuition, as in practice the setup below is combined with other loss functions such as code correctness.
 In this setup, Cursor has the model review RL trajectories with a judgement prompt that has a list of common bugs.
@@ -281,6 +281,8 @@ The hint in the token-space for the model is enough to help the model correct it
 This leaves on-policy distillation as a core post-training method, useful for combining multiple skills into one general model or pushing the frontier in a specialized deployment.
 
 ![Three distillation regimes, compared by where the rollout comes from and how supervision flows. **Sequence KD** (left): the teacher generates an output offline and the student is trained to match it with a cross-entropy (CE) loss. **On-policy distillation (OPD)** (center): the student generates the rollout on-policy (e.g. within a RL framework) and a separate teacher scores each visited token, training the student with a per-token KL divergence (KL). **On-policy self-distillation (OPSD)** (right): one model plays both roles -- privileged information (a hint) added to the context creates a teacher trajectory, and the no-hint generation is distilled toward it with a KL loss, with no separate teacher model.](images/distillation_directionality_tikz.png){#fig:distillation-directionality data-dark-src="images/distillation_directionality_tikz-dark.png"}
+
+![On-policy self-distillation (OPSD) on a string-reversal task. One policy $\pi_\theta$ is forwarded twice over the same student-sampled completion $y$: a **teacher** pass conditioned on the question plus a correct sibling demonstration (yellow), and a **student** pass conditioned on the question only (green). The per-token reverse KL between the two passes, with a stop-gradient on the teacher, pulls the question-only policy toward its demonstration-conditioned self; highlighted columns are the incorrectly sampled tokens where the distributions diverge most.](images/sdpo_tikz.png){#fig:sdpo data-dark-src="images/sdpo_tikz-dark.png"}
 
 ## AI Feedback
 

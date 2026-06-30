@@ -17,6 +17,17 @@
 
 \input{styles_rlhf.tex}
 
+% Dark-mode loose-ink recolor (see styles_rlhf.tex): structural grey lines mix
+% toward the dark page background so they stay subdued but visible; semantic
+% colors (red/green/yellow/blue) and white chips are left untouched.
+\ifnum\figdark=1
+  \colorlet{gridink}{inkcolor!45!black}
+  \colorlet{tickink}{inkcolor!45!black}
+\else
+  \colorlet{gridink}{black!40}
+  \colorlet{tickink}{black!45}
+\fi
+
 % ---- SDPO colors ----
 \definecolor{qfill}{HTML}{D7EFC9}      \definecolor{qline}{HTML}{4E8C3A}  % green: question
 \definecolor{demofill}{HTML}{FCEFC0}   \definecolor{demoline}{HTML}{C9A227} % yellow: expert demo
@@ -32,9 +43,9 @@
                 minimum height=1.0cm, font=\small, rounded corners=3pt, align=center},
   distframe/.style={rectangle, draw=densered!55, fill=densered!5,
                 rounded corners=2pt, inner sep=2.5pt},
-  greygroup/.style={draw=black!40, dashed, rounded corners=4pt, inner sep=6pt},
+  greygroup/.style={draw=gridink, dashed, rounded corners=4pt, inner sep=6pt},
   redgroup/.style={draw=densered!40, dashed, rounded corners=4pt, inner sep=5pt},
-  amax/.style={font=\normalsize\ttfamily, text=black!80},
+  amax/.style={font=\normalsize\ttfamily, text=\loose{black!80}},
 }
 
 % \minidist{name}{x}{y}{bar heights list}
@@ -45,7 +56,7 @@
     \foreach \h [count=\i from 0] in #4 {
       \fill[densered!75] (\i*0.135-0.30,-0.30) rectangle (\i*0.135-0.21,-0.30+\h);
     }
-    \draw[black!45, line width=0.3pt] (-0.34,-0.30) -- (0.30,-0.30);
+    \draw[tickink, line width=0.3pt] (-0.34,-0.30) -- (0.30,-0.30);
   \end{scope}%
 }
 
@@ -62,7 +73,7 @@
         \fill[densered!30] (\j*0.135-0.30,-0.30) rectangle (\j*0.135-0.21,-0.30+\h);
       \fi
     }
-    \draw[black!45, line width=0.3pt] (-0.34,-0.30) -- (0.30,-0.30);
+    \draw[tickink, line width=0.3pt] (-0.34,-0.30) -- (0.30,-0.30);
   \end{scope}%
 }
 
@@ -97,7 +108,7 @@
 % ============================================================
 \node[model] (t-m) at (\mx,\ty) {$\pi_\theta$\\\scriptsize teacher};
 \node[model] (s-m) at (\mx,\sy) {$\pi_\theta$\\\scriptsize student};
-\draw[<->, dotted, thick, black!55] (t-m.south) -- (s-m.north)
+\draw[<->, dotted, thick, \loose{black!55}] (t-m.south) -- (s-m.north)
       node[midway, fill=white, font=\scriptsize, text=black!70, inner sep=1.5pt] {shared $\theta$};
 
 % context -> model (strictly horizontal, leaving the dashed group at lane height)
@@ -152,11 +163,11 @@
 % completion tokens: one larger row above the top dashed box;
 % the two swapped tokens (incorrectly sampled) are deep red.
 \foreach \i/\letter/\lc [evaluate=\i as \xx using {10.7+\i*1.0}] in
-    {0/y/black!80, 1/r/black!80, 2/r/black!80, 3/b/hilite, 4/e/hilite,
-     5/w/black!80, 6/a/black!80, 7/r/black!80, 8/t/black!80, 9/s/black!80} {
+    {0/y/\loose{black!80}, 1/r/\loose{black!80}, 2/r/\loose{black!80}, 3/b/hilite, 4/e/hilite,
+     5/w/\loose{black!80}, 6/a/\loose{black!80}, 7/r/\loose{black!80}, 8/t/\loose{black!80}, 9/s/\loose{black!80}} {
   \node[font=\normalsize\ttfamily, text=\lc] at (\xx,\ty+0.95) {\letter};
 }
-\node[font=\footnotesize, text=black!70] at (15.2,\ty+1.55) {sampled completions $\;y\sim\pi_\theta(\cdot\mid\text{question})$};
+\node[font=\footnotesize, text=\loose{black!70}] at (15.2,\ty+1.55) {sampled completions $\;y\sim\pi_\theta(\cdot\mid\text{question})$};
 % point out the swap
 \node[font=\scriptsize, text=hilite] at (14.2,\sy-0.72) {incorrect tokens};
 
@@ -173,7 +184,7 @@
 \draw[arrow] (sgrp.east) -| (loss.south);
 
 % loss equation, bottom band
-\node[font=\small, text=black] at (15.2,\sy-1.85)
+\node[font=\small, text=\loose{black}] at (15.2,\sy-1.85)
       {$\mathcal{L}_{\text{SDPO}} = \mathbb{E}_{y\sim\pi_\theta}\!\Big[\tfrac{1}{T}\textstyle\sum_{t} D_{KL}\big(p^{S}_t \,\big\|\, \text{sg}[\,p^{T}_t]\big)\Big]$};
 
 \end{tikzpicture}
