@@ -40,7 +40,7 @@ Good first sweeps:
 - **Rejection sampling**: keep generation/scoring settings identical while comparing `top_*` configs to their `random_*` controls.
 - **Distillation**: copy `distillation/configs/sdpo.yaml` and vary `num_rollouts`, `kl_top_k`, and `prompts_per_step`, watching how `skipped` and `reward` respond as the self-distillation loop converges.
 
-The book chapters now include suggested exercises in Chapters 4, 5, 6, 8, 9, and 12.
+The book chapters now include suggested exercises at the end of Chapters 4, 5, 6, 8, 9, and 12.
 
 ## Attribution
 
