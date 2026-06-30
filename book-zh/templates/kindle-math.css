@@ -1,0 +1,10 @@
+img.display-math {
+  display: block;
+  margin: 0.5em auto;
+  max-width: 95%;
+}
+img.inline-math {
+  display: inline;
+  vertical-align: middle;
+  height: 1.1em;
+}

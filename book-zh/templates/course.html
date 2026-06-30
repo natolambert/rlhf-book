@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="utf-8" />
+  <!-- Set the theme before first paint to avoid a flash of the wrong theme. -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('theme');
+        if (t !== 'light' && t !== 'dark') {
+          t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
+  <script src="theme.js" defer></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
+  <link rel="canonical" href="https://rlhfbook.com/course" />
+  <meta name="description" content="Free course lectures on RLHF, reward models, preference tuning, RLVR, and modern LLM post-training." />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="RLHF Book" />
+  <meta property="og:image" content="https://rlhfbook.com/assets/rlhf-book-share.png" />
+  <meta property="og:image:width" content="1920" />
+  <meta property="og:image:height" content="1080" />
+  <meta property="og:title" content="RLHF &amp; Post-Training Course by Nathan Lambert" />
+  <meta property="og:description" content="Free course lectures on RLHF, reward models, preference tuning, RLVR, and modern LLM post-training." />
+  <meta property="og:url" content="https://rlhfbook.com/course" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="RLHF &amp; Post-Training Course by Nathan Lambert" />
+  <meta name="twitter:description" content="Free course lectures on RLHF, reward models, preference tuning, RLVR, and modern LLM post-training." />
+  <meta name="twitter:image" content="https://rlhfbook.com/assets/rlhf-book-share.png" />
+
+  <title>RLHF &amp; Post-Training Course by Nathan Lambert</title>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Course",
+    "name": "RLHF & Post-Training Course",
+    "description": "Free course lectures on RLHF, reward models, preference tuning, RLVR, and modern LLM post-training.",
+    "url": "https://rlhfbook.com/course",
+    "provider": {
+      "@type": "Person",
+      "name": "Nathan Lambert"
+    },
+    "isAccessibleForFree": true,
+    "inLanguage": "en-US",
+    "about": [
+      "Reinforcement learning from human feedback",
+      "LLM post-training",
+      "Reward models",
+      "Preference tuning",
+      "RLVR"
+    ]
+  }
+  </script>
+
+  <link rel="stylesheet" href="style.css" />
+  <link href="/pagefind/pagefind-ui.css" rel="stylesheet">
+  <script src="/pagefind/pagefind-ui.js"></script>
+  <script src="nav.js" defer></script>
+
+  <style>
+    #title-block-header {
+      text-align: center;
+    }
+
+    /* Table of contents */
+    .slides-toc {
+      margin: 1.5em 0 2em;
+    }
+
+    .slides-toc h2 {
+      font-size: 1.1em;
+      margin-bottom: 0.5em;
+    }
+
+    .slides-toc ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .slides-toc li {
+      padding: 0.3em 0;
+    }
+
+    .slides-toc a {
+      color: #0645ad;
+    }
+
+    .slides-toc .toc-meta {
+      color: #888;
+      font-size: 0.9em;
+    }
+
+    .slides-section h2 {
+      border-bottom: 3px solid #0645ad;
+      padding-bottom: 0.3em;
+      margin-top: 2em;
+      margin-bottom: 1em;
+    }
+
+    /* Other lectures sections */
+    .other-lectures-section h2 {
+      border-bottom: 3px solid #0645ad;
+      padding-bottom: 0.3em;
+      margin-top: 2em;
+      margin-bottom: 1em;
+    }
+
+    .other-lectures-section h3 {
+      margin-top: 1.5em;
+      margin-bottom: 0.75em;
+      color: #333;
+    }
+
+    /* Talk entry — single column, full width */
+    .talk-entry {
+      border: 1px solid #e2e2e2;
+      border-radius: 0.35em;
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(17, 17, 17, 0.06);
+      overflow: hidden;
+      margin-bottom: 2em;
+    }
+
+    /* Interactive slide viewer */
+    .slide-viewer {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%; /* 16:9 */
+      overflow: hidden;
+      background: #1a1a1a;
+    }
+
+    .slide-viewer iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1280px;
+      height: 720px;
+      transform-origin: top left;
+      border: none;
+    }
+
+
+    /* Info bar below the viewer */
+    .talk-info {
+      padding: 1em 1.5em;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.75em;
+      border-top: 1px solid #e2e2e2;
+    }
+
+    .talk-info-left h3 {
+      margin: 0 0 0.25em 0;
+      font-size: 1.1em;
+    }
+
+    .talk-info-left .meta {
+      font-size: 0.85em;
+      color: #666;
+      margin: 0;
+    }
+
+    .talk-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.6em;
+      flex-shrink: 0;
+    }
+
+    .talk-actions .tag {
+      display: inline-block;
+      font-size: 0.8em;
+      padding: 0.2em 0.6em;
+      border-radius: 0.25em;
+      background: rgba(6, 69, 173, 0.08);
+      color: #0645ad;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4em;
+      font-size: 0.85em;
+      padding: 0.35em 0.7em;
+      border-radius: 0.3em;
+      border: 1px solid #0645ad;
+      background: rgba(6, 69, 173, 0.1);
+      color: #0645ad;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background: rgba(6, 69, 173, 0.18);
+    }
+
+    .btn-watch {
+      border-color: #c0392b;
+      background: rgba(192, 57, 43, 0.1);
+      color: #c0392b;
+    }
+
+    .btn-watch:hover {
+      background: rgba(192, 57, 43, 0.18);
+    }
+
+    .btn-source {
+      border-color: #333;
+      background: rgba(51, 51, 51, 0.1);
+      color: #333;
+    }
+
+    .btn-source:hover {
+      background: rgba(51, 51, 51, 0.18);
+    }
+
+    .course-list {
+      display: grid;
+      gap: 1em;
+    }
+
+    .course-entry {
+      border: 1px solid #e2e2e2;
+      border-radius: 0.35em;
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(17, 17, 17, 0.06);
+      padding: 1.1em 1.3em;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1em;
+      flex-wrap: wrap;
+    }
+
+    .course-entry h3 {
+      margin: 0 0 0.2em 0;
+      font-size: 1.05em;
+    }
+
+    .course-entry .meta {
+      font-size: 0.9em;
+      color: #666;
+      margin: 0;
+    }
+
+    .course-entry.qa-entry {
+      background: #f7f7f7;
+    }
+
+    .welcome-video {
+      margin: 1.5em 0 2em;
+      padding: 1.1em 1.3em;
+      border: 1px solid #e2e2e2;
+      border-radius: 0.35em;
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(17, 17, 17, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1em;
+      flex-wrap: wrap;
+    }
+
+    .welcome-video h3 {
+      margin: 0 0 0.2em 0;
+      font-size: 1.05em;
+    }
+
+    .welcome-video .meta {
+      font-size: 0.9em;
+      color: #666;
+      margin: 0;
+    }
+
+    .page-guide {
+      margin: 0 0 2em;
+      padding-left: 1.2em;
+      color: #333;
+    }
+
+    .page-guide li {
+      margin-bottom: 0.45em;
+    }
+
+    /* Compact Books & Courses grid */
+    .resource-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 0.7em;
+      margin-bottom: 1.75em;
+    }
+
+    .resource-card {
+      display: block;
+      border: 1px solid #e2e2e2;
+      border-radius: 0.35em;
+      background: #fff;
+      box-shadow: 0 2px 6px rgba(17, 17, 17, 0.05);
+      padding: 0.7em 0.85em;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .resource-card:hover {
+      border-color: #0645ad;
+      background: rgba(6, 69, 173, 0.03);
+    }
+
+    .resource-card .rc-kind {
+      display: inline-block;
+      font-size: 0.68em;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #0645ad;
+      background: rgba(6, 69, 173, 0.08);
+      padding: 0.12em 0.5em;
+      border-radius: 0.25em;
+      margin-bottom: 0.45em;
+    }
+
+    .resource-card .rc-kind.course {
+      color: #c0392b;
+      background: rgba(192, 57, 43, 0.08);
+    }
+
+    .resource-card .rc-title {
+      display: block;
+      font-weight: 600;
+      font-size: 0.92em;
+      line-height: 1.25;
+    }
+
+    .resource-card .rc-meta {
+      display: block;
+      font-size: 0.8em;
+      color: #666;
+      margin-top: 0.2em;
+    }
+
+    /* Concentrated talk list, grouped by chapter */
+    .talk-groups {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 0 2em;
+      align-items: start;
+    }
+
+    .talk-group {
+      margin-bottom: 1.1em;
+    }
+
+    .talk-group h4 {
+      margin: 0 0 0.35em;
+      font-size: 0.82em;
+      color: #555;
+      border-bottom: 1px solid #e2e2e2;
+      padding-bottom: 0.2em;
+    }
+
+    .talk-group ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .talk-group li {
+      margin-bottom: 0.35em;
+      font-size: 0.9em;
+      line-height: 1.3;
+    }
+
+    .talk-group li a {
+      color: #0645ad;
+      text-decoration: none;
+    }
+
+    .talk-group li a:hover {
+      text-decoration: underline;
+    }
+
+    .talk-group .when {
+      color: #999;
+      font-size: 0.82em;
+      white-space: nowrap;
+    }
+
+    /* ---- Dark-mode overrides (light rules above are unchanged) ---- */
+    :root[data-theme="dark"] .slides-toc a,
+    :root[data-theme="dark"] .talk-group li a {
+      color: var(--color-link);
+    }
+    :root[data-theme="dark"] .slides-toc .toc-meta,
+    :root[data-theme="dark"] .talk-group .when {
+      color: var(--color-text-faint);
+    }
+    :root[data-theme="dark"] .slides-section h2,
+    :root[data-theme="dark"] .other-lectures-section h2 {
+      border-bottom-color: var(--color-link);
+    }
+    :root[data-theme="dark"] .other-lectures-section h3,
+    :root[data-theme="dark"] .page-guide {
+      color: var(--color-heading);
+    }
+    :root[data-theme="dark"] .talk-entry,
+    :root[data-theme="dark"] .course-entry,
+    :root[data-theme="dark"] .welcome-video,
+    :root[data-theme="dark"] .resource-card {
+      border-color: var(--color-border);
+      background: var(--color-bg-section);
+      box-shadow: 0 4px 12px var(--color-shadow);
+    }
+    :root[data-theme="dark"] .talk-info {
+      border-top-color: var(--color-border);
+    }
+    :root[data-theme="dark"] .talk-info-left .meta,
+    :root[data-theme="dark"] .course-entry .meta,
+    :root[data-theme="dark"] .welcome-video .meta,
+    :root[data-theme="dark"] .resource-card .rc-meta {
+      color: var(--color-text-muted);
+    }
+    :root[data-theme="dark"] .course-entry.qa-entry {
+      background: var(--color-bg-subtle);
+    }
+    :root[data-theme="dark"] .talk-actions .tag,
+    :root[data-theme="dark"] .resource-card .rc-kind {
+      background: rgba(96, 165, 250, 0.14);
+      color: var(--color-link);
+    }
+    :root[data-theme="dark"] .btn {
+      border-color: var(--color-link);
+      background: rgba(96, 165, 250, 0.14);
+      color: var(--color-link);
+    }
+    :root[data-theme="dark"] .btn:hover {
+      background: rgba(96, 165, 250, 0.24);
+    }
+    :root[data-theme="dark"] .btn-watch,
+    :root[data-theme="dark"] .resource-card .rc-kind.course {
+      border-color: #f87171;
+      background: rgba(248, 113, 113, 0.14);
+      color: #f87171;
+    }
+    :root[data-theme="dark"] .btn-watch:hover {
+      background: rgba(248, 113, 113, 0.24);
+    }
+    :root[data-theme="dark"] .btn-source {
+      border-color: var(--color-border-strong);
+      background: rgba(148, 163, 184, 0.14);
+      color: var(--color-text);
+    }
+    :root[data-theme="dark"] .btn-source:hover {
+      background: rgba(148, 163, 184, 0.24);
+    }
+    :root[data-theme="dark"] .resource-card:hover {
+      border-color: var(--color-link);
+      background: rgba(96, 165, 250, 0.08);
+    }
+    :root[data-theme="dark"] .talk-group h4 {
+      color: var(--color-text-muted);
+      border-bottom-color: var(--color-border);
+    }
+  </style>
+
+  <!-- Privacy-friendly analytics by Plausible -->
+  <script async src="https://plausible.io/js/pa-Rr3_iGtVZcPHhxkdbyDIb.js"></script>
+  <script>
+    window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+    plausible.init()
+  </script>
+</head>
+<body>
+<button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch to dark mode" aria-pressed="false">
+  <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+  <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+</button>
+  <!-- Reusable SVG icon definitions -->
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+    <symbol id="icon-watch" viewBox="0 0 24 24" fill="currentColor">
+      <polygon points="5 3 19 12 5 21 5 3"/>
+    </symbol>
+    <symbol id="icon-pdf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+    </symbol>
+    <symbol id="icon-slides" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/><path d="M21 14v5a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h5"/>
+    </symbol>
+    <symbol id="icon-github" viewBox="0 0 16 16" fill="currentColor">
+      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+    </symbol>
+  </svg>
+
+  <header id="title-block-header">
+    <h1 class="title"><a href="https://rlhfbook.com/" style="color: inherit; text-decoration: none;">Reinforcement Learning from Human Feedback</a></h1>
+    <p class="subtitle">A short introduction to RLHF and post-training focused on language models.</p>
+    <p class="author">Nathan Lambert</p>
+    <navigation-dropdown expanded="false"></navigation-dropdown>
+  </header>
+
+  <!-- Pagefind only indexes pages carrying data-pagefind-body once any indexed
+       page uses it (the chapter template does), so mark the course content. -->
+  <div data-pagefind-body data-pagefind-meta="title:Course">
+  <h1>Course</h1>
+
+  <p>
+    A full course accompanying the book with added resources and other lectures I've given.
+  </p>
+
+  <p class="meta">The slide decks are usually built with Claude Opus, with substantial human revisions. (Exceptions are noted on the deck itself.)</p>
+
+  <div class="welcome-video">
+    <div>
+      <h3>Welcome to the Course</h3>
+      <p class="meta">Introduction and overview of what you'll learn</p>
+    </div>
+    <div class="talk-actions">
+      <a href="https://www.youtube.com/watch?v=jQPiH-KB4B0&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y" class="btn btn-watch" target="_blank" rel="noopener noreferrer">
+        <svg width="14" height="14"><use href="#icon-watch"/></svg>
+        Watch
+      </a>
+    </div>
+  </div>
+
+  <ul class="page-guide">
+    <li><a href="#prerequisites"><strong>Prerequisites</strong></a> &mdash; what to know before starting.</li>
+    <li><a href="#lectures"><strong>Primary Material</strong></a> &mdash; the core lecture series that follows the book chapter by chapter, with recordings, slides, PDFs, and source.</li>
+    <li><a href="#extra-resources"><strong>Extra Resources</strong></a> &mdash; recommended books, external RL courses, and Nathan's own talks paired with the chapters they go with.</li>
+    <li><a href="#other-lectures"><strong>Other Guest Lectures and Talks</strong></a> &mdash; invited talks and standalone presentations.</li>
+  </ul>
+
+  <section class="slides-section" id="prerequisites">
+    <h2>Prerequisites</h2>
+
+    <p>This course is roughly aimed at early AI PhD or master's students, but it is designed to be accessible to anyone willing to put in the work.</p>
+
+    <p>You do <strong>not</strong> need prior reinforcement learning or language modeling background to start. A motivated learner who studies hard &mdash; leaning on today's top LLMs as a tutor to unpack unfamiliar math, code, and jargon &mdash; can follow the entire course. I encourage you to go down rabbit holes, skip or reorder videos, and chase what excites you.</p>
+
+    <p>If you prefer the traditional coursework path, the usual background is the basics of language modeling / NLP plus basic machine learning (e.g. an intro to AI course and an intro to ML course).</p>
+
+    <div class="course-entry" id="prerequisite-review">
+      <div>
+        <h3>The ML Foundations of LLM Post-Training</h3>
+        <p class="meta">A refresher on the ML prerequisites of post-training — language modeling, KL, cross-entropy, & other math — to acclimate to the series</p>
+      </div>
+      <div class="talk-actions">
+        <a href="https://www.youtube.com/watch?v=MMDNaeIFVy8&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=2" class="btn btn-watch" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-watch"/></svg> Watch</a>
+        <a href="/teach/course/lec0-prereq-review/slides.pdf" class="btn" download><svg width="14" height="14"><use href="#icon-pdf"/></svg> PDF</a>
+        <a href="/teach/course/lec0-prereq-review/" class="btn" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-slides"/></svg> Slides</a>
+        <a href="https://github.com/natolambert/rlhf-book/blob/main/teach/course/lec0-prereq-review.md?plain=1" class="btn btn-source" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-github"/></svg> Source</a>
+      </div>
+    </div>
+
+    <p class="meta"><a href="#extra-resources" style="display: inline-flex; align-items: center; gap: 0.4em;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>Additional learning material</a></p>
+  </section>
+
+  <section class="slides-section" id="lectures">
+    <h2>Primary Material</h2>
+
+    <div class="course-list">
+      <div class="course-entry" id="lecture-1-overview">
+        <div>
+          <h3>Lecture 1: Overview</h3>
+          <p class="meta">Chapters 1-3 &middot; Foundations of RLHF and post-training</p>
+        </div>
+        <div class="talk-actions">
+          <a href="https://www.youtube.com/watch?v=o6l6tJQgUg4&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=2" class="btn btn-watch" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-watch"/></svg> Watch</a>
+          <a href="/teach/course/lec1-chap1-3/slides.pdf" class="btn" download><svg width="14" height="14"><use href="#icon-pdf"/></svg> PDF</a>
+          <a href="/teach/course/lec1-chap1-3/" class="btn" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-slides"/></svg> Slides</a>
+          <a href="https://github.com/natolambert/rlhf-book/blob/main/teach/course/lec1-chap1-3.md?plain=1" class="btn btn-source" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-github"/></svg> Source</a>
+        </div>
+      </div>
+      <div class="course-entry" id="lecture-2-ift-rm-rs">
+        <div>
+          <h3>Lecture 2: IFT, Reward Models, &amp; Rejection Sampling</h3>
+          <p class="meta">Chapters 4, 5, 9 &middot; Start of the core optimization methods section</p>
+        </div>
+        <div class="talk-actions">
+          <a href="https://www.youtube.com/watch?v=4gIwiSPmQkU&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=3" class="btn btn-watch" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-watch"/></svg> Watch</a>
+          <a href="/teach/course/lec2-chap4-5-9/slides.pdf" class="btn" download><svg width="14" height="14"><use href="#icon-pdf"/></svg> PDF</a>
+          <a href="/teach/course/lec2-chap4-5-9/" class="btn" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-slides"/></svg> Slides</a>
+          <a href="https://github.com/natolambert/rlhf-book/blob/main/teach/course/lec2-chap4-5-9.md?plain=1" class="btn btn-source" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-github"/></svg> Source</a>
+        </div>
+      </div>
+      <div class="course-entry" id="lecture-3-rl-theory">
+        <div>
+          <h3>Lecture 3: RL Motivation &amp; Math</h3>
+          <p class="meta">Chapter 6, Part 1 &middot; Policy gradients math, intuitions, and theory</p>
+        </div>
+        <div class="talk-actions">
+          <a href="https://www.youtube.com/watch?v=K_Sj_-1BUMM&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=4" class="btn btn-watch" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-watch"/></svg> Watch</a>
+          <a href="/teach/course/lec3-chap6-p1/slides.pdf" class="btn" download><svg width="14" height="14"><use href="#icon-pdf"/></svg> PDF</a>
+          <a href="/teach/course/lec3-chap6-p1/" class="btn" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-slides"/></svg> Slides</a>
+          <a href="https://github.com/natolambert/rlhf-book/blob/main/teach/course/lec3-chap6-p1.md?plain=1" class="btn btn-source" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-github"/></svg> Source</a>
+        </div>
+      </div>
+      <div class="course-entry" id="lecture-4-rl-implementation">
+        <div>
+          <h3>Lecture 4: RL Implementation &amp; Practice</h3>
+          <p class="meta">Chapter 6, Part 2 &middot; Code, loss aggregation, async training, and practical engineering</p>
+        </div>
+        <div class="talk-actions">
+          <a href="https://www.youtube.com/watch?v=i-AIMpZHgeg&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=5" class="btn btn-watch" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-watch"/></svg> Watch</a>
+          <a href="/teach/course/lec4-chap6-p2/slides.pdf" class="btn" download><svg width="14" height="14"><use href="#icon-pdf"/></svg> PDF</a>
+          <a href="/teach/course/lec4-chap6-p2/" class="btn" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-slides"/></svg> Slides</a>
+          <a href="https://github.com/natolambert/rlhf-book/blob/main/teach/course/lec4-chap6-p2.md?plain=1" class="btn btn-source" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-github"/></svg> Source</a>
+        </div>
+      </div>
+      <div class="course-entry qa-entry" id="qa-01">
+        <div>
+          <h3>Q&amp;A 1: Reader questions, lec. 1-4</h3>
+        </div>
+        <div class="talk-actions">
+          <a href="https://www.youtube.com/watch?v=x-MqKBzoxkI&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=6" class="btn btn-watch" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-watch"/></svg> Watch</a>
+          <a href="/teach/course/qa-01/slides.pdf" class="btn" download><svg width="14" height="14"><use href="#icon-pdf"/></svg> PDF</a>
+          <a href="/teach/course/qa-01/" class="btn" target="_blank"><svg width="14" height="14"><use href="#icon-slides"/></svg> Slides</a>
+          <a href="https://github.com/natolambert/rlhf-book/blob/main/teach/course/qa-01.md?plain=1" class="btn btn-source" target="_blank"><svg width="14" height="14"><use href="#icon-github"/></svg> Source</a>
+        </div>
+      </div>
+      <div class="course-entry" id="lecture-5-reasoning">
+        <div>
+          <h3>Lecture 5: The Rise of Reasoning Models</h3>
+          <p class="meta">Chapter 7 &middot; RLVR, inference-time scaling, and the 2025 reasoning model wave</p>
+        </div>
+        <div class="talk-actions">
+          <a href="https://www.youtube.com/watch?v=o4AB5xHIDdM&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=7" class="btn btn-watch" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-watch"/></svg> Watch</a>
+          <a href="/teach/course/lec5-chap7/slides.pdf" class="btn" download><svg width="14" height="14"><use href="#icon-pdf"/></svg> PDF</a>
+          <a href="/teach/course/lec5-chap7/" class="btn" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-slides"/></svg> Slides</a>
+          <a href="https://github.com/natolambert/rlhf-book/blob/main/teach/course/lec5-chap7.md?plain=1" class="btn btn-source" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-github"/></svg> Source</a>
+        </div>
+      </div>
+      <div class="course-entry" id="lecture-6-dpo">
+        <div>
+          <h3>Lecture 6: Direct Preference Optimization</h3>
+          <p class="meta">Chapter 8 &middot; Deriving DPO step by step, plus variants and practice</p>
+        </div>
+        <div class="talk-actions">
+          <a href="https://www.youtube.com/watch?v=6g6b4gvO-y0&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=8" class="btn btn-watch" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-watch"/></svg> Watch</a>
+          <a href="/teach/course/lec6-chap8-dpo/slides.pdf" class="btn" download><svg width="14" height="14"><use href="#icon-pdf"/></svg> PDF</a>
+          <a href="/teach/course/lec6-chap8-dpo/" class="btn" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-slides"/></svg> Slides</a>
+          <a href="https://github.com/natolambert/rlhf-book/blob/main/teach/course/lec6-chap8-dpo.md?plain=1" class="btn btn-source" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-github"/></svg> Source</a>
+        </div>
+      </div>
+      <div class="course-entry qa-entry" id="conversation-01">
+        <div>
+          <h3>Conversation 1: Frontier post-training recipes in 2026 (w/ Finbarr Timbers)</h3>
+        </div>
+        <div class="talk-actions">
+          <a href="https://www.youtube.com/watch?v=sbXEPxIazqY&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=9" class="btn btn-watch" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-watch"/></svg> Watch</a>
+          <a href="/teach/course/conversation-01/slides.pdf" class="btn" download><svg width="14" height="14"><use href="#icon-pdf"/></svg> PDF</a>
+          <a href="/teach/course/conversation-01/" class="btn" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-slides"/></svg> Slides</a>
+          <a href="https://github.com/natolambert/rlhf-book/blob/main/teach/course/conversation-01.md?plain=1" class="btn btn-source" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-github"/></svg> Source</a>
+        </div>
+      </div>
+      <div class="course-entry" id="lecture-7-synthetic-data">
+        <div>
+          <h3>Lecture 7: Synthetic Data and Modern Post-training Methods</h3>
+          <p class="meta">Chapter 12 &middot; On-policy distillation, AI feedback, Constitutional AI, and rubrics</p>
+        </div>
+        <div class="talk-actions">
+          <a href="https://www.youtube.com/watch?v=6nyJ8y8ghsE&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=10" class="btn btn-watch" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-watch"/></svg> Watch</a>
+          <a href="/teach/course/lec7-chap12-synthetic-data/slides.pdf" class="btn" download><svg width="14" height="14"><use href="#icon-pdf"/></svg> PDF</a>
+          <a href="/teach/course/lec7-chap12-synthetic-data/" class="btn" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-slides"/></svg> Slides</a>
+          <a href="https://github.com/natolambert/rlhf-book/blob/main/teach/course/lec7-chap12-synthetic-data.md?plain=1" class="btn btn-source" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-github"/></svg> Source</a>
+        </div>
+      </div>
+      <div class="course-entry qa-entry" id="qa-02">
+        <div>
+          <h3>Q&amp;A 2: Reader questions, lec. 5-7</h3>
+        </div>
+        <div class="talk-actions">
+          <a href="/teach/course/qa-02/slides.pdf" class="btn" download><svg width="14" height="14"><use href="#icon-pdf"/></svg> PDF</a>
+          <a href="/teach/course/qa-02/" class="btn" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-slides"/></svg> Slides</a>
+          <a href="https://github.com/natolambert/rlhf-book/blob/main/teach/course/qa-02.md?plain=1" class="btn btn-source" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-github"/></svg> Source</a>
+        </div>
+      </div>
+      <div class="course-entry" id="lecture-8-preferences">
+        <div>
+          <h3>[Draft] Lecture 8: Preferences and Preference Data</h3>
+          <p class="meta">Chapters 10 &amp; 11 &middot; A history of preferences, the preference-data engine, and unanswerable questions</p>
+        </div>
+        <div class="talk-actions">
+          <a href="/teach/course/lec8-chap10-11-preferences/slides.pdf" class="btn" download><svg width="14" height="14"><use href="#icon-pdf"/></svg> PDF</a>
+          <a href="/teach/course/lec8-chap10-11-preferences/" class="btn" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-slides"/></svg> Slides</a>
+          <a href="https://github.com/natolambert/rlhf-book/blob/main/teach/course/lec8-chap10-11-preferences.md?plain=1" class="btn btn-source" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-github"/></svg> Source</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="other-lectures-section" id="extra-resources">
+    <h2>Extra Resources</h2>
+
+    <p class="meta" style="margin-bottom: 1em;">Outside material that I've personally used for going deeper on reinforcement learning and language models. The books in particular are wonderful complements.</p>
+
+    <h3>Books &amp; Courses</h3>
+    <div class="resource-grid">
+      <a class="resource-card" href="https://amzn.to/4vfAM2E" target="_blank" rel="noopener noreferrer">
+        <span class="rc-kind">Book</span>
+        <span class="rc-title">Reinforcement Learning: An Introduction</span>
+        <span class="rc-meta">Sutton &amp; Barto &middot; The foundational RL textbook</span>
+      </a>
+      <a class="resource-card" href="https://amzn.to/4ef1DWP" target="_blank" rel="noopener noreferrer">
+        <span class="rc-kind">Book</span>
+        <span class="rc-title">Build a Large Language Model (From Scratch)</span>
+        <span class="rc-meta">Sebastian Raschka</span>
+      </a>
+      <a class="resource-card" href="https://amzn.to/4x14Kcu" target="_blank" rel="noopener noreferrer">
+        <span class="rc-kind">Book</span>
+        <span class="rc-title">Build a Reasoning Model (From Scratch)</span>
+        <span class="rc-meta">Sebastian Raschka</span>
+      </a>
+      <a class="resource-card" href="https://www.youtube.com/watch?v=SupFHGbytvA&list=PL_iWQOsE6TfVYGEGiAOMaOzzv41Jfm_Ps&index=1" target="_blank" rel="noopener noreferrer">
+        <span class="rc-kind course">Course</span>
+        <span class="rc-title">CS285: Deep Reinforcement Learning (2023)</span>
+        <span class="rc-meta">UC Berkeley &middot; Sergey Levine</span>
+      </a>
+      <a class="resource-card" href="https://www.youtube.com/watch?v=2pWv7GOvuf0&list=PLzuuYNsE1EZAXYR4FJ75jcJseBmo4KQ9-" target="_blank" rel="noopener noreferrer">
+        <span class="rc-kind course">Course</span>
+        <span class="rc-title">Introduction to Reinforcement Learning (2015)</span>
+        <span class="rc-meta">DeepMind / UCL &middot; David Silver</span>
+      </a>
+    </div>
+
+    <h3>More talks from Nathan</h3>
+    <p class="meta" style="margin-bottom: 0.8em;">Various presentations over my last few years working in post-training, grouped by corresponding chapter.</p>
+    <div class="talk-groups">
+      <div class="talk-col">
+        <div class="talk-group">
+          <h4>Chapter 1 &middot; Introduction</h4>
+          <ul>
+            <li><a href="https://www.youtube.com/watch?v=AdLgPmcrXwQ" target="_blank" rel="noopener noreferrer">Aligning Open Language Models (Stanford CS25)</a> <span class="when">Apr 2024</span></li>
+          </ul>
+        </div>
+        <div class="talk-group">
+          <h4>Chapter 3 &middot; Training Overview</h4>
+          <ul>
+            <li><a href="https://www.youtube.com/watch?v=6yIMb0K-aS4" target="_blank" rel="noopener noreferrer">How Language Model Post-Training Is Done Today</a> <span class="when">Jan 2025</span></li>
+            <li><a href="https://www.youtube.com/watch?v=uaZ3yRdYg8A" target="_blank" rel="noopener noreferrer">How We Built a Leading Reasoning Model (Olmo 3)</a> <span class="when">Dec 2025</span></li>
+          </ul>
+        </div>
+        <div class="talk-group">
+          <h4>Chapter 6 &middot; Reinforcement Learning</h4>
+          <ul>
+            <li><a href="https://www.youtube.com/watch?v=amrJDwMUFNs" target="_blank" rel="noopener noreferrer">GRPO's New Variants and Implementation Secrets</a> <span class="when">Mar 2025</span></li>
+          </ul>
+        </div>
+        <div class="talk-group">
+          <h4>Chapter 10 &middot; The Nature of Preferences</h4>
+          <ul>
+            <li><a href="https://www.youtube.com/watch?v=Mu_-FWIuhDA" target="_blank" rel="noopener noreferrer">15 Minute History of Reinforcement Learning and Human Feedback</a> <span class="when">Dec 2023</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="talk-col">
+        <div class="talk-group">
+          <h4>Chapter 7 &middot; Reasoning &amp; Inference-Time Scaling</h4>
+          <ul>
+            <li><a href="https://www.youtube.com/watch?v=YXTYbr3hiFU" target="_blank" rel="noopener noreferrer">An Unexpected Reinforcement Learning Renaissance</a> <span class="when">Feb 2025</span></li>
+            <li><a href="https://www.youtube.com/watch?v=J1APR8Bo9dE" target="_blank" rel="noopener noreferrer">Early Stages of the Reinforcement Learning Era of Language Models</a> <span class="when">Mar 2025</span></li>
+            <li><a href="https://www.youtube.com/watch?v=zYeIqzULzr0" target="_blank" rel="noopener noreferrer">Experimenting with Reinforcement Learning with Verifiable Rewards (RLVR)</a> <span class="when">Apr 2025</span></li>
+          </ul>
+        </div>
+        <div class="talk-group">
+          <h4>Chapter 8 &middot; Direct-Alignment Algorithms</h4>
+          <ul>
+            <li><a href="https://www.youtube.com/watch?v=YJMCSVLRUNs" target="_blank" rel="noopener noreferrer">DPO Debate: Is RL Needed for RLHF?</a> <span class="when">Dec 2023</span></li>
+            <li><a href="https://www.youtube.com/watch?v=dnF463_Ar9I" target="_blank" rel="noopener noreferrer">Life After DPO (Stanford CS224N)</a> <span class="when">May 2024</span></li>
+            <li><a href="https://www.youtube.com/watch?v=rDF7eFPeVto" target="_blank" rel="noopener noreferrer">An Update on DPO vs PPO for LLM Alignment</a> <span class="when">Jul 2024</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="other-lectures-section" id="other-lectures">
+    <h2>Other Guest Lectures and Talks</h2>
+
+    <h3>2026</h3>
+
+    <div class="talk-entry" id="sala-2026">
+      <div class="slide-viewer">
+        <iframe src="/teach/SALA-2026/" loading="lazy"></iframe>
+      </div>
+      <div class="talk-info">
+        <div class="talk-info-left">
+          <h3>An Introduction to Reinforcement Learning from Human Feedback and Post-training</h3>
+          <p class="meta">SALA 2026 &middot; Quito, Ecuador &middot; March 2026</p>
+        </div>
+        <div class="talk-actions">
+          <span class="tag">Invited Talk</span>
+          <a href="/teach/SALA-2026/slides.pdf" class="btn" download><svg width="14" height="14"><use href="#icon-pdf"/></svg> PDF</a>
+          <a href="/teach/SALA-2026/" class="btn" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-slides"/></svg> Full Screen</a>
+          <a href="https://github.com/natolambert/rlhf-book/blob/main/teach/SALA-2026/talk.md?plain=1" class="btn btn-source" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-github"/></svg> Source</a>
+        </div>
+      </div>
+    </div>
+  </section>
+  </div><!-- /data-pagefind-body -->
+
+  <section id="citation" style="padding: 0 20px;">
+    <h4 style="text-align: left; font-weight: normal;">Citation</h4>
+    <p>If you found this useful for your research, please cite it!</p>
+    <pre style="text-align: left; font-size: small; color: #888;">@book{rlhf2026lambert,
+  author = {Nathan Lambert},
+  title = {Reinforcement Learning from Human Feedback},
+  year = {2026},
+  publisher = {Online},
+  url = {https://rlhfbook.com}
+}</pre>
+  </section>
+  <!-- include: footer.html -->
+
+  <script>
+    // Scale iframes to fit their containers
+    function scaleViewers() {
+      document.querySelectorAll('.slide-viewer').forEach(container => {
+        const iframe = container.querySelector('iframe');
+        if (!iframe) return;
+        const scale = container.offsetWidth / 1280;
+        iframe.style.transform = 'scale(' + scale + ')';
+      });
+    }
+    window.addEventListener('load', scaleViewers);
+    window.addEventListener('resize', scaleViewers);
+
+  </script>
+</body>
+</html>

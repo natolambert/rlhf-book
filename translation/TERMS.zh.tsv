@@ -1,0 +1,78 @@
+english	zh	first_mention	keep_english	category	alternatives	notes
+reinforcement learning	强化学习	强化学习（reinforcement learning, RL）	yes	core	RL	常见稳定译法；缩写 RL 保留。
+reinforcement learning from human feedback	基于人类反馈的强化学习	基于人类反馈的强化学习（RLHF）	yes	core	RLHF	之后多用 RLHF。
+language model	语言模型	语言模型（language model, LM）	yes	core	LM	LLM 译为大语言模型。
+large language model	大语言模型	大语言模型（large language model, LLM）	yes	core	LLM	之后可用 LLM。
+post-training	后训练	后训练（post-training）	no	core		指预训练之后的模型适配和优化阶段。
+pretraining	预训练	预训练（pretraining）	no	core		稳定译法。
+instruction tuning	指令微调	指令微调（instruction tuning）	no	training	指令调优	本书优先统一为指令微调。
+supervised fine-tuning	监督微调	监督微调（supervised fine-tuning, SFT）	yes	training	SFT	保留 SFT。
+preference tuning	偏好调优	偏好调优（preference tuning）	no	training	偏好微调	若指 preference fine-tuning/PreFT，偏好微调也可接受。
+preference fine-tuning	偏好微调	偏好微调（preference fine-tuning, PreFT）	yes	training	偏好调优	PreFT 语境中优先用偏好微调。
+preference data	偏好数据	偏好数据（preference data）	no	data		稳定译法。
+preference model	偏好模型	偏好模型（preference model）	no	model	PM	有时图中缩写 PM。
+reward model	奖励模型	奖励模型（reward model, RM）	yes	model	RM	保留 RM。
+outcome reward model	结果奖励模型	结果奖励模型（outcome reward model, ORM）	yes	model	ORM	保留 ORM。
+process reward model	过程奖励模型	过程奖励模型（process reward model, PRM）	yes	model	PRM	保留 PRM。
+reward signal	奖励信号	奖励信号（reward signal）	no	rl		稳定译法。
+policy	策略	策略（policy）	no	rl	policy	数学符号和代码中的 policy 不改。
+value function	价值函数	价值函数（value function）	no	rl		稳定译法。
+advantage	优势	优势（advantage）	no	rl		策略梯度语境。
+trajectory	轨迹	轨迹（trajectory）	no	rl		稳定译法。
+rollout	rollout	rollout	yes	rl	采样轨迹	强化学习语境优先保留英文。
+on-policy	on-policy	on-policy	yes	rl	同策略	本书优先保留英文。
+off-policy	off-policy	off-policy	yes	rl	离策略	本书优先保留英文。
+rejection sampling	拒绝采样	拒绝采样（Rejection Sampling, RS）	yes	method	RS	保留 RS。
+best-of-N	best-of-N	best-of-N	yes	method	从 N 个候选中选优	可在解释性文字中说明。
+direct alignment	直接对齐	直接对齐（direct alignment）	no	method		章节标题使用直接对齐。
+direct preference optimization	直接偏好优化	直接偏好优化（Direct Preference Optimization, DPO）	yes	method	DPO	保留 DPO。
+proximal policy optimization	近端策略优化	近端策略优化（Proximal Policy Optimization, PPO）	yes	method	PPO	保留 PPO。
+policy gradient	策略梯度	策略梯度（policy gradient）	no	method		稳定译法。
+regularization	正则化	正则化（regularization）	no	method		稳定译法。
+over-optimization	过度优化	过度优化（over-optimization）	no	method		稳定译法。
+evaluation	评估	评估（evaluation）	no	eval		稳定译法。
+benchmark	benchmark	benchmark	yes	eval	基准测试	具体 benchmark 名称不译。
+synthetic data	合成数据	合成数据（synthetic data）	no	data		稳定译法。
+distillation	蒸馏	蒸馏（distillation）	no	training		稳定译法。
+tool use	工具使用	工具使用（tool use）	no	capability		稳定译法。
+function calling	函数调用	函数调用（function calling）	no	capability		稳定译法。
+character training	角色训练	角色训练（Character Training）	yes	product	性格训练	作为行业术语时可首现保留英文。
+alignment	对齐	对齐（alignment）	no	alignment		AI alignment 译为 AI 对齐。
+preference	偏好	偏好（preference）	no	alignment		稳定译法。
+completion	补全	补全（completion）	no	lm	回复	聊天语境可译为回复；算法数据语境优先补全。
+prompt	prompt	prompt	yes	lm	提示词	技术流程中常保留 prompt。
+response	回复	回复（response）	no	lm		稳定译法。
+sample	样本 / 采样	样本 / 采样（sample）	no	data		名词样本，动词采样。
+dataset	数据集	数据集（dataset）	no	data		稳定译法。
+distribution	分布	分布（distribution）	no	math		稳定译法。
+loss	损失	损失（loss）	no	math		稳定译法。
+objective	目标函数	目标函数（objective）	no	math	目标	优化语境用目标函数。
+inference	推理	推理（inference）	no	serving		注意与 reasoning 区分。
+reasoning	推理	推理（reasoning）	no	capability		与 inference 同译但语境不同。
+training	训练	训练（training）	no	training		稳定译法。
+deployment	部署	部署（deployment）	no	serving		稳定译法。
+serving	服务化	服务化（serving）	no	serving		模型线上服务语境。
+elicitation	引出 / 激发	elicitation	yes	concept	引出;激发	视上下文选择，理论名可保留英文。
+calibration	校准	校准（calibration）	no	eval		稳定译法。
+annotator	标注者	标注者（annotator）	no	data		稳定译法。
+labeler	标注员	标注员（labeler）	no	data		稳定译法。
+human feedback	人类反馈	人类反馈（human feedback）	no	data		稳定译法。
+human preference	人类偏好	人类偏好（human preference）	no	data		稳定译法。
+AI feedback	AI 反馈	AI 反馈（AI feedback）	yes	data		AI 保留英文。
+scalable oversight	可扩展监督	可扩展监督（scalable oversight）	no	alignment		稳定译法。
+reward hacking	奖励投机	奖励投机（reward hacking）	no	alignment	奖励黑客	若需要突出原术语，可首现中英对照。
+specification gaming	规范钻空子	规范钻空子（specification gaming）	no	alignment		可首现保留英文。
+hallucination	幻觉	幻觉（hallucination）	no	behavior		稳定译法。
+reasoning model	推理模型	推理模型（reasoning model）	no	model		稳定译法。
+verifier	验证器	验证器（verifier）	no	model		稳定译法。
+generator	生成器	生成器（generator）	no	model		稳定译法。
+classifier	分类器	分类器（classifier）	no	model		稳定译法。
+ranking	排序	排序（ranking）	no	data		稳定译法。
+ranking model	排序模型	排序模型（ranking model）	no	model		稳定译法。
+pairwise comparison	成对比较	成对比较（pairwise comparison）	no	data		稳定译法。
+pairwise preference	成对偏好	成对偏好（pairwise preference）	no	data		稳定译法。
+Likert scale	Likert 量表	Likert 量表（Likert scale）	yes	data		人名保留。
+fine-tune	微调	微调（fine-tune）	no	training		动词。
+open model	开放模型	开放模型（open model）	no	model		稳定译法。
+frontier model	前沿模型	前沿模型（frontier model）	no	model		稳定译法。
+closed model	闭源模型	闭源模型（closed model）	no	model		稳定译法。

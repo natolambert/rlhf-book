@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="$lang$" xml:lang="$lang$"$if(dir)$ dir="$dir$"$endif$>
+<head>
+  <meta charset="utf-8" />
+  <!-- Set the theme before first paint to avoid a flash of the wrong theme. -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('theme');
+        if (t !== 'light' && t !== 'dark') {
+          t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+  <link rel="canonical" href="$if(canonical-url)$$canonical-url$$else$https://rlhfbook.com/$endif$" />
+  <meta name="description" content="$if(meta-description)$$meta-description$$else$A chapter from the RLHF Book, a free guide to reinforcement learning from human feedback and post-training language models.$endif$" />
+
+  <!-- Add Open Graph meta tags for share image -->
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="RLHF Book" />
+  <meta property="og:image" content="https://rlhfbook.com/assets/rlhf-book-share.png" />
+  <meta property="og:image:width" content="1920" />
+  <meta property="og:image:height" content="1080" />
+
+  <!-- <meta property="og:title" content="$if(title-prefix)$$title-prefix$ – $endif$$pagetitle$" /> -->
+  <meta property="og:title" content="$if(page-title)$$page-title$$else$$title$$endif$ | RLHF and Post-Training Book by Nathan Lambert" />
+  <meta property="og:description" content="$if(meta-description)$$meta-description$$else$A chapter from the RLHF Book, a free guide to reinforcement learning from human feedback and post-training language models.$endif$" />
+  <meta property="og:url" content="$if(canonical-url)$$canonical-url$$else$https://rlhfbook.com/$endif$" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="$if(page-title)$$page-title$$else$$title$$endif$ | RLHF and Post-Training Book by Nathan Lambert" />
+  <meta name="twitter:description" content="$if(meta-description)$$meta-description$$else$A chapter from the RLHF Book, a free guide to reinforcement learning from human feedback and post-training language models.$endif$" />
+  <meta name="twitter:image" content="https://rlhfbook.com/assets/rlhf-book-share.png" />
+
+  $for(author-meta)$
+  <meta name="author" content="$author-meta$" />
+$endfor$
+$if(date-meta)$
+  <meta name="dcterms.date" content="$date-meta$" />
+$endif$
+$if(keywords)$
+  <meta name="keywords" content="$for(keywords)$$keywords$$sep$, $endfor$" />
+$endif$
+  <!-- <title>RLHF Book</title> -->
+   <!-- SEO and Open Graph titles -->
+   <title>$if(page-title)$$page-title$$else$$title$$endif$ | RLHF and Post-Training Book by Nathan Lambert</title>
+
+  <script type="application/ld+json">
+$chapter-jsonld$
+  </script>
+  <script type="application/ld+json">
+$breadcrumb-jsonld$
+  </script>
+
+  <style>
+    $styles.html()$
+    $style.css()$
+  </style>
+$for(css)$
+  <link rel="stylesheet" href="$css$" />
+$endfor$
+$if(math)$
+  <script>
+    window.MathJax = window.MathJax || {};
+    window.MathJax.startup = window.MathJax.startup || {};
+    (function() {
+      var originalReady = window.MathJax.startup.ready;
+      window.MathJax.startup.ready = function() {
+        document.querySelectorAll('.math.display').forEach(function(node) {
+          if (!node.dataset.latexSource) {
+            node.dataset.latexSource = node.textContent;
+          }
+        });
+
+        if (typeof originalReady === 'function') {
+          return originalReady();
+        }
+
+        return MathJax.startup.defaultReady();
+      };
+    })();
+  </script>
+  $math$
+  <style>
+    /* Horizontal scroll for wide equations, no vertical scrollbars */
+    .MathJax_Display, .MJXc-display, .math.display, mjx-container[jax="CHTML"][display="true"], mjx-container[jax="SVG"][display="true"] {
+      overflow-x: auto;
+      overflow-y: hidden !important;
+      max-width: 100%;
+      padding: 0.5em 0;
+    }
+  </style>
+$endif$
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+$for(header-includes)$
+  $header-includes$
+$endfor$
+
+<link href="/pagefind/pagefind-ui.css" rel="stylesheet">
+<script src="/pagefind/pagefind-ui.js"></script>
+<!-- custom js nav -->
+<script src="nav.js" defer></script>
+<script src="header-anchors.js" defer></script>
+<script src="table-scroll.js" defer></script>
+<script src="citation-tooltips.js" defer></script>
+<script src="copy-code.js" defer></script>
+<script src="view-source.js" defer></script>
+<script src="conversation.js" defer></script>
+<script src="theme.js" defer></script>
+<style>
+  .toc-lecture-link {
+    margin-top: 0.3em;
+    list-style: none;
+  }
+  .toc-lecture-link a {
+    color: #888 !important;
+    font-size: 0.9em;
+    text-decoration: none;
+  }
+  .toc-lecture-link a:hover {
+    color: #555 !important;
+  }
+</style>
+
+<!-- Privacy-friendly analytics by Plausible -->
+<script async src="https://plausible.io/js/pa-Rr3_iGtVZcPHhxkdbyDIb.js"></script>
+<script>
+  window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+  plausible.init()
+</script>
+
+</head>
+<body>
+<button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch to dark mode" title="Switch to dark mode" aria-pressed="false">
+  <svg class="theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+  <svg class="theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+</button>
+$for(include-before)$
+$include-before$
+$endfor$
+$if(title)$
+<header id="title-block-header">
+<div class="title" role="heading" aria-level="1"><a href="https://rlhfbook.com/" style="color: inherit; text-decoration: none;">$title$</a></div>
+$if(subtitle)$
+<p class="subtitle">$subtitle$</p>
+$endif$
+$for(author)$
+<p class="author">$author$</p>
+$endfor$
+<navigation-dropdown expanded="false"></navigation-dropdown>
+
+</header>
+$endif$
+<div> <h3> Chapter Contents </h3> </div>
+$if(toc)$
+<nav id="$idprefix$TOC" role="doc-toc">
+$if(toc-title)$
+<h2 id="$idprefix$toc-title">$toc-title$</h2>
+$endif$
+$table-of-contents$
+</nav>
+$endif$
+$for(lectures)$
+$if(lectures.video)$
+<li class="toc-lecture-link toc-lecture-link-item" hidden>
+  <a href="$lectures.video$" target="_blank" rel="noopener">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -2px;"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+    $lectures.label$
+  </a>
+</li>
+$else$
+<li class="toc-lecture-link toc-lecture-link-item" hidden>
+  <span style="color: #aaa;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -2px;"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+    $lectures.label$
+  </span>
+</li>
+$endif$
+$endfor$
+$if(lectures)$
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var toc = document.getElementById('TOC');
+    if (!toc) return;
+    var topUl = toc.querySelector('ul');
+    if (!topUl) return;
+    document.querySelectorAll('.toc-lecture-link-item').forEach(function(li) {
+      topUl.appendChild(li);
+      li.hidden = false;
+    });
+  });
+</script>
+$endif$
+<div id="content" data-pagefind-body $if(search-title)$data-pagefind-meta="title:$search-title$"$endif$>
+  $body$
+</div>
+
+<div id="chapter-navigation" style="display: flex; justify-content: space-between; padding: 2em 0;">
+  $if(prev-url)$
+  <a href="$prev-url$" class="prev-chapter">
+    ← Previous: $prev-chapter$
+  </a>
+  $else$
+  <div></div>
+  $endif$
+
+  $if(next-url)$
+  <a href="$next-url$" class="next-chapter">
+    Next: $next-chapter$ →
+  </a>
+  $endif$
+</div>
+$for(include-after)$
+$include-after$
+$endfor$
+<section id="citation" style="padding: 0 20px;">
+  <h4 style="text-align: left; font-weight: normal;">Citation</h4>
+  <p>If you found this useful for your research, please cite it!</p>
+  <pre style="text-align: left; font-size: small; color: #888;">@book{rlhf2026lambert,
+  author = {Nathan Lambert},
+  title = {Reinforcement Learning from Human Feedback},
+  year = {2026},
+  publisher = {Online},
+  url = {https://rlhfbook.com}
+}</pre>
+</section>
+$footer.html()$
+</body>
+</html>

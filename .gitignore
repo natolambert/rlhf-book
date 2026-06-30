@@ -7,6 +7,9 @@ build/html/
 build/latex/
 build/review/
 build/arxiv.zip
+build-zh/
+output/
+tmp/
 
 # Misc
 *.log
