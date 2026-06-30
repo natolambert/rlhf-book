@@ -5,6 +5,7 @@ On release, entries get moved under a version heading.
 
 ## Unreleased
 
+- 2026-06-30: [PR #NNN](https://github.com/natolambert/rlhf-book/pull/NNN) added Chapter 12 to the `code/README.md` reader-experiment table and "Good first sweeps", surfacing the distillation (SDPO/OPSD) example alongside the other code-backed chapters.
 - 2026-06-30: [PR #429](https://github.com/natolambert/rlhf-book/pull/429) folded the unused no-grad `SDPOLoss.forward` into the autograd path: the chunked backward-accumulation method is now the canonical `forward` (called via `objective(...)`), removing the duplicate eval-only loss. No change to training behavior or metrics.
 - 2026-06-30: [PR #429](https://github.com/natolambert/rlhf-book/pull/429) added an SDPO method schematic (`book/images/sdpo_tikz.png`, source `diagrams/tikz/12-synthetic-data/sdpo_tikz.tex`) to the top of `distillation/README.md`, illustrating the per-token reverse-KL self-distillation between the demonstration-conditioned self-teacher and the question-only student over completions sampled from the student.
 - 2026-06-30: [PR #429](https://github.com/natolambert/rlhf-book/pull/429) added the SDPO training-results figure (`code/images/wandb_distillation.png`) to the `distillation/` and `code/` READMEs, and corrected the `code/README.md` On-Policy Distillation blurb (LiveCodeBench/execution-feedback → Reasoning Gym `spell_backward` with sibling-demonstration distillation). Reference wandb run IDs remain pending a maintainer run.

@@ -29,6 +29,7 @@ If you are running these with a coding assistant, launch long training/eval comm
 | Chapter 6: Policy Gradients | GRPO on `spell_backward` | `uv run python -m policy_gradients.train --config policy_gradients/configs/grpo.yaml` | `avg_correctness`, `avg_format`, `avg_binary`, and whether groups contain contrast |
 | Chapter 8: Direct Alignment | DPO on UltraFeedback | `uv run python -m direct_alignment.train --loss dpo --max_samples 1000` | `accuracy`, `margins`, `chosen_rewards`, `rejected_rewards`, sample generations |
 | Chapter 9: Rejection Sampling | GSM8K reward selection versus random controls | `uv run python -m rejection_sampling.train --config rejection_sampling/configs/top_per_prompt.yaml` | Final exact-match accuracy against the matched random baseline |
+| Chapter 12: Synthetic Data | SDPO / on-policy self-distillation on string-reversal | `uv run python -m distillation.train --config distillation/configs/sdpo.yaml` | `reward`, `loss`, `skipped`, and the in-loop teacher/student rollout samples |
 
 Good first sweeps:
 
@@ -37,8 +38,9 @@ Good first sweeps:
 - **Direct alignment**: hold the dataset fixed and compare `dpo.yaml`, `ipo.yaml`, and `dpo_norm.yaml`; read IPO through margins/accuracy, not raw loss scale.
 - **Reward models**: vary `--samples`, `--lr`, and `--model-id` before changing the model architecture.
 - **Rejection sampling**: keep generation/scoring settings identical while comparing `top_*` configs to their `random_*` controls.
+- **Distillation**: copy `distillation/configs/sdpo.yaml` and vary `num_rollouts`, `kl_top_k`, and `prompts_per_step`, watching how `skipped` and `reward` respond as the self-distillation loop converges.
 
-The book chapters now include suggested exercises at the end of Chapters 4, 5, 6, 8, and 9.
+The book chapters now include suggested exercises in Chapters 4, 5, 6, 8, 9, and 12.
 
 ## Attribution
 
