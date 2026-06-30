@@ -1,14 +1,21 @@
 BUILD_ZH = build-zh
 BOOK_ZH = book-zh
+BOOK_EN = book
 OUTPUT_ZH = rlhf-book-zh
 METADATA_ZH = $(BOOK_ZH)/metadata.yml
 CHAPTERS_ZH = $(filter-out $(BOOK_ZH)/chapters/README.md,$(wildcard $(BOOK_ZH)/chapters/*.md))
 CONTENT_ZH = awk 'FNR==1 && NR!=1 {print "\n\n"}{print}' $(CHAPTERS_ZH)
+RESOURCE_PATH_ZH = $(BOOK_ZH):$(BOOK_EN)
+SHARED_IMAGES_ZH = $(shell find $(BOOK_EN)/images -type f 2>/dev/null)
 
 TOC_ZH = --toc --toc-depth 3
-BIBLIOGRAPHY_ZH = --bibliography=$(BOOK_ZH)/chapters/bib.bib --citeproc --csl=$(BOOK_ZH)/templates/ieee.csl
+BIBLIOGRAPHY_ZH = --bibliography=$(BOOK_ZH)/chapters/bib.bib --citeproc --csl=$(BOOK_EN)/templates/ieee.csl
 COMMON_ARGS_ZH = $(TOC_ZH) --metadata-file $(METADATA_ZH) --filter pandoc-crossref $(BIBLIOGRAPHY_ZH) --metadata date="$(shell date +'%d %B %Y')"
 PDF_ENGINE_ZH ?= xelatex
+PDF_TEMPLATE_ZH = $(BOOK_ZH)/templates/pdf.tex
+DOCX_TEMPLATE_ZH = $(BOOK_EN)/templates/docx.docx
+HTML_TEMPLATE_ZH = $(BOOK_EN)/templates/html.html
+CSL_ZH = $(BOOK_EN)/templates/ieee.csl
 
 .PHONY: zh-pdf zh-docx zh-html zh-check zh-term-dry-run zh-term-replace zh-clean
 
@@ -29,19 +36,19 @@ zh-term-replace:
 	@test -n "$(OLD)" && test -n "$(NEW)" || (echo 'Usage: make -f Makefile.zh zh-term-replace OLD=旧译法 NEW=新译法' && exit 1)
 	python3 scripts/replace_translation_term.py --old "$(OLD)" --new "$(NEW)" --apply
 
-$(BUILD_ZH)/pdf/$(OUTPUT_ZH).pdf: $(CHAPTERS_ZH) $(METADATA_ZH) $(BOOK_ZH)/chapters/bib.bib $(BOOK_ZH)/templates/pdf.tex $(BOOK_ZH)/templates/ieee.csl
+$(BUILD_ZH)/pdf/$(OUTPUT_ZH).pdf: Makefile.zh $(CHAPTERS_ZH) $(METADATA_ZH) $(BOOK_ZH)/chapters/bib.bib $(PDF_TEMPLATE_ZH) $(CSL_ZH) $(SHARED_IMAGES_ZH)
 	mkdir -p $(BUILD_ZH)/pdf output/pdf
-	$(CONTENT_ZH) | pandoc $(COMMON_ARGS_ZH) --template $(BOOK_ZH)/templates/pdf.tex --pdf-engine=$(PDF_ENGINE_ZH) --resource-path=$(BOOK_ZH) -o $@
+	$(CONTENT_ZH) | pandoc $(COMMON_ARGS_ZH) --template $(PDF_TEMPLATE_ZH) --pdf-engine=$(PDF_ENGINE_ZH) --resource-path=$(RESOURCE_PATH_ZH) -o $@
 	cp $@ output/pdf/$(OUTPUT_ZH).pdf
 
-$(BUILD_ZH)/docx/$(OUTPUT_ZH).docx: $(CHAPTERS_ZH) $(METADATA_ZH) $(BOOK_ZH)/chapters/bib.bib $(BOOK_ZH)/templates/docx.docx $(BOOK_ZH)/templates/ieee.csl
+$(BUILD_ZH)/docx/$(OUTPUT_ZH).docx: Makefile.zh $(CHAPTERS_ZH) $(METADATA_ZH) $(BOOK_ZH)/chapters/bib.bib $(DOCX_TEMPLATE_ZH) $(CSL_ZH) $(SHARED_IMAGES_ZH)
 	mkdir -p $(BUILD_ZH)/docx output/docx
-	$(CONTENT_ZH) | pandoc $(COMMON_ARGS_ZH) --standalone --reference-doc $(BOOK_ZH)/templates/docx.docx --resource-path=$(BOOK_ZH) -o $@
+	$(CONTENT_ZH) | pandoc $(COMMON_ARGS_ZH) --standalone --reference-doc $(DOCX_TEMPLATE_ZH) --resource-path=$(RESOURCE_PATH_ZH) -o $@
 	cp $@ output/docx/$(OUTPUT_ZH).docx
 
-$(BUILD_ZH)/html/$(OUTPUT_ZH).html: $(CHAPTERS_ZH) $(METADATA_ZH) $(BOOK_ZH)/chapters/bib.bib $(BOOK_ZH)/templates/html.html $(BOOK_ZH)/templates/ieee.csl
+$(BUILD_ZH)/html/$(OUTPUT_ZH).html: Makefile.zh $(CHAPTERS_ZH) $(METADATA_ZH) $(BOOK_ZH)/chapters/bib.bib $(HTML_TEMPLATE_ZH) $(CSL_ZH) $(SHARED_IMAGES_ZH)
 	mkdir -p $(BUILD_ZH)/html output/html
-	$(CONTENT_ZH) | pandoc $(COMMON_ARGS_ZH) --mathjax --template $(BOOK_ZH)/templates/html.html --standalone --to html5 --listings --wrap=none --resource-path=$(BOOK_ZH) -o $@
+	$(CONTENT_ZH) | pandoc $(COMMON_ARGS_ZH) --mathjax --template $(HTML_TEMPLATE_ZH) --standalone --to html5 --listings --wrap=none --resource-path=$(RESOURCE_PATH_ZH) -o $@
 	cp $@ output/html/$(OUTPUT_ZH).html
 
 zh-clean:
