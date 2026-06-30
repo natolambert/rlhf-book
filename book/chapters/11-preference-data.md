@@ -10,7 +10,7 @@ prev-url: "10-preferences"
 page-title: Preference Data
 search-title: "Chapter 11: Preference Data"
 meta-description: "How preference datasets are designed, collected, filtered, and used for RLHF and post-training language models."
-next-chapter: "Synthetic Data"
+next-chapter: "Synthetic Data & Distillation"
 next-url: "12-synthetic-data"
 ---
 

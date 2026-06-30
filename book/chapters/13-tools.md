@@ -5,7 +5,7 @@
   Full license: https://github.com/natolambert/rlhf-book/blob/main/LICENSE-CHAPTERS
 -->
 ---
-prev-chapter: "Synthetic Data"
+prev-chapter: "Synthetic Data & Distillation"
 prev-url: "12-synthetic-data"
 page-title: Tool Use and Function Calling
 search-title: "Chapter 13: Tool Use and Function Calling"
