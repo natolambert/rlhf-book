@@ -1,0 +1,126 @@
+import argparse
+import os
+import random
+import time
+
+import torch
+import torch.optim as optim
+import wandb
+from torch.nn.utils import clip_grad_norm_
+
+from .config import Config, load_config
+from .data import build_dataloader, create_dataset
+from .rollout import generate_batch
+from .utils import (
+    get_loss_objective,
+    load_model,
+    print_model_info,
+    print_rollout_sample,
+    print_step_header,
+    print_step_metrics,
+    seed_everything,
+)
+
+
+def main(cfg: Config):
+    seed_everything(cfg.seed)
+    device = (
+        torch.device(f"cuda:{cfg.model_device_id}")
+        if torch.cuda.is_available()
+        else torch.device("cpu")
+    )
+
+    model, tokenizer = load_model(cfg.model_name, device)
+    dataset = create_dataset(cfg)
+    loader = build_dataloader(dataset, batch_size=cfg.prompts_per_step, shuffle=True)
+    objective = get_loss_objective(
+        cfg.loss, kl_top_k=cfg.kl_top_k, rollout_chunk=cfg.rollout_chunk
+    ).to(device)
+    optimizer = optim.Adam(model.parameters(), lr=cfg.lr)
+    num_warmup_steps = int(cfg.num_steps * cfg.warmup_ratio)
+
+    def lr_lambda(step):
+        # Linear warmup to the target LR, then held constant.
+        if step < num_warmup_steps:
+            # Start at 1/(num_warmup_steps + 1) so the first step still moves.
+            return float(step + 1) / float(max(1, num_warmup_steps + 1))
+        return 1.0
+
+    scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
+
+    wandb_entity = os.environ.get("WANDB_ENTITY", cfg.wandb_entity)
+    wandb_project = os.environ.get("WANDB_PROJECT", cfg.wandb_project)
+    wandb_run_name = os.environ.get("WANDB_RUN_NAME", cfg.wandb_run_name)
+    if wandb_project is None:
+        wandb.init(mode="disabled")
+    else:
+        wandb.init(
+            entity=wandb_entity,
+            project=wandb_project,
+            name=wandb_run_name,
+            config=vars(cfg),
+        )
+    print_model_info(model)
+
+    def _prompt_stream():
+        while True:
+            for prompts in loader:
+                yield from prompts
+
+    prompts = _prompt_stream()
+    start_time = time.time()
+    for step in range(cfg.num_steps):
+        torch.cuda.empty_cache()
+        model.eval()
+
+        # Poll the inference engine until prompts_per_step prompts each yield a correct rollout.
+        # Bound the polling so a task the model never solves fails fast with a clear message
+        # instead of hanging forever (the limit is generous and never hit by a healthy run).
+        max_polls = cfg.prompts_per_step * 100
+        batches, polled = [], 0
+        while len(batches) < cfg.prompts_per_step:
+            if polled >= max_polls:
+                raise RuntimeError(
+                    f"Polled {polled} prompts but only {len(batches)}/{cfg.prompts_per_step} "
+                    "yielded a correct rollout; the task may be too hard for the current model "
+                    "(lower success_reward_threshold or change data.specs)."
+                )
+            batch = generate_batch(model, tokenizer, dataset, next(prompts), cfg)
+            polled += 1
+            if batch is not None:
+                batches.append(batch)
+        print_step_header(step=step, total=cfg.num_steps)
+
+        model.train()
+        optimizer.zero_grad(set_to_none=True)
+        accumulated_loss = 0.0
+        for b in batches:
+            accumulated_loss += objective(model, b, scale=1.0 / len(batches))
+
+        grad_norm = clip_grad_norm_(model.parameters(), cfg.max_norm)
+        optimizer.step()
+        scheduler.step()
+        torch.cuda.empty_cache()
+
+        metrics = {
+            "reward": torch.cat([b["reward"] for b in batches]).mean().item(),
+            "loss": accumulated_loss,
+            "grad_norm": float(grad_norm),
+            "lr": scheduler.get_last_lr()[0],
+            "skipped": polled - len(batches),
+            "hours": (time.time() - start_time) / 3600,
+        }
+        wandb.log(metrics, step=step)
+        print_step_metrics(metrics)
+        print_rollout_sample(**random.choice(batches)["sample"])
+
+
+def main_cli():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--config", type=str, required=True, help="Path to YAML config file")
+    args = parser.parse_args()
+    main(load_config(args.config))
+
+
+if __name__ == "__main__":
+    main_cli()

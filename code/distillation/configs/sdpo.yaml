@@ -1,0 +1,42 @@
+model_name: Qwen/Qwen3-1.7B
+loss: sdpo
+
+# Data (Reasoning Gym — string reversal)
+data:
+  size: 10000
+  specs:
+    - name: spell_backward
+      weight: 1
+      config:
+        min_word_len: 3
+        max_word_len: 10
+
+# SDPO
+kl_top_k: 20
+success_reward_threshold: 1.0
+
+# Generation
+temperature: 0.6
+top_p: 0.95
+top_k: 20
+min_p: 0.0
+repetition_penalty: 1.0
+max_new_tokens: 512
+max_prompt_len: 512  # student prompt cap
+max_reprompt_len: 1024  # teacher reprompt cap (problem + full sibling demo)
+enable_thinking: true
+
+# Training
+lr: 1.0e-6
+warmup_ratio: 0.0  # constant LR (no warmup), matching the feedback-conditioned SDPO regime
+prompts_per_step: 16
+num_rollouts: 8
+num_steps: 200
+max_norm: 1.0
+seed: 42
+model_device_id: 0
+
+# Logging (set wandb_project or the WANDB_PROJECT env var to enable)
+wandb_entity: null
+wandb_project: null
+wandb_run_name: null

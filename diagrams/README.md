@@ -118,6 +118,7 @@ Box-and-arrow flows for RLHF architectures and related training concepts. Many u
 | `rlvr_loop_tikz` | `tikz/07-reasoning/rlvr_loop_tikz.tex` | RLVR loop: RLHF loop with a verifiable reward (r = &gamma; if correct, else 0) | Ch 7 (Reasoning) |
 | `knowledge_distillation_tikz` | `tikz/12-synthetic-data/knowledge_distillation_tikz.tex` | Knowledge distillation pipeline | Ch 12 (Synthetic Data) |
 | `synthetic_data_distillation_tikz` | `tikz/12-synthetic-data/synthetic_data_distillation_tikz.tex` | Synthetic data distillation process | Ch 12 (Synthetic Data) |
+| `sdpo_tikz` | `tikz/12-synthetic-data/sdpo_tikz.tex` | SDPO self-distillation: per-token reverse KL between a demonstration-conditioned self-teacher and the question-only student over sampled completions | Ch 12 (Synthetic Data) |
 | `tooluse_rl_tikz` | `tikz/13-tools/tooluse_rl_tikz.tex` | Tool-use RL: agent &harr; environment/tools over a trajectory, graded reward at trajectory end | Ch 13 (Tools) |
 | `persona_vectors_pipeline_tikz` | `tikz/17-product/persona_vectors_pipeline_tikz.tex` | Persona vector extraction and steering pipeline | Ch 17 (Product) |
 | `pretraining_next_token_tikz` | `tikz/pretraining/pretraining_next_token_tikz.tex` | Introductory next-token prediction example with target token and loss intuition | Talks/presentations |

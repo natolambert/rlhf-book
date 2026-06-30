@@ -1,0 +1,191 @@
+% SDPO (Self-Distillation) per-token reverse-KL diagram
+% One policy pi_theta is forwarded twice (teacher forcing, no generation) over
+% the SAME completion tokens y sampled from the student:
+%   - Student pass: conditioned on the question only (green)
+%   - Teacher pass: conditioned on question + a correct expert demo (yellow)
+% Each pass emits a DENSE distribution over the full vocabulary at every
+% completion position (red). Loss is the per-token reverse KL(student || teacher),
+% pulling the question-only policy toward its demo-conditioned self.
+\documentclass{article}
+\usepackage[margin=0.3cm, paperwidth=25.5cm, paperheight=8.4cm]{geometry}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{xcolor}
+\usetikzlibrary{positioning, arrows.meta, shapes.geometric, fit, calc, backgrounds}
+\pagestyle{empty}
+
+\input{styles_rlhf.tex}
+
+% Dark-mode loose-ink recolor (see styles_rlhf.tex): structural grey lines mix
+% toward the dark page background so they stay subdued but visible; semantic
+% colors (red/green/yellow/blue) and white chips are left untouched.
+\ifnum\figdark=1
+  \colorlet{gridink}{inkcolor!45!black}
+  \colorlet{tickink}{inkcolor!45!black}
+\else
+  \colorlet{gridink}{black!40}
+  \colorlet{tickink}{black!45}
+\fi
+
+% ---- SDPO colors ----
+\definecolor{qfill}{HTML}{D7EFC9}      \definecolor{qline}{HTML}{4E8C3A}  % green: question
+\definecolor{demofill}{HTML}{FCEFC0}   \definecolor{demoline}{HTML}{C9A227} % yellow: expert demo
+\definecolor{densered}{HTML}{D9534F}                                       % red: dense logprobs
+\definecolor{hilite}{HTML}{B3001B}                                         % deep red: highlighted mismatch
+
+\tikzset{
+  qcell/.style={rectangle, draw=qline, fill=qfill, minimum height=0.7cm,
+                font=\footnotesize, rounded corners=2pt, align=center, inner sep=3pt},
+  democell/.style={rectangle, draw=demoline, fill=demofill,
+                font=\scriptsize, rounded corners=2pt, align=left, inner sep=4pt},
+  model/.style={rectangle, draw=blue!70, fill=blue!12, minimum width=1.7cm,
+                minimum height=1.0cm, font=\small, rounded corners=3pt, align=center},
+  distframe/.style={rectangle, draw=densered!55, fill=densered!5,
+                rounded corners=2pt, inner sep=2.5pt},
+  greygroup/.style={draw=gridink, dashed, rounded corners=4pt, inner sep=6pt},
+  redgroup/.style={draw=densered!40, dashed, rounded corners=4pt, inner sep=5pt},
+  amax/.style={font=\normalsize\ttfamily, text=\loose{black!80}},
+}
+
+% \minidist{name}{x}{y}{bar heights list}
+% Draws a small full-vocabulary bar chart (5 bars) centered at (x,y).
+\newcommand{\minidist}[4]{%
+  \begin{scope}[shift={(#2,#3)}]
+    \node[distframe, minimum width=0.8cm, minimum height=0.8cm] (#1) at (0,0.02) {};
+    \foreach \h [count=\i from 0] in #4 {
+      \fill[densered!75] (\i*0.135-0.30,-0.30) rectangle (\i*0.135-0.21,-0.30+\h);
+    }
+    \draw[tickink, line width=0.3pt] (-0.34,-0.30) -- (0.30,-0.30);
+  \end{scope}%
+}
+
+% \minidisthl{name}{x}{y}{bar heights list}{peak index} -- highlighted mismatch:
+% peak bar in deep red, the rest muted, deep-red box border.
+\newcommand{\minidisthl}[5]{%
+  \begin{scope}[shift={(#2,#3)}]
+    \node[distframe, draw=hilite, line width=0.6pt, fill=hilite!6,
+          minimum width=0.8cm, minimum height=0.8cm] (#1) at (0,0.02) {};
+    \foreach \h [count=\j from 0] in #4 {
+      \ifnum\j=#5\relax
+        \fill[hilite] (\j*0.135-0.30,-0.30) rectangle (\j*0.135-0.21,-0.30+\h);
+      \else
+        \fill[densered!30] (\j*0.135-0.30,-0.30) rectangle (\j*0.135-0.21,-0.30+\h);
+      \fi
+    }
+    \draw[tickink, line width=0.3pt] (-0.34,-0.30) -- (0.30,-0.30);
+  \end{scope}%
+}
+
+\begin{document}
+\begin{tikzpicture}
+
+% ============================================================
+% LANE GEOMETRY
+% ============================================================
+\def\ty{2.3}     % teacher lane y
+\def\sy{-1.0}    % student lane y
+\def\mx{7.4}     % model column x
+
+% ============================================================
+% INPUT CONTEXTS (left) -- grey dashed group around each
+% ============================================================
+% --- Teacher context: question (green) + expert demo (yellow) ---
+\node[qcell, minimum width=2.0cm, minimum height=1.2cm] (t-q) at (1.0,\ty) {Spell\\``strawberry''\\backwards};
+\node[democell, anchor=west, text width=3.1cm] (t-d) at ($(t-q.east)+(0.20,0)$)
+      {$\langle$think$\rangle$\\ Read it forward:\\ s t r a w b e r r y\\ Emit in reverse:\\ y r r e b w a r t s\\ $\langle$/think$\rangle$\\[6pt] $\langle$answer$\rangle$\\ yrrebwarts\\ $\langle$/answer$\rangle$};
+\node[font=\tiny, text=demoline] (t-dcap) at ($(t-d.south)+(0,-0.22)$) {correct sampled completion};
+\node[font=\tiny, text=qline]    (t-qcap) at ($(t-q.south)+(0,-0.20)$) {question};
+\node[greygroup, fit=(t-q)(t-d)(t-dcap)] (t-in) {};
+
+% --- Student context: question only (green); caption inside, symmetric padding ---
+\node[qcell, minimum width=2.0cm, minimum height=1.2cm] (s-q) at (1.0,\sy) {Spell\\``strawberry''\\backwards};
+\node[font=\tiny, text=qline] (s-qcap) at ($(s-q.south)+(0,-0.18)$) {question};
+\node[greygroup, inner ysep=3pt, fit=(s-q)(s-qcap)] (s-in) {};
+
+% ============================================================
+% SHARED POLICY (two boxes, tied weights)
+% ============================================================
+\node[model] (t-m) at (\mx,\ty) {$\pi_\theta$\\\scriptsize teacher};
+\node[model] (s-m) at (\mx,\sy) {$\pi_\theta$\\\scriptsize student};
+\draw[<->, dotted, thick, \loose{black!55}] (t-m.south) -- (s-m.north)
+      node[midway, fill=white, font=\scriptsize, text=black!70, inner sep=1.5pt] {shared $\theta$};
+
+% context -> model (strictly horizontal, leaving the dashed group at lane height)
+\draw[arrow] (t-in.east |- t-m.west) -- (t-m.west);
+\draw[arrow] (s-in.east |- s-m.west) -- (s-m.west);
+
+% ============================================================
+% DENSE PER-TOKEN DISTRIBUTIONS (right) -- one per token of "yrrebwarts"
+% teacher: sharper (demo makes it confident); student: flatter
+% Columns 3 & 4 are the swapped (incorrectly sampled) tokens -> highlighted.
+% ============================================================
+% highlight band behind the two mismatched columns (both lanes)
+\fill[hilite!8, rounded corners=4pt] (13.15,\sy-0.55) rectangle (15.25,\ty+0.55);
+
+\minidist{t0}{10.7}{\ty}{{0.55,0.16,0.12,0.10,0.08}}
+\minidist{t1}{11.7}{\ty}{{0.10,0.58,0.16,0.12,0.08}}
+\minidist{t2}{12.7}{\ty}{{0.12,0.16,0.60,0.14,0.10}}
+\minidisthl{t3}{13.7}{\ty}{{0.08,0.10,0.14,0.16,0.60}}{4}
+\minidisthl{t4}{14.7}{\ty}{{0.10,0.60,0.14,0.10,0.08}}{1}
+\minidist{t5}{15.7}{\ty}{{0.10,0.58,0.16,0.12,0.08}}
+\minidist{t6}{16.7}{\ty}{{0.55,0.16,0.12,0.10,0.08}}
+\minidist{t7}{17.7}{\ty}{{0.12,0.16,0.60,0.14,0.10}}
+\minidist{t8}{18.7}{\ty}{{0.08,0.14,0.18,0.56,0.12}}
+\minidist{t9}{19.7}{\ty}{{0.08,0.10,0.14,0.18,0.55}}
+
+\minidist{s0}{10.7}{\sy}{{0.40,0.30,0.26,0.24,0.22}}
+\minidist{s1}{11.7}{\sy}{{0.24,0.42,0.30,0.26,0.22}}
+\minidist{s2}{12.7}{\sy}{{0.26,0.30,0.40,0.28,0.24}}
+\minidisthl{s3}{13.7}{\sy}{{0.16,0.54,0.18,0.12,0.10}}{1}
+\minidisthl{s4}{14.7}{\sy}{{0.10,0.14,0.16,0.18,0.55}}{4}
+\minidist{s5}{15.7}{\sy}{{0.24,0.42,0.30,0.26,0.22}}
+\minidist{s6}{16.7}{\sy}{{0.40,0.30,0.26,0.24,0.22}}
+\minidist{s7}{17.7}{\sy}{{0.26,0.30,0.40,0.28,0.24}}
+\minidist{s8}{18.7}{\sy}{{0.22,0.26,0.30,0.40,0.26}}
+\minidist{s9}{19.7}{\sy}{{0.22,0.24,0.28,0.30,0.40}}
+
+% per-token reverse-KL arrows between the two lanes
+\foreach \i [evaluate=\i as \xx using {10.7+\i*1.0}] in {0,1,2,5,6,7,8,9} {
+  \draw[<->, >=Stealth, thick, densered!70] (\xx,\ty-0.45) -- (\xx,\sy+0.45);
+}
+% mismatched columns: larger divergence -> thicker, deep-red arrows
+\foreach \i [evaluate=\i as \xx using {10.7+\i*1.0}] in {3,4} {
+  \draw[<->, >=Stealth, line width=1.4pt, hilite] (\xx,\ty-0.45) -- (\xx,\sy+0.45);
+}
+
+% red dashed groups + single arrow from each model
+\node[redgroup, fit=(t0)(t9)] (tgrp) {};
+\node[redgroup, fit=(s0)(s9)] (sgrp) {};
+\draw[arrow] (t-m.east) -- (tgrp.west);
+\draw[arrow] (s-m.east) -- (sgrp.west);
+
+% completion tokens: one larger row above the top dashed box;
+% the two swapped tokens (incorrectly sampled) are deep red.
+\foreach \i/\letter/\lc [evaluate=\i as \xx using {10.7+\i*1.0}] in
+    {0/y/\loose{black!80}, 1/r/\loose{black!80}, 2/r/\loose{black!80}, 3/b/hilite, 4/e/hilite,
+     5/w/\loose{black!80}, 6/a/\loose{black!80}, 7/r/\loose{black!80}, 8/t/\loose{black!80}, 9/s/\loose{black!80}} {
+  \node[font=\normalsize\ttfamily, text=\lc] at (\xx,\ty+0.95) {\letter};
+}
+\node[font=\footnotesize, text=\loose{black!70}] at (15.2,\ty+1.55) {sampled completions $\;y\sim\pi_\theta(\cdot\mid\text{question})$};
+% point out the swap
+\node[font=\scriptsize, text=hilite] at (14.2,\sy-0.72) {incorrect tokens};
+
+% per-token reverse-KL label
+\node[font=\scriptsize, text=densered!80, align=center] at (21.05,0.65)
+      {$D_{KL}\big(p^{S}_t \,\|\, p^{T}_t\big)$\\[1pt]per token};
+
+% ============================================================
+% LOSS
+% ============================================================
+\node[plainwide, minimum width=1.5cm, minimum height=0.9cm] (loss) at (23.1,0.65)
+      {$\mathcal{L}_{\text{SDPO}}$};
+\draw[arrow] (tgrp.east) -| (loss.north);
+\draw[arrow] (sgrp.east) -| (loss.south);
+
+% loss equation, bottom band
+\node[font=\small, text=\loose{black}] at (15.2,\sy-1.85)
+      {$\mathcal{L}_{\text{SDPO}} = \mathbb{E}_{y\sim\pi_\theta}\!\Big[\tfrac{1}{T}\textstyle\sum_{t} D_{KL}\big(p^{S}_t \,\big\|\, \text{sg}[\,p^{T}_t]\big)\Big]$};
+
+\end{tikzpicture}
+\end{document}

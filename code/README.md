@@ -287,6 +287,37 @@ On the reference 1k-train / 200-test GSM8K slice, `top_k_overall` beat its
 matched random baseline, while `top_per_prompt` and `random_per_prompt` were
 effectively tied.
 
+## On-Policy Distillation
+
+Train with SDPO (Self-Distillation Policy Optimization), an on-policy distillation
+method for reasoning tasks. The model acts as its own teacher: it samples rollouts on a
+[Reasoning Gym](https://github.com/open-thought/reasoning-gym) task (default
+`spell_backward`, a string-reversal problem), then a demonstration-conditioned copy of
+the same model — given a correct sibling rollout from the same group — supplies better
+next-token targets that are distilled back into the student via a top-K KL. Prompts
+whose rollout group has no correct sample are skipped, so every update has a
+demonstration to learn from.
+See `distillation/README.md` for the full walk-through.
+
+```bash
+# SDPO on the Reasoning Gym string-reversal task
+uv run python -m distillation.train --config distillation/configs/sdpo.yaml
+```
+
+### Training Results
+
+![SDPO Training Results](images/wandb_distillation.png)
+
+The reference run trained `Qwen/Qwen3-1.7B` on `spell_backward` in under 20 hours on a
+single 24 GB consumer GPU: `reward` climbs from ~0.55 to ~0.8 while the distillation
+`loss` and `grad_norm` trend down.
+
+### Example Run
+
+| Algorithm | Description | Example Run |
+|-----------|-------------|-------------|
+| SDPO | Self-Distillation Policy Optimization on Reasoning Gym ([Hübotter et al., 2026](https://arxiv.org/abs/2601.20802)) | _pending maintainer run_ |
+
 ## Configuration
 
 ### Weights & Biases Logging
