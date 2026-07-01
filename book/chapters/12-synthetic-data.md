@@ -286,10 +286,10 @@ This leaves on-policy distillation as a core post-training method, useful for co
 
 ### Suggested Experiments
 
-The companion code in `code/distillation/` implements on-policy self-distillation (OPSD), the variant illustrated in @fig:sdpo: one policy acts as both the demonstration-conditioned teacher and the question-only student, trained with a per-token reverse KL.
+The companion code in `code/distillation/` implements SDPO [@hubotter2026reinforcement], the on-policy self-distillation setup illustrated in @fig:sdpo (the concurrent OPSD paper [@zhao2026selfdistilled] is closely related): one policy acts as both the demonstration-conditioned teacher and the question-only student, trained with a per-token reverse KL.
 It runs on a small string-reversal task, which makes the on-policy distillation loop cheap enough to watch end-to-end on a single GPU.
 
-1. **Run the OPSD string-reversal example.**
+1. **Run the SDPO string-reversal example.**
 
    ```bash
    cd code/
