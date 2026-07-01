@@ -7,8 +7,8 @@
 ---
 prev-chapter: "Preference Data"
 prev-url: "11-preference-data"
-page-title: Synthetic Data
-search-title: "Chapter 12: Synthetic Data"
+page-title: Synthetic Data & Distillation
+search-title: "Chapter 12: Synthetic Data & Distillation"
 meta-description: "Synthetic data, distillation, Constitutional AI, and AI feedback methods used throughout modern post-training."
 next-chapter: "Tool Use and Function Calling"
 next-url: "13-tools"
@@ -17,7 +17,7 @@ lectures:
     label: "Lecture 7: Synthetic Data and Modern Post-training Methods"
 ---
 
-# Synthetic Data
+# Synthetic Data & Distillation
 
 Reinforcement learning from *human feedback* is deeply rooted in the idea of keeping a human influence on the models we are building.
 When the first models were trained successfully with RLHF, human data was *the only* viable way to improve the models in this way.
@@ -283,6 +283,25 @@ This leaves on-policy distillation as a core post-training method, useful for co
 ![Three distillation regimes, compared by where the rollout comes from and how supervision flows. **Sequence KD** (left): the teacher generates an output offline and the student is trained to match it with a cross-entropy (CE) loss. **On-policy distillation (OPD)** (center): the student generates the rollout on-policy (e.g. within a RL framework) and a separate teacher scores each visited token, training the student with a per-token KL divergence (KL). **On-policy self-distillation (OPSD)** (right): one model plays both roles -- privileged information (a hint) added to the context creates a teacher trajectory, and the no-hint generation is distilled toward it with a KL loss, with no separate teacher model.](images/distillation_directionality_tikz.png){#fig:distillation-directionality data-dark-src="images/distillation_directionality_tikz-dark.png"}
 
 ![On-policy self-distillation (OPSD) on a string-reversal task. One policy $\pi_\theta$ is forwarded twice over the same student-sampled completion $y$: a **teacher** pass conditioned on the question plus a correct sibling demonstration (yellow), and a **student** pass conditioned on the question only (green). The per-token reverse KL between the two passes, with a stop-gradient on the teacher, pulls the question-only policy toward its demonstration-conditioned self; highlighted columns are the incorrectly sampled tokens where the distributions diverge most.](images/sdpo_tikz.png){#fig:sdpo data-dark-src="images/sdpo_tikz-dark.png"}
+
+### Suggested Experiments
+
+The companion code in `code/distillation/` implements SDPO [@hubotter2026reinforcement], the on-policy self-distillation setup illustrated in @fig:sdpo (the concurrent OPSD paper [@zhao2026selfdistilled] is closely related): one policy acts as both the demonstration-conditioned teacher and the question-only student, trained with a per-token reverse KL.
+It runs on a small string-reversal task, which makes the on-policy distillation loop cheap enough to watch end-to-end on a single GPU.
+
+1. **Run the SDPO string-reversal example.**
+
+   ```bash
+   cd code/
+   uv run python -m distillation.train --config distillation/configs/sdpo.yaml
+   ```
+
+   Watch `reward`, `loss`, and `skipped`, along with the teacher/student rollout samples printed in the loop.
+   The `skipped` count is the number of polled prompts whose sampled group contained no correct rollout; as the student improves, fewer prompts are skipped and `reward` climbs toward 1.
+
+2. **Vary the on-policy knobs.**
+   Copy `distillation/configs/sdpo.yaml` and sweep `num_rollouts`, `kl_top_k`, and `prompts_per_step` while holding the task fixed.
+   More rollouts per prompt make a correct sibling demonstration easier to find (lowering `skipped`) at the cost of more generation per step; `kl_top_k` trades off how much of the teacher distribution the reverse KL matches against compute.
 
 ## AI Feedback
 
