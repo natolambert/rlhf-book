@@ -96,8 +96,9 @@ To cite this book, please use the following format:
 
 ## License
 
-- Code: [MIT](LICENSE-CODE)
-- Chapters: [CC-BY-NC-SA-4.0](LICENSE-CHAPTERS)
+- `book/chapters`: [CC-BY-NC-SA-4.0](LICENSE-CHAPTERS)
+- everything else (`code/`, `diagrams/`, `scripts/`, etc.): [MIT](LICENSE-CODE)
+- note that some images in `book/images/` are unlicensed photos or screenshots. 
 
 ## Contributors
 
@@ -116,8 +117,28 @@ To add yours: keep it in your own repo (translations are not merged here), follo
 
 ### AI Use Policy
 
-<!-- TODO(natolambert): write this section. Two parts sketched below. -->
+I wanted to clearly document how I used AI to aid in the editing and creation of this book (and my expectations for contributors).
+This book was written at an interesting time, when AI models transitioned from useful to essential as tools for knowledge work.
 
-**How AI was used in this book:** TODO — how I used AI tools (drafting, editing, code, diagrams) and where the human judgment lives.
+The core of this book was written when language models felt borderline useless for non-fiction writing; this is roughly the first 10 chapters of the book -- it was my personal notes as I learned post-training.
+The first draft was almost entirely manual (typos and all are in the git history).
+Much of the other chapters and the appendices were adapted directly from content on [interconnects.ai](https://interconnects.ai/), my personal newsletter.
+This writing is very high-voice and uses the lightest of AI editing to maintain the communication of intuitions.
+The less math and code in a chapter, the less I used AI.
 
-**Expectations for contributors:** TODO — what AI-assisted contributions are welcome, what is expected of the contributor (understanding and standing behind the change), and how to disclose AI use in a PR.
+Through the editing, the default workflow I used was passing a list of suggested edits from a human editor to Claude Code with the context, and asking it to go one-by-one to apply various edits. 
+In this format, I'd read the context and write a fix.
+In a case where the edit was a simple typo or blatant error or just a low number of words, Claude could directly make this edit.
+More complex language edits were crafted by me, normally with me re-writing various sentences and additions.
+I also often just write in Cursor and then ask Claude to handle GitHub for me.
+
+For the more math-heavy chapters, the models are unbelievably useful at manipulating LaTeX equations and basic code snippets.
+These sections are more direct outputs from the AI models, as me writing the LaTeX manually would take substantial time.
+Then, I would review the math and code an additional time manually and with the check of GPT-Pro models.
+
+AI models were used much more extensively in `diagrams/` and `code/`, where I viewed these as a form of play with the latest models, around the substantial content of the book.
+
+The physical edition of the book went through additional, substantial copy editing that transitioned the voice to be more of a standard style for a technical textbook. 
+
+All new additions to the book should obviously be written by humans first, and then can be edited with AI, as this reflects my workflow above.
+The presence of obvious AI-written content in a PR to GitHub will almost certainly result in it not being included.
