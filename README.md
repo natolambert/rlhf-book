@@ -106,6 +106,8 @@ Where I get the credit as the sole "author" and creator of this project, I've be
 
 See all [contributors](https://github.com/natolambert/rlhf-book/graphs/contributors).
 
+Note: *because I made the mistake of associating my commits with my Ai2 email, which I no longer have access to, the commit history lost most of my tracking, RIP!*
+
 ### Translations
 
 Readers maintain unofficial translations of the book in their own repositories. 
