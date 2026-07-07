@@ -132,6 +132,9 @@ In a case where the edit was a simple typo or blatant error or just a low number
 More complex language edits were crafted by me, normally with me re-writing various sentences and additions.
 I also often just write in Cursor and then ask Claude to handle GitHub for me.
 
+If you follow my writing closely, the difference between this book and Interconnects is that I let AI agents apply edits I suggested for me in this repo, whereas on my blog I make a point of doing all of that work manually. 
+This is largely a function of scale and complexity.
+
 For the more math-heavy chapters, the models are unbelievably useful at manipulating LaTeX equations and basic code snippets.
 These sections are more direct outputs from the AI models, as me writing the LaTeX manually would take substantial time.
 Then, I would review the math and code an additional time manually and with the check of GPT-Pro models.
