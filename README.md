@@ -113,3 +113,11 @@ These are community projects — independent of the official print editions and 
 - 简体中文 (Simplified Chinese): [jweihe/RLHF-book-Chinese](https://github.com/jweihe/RLHF-book-Chinese)
 
 To add yours: keep it in your own repo (translations are not merged here), follow the license terms above, label it clearly as a community translation, then open a PR adding it to this list and to the homepage Ecosystem section (`book/templates/html.html`).
+
+### AI Use Policy
+
+<!-- TODO(natolambert): write this section. Two parts sketched below. -->
+
+**How AI was used in this book:** TODO — how I used AI tools (drafting, editing, code, diagrams) and where the human judgment lives.
+
+**Expectations for contributors:** TODO — what AI-assisted contributions are welcome, what is expected of the contributor (understanding and standing behind the change), and how to disclose AI use in a PR.
