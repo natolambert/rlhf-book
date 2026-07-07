@@ -102,3 +102,11 @@ To cite this book, please use the following format:
 Where I get the credit as the sole "author" and creator of this project, I've been super lucky to have many contributions from early readers. These have massively accelerated the editing progress and flat-out added meaningful content to the book. I'm happy to send substantive contributors free copies of the book and expect the internet goodwill to pay them back in unexpected ways.
 
 See all [contributors](https://github.com/natolambert/rlhf-book/graphs/contributors).
+
+### Translations
+
+Readers maintain unofficial translations of the book in their own repositories. These are community projects — independent of the official print editions and their professional translations — released under the same CC-BY-NC-SA license with attribution back to this book:
+
+- 简体中文 (Simplified Chinese): [jweihe/RLHF-book-Chinese](https://github.com/jweihe/RLHF-book-Chinese)
+
+To add yours: keep it in your own repo (translations are not merged here), follow the license terms above, label it clearly as an unofficial community translation, then open a PR adding it to this list and to the homepage Ecosystem section (`book/templates/html.html`).
