@@ -33,11 +33,34 @@ uv sync
 WANDB_PROJECT=rlhf-book uv run python -m reward_models.train_orm --samples 400 --epochs 2
 
 # Train Preference RM (Bradley-Terry)
-WANDB_PROJECT=rlhf-book uv run python -m reward_models.train_preference_rm --samples 2000 --epochs 1
+WANDB_PROJECT=rlhf-book uv run python -m reward_models.train_preference_rm \
+    --config reward_models/configs/preference_rm.yaml
+
+# Or override config values for a smaller run
+WANDB_PROJECT=rlhf-book uv run python -m reward_models.train_preference_rm \
+    --config reward_models/configs/preference_rm.yaml \
+    --samples 2000 --epochs 1
 
 # Train PRM
 WANDB_PROJECT=rlhf-book uv run python -m reward_models.train_prm --samples 500 --epochs 2
 ```
+
+## Preference RM Configuration
+
+The Preference RM script supports config-driven training via
+`reward_models/configs/preference_rm.yaml`.
+
+The default config trains Qwen3-0.6B on 5k UltraFeedback preference pairs with:
+
+- effective batch size 16
+- learning rate 5e-5
+- 2 epochs
+- 10% validation split
+- linear warmup + linear decay
+- validation logging every 25 optimizer steps
+
+These defaults were selected from a small sweep and are intended as a cleaner
+educational baseline, not universally optimal hyperparameters.
 
 ## Known Issues
 
@@ -47,7 +70,7 @@ WANDB_PROJECT=rlhf-book uv run python -m reward_models.train_prm --samples 500 -
 
 ## TODOs for Community Contributions
 
-- [ ] Tune hyperparameters for cleaner training curves
-- [ ] Add config files (like direct_alignment has)
+- [ ] Tune hyperparameters for cleaner training curves for PRM and ORM
+- [ ] Add config files (like direct_alignment has) for PRM and ORM
 - [ ] Evaluate on standard benchmarks (RewardBench)
 - [ ] Add data augmentation and curriculum learning

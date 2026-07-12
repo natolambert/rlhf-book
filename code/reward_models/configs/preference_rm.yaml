@@ -1,0 +1,30 @@
+# Preference Reward Model Configuration
+# Bradley-Terry reward model on UltraFeedback.
+#
+# Run with:
+#   uv run python -m reward_models.train_preference_rm \
+#     --config reward_models/configs/preference_rm.yaml
+
+# Model
+model_id: Qwen/Qwen3-0.6B-Base
+
+# Dataset
+dataset_name: argilla/ultrafeedback-binarized-preferences-cleaned
+dataset_split: train
+samples: 5000
+max_length: 512
+
+# Training
+batch_size: 2
+grad_accum_steps: 8
+epochs: 2
+lr: 5.0e-5
+warmup_ratio: 0.1
+lr_scheduler: linear_decay
+val_ratio: 0.1
+eval_interval: 25
+seed: 123
+
+# Logging / demo
+use_wandb: true
+skip_demo: false
