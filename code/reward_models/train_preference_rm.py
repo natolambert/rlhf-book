@@ -18,9 +18,9 @@ Usage:
 """
 
 import argparse
+import os
 import random
 from typing import Dict, List
-import os
 
 import torch
 import torch.nn.functional as F
@@ -426,8 +426,7 @@ def train_preference_rm(
         )
     else:
         raise ValueError(
-            f"Unsupported lr_scheduler={lr_scheduler!r}. "
-            'Expected "linear_decay" or "warmup_only".'
+            f'Unsupported lr_scheduler={lr_scheduler!r}. Expected "linear_decay" or "warmup_only".'
         )
 
     print(
@@ -508,7 +507,11 @@ def train_preference_rm(
 
                 # Run validation every N optimizer steps.
                 # evaluate_preference_rm() switches model to eval mode, so switch back to train after.
-                if val_loader is not None and eval_interval > 0 and global_step % eval_interval == 0:
+                if (
+                    val_loader is not None
+                    and eval_interval > 0
+                    and global_step % eval_interval == 0
+                ):
                     val_metrics = evaluate_preference_rm(
                         model,
                         val_loader,
@@ -537,9 +540,8 @@ def train_preference_rm(
         print(f"Epoch {epoch} | Loss: {avg_loss:.4f} | Accuracy: {accuracy:.3f}")
 
         # Also run validation at epoch end, unless we already evaluated on this exact step.
-        should_run_epoch_eval = (
-            val_loader is not None
-            and (eval_interval <= 0 or global_step % eval_interval != 0)
+        should_run_epoch_eval = val_loader is not None and (
+            eval_interval <= 0 or global_step % eval_interval != 0
         )
 
         if should_run_epoch_eval:
