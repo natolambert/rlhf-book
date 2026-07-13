@@ -22,9 +22,21 @@ custom_css: |
   /* Bulleted lists should never be centered (markers float, looks bad).
      Target lists only — leave titles and display-math paragraphs centered. */
   .slide ul, .slide ol, .slide li { text-align: left; }
+  /* A/B preference comparison: force both answer cards to fill their column
+     evenly so they read as a matched pair, not two ragged chat logs. */
+  .slide.poem-ab .colloquium-message { max-width: 100%; width: 100%; padding: 1em 1.1em; }
+  .slide.poem-ab .colloquium-conversation { height: 100%; justify-content: center; }
+  .slide.poem-ab .colloquium-message-role { font-size: 0.75em; }
+  /* Full-bleed image: let a figure use the full slide width (and remaining
+     height) with only the title kept clear at the top. */
+  .slide.full-bleed { padding-left: 0; padding-right: 0; padding-bottom: 0; }
+  .slide.full-bleed .slide-content { min-height: 0; }
+  .slide.full-bleed .slide-content img {
+    width: 100%; height: 100%;
+    max-width: none; max-height: none;
+    object-fit: contain;
+  }
 ---
-
-<!-- DRAFT NOTE (Nathan): history slides intentionally use minimal text + <!-- IMAGE: ... --> placeholders for screenshots/portraits you can drop into assets/. The data half uses real screenshots already in the repo. Build with `make teach` so assets/ is copied. -->
 
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
@@ -37,28 +49,39 @@ custom_css: |
 <p class="colloquium-title-name">Nathan Lambert</p>
 </div>
 
-<p class="colloquium-title-note">Course on RLHF and post-training. Chapters 10 & 11 -- where "preferences" come from, why they're an imperfect formulation, and the data engine underneath.</p>
+<p class="colloquium-title-note">Course on RLHF and post-training. Chapters 10 & 11.</p>
 
 ---
 
-## When preference replaces correctness
+<!-- layout: section-break -->
+<!-- align: center -->
+<!-- valign: center -->
 
-Most of post-training so far has had a notion of *correct* -- a math answer, a passing test, a verifiable reward. Preferences are what we reach for when there is **no right answer**.
-
-- Which poem is better? Which explanation is clearer? Which tone is kinder?
-- There is no closed-form reward for "good" here -- so we ask humans (or models) to compare.
-- That single move -- *replace correctness with preference* -- is the foundation of RLHF, and the source of most of its messiness.
+## How do we hillclimb on capabilities we don't really know how to score?
 
 ---
 
-<!-- columns: 50/50 -->
+<!-- layout: section-break -->
+<!-- align: center -->
+<!-- valign: center -->
+
+## Is it easier to write a good demonstration or decide between a good and a bad example?
+
+---
+
+<!-- class: poem-ab -->
+<!-- rows: 22/78 -->
 ## Which poem is better? Which model?
 
+Same prompt to two frontier models (Claude 3.7 Sonnet and ChatGPT with GPT-4o, Feb 2025): *"Write me a short poem about an optimistic goldfish."* Which is better -- and which came from which?
+
+===
+
+<!-- row-columns: 50/50 -->
+
 ```conversation
-size: 0.5
+size: 0.9
 messages:
-  - role: user
-    content: "Write me a short poem about an optimistic goldfish."
   - role: assistant
     model: "A"
     content: |
@@ -78,10 +101,8 @@ messages:
 |||
 
 ```conversation
-size: 0.5
+size: 0.9
 messages:
-  - role: user
-    content: "Write me a short poem about an optimistic goldfish."
   - role: assistant
     model: "B"
     content: |
@@ -98,14 +119,23 @@ messages:
       The optimist in golden hue.
 ```
 
-(Same prompt, two frontier models, Feb 2025. Which is better -- and which came from which?)
+---
+
+## When preference replaces correctness
+
+Most of post-training so far (SFT, RLVR) has had a notion of *correct* -- a math answer, a passing test, a verifiable reward. 
+Preferences are what we reach for when there is **no right answer**.
+
+E.g. Which poem is better? Which explanation is clearer? Which tone is kinder?
+
+*Preferences came to be the core of RLHF, as the alignment community looked to optimize for complicated objectives like "human values."*
 
 ---
 
 <!-- columns: 50/50 -->
 ## This lecture
 
-We trace where "preferences" came from, argue why it's an **imperfect problem formulation**, then dig into **preference data** -- the engine of most of that imperfection.
+We trace where "preferences" came from, argue why it's an **imperfect problem formulation**, then dig into **preference data** (chapter 11) used for today's models.
 
 Grounded in *The History and Risks of RLHF* [@lambert2023entangled].
 
@@ -123,51 +153,22 @@ content: |
 
 ---
 
-<!-- rows: 50/50 -->
-## Lecture 8: Where it sits
+<!-- columns: 42/58 -->
+<!-- valign: center -->
+<!-- cite-right: lambert2023entangled -->
+## The paper behind this lecture
 
-<!-- row-columns: 32/36/32 -->
-
-```box
-title: Foundations
-tone: muted
-compact: true
-content: |
-  1. Introduction
-  2. Key Related Works
-  3. Training Overview
-```
+![](assets/history-risks-rlhf.png)
 
 |||
 
-```box
-title: Core Training Pipeline
-tone: muted
-compact: true
-content: |
-  4. Instruction Tuning
-  5. Reward Models
-  6. Reinforcement Learning
-  7. Reasoning
-  8. Direct Alignment
-  9. Rejection Sampling
-```
+*The History and Risks of Reinforcement Learning and Human Feedback* (2023) traces RLHF back through the fields it borrows from -- and asks what breaks in the borrowing.
 
-|||
+- **History:** RLHF is the meeting point of philosophy, economics, optimal control, and RL -- each with its own idea of what a "preference" is.
+- **Risk:** it quietly treats **costs, rewards, and preferences** as interchangeable when they are not.
+- **Consequence:** we inherit RL's optimizers without inheriting its guarantees.
 
-```box
-title: Data & Preferences
-tone: accent
-compact: true
-content: |
-  **10. The Nature of Preferences**
-  **11. Preference Data**
-  12. Synthetic Data & CAI
-```
-
-===
-
-The two chapters this lecture covers sit *under* everything else: reward models, RL, and direct alignment all consume the preferences we define here.
+Parts 1 and 2 of this lecture follow its argument directly.
 
 ---
 
@@ -178,12 +179,14 @@ The two chapters this lecture covers sit *under* everything else: reward models,
 
 ---
 
+<!-- class: full-bleed -->
 <!-- img-align: center -->
 <!-- valign: center -->
 <!-- cite-right: lambert2023entangled -->
+<!-- notes: The integration of subfields into modern RLHF. Solid links are continuous technical developments; arrows are motivations and conceptual borrowings. Philosophy, economics, control theory, and deep learning each arrive with different assumptions about what a "preference" even is. -->
 ## Many fields converged into "RLHF"
 
-![The integration of subfields into modern RLHF. Solid links are continuous technical developments; arrows are motivations and conceptual borrowings. Philosophy, economics, control theory, and deep learning each arrive with different assumptions about what a "preference" even is.](assets/rlhf-tree.png)
+![](assets/rlhf-tree.png)
 
 ---
 
@@ -196,7 +199,7 @@ The idea that choices can be *scored* is old:
 - **Bentham's hedonic calculus** (early 1800s): weigh all of life on one scale [@bentham1823hedonic]
 - **Ramsey**, *Truth and Probability* (1931): first to quantify preference *and* belief together [@ramsey2016truth]
 
-The through-line: a hope that messy human wanting collapses to a single number.
+The common thread: the hope that human wanting can be reduced to a single number.
 
 > *"To judge what one must do to obtain a good or avoid an evil, it is necessary to consider not only the good and evil in itself, but also the probability that it happens or does not happen."* -- The Port Royal Logic, 1662
 
@@ -205,18 +208,18 @@ The through-line: a hope that messy human wanting collapses to a single number.
 ---
 
 <!-- valign: center -->
-## The theorem that licensed scalar reward
+## Von Neumann-Morgenstern utility (1947)
 
 **Von Neumann & Morgenstern** (1947): if your preferences obey a few axioms (completeness, transitivity, continuity, independence), they can be represented by a single **utility function**, and rational choice = maximizing **expected utility** [@von1947theory].
 
-This is the mathematical permission slip RLHF leans on: "just fit a scalar reward." Hold onto the *if* -- we come back to it.
+This is the result RLHF leans on to justify fitting a scalar reward. Note the *if* -- it returns in Part 2.
 
 <!-- IMAGE: suggest cover of "Theory of Games and Economic Behavior" (1944/1947). -->
 
 ---
 
 <!-- valign: top -->
-## ...and the fields that pushed back
+## Where utility theory breaks down
 
 Almost as soon as utility was formalized, social choice and economics found its limits:
 
@@ -243,7 +246,7 @@ Already a problem for "collect a label, fit a fixed reward."
 ---
 
 <!-- valign: top -->
-## The other parent: optimal control & RL
+## The other root: optimal control & RL
 
 In parallel, a machinery for *optimizing* a reward matured:
 
@@ -259,7 +262,7 @@ The catch (Part 2): these guarantees assume a **single, closed-form reward**.
 ---
 
 <!-- valign: center -->
-## The bridge: Bradley-Terry (1952)
+## Bradley-Terry (1952): comparisons to scores
 
 The statistical model that turns *comparisons* into *scores* -- and became the backbone of reward modeling [@BradleyTerry]:
 
@@ -277,7 +280,7 @@ Give it pairwise human comparisons; out comes a scalar reward. This is *why* RLH
 ---
 
 <!-- columns: 52/48 -->
-## The VNM bait-and-switch
+## The VNM assumptions vs. RLHF reality
 
 The utility theorem says a scalar reward exists **if** preferences are complete, transitive, stable, and independent of irrelevant context.
 
@@ -300,7 +303,7 @@ A reward model compresses, into a single number, all of:
 - the annotator's psychology, culture, and the interface they used
 - whatever the *framing* of the comparison nudged them toward
 
-We then optimize *hard* against that number -- and over-optimize the parts that were noise.
+We then optimize hard against that number, and over-optimize the parts that were noise.
 
 ---
 
@@ -328,7 +331,7 @@ Deep RL's theory lives in MDPs with **one fixed, closed-form reward** (games, co
 - Inverse RL -- learning a reward *from behavior* -- is conceptually close but oddly absent from RLHF practice [@ng2000algorithms].
 - So we inherit RL's optimizers without inheriting its guarantees.
 
-**Where does the imperfection concentrate? In the data.** → Part 3.
+**The imperfection concentrates in the data.** → Part 3.
 
 ---
 
@@ -355,6 +358,7 @@ As of 2026, **no open model** ships fully open human preference data *with* the 
 <!-- img-align: center -->
 <!-- valign: center -->
 <!-- cite-right: bai2022training -->
+<!-- img-fill -->
 ## Interface 1: research data collection (Anthropic)
 
 ![An early preference-collection interface from Anthropic's research: review the full conversation, then rate. Bai et al., 2022 (CC-BY).](assets/anthropic-interface.png)
@@ -363,6 +367,7 @@ As of 2026, **no open model** ships fully open human preference data *with* the 
 
 <!-- img-align: center -->
 <!-- valign: center -->
+<!-- img-fill -->
 ## Interface 2: A/B testing in production (ChatGPT)
 
 ![Two completions from different ChatGPT beta models, served side by side. The answers are very close -- a reminder that preference data is noisy and hard to get exactly right.](assets/chatgpt-ab-test.jpeg)
@@ -372,6 +377,7 @@ As of 2026, **no open model** ships fully open human preference data *with* the 
 <!-- img-align: center -->
 <!-- valign: center -->
 <!-- cite-right: chiang2024chatbot -->
+<!-- img-fill -->
 ## Interface 3: pairwise with ties (Chatbot Arena)
 
 ![An early version of the Chatbot Arena interface: pairwise comparison with a tie option.](assets/chatbotarena.png)
@@ -380,6 +386,7 @@ As of 2026, **no open model** ships fully open human preference data *with* the 
 
 <!-- img-align: center -->
 <!-- valign: center -->
+<!-- img-fill -->
 ## Interface 4: a single bit (Ai2 demos)
 
 ![Up/down voting from Ai2's research demos -- the minimal directional signal.](assets/up-down-vote.png)
@@ -388,6 +395,7 @@ As of 2026, **no open model** ships fully open human preference data *with* the 
 
 <!-- img-align: center -->
 <!-- valign: center -->
+<!-- img-fill -->
 ## Interface 5: pick-from-many (image models)
 
 ![Selecting among generated images -- preference data outside of text. Every interface shapes the preference it captures.](assets/midj.jpeg)
@@ -434,13 +442,38 @@ Richer signal, harder collection.
 ---
 
 <!-- rows: 55/45 -->
-## Sourcing & contracts: the unglamorous reality
+## Sourcing & contracts
 
 ![A typical multi-batch human-data contract (~$500K): an early ramp where goals and methodology narrow, with much of the first batches thrown out. Larger contracts vary substantially.](assets/pref-data-timeline.png)
 
 ===
 
-Getting data is a **who-you-know** game -- vendors are supply-limited and favor big budgets and brand names. Millions get spent and partly wasted; few teams have the bandwidth to fully use human data. Contracts hide non-open clauses in the fine print.
+Access is relationship-driven: vendors are supply-limited and favor big budgets and known brands. Millions get spent and partly wasted; few teams have the bandwidth to fully use human data. Contracts hide non-open clauses in the fine print.
+
+---
+
+<!-- valign: center -->
+## A dataset we bought: No Robots
+
+On Hugging Face's **H4 team**, we commissioned human data the same way the labs do.
+
+- **No Robots** [@no_robots] -- 10K expert human-written demonstrations, paid for from a vendor and then released **openly** (rare for commissioned data).
+- Same team, same era: the **Zephyr** models [@tunstall2023zephyr] and the **Open LLM Leaderboard** [@open_llm_leaderboard].
+- The unusual part wasn't buying the data -- it was opening it: data, recipe, and models together.
+
+---
+
+<!-- valign: center -->
+<!-- cite-right: arena2026 -->
+## Preference data is now a business
+
+By 2026, collecting preferences is a standalone industry, not just an in-house step in one lab's pipeline.
+
+- **Arena** (the LMArena leaderboard) reached a **~$100M annualized revenue run-rate within ~8 months** of launching its enterprise offering [@arena2026].
+- The product: **crowd-sourced A/B preference testing as a service** -- users vote on which of two model responses is better, and labs buy the aggregated preference data to benchmark and improve models.
+- Scale: **82M+ votes** across **700M+ conversations** from **10M+ monthly visitors**.
+
+The comparison interfaces earlier in this section are no longer just research tooling -- they are the product.
 
 ---
 
@@ -454,7 +487,7 @@ Subtle, systematic biases sail straight from the data into the model:
 - **Formatting** -- lists and bold look "better" [@zhang2024lists]
 - **Flattery / fluff** -- decorative language inflates scores [@bharadwaj2025flatteryflufffogdiagnosing]
 
-Catching these is the difference between *good* and *great* preference data.
+Detecting and controlling these biases is central to collecting high-quality preference data.
 
 ---
 
@@ -475,7 +508,7 @@ Catching these is the difference between *good* and *great* preference data.
 ---
 
 <!-- valign: center -->
-## The gap we can't yet measure
+## The unaudited gap: spec → data → behavior
 
 RLHF's *motivation* (align to human preference) has drifted from its *practice* (make models effective).
 
@@ -486,9 +519,9 @@ Many of these questions reappear in chapter 12: the human/AI feedback balance, a
 ---
 
 <!-- columns: 50/50 -->
-## Be curious
+## An open, human problem
 
-This is one of the least-settled, most-human parts of the field -- so read widely and look for the primary sources.
+This is one of the least-settled, most human parts of the field. Read widely and go to the primary sources.
 
 |||
 
@@ -500,6 +533,21 @@ content: |
   - [**RewardBench**](https://arxiv.org/abs/2403.13787) -- on-policy vs pooled preference data.
   - [**Interconnects**](https://www.interconnects.ai/) -- ongoing notes on preferences & data.
 ```
+
+---
+
+<!-- valign: center -->
+## The course so far
+
+1. Overview
+2. IFT, Reward Models & Rejection Sampling
+3. RL: Motivation & Math
+4. RL: Implementation & Practice
+5. The Rise of Reasoning Models
+6. Direct Preference Optimization
+7. Synthetic Data & Modern Post-training
+8. **Preferences & Preference Data** -- *today*
+9. **Overoptimization & Regularization** -- *next*
 
 ---
 
