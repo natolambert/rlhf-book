@@ -164,12 +164,13 @@ content: |
 
 - **History:** RLHF is the meeting point of philosophy, economics, optimal control, and RL -- each with its own idea of what a "preference" is.
 - **Risk:** it quietly treats **costs, rewards, and preferences** as interchangeable when they are not.
-- **Consequence:** we inherit RL's optimizers without inheriting its guarantees.
+- Idea: we inherit RL's optimizers/setup without inheriting its guarantees for convergence.
 
-Parts 1 and 2 of this lecture follow its argument directly.
+Paper details a series of assumptions and presumptions in the literature that RLHF / post-training are derived from.
 
 ---
 
+<!-- columns: 58/42 -->
 <!-- valign: center -->
 ## Aside: the "objective mismatch" lens
 
@@ -178,7 +179,11 @@ A recurring way to think about post-training: we optimize a **proxy** objective 
 - **Model-based RL:** the dynamics model is trained for prediction accuracy, not control performance -- so a "better" model can yield a *worse* policy [@lambert2020objective].
 - **RLHF:** the reward model is trained for preference-classification accuracy, not downstream policy quality -- the same mismatch, one level up [@lambert2023alignment].
 
-Reward-model accuracy (RewardBench-style) is a proxy for a proxy. It pays to keep asking what you are *really* optimizing.
+Reward-model accuracy (RewardBench-style) is a proxy for a proxy! Keep asking what you are *really* optimizing.
+
+|||
+
+![](assets/alignment-ceiling.png)
 
 ---
 
