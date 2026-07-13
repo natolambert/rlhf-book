@@ -144,10 +144,9 @@ We trace where "preferences" came from, argue why it's an **imperfect problem fo
 title: The plan
 tone: accent
 content: |
-  1. A short **history** of preferences (chapter 10)
-  2. Why "preferences" is an **imperfect** formulation
-  3. **Preference data** -- the engine (chapter 11)
-  4. **Open questions** (some shared with synthetic data)
+  1. A short **history** of preferences -- and why it's an **imperfect** formulation (chapter 10)
+  2. **Preference data** -- the trade-offs in practice (chapter 11)
+  3. **Open questions** (some shared with synthetic data)
 ```
 
 ---
@@ -191,7 +190,7 @@ Reward-model accuracy (RewardBench-style) is a proxy for a proxy! Keep asking wh
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 1: A short history of preferences
+## Part 1: A short history of optimizing or measuring preferences
 
 ---
 
@@ -210,13 +209,12 @@ Reward-model accuracy (RewardBench-style) is a proxy for a proxy! Keep asking wh
 <!-- valign: top -->
 ## Utility, from logic to a number
 
-The idea that choices can be *scored* is old:
+The idea that choices can be *scored* is old. The common thread: the idea that human wants can be reduced to a single measure:
 
 - **Port Royal Logic** (1662): decision quality = outcome weighted by its probability [@arnauld1861port]
 - **Bentham's hedonic calculus** (early 1800s): weigh all of life on one complicated, but common scale [@bentham1823hedonic]
-- **Ramsey**, *Truth and Probability* (1931): first to quantify preference *and* belief together [@ramsey2016truth]
+- **Ramsey**, *Truth and Probability* (1931): first to quantify preference *and* belief together as the way that individuals make probabilistic decisions [@ramsey2016truth]
 
-The common thread: the idea that human wants can be reduced to a single measure.
 
 > *"To judge what one must do to obtain a good or avoid an evil, it is necessary to consider not only the good and evil in itself, but also the probability that it happens or does not happen."* -- The Port Royal Logic, 1662
 
@@ -225,6 +223,30 @@ The common thread: the idea that human wants can be reduced to a single measure.
 ![*La Logique, ou l'Art de Penser* (the Port Royal Logic), 1662](assets/port-royal-logic.jpg)
 
 ---
+
+<!-- columns: 64/36 -->
+<!-- valign: center -->
+## Von Neumann-Morgenstern utility theorem (1947)
+
+**Von Neumann & Morgenstern** (1947): if your preferences obey a few axioms (completeness, transitivity, continuity, independence), they can be represented by a single **utility function**, and rational choice = maximizing **expected utility** [@von1947theory].
+
+This is the result RLHF leans on to justify fitting a scalar reward. 
+
+<!-- step -->
+
+In RLHF, essentially none of those *if* hold:
+
+- preferences **drift** during and after labeling
+- they're **context- and framing-dependent**
+- at high complexity they can be **intransitive**
+- and they're **multidimensional**, squashed into one number
+
+|||
+
+![John von Neumann (Los Alamos badge photo, public domain)](assets/von-neumann.jpg)
+
+---
+
 
 <!-- valign: center -->
 ## Bradley-Terry (1952): comparisons to scores
@@ -238,20 +260,15 @@ This is *why* RLHF needs **preference data** (and where the imperfections enter)
 
 ---
 
+## One scalar preference, many features
 
-<!-- columns: 64/36 -->
-<!-- valign: center -->
-## Von Neumann-Morgenstern utility theorem (1947)
+A reward model compresses, into a single number, all of:
 
-**Von Neumann & Morgenstern** (1947): if your preferences obey a few axioms (completeness, transitivity, continuity, independence), they can be represented by a single **utility function**, and rational choice = maximizing **expected utility** [@von1947theory].
+- helpfulness, honesty, harmlessness, tone, format, length, taste...
+- the annotator's psychology, culture, and the interface they used
+- whatever the *framing* of the comparison nudged them toward
 
-This is the result RLHF leans on to justify fitting a scalar reward. 
-
-(Note the *if* -- it returns in Part 2.)
-
-|||
-
-![John von Neumann (Los Alamos badge photo, public domain)](assets/von-neumann.jpg)
+We then optimize hard against that number, which is impossible to ever do perfectly! There will always be trade-offs.
 
 ---
 
@@ -325,105 +342,59 @@ Note: these guarantees assume a **single, closed-form reward**!
 
 ---
 
-<!-- layout: section-break -->
-<!-- align: center -->
-
-## Part 2: Why "preferences" is an imperfect formulation
-
----
-
-<!-- columns: 52/48 -->
-## The VNM assumptions vs. RLHF reality
-
-The utility theorem says a scalar reward exists **if** preferences are complete, transitive, stable, and independent of irrelevant context.
-
-|||
-
-In RLHF, essentially none of those hold:
-
-- preferences **drift** during and after labeling
-- they're **context- and framing-dependent**
-- at high complexity they can be **intransitive**
-- and they're **multidimensional**, squashed into one number
-
----
-
-## One scalar, many things
-
-A reward model compresses, into a single number, all of:
-
-- helpfulness, honesty, harmlessness, tone, format, length, taste...
-- the annotator's psychology, culture, and the interface they used
-- whatever the *framing* of the comparison nudged them toward
-
-We then optimize hard against that number, and over-optimize the parts that were noise.
-
----
-
 <!-- valign: center -->
 ## Costs ≠ rewards ≠ preferences
 
-A core argument of the history paper: these three are **ontologically different**, and RLHF quietly treats them as interchangeable [@lambert2023entangled].
+These three are **ontologically different**, and the emergence of modern post-training treated them as interchangeable [@lambert2023entangled].
 
-- **Costs** come from control: physical, measurable, given.
-- **Rewards** are an RL convenience: a scalar signal to maximize.
+- **Costs** come from control: physical, measurable, given, and often have clear optimality/bounds.
+- **Rewards** are from psychology and an RL convenience: a scalar signal to maximize.
 - **Preferences** are human, relational, and unstable -- *not* obviously a scalar at all.
 
-> *"Rewards in an RL system correspond to primary rewards... hard-wired by the evolutionary process due to their relevance to reproductive success."* -- Singh et al., 2009 [@singh2009rewards]
-
-Reducing the third to the second is the move that makes RLHF tractable, and imperfect.
+Reducing preferences to rewards made the optimization format tractable, but is the root cause of many of the unsolvable "biases" in RLHF and preference data.
 
 ---
 
-<!-- valign: top -->
-## RL's guarantees don't transfer
+## Costs ≠ rewards ≠ preferences
 
-Deep RL's theory lives in MDPs with **one fixed, closed-form reward** (games, control).
+These three are **ontologically different**, and the emergence of modern post-training treated them as interchangeable [@lambert2023entangled].
+Deep RL's theory lives in MDPs with a fixed, closed-form reward (e.g. games, control).
 
 - A learned reward model is a *moving, noisy proxy*, not a ground-truth reward.
 - Inverse RL -- learning a reward *from behavior* -- is conceptually close but oddly absent from RLHF practice [@ng2000algorithms].
 - So we inherit RL's optimizers without inheriting its guarantees.
 
-**The imperfection concentrates in the data.** → Part 3.
 
-(What happens when you optimize hard against this proxy anyway is *over-optimization* → Lecture 9.)
+---
+
+## On what "reward" is
+
+> *Rewards in an RL system correspond to primary rewards, i.e., rewards that in animals have been hard-wired by the evolutionary process due to their relevance to reproductive success. … Further, RL systems that form value functions, … effectively create conditioned or secondary reward processes whereby predictors of primary rewards act as rewards themselves… The result is that the local landscape of a value function gives direction to the system’s preferred behavior: decisions are made to cause transitions to higher-valued states. A close parallel can be drawn between the gradient of a value function and incentive motivation.* 
+
+-- Singh et al., 2009 [@singh2009rewards]
 
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 3: Preference data -- the engine
+## Part 2: Preference data -- the trade-offs in practice
 
 ---
 
-<!-- columns: 50/50 -->
-## Why preference data at all
+## Where we started -- why collect preference data
 
-It is far easier to **judge** than to **generate** -- humans (and models) can reliably say which of two answers is better long before they can write the better one.
+It is far easier to **judge** than to **generate** -- humans (and models) can reliably say which of two answers is better long before they can write the better one. There are many cases where models can't at all generate a good answer, but can pick up on cues for which is better. 
 
-|||
+But collecting (and processing) any data like this well is the most **opaque** part of the modern post-training pipeline.
 
-But collecting it well is the most **opaque** part of the pipeline.
-
-As of 2026, **no open model** ships fully open human preference data *with* the methodology used to collect it.
+Very few open models ship fully open human preference data *with* the methodology used to collect it -- the best examples are NVIDIA's **HelpSteer** datasets (behind the open Nemotron models) [@wang2024helpsteer2; @wang2024helpsteer2p; @wang2025helpsteer3].
 
 ---
 
-<!-- columns: 56/44 -->
 <!-- valign: center -->
-<!-- cite-right: ouyang2022training -->
-## A rare public artifact: labeler instructions
+## Example data collection interfaces
 
-Once a contract is signed, buyer and vendor agree on **detailed instructions** for every task -- normally never seen outside the lab.
-
-- One of the first *public* examples: OpenAI released the full **InstructGPT** labeler instructions (2022) [@ouyang2022training].
-- Pages of guidance on ranking **helpful, truthful, harmless** -- the spec that actually shapes the labels.
-- [**Download the PDF**](https://rlhfbook.com/assets/instructgpt-instructions.pdf) (mirrored on rlhfbook.com).
-
-|||
-
-![InstructGPT "Final labeling instructions" (OpenAI, 2022) -- released publicly.](assets/instructgpt-instructions.jpg)
 
 ---
 
@@ -431,7 +402,7 @@ Once a contract is signed, buyer and vendor agree on **detailed instructions** f
 <!-- valign: center -->
 <!-- cite-right: bai2022training -->
 <!-- img-fill -->
-## Interface 1: research data collection (Anthropic)
+## Interface 1: research data collection (Anthropic's early Claude models)
 
 ![An early preference-collection interface from Anthropic's research: review the full conversation, then rate. Bai et al., 2022 (CC-BY).](assets/anthropic-interface.png)
 
@@ -440,7 +411,7 @@ Once a contract is signed, buyer and vendor agree on **detailed instructions** f
 <!-- img-align: center -->
 <!-- valign: center -->
 <!-- img-fill -->
-## Interface 2: A/B testing in production (ChatGPT)
+## Interface 2: A/B testing in production (ChatGPT user data)
 
 ![Two completions from different ChatGPT beta models, served side by side. The answers are very close -- a reminder that preference data is noisy and hard to get exactly right.](assets/chatgpt-ab-test.jpeg)
 
@@ -450,7 +421,7 @@ Once a contract is signed, buyer and vendor agree on **detailed instructions** f
 <!-- valign: center -->
 <!-- cite-right: chiang2024chatbot -->
 <!-- img-fill -->
-## Interface 3: pairwise with ties (Chatbot Arena)
+## Interface 3: pairwise with ties (Chatbot Arena public evaluation)
 
 ![An early version of the Chatbot Arena interface: pairwise comparison with a tie option.](assets/chatbotarena.png)
 
@@ -459,7 +430,7 @@ Once a contract is signed, buyer and vendor agree on **detailed instructions** f
 <!-- img-align: center -->
 <!-- valign: center -->
 <!-- img-fill -->
-## Interface 4: a single bit (Ai2 demos)
+## Interface 4: a single bit (Ai2 demos; in many other products)
 
 ![Up/down voting from Ai2's research demos -- the minimal directional signal.](assets/up-down-vote.png)
 
@@ -468,22 +439,54 @@ Once a contract is signed, buyer and vendor agree on **detailed instructions** f
 <!-- img-align: center -->
 <!-- valign: center -->
 <!-- img-fill -->
-## Interface 5: pick-from-many (image models)
+## Interface 5: pick-from-many (default in image models)
 
 ![Selecting among generated images -- preference data outside of text. Every interface shapes the preference it captures.](assets/midj.jpeg)
 
 ---
 
-<!-- columns: 50/50 -->
+<!-- rows: 42/58 -->
 ## Rankings vs. ratings
 
-**Ratings:** a score on one completion (e.g. 1-5). Good as metadata.
+**Ratings:** a score on one completion in isolation (e.g. 1-5). Good as metadata.
 
 **Rankings:** relative comparisons, often on a Likert scale -- early Claude used an 8-point scale [@bai2022training]; UltraFeedback pairs high- vs low-rated completions [@cui2023ultrafeedback].
 
+In practice almost everyone trains on pairwise rankings, binarized to chosen/rejected for the Bradley-Terry loss (lecture 2 / chapter 5) -- and keeps ratings on the side.
+
+===
+
+<!-- row-columns: 50/50 -->
+
+```conversation
+size: 0.85
+messages:
+  - role: user
+    content: |
+      **Rating:** "Rate this completion 1-5."
+
+      *"Paris is the capital of France, known for the Eiffel Tower."*
+  - role: assistant
+    model: "Annotator"
+    content: |
+      **4 / 5**
+```
+
 |||
 
-In practice almost everyone trains on pairwise rankings, binarized to chosen/rejected for the Bradley-Terry loss -- and keeps ratings on the side.
+```conversation
+size: 0.85
+messages:
+  - role: user
+    content: |
+      **Ranking:** "Which response is better?"
+
+      **A:** *"Paris."*  ·  **B:** *"Paris -- the capital since 987, home of the Eiffel Tower."*
+  - role: assistant
+    model: "Annotator"
+    content: |
+      **B > A**
+```
 
 ---
 
@@ -492,81 +495,138 @@ In practice almost everyone trains on pairwise rankings, binarized to chosen/rej
 
 A **Likert scale** records a preference as an *ordered, graded* judgment -- not just which answer wins, but **by how much**, on a symmetric scale with an optional neutral middle. (After psychologist Rensis Likert, 1932 -- the same "strongly agree ... strongly disagree" survey tool, repurposed for pairwise preference.)
 
-```box
-title: A typical 5-point preference scale
-tone: accent
-content: |
-  **A much better**  ·  A better  ·  *tie*  ·  B better  ·  **B much better**
-```
+**5-point with a tie** (LMArena-style): labelers can say "about the same."
 
-- **5-point with a tie** (LMArena-style): labelers can say "about the same."
-- **8-point without a tie** (early Claude [@bai2022training]): forces a direction -- four strengths on each side, no neutral.
+| 1 | 2 | 3 | 4 | 5 |
+|:---:|:---:|:---:|:---:|:---:|
+| **A much better** | A better | *tie* | B better | **B much better** |
+
+**8-point without a tie** (early Claude [@bai2022training]): forces a direction.
+
+| 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| **A>>>B** | | | A>B | B>A | | | **B>>>A** |
 
 How many points, and whether ties are allowed, are both design choices that change the data you collect.
 
 ---
 
-<!-- valign: top -->
+<!-- class: poem-ab -->
+<!-- rows: 62/38 -->
 ## Structured (synthetic) preference data
 
 In domains with structure, you can build preference pairs automatically:
 
 - **Math**: a correct solution ≻ an incorrect one.
-- **Instruction following (IFEval-style)**: prompt twice -- with the constraint and without -- and prefer the one that obeys it.
+- **Instruction following (IFEval-style)**: prompt twice -- with the constraint and without -- and prefer the one that obeys it. The constraint is checked with code, so the label is free.
 
-In these narrow domains, structured pairs beat quality-judged preferences [@lambert2024t]. This is *synthetic* preference data -- chapter 12, which we covered in Lecture 7.
+In these narrow domains, structured pairs can beat quality-judged preferences [@lambert2024t]. 
+This is a simple form of *synthetic* preference data -- chapter 12 / lecture 7.
+
+Example prompt: *"Describe the ocean. **Respond in all lowercase.**"*
+
+===
+
+<!-- row-columns: 50/50 -->
+
+```conversation
+size: 0.8
+messages:
+  - role: assistant
+    model: "Chosen (sampled with the constraint) ✓"
+    content: |
+      the ocean covers most of our planet, a restless sheet of salt water...
+```
+
+|||
+
+```conversation
+size: 0.8
+messages:
+  - role: assistant
+    model: "Rejected (sampled without the constraint) ✗"
+    content: |
+      The ocean covers most of our planet. It is a restless sheet of salt water...
+```
 
 ---
 
-## Beyond pairwise
+## Beyond pairwise preferences
 
 The pairwise comparison is a convention, not a law. Alternatives:
 
-- **Directional / single-bit** labels (thumbs up/down), trained with KTO [@ethayarajh2024kto]
-- **Token-level / fine-grained** feedback [@wu2024fine]
-- **Natural-language** feedback -- written critiques instead of a label [@chen2024learning]
+- **Directional / single-bit** labels (thumbs up/down), trained with Kahneman-Tversky Optimization (KTO) [@ethayarajh2024kto].
+- **Token-level / fine-grained** feedback [@wu2024fine]: Label specific tokens, or token-spans as good or bad.
+- **Natural-language** feedback -- written critiques instead of a label [@chen2024learning].
 
-Richer signal, harder collection.
+Richer signal, harder collection (and not often used extensively in practice).
 
 ---
 
-<!-- rows: 55/45 -->
+<!-- columns: 56/44 -->
 ## Sourcing & contracts
 
 ![A typical multi-batch human-data contract (~$500K): an early ramp where goals and methodology narrow, with much of the first batches thrown out. Larger contracts vary substantially.](assets/pref-data-timeline.png)
 
-===
+|||
 
-Access is relationship-driven: vendors are supply-limited and favor big budgets and known brands. Millions get spent and partly wasted; few teams have the bandwidth to fully use human data. Contracts hide non-open clauses in the fine print.
+Access is relationship-driven: vendors are supply-limited and favor big budgets and known brands. Millions get spent and partly wasted; few teams have the bandwidth to fully use human data. Contracts often restrict you from releasing some data like this openly.
+
+Is a far more complex industry today with environments, etc. But, even for simple, human preference data, you need a robust, existing post-training recipe to plug it into.
 
 ---
+
+<!-- columns: 56/44 -->
+<!-- valign: center -->
+<!-- cite-right: ouyang2022training -->
+## Guiding data collection: labeler instructions
+
+Once a contract is signed, buyer and vendor agree on **detailed instructions** for every task -- normally never seen outside the lab.
+
+- One of the first *public* examples: OpenAI released the full **InstructGPT** labeler instructions (2022) [@ouyang2022training]. This was later deleted, but I recovered it.
+- Pages of guidance on ranking **helpful, truthful, harmless** -- the spec that actually shapes the labels.
+- [**Download the PDF**](https://rlhfbook.com/assets/instructgpt-instructions.pdf) (mirrored on rlhfbook.com).
+
+|||
+
+![InstructGPT "Final labeling instructions" (OpenAI, 2022) -- released publicly.](assets/instructgpt-instructions.jpg)
+
+
+---
+
 
 <!-- valign: center -->
 ## A dataset we bought: No Robots
 
-On Hugging Face's **H4 team**, we commissioned human data the same way the labs do.
+On Hugging Face's **H4 team**, we commissioned human data the same way the labs did.
 
-- **No Robots** [@no_robots] -- 10K expert human-written demonstrations, paid for from a vendor and then released **openly** (rare for commissioned data).
-- Same team, same era: the **Zephyr** models [@tunstall2023zephyr] and the **Open LLM Leaderboard** [@open_llm_leaderboard].
-- The unusual part wasn't buying the data -- it was opening it: data, recipe, and models together.
+- **No Robots** [@no_robots] -- 10K expert human-written demonstrations, matching InstructGPT distribution, paid for from a vendor and then released **openly** (rare for commissioned data): [hf.co/datasets/HuggingFaceH4/no_robots](https://huggingface.co/datasets/HuggingFaceH4/no_robots)
+- From the era/team of the **Zephyr** models [@tunstall2023zephyr] and the **Open LLM Leaderboard** [@open_llm_leaderboard].
 
 ---
 
+<!-- columns: 50/50 -->
 <!-- valign: center -->
 <!-- cite-right: arena2026 -->
-## Preference data is now a business
+## Preference *evals* is now a standalone business
 
-By 2026, collecting preferences is a standalone industry, not just an in-house step in one lab's pipeline.
+Recently in 2026 **Arena** (formerly, the LMArena leaderboard, formerly ChatBotArena) reached a **~$100M annualized revenue run-rate within ~8 months** of launching its enterprise A/B testing offering [@arena2026].
 
-- **Arena** (the LMArena leaderboard) reached a **~$100M annualized revenue run-rate within ~8 months** of launching its enterprise offering [@arena2026].
-- The product: **crowd-sourced A/B preference testing as a service** -- users vote on which of two model responses is better, and labs buy the aggregated preference data to benchmark and improve models.
-- Scale: **82M+ votes** across **700M+ conversations** from **10M+ monthly visitors**.
+|||
 
-The comparison interfaces earlier in this section are no longer just research tooling -- they are the product.
+[![](assets/arena-100m-article.png)](https://arena.ai/blog/arena-100m-revenue)
 
 ---
 
-## Bias: what to watch for
+<!-- layout: section-break -->
+<!-- align: center -->
+
+## Part 3: Open questions in preference data
+
+---
+
+<!-- animate: bullets -->
+## Bias: what to watch for in data
 
 Subtle, systematic biases sail straight from the data into the model:
 
@@ -576,18 +636,13 @@ Subtle, systematic biases sail straight from the data into the model:
 - **Formatting** -- lists and bold look "better" [@zhang2024lists]
 - **Flattery / fluff** -- decorative language inflates scores [@bharadwaj2025flatteryflufffogdiagnosing]
 
+<!-- step -->
 Detecting and controlling these biases is central to collecting high-quality preference data -- and they are exactly what over-optimization amplifies into model behavior (Lecture 9).
 
 ---
 
-<!-- layout: section-break -->
-<!-- align: center -->
-
-## Part 4: Open questions in preference data
-
----
-
-## Four open clusters
+<!-- animate: bullets -->
+## Higher level complexities 
 
 - **Collection context** -- do workplace labels transfer to end users? Paid vs. volunteer? Do annotators follow instructions or their own values?
 - **Type of feedback** -- does a binary pair actually capture the preference we mean? What structure mirrors how people really compare?
@@ -601,27 +656,17 @@ Detecting and controlling these biases is central to collecting high-quality pre
 
 RLHF's *motivation* (align to human preference) has drifted from its *practice* (make models effective).
 
-Because industrial RLHF is closed, we can't check whether the trained model actually reflects the spec given to annotators. The **Model Spec** [@openai2024modelspec] documents intended behavior, but the link from data → behavior stays largely unaudited.
+Because industrial RLHF is closed, we can't check whether the trained model actually reflects the spec given to annotators. 
+The **Model Spec** [@openai2024modelspec] documents intended behavior, but the link from data → behavior stays largely unaudited.
 
-Many of these questions already surfaced with synthetic data (chapter 12 / Lecture 7): the human/AI feedback balance, and on-policy preference data.
+Many of these questions already surfaced with synthetic data (chapter 12 / lecture 7): the human/AI feedback balance, and on-policy preference data.
 
 ---
 
-<!-- columns: 50/50 -->
-## An open, human problem
+## The nature of preferences is the lasting problem of RLHF
 
 This is one of the least-settled, most human parts of the field. Read widely and go to the primary sources.
-
-|||
-
-```box
-title: Go deeper
-tone: surface
-content: |
-  - [**The History and Risks of RLHF**](https://arxiv.org/abs/2310.13595) -- where this framing comes from.
-  - [**RewardBench**](https://arxiv.org/abs/2403.13787) -- on-policy vs pooled preference data.
-  - [**Interconnects**](https://www.interconnects.ai/) -- ongoing notes on preferences & data.
-```
+Is a great academic problem!
 
 ---
 
