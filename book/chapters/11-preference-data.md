@@ -209,7 +209,7 @@ For example, the default terms on the contracts often prohibit the open sourcing
 
 Once a contract is settled, the data buyer and data provider agree upon instructions for the task(s) purchased. 
 There are intricate documents with extensive details, corner cases, and priorities for the data. 
-A popular example of data instructions is the one that [OpenAI released for InstructGPT](https://docs.google.com/document/d/1MJCqDNjzD04UbcnVZ-LmeXJ04-TKEICDAepXyMCBUb8/edit#heading=h.21o5xkowgmpj) [@ouyang2022training].
+A popular example of data instructions is the one that [OpenAI released for InstructGPT](https://rlhfbook.com/assets/instructgpt-instructions.pdf) [@ouyang2022training].
 
 Depending on the domains of interest in the data, timelines for when the data can be labeled or curated vary. 
 High-demand areas like mathematical reasoning or coding must be locked into a schedule weeks out. 
