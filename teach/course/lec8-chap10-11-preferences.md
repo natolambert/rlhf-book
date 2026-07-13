@@ -226,6 +226,19 @@ The common thread: the idea that human wants can be reduced to a single measure.
 
 ---
 
+<!-- valign: center -->
+## Bradley-Terry (1952): comparisons to scores
+
+The statistical model that turns *comparisons* into *scores* -- and became the backbone of reward modeling [@BradleyTerry] (see Chapter 5 / Lecture 2):
+
+$$ P(y_w \succ y_l \mid x) = \sigma\!\big(r(x,y_w) - r(x,y_l)\big) = \frac{e^{\,r(x,y_w)}}{e^{\,r(x,y_w)} + e^{\,r(x,y_l)}} $$
+
+Give it pairwise human comparisons; out comes a scalar reward. 
+This is *why* RLHF needs **preference data** (and where the imperfections enter).
+
+---
+
+
 <!-- columns: 64/36 -->
 <!-- valign: center -->
 ## Von Neumann-Morgenstern utility theorem (1947)
@@ -311,7 +324,6 @@ Note: these guarantees assume a **single, closed-form reward**!
 ![Lee Sedol vs AlphaGo, Game 4 (2016) (CC BY-SA 4.0, via Wikimedia Commons)](assets/alphago-game4.jpg)
 
 ---
-
 
 <!-- layout: section-break -->
 <!-- align: center -->
@@ -471,7 +483,24 @@ Once a contract is signed, buyer and vendor agree on **detailed instructions** f
 
 In practice almost everyone trains on pairwise rankings, binarized to chosen/rejected for the Bradley-Terry loss -- and keeps ratings on the side.
 
-The Likert granularity (5-point with ties vs 8-point without) is itself a design choice that changes the data.
+---
+
+<!-- valign: center -->
+## What exactly is a "Likert scale"?
+
+A **Likert scale** records a preference as an *ordered, graded* judgment -- not just which answer wins, but **by how much**, on a symmetric scale with an optional neutral middle. (After psychologist Rensis Likert, 1932 -- the same "strongly agree ... strongly disagree" survey tool, repurposed for pairwise preference.)
+
+```box
+title: A typical 5-point preference scale
+tone: accent
+content: |
+  **A much better**  ·  A better  ·  *tie*  ·  B better  ·  **B much better**
+```
+
+- **5-point with a tie** (LMArena-style): labelers can say "about the same."
+- **8-point without a tie** (early Claude [@bai2022training]): forces a direction -- four strengths on each side, no neutral.
+
+How many points, and whether ties are allowed, are both design choices that change the data you collect.
 
 ---
 
