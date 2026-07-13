@@ -132,12 +132,10 @@ E.g. Which poem is better? Which explanation is clearer? Which tone is kinder?
 
 ---
 
-<!-- columns: 50/50 -->
+<!-- columns: 40/60 -->
 ## This lecture
 
 We trace where "preferences" came from, argue why it's an **imperfect problem formulation**, then dig into **preference data** (chapter 11) used for today's models.
-
-Grounded in *The History and Risks of RLHF* [@lambert2023entangled].
 
 |||
 
@@ -156,13 +154,13 @@ content: |
 <!-- columns: 42/58 -->
 <!-- valign: center -->
 <!-- cite-right: lambert2023entangled -->
-## The paper behind this lecture
+## The paper behind the first half of this lecture
 
 ![](assets/history-risks-rlhf.png)
 
 |||
 
-*The History and Risks of Reinforcement Learning and Human Feedback* (2023) traces RLHF back through the fields it borrows from -- and asks what breaks in the borrowing.
+*The History and Risks of Reinforcement Learning and Human Feedback* (2023) [@lambert2023entangled] traces RLHF back through the fields it borrows from -- and asks what breaks in the borrowing.
 
 - **History:** RLHF is the meeting point of philosophy, economics, optimal control, and RL -- each with its own idea of what a "preference" is.
 - **Risk:** it quietly treats **costs, rewards, and preferences** as interchangeable when they are not.
