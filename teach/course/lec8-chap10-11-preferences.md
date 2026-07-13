@@ -30,7 +30,7 @@ custom_css: |
   /* Full-bleed image: let a figure use the full slide width (and remaining
      height) with only the title kept clear at the top. */
   .slide.full-bleed { padding-left: 0; padding-right: 0; padding-bottom: 0; }
-  .slide.full-bleed .slide-content { min-height: 0; }
+  .slide.full-bleed .slide-content { min-height: 0; flex: 1; display: flex; align-items: center; justify-content: center; }
   .slide.full-bleed .slide-content img {
     width: 100%; height: 100%;
     max-width: none; max-height: none;
