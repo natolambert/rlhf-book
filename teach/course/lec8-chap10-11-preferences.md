@@ -228,7 +228,7 @@ The common thread: the idea that human wants can be reduced to a single measure.
 
 <!-- columns: 64/36 -->
 <!-- valign: center -->
-## Von Neumann-Morgenstern utility (1947)
+## Von Neumann-Morgenstern utility theorem (1947)
 
 **Von Neumann & Morgenstern** (1947): if your preferences obey a few axioms (completeness, transitivity, continuity, independence), they can be represented by a single **utility function**, and rational choice = maximizing **expected utility** [@von1947theory].
 
@@ -265,19 +265,20 @@ Almost as soon as utility was formalized, social choice (the field studying how 
 
 If aggregating preferences is the hard part, **social choice theory** is the field that studies it -- and a natural lens for alignment.
 
-- A 2024 position paper argues social choice should guide how we aggregate **diverse** human feedback [@conitzer2024social].
-- Whose preferences count? How do you combine disagreeing labelers? Arrow's warning, one abstraction up.
+*Social Choice Should Guide AI Alignment in Dealing with Diverse Human Feedback*.
+- A 2024 position paper I was part of argues social choice should guide how we aggregate diverse human feedback [@conitzer2024social]. 
+- Whose preferences count? How do you combine disagreeing labelers? ...
 - (One of the rabbit holes I used to spend more time in.)
 
 |||
 
-![*Social Choice Should Guide AI Alignment in Dealing with Diverse Human Feedback* (2024)](assets/social-choice-alignment.png)
+![](assets/social-choice-alignment.png)
 
 ---
 
 <!-- columns: 64/36 -->
 <!-- valign: center -->
-## Preferences are not stable objects
+## Preferences are not stable objects over time/space
 
 From psychology and behavioral economics:
 
@@ -402,6 +403,23 @@ It is far easier to **judge** than to **generate** -- humans (and models) can re
 But collecting it well is the most **opaque** part of the pipeline.
 
 As of 2026, **no open model** ships fully open human preference data *with* the methodology used to collect it.
+
+---
+
+<!-- columns: 56/44 -->
+<!-- valign: center -->
+<!-- cite-right: ouyang2022training -->
+## A rare public artifact: labeler instructions
+
+Once a contract is signed, buyer and vendor agree on **detailed instructions** for every task -- normally never seen outside the lab.
+
+- One of the first *public* examples: OpenAI released the full **InstructGPT** labeler instructions (2022) [@ouyang2022training].
+- Pages of guidance on ranking **helpful, truthful, harmless** -- the spec that actually shapes the labels.
+- [**Download the PDF**](https://rlhfbook.com/assets/instructgpt-instructions.pdf) (mirrored on rlhfbook.com).
+
+|||
+
+![InstructGPT "Final labeling instructions" (OpenAI, 2022) -- released publicly.](assets/instructgpt-instructions.jpg)
 
 ---
 
