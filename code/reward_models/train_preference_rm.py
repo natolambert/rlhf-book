@@ -461,9 +461,10 @@ def train_preference_rm(
             with torch.amp.autocast("cuda", dtype=torch.bfloat16, enabled=autocast_enabled):
                 loss, r_chosen, r_rejected = model(**batch)
 
-            # accum_start = (step_idx // grad_accum_steps) * grad_accum_steps
-            # accum_end = min(accum_start + grad_accum_steps, len(train_loader))
-            # current_accum_steps = accum_end - accum_start
+            # Use a fixed grad_accum_steps divisor even for the final partial accumulation
+            # window. This can slightly under-weight the final update when len(train_loader)
+            # is not divisible by grad_accum_steps, but keeps the teaching example simple
+            # and follows the common constant-divisor convention.
 
             (loss / grad_accum_steps).backward()
 

@@ -5,7 +5,7 @@
 Educational implementations of reward model training for [RLHF Book](https://rlhfbook.com).
 See **Chapter 5: Reward Models** for mathematical derivations and intuitions.
 
-> **⚠️ IN DEVELOPMENT**: These implementations are experimental. Hyperparameters, datasets, and model configurations have not been fully tuned for clean training curves. Contributions welcome!
+> **⚠️ IN DEVELOPMENT**: These implementations are experimental. Preference RM now includes a config-driven example with validation logging and LR scheduling, but ORM/PRM configs, datasets, and evaluation still need refinement. Contributions welcome!
 
 ## Algorithms
 
@@ -62,6 +62,8 @@ The default config trains Qwen3-0.6B on 5k UltraFeedback preference pairs with:
 These defaults were selected from a small sweep and are intended as a cleaner
 educational baseline, not universally optimal hyperparameters.
 
+Reward models are commonly trained for around one epoch to reduce overfitting. This example uses two epochs because it produced cleaner validation curves in a small local 5k-pair sweep, but users should monitor `val/loss` and `val/accuracy` during the second epoch and reduce `epochs` if validation metrics degrade.
+
 ## Known Issues
 
 - Training curves may be noisy - hyperparameters not yet optimized
@@ -70,7 +72,6 @@ educational baseline, not universally optimal hyperparameters.
 
 ## TODOs for Community Contributions
 
-- [ ] Tune hyperparameters for cleaner training curves for PRM and ORM
-- [ ] Add config files (like direct_alignment has) for PRM and ORM
+- [ ] Add config files, validation splits, and validation logging for PRM and ORM
 - [ ] Evaluate on standard benchmarks (RewardBench)
 - [ ] Add data augmentation and curriculum learning
