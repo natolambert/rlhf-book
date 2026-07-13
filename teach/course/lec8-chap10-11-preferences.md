@@ -386,6 +386,8 @@ Deep RL's theory lives in MDPs with **one fixed, closed-form reward** (games, co
 
 **The imperfection concentrates in the data.** → Part 3.
 
+(What happens when you optimize hard against this proxy anyway is *over-optimization* → Lecture 9.)
+
 ---
 
 <!-- layout: section-break -->
@@ -512,7 +514,7 @@ In domains with structure, you can build preference pairs automatically:
 - **Math**: a correct solution ≻ an incorrect one.
 - **Instruction following (IFEval-style)**: prompt twice -- with the constraint and without -- and prefer the one that obeys it.
 
-In these narrow domains, structured pairs beat quality-judged preferences [@lambert2024t]. This is *synthetic* preference data -- more in chapter 12.
+In these narrow domains, structured pairs beat quality-judged preferences [@lambert2024t]. This is *synthetic* preference data -- chapter 12, which we covered in Lecture 7.
 
 ---
 
@@ -574,7 +576,7 @@ Subtle, systematic biases sail straight from the data into the model:
 - **Formatting** -- lists and bold look "better" [@zhang2024lists]
 - **Flattery / fluff** -- decorative language inflates scores [@bharadwaj2025flatteryflufffogdiagnosing]
 
-Detecting and controlling these biases is central to collecting high-quality preference data.
+Detecting and controlling these biases is central to collecting high-quality preference data -- and they are exactly what over-optimization amplifies into model behavior (Lecture 9).
 
 ---
 
@@ -601,7 +603,7 @@ RLHF's *motivation* (align to human preference) has drifted from its *practice* 
 
 Because industrial RLHF is closed, we can't check whether the trained model actually reflects the spec given to annotators. The **Model Spec** [@openai2024modelspec] documents intended behavior, but the link from data → behavior stays largely unaudited.
 
-Many of these questions reappear in chapter 12: the human/AI feedback balance, and on-policy preference data.
+Many of these questions already surfaced with synthetic data (chapter 12 / Lecture 7): the human/AI feedback balance, and on-policy preference data.
 
 ---
 
@@ -635,7 +637,7 @@ content: |
 6. Direct Preference Optimization *(ch. 8)*
 7. Synthetic Data & Modern Post-training *(ch. 12)*
 8. **Preferences & Preference Data** *(ch. 10–11)* -- *today*
-9. **Overoptimization & Regularization** *(ch. 14–15)* -- *next*
+9. **Overoptimization & Regularization** *(ch. 14–15, app. B)* -- *next*
 
 ---
 
