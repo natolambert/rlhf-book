@@ -27,9 +27,8 @@ custom_css: |
   .slide.poem-ab .colloquium-message { max-width: 100%; width: 100%; padding: 1em 1.1em; }
   .slide.poem-ab .colloquium-conversation { height: 100%; justify-content: center; }
   .slide.poem-ab .colloquium-message-role { font-size: 0.75em; }
-  /* Full-bleed image: let a figure use the full slide width (and remaining
-     height) with only the title kept clear at the top. */
-  .slide.full-bleed { padding-left: 0; padding-right: 0; padding-bottom: 0; }
+  /* Full-bleed image: the figure owns the whole canvas -- no title, no padding. */
+  .slide.full-bleed { padding: 0; }
   .slide.full-bleed .slide-content { min-height: 0; flex: 1; display: flex; align-items: center; justify-content: center; }
   .slide.full-bleed .slide-content img {
     width: 100%; height: 100%;
@@ -198,9 +197,7 @@ Reward-model accuracy (RewardBench-style) is a proxy for a proxy! Keep asking wh
 <!-- img-align: center -->
 <!-- valign: center -->
 <!-- cite-right: lambert2023entangled -->
-<!-- notes: The integration of subfields into modern RLHF. Solid links are continuous technical developments; arrows are motivations and conceptual borrowings. Philosophy, economics, control theory, and deep learning each arrive with different assumptions about what a "preference" even is. -->
-## Many fields converged into "RLHF"
-
+<!-- notes: Many fields converged into "RLHF". The integration of subfields into modern RLHF. Solid links are continuous technical developments; arrows are motivations and conceptual borrowings. Philosophy, economics, control theory, and deep learning each arrive with different assumptions about what a "preference" even is. -->
 ![](assets/rlhf-tree.png)
 
 ---
@@ -210,8 +207,8 @@ Reward-model accuracy (RewardBench-style) is a proxy for a proxy! Keep asking wh
 
 The idea that choices can be *scored* is old:
 
-- **Port Royal Logic** (1662): decision quality = probability-weighted outcome [@arnauld1861port]
-- **Bentham's hedonic calculus** (early 1800s): weigh all of life on one scale [@bentham1823hedonic]
+- **Port Royal Logic** (1662): introduced the notion of decision-making quality as a probability [@arnauld1861port]
+- **Bentham's hedonic calculus** (early 1800s): weigh all of life on one complicated scale [@bentham1823hedonic]
 - **Ramsey**, *Truth and Probability* (1931): first to quantify preference *and* belief together [@ramsey2016truth]
 
 The common thread: the hope that human wanting can be reduced to a single number.
