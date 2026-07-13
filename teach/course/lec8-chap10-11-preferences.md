@@ -206,6 +206,7 @@ Reward-model accuracy (RewardBench-style) is a proxy for a proxy! Keep asking wh
 
 ---
 
+<!-- columns: 62/38 -->
 <!-- valign: top -->
 ## Utility, from logic to a number
 
@@ -219,10 +220,13 @@ The common thread: the idea that human wants can be reduced to a single measure.
 
 > *"To judge what one must do to obtain a good or avoid an evil, it is necessary to consider not only the good and evil in itself, but also the probability that it happens or does not happen."* -- The Port Royal Logic, 1662
 
-<!-- IMAGE: suggest title page of "La Logique" (Port Royal) or Ramsey 1931; portrait of Bentham. -->
+|||
+
+![*La Logique, ou l'Art de Penser* (the Port Royal Logic), 1662](assets/port-royal-logic.jpg)
 
 ---
 
+<!-- columns: 64/36 -->
 <!-- valign: center -->
 ## Von Neumann-Morgenstern utility (1947)
 
@@ -232,11 +236,14 @@ This is the result RLHF leans on to justify fitting a scalar reward.
 
 (Note the *if* -- it returns in Part 2.)
 
-<!-- IMAGE: suggest cover of "Theory of Games and Economic Behavior" (1944/1947). -->
+|||
+
+![John von Neumann (Los Alamos badge photo, public domain)](assets/von-neumann.jpg)
 
 ---
 
-<!-- valign: top -->
+<!-- columns: 64/36 -->
+<!-- valign: center -->
 ## Where utility theory breaks down
 
 Almost as soon as utility was formalized, social choice (the field studying how preferences should be aggregated) and economics found its limits:
@@ -245,11 +252,31 @@ Almost as soon as utility was formalized, social choice (the field studying how 
 - **Sen**, *Behaviour, Choice and Values* (1973): choice ≠ preference; revealed-preference theory is too thin [@sen1973behaviour]
 - **Hirschman**, *Against Parsimony* (1984): people have *preferences over their preferences* -- so preferences may be unmeasurable [@hirschman1984against]
 
-<!-- IMAGE: suggest Arrow portrait / impossibility theorem statement. -->
+|||
+
+![Kenneth Arrow (CC BY 3.0, via Wikimedia Commons)](assets/kenneth-arrow.jpg)
 
 ---
 
-<!-- valign: top -->
+<!-- columns: 58/42 -->
+<!-- valign: center -->
+<!-- cite-right: conitzer2024social -->
+## Aside: social choice for AI alignment
+
+If aggregating preferences is the hard part, **social choice theory** is the field that studies it -- and a natural lens for alignment.
+
+- A 2024 position paper argues social choice should guide how we aggregate **diverse** human feedback [@conitzer2024social].
+- Whose preferences count? How do you combine disagreeing labelers? Arrow's warning, one abstraction up.
+- (One of the rabbit holes I used to spend more time in.)
+
+|||
+
+![*Social Choice Should Guide AI Alignment in Dealing with Diverse Human Feedback* (2024)](assets/social-choice-alignment.png)
+
+---
+
+<!-- columns: 64/36 -->
+<!-- valign: center -->
 ## Preferences are not stable objects
 
 From psychology and behavioral economics:
@@ -259,11 +286,14 @@ From psychology and behavioral economics:
 
 Already a problem for "collect a label, fit a fixed reward."
 
-<!-- IMAGE: suggest a framing-effect / preference-reversal figure. -->
+|||
+
+![Daniel Kahneman, whose work on framing and preference reversals (CC BY-SA 2.0, via Wikimedia Commons)](assets/daniel-kahneman.jpg)
 
 ---
 
-<!-- valign: top -->
+<!-- columns: 62/38 -->
+<!-- valign: center -->
 ## The other root: optimal control & RL
 
 In parallel, a machinery for *optimizing* a reward matured:
@@ -275,7 +305,9 @@ In parallel, a machinery for *optimizing* a reward matured:
 
 The catch (Part 2): these guarantees assume a **single, closed-form reward**.
 
-<!-- IMAGE: suggest Atari/DQN or AlphaGo figure (or highlight the RL branch of the tree). -->
+|||
+
+![Lee Sedol vs AlphaGo, Game 4 (2016) (CC BY-SA 4.0, via Wikimedia Commons)](assets/alphago-game4.jpg)
 
 ---
 
