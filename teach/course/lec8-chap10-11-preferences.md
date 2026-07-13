@@ -285,11 +285,11 @@ From psychology and behavioral economics:
 - Preferences **drift** -- they change with time, mood, and experience [@pettigrew2019choosing]
 - Choices are shaped by situation and framing, not just an inner ranking [@gilbert2022choices]
 
-Already a problem for "collect a label, fit a fixed reward."
+A problem for "collect a label, train on it later repeatedly."
 
 |||
 
-![Daniel Kahneman, whose work on framing and preference reversals (CC BY-SA 2.0, via Wikimedia Commons)](assets/daniel-kahneman.jpg)
+![The prospect-theory value function: the *same* outcome is valued differently depending on the reference point -- value depends on framing, not a fixed ranking (CC BY-SA 3.0, via Wikimedia Commons).](assets/prospect-value-function.png)
 
 ---
 
@@ -299,12 +299,12 @@ Already a problem for "collect a label, fit a fixed reward."
 
 In parallel, a machinery for *optimizing* a reward matured:
 
-- **Bellman** (1957): MDPs and dynamic programming [@bellman1957markovian]
-- **Sutton** (1988): temporal-difference learning for credit assignment [@sutton1988learning]
-- **Watkins** (1992): Q-learning [@watkins1992q]
-- **DQN** (2013): deep RL at scale [@mnih2013playing]; **AlphaGo / AlphaZero** (2017): mastery from self-play [@silver2017mastering]
+- **Bellman** (1957): MDPs and dynamic programming [@bellman1957markovian] --> origins of "optimal" control / control theory
+- **Sutton** (1988): temporal-difference learning for credit assignment [@sutton1988learning] (instead of learning from a lot of past data)
+- **Watkins** (1992): Q-learning [@watkins1992q] (learning value)
+- **DQN** (2013): deep RL at scale [@mnih2013playing]; **AlphaGo / AlphaZero** (2017): mastery from self-play [@silver2017mastering]. "RL works"
 
-The catch (Part 2): these guarantees assume a **single, closed-form reward**.
+Note: these guarantees assume a **single, closed-form reward**!
 
 |||
 
@@ -312,16 +312,6 @@ The catch (Part 2): these guarantees assume a **single, closed-form reward**.
 
 ---
 
-<!-- valign: center -->
-## Bradley-Terry (1952): comparisons to scores
-
-The statistical model that turns *comparisons* into *scores* -- and became the backbone of reward modeling [@BradleyTerry]:
-
-$$ P(y_w \succ y_l \mid x) = \sigma\!\big(r(x,y_w) - r(x,y_l)\big) = \frac{e^{\,r(x,y_w)}}{e^{\,r(x,y_w)} + e^{\,r(x,y_l)}} $$
-
-Give it pairwise human comparisons; out comes a scalar reward. This is *why* RLHF needs **preference data** -- and where the imperfections enter.
-
----
 
 <!-- layout: section-break -->
 <!-- align: center -->
