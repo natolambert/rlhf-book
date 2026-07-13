@@ -27,8 +27,10 @@ custom_css: |
   .slide.poem-ab .colloquium-message { max-width: 100%; width: 100%; padding: 1em 1.1em; }
   .slide.poem-ab .colloquium-conversation { height: 100%; justify-content: center; }
   .slide.poem-ab .colloquium-message-role { font-size: 0.75em; }
-  /* Full-bleed image: the figure owns the whole canvas -- no title, no padding. */
-  .slide.full-bleed { padding: 0; }
+  /* Full-bleed image: near-edge figure (98% width), vertically centered,
+     with the slide title kept in its normal position. */
+  .slide.full-bleed { padding: 60px 13px 24px; }
+  .slide.full-bleed h2 { margin-left: 47px; }
   .slide.full-bleed .slide-content { min-height: 0; flex: 1; display: flex; align-items: center; justify-content: center; }
   .slide.full-bleed .slide-content img {
     width: 100%; height: 100%;
@@ -197,7 +199,9 @@ Reward-model accuracy (RewardBench-style) is a proxy for a proxy! Keep asking wh
 <!-- img-align: center -->
 <!-- valign: center -->
 <!-- cite-right: lambert2023entangled -->
-<!-- notes: Many fields converged into "RLHF". The integration of subfields into modern RLHF. Solid links are continuous technical developments; arrows are motivations and conceptual borrowings. Philosophy, economics, control theory, and deep learning each arrive with different assumptions about what a "preference" even is. -->
+<!-- notes: The integration of subfields into modern RLHF. Solid links are continuous technical developments; arrows are motivations and conceptual borrowings. Philosophy, economics, control theory, and deep learning each arrive with different assumptions about what a "preference" even is. -->
+## Many fields converged into "RLHF"
+
 ![](assets/rlhf-tree.png)
 
 ---
@@ -209,9 +213,9 @@ The idea that choices can be *scored* is old:
 
 - **Port Royal Logic** (1662): introduced the notion of decision-making quality as a probability [@arnauld1861port]
 - **Bentham's hedonic calculus** (early 1800s): weigh all of life on one complicated scale [@bentham1823hedonic]
-- **Ramsey**, *Truth and Probability* (1931): first to quantify preference *and* belief together [@ramsey2016truth]
+- **Ramsey**, *Truth and Probability* (1931): apply the above ideas quantitatively [@ramsey2016truth]
 
-The common thread: the hope that human wanting can be reduced to a single number.
+The common thread: the idea that human wants can be reduced to a single measure.
 
 > *"To judge what one must do to obtain a good or avoid an evil, it is necessary to consider not only the good and evil in itself, but also the probability that it happens or does not happen."* -- The Port Royal Logic, 1662
 
@@ -224,7 +228,9 @@ The common thread: the hope that human wanting can be reduced to a single number
 
 **Von Neumann & Morgenstern** (1947): if your preferences obey a few axioms (completeness, transitivity, continuity, independence), they can be represented by a single **utility function**, and rational choice = maximizing **expected utility** [@von1947theory].
 
-This is the result RLHF leans on to justify fitting a scalar reward. Note the *if* -- it returns in Part 2.
+This is the result RLHF leans on to justify fitting a scalar reward. 
+
+(Note the *if* -- it returns in Part 2.)
 
 <!-- IMAGE: suggest cover of "Theory of Games and Economic Behavior" (1944/1947). -->
 
@@ -233,7 +239,7 @@ This is the result RLHF leans on to justify fitting a scalar reward. Note the *i
 <!-- valign: top -->
 ## Where utility theory breaks down
 
-Almost as soon as utility was formalized, social choice and economics found its limits:
+Almost as soon as utility was formalized, social choice (the field studying how preferences should be aggregated) and economics found its limits:
 
 - **Arrow's impossibility theorem** (1950): no voting rule aggregates individual preferences into a collective one while satisfying a few basic fairness criteria [@arrow1950difficulty]
 - **Sen**, *Behaviour, Choice and Values* (1973): choice ≠ preference; revealed-preference theory is too thin [@sen1973behaviour]
