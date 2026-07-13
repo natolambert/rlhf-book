@@ -170,6 +170,18 @@ Parts 1 and 2 of this lecture follow its argument directly.
 
 ---
 
+<!-- valign: center -->
+## Aside: the "objective mismatch" lens
+
+A recurring way to think about post-training: we optimize a **proxy** objective that isn't the one we actually care about.
+
+- **Model-based RL:** the dynamics model is trained for prediction accuracy, not control performance -- so a "better" model can yield a *worse* policy [@lambert2020objective].
+- **RLHF:** the reward model is trained for preference-classification accuracy, not downstream policy quality -- the same mismatch, one level up [@lambert2023alignment].
+
+Reward-model accuracy (RewardBench-style) is a proxy for a proxy. It pays to keep asking what you are *really* optimizing.
+
+---
+
 <!-- layout: section-break -->
 <!-- align: center -->
 
@@ -537,15 +549,16 @@ content: |
 <!-- valign: center -->
 ## The course so far
 
-1. Overview
-2. IFT, Reward Models & Rejection Sampling
-3. RL: Motivation & Math
-4. RL: Implementation & Practice
-5. The Rise of Reasoning Models
-6. Direct Preference Optimization
-7. Synthetic Data & Modern Post-training
-8. **Preferences & Preference Data** -- *today*
-9. **Overoptimization & Regularization** -- *next*
+0. Prerequisites review
+1. Overview *(ch. 1–3)*
+2. IFT, Reward Models & Rejection Sampling *(ch. 4, 5, 9)*
+3. RL: Motivation & Math *(ch. 6)*
+4. RL: Implementation & Practice *(ch. 6)*
+5. The Rise of Reasoning Models *(ch. 7)*
+6. Direct Preference Optimization *(ch. 8)*
+7. Synthetic Data & Modern Post-training *(ch. 12)*
+8. **Preferences & Preference Data** *(ch. 10–11)* -- *today*
+9. **Overoptimization & Regularization** *(ch. 14–15)* -- *next*
 
 ---
 
