@@ -212,9 +212,9 @@ Reward-model accuracy (RewardBench-style) is a proxy for a proxy! Keep asking wh
 
 The idea that choices can be *scored* is old:
 
-- **Port Royal Logic** (1662): introduced the notion of decision-making quality as a probability [@arnauld1861port]
-- **Bentham's hedonic calculus** (early 1800s): weigh all of life on one complicated scale [@bentham1823hedonic]
-- **Ramsey**, *Truth and Probability* (1931): apply the above ideas quantitatively [@ramsey2016truth]
+- **Port Royal Logic** (1662): decision quality = outcome weighted by its probability [@arnauld1861port]
+- **Bentham's hedonic calculus** (early 1800s): weigh all of life on one complicated, but common scale [@bentham1823hedonic]
+- **Ramsey**, *Truth and Probability* (1931): first to quantify preference *and* belief together [@ramsey2016truth]
 
 The common thread: the idea that human wants can be reduced to a single measure.
 
@@ -291,7 +291,7 @@ If aggregating preferences is the hard part, **social choice theory** is the fie
 
 <!-- columns: 64/36 -->
 <!-- valign: center -->
-## Preferences are not stable objects over time/space
+## Preferences are not stable objects over time and context
 
 From psychology and behavioral economics:
 
@@ -312,7 +312,7 @@ A problem for "collect a label, train on it later repeatedly."
 
 In parallel, a machinery for *optimizing* a reward matured:
 
-- **Bellman** (1957): MDPs and dynamic programming [@bellman1957markovian] --> origins of "optimal" control / control theory
+- **Bellman** (1957): MDPs and dynamic programming [@bellman1957markovian] → origins of "optimal" control / control theory
 - **Sutton** (1988): temporal-difference learning for credit assignment [@sutton1988learning] (instead of learning from a lot of past data)
 - **Watkins** (1992): Q-learning [@watkins1992q] (learning value)
 - **DQN** (2013): deep RL at scale [@mnih2013playing]; **AlphaGo / AlphaZero** (2017): mastery from self-play [@silver2017mastering]. "RL works"
