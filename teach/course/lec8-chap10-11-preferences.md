@@ -42,7 +42,7 @@ custom_css: |
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
 
-# Lecture 8: Preferences and Preference Data
+# Lecture 8: On "Preferences" and Preference Data
 
 <div class="colloquium-title-eyebrow">rlhfbook.com</div>
 
