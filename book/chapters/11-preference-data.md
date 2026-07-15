@@ -12,6 +12,9 @@ search-title: "Chapter 11: Preference Data"
 meta-description: "How preference datasets are designed, collected, filtered, and used for RLHF and post-training language models."
 next-chapter: "Synthetic Data & Distillation"
 next-url: "12-synthetic-data"
+lectures:
+  - video: "https://www.youtube.com/watch?v=Y2tv5vuaxFs&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=13"
+    label: 'Lecture 8: On "Preferences" and Preference Data'
 ---
 
 # Preference Data

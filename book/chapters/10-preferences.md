@@ -12,6 +12,9 @@ search-title: "Chapter 10: The Nature of Preferences"
 meta-description: "A conceptual chapter on human preferences, preference learning, and why RLHF can optimize hard-to-specify behaviors."
 next-chapter: "Preference Data"
 next-url: "11-preference-data"
+lectures:
+  - video: "https://www.youtube.com/watch?v=Y2tv5vuaxFs&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=13"
+    label: 'Lecture 8: On "Preferences" and Preference Data'
 ---
 
 # The Nature of Preferences
