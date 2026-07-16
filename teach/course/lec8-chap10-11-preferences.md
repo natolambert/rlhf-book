@@ -682,7 +682,8 @@ Is a great academic problem!
 6. Direct Preference Optimization *(ch. 8)*
 7. Synthetic Data & Modern Post-training *(ch. 12)*
 8. **Preferences & Preference Data** *(ch. 10–11)* -- *today*
-9. **Overoptimization & Regularization** *(ch. 14–15, app. B)* -- *next*
+9. **Over-Optimization & RLHF's Bad Reputation** *(ch. 14, app. B)* -- *next*
+10. Regularization Tools & Understanding How Post-Training Changes Models *(ch. 15)*
 
 ---
 

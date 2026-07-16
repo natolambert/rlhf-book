@@ -1,5 +1,12 @@
 # Lecture 9 plan — Over-Optimization and Regularization
 
+> **Update (2026-07-15):** this lecture was **split into two decks** — Lecture 9,
+> *Over-Optimization and RLHF's Bad Reputation* (ch. 14 + Appendix B,
+> `lec9-chap14-appb-overoptimization.md`) and Lecture 10, *Regularization and KL Control*
+> (ch. 15, `lec10-chap15-regularization.md`) — to align each video with one type of content
+> (narrative/empirical vs. math/technical), matching the Lecture 3/4 precedent. The outline
+> below predates the split but remains the content source for both decks.
+
 Design outline for the Lecture 9 course deck (`teach/course/lec9-chap14-15-overoptimization-regularization.md`),
 covering book **Chapters 14 (Over-Optimization), 15 (Regularization), and Appendix B ("Beyond 'Just Style'")**,
 in the polished Lecture 8 style: talked-over slides, sentence-case titles, framing-question openers,
