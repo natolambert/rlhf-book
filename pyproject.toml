@@ -18,5 +18,8 @@ skills = [
     "google-genai>=1.63.0",
 ]
 teach = [
-    "colloquium==0.2.2",
+    # TODO: pin back to a PyPI release (colloquium==0.2.3) once it ships with the
+    # Google-Fonts <link> fix (natolambert/colloquium#41). Until then, track the
+    # merge commit on main so course decks render their Rubik/Poppins fonts.
+    "colloquium @ git+https://github.com/natolambert/colloquium.git@11b12845463ed86376707cef5b6f95297fba6afd",
 ]
