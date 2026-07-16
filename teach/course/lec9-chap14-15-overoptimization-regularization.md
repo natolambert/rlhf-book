@@ -160,6 +160,16 @@ Concrete gaming: verbose, confident-sounding answers that score well; repeating 
 <!-- img-fill -->
 <!-- img-align: center -->
 <!-- valign: center -->
+<!-- cite-right: gao2023scaling -->
+## The real curves: scaling laws for RM over-optimization
+
+![Best-of-n (top) and RL (bottom) optimizing a proxy RM, scored against a "gold" RM: the proxy reward (dashed) keeps rising while the gold reward (solid) peaks and falls -- earlier and harder for smaller reward models. Note the x-axes: BoN spends ~10 nats of KL where RL spends ~100. Gao et al., 2023.](assets/gao-overoptimization.png)
+
+---
+
+<!-- img-fill -->
+<!-- img-align: center -->
+<!-- valign: center -->
 <!-- cite-right: bai2022training -->
 ## Measuring it: train vs. test reward models
 
