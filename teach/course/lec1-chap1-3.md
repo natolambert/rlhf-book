@@ -861,7 +861,7 @@ Generate many completions, score them, fine-tune on the best:
 3. **Select**: keep the highest-scoring completion(s)
 4. **Fine-tune**: standard SFT loss on the curated set
 
-$$\mathcal{L}_{\mathrm{RS}} = \mathcal{L}_{\mathrm{SFT}}\!\left(\theta;\; \{(x_i, y_i^{\star})\}\right) \quad \text{where } y_i^{\star} = \arg\max_{j} r_\phi(x_i, y_{i,j})$$
+$$\mathcal{L}_{\mathrm{RS}} = \mathcal{L}_{\mathrm{SFT}}\!\left(\theta;\; \{(x_i, y_i^{\star})\}\right) \quad \text{where } y_i^{\star} = y_{i,\, \arg\max_{j} r_\phi(x_i, y_{i,j})}$$
 
 Simple, stable, and widely used: Llama 2 [@touvron2023llama] and DeepSeek R1 [@guo2025deepseek] both include rejection sampling stages.
 
