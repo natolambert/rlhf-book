@@ -74,6 +74,47 @@ Logged to W&B each optimizer step (see [`train.py`](train.py)):
 Steps whose prompts are all skipped (no correct demonstration in any group) produce no
 update and are not logged.
 
+## Stability at scale
+
+When you move to harder datasets — usually via a vendored fork of [verl](https://github.com/verl-project/verl) 
+(which is what the [original SDPO implementation](https://github.com/lasgroup/SDPO) is built on) — training
+stability gets tricky: the reward line can flatline, or completely diverge.
+
+We have found the settings below to generally produce stable training runs:
+
+| Parameter | Value | Note |
+|-----------|-------|------|
+| Prompts per round | `32` | Questions per rollout budget |
+| Rollouts per prompt | `8` | 256 completions per round |
+| Mini batch size | `2` prompts | **Biggest lever.** 16 optimizer steps per round, not 1 |
+| Max completion length | `8192` | Truncation reads as failure, starves the demo pool |
+| Learning rate | `1e-6` | Flat, no schedule |
+| Weight decay | `0.01` | Standard AdamW value |
+| Optimizer | AdamW | Good starting point |
+| Gradient clip norm | `1.0` | Gradient spikes are inevitable |
+| Teacher | EMA of the student, `alpha = 0.01` | No frozen teacher |
+| Teacher IS clip | `2.0` | Caps teacher/student ratio |
+| Rollout IS | token-level, clip `2.0` | Off-policy correction within a round |
+| Distillation divergence | reverse KL | Completions are sampled on-policy from the student |
+| Top-K distillation | `20` + tail bucket | Rest of the mass in one bucket |
+| Model | instruct-tuned, non-thinking | Following [Kaur et al., 2026](https://arxiv.org/abs/2607.05184) |
+| Train sampling | `temperature = 1.0` | No top-k/top-p |
+| Eval sampling | per model card | Don't reuse the train sampler |
+
+The privileged context passed to the teacher also plays a huge role in the success of the student:
+
+- When a group has several correct completions, pick one **at random**. Picking the
+  *shortest* one collapses training — the student learns to minimize answer length
+  rather than to solve.
+- Filter completions that are ultimately correct but emit several `<answer>...</answer>`
+  blocks, i.e. the model doom-loops and backtracks its way there. Using those as teacher
+  supervision teaches exactly that behavior. Better still, set `</answer>` as a stop
+  sequence so rollouts can't produce more than one in the first place.
+- Fold in any other environment feedback you have (error messages, test output, partial
+  scores) as privileged context.
+
+![SDPO on a harder task: reward, accuracy and format rise steadily while pg_loss and grad_norm stay flat.](../images/sdpo_sokoban.png)
+
 ## TODOs for Community Contributions
 
 - [ ] Explore additional Reasoning Gym task domains beyond string reversal.
