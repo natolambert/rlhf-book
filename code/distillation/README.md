@@ -74,13 +74,12 @@ Logged to W&B each optimizer step (see [`train.py`](train.py)):
 Steps whose prompts are all skipped (no correct demonstration in any group) produce no
 update and are not logged.
 
-## Stability at scale
+## Hyperparameters for harder tasks
 
-When you move to harder datasets — usually via a vendored fork of [verl](https://github.com/verl-project/verl) 
-(which is what the [original SDPO implementation](https://github.com/lasgroup/SDPO) is built on) — training
-stability gets tricky: the reward line can flatline, or completely diverge.
-
-We have found the settings below to generally produce stable training runs:
+On harder datasets, usually run through a vendored fork of [verl](https://github.com/verl-project/verl)
+(which is what the [original SDPO implementation](https://github.com/lasgroup/SDPO) is built on),
+training gets much harder to keep stable. The reward line flatlines, or it climbs for a while and
+then diverges. These are the settings we found to generally produce stable runs:
 
 | Parameter | Value | Note |
 |-----------|-------|------|
@@ -104,7 +103,7 @@ We have found the settings below to generally produce stable training runs:
 The privileged context passed to the teacher also plays a huge role in the success of the student:
 
 - When a group has several correct completions, pick one **at random**. Picking the
-  *shortest* one collapses training — the student learns to minimize answer length
+  *shortest* one collapses training, since the student learns to minimize answer length
   rather than to solve.
 - Filter completions that are ultimately correct but emit several `<answer>...</answer>`
   blocks, i.e. the model doom-loops and backtracks its way there. Using those as teacher
