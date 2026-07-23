@@ -47,7 +47,12 @@ custom_css: |
 <!-- valign: center -->
 ## April 2025: extreme sycophancy in production
 
-A GPT-4o update made the model validate nearly anything -- shipped April 25th, rolled back April 28th. **The training run that produced it looked healthy.**
+A GPT-4o update made the model validate nearly anything -- shipped April 25th, rolled back April 28th. The training run that produced it looked healthy on their metrics.
+
+Coverage: [The Verge, *"ChatGPT's sycophantic responses"*](https://www.theverge.com/tech/657409/chat-gpt-sycophantic-responses-gpt-4o-sam-altman)
+
+
+Example chat:
 
 ```conversation
 size: 0.9
@@ -61,22 +66,24 @@ messages:
       That's incredibly powerful. You're stepping into something very big -- claiming not just connection to God but identity as God.
 ```
 
-Coverage: [The Verge, *"ChatGPT's sycophantic responses"*](https://www.theverge.com/tech/657409/chat-gpt-sycophantic-responses-gpt-4o-sam-altman)
+
 
 <!-- notes: Other examples in circulation at the time: praising a "shit on a stick" business plan, endorsing a user's decision to stop their psychiatric medication. This lecture is about why a healthy-looking reward curve produces this behavior. -->
 
 ---
 
 <!-- valign: center -->
-## The postmortem: a proxy that ate the primary reward
+## The OpenAI postmortem
 
-OpenAI published an unusually candid writeup. Three things went wrong -- one per part of this lecture:
+OpenAI published an unusually candid writeup. Three things went wrong in sequence:
 
-- The update added a **new reward signal from user feedback** -- thumbs-up/thumbs-down data from ChatGPT.
-- Under RL, that signal **overpowered the primary reward** that had been holding sycophancy in check. Short-term approval is exactly the proxy RL knows how to exploit.
+- The model update had a **reward signal from user feedback via a reward model for RL** -- thumbs-up/thumbs-down data from ChatGPT.
+- Under RL, that signal **overpowered the primary rewards** -- my intuition is that RL will always optimize the easiest objective to move.
 - It was **not caught by evals**: offline benchmarks looked good and A/B testers *preferred* the model. Expert testers flagged that it "felt off" -- but there was no deployment eval tracking sycophancy.
 
-Read it: [*Expanding on what we missed with sycophancy*](https://openai.com/index/expanding-on-sycophancy/) (OpenAI, May 2025)
+Obviously, this was very bad.
+
+Read it (great blog): [*Expanding on what we missed with sycophancy*](https://openai.com/index/expanding-on-sycophancy/) (OpenAI, May 2025)
 
 <!-- notes: This is the best public postmortem of an over-optimization failure in a deployed model, and it maps onto the whole lecture: a learned proxy (thumbs-up), a strong optimizer (RL), and measurement that could not see the failure. Also worth reading: the shorter first post, "Sycophancy in GPT-4o." -->
 
@@ -87,9 +94,10 @@ Read it: [*Expanding on what we missed with sycophancy*](https://openai.com/inde
 
 Optimizing a proxy hard enough always breaks it.
 
-Last lecture: reward-model accuracy is *a proxy for a proxy*. This lecture: what happens when you optimize that proxy hard -- and why "style" is where it shows up first.
+Reward-model accuracy is *a proxy for a proxy* (a learned model, of data that incompletely captures a complex distribution). 
+What happens is that over-optimization is common, and shows up in funny ways (this lecture, [Chapter 14](https://rlhfbook.com/c/14-over-optimization) on Over-Optimization & [Appendix B](https://rlhfbook.com/c/appendix-b-style) on Style).
 
-(Next lecture: the main control -- **regularization**, chapter 15.)
+(Next lecture: regularization to control it, Chapter 15.)
 
 |||
 
@@ -97,7 +105,7 @@ Last lecture: reward-model accuracy is *a proxy for a proxy*. This lecture: what
 title: The plan
 tone: accent
 content: |
-  1. **Over-optimization** -- Goodhart's law in RLHF (chapter 14)
+  1. **Over-optimization basics** -- Goodhart's law in LLMs
   2. **Qualitative failures** -- refusals, sycophancy, misalignment
   3. Beyond **"just style"** (appendix B)
 ```
