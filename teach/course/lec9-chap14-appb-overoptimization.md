@@ -126,24 +126,32 @@ content: |
 
 Colloquially: "When a measure becomes a target, it ceases to be a good measure" [@hoskin1996awful].
 
+<!-- step -->
+
 - RL is a very strong optimizer -- it pulls *all* the available reward out of the environment.
 - In RLHF the reward is a **learned model**, at best *correlated* with downstream quality [@schulman2023proxy].
-- Over-optimization: optimizing the proxy makes the true objective better -- then worse.
+- How over-optimization plays out: optimizing the proxy makes the true objective better early in training -- then worse.
 
 ---
 
 <!-- columns: 50/50 -->
-## Over-optimization is not overfitting
+<!-- notes: Build the left side first (the familiar failure), then the right. The punchline: over-optimization does not show up as a gap between train and held-out data, so no split of the data reveals it -- which is exactly why the April 2025 evals came back clean. Neither failure mode here is about memorizing training data; over-optimization is about gaming a proxy metric. (Chapter 14.) -->
 
-**Overfitting**: the model memorizes training examples instead of the pattern.
+## Over-optimization v. overfitting
 
-Train and held-out metrics measure the *same task* on different data splits.
+**Overfitting**: the model memorizes training examples rather than learning generalizable patterns.
+
+Training accuracy improves while held-out accuracy degrades -- but both metrics measure the *same task* on different data splits.
 
 |||
 
-**Over-optimization**: the model *genuinely improves* on the proxy -- but the metric itself was never quite right [@zhang2018study].
+<!-- step -->
 
-Concrete gaming: verbose, confident-sounding answers that score well; repeating rare tokens that exploit reward-model artifacts.
+**Over-optimization**: the model *genuinely improves* at the proxy objective -- the reward model's scores (including on validation set) -- but that objective diverges from the true goal, actual user satisfaction [@zhang2018study].
+
+It isn't a generalization problem, but a measurement/metric problem.
+
+Gaming it looks like: verbose, confident-sounding answers that score well without being more helpful; repeating rare tokens that hit artifacts in RM training.
 
 ---
 
