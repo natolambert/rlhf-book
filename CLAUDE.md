@@ -120,6 +120,12 @@ To update the footer, edit `book/templates/footer.html`. That's it.
 
 The Citation block (which has a different heading level across pages — h3 on index, h4 on chapters/library) is **not** part of the footer partial and remains inline in each template. Footer asset paths are absolute (`/assets/...`) so they resolve correctly even when 404.html is served as a fallback on an arbitrary URL.
 
+## Slide Conventions (teach/course)
+
+- **Never add `<!-- notes: ... -->` speaker notes to slides** — they get in the
+  way when presenting. Put load-bearing context in the slide body or the PR
+  description instead.
+
 ## Style Notes
 
 - Keep diagrams simple and artist-friendly

@@ -307,7 +307,6 @@ Sequential fine-tuning experiments say otherwise.
 
 Most of these are scaffolding: added to stabilize one setup, simplified away in the next model generation.
 
-<!-- notes: Reward margins extend into direct alignment: RPO integrates reward-model scores into a DPO-style update (Adler et al., Nemotron), and REBEL uses a reward-delta weighting in a regression loss (Gao et al.). -->
 
 ---
 

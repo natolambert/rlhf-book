@@ -68,7 +68,6 @@ messages:
 
 
 
-<!-- notes: Other examples in circulation at the time: praising a "shit on a stick" business plan, endorsing a user's decision to stop their psychiatric medication. This lecture is about why a healthy-looking reward curve produces this behavior. -->
 
 ---
 
@@ -85,7 +84,6 @@ Obviously, this was very bad.
 
 Read it (great blog): [*Expanding on what we missed with sycophancy*](https://openai.com/index/expanding-on-sycophancy/) (OpenAI, May 2025)
 
-<!-- notes: This is the best public postmortem of an over-optimization failure in a deployed model, and it maps onto the whole lecture: a learned proxy (thumbs-up), a strong optimizer (RL), and measurement that could not see the failure. Also worth reading: the shorter first post, "Sycophancy in GPT-4o." -->
 
 ---
 
@@ -135,7 +133,6 @@ Colloquially: "When a measure becomes a target, it ceases to be a good measure" 
 ---
 
 <!-- columns: 50/50 -->
-<!-- notes: Build the left side first (the familiar failure), then the right. The punchline: over-optimization does not show up as a gap between train and held-out data, so no split of the data reveals it -- which is exactly why the April 2025 evals came back clean. Neither failure mode here is about memorizing training data; over-optimization is about gaming a proxy metric. (Chapter 14.) -->
 
 ## Over-optimization v. overfitting
 
@@ -155,14 +152,22 @@ Gaming it looks like: verbose, confident-sounding answers that score well withou
 
 ---
 
+<!-- columns: 60/40 -->
 <!-- img-fill -->
 <!-- img-align: center -->
 <!-- valign: center -->
 <!-- cite-right: gao2023scaling -->
-<!-- notes: The x-axis can equivalently be KL distance from the reference model -- the knob Lecture 10 turns. -->
 ## The shape of over-optimization
 
-![The recurring shape of RLHF training runs: the run looks healthy -- training reward keeps climbing -- but downstream evaluations peak and then decline. The gains come from regions of the reward model that do not map to real usage.](assets/overoptimization.png)
+![](assets/overoptimization.png)
+
+|||
+
+The recurring shape of RLHF training runs: the run looks healthy -- training reward keeps climbing -- but downstream evaluations peak and then decline.
+
+The gains come from regions of the reward model that do not map to real usage.
+
+Formalized in *[Scaling Laws for Reward Model Overoptimization](https://arxiv.org/abs/2210.10760)* (Gao, Schulman, Hilton, 2023) -- next slide.
 
 ---
 
@@ -171,8 +176,7 @@ Gaming it looks like: verbose, confident-sounding answers that score well withou
 <!-- img-align: center -->
 <!-- valign: center -->
 <!-- cite-right: gao2023scaling -->
-<!-- notes: Proxy RM (dashed) vs gold RM (solid), colored by RM size. The gap between dashed and solid IS the over-optimization. Smaller RMs turn over earlier and harder. Note the x-axes: best-of-n spends ~10 nats of KL where RL spends ~100 -- RL is the far more aggressive optimizer. -->
-## The real curves: scaling laws for RM over-optimization
+## Scaling laws for RM over-optimization (seminal paper)
 
 ![**Best-of-n**: gold reward (solid) flattens and falls while the proxy (dashed) keeps climbing.](assets/gao-overopt-bon.png)
 
@@ -182,14 +186,47 @@ Gaming it looks like: verbose, confident-sounding answers that score well withou
 
 ---
 
+<!-- columns: 55/45 -->
+<!-- img-fill -->
+<!-- img-align: center -->
+<!-- valign: center -->
+<!-- cite-right: gao2023scaling -->
+## Scaling laws for RM over-optimization (seminal paper)
+
+![](assets/gao-overopt-rl.png)
+
+|||
+
+<div class="text-sm">
+
+The setup, since humans are too expensive to query during training:
+
+- A 6B **"gold" RM stands in for ground-truth preferences** -- it labels the comparison data.
+- Smaller **proxy RMs (3M-3B)** are trained on those labels; RL optimizes *the proxy only*.
+- Score the policy with both. The proxy (dashed) climbs forever; the gold (solid) peaks and falls.
+
+Larger proxy RMs turn over later and more gently. And since gold-labels-train-proxy is another proxy, real models diverge slightly differently.
+
+</div>
+
+---
+
+<!-- columns: 55/45 -->
 <!-- img-fill -->
 <!-- img-align: center -->
 <!-- valign: center -->
 <!-- cite-right: bai2022training -->
-<!-- notes: The setup, briefly: split the preference comparisons in half and train two separate 52B preference models -- a "train PM" and a "test PM". RL against the train PM only; score with both. The x-axis is sqrt(KL) from the initial policy, because Bai et al. found reward rises roughly *linearly* in sqrt(KL) during RLHF -- so it is a natural measure of "how far the policy has moved". The two curves track each other early and separate around 150K samples: further gains on the train PM stop transferring. That gap is the policy finding non-robust directions in the train PM, not real improvement. Their caveats: the two PMs may share correlated robustness failures, so this understates the problem; and larger PMs were consistently more robust. -->
 ## Measuring it: train vs. test reward models
 
-![Split the preference data in half and train two reward models. Gains against the train RM stop transferring to the held-out RM around 150K samples. Bai et al., 2022 (CC-BY).](assets/anthropic_overoptimization.png)
+![](assets/anthropic_overoptimization.png)
+
+|||
+
+Anthropic's version of over-opt:
+
+- **Split the preference data in half** and train two 52B preference models -- a *train PM* and a *test PM*.
+- RL against the train PM only; score the policy with both.
+- The x-axis is $\sqrt{D_{\mathrm{KL}}}$ from the initial policy (how much policy has changed).
 
 ---
 
@@ -203,6 +240,8 @@ Recurring signatures in early chat models:
 - Pandering: self-doubt, over-apologizing, sycophancy [@sharma2023towards]
 - Misaligned behavior such as over-refusals
 
+"Javascript, Javascript, Javascript, Javascript, Javascript, Javascript, Javascript,..."
+
 The preference-data biases from Lecture 8 -- sycophancy, verbosity, formatting -- amplified into policy behavior.
 
 ---
@@ -212,11 +251,10 @@ The preference-data biases from Lecture 8 -- sycophancy, verbosity, formatting -
 
 **John Schulman, ICML 2023 invited talk -- "Proxy objectives in reinforcement learning from human feedback"** [@schulman2023proxy]
 
-The clearest statement of the framing this whole lecture rests on: RLHF is **a chain of approximations**, and every link widens the gap between what you wanted and what you optimized.
+One of the great ones on this topic.
 
 [icml.cc/virtual/2023/invited-talk/21549](https://icml.cc/virtual/2023/invited-talk/21549)
 
-<!-- notes: Given in the middle of the ChatGPT era by the person running RLHF at OpenAI at the time. Still the best hour on why the proxy is the problem. -->
 
 ---
 
@@ -267,7 +305,6 @@ Mitigations in use:
 
 The main lever in practice: **the KL penalty** -- the subject of **Lecture 10**.
 
-<!-- notes: Also discussed in the chapter: implicit user feedback (re-rolls, closing the tab) as a future signal, with the risk that smoother reward surfaces are easier to exploit; alternative pairwise losses like Mallows and Plackett-Luce. -->
 
 ---
 
@@ -362,6 +399,19 @@ Preference tuning reliably boosts LLM-as-a-judge chat evals (AlpacaEval, MT-Benc
 |||
 
 ![Results from the Direct Nash Optimization paper claiming a 7B model outperforming GPT-4 on AlpacaEval. Rosset et al., 2024 (CC-BY).](assets/dno-figure.png)
+
+---
+
+<!-- valign: center -->
+## Llama 4's Chatbot Arena special (April 2025)
+
+Meta's Llama 4 launch headlined Maverick at **ELO 1417 -- #2 on Chatbot Arena** ... via "an experimental chat version."
+
+- The model on the leaderboard was **not the released model**: a variant tuned for Arena voters -- long, emoji-filled, relentlessly enthusiastic answers. Same name, drastically different behavior on LMArena vs. every other provider.
+- The released Maverick is a fine model with a reasonable tone; the Arena special reads as juvenile. When the real model was ranked later, it landed far down the leaderboard, and LMArena changed its policies in response.
+- The lesson for this lecture: **a human-preference leaderboard is just another proxy.** Optimize it directly and you get a model people vote for in A/B tests but don't want to use -- the same failure as the sycophancy postmortem, in public.
+
+I wrote about it at the time: [*Llama 4: Did Meta just push the panic button?*](https://www.interconnects.ai/p/llama-4) (Interconnects, April 2025)
 
 ---
 
