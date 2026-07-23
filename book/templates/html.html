@@ -47,6 +47,18 @@ $endif$
 $if(keywords)$
   <meta name="keywords" content="$for(keywords)$$keywords$$sep$, $endfor$" />
 $endif$
+
+  <!-- Google Scholar / Highwire Press citation tags so the book is indexed as a
+       citable work (not just a website). See
+       https://scholar.google.com/intl/en/scholar/inclusion.html
+       Kept consistent with the arXiv record (arXiv:2504.12501) -- matching title,
+       author, and year lets Scholar group both versions into one citation cluster.
+       Only emitted on the canonical index.html (chapter pages use chapter.html). -->
+  <meta name="citation_title" content="$if(title)$$title$$else$Reinforcement Learning from Human Feedback$endif$" />
+  <meta name="citation_author" content="Lambert, Nathan" />
+  <meta name="citation_publication_date" content="2025" />
+  <meta name="citation_pdf_url" content="https://rlhfbook.com/book.pdf" />
+
   <!-- <title>$if(title-prefix)$$title-prefix$ – $endif$$pagetitle$</title> -->
    <!-- SEO and Open Graph titles -->
   <title>$if(seo-title)$$seo-title$$else$RLHF Book: Reinforcement Learning from Human Feedback and LLM Post-Training$endif$</title>
