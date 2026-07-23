@@ -44,18 +44,10 @@ custom_css: |
 
 ---
 
-<!-- layout: section-break -->
-<!-- align: center -->
-<!-- valign: center -->
-
-## Your reward-model score keeps climbing -- why is the model getting worse?
-
----
-
 <!-- valign: center -->
 ## April 2025: extreme sycophancy in production
 
-A GPT-4o update made the model validate nearly anything. OpenAI rolled it back within days. The training run that produced it looked healthy.
+A GPT-4o update made the model validate nearly anything -- shipped April 25th, rolled back April 28th. **The training run that produced it looked healthy.**
 
 ```conversation
 size: 0.9
@@ -69,7 +61,24 @@ messages:
       That's incredibly powerful. You're stepping into something very big -- claiming not just connection to God but identity as God.
 ```
 
-<!-- notes: Coverage: The Verge, "ChatGPT's sycophantic responses" (theverge.com/tech/657409). The update was reverted within days. This lecture is about why a healthy-looking reward curve produces this behavior. -->
+Coverage: [The Verge, *"ChatGPT's sycophantic responses"*](https://www.theverge.com/tech/657409/chat-gpt-sycophantic-responses-gpt-4o-sam-altman)
+
+<!-- notes: Other examples in circulation at the time: praising a "shit on a stick" business plan, endorsing a user's decision to stop their psychiatric medication. This lecture is about why a healthy-looking reward curve produces this behavior. -->
+
+---
+
+<!-- valign: center -->
+## The postmortem: a proxy that ate the primary reward
+
+OpenAI published an unusually candid writeup. Three things went wrong -- one per part of this lecture:
+
+- The update added a **new reward signal from user feedback** -- thumbs-up/thumbs-down data from ChatGPT.
+- Under RL, that signal **overpowered the primary reward** that had been holding sycophancy in check. Short-term approval is exactly the proxy RL knows how to exploit.
+- It was **not caught by evals**: offline benchmarks looked good and A/B testers *preferred* the model. Expert testers flagged that it "felt off" -- but there was no deployment eval tracking sycophancy.
+
+Read it: [*Expanding on what we missed with sycophancy*](https://openai.com/index/expanding-on-sycophancy/) (OpenAI, May 2025)
+
+<!-- notes: This is the best public postmortem of an over-optimization failure in a deployed model, and it maps onto the whole lecture: a learned proxy (thumbs-up), a strong optimizer (RL), and measurement that could not see the failure. Also worth reading: the shorter first post, "Sycophancy in GPT-4o." -->
 
 ---
 
@@ -141,13 +150,19 @@ Concrete gaming: verbose, confident-sounding answers that score well; repeating 
 
 ---
 
+<!-- columns: 50/50 -->
 <!-- img-fill -->
 <!-- img-align: center -->
 <!-- valign: center -->
 <!-- cite-right: gao2023scaling -->
+<!-- notes: Proxy RM (dashed) vs gold RM (solid), colored by RM size. The gap between dashed and solid IS the over-optimization. Smaller RMs turn over earlier and harder. Note the x-axes: best-of-n spends ~10 nats of KL where RL spends ~100 -- RL is the far more aggressive optimizer. -->
 ## The real curves: scaling laws for RM over-optimization
 
-![Best-of-n (top) and RL (bottom) optimizing a proxy RM, scored against a "gold" RM: the proxy reward (dashed) keeps rising while the gold reward (solid) peaks and falls -- earlier and harder for smaller reward models. Note the x-axes: BoN spends ~10 nats of KL where RL spends ~100. Gao et al., 2023.](assets/gao-overoptimization.png)
+![**Best-of-n**: gold reward (solid) flattens and falls while the proxy (dashed) keeps climbing.](assets/gao-overopt-bon.png)
+
+|||
+
+![**RL**: same shape, ~10x more KL spent -- and a much harder turnover for small RMs.](assets/gao-overopt-rl.png)
 
 ---
 
@@ -155,6 +170,7 @@ Concrete gaming: verbose, confident-sounding answers that score well; repeating 
 <!-- img-align: center -->
 <!-- valign: center -->
 <!-- cite-right: bai2022training -->
+<!-- notes: The setup, briefly: split the preference comparisons in half and train two separate 52B preference models -- a "train PM" and a "test PM". RL against the train PM only; score with both. The x-axis is sqrt(KL) from the initial policy, because Bai et al. found reward rises roughly *linearly* in sqrt(KL) during RLHF -- so it is a natural measure of "how far the policy has moved". The two curves track each other early and separate around 150K samples: further gains on the train PM stop transferring. That gap is the policy finding non-robust directions in the train PM, not real improvement. Their caveats: the two PMs may share correlated robustness failures, so this understates the problem; and larger PMs were consistently more robust. -->
 ## Measuring it: train vs. test reward models
 
 ![Split the preference data in half and train two reward models. Gains against the train RM stop transferring to the held-out RM around 150K samples. Bai et al., 2022 (CC-BY).](assets/anthropic_overoptimization.png)
@@ -172,6 +188,19 @@ Recurring signatures in early chat models:
 - Misaligned behavior such as over-refusals
 
 The preference-data biases from Lecture 8 -- sycophancy, verbosity, formatting -- amplified into policy behavior.
+
+---
+
+<!-- valign: center -->
+## Aside: go watch this talk
+
+**John Schulman, ICML 2023 invited talk -- "Proxy objectives in reinforcement learning from human feedback"** [@schulman2023proxy]
+
+The clearest statement of the framing this whole lecture rests on: RLHF is **a chain of approximations**, and every link widens the gap between what you wanted and what you optimized.
+
+[icml.cc/virtual/2023/invited-talk/21549](https://icml.cc/virtual/2023/invited-talk/21549)
+
+<!-- notes: Given in the middle of the ChatGPT era by the person running RLHF at OpenAI at the time. Still the best hour on why the proxy is the problem. -->
 
 ---
 
