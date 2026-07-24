@@ -366,7 +366,7 @@ Another common thing was this:
 
 Was easy to juice chattiness at the expense of other skills. 
 - Preference methods run in loops or with abundant data can trade math and coding for chat performance [@ivison2024unpacking]
-- OLMo 3 shipped the checkpoint with higher math/code/reasoning scores over ones that maximized LLM-judged chat benchmarks [@teamolmo2025olmo3]
+- Olmo 3 shipped the checkpoint with higher math/code/reasoning scores over ones that maximized LLM-judged chat benchmarks [@teamolmo2025olmo3]
 
 ---
 
@@ -412,7 +412,7 @@ I wrote about it at the time: [*Llama 4: Did Meta just push the panic button?*](
 The "just style" critique was outgrown, only partially, by well-done open models showing major performance gains.
 
 - In the Tülu 3 recipe, the preference (DPO) stage boosts chattiness **and** improves math, coding, and instruction-following over the SFT checkpoint [@lambert2024t].
-- Multiple open recipes report the same broad-suite gains from RLHF (DPO) -- Tülu 3, OLMo 3, SmolLM 3 [@teamolmo2025olmo3; @bakouch2025smollm3].
+- Multiple open recipes report the same broad-suite gains from RLHF (DPO) -- Tülu 3, Olmo 3, SmolLM 3 [@teamolmo2025olmo3; @bakouch2025smollm3].
 
 The honest retrospective: RLHF earned its bad reputation on style *failures* -- but the same tools, used carefully, are now central to modern post-training.
 
