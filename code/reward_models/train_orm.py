@@ -45,7 +45,7 @@ from reward_models.base import (
 # =============================================================================
 
 DEFAULT_MODEL_ID = "Qwen/Qwen3-1.7B-Base"
-DEFAULT_DATASET = "gsm8k"
+DEFAULT_DATASET = "openai/gsm8k"
 DEFAULT_SAMPLES = 2000
 DEFAULT_BATCH_SIZE = 2
 DEFAULT_GRAD_ACCUM = 16
