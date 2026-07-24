@@ -27,7 +27,7 @@ custom_css: |
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
 
-# Lecture 10: Regularization Tools & Understanding How Post-Training Changes Models
+# Lecture 10: Regularization Tools and The Mechanics of SFT vs. RL
 
 <div class="colloquium-title-eyebrow">rlhfbook.com</div>
 
