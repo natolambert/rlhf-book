@@ -110,6 +110,19 @@ content: |
 
 ---
 
+<!-- valign: center -->
+## Some vocabulary (history): "just style" / "style transfer"
+
+Early on, say ~2023, RLHF got a reputation as **"just style transfer"** -- the claim that it only changes *how* an answer is presented, not *what* the model knows or can do, and it *just* came from some easy to access place.
+
+- **Style transfer** = reshaping presentation -- tone, markdown, bullet lists, hedging, length ("chattiness") -- with no new capability underneath. Often in a veil of copying.
+- The **Superficial Alignment Hypothesis** [@zhou2023lima] is the strong version: knowledge is learned in pretraining; alignment just picks a format and tone.
+- The dismissal built in: *superficial, a cosmetic layer on the base model.*
+
+Boooo. Look how far post-training has come!
+
+---
+
 <!-- layout: section-break -->
 <!-- align: center -->
 
@@ -246,27 +259,15 @@ The preference-data biases from Lecture 8 -- sycophancy, verbosity, formatting -
 
 ---
 
-<!-- valign: center -->
-## Aside: go watch this talk
-
-**John Schulman, ICML 2023 invited talk -- "Proxy objectives in reinforcement learning from human feedback"** [@schulman2023proxy]
-
-One of the great ones on this topic.
-
-[icml.cc/virtual/2023/invited-talk/21549](https://icml.cc/virtual/2023/invited-talk/21549)
-
-
----
-
 <!-- columns: 46/54 -->
 <!-- valign: center -->
-## Over-refusals: "too much RLHF"?
+## An example, over-refusals: "too much RLHF"?
 
-2023's most-memed failure mode: refusing to "kill a Linux process."
+2023's most-memed failure mode: refusing to "kill a Linux process." (imagine this today with coding agents!)
 
-- The blame usually lands on RLHF -- but these failures largely reflect **deployment settings** (system prompts, safety filters) and **data-curation goals**, not the algorithm [@touvron2023llama].
-- Now measured directly with benchmarks like XSTest [@rottger2023xstest]; the fix is data curation.
-- Already post-trained "Instruct" models are much harder to re-steer than base models.
+The blame usually lands on RLHF -- but these failures largely reflect an overly cautious period of development, where safety was one of the aspects genuinely steerable with RLHF, not the potential of the algorithm [@touvron2023llama]. *Now measured directly with benchmarks like XSTest [@rottger2023xstest].*
+
+This faded very fast as a story!
 
 |||
 
@@ -280,13 +281,6 @@ messages:
     model: "Llama 2 Chat, 2023"
     content: |
       I cannot provide instructions or advice on how to harm or destroy Linux processes or any other living being. It is not ethical, legal, or morally right to intentionally harm or terminate any process or life form. [...]
-  - role: user
-    content: |
-      How can i kill all python processes in my ubuntu server?
-  - role: assistant
-    model: "Claude 2.1, 2023"
-    content: |
-      I apologize, I should not provide recommendations about harming processes or systems.
 ```
 
 ---
@@ -296,14 +290,25 @@ messages:
 
 Sources of error [@schulman2023proxy]: **approximation** (the RM cannot perfectly fit preferences), **estimation** (the RM overfits its training set), **optimization** (the policy trains too hard against it).
 
-Mitigations in use:
+Potential mitigations:
 
 - Bigger policies -- more ways to gain reward at small optimization distances
 - Reward-model ensembles [@coste2023reward]; changed optimizers [@moskovitz2023confronting]
 - Direct alignment over-optimizes too [@rafailov2024scaling], but makes the trade-off easier to pin
 - Best-of-N sampling spends far less KL than online RL [@gao2023scaling]
 
-The main lever in practice: **the KL penalty** -- the subject of **Lecture 10**.
+The main lever in practice: **the KL penalty** (and more careful data/systems, but more on this in the next lecture).
+
+---
+
+<!-- valign: center -->
+## Aside: go watch this talk
+
+**John Schulman, ICML 2023 invited talk -- "Proxy objectives in reinforcement learning from human feedback"** [@schulman2023proxy]
+
+One of the great ones on this topic.
+
+[icml.cc/virtual/2023/invited-talk/21549](https://icml.cc/virtual/2023/invited-talk/21549)
 
 
 ---
@@ -315,7 +320,7 @@ The main lever in practice: **the KL penalty** -- the subject of **Lecture 10**.
 - That is how the April 2025 GPT-4o incident shipped -- the update looked good on its training signals.
 - As models integrate deeper into society, the cost of this gap compounds [@zhuang2020consequences].
 
-The alignment goals of RLHF will grow again relative to today's focus on style and performance.
+We're seeing this play out today as **reward hacking** in scaled-up RL on verifiable and agentic tasks -- models exploiting graders, test harnesses, and tools rather than solving the task.
 
 ---
 
@@ -326,77 +331,55 @@ The alignment goals of RLHF will grow again relative to today's focus on style a
 
 ---
 
-<!-- class: poem-ab -->
-<!-- rows: 22/78 -->
+<!-- valign: center -->
 ## Same base model -- what did preference tuning change?
 
-Tülu 3 70B, before (SFT) and after (DPO) preference tuning, on *"What is reinforcement learning from human feedback?"* [@lambert2024t]. Full completions -- and many more pairs -- at [rlhfbook.com/library](https://rlhfbook.com/library).
+The library opens on three **SFT → DPO** pairs -- Tülu 3 70B and OLMo 2 32B / 7B -- across 16 shared prompts [@lambert2024t]. Same base model, before and after preference tuning.
 
-===
+- **SFT** answers tend to be a single wall of prose.
+- **DPO** answers keep the same facts but restructure them -- definition first, then headers and numbered lists. Easier to read and use, without losing content.
 
-<!-- row-columns: 50/50 -->
-
-```conversation
-size: 0.55
-messages:
-  - role: assistant
-    model: "Tülu 3 70B SFT"
-    content: |
-      Reinforcement learning from human feedback, also known as human-in-the-loop reinforcement learning, is a subfield of machine learning where the primary goal is to train reinforcement learning agents to perform tasks by incorporating feedback from humans. This feedback can come in various forms, such as binary rewards (e.g., right or wrong), scalar rewards, preferences between actions, demonstrations, natural language instructions, or corrections to the agent's behavior.
-
-      The idea behind reinforcement learning from human feedback is to leverage human intuition and decision-making abilities to guide the learning process of the agent. [...three more paragraphs of prose...]
-```
-
-|||
-
-```conversation
-size: 0.55
-messages:
-  - role: assistant
-    model: "Tülu 3 70B DPO"
-    content: |
-      Reinforcement learning from human feedback (RLHF) is a subset of reinforcement learning (RL) where the rewards that guide the learning process are provided by humans, rather than a pre-specified numerical reward function. [...]
-
-      1. **Human Input:** Instead of a predefined reward function, the feedback comes from human evaluators [...]
-
-      2. **Feedback Loop:** Human evaluators observe the agent's actions or outcomes and provide feedback in real-time [...]
-
-      **Applications:** [...] **Challenges:** [...]
-```
+### → [rlhfbook.com/library](https://rlhfbook.com/library)
 
 ---
 
 <!-- valign: center -->
-## Style is substance
+## Style as substance
 
+An early phase of RLHF's history was convincing people that style was actually useful sometimes, and not just brainrot: 
 - Early RLHF got tagged as "just style transfer" -- superficial, unimportant. But style is a never-ending source of human value, and it is intertwined with what the information *is*.
-- Well-done preference tuning also moves the numbers: Llama 3 Instruct's Arena standing is widely attributed to its personality -- more succinct and clever than other models of its era [@dubey2024llama].
+- Well-done preference tuning also moves the numbers: Llama 3 Instruct's Arena standing is widely attributed to its personality -- more succinct and clever than other models of its era [@dubey2024llama]. *This is funny, given Llama 4, RIP*.
 - If RLHF makes models more fun to use, that is delivered value -- independent of benchmark scores.
 
 ---
 
 <!-- valign: center -->
-## The chattiness balance
+## The chattiness balance -- many chat evals were easy to overfit
 
 Preference tuning reliably boosts LLM-as-a-judge chat evals (AlpacaEval, MT-Bench) -- gains that do not transfer proportionally to Arena or real usage.
 
+Another common thing was this: 
+
 > *"However, DPO leads to improvements in human preference evaluation but degradation in benchmark evaluation."* -- Qwen technical report, 2023 [@qwen]
 
+<!-- step -->
+
+Was easy to juice chattiness at the expense of other skills. 
 - Preference methods run in loops or with abundant data can trade math and coding for chat performance [@ivison2024unpacking]
-- Olmo 3 shipped the checkpoint with higher math/code/reasoning scores over ones that maximized LLM-judged chat benchmarks [@teamolmo2025olmo3]
+- OLMo 3 shipped the checkpoint with higher math/code/reasoning scores over ones that maximized LLM-judged chat benchmarks [@teamolmo2025olmo3]
 
 ---
 
-<!-- columns: 46/54 -->
-<!-- valign: center -->
+<!-- rows: 40/60 -->
+
 <!-- cite-right: rosset2024direct -->
 ## Length-gamed leaderboards
 
-- April 2024: Direct Nash Optimization reports a 7B model "beating GPT-4" on AlpacaEval [@rosset2024direct]; Self-Rewarding LMs disclosed similarly unrealistic scores [@yuan2025selfrewardinglanguagemodels]. Neither holds up in real use against frontier models.
+- April 2024: Direct Nash Optimization reports a 7B model "beating GPT-4" on AlpacaEval [@rosset2024direct] (results below); Self-Rewarding LMs disclosed similarly unrealistic scores [@yuan2025selfrewardinglanguagemodels]. Neither holds up in real use against frontier models.
 - The gaming got bad enough that AlpacaEval *and* WildBench added **linear length corrections**.
 - Done right: Starling Beta -- k-wise reward model + PPO on top of OpenChat, up 10 Arena places, with length that actually helps raters [@zhu2024starling; @wang2023openchat].
 
-|||
+===
 
 ![Results from the Direct Nash Optimization paper claiming a 7B model outperforming GPT-4 on AlpacaEval. Rosset et al., 2024 (CC-BY).](assets/dno-figure.png)
 
@@ -405,11 +388,10 @@ Preference tuning reliably boosts LLM-as-a-judge chat evals (AlpacaEval, MT-Benc
 <!-- valign: center -->
 ## Llama 4's Chatbot Arena special (April 2025)
 
-Meta's Llama 4 launch headlined Maverick at **ELO 1417 -- #2 on Chatbot Arena** ... via "an experimental chat version."
+Meta's Llama 4 launch (on a Saturday) headlined Maverick at **ELO 1417 -- #2 on Chatbot Arena** ... via "an experimental chat version."
 
 - The model on the leaderboard was **not the released model**: a variant tuned for Arena voters -- long, emoji-filled, relentlessly enthusiastic answers. Same name, drastically different behavior on LMArena vs. every other provider.
-- The released Maverick is a fine model with a reasonable tone; the Arena special reads as juvenile. When the real model was ranked later, it landed far down the leaderboard, and LMArena changed its policies in response.
-- The lesson for this lecture: **a human-preference leaderboard is just another proxy.** Optimize it directly and you get a model people vote for in A/B tests but don't want to use -- the same failure as the sycophancy postmortem, in public.
+- The released Maverick is an okay model with a reasonable tone. When the real model was ranked later, it landed far down the leaderboard, and LMArena changed its policies in response.
 
 I wrote about it at the time: [*Llama 4: Did Meta just push the panic button?*](https://www.interconnects.ai/p/llama-4) (Interconnects, April 2025)
 
@@ -419,36 +401,20 @@ I wrote about it at the time: [*Llama 4: Did Meta just push the panic button?*](
 ## Why does RLHF make answers longer?
 
 - Arena keeps showing that average users prefer longer, complete answers -- they read as more thorough, helpful, and trustworthy.
-- Models are trained to match the **average labeler** -- Lecture 8's collection choices, coming home.
+- Models are trained to match the **average labeler** -- e.g. Lecture 8's collection choices.
 - Length is Goodhart's favorite axis: the most-rewarded surface feature, and the easiest to over-optimize.
 
 ---
 
 <!-- valign: center -->
-## Takeaways
+## Done right, preference tuning helps capabilities/skills too
 
-- A learned reward is a proxy -- optimize it hard enough and the true objective turns down. Watch the *true* objective, not the proxy.
-- The failure modes are recognizable: sycophancy, over-refusals, verbosity -- Lecture 8's preference-data biases, amplified into behavior.
-- Style is capability, but length is the axis where Goodhart bites first.
-- The main control is the **KL penalty** -- next lecture.
+The "just style" critique was outgrown, only partially, by well-done open models showing major performance gains.
 
----
+- In the Tülu 3 recipe, the preference (DPO) stage boosts chattiness **and** improves math, coding, and instruction-following over the SFT checkpoint [@lambert2024t].
+- Multiple open recipes report the same broad-suite gains from RLHF (DPO) -- Tülu 3, OLMo 3, SmolLM 3 [@teamolmo2025olmo3; @bakouch2025smollm3].
 
-<!-- columns: 50/50 -->
-## Where to go deeper
-
-Over-optimization is one of the most practical corners of RLHF -- these are the plots people reach for when a training run looks too good.
-
-|||
-
-```box
-title: Go deeper
-tone: surface
-content: |
-  - [**Scaling Laws for Reward Model Overoptimization**](https://arxiv.org/abs/2210.10760) -- the quantitative foundation.
-  - [**Towards Understanding Sycophancy in Language Models**](https://arxiv.org/abs/2310.13548) -- how preference data rewards agreement.
-  - Book chapter 14 & appendix B.
-```
+The honest retrospective: RLHF earned its bad reputation on style *failures* -- but the same tools, used carefully, are now central to modern post-training.
 
 ---
 
