@@ -12,6 +12,9 @@ search-title: "Chapter 14: Over-Optimization"
 meta-description: "How RLHF over-optimization and reward hacking happen, and why they matter for post-training and alignment."
 next-chapter: "Regularization"
 next-url: "15-regularization"
+lectures:
+  - video: "https://www.youtube.com/watch?v=y04JhXpiI4s&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y"
+    label: "Lecture 9: Over-Optimization and RLHF's Bad Reputation"
 ---
 
 # Over-Optimization

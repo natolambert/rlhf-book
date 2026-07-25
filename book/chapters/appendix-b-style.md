@@ -12,6 +12,9 @@ search-title: "Appendix B: Beyond \"Just Style\""
 meta-description: "Style, calibration, and information presentation issues that RLHF and post-training shape in language models."
 next-chapter: "Practical Issues"
 next-url: "appendix-c-practical"
+lectures:
+  - video: "https://www.youtube.com/watch?v=y04JhXpiI4s&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y"
+    label: "Lecture 9: Over-Optimization and RLHF's Bad Reputation"
 ---
 
 # Beyond "Just Style"
