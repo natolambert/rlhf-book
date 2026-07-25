@@ -1,5 +1,5 @@
 ---
-title: "Lecture 10: Regularization Tools & Understanding How Post-Training Changes Models"
+title: "Lecture 10: Regularization Tools and The Mechanics of SFT vs. RL"
 author: "Nathan Lambert"
 fonts:
   heading: "Rubik"
