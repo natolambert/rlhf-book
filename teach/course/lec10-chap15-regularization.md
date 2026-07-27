@@ -465,20 +465,28 @@ Most of these are scaffolding: added to stabilize one setup, simplified away in 
 ---
 
 <!-- valign: center -->
+<!-- animate: bullets -->
 ## 2026: the trust region is moving -- from the reference to the sampler
 
 Tool use is changing what regularization has to do. In agentic recipes, the KL-to-reference penalty is disappearing:
 
-- GLM-5 removes it outright -- "to accelerate RL improvement" [@glm5team2026glm5]. Kimi K3 never had one [@moonshot2026kimik3]. In our TMax terminal-agent recipe we measured the trade-off: a small KL reduced the severity of collapse but lowered reward, so the final recipe is $\beta = 0$ [@ivison2026tmax].
+- GLM-5 removes it outright -- "to accelerate RL improvement" [@glm5team2026glm5]. Kimi K3 never had one [@moonshot2026kimik3].
+- In our TMax terminal-agent recipe we measured the trade-off: a small KL reduced the severity of collapse but lowered reward, so the final recipe is $\beta = 0$ [@ivison2026tmax].
+- Why tool use forces the change: 20+ turn trajectories, async/partial rollouts, and train-vs-inference engine mismatch make drift from the *sampler* the binding failure, not drift from init. (In TMax, instabilities appear past ~10 assistant turns [@ivison2026tmax].)
 
-<!-- step -->
+---
 
-What replaced it: **stay close to the distribution you actually sampled from.**
+<!-- rows: 55/45 -->
+<!-- valign: center -->
+<!-- cite-right: qi2026dppo -->
+## What replaced it: a trust region on the sampling distribution
 
-- DPPO masks tokens by a *directly estimated* divergence between the rollout and training policies, instead of PPO's noisy per-token ratio clip [@qi2026dppo]. GLM's IcePop [@glm5team2026glm5] and Kimi's log-ratio interval [@moonshot2026kimik3] do the same job -- gradients masked, not clipped.
-- Why tool use forces this: 20+ turn trajectories, async/partial rollouts, and train-vs-inference engine mismatch make drift from the *sampler* the binding failure, not drift from init. (In TMax, instabilities appear past ~10 assistant turns [@ivison2026tmax].)
+- **DPPO** masks tokens by a *directly estimated* divergence between the rollout and training policies (binary TV), instead of PPO's per-token ratio clip -- the ratio is a noisy one-sample estimate of that divergence [@qi2026dppo]. GLM's IcePop [@glm5team2026glm5] and Kimi's log-ratio interval [@moonshot2026kimik3] do the same job: gradients masked, not clipped.
+- This is not the reference-anchored reverse KL from this lecture -- it is **drift control against the sampling distribution**, a trust region on each update rather than a penalty in the objective.
 
-Note what changed: this is not the reference-anchored reverse KL from this lecture. It is **drift control against the sampling distribution** -- a trust region on each update, not a divergence penalty in the objective.
+===
+
+![The motivation, from the DPPO paper: for the same rollout tokens, per-token probability ratios (left) explode at low probabilities while the directly-estimated TV divergence (right) stays stable. Qi et al., 2026.](assets/dppo-ratio-vs-tv.png)
 
 ---
 
@@ -487,8 +495,7 @@ Note what changed: this is not the reference-anchored reverse KL from this lectu
 
 - The KL penalty is the explicit control: a **reverse KL**, estimated on the policy's own samples. 
 - The KL-regularized RL objective is a reverse KL minimization -- mode-seeking toward a reward-shaped reference policy -- while SFT is the forward direction, mass-covering toward the data.
-- Even with no penalty, on-policy RL is implicitly regularized -- SFT memorizes, RL generalizes. Forgetting tracks KL drift (RL's razor), and **on-policy data** -- not negative gradients -- is why RL forgets less.
-- Most other regularizers are scaffolding: they stabilize one setup and disappear in the next generation.
+- Even with no penalty, on-policy RL is implicitly regularized -- SFT memorizes, RL generalizes. 
 
 ---
 
@@ -505,8 +512,9 @@ Note what changed: this is not the reference-anchored reverse KL from this lectu
 7. Synthetic Data & Modern Post-training *(ch. 12)*
 8. Preferences & Preference Data *(ch. 10-11)*
 9. Over-Optimization & RLHF's Bad Reputation *(ch. 14, app. B)*
-10. **Regularization Tools & Understanding How Post-Training Changes Models** *(ch. 15)* -- *today*
+10. **Regularization** *(ch. 15)* -- *today*
 11. **Evaluation** *(ch. 16)* -- *next (tentative)*
+12. **Basics of tool-use** *(ch. 13)* -- hopefully?
 
 ---
 
