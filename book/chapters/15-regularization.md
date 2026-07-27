@@ -104,6 +104,59 @@ kl_full   = F.kl_div(ref_logprobs, logprobs, reduction='batchmean')
 Some example implementations include [TRL](https://github.com/huggingface/trl/blob/5c21de30ae210e4251ead85517ba8dfe3f210e81/trl/trainer/ppo_trainer.py#L1150) and [Hamish Ivison's Jax Code](https://github.com/hamishivi/EasyLM/blob/main/EasyLM/models/llama/llama_train_ppo.py#L278).
 
 
+## Other Tools to Control Optimization
+
+Within the post-training literature, many prominent models include other methods for regularization that help reach leading performance within their setup.
+These two examples are included to paint a picture for how some leading models have manipulated post-training setups to get stable optimization, rather than as tools that should work explicitly in every setup. 
+Countless more creative solutions can work and will be found!
+
+### Pretraining Gradients
+
+Another way of viewing regularization is that you may have a *dataset* that you want the model to remain close to, as done in InstructGPT [@ouyang2022training] "in order to fix the performance regressions on public NLP datasets".
+To implement this, they modify the training objective for RLHF.
+Taking @eq:rl_start, we can transform this into an objective function to optimize by sampling from the RL policy model, completions $y$ from prompts $x$ in the RL dataset used for RLHF, which yields:
+$$
+J(\theta) = \mathbb{E}_{(x,y) \sim \mathcal{D}_{\pi_{\text{RL},\theta}}} \left[ r_{\theta}(y \mid x) - \lambda r_{\text{reg.}} \right]
+$$ {#eq:objective_regularization}
+
+Then, we can add an additional reward for higher probabilities on the standard autoregressive next-token prediction loss used during pretraining, over a set of documents sampled from the pretraining corpus (or another dataset) to maintain textual coherence:
+
+$$
+J(\theta) = \mathbb{E}_{(x,y) \sim \mathcal{D}_{\pi_{\text{RL},\theta}}} \left[ r_{\theta}(y \mid x) - \lambda r_{\text{reg.}} \right] + \gamma \mathbb{E}_{x \sim \mathcal{D}_{\text{pretrain}}} \left[ \log(\pi_{\text{RL},\theta}(x)) \right]
+$$ {#eq:objective_pretraining}
+
+Recent work proposed using a negative log-likelihood term to balance the optimization of Direct Preference Optimization (DPO) [@pang2024iterative].
+Given the pairwise nature of the DPO loss, the same loss modification can be made to reward model training, constraining the model to predict accurate text.
+
+The optimization follows as a modification to DPO.
+$$\mathcal{L}_{\text{DPO+NLL}} = \mathcal{L}_{\text{DPO}}(c_i^w, y_i^w, c_i^l, y_i^l \mid x_i) + \alpha \mathcal{L}_{\text{NLL}}(c_i^w, y_i^w \mid x_i)
+$$ {#eq:dpo_nll}
+
+$$
+= -\log \sigma \left( \beta \log \frac{P_\theta(c_i^w, y_i^w \mid x_i)}{P_{\text{ref.}}(c_i^w, y_i^w \mid x_i)} - \beta \log \frac{P_\theta(c_i^l, y_i^l \mid x_i)}{P_{\text{ref.}}(c_i^l, y_i^l \mid x_i)} \right) - \alpha \frac{\log P_\theta(c_i^w, y_i^w \mid x_i)}{|c_i^w| + |y_i^w|},
+$$ {#eq:dpo_nll_expanded}
+
+where $P_{\theta}$ is the trainable policy model, $P_{\text{ref.}}$ is a fixed reference model (often the SFT checkpoint), and $(c_i^w, y_i^w)$ and $(c_i^l, y_i^l)$ denote the winning and losing completions for prompt $x_i$.
+The first term is the standard DPO logistic loss: it increases the margin between the win and loss using the difference of log-likelihood ratios, $\log \tfrac{P_{\theta}}{P_{\text{ref.}}}$, and $\beta$ controls how strongly this preference signal pulls away from the reference.
+The second term is a length-normalized negative log-likelihood penalty on the winning completion, weighted by $\alpha$, which helps keep the preferred text high-likelihood in an absolute language modeling sense rather than only relatively better than the rejected sample.
+
+### Margin-Based Regularization
+
+Controlling the optimization is less well defined in other parts of the RLHF stack.
+Most reward models have no regularization beyond the standard contrastive loss function.
+Direct Alignment Algorithms handle regularization to KL divergence differently, through the $\beta$ parameter (see the [chapter on direct alignment](https://rlhfbook.com/c/08-direct-alignment)).
+
+Llama 2 proposed a margin loss for reward model training [@touvron2023llama]:
+
+$$
+\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) - m(y_c, y_r) \right) \right)
+$$ {#eq:margin_loss}
+
+where $m(y_c, y_r)$ is the margin between two data points $y_c$ and $y_r$ representing the numerical difference in the delta between the ratings of two annotators.
+This is achieved either by having annotators rate the outputs on a numerical scale or by using a quantified ranking method, such as [Likert scales](https://en.wikipedia.org/wiki/Likert_scale).
+
+Reward margins have been used heavily in the direct alignment literature, such as Reward-weighted DPO; Reward-aware Preference Optimization (RPO), which integrates reward model scores into the update rule following a DPO loss [@adler2024nemotron]; and REBEL [@gao2024rebel], which has a reward delta weighting in a regression-loss formulation.
+
 ## Implicit Regularization
 
 The other sections in this chapter describe *explicit* regularization: KL penalties, pretraining gradients, and margin losses that practitioners deliberately add to the training objective.
@@ -266,56 +319,3 @@ Remarkably, they find that on-policy versus offline data fully accounts for the 
 
 Intuitively, on-policy methods sample outputs the model already assigns non-negligible probability to, so each update is constrained to stay near the current distribution. 
 On the other hand, SFT trains on a fixed external distribution that can lie arbitrarily far from what the model currently produces, and each gradient step pulls toward that distant target regardless of the model's own beliefs.
-
-## Other Types of Regularization
-
-Within the post-training literature, many prominent models include other methods for regularization that help reach leading performance within their setup.
-These two examples are included to paint a picture for how some leading models have manipulated post-training setups to get stable optimization, rather than as tools that should work explicitly in every setup. 
-Countless more creative solutions can work and will be found!
-
-### Pretraining Gradients
-
-Another way of viewing regularization is that you may have a *dataset* that you want the model to remain close to, as done in InstructGPT [@ouyang2022training] "in order to fix the performance regressions on public NLP datasets".
-To implement this, they modify the training objective for RLHF.
-Taking @eq:rl_start, we can transform this into an objective function to optimize by sampling from the RL policy model, completions $y$ from prompts $x$ in the RL dataset used for RLHF, which yields:
-$$
-J(\theta) = \mathbb{E}_{(x,y) \sim \mathcal{D}_{\pi_{\text{RL},\theta}}} \left[ r_{\theta}(y \mid x) - \lambda r_{\text{reg.}} \right]
-$$ {#eq:objective_regularization}
-
-Then, we can add an additional reward for higher probabilities on the standard autoregressive next-token prediction loss used during pretraining, over a set of documents sampled from the pretraining corpus (or another dataset) to maintain textual coherence:
-
-$$
-J(\theta) = \mathbb{E}_{(x,y) \sim \mathcal{D}_{\pi_{\text{RL},\theta}}} \left[ r_{\theta}(y \mid x) - \lambda r_{\text{reg.}} \right] + \gamma \mathbb{E}_{x \sim \mathcal{D}_{\text{pretrain}}} \left[ \log(\pi_{\text{RL},\theta}(x)) \right]
-$$ {#eq:objective_pretraining}
-
-Recent work proposed using a negative log-likelihood term to balance the optimization of Direct Preference Optimization (DPO) [@pang2024iterative].
-Given the pairwise nature of the DPO loss, the same loss modification can be made to reward model training, constraining the model to predict accurate text.
-
-The optimization follows as a modification to DPO.
-$$\mathcal{L}_{\text{DPO+NLL}} = \mathcal{L}_{\text{DPO}}(c_i^w, y_i^w, c_i^l, y_i^l \mid x_i) + \alpha \mathcal{L}_{\text{NLL}}(c_i^w, y_i^w \mid x_i)
-$$ {#eq:dpo_nll}
-
-$$
-= -\log \sigma \left( \beta \log \frac{P_\theta(c_i^w, y_i^w \mid x_i)}{P_{\text{ref.}}(c_i^w, y_i^w \mid x_i)} - \beta \log \frac{P_\theta(c_i^l, y_i^l \mid x_i)}{P_{\text{ref.}}(c_i^l, y_i^l \mid x_i)} \right) - \alpha \frac{\log P_\theta(c_i^w, y_i^w \mid x_i)}{|c_i^w| + |y_i^w|},
-$$ {#eq:dpo_nll_expanded}
-
-where $P_{\theta}$ is the trainable policy model, $P_{\text{ref.}}$ is a fixed reference model (often the SFT checkpoint), and $(c_i^w, y_i^w)$ and $(c_i^l, y_i^l)$ denote the winning and losing completions for prompt $x_i$.
-The first term is the standard DPO logistic loss: it increases the margin between the win and loss using the difference of log-likelihood ratios, $\log \tfrac{P_{\theta}}{P_{\text{ref.}}}$, and $\beta$ controls how strongly this preference signal pulls away from the reference.
-The second term is a length-normalized negative log-likelihood penalty on the winning completion, weighted by $\alpha$, which helps keep the preferred text high-likelihood in an absolute language modeling sense rather than only relatively better than the rejected sample.
-
-### Margin-Based Regularization
-
-Controlling the optimization is less well defined in other parts of the RLHF stack.
-Most reward models have no regularization beyond the standard contrastive loss function.
-Direct Alignment Algorithms handle regularization to KL divergence differently, through the $\beta$ parameter (see the [chapter on direct alignment](https://rlhfbook.com/c/08-direct-alignment)).
-
-Llama 2 proposed a margin loss for reward model training [@touvron2023llama]:
-
-$$
-\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) - m(y_c, y_r) \right) \right)
-$$ {#eq:margin_loss}
-
-where $m(y_c, y_r)$ is the margin between two data points $y_c$ and $y_r$ representing the numerical difference in the delta between the ratings of two annotators.
-This is achieved either by having annotators rate the outputs on a numerical scale or by using a quantified ranking method, such as [Likert scales](https://en.wikipedia.org/wiki/Likert_scale).
-
-Reward margins have been used heavily in the direct alignment literature, such as Reward-weighted DPO; Reward-aware Preference Optimization (RPO), which integrates reward model scores into the update rule following a DPO loss [@adler2024nemotron]; and REBEL [@gao2024rebel], which has a reward delta weighting in a regression-loss formulation.

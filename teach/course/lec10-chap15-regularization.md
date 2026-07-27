@@ -361,7 +361,7 @@ Sequential fine-tuning experiments say otherwise.
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 4: Other regularization tools
+## Part 4: Other tools to control optimization
 
 ---
 
