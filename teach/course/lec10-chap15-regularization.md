@@ -476,7 +476,7 @@ Tool use is changing what regularization has to do. In agentic recipes, the KL-t
 
 ---
 
-<!-- rows: 55/45 -->
+<!-- columns: 48/52 -->
 <!-- valign: center -->
 <!-- cite-right: qi2026dppo -->
 ## What replaced it: a trust region on the sampling distribution
@@ -484,7 +484,7 @@ Tool use is changing what regularization has to do. In agentic recipes, the KL-t
 - **DPPO** masks tokens by a *directly estimated* divergence between the rollout and training policies (binary TV), instead of PPO's per-token ratio clip -- the ratio is a noisy one-sample estimate of that divergence [@qi2026dppo]. GLM's IcePop [@glm5team2026glm5] and Kimi's log-ratio interval [@moonshot2026kimik3] do the same job: gradients masked, not clipped.
 - This is not the reference-anchored reverse KL from this lecture -- it is **drift control against the sampling distribution**, a trust region on each update rather than a penalty in the objective.
 
-===
+|||
 
 ![The motivation, from the DPPO paper: for the same rollout tokens, per-token probability ratios (left) explode at low probabilities while the directly-estimated TV divergence (right) stays stable. Qi et al., 2026.](assets/dppo-ratio-vs-tv.png)
 
