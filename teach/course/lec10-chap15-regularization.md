@@ -485,7 +485,7 @@ Tool use is changing what regularization has to do. In agentic recipes, the KL-t
 
 ===
 
-<!-- row-columns: 48/52 -->
+<!-- row-columns: 55/45 -->
 - The per-token ratio is a noisy one-sample estimate of that divergence. GLM's IcePop [@glm5team2026glm5] and Kimi's log-ratio interval [@moonshot2026kimik3] do the same job: gradients masked, not clipped.
 - This is not the reference-anchored reverse KL from this lecture -- it is **drift control against the sampling distribution**, a trust region on each update rather than a penalty in the objective.
 
@@ -526,7 +526,9 @@ Tool use is changing what regularization has to do. In agentic recipes, the KL-t
 <!-- rows: 85/15 -->
 ## Thank you
 
-Questions / discussion
+Questions / discussion are encouraged!
+
+If you have a second to subscribe and/or share my content with a friend, it helps massively on getting the word out.
 
 Contact: nathan@natolambert.com
 
