@@ -143,7 +143,7 @@ The model writes the program; the interpreter provides the truth. Tools let a pr
 from decimal import Decimal, getcontext
 getcontext().prec = 60
 C = 426880 * Decimal(10005).sqrt()
-K, M, X, L, S = 0, 1, 1, 13591409, Decimal(13591409)
+K, M, X, L, S = 6, 1, 1, 13591409, Decimal(13591409)
 for i in range(1, 100):
     M = M * (K**3 - 16*K) // i**3
     K += 12; L += 545140134
@@ -174,7 +174,7 @@ print(str(C / S)[:52])
 
 <!-- valign: center -->
 <!-- cite-right: yao2023react -->
-## ReAct: reasoning and acting are one generation
+## ReAct: Reasoning and acting are one generation
 
 > *"...reasoning traces help the model induce, track, and update action plans as well as handle exceptions, while actions allow it to interface with and gather additional information from external sources such as knowledge bases or environments."*
 
@@ -185,7 +185,7 @@ print(str(C / S)[:52])
 
 <!-- valign: center -->
 <!-- cite-right: schick2023toolformerlanguagemodelsteach -->
-## Toolformer: models teach themselves tools
+## Toolformer: Models teach themselves tools
 
 Tools: "a calculator, a Q&A system, two different search engines, a translation system, and a calendar."
 
@@ -239,6 +239,7 @@ while True:
     if not resp.tool_calls:
         return resp.text
 
+    messages.append(resp.message)
     for call in resp.tool_calls:
         result = execute_tool(
             call.name, call.args)
@@ -260,7 +261,7 @@ while True:
 <!-- columns: 55/45 -->
 <!-- valign: center -->
 <!-- cite-right: anthropic_mcp_2024 -->
-## MCP: standardizing the tool side
+## MCP: Standardizing the tool side
 
 Model Context Protocol -- an open standard for connecting models to external systems (JSON-RPC 2.0 underneath).
 
@@ -382,7 +383,7 @@ The SFT rung, done in the open: a fully open **data-curation pipeline** for agen
 <!-- columns: 45/55 -->
 <!-- valign: center -->
 <!-- cite-right: ivison2026tmax -->
-## TMax: an open recipe for terminal agents
+## TMax: An open recipe for terminal agents
 
 The RL rung, end to end in the open:
 
