@@ -470,7 +470,7 @@ Most of these are scaffolding: added to stabilize one setup, simplified away in 
 
 Tool use is changing what regularization has to do. In agentic recipes, the KL-to-reference penalty is disappearing:
 
-- GLM-5 removes it outright -- "to accelerate RL improvement" [@glm5team2026glm5]. Kimi K3 never had one [@moonshot2026kimik3].
+- GLM-5 removes it outright -- "to accelerate RL improvement" [@glm5team2026glm5]. Kimi does not use one either: the K2 → K3 recipes ship with no KL penalty and no reference policy at all [@moonshot2026kimik3].
 - In our TMax terminal-agent recipe we measured the trade-off: a small KL reduced the severity of collapse but lowered reward, so the final recipe is $\beta = 0$ [@ivison2026tmax].
 - Why tool use forces the change: 20+ turn trajectories, async/partial rollouts, and train-vs-inference engine mismatch make drift from the *sampler* the binding failure, not drift from init. (In TMax, instabilities appear past ~10 assistant turns [@ivison2026tmax].)
 
