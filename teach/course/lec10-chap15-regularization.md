@@ -335,19 +335,25 @@ This is very reminiscent of Lecture 7 (on-policy distillation), with both direct
 ===
 
 <!-- row-columns: 50/50 -->
+**Forward KL** -- supervised fine-tuning (aka standard KL):
+
+$$ D_{\mathrm{KL}}(\pi_{\mathcal{D}} \,\|\, \pi_\theta) = \mathbb{E}_{y \sim \pi_{\mathcal{D}}}\!\left[\log \tfrac{\pi_{\mathcal{D}}(y)}{\pi_\theta(y)}\right] $$
+
+Samples come from the **target** (a fixed dataset). 
+
+*Mass-covering*: wherever the target has mass and $\pi_\theta \to 0$, the loss blows up -- the model must spread to cover everything.
+
+|||
+
+<!-- step -->
+
 **Reverse KL** -- reinforcement learning:
 
 $$ D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_\star) = \mathbb{E}_{y \sim \pi_\theta}\!\left[\log \tfrac{\pi_\theta(y)}{\pi_\star(y)}\right] $$
 
-Samples come from the **policy itself**. *Mode-seeking*: only penalized where it places mass, so it concentrates on high-reward modes.
+Samples come from the **policy itself**. 
 
-|||
-
-**Forward KL** -- supervised fine-tuning:
-
-$$ D_{\mathrm{KL}}(\pi_{\mathcal{D}} \,\|\, \pi_\theta) = \mathbb{E}_{y \sim \pi_{\mathcal{D}}}\!\left[\log \tfrac{\pi_{\mathcal{D}}(y)}{\pi_\theta(y)}\right] $$
-
-Samples come from the **target** (a fixed dataset). *Mass-covering*: wherever the target has mass and $\pi_\theta \to 0$, the loss blows up -- the model must spread to cover everything.
+*Mode-seeking*: only penalized where it places mass, so it concentrates on high-reward modes.
 
 ---
 
@@ -367,6 +373,8 @@ $$ D_{\mathrm{KL}}(\pi_T \,\|\, \pi_\theta) = \mathbb{E}_{z \sim \pi_T}\!\left[\
 
 |||
 
+<!-- step -->
+
 **On-policy distillation** (reverse KL) -- the expectation is over the *student*, $z \sim \pi_\theta$ (**on-policy**: you sample the model you're training):
 
 $$ D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_T) = \mathbb{E}_{z \sim \pi_\theta}\!\left[\log\frac{\pi_\theta(z)}{\pi_T(z)}\right] $$
@@ -384,7 +392,7 @@ $$ D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_T) = \mathbb{E}_{z \sim \pi_\theta}\!\l
 
 <!-- valign: center -->
 <!-- cite-right: chu2025sft -->
-## Even with no penalty: "SFT memorizes, RL generalizes"
+## "SFT memorizes, RL generalizes"
 
 Controlled study: post-train on one task, evaluate under a rule shift [@chu2025sft].
 
