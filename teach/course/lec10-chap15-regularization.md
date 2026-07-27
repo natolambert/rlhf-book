@@ -27,7 +27,7 @@ custom_css: |
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
 
-# Lecture 10: Regularization Tools and The Mechanics of SFT vs. RL
+# Lecture 10: Regularization in RL, Why RL Generalizes, and why SFT Forgets
 
 <div class="colloquium-title-eyebrow">rlhfbook.com</div>
 
@@ -43,17 +43,17 @@ custom_css: |
 <!-- align: center -->
 <!-- valign: center -->
 
-## How much should we let the model change to earn more reward?
+## How do these optimizers change the distributions of the models? How do we control it?
 
 ---
 
-<!-- columns: 40/60 -->
+<!-- columns: 45/55 -->
 <!-- valign: center -->
-## Recall: the RLHF objective
+## Recall: the RLHF process
 
-The regularization is already *in the main figure*: the RL step maximizes reward from the reward model **minus a penalty for drifting from the reference model**.
+The RL step maximizes reward from the reward model **minus a penalty for drifting from the reference model**.
 
-This lecture is about that penalty -- and what happens with and without it.
+This lecture is about that penalt -- and what happens with and without it.
 
 |||
 
@@ -63,12 +63,13 @@ This lecture is about that penalty -- and what happens with and without it.
 
 <!-- columns: 50/50 -->
 <!-- valign: center -->
-## ...and remember RLVR
+## RLVR has regularization too, but different best practices
 
 Same RL loop, different reward source: a verification function instead of a reward model.
 
-- The regularization question is identical -- how far do we let the policy move to earn more reward?
-- Modern RLVR reasoning recipes often shrink the KL penalty or drop it entirely. Keep that in mind for Part 1.
+Reasoning models (before tool use) often dropped the KL penalty to enhance learning.
+
+With the emergence of large-scale tool-use, KL penalties have started coming a bit more into vogue again (more on this at the end of the lecture).
 
 |||
 
@@ -76,22 +77,12 @@ Same RL loop, different reward source: a verification function instead of a rewa
 
 ---
 
-<!-- img-fill -->
-<!-- img-align: center -->
-<!-- valign: center -->
-<!-- cite-right: gao2023scaling -->
-## Recall Lecture 9: the x-axis was KL
-
-![Last lecture's over-optimization curves: the proxy reward keeps climbing while the gold reward peaks and falls. The x-axis -- KL distance from the initial policy -- is the quantity this lecture is about controlling. Gao et al., 2023.](assets/gao-overoptimization.png)
-
----
-
 <!-- columns: 40/60 -->
 ## This lecture
 
-Over-optimization is unavoidable -- regularization is how we keep it under control.
+How we control optimization pressures on models explicitly.
 
-The spine of this lecture: in RL post-training, nearly every objective points the KL in the *same direction*.
+How the math of the optimizers we use changes the shapoes of the models.
 
 |||
 
@@ -99,24 +90,17 @@ The spine of this lecture: in RL post-training, nearly every objective points th
 title: The plan
 tone: accent
 content: |
-  1. The **explicit KL penalty** -- the workhorse, how to measure it, and who sets β
-  2. **The two directions of KL** -- the RL objective is a reverse KL; SFT is the forward one
-  3. **Why RL generalizes more** -- implicit regularization and RL's razor
-  4. **Other tools** -- pretraining gradients, NLL terms, reward margins
+  1. The **KL penalty** that controls RL
+  2. **The two directions of KL divergences**
+  3. **Why RL generalizes better than SFT**
+  4. **Other related work**
 ```
 
 ---
 
-<!-- valign: center -->
-## What "off the rails" looks like
+<!-- align: center -->
 
-Without regularization, strong optimizers push language models into:
-
-- Fluent-looking reasoning with extremely incorrect answers
-- Repeated text and excessive special characters
-- **Language switching** mid-generation -- recall Lecture 5: R1-Zero mixed languages while reasoning, and labs added language-consistency rewards to stop it
-
-Regularization is the difference between healthy RL training and these failure modes.
+## Aside: Watch lecture 9 first
 
 ---
 
@@ -393,6 +377,24 @@ content: |
   3. **Implicit** -- on-policy sampling alone biases RL toward KL-minimal solutions (RL's razor)
   4. **Auxiliary** -- pretraining gradients, NLL terms, reward margins
 ```
+
+---
+
+<!-- valign: center -->
+## 2026: the trust region is moving -- from the reference to the sampler
+
+Tool use is changing what regularization has to do. In agentic recipes, the KL-to-reference penalty is disappearing:
+
+- GLM-5 removes it outright -- "to accelerate RL improvement" [@glm5team2026glm5]. Kimi K3 never had one [@moonshot2026kimik3]. In our TMax terminal-agent recipe we measured the trade-off: a small KL reduced the severity of collapse but lowered reward, so the final recipe is $\beta = 0$ [@ivison2026tmax].
+
+<!-- step -->
+
+What replaced it: **stay close to the distribution you actually sampled from.**
+
+- DPPO masks tokens by a *directly estimated* divergence between the rollout and training policies, instead of PPO's noisy per-token ratio clip [@qi2026dppo]. GLM's IcePop and Kimi's log-ratio interval do the same job -- gradients masked, not clipped.
+- Why tool use forces this: 20+ turn trajectories, async/partial rollouts, and train-vs-inference engine mismatch make drift from the *sampler* the binding failure, not drift from init. (In TMax, instabilities appear past ~10 assistant turns.)
+
+Same reverse-KL machinery as this lecture -- the anchor just moved from a frozen reference to the sampling distribution.
 
 ---
 
