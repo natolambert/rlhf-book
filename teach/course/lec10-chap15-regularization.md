@@ -421,7 +421,7 @@ Is this correct?
 <!-- cite-right: chen2025retainingdoingroleonpolicy -->
 ## Which direction should forget less?
 
-**The opposite holds.** That intuition assumes a unimodal policy -- LLMs are multimodal. Paper: [arxiv.org/abs/2510.18874](https://arxiv.org/abs/2510.18874)
+That intuition assumes a unimodal policy -- LLMs are multimodal. Paper: [arxiv.org/abs/2510.18874](https://arxiv.org/abs/2510.18874)
 
 ![](assets/retaining_by_doing_mode_intuition.png)
 
@@ -430,7 +430,7 @@ Is this correct?
 <!-- rows: 52/48 -->
 <!-- valign: center -->
 <!-- cite-right: shenfeld2026rls -->
-## RL's razor
+## RL's razor: Lower KL drift for equivalent performance
 
 > *"Among the many high-reward solutions for a new task, on-policy methods such as RL are inherently biased toward solutions that remain closer to the original policy in KL divergence."* [@shenfeld2026rls]
 
@@ -451,6 +451,7 @@ Is this correct?
 ---
 
 <!-- valign: center -->
+<!-- animate: bullets -->
 ## Other regularization in the wild
 
 - **Pretraining gradients** (InstructGPT): add $\gamma\, \mathbb{E}_{x \sim \mathcal{D}_{\text{pretrain}}}\left[\log \pi_{\text{RL}}(x)\right]$ to the objective, "to fix the performance regressions on public NLP datasets" [@ouyang2022training].
