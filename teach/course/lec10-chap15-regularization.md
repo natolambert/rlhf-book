@@ -403,6 +403,8 @@ On V-IRL, RL improves out-of-distribution accuracy **80.8% → 91.8%**. SFT coll
 
 RL-based post-training carries *implicit* regularization from its on-policy structure alone.
 
+Paper: [arxiv.org/abs/2501.17161](https://arxiv.org/abs/2501.17161)
+
 ---
 
 <!-- valign: center -->
@@ -410,7 +412,7 @@ RL-based post-training carries *implicit* regularization from its on-policy stru
 
 The naive read: forward KL is *mass-covering*, so SFT should preserve every mode -- while mode-seeking RL should collapse onto one and forget the rest.
 
-Sequential fine-tuning experiments say otherwise.
+Is this correct?
 
 ---
 
@@ -419,13 +421,13 @@ Sequential fine-tuning experiments say otherwise.
 <!-- cite-right: chen2025retainingdoingroleonpolicy -->
 ## Which direction should forget less?
 
-**The opposite holds.** That intuition assumes a unimodal policy -- LLMs are multimodal.
+**The opposite holds.** That intuition assumes a unimodal policy -- LLMs are multimodal. Paper: [arxiv.org/abs/2510.18874](https://arxiv.org/abs/2510.18874)
 
-![Forward KL (SFT) stretches the policy to cover the target, dragging probability mass off the "old" mode. Reverse KL (RL) shifts a new mode toward the target and leaves the old one alone. Chen et al., 2025 (with permission).](assets/retaining_by_doing_mode_intuition.png)
+![](assets/retaining_by_doing_mode_intuition.png)
 
 ---
 
-<!-- columns: 46/54 -->
+<!-- rows: 52/48 -->
 <!-- valign: center -->
 <!-- cite-right: shenfeld2026rls -->
 ## RL's razor
@@ -433,9 +435,9 @@ Sequential fine-tuning experiments say otherwise.
 > *"Among the many high-reward solutions for a new task, on-policy methods such as RL are inherently biased toward solutions that remain closer to the original policy in KL divergence."* [@shenfeld2026rls]
 
 - Forgetting tracks KL drift: $\text{Forgetting} \approx f\!\left(\mathbb{E}_{x \sim \tau}\!\left[D_{\mathrm{KL}}\!\left(\pi_0 \,\|\, \pi\right)\right]\right)$ with $R^2 = 0.96$ -- measured on the **new task's data**. A cheap forgetting predictor.
-- The ablation: **on-policy data fully accounts for the difference** -- negative gradients have no discernible effect.
+- The ablation: **on-policy data fully accounts for the difference** -- negative gradients have no discernible effect. Paper: [arxiv.org/abs/2509.04259](https://arxiv.org/abs/2509.04259)
 
-|||
+===
 
 ![Among policies that solve the new task, RL converges to those closest in KL to the base model -- yielding higher prior-task retention at matched new-task performance. Shenfeld et al., 2026 (CC-BY).](assets/rl_razor_motivation.png)
 
