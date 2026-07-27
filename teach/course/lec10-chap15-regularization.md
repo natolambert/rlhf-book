@@ -133,13 +133,16 @@ style: "border:none;display:block;width:100%;aspect-ratio:16/9;height:auto"
 ---
 
 <!-- valign: center -->
-## The workhorse: a KL penalty to the reference
+<!-- animate: bullets -->
+## A KL penalty to the reference model controls reward
+
+The canonical LLM reward function:
 
 $$ r = r_\theta - \lambda_{\text{KL}} \, D_{\mathrm{KL}}\!\left( \pi_{\text{RL}}(y \mid x) \,\|\, \pi_{\text{ref}}(y \mid x) \right) $$
 
-- KL control predates LLMs: dialogue agents [@jaques2017sequence], then fine-tuning pretrained models [@jaques2020human]. Lecture 3 covered the per-token mechanics ($\tilde{r}_t = -\beta\,\text{KL}_t$).
-- Note the direction: this penalty is a **reverse KL** -- estimated by sampling from the *policy* and scoring against the reference. It punishes the policy for putting mass where the reference would not.
-- "KL distance" is the *optimization distance* spent (colloquially -- KL is not a true metric). The x-axis of the over-optimization curves **is** this quantity.
+- KL control for RL predates LLMs: dialogue agents [@jaques2017sequence], then fine-tuning pretrained models [@jaques2020human]. 
+- This penalty is a **reverse KL** -- estimated by sampling from the *policy* and scoring against the reference. It punishes the policy for putting mass where the reference would not.
+- "KL distance" is the *optimization distance* spent (colloquially -- KL is not a true metric).
 
 ---
 
@@ -152,7 +155,7 @@ Sampling from $P$ turns the definition into an expectation:
 $$ D_{\mathrm{KL}}(P \,\|\, Q) = \mathbb{E}_{x \sim P}\left[ \log P(x) - \log Q(x) \right] $$
 
 - Practitioners watch the KL curve during training -- a very large KL usually means a bug or a broken model.
-- Lower-variance estimators ($k_1, k_2, k_3$) came up in Q&A 2 [@schulman2020klapprox].
+- Lower-variance estimators ($k_1, k_2, k_3$) came up in [Q&A 2](https://www.youtube.com/watch?v=gB-bYUECpzE&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=11) [@schulman2020klapprox].
 
 |||
 
