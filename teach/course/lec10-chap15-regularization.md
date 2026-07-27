@@ -183,8 +183,8 @@ kl_approx = token_lp.sum(-1) - ref_token_lp.sum(-1)
 
 ![](assets/olmo2-grpo-zero-reward-kl.png)
 
-- An OLMo-2-7B RL-Zero-style GRPO run from open-instruct ([public W&B logs](https://wandb.ai/ai2-llm/open_instruct_public/reports/OLMo-2-7B-GRPO-Fast-Zero--VmlldzoxMjA0MjU4MQ)): the verifiable reward climbs while the logged KL to the reference drifts up and wanders. This run has **β = 0** -- nothing pulls the KL back; it is purely a diagnostic.
-- This is the healthy shape. A KL curve that bends sharply upward while reward jumps usually means the policy found a bug or a hack, not a capability.
+An OLMo-2-7B GRPO run, RL directly on the *base* model (R1-Zero-style, no SFT), from open-instruct ([public W&B logs](https://wandb.ai/ai2-llm/open_instruct_public/reports/OLMo-2-7B-GRPO-Fast-Zero--VmlldzoxMjA0MjU4MQ)): over ~1M episodes the verifiable reward climbs while the logged KL to the reference rises and then wanders. This run has **β = 0**.
+This is a healthy shape.
 
 ---
 
@@ -202,6 +202,18 @@ $$ e_t = \operatorname{clip}\!\left( \frac{\mathrm{KL}(\pi_t, \pi_{\text{ref}}) 
 - The idea is older than RLHF: PPO's original **adaptive KL penalty** variant doubled or halved β around a target [@schulman2017proximal], and constrained RL later made the controls framing explicit with full **PID controllers** on the penalty multiplier [@stooke2020responsive].
 - Modern practice swung back to a small **static** β -- or, in many RLVR reasoning recipes, no KL term at all.
 
+---
+
+<!-- valign: center -->
+<!-- cite-right: ziegler2019fine -->
+<!-- animate: bullets -->
+
+## Static or dynamic KL penalties? β began as a feedback controller
+
+The first RLHF-on-LMs paper did not fix β. It picked a **target KL** and let a controller chase it:
+
+$$ e_t = \operatorname{clip}\!\left( \frac{\mathrm{KL}(\pi_t, \pi_{\text{ref}}) - \mathrm{KL}_{\text{target}}}{\mathrm{KL}_{\text{target}}},\, -0.2,\, 0.2 \right), \qquad \beta_{t+1} = \beta_t \left(1 + K_\beta\, e_t\right) $$
+
 Read the code: [the original controller](https://github.com/openai/lm-human-preferences/blob/cbfd210bb8b08f6bc5c26878c10984b90f516c66/lm_human_preferences/train_policy.py#L115-L124) (lm-human-preferences, 2019) · [TRL's `AdaptiveKLController`](https://github.com/huggingface/trl/blob/v0.11.4/trl/trainer/utils.py#L54-L69) (v0.11.4 -- deleted in the modern rewrite) · [open-instruct today](https://github.com/allenai/open-instruct/blob/5b2ebfa12381925bb431845d588dbc9ebead20a7/open_instruct/grpo_utils.py#L104-L105): a static `beta = 0.05`, [applied directly in the loss](https://github.com/allenai/open-instruct/blob/5b2ebfa12381925bb431845d588dbc9ebead20a7/open_instruct/grpo_fast.py#L718).
 
 ---
@@ -209,7 +221,7 @@ Read the code: [the original controller](https://github.com/openai/lm-human-pref
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 2: RL optimization is a reverse KL
+## Part 2: RL optimization is a reverse KL minimization
 
 ---
 
