@@ -299,7 +299,7 @@ With the penalty included, RL doesn't just *use* a reverse KL -- the whole objec
 <!-- title: center -->
 ## SFT is forward KL
 
-Now the comparison point. SFT trains on a fixed dataset -- the samples come from the *data distribution*, call it $\pi_{\mathcal{D}}$ (not the reward-tilted $\pi_\star$ from the RL slides), which makes it the other direction:
+Now the comparison point. SFT trains on a fixed dataset -- the samples come from the *data distribution*, call it $\pi_{\mathcal{D}}$, which makes it the other KL direction:
 
 $$
 \begin{aligned}
@@ -327,11 +327,14 @@ Same gradients, same minimum: minimizing the SFT loss *is* minimizing forward KL
 
 ---
 
-<!-- columns: 50/50 -->
+<!-- rows: 18/82 -->
 ## SFT and RL are the two directions of KL
 
-We just derived both directions -- the same frame as Lecture 7 (on-policy distillation):
+This is very reminiscent of Lecture 7 (on-policy distillation), with both directions of KL at play. Post-training math repeats itself.:
 
+===
+
+<!-- row-columns: 50/50 -->
 **Reverse KL** -- reinforcement learning:
 
 $$ D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_\star) = \mathbb{E}_{y \sim \pi_\theta}\!\left[\log \tfrac{\pi_\theta(y)}{\pi_\star(y)}\right] $$
@@ -346,7 +349,29 @@ $$ D_{\mathrm{KL}}(\pi_{\mathcal{D}} \,\|\, \pi_\theta) = \mathbb{E}_{y \sim \pi
 
 Samples come from the **target** (a fixed dataset). *Mass-covering*: wherever the target has mass and $\pi_\theta \to 0$, the loss blows up -- the model must spread to cover everything.
 
-Chapter 12 promised the *why reverse KL is better* in chapter 15 -- here it is.
+---
+
+<!-- rows: 18/82 -->
+## Recall, Lecture 7: the same two directions in distillation
+
+The distillation version, verbatim from Lecture 7 -- teacher $\pi_T$ in place of the target. Sampling completions from the student is what puts $\pi_\theta$ on the **left** of the KL:
+
+===
+
+<!-- row-columns: 50/50 -->
+**Offline KD / SFT** (forward KL) -- the expectation is over the *teacher*, $z \sim \pi_T$ (**off-policy**: a fixed teacher dataset):
+
+$$ D_{\mathrm{KL}}(\pi_T \,\|\, \pi_\theta) = \mathbb{E}_{z \sim \pi_T}\!\left[\log\frac{\pi_T(z)}{\pi_\theta(z)}\right] $$
+
+*Mass-covering* -- weighted by **teacher** mass: wherever the teacher has mass and $\pi_\theta \to 0$, the log-ratio blows up, so the student must cover *everything* the teacher might say.
+
+|||
+
+**On-policy distillation** (reverse KL) -- the expectation is over the *student*, $z \sim \pi_\theta$ (**on-policy**: you sample the model you're training):
+
+$$ D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_T) = \mathbb{E}_{z \sim \pi_\theta}\!\left[\log\frac{\pi_\theta(z)}{\pi_T(z)}\right] $$
+
+*Mode-seeking* -- weighted by the **student's** own mass: penalized only where *it* puts probability the teacher dislikes, so it collapses onto the teacher's modes. Lecture 7 deferred *why reverse KL is better* to this lecture.
 
 ---
 
