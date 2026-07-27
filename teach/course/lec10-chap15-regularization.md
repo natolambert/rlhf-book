@@ -371,7 +371,7 @@ content: |
 8. Preferences & Preference Data *(ch. 10-11)*
 9. Over-Optimization & RLHF's Bad Reputation *(ch. 14, app. B)*
 10. **Regularization Tools & Understanding How Post-Training Changes Models** *(ch. 15)* -- *today*
-11. **Evaluation** *(ch. 16)* -- *next (tentative)*
+11. **Tool Use, Function Calling & The Road to Agents** *(ch. 13)* -- *next*
 
 ---
 
