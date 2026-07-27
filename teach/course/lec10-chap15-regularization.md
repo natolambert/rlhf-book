@@ -454,31 +454,13 @@ That intuition assumes a unimodal policy -- LLMs are multimodal. Paper: [arxiv.o
 <!-- animate: bullets -->
 ## Other regularization in the wild
 
-- **Pretraining gradients** (InstructGPT): add $\gamma\, \mathbb{E}_{x \sim \mathcal{D}_{\text{pretrain}}}\left[\log \pi_{\text{RL}}(x)\right]$ to the objective, "to fix the performance regressions on public NLP datasets" [@ouyang2022training].
+Most of these are scaffolding: added to stabilize one setup, simplified away in the next model generation.
+
+- **Pretraining next-token pred. gradients** (InstructGPT): add $\gamma\, \mathbb{E}_{x \sim \mathcal{D}_{\text{pretrain}}}\left[\log \pi_{\text{RL}}(x)\right]$ to the objective, "to fix the performance regressions on public NLP datasets" [@ouyang2022training].
 - **NLL alongside DPO**: $\mathcal{L}_{\text{DPO+NLL}} = \mathcal{L}_{\text{DPO}} + \alpha\, \mathcal{L}_{\text{NLL}}$ keeps the chosen text high-likelihood in absolute terms, not just relatively better [@pang2024iterative].
 - **Margin loss** for reward models (Llama 2): $-\log \sigma\!\left(r_{\theta}(y_c) - r_{\theta}(y_r) - m(y_c, y_r)\right)$, where the margin $m$ comes from annotator rating deltas -- **the Likert scales from Lecture 8** [@touvron2023llama].
 
-Most of these are scaffolding: added to stabilize one setup, simplified away in the next model generation.
 
-
----
-
-<!-- columns: 50/50 -->
-## Recap: keeping the policy close
-
-Every RL-side objective in this lecture points the KL the same way: sampled from the model, scored against a target.
-
-|||
-
-```box
-title: Four kinds of control
-tone: accent
-content: |
-  1. **Explicit** -- the reverse-KL penalty to the reference; β static or run by a controller
-  2. **Structural** -- with the penalty on ($\beta > 0$), the RL objective is *exactly* a reverse KL to a reward-tilted reference
-  3. **Implicit** -- on-policy sampling alone biases RL toward KL-minimal solutions (RL's razor)
-  4. **Auxiliary** -- pretraining gradients, NLL terms, reward margins
-```
 
 ---
 
@@ -503,29 +485,10 @@ Note what changed: this is not the reference-anchored reverse KL from this lectu
 <!-- valign: center -->
 ## Takeaways
 
-- The KL penalty is the explicit control: a **reverse KL**, estimated on the policy's own samples. Early RLHF didn't even fix β -- it ran a feedback controller to hit a target KL budget.
-- The penalty is not the only reverse KL: the whole KL-regularized RL objective **is** one -- mode-seeking toward a reward-tilted reference -- while SFT is the forward direction, mass-covering toward the data.
+- The KL penalty is the explicit control: a **reverse KL**, estimated on the policy's own samples. 
+- The KL-regularized RL objective is a reverse KL minimization -- mode-seeking toward a reward-shaped reference policy -- while SFT is the forward direction, mass-covering toward the data.
 - Even with no penalty, on-policy RL is implicitly regularized -- SFT memorizes, RL generalizes. Forgetting tracks KL drift (RL's razor), and **on-policy data** -- not negative gradients -- is why RL forgets less.
 - Most other regularizers are scaffolding: they stabilize one setup and disappear in the next generation.
-
----
-
-<!-- columns: 50/50 -->
-## Where to go deeper
-
-Regularization is where RLHF practice earns its stability -- these are the references people reach for when debugging real runs.
-
-|||
-
-```box
-title: Go deeper
-tone: surface
-content: |
-  - [**RL's Razor**](https://openreview.net/forum?id=7HNRYT4V44) -- why on-policy forgets less.
-  - [**SFT Memorizes, RL Generalizes**](https://arxiv.org/abs/2501.17161) -- the OOD study.
-  - [**Approximating KL Divergence**](http://joschu.net/blog/kl-approx.html) -- the k1/k2/k3 estimators.
-  - Book chapter 15.
-```
 
 ---
 
