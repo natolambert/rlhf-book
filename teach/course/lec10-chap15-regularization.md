@@ -466,20 +466,20 @@ Most of these are scaffolding: added to stabilize one setup, simplified away in 
 
 <!-- valign: center -->
 <!-- animate: bullets -->
-## 2026: the trust region is moving -- from the reference to the sampler
+## 2026: the trust region / kl pen. is moving on
 
 Tool use is changing what regularization has to do. In agentic recipes, the KL-to-reference penalty is disappearing:
 
 - GLM-5 removes it outright -- "to accelerate RL improvement" [@glm5team2026glm5]. Kimi does not use one either: the K2 → K3 recipes ship with no KL penalty and no reference policy at all [@moonshot2026kimik3].
 - In our TMax terminal-agent recipe we measured the trade-off: a small KL reduced the severity of collapse but lowered reward, so the final recipe is $\beta = 0$ [@ivison2026tmax].
-- Why tool use forces the change: 20+ turn trajectories, async/partial rollouts, and train-vs-inference engine mismatch make drift from the *sampler* the binding failure, not drift from init. (In TMax, instabilities appear past ~10 assistant turns [@ivison2026tmax].)
+- Why tool use forces the change: 20+ turn trajectories, async/partial rollouts, and train-vs-inference engine mismatch make drift from the *sampler* the binding failure, not drift from init. (In TMax, instabilities increase past 10 assistant turns and were absent below 5 [@ivison2026tmax].)
 
 ---
 
 <!-- columns: 48/52 -->
 <!-- valign: center -->
 <!-- cite-right: qi2026dppo -->
-## What replaced it: a trust region on the sampling distribution
+## A trust region on the sampling distribution
 
 - **DPPO** masks tokens by a *directly estimated* divergence between the rollout and training policies (binary TV), instead of PPO's per-token ratio clip -- the ratio is a noisy one-sample estimate of that divergence [@qi2026dppo]. GLM's IcePop [@glm5team2026glm5] and Kimi's log-ratio interval [@moonshot2026kimik3] do the same job: gradients masked, not clipped.
 - This is not the reference-anchored reverse KL from this lecture -- it is **drift control against the sampling distribution**, a trust region on each update rather than a penalty in the objective.
