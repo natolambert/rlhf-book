@@ -98,9 +98,28 @@ content: |
 
 ---
 
-<!-- align: center -->
+<!-- columns: 50/50 -->
+<!-- valign: center -->
 
 ## Aside: Watch lecture 9 first
+
+```iframe
+src: https://rlhfbook.com/teach/course/lec9-chap14-appb-overoptimization/
+title: Lecture 9 slides
+height: 380
+```
+
+[Slides](https://rlhfbook.com/teach/course/lec9-chap14-appb-overoptimization/) -- yes, these are the real slides, in a slide.
+
+|||
+
+```iframe
+src: https://www.youtube.com/embed/y04JhXpiI4s?list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y
+title: Lecture 9 video
+height: 380
+```
+
+[Watch on YouTube](https://www.youtube.com/watch?v=y04JhXpiI4s&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y)
 
 ---
 
