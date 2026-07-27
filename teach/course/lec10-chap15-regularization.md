@@ -47,6 +47,35 @@ custom_css: |
 
 ---
 
+<!-- columns: 40/60 -->
+<!-- valign: center -->
+## Recall: the RLHF objective
+
+The regularization is already *in the main figure*: the RL step maximizes reward from the reward model **minus a penalty for drifting from the reference model**.
+
+This lecture is about that penalty -- and what happens with and without it.
+
+|||
+
+![The RLHF training pipeline -- the RL step optimizes the policy against the reward model, held close to the reference model by a KL penalty.](assets/rlhf-overview.png)
+
+---
+
+<!-- columns: 50/50 -->
+<!-- valign: center -->
+## ...and remember RLVR
+
+Same RL loop, different reward source: a verification function instead of a reward model.
+
+- The regularization question is identical -- how far do we let the policy move to earn more reward?
+- Modern RLVR reasoning recipes often shrink the KL penalty or drop it entirely. Keep that in mind for Part 1.
+
+|||
+
+![RLVR uses a verification function instead of a reward model, but the RL loop -- and the regularization question -- is the same.](assets/rlvr-system.png)
+
+---
+
 <!-- img-fill -->
 <!-- img-align: center -->
 <!-- valign: center -->
@@ -70,9 +99,10 @@ The spine of this lecture: in RL post-training, nearly every objective points th
 title: The plan
 tone: accent
 content: |
-  1. The **explicit KL penalty** -- the workhorse, and how to measure it
-  2. **Implicit regularization** -- why RL forgets less than SFT
-  3. **Other tools** -- pretraining gradients, NLL terms, reward margins
+  1. The **explicit KL penalty** -- the workhorse, how to measure it, and who sets β
+  2. **The two directions of KL** -- the RL objective is a reverse KL; SFT is the forward one
+  3. **Why RL generalizes more** -- implicit regularization and RL's razor
+  4. **Other tools** -- pretraining gradients, NLL terms, reward margins
 ```
 
 ---
@@ -139,78 +169,38 @@ kl_approx = token_lp.sum(-1) - ref_token_lp.sum(-1)
 
 ---
 
+<!-- valign: center -->
+<!-- cite-right: ziegler2019fine -->
+## Static or dynamic? β began as a feedback controller
+
+The first RLHF-on-LMs paper did not fix β. It picked a **target KL** and let a controller chase it:
+
+$$ e_t = \operatorname{clip}\!\left( \frac{\mathrm{KL}(\pi_t, \pi_{\text{ref}}) - \mathrm{KL}_{\text{target}}}{\mathrm{KL}_{\text{target}}},\, -0.2,\, 0.2 \right), \qquad \beta_{t+1} = \beta_t \left(1 + K_\beta\, e_t\right) $$
+
+- A "log-space proportional controller" (their words), with $K_\beta = 0.1$: KL too high → β grows and pulls the policy back; too low → β shrinks and frees it up. Runs with different seeds land on the *same* KL budget, making experiments comparable.
+- The idea is older than RLHF: PPO's original **adaptive KL penalty** variant doubled or halved β around a target [@schulman2017proximal], and constrained RL later made the controls framing explicit with full **PID controllers** on the penalty multiplier [@stooke2020responsive].
+- Modern practice swung back to a small **static** β -- or, in many RLVR reasoning recipes, no KL term at all.
+
+---
+
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 2: Implicit regularization
+## Part 2: The optimization is a reverse KL
 
 ---
 
 <!-- valign: center -->
-<!-- cite-right: chu2025sft -->
-## Even with no penalty: "SFT memorizes, RL generalizes"
+## The penalty and the direction are two different things
 
-Controlled study: post-train on one task, evaluate under a rule shift [@chu2025sft].
+Part 1 was about a **penalty**: a term added to the reward, with a coefficient you tune (or control). You can turn it off.
 
-- **GeneralPoints**: reach 24 from four cards; shift the face-card rule (train: J/Q/K = 10; test: 11/12/13).
-- **V-IRL**: visual navigation; shift from absolute (north/east) to relative (left/right) directions.
+This part is about the **shape of the optimization**: which direction of KL the whole training procedure minimizes. That is set by *where the samples come from*, not by any penalty:
 
-On V-IRL, RL improves out-of-distribution accuracy **80.8% → 91.8%**. SFT collapses it **80.8% → 1.3%** -- destroying spatial reasoning the base model already had.
+- **SFT** samples from the *data* → it minimizes a **forward** KL.
+- **RL** samples from *itself* → it is **reverse**-KL shaped, even with the penalty off.
 
-RL-based post-training carries *implicit* regularization from its on-policy structure alone.
-
----
-
-<!-- columns: 50/50 -->
-## SFT and RL are the two directions of KL
-
-Recall the frame from Lecture 7 (on-policy distillation):
-
-**Forward KL** -- supervised fine-tuning:
-
-$$ D_{\mathrm{KL}}(\pi_\star \,\|\, \pi_\theta) = \mathbb{E}_{y \sim \pi_\star}\!\left[\log \tfrac{\pi_\star(y)}{\pi_\theta(y)}\right] $$
-
-Samples come from the **target** (a fixed dataset). *Mass-covering*: wherever the target has mass and $\pi_\theta \to 0$, the loss blows up -- the model must spread to cover everything.
-
-|||
-
-**Reverse KL** -- reinforcement learning:
-
-$$ D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_\star) = \mathbb{E}_{y \sim \pi_\theta}\!\left[\log \tfrac{\pi_\theta(y)}{\pi_\star(y)}\right] $$
-
-Samples come from the **policy itself**. *Mode-seeking*: only penalized where it places mass, so it concentrates on high-reward modes.
-
-Chapter 12 promised the *why reverse KL is better* in chapter 15 -- here it is.
-
----
-
-<!-- valign: top -->
-<!-- title: center -->
-## SFT is forward KL
-
-$$
-\begin{aligned}
-D_{\mathrm{KL}}(\pi_\star \,\|\, \pi_\theta) &= \mathbb{E}_{(x,y) \sim \mathcal{D}} \left[ \log \pi_\star(y \mid x) - \log \pi_\theta(y \mid x) \right] && \text{definition; samples are the data}
-\end{aligned}
-$$
-
-<!-- step -->
-
-$$
-\begin{aligned}
-&= \underbrace{\mathbb{E}_{(x,y) \sim \mathcal{D}}\left[ \log \pi_\star(y \mid x) \right]}_{-H(\pi_\star),\ \text{constant in } \theta} \; - \; \mathbb{E}_{(x,y) \sim \mathcal{D}}\left[ \log \pi_\theta(y \mid x) \right] && \text{split the expectation}
-\end{aligned}
-$$
-
-<!-- step -->
-
-$$
-\begin{aligned}
-&= -H(\pi_\star) + \mathcal{L}_{\text{SFT}}(\theta) \;\propto\; \boxed{\ \mathcal{L}_{\text{SFT}}(\theta)\ } && \text{the NLL term is the SFT loss}
-\end{aligned}
-$$
-
-Same gradients, same minimum: minimizing the SFT loss *is* minimizing forward KL to the data distribution.
+They meet in one clean identity: *with* the penalty on, the full RL objective is *exactly* a reverse KL. We derive that next -- the penalty-free version of the story is Part 3.
 
 ---
 
@@ -251,7 +241,84 @@ $$
 
 $$ \boxed{\ \max_\theta\, \mathcal{J}_{\text{RL}}(\theta) \iff \min_\theta\, D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_\star)\ } $$
 
-SFT minimizes forward KL to the *data*; RL minimizes reverse KL to the *reward-tilted reference*.
+With the penalty included, RL doesn't just *use* a reverse KL -- the whole objective **is** one, pointed at the reward-tilted reference.
+
+---
+
+<!-- valign: top -->
+<!-- title: center -->
+## SFT is forward KL
+
+Now the comparison point. SFT trains on a fixed dataset -- the samples come from the *target*, not the policy -- which makes it the other direction:
+
+$$
+\begin{aligned}
+D_{\mathrm{KL}}(\pi_\star \,\|\, \pi_\theta) &= \mathbb{E}_{(x,y) \sim \mathcal{D}} \left[ \log \pi_\star(y \mid x) - \log \pi_\theta(y \mid x) \right] && \text{definition; samples are the data}
+\end{aligned}
+$$
+
+<!-- step -->
+
+$$
+\begin{aligned}
+&= \underbrace{\mathbb{E}_{(x,y) \sim \mathcal{D}}\left[ \log \pi_\star(y \mid x) \right]}_{-H(\pi_\star),\ \text{constant in } \theta} \; - \; \mathbb{E}_{(x,y) \sim \mathcal{D}}\left[ \log \pi_\theta(y \mid x) \right] && \text{split the expectation}
+\end{aligned}
+$$
+
+<!-- step -->
+
+$$
+\begin{aligned}
+&= -H(\pi_\star) + \mathcal{L}_{\text{SFT}}(\theta) \;\propto\; \boxed{\ \mathcal{L}_{\text{SFT}}(\theta)\ } && \text{the NLL term is the SFT loss}
+\end{aligned}
+$$
+
+Same gradients, same minimum: minimizing the SFT loss *is* minimizing forward KL to the data distribution.
+
+---
+
+<!-- columns: 50/50 -->
+## SFT and RL are the two directions of KL
+
+We just derived both directions -- the same frame as Lecture 7 (on-policy distillation):
+
+**Reverse KL** -- reinforcement learning:
+
+$$ D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_\star) = \mathbb{E}_{y \sim \pi_\theta}\!\left[\log \tfrac{\pi_\theta(y)}{\pi_\star(y)}\right] $$
+
+Samples come from the **policy itself**. *Mode-seeking*: only penalized where it places mass, so it concentrates on high-reward modes.
+
+|||
+
+**Forward KL** -- supervised fine-tuning:
+
+$$ D_{\mathrm{KL}}(\pi_\star \,\|\, \pi_\theta) = \mathbb{E}_{y \sim \pi_\star}\!\left[\log \tfrac{\pi_\star(y)}{\pi_\theta(y)}\right] $$
+
+Samples come from the **target** (a fixed dataset). *Mass-covering*: wherever the target has mass and $\pi_\theta \to 0$, the loss blows up -- the model must spread to cover everything.
+
+Chapter 12 promised the *why reverse KL is better* in chapter 15 -- here it is.
+
+---
+
+<!-- layout: section-break -->
+<!-- align: center -->
+
+## Part 3: Why RL generalizes more
+
+---
+
+<!-- valign: center -->
+<!-- cite-right: chu2025sft -->
+## Even with no penalty: "SFT memorizes, RL generalizes"
+
+Controlled study: post-train on one task, evaluate under a rule shift [@chu2025sft].
+
+- **GeneralPoints**: reach 24 from four cards; shift the face-card rule (train: J/Q/K = 10; test: 11/12/13).
+- **V-IRL**: visual navigation; shift from absolute (north/east) to relative (left/right) directions.
+
+On V-IRL, RL improves out-of-distribution accuracy **80.8% → 91.8%**. SFT collapses it **80.8% → 1.3%** -- destroying spatial reasoning the base model already had.
+
+RL-based post-training carries *implicit* regularization from its on-policy structure alone.
 
 ---
 
@@ -294,7 +361,7 @@ Sequential fine-tuning experiments say otherwise.
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 3: Other regularization tools
+## Part 4: Other regularization tools
 
 ---
 
@@ -318,12 +385,13 @@ Every RL-side objective in this lecture points the KL the same way: sampled from
 |||
 
 ```box
-title: Three kinds of control
+title: Four kinds of control
 tone: accent
 content: |
-  1. **Explicit** -- the reverse-KL penalty to the reference (the workhorse)
-  2. **Implicit** -- on-policy sampling alone biases RL toward KL-minimal solutions
-  3. **Auxiliary** -- pretraining gradients, NLL terms, reward margins
+  1. **Explicit** -- the reverse-KL penalty to the reference; β static or run by a controller
+  2. **Structural** -- sampling from the policy makes RL reverse-KL shaped; with the penalty on, the objective is *exactly* a reverse KL to a reward-tilted reference
+  3. **Implicit** -- on-policy sampling alone biases RL toward KL-minimal solutions (RL's razor)
+  4. **Auxiliary** -- pretraining gradients, NLL terms, reward margins
 ```
 
 ---
@@ -331,9 +399,9 @@ content: |
 <!-- valign: center -->
 ## Takeaways
 
-- The KL penalty is the explicit control: a **reverse KL**, estimated on the policy's own samples. Watch the KL curve during training.
-- Even with no penalty, on-policy RL is implicitly regularized -- SFT memorizes, RL generalizes.
-- Forgetting tracks KL drift (RL's razor), and **on-policy data** -- not negative gradients -- is why RL forgets less.
+- The KL penalty is the explicit control: a **reverse KL**, estimated on the policy's own samples. Early RLHF didn't even fix β -- it ran a feedback controller to hit a target KL budget.
+- The penalty is not the only reverse KL: the whole KL-regularized RL objective **is** one -- mode-seeking toward a reward-tilted reference -- while SFT is the forward direction, mass-covering toward the data.
+- Even with no penalty, on-policy RL is implicitly regularized -- SFT memorizes, RL generalizes. Forgetting tracks KL drift (RL's razor), and **on-policy data** -- not negative gradients -- is why RL forgets less.
 - Most other regularizers are scaffolding: they stabilize one setup and disappear in the next generation.
 
 ---
