@@ -22,6 +22,9 @@ custom_css: |
   /* Bulleted lists should never be centered (markers float, looks bad).
      Target lists only -- leave titles and display-math paragraphs centered. */
   .slide ul, .slide ol, .slide li { text-align: left; }
+  /* Per-line math reveals: left-align display math and tighten spacing so
+     stacked single-line equations read as one aligned derivation. */
+  .slide.math-steps .katex-display { text-align: left; margin: 0.35em 0; }
 ---
 
 <!-- layout: title-sidebar -->
@@ -226,21 +229,23 @@ Read the code: [the original controller](https://github.com/openai/lm-human-pref
 ---
 
 <!-- valign: center -->
-## The penalty and the direction are two different things
+## The reward penalty and the optimization shape are two different things
 
-Part 1 was about a **penalty**: a term added to the reward, with a coefficient you tune (or control). You can turn it off.
+We started with a **penalty** on the RL setup: a term added to the reward, with a coefficient you tune (or control). You can turn it off.
 
-This part is about the **shape of the optimization**: which direction of KL the training procedure relates to. That is set by *where the samples come from*:
+This next part is about the **shape of RL optimization** and how it relates to KL as well.
+It comes down to "which direction of KL" -- that is set by *where the samples come from*:
 
-- **SFT** samples from the *data* → minimizing its loss is exactly minimizing a **forward** KL.
-- **RL** samples from *itself* → *with* the penalty on, maximizing the objective is exactly a **reverse-KL minimization** toward a reward-tilted reference. The identity needs $\beta > 0$; we derive it next.
+<!-- step -->
 
-With the penalty *off*, the objective is just expected reward -- no KL term hides inside it. But on-policy sampling still *biases* RL toward KL-minimal solutions. That empirical story is Part 3.
+- **SFT** samples from *data (or a separate teacher model)* → minimizing its loss is exactly minimizing a **forward** KL.
+- **RL** samples from *itself* → *with* the penalty on, maximizing the objective is exactly a **reverse-KL minimization** toward a reward-tilted reference. This is only true with the KL penalty in the optimization (does not apply to all RLVR results)... but on-policy sampling still *biases* RL toward KL-minimal solutions. More on that later.
 
 ---
 
 <!-- valign: top -->
 <!-- title: center -->
+<!-- cite-right: chen2025retainingdoingroleonpolicy -->
 ## RL is reverse KL
 
 Start from the KL-regularized objective (the one our RL trainers optimize):
@@ -251,32 +256,43 @@ $$
 
 <!-- step -->
 
-Dividing by $-\beta$ and normalizing the reward-tilted reference with $Z(x)$ turns the objective into a single KL -- minimized exactly when $\pi$ equals the tilted distribution. Lecture 6 walked this same path to the optimal policy (the starting point of DPO):
+Dividing by $-\beta$ and normalizing turns the objective into a single KL -- minimized exactly when $\pi$ equals the optimal policy $\pi_\star$. Lecture 6 walked this same path (the starting point of DPO):
 
 $$ \pi_\star(y \mid x) = \frac{1}{Z(x)}\, \pi_{\text{ref}}(y \mid x)\, \exp\!\left(\tfrac{1}{\beta}\, r(x,y)\right) $$
+
+<!-- step -->
+
+Read $\pi_\star$ as the **reward-tilted reference**: take $\pi_{\text{ref}}$ and multiply each completion's probability by $\exp(r/\beta)$, then renormalize (that is all $Z(x)$ does). The "tilt" shifts probability mass toward high-reward completions while staying inside the reference's support -- large $\beta$ tilts barely at all, small $\beta$ concentrates on the highest-reward completions.
 
 ---
 
 <!-- valign: top -->
 <!-- title: center -->
+<!-- class: math-steps -->
+<!-- cite-right: chen2025retainingdoingroleonpolicy -->
 ## RL is reverse KL
 
 Now expand the reverse KL to $\pi_\star$, substituting $\log \pi_\star = \log \pi_{\text{ref}} - \log Z(x) + \tfrac{1}{\beta} r(x,y)$:
 
-$$
-\begin{aligned}
-D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_\star) &= \mathbb{E}_{x \sim \mathcal{D},\, y \sim \pi_\theta}\left[ \log \pi_\theta(y \mid x) - \log \pi_\star(y \mid x) \right] && \text{definition; samples from } \pi_\theta \\
-&= \mathbb{E}_{x \sim \mathcal{D},\, y \sim \pi_\theta}\left[ \log \pi_\theta - \log \pi_{\text{ref}} + \log Z(x) - \tfrac{1}{\beta}\, r(x,y) \right] && \text{substitute } \log \pi_\star \\
-&= -\tfrac{1}{\beta}\,\mathbb{E}\left[r(x,y)\right] + D_{\mathrm{KL}}\!\left(\pi_\theta \,\|\, \pi_{\text{ref}}\right) + \underbrace{\log Z(x)}_{\text{constant}} && \text{regroup the terms} \\
-&\propto -\tfrac{1}{\beta}\, \mathcal{J}_{\text{RL}}(\theta) && \text{drop the constant}
-\end{aligned}
-$$
+$$ D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_\star) = \mathbb{E}_{x \sim \mathcal{D},\, y \sim \pi_\theta}\left[ \log \pi_\theta(y \mid x) - \log \pi_\star(y \mid x) \right] \qquad \text{definition; samples from } \pi_\theta $$
+
+<!-- step -->
+
+$$ \phantom{D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_\star)} = \mathbb{E}_{x \sim \mathcal{D},\, y \sim \pi_\theta}\left[ \log \pi_\theta - \log \pi_{\text{ref}} + \log Z(x) - \tfrac{1}{\beta}\, r(x,y) \right] \qquad \text{substitute } \log \pi_\star $$
+
+<!-- step -->
+
+$$ \phantom{D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_\star)} = -\tfrac{1}{\beta}\,\mathbb{E}\left[r(x,y)\right] + D_{\mathrm{KL}}\!\left(\pi_\theta \,\|\, \pi_{\text{ref}}\right) + \underbrace{\log Z(x)}_{\text{constant}} \qquad \text{regroup the terms} $$
+
+<!-- step -->
+
+$$ \phantom{D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_\star)} \propto -\tfrac{1}{\beta}\, \mathcal{J}_{\text{RL}}(\theta) \qquad \text{drop the constant} $$
 
 <!-- step -->
 
 $$ \boxed{\ \max_\theta\, \mathcal{J}_{\text{RL}}(\theta) \iff \min_\theta\, D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_\star)\ } $$
 
-With the penalty included, RL doesn't just *use* a reverse KL -- the whole objective **is** one, pointed at the reward-tilted reference.
+With the penalty included, RL doesn't just *use* a reverse KL -- the whole objective **is** one, pointed at the reward-tilted reference policy.
 
 ---
 
