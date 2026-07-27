@@ -125,6 +125,15 @@ The Citation block (which has a different heading level across pages — h3 on i
 - **Never add `<!-- notes: ... -->` speaker notes to slides** — they get in the
   way when presenting. Put load-bearing context in the slide body or the PR
   description instead.
+- **Never shut down the colloquium preview server to resolve file conflicts.**
+  The user is often editing the same deck (and watching the preview) while the
+  agent works — killing the server to get edits past a staleness check breaks
+  their loop. Leave the server running.
+- **On file-modified conflicts, edit via script instead of retrying.** The
+  default Read→Edit pathway aborts whenever the file's mtime changes (user
+  saves, server touches) and is not fault tolerant for concurrent editing.
+  After one stale-file error, switch to a targeted `python3`/`sed` replacement
+  of the exact string — verify the match count first, then substitute.
 
 ## Style Notes
 
