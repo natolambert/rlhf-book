@@ -209,7 +209,6 @@ $$ e_t = \operatorname{clip}\!\left( \frac{\mathrm{KL}(\pi_t, \pi_{\text{ref}}) 
 
 <!-- valign: center -->
 <!-- cite-right: ziegler2019fine -->
-<!-- animate: bullets -->
 
 ## Static or dynamic KL penalties? β began as a feedback controller
 
@@ -300,11 +299,11 @@ With the penalty included, RL doesn't just *use* a reverse KL -- the whole objec
 <!-- title: center -->
 ## SFT is forward KL
 
-Now the comparison point. SFT trains on a fixed dataset -- the samples come from the *target*, not the policy -- which makes it the other direction:
+Now the comparison point. SFT trains on a fixed dataset -- the samples come from the *data distribution*, call it $\pi_{\mathcal{D}}$ (not the reward-tilted $\pi_\star$ from the RL slides), which makes it the other direction:
 
 $$
 \begin{aligned}
-D_{\mathrm{KL}}(\pi_\star \,\|\, \pi_\theta) &= \mathbb{E}_{(x,y) \sim \mathcal{D}} \left[ \log \pi_\star(y \mid x) - \log \pi_\theta(y \mid x) \right] && \text{definition; samples are the data}
+D_{\mathrm{KL}}(\pi_{\mathcal{D}} \,\|\, \pi_\theta) &= \mathbb{E}_{(x,y) \sim \mathcal{D}} \left[ \log \pi_{\mathcal{D}}(y \mid x) - \log \pi_\theta(y \mid x) \right] && \text{definition; samples are the data}
 \end{aligned}
 $$
 
@@ -312,7 +311,7 @@ $$
 
 $$
 \begin{aligned}
-&= \underbrace{\mathbb{E}_{(x,y) \sim \mathcal{D}}\left[ \log \pi_\star(y \mid x) \right]}_{-H(\pi_\star),\ \text{constant in } \theta} \; - \; \mathbb{E}_{(x,y) \sim \mathcal{D}}\left[ \log \pi_\theta(y \mid x) \right] && \text{split the expectation}
+&= \underbrace{\mathbb{E}_{(x,y) \sim \mathcal{D}}\left[ \log \pi_{\mathcal{D}}(y \mid x) \right]}_{-H(\pi_{\mathcal{D}}),\ \text{constant in } \theta} \; - \; \mathbb{E}_{(x,y) \sim \mathcal{D}}\left[ \log \pi_\theta(y \mid x) \right] && \text{split the expectation}
 \end{aligned}
 $$
 
@@ -320,7 +319,7 @@ $$
 
 $$
 \begin{aligned}
-&= -H(\pi_\star) + \mathcal{L}_{\text{SFT}}(\theta) \;\propto\; \boxed{\ \mathcal{L}_{\text{SFT}}(\theta)\ } && \text{the NLL term is the SFT loss}
+&= -H(\pi_{\mathcal{D}}) + \mathcal{L}_{\text{SFT}}(\theta) \;\propto\; \boxed{\ \mathcal{L}_{\text{SFT}}(\theta)\ } && \text{the NLL term is the SFT loss}
 \end{aligned}
 $$
 
@@ -343,7 +342,7 @@ Samples come from the **policy itself**. *Mode-seeking*: only penalized where it
 
 **Forward KL** -- supervised fine-tuning:
 
-$$ D_{\mathrm{KL}}(\pi_\star \,\|\, \pi_\theta) = \mathbb{E}_{y \sim \pi_\star}\!\left[\log \tfrac{\pi_\star(y)}{\pi_\theta(y)}\right] $$
+$$ D_{\mathrm{KL}}(\pi_{\mathcal{D}} \,\|\, \pi_\theta) = \mathbb{E}_{y \sim \pi_{\mathcal{D}}}\!\left[\log \tfrac{\pi_{\mathcal{D}}(y)}{\pi_\theta(y)}\right] $$
 
 Samples come from the **target** (a fixed dataset). *Mass-covering*: wherever the target has mass and $\pi_\theta \to 0$, the loss blows up -- the model must spread to cover everything.
 
@@ -459,7 +458,7 @@ Tool use is changing what regularization has to do. In agentic recipes, the KL-t
 What replaced it: **stay close to the distribution you actually sampled from.**
 
 - DPPO masks tokens by a *directly estimated* divergence between the rollout and training policies, instead of PPO's noisy per-token ratio clip [@qi2026dppo]. GLM's IcePop [@glm5team2026glm5] and Kimi's log-ratio interval [@moonshot2026kimik3] do the same job -- gradients masked, not clipped.
-- Why tool use forces this: 20+ turn trajectories, async/partial rollouts, and train-vs-inference engine mismatch make drift from the *sampler* the binding failure, not drift from init. (In TMax, instabilities appear past ~10 assistant turns.)
+- Why tool use forces this: 20+ turn trajectories, async/partial rollouts, and train-vs-inference engine mismatch make drift from the *sampler* the binding failure, not drift from init. (In TMax, instabilities appear past ~10 assistant turns [@ivison2026tmax].)
 
 Note what changed: this is not the reference-anchored reverse KL from this lecture. It is **drift control against the sampling distribution** -- a trust region on each update, not a divergence penalty in the objective.
 
