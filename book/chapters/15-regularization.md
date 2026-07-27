@@ -107,10 +107,10 @@ Some example implementations include [TRL](https://github.com/huggingface/trl/bl
 ## Other Tools to Control Optimization
 
 Within the post-training literature, many prominent models include other methods for regularization that help reach leading performance within their setup.
-These two examples are included to paint a picture for how some leading models have manipulated post-training setups to get stable optimization, rather than as tools that should work explicitly in every setup. 
+These examples are included to paint a picture for how some leading models have manipulated post-training setups to get stable optimization, rather than as tools that should work explicitly in every setup. 
 Countless more creative solutions can work and will be found!
 
-### Pretraining Gradients
+### Pretraining Gradients in RL
 
 Another way of viewing regularization is that you may have a *dataset* that you want the model to remain close to, as done in InstructGPT [@ouyang2022training] "in order to fix the performance regressions on public NLP datasets".
 To implement this, they modify the training objective for RLHF.
@@ -124,6 +124,8 @@ Then, we can add an additional reward for higher probabilities on the standard a
 $$
 J(\theta) = \mathbb{E}_{(x,y) \sim \mathcal{D}_{\pi_{\text{RL},\theta}}} \left[ r_{\theta}(y \mid x) - \lambda r_{\text{reg.}} \right] + \gamma \mathbb{E}_{x \sim \mathcal{D}_{\text{pretrain}}} \left[ \log(\pi_{\text{RL},\theta}(x)) \right]
 $$ {#eq:objective_pretraining}
+
+### Next-token Accuracy in DPO
 
 Recent work proposed using a negative log-likelihood term to balance the optimization of Direct Preference Optimization (DPO) [@pang2024iterative].
 Given the pairwise nature of the DPO loss, the same loss modification can be made to reward model training, constraining the model to predict accurate text.
@@ -140,7 +142,7 @@ where $P_{\theta}$ is the trainable policy model, $P_{\text{ref.}}$ is a fixed r
 The first term is the standard DPO logistic loss: it increases the margin between the win and loss using the difference of log-likelihood ratios, $\log \tfrac{P_{\theta}}{P_{\text{ref.}}}$, and $\beta$ controls how strongly this preference signal pulls away from the reference.
 The second term is a length-normalized negative log-likelihood penalty on the winning completion, weighted by $\alpha$, which helps keep the preferred text high-likelihood in an absolute language modeling sense rather than only relatively better than the rejected sample.
 
-### Margin-Based Regularization
+### Margin-Based Regularization in Reward Modeling
 
 Controlling the optimization is less well defined in other parts of the RLHF stack.
 Most reward models have no regularization beyond the standard contrastive loss function.
