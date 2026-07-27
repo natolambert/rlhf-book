@@ -85,7 +85,7 @@ With the emergence of large-scale tool-use, regularization is coming back into v
 
 How we control optimization pressures on models explicitly.
 
-How the math of the optimizers we use changes the shapoes of the models.
+How the math of the optimizers we use changes the shapes of the models.
 
 |||
 
@@ -330,7 +330,7 @@ Same gradients, same minimum: minimizing the SFT loss *is* minimizing forward KL
 <!-- rows: 18/82 -->
 ## SFT and RL are the two directions of KL
 
-This is very reminiscent of Lecture 7 (on-policy distillation), with both directions of KL at play. Post-training math repeats itself.:
+This is very reminiscent of Lecture 7 (on-policy distillation), with both directions of KL at play. Post-training math repeats itself:
 
 ===
 
@@ -499,11 +499,12 @@ Tool use is changing what regularization has to do. In agentic recipes, the KL-t
 ## Takeaways
 
 - The KL penalty is the explicit control: a **reverse KL**, estimated on the policy's own samples. 
-- The KL-regularized RL objective is a reverse KL minimization -- mode-seeking toward a reward-shaped reference policy -- while SFT is the forward direction, mass-covering toward the data.
+- The KL-regularized RL objective is a reverse KL minimization -- mode-seeking toward a reward-tilted reference policy -- while SFT is the forward direction, mass-covering toward the data.
 - Even with no penalty, on-policy RL is implicitly regularized -- SFT memorizes, RL generalizes. 
 
 ---
 
+<!-- columns: 50/50 -->
 <!-- valign: center -->
 ## The course so far
 
@@ -514,6 +515,9 @@ Tool use is changing what regularization has to do. In agentic recipes, the KL-t
 4. RL: Implementation & Practice *(ch. 6)*
 5. The Rise of Reasoning Models *(ch. 7)*
 6. Direct Preference Optimization *(ch. 8)*
+
+|||
+
 7. Synthetic Data & Modern Post-training *(ch. 12)*
 8. Preferences & Preference Data *(ch. 10-11)*
 9. Over-Optimization & RLHF's Bad Reputation *(ch. 14, app. B)*
