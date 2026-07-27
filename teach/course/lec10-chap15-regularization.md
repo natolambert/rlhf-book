@@ -1,5 +1,5 @@
 ---
-title: "Lecture 10: Regularization Tools and The Mechanics of SFT vs. RL"
+title: "Lecture 10: Regularization in RL, Why RL Generalizes, and why SFT Forgets"
 author: "Nathan Lambert"
 fonts:
   heading: "Rubik"
@@ -53,7 +53,7 @@ custom_css: |
 
 The RL step maximizes reward from the reward model **minus a penalty for drifting from the reference model**.
 
-This lecture is about that penalt -- and what happens with and without it.
+This lecture is about that penalty -- and what happens with and without it.
 
 |||
 
@@ -69,7 +69,7 @@ Same RL loop, different reward source: a verification function instead of a rewa
 
 Reasoning models (before tool use) often dropped the KL penalty to enhance learning.
 
-With the emergence of large-scale tool-use, KL penalties have started coming a bit more into vogue again (more on this at the end of the lecture).
+With the emergence of large-scale tool-use, regularization is coming back into vogue -- but aimed at drift from the *sampling distribution*, not a KL penalty to a reference model (more on this at the end of the lecture).
 
 |||
 
@@ -143,6 +143,7 @@ $$ r = r_\theta - \lambda_{\text{KL}} \, D_{\mathrm{KL}}\!\left( \pi_{\text{RL}}
 - KL control for RL predates LLMs: dialogue agents [@jaques2017sequence], then fine-tuning pretrained models [@jaques2020human]. 
 - This penalty is a **reverse KL** -- estimated by sampling from the *policy* and scoring against the reference. It punishes the policy for putting mass where the reference would not.
 - "KL distance" is the *optimization distance* spent (colloquially -- KL is not a true metric).
+- In practice, the above $\lambda$ is often written as $\beta$. 
 
 ---
 
@@ -178,8 +179,20 @@ kl_approx = token_lp.sum(-1) - ref_token_lp.sum(-1)
 ---
 
 <!-- valign: center -->
+## What the curves look like in a real run
+
+![](assets/olmo2-grpo-zero-reward-kl.png)
+
+- An OLMo-2-7B RL-Zero-style GRPO run from open-instruct ([public W&B logs](https://wandb.ai/ai2-llm/open_instruct_public/reports/OLMo-2-7B-GRPO-Fast-Zero--VmlldzoxMjA0MjU4MQ)): the verifiable reward climbs while the logged KL to the reference drifts up and wanders. This run has **β = 0** -- nothing pulls the KL back; it is purely a diagnostic.
+- This is the healthy shape. A KL curve that bends sharply upward while reward jumps usually means the policy found a bug or a hack, not a capability.
+
+---
+
+<!-- valign: center -->
 <!-- cite-right: ziegler2019fine -->
-## Static or dynamic? β began as a feedback controller
+<!-- animate: bullets -->
+
+## Static or dynamic KL penalties? β began as a feedback controller
 
 The first RLHF-on-LMs paper did not fix β. It picked a **target KL** and let a controller chase it:
 
@@ -189,12 +202,14 @@ $$ e_t = \operatorname{clip}\!\left( \frac{\mathrm{KL}(\pi_t, \pi_{\text{ref}}) 
 - The idea is older than RLHF: PPO's original **adaptive KL penalty** variant doubled or halved β around a target [@schulman2017proximal], and constrained RL later made the controls framing explicit with full **PID controllers** on the penalty multiplier [@stooke2020responsive].
 - Modern practice swung back to a small **static** β -- or, in many RLVR reasoning recipes, no KL term at all.
 
+Read the code: [the original controller](https://github.com/openai/lm-human-preferences/blob/cbfd210bb8b08f6bc5c26878c10984b90f516c66/lm_human_preferences/train_policy.py#L115-L124) (lm-human-preferences, 2019) · [TRL's `AdaptiveKLController`](https://github.com/huggingface/trl/blob/v0.11.4/trl/trainer/utils.py#L54-L69) (v0.11.4 -- deleted in the modern rewrite) · [open-instruct today](https://github.com/allenai/open-instruct/blob/5b2ebfa12381925bb431845d588dbc9ebead20a7/open_instruct/grpo_utils.py#L104-L105): a static `beta = 0.05`, [applied directly in the loss](https://github.com/allenai/open-instruct/blob/5b2ebfa12381925bb431845d588dbc9ebead20a7/open_instruct/grpo_fast.py#L718).
+
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 2: The optimization is a reverse KL
+## Part 2: RL optimization is a reverse KL
 
 ---
 
@@ -203,12 +218,12 @@ $$ e_t = \operatorname{clip}\!\left( \frac{\mathrm{KL}(\pi_t, \pi_{\text{ref}}) 
 
 Part 1 was about a **penalty**: a term added to the reward, with a coefficient you tune (or control). You can turn it off.
 
-This part is about the **shape of the optimization**: which direction of KL the whole training procedure minimizes. That is set by *where the samples come from*, not by any penalty:
+This part is about the **shape of the optimization**: which direction of KL the training procedure relates to. That is set by *where the samples come from*:
 
-- **SFT** samples from the *data* → it minimizes a **forward** KL.
-- **RL** samples from *itself* → it is **reverse**-KL shaped, even with the penalty off.
+- **SFT** samples from the *data* → minimizing its loss is exactly minimizing a **forward** KL.
+- **RL** samples from *itself* → *with* the penalty on, maximizing the objective is exactly a **reverse-KL minimization** toward a reward-tilted reference. The identity needs $\beta > 0$; we derive it next.
 
-They meet in one clean identity: *with* the penalty on, the full RL objective is *exactly* a reverse KL. We derive that next -- the penalty-free version of the story is Part 3.
+With the penalty *off*, the objective is just expected reward -- no KL term hides inside it. But on-policy sampling still *biases* RL toward KL-minimal solutions. That empirical story is Part 3.
 
 ---
 
@@ -397,7 +412,7 @@ title: Four kinds of control
 tone: accent
 content: |
   1. **Explicit** -- the reverse-KL penalty to the reference; β static or run by a controller
-  2. **Structural** -- sampling from the policy makes RL reverse-KL shaped; with the penalty on, the objective is *exactly* a reverse KL to a reward-tilted reference
+  2. **Structural** -- with the penalty on ($\beta > 0$), the RL objective is *exactly* a reverse KL to a reward-tilted reference
   3. **Implicit** -- on-policy sampling alone biases RL toward KL-minimal solutions (RL's razor)
   4. **Auxiliary** -- pretraining gradients, NLL terms, reward margins
 ```
@@ -415,10 +430,10 @@ Tool use is changing what regularization has to do. In agentic recipes, the KL-t
 
 What replaced it: **stay close to the distribution you actually sampled from.**
 
-- DPPO masks tokens by a *directly estimated* divergence between the rollout and training policies, instead of PPO's noisy per-token ratio clip [@qi2026dppo]. GLM's IcePop and Kimi's log-ratio interval do the same job -- gradients masked, not clipped.
+- DPPO masks tokens by a *directly estimated* divergence between the rollout and training policies, instead of PPO's noisy per-token ratio clip [@qi2026dppo]. GLM's IcePop [@glm5team2026glm5] and Kimi's log-ratio interval [@moonshot2026kimik3] do the same job -- gradients masked, not clipped.
 - Why tool use forces this: 20+ turn trajectories, async/partial rollouts, and train-vs-inference engine mismatch make drift from the *sampler* the binding failure, not drift from init. (In TMax, instabilities appear past ~10 assistant turns.)
 
-Same reverse-KL machinery as this lecture -- the anchor just moved from a frozen reference to the sampling distribution.
+Note what changed: this is not the reference-anchored reverse KL from this lecture. It is **drift control against the sampling distribution** -- a trust region on each update, not a divergence penalty in the objective.
 
 ---
 
