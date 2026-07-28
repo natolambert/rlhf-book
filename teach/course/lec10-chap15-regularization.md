@@ -1,5 +1,5 @@
 ---
-title: "Lecture 10: Regularization in RL, Why RL Generalizes, and why SFT Forgets"
+title: "Lecture 10: Regularization in RL, Why RL Generalizes, and Why SFT Forgets"
 author: "Nathan Lambert"
 fonts:
   heading: "Rubik"
@@ -30,7 +30,7 @@ custom_css: |
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
 
-# Lecture 10: Regularization in RL, Why RL Generalizes, and why SFT Forgets
+# Lecture 10: Regularization in RL, Why RL Generalizes, and Why SFT Forgets
 
 <div class="colloquium-title-eyebrow">rlhfbook.com</div>
 
