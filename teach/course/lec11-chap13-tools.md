@@ -374,7 +374,7 @@ Step 3 is classic RL again: a full trajectory of actions and observations, one r
 
 The SFT rung, done in the open: a fully open **data-curation pipeline** for agentic training data, validated by **more than 100 controlled ablation experiments** -- *which curation decisions matter*, not just one recipe. Fine-tuning Qwen3-32B on the resulting 100K examples reaches **44.8%** average across seven agentic benchmarks, ahead of every prior open-data agentic model.
 
-![OpenThoughts-Agent data (red) leads open agentic datasets at every training-set size. Raoof et al., 2026.](assets/openthoughts-agent-results.jpg)
+![OpenThoughts-Agent data (red) leads open agentic datasets at every training-set size. Raoof et al., 2026.](assets/openthoughts-agent-results.png)
 
 ---
 
@@ -462,6 +462,7 @@ content: |
 
 ---
 
+<!-- columns: 50/50 -->
 <!-- valign: center -->
 ## The course so far
 
@@ -472,6 +473,9 @@ content: |
 4. RL: Implementation & Practice *(ch. 6)*
 5. The Rise of Reasoning Models *(ch. 7)*
 6. Direct Preference Optimization *(ch. 8)*
+
+|||
+
 7. Synthetic Data & Modern Post-training *(ch. 12)*
 8. Preferences & Preference Data *(ch. 10-11)*
 9. Over-Optimization & RLHF's Bad Reputation *(ch. 14, app. B)*
