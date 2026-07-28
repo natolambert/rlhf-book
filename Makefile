@@ -332,9 +332,6 @@ TEACH_TALK_SOURCES = $(wildcard teach/*/talk.md) $(wildcard teach/*/slides.md)
 TEACH_DIRS = $(sort $(patsubst teach/%/,%,$(dir $(TEACH_TALK_SOURCES))))
 COURSE_LECTURE_SOURCES = $(wildcard teach/course/*.md)
 COURSE_LECTURE_NAMES = $(basename $(notdir $(COURSE_LECTURE_SOURCES)))
-# Static course decks: externally produced slides committed as teach/course/<name>/slides.pdf
-COURSE_STATIC_PDFS = $(wildcard teach/course/*/slides.pdf)
-COURSE_STATIC_NAMES = $(patsubst teach/course/%/slides.pdf,%,$(COURSE_STATIC_PDFS))
 
 # Map from dir name to its .md source file (prefer talk.md over slides.md)
 teach_source = $(firstword $(wildcard teach/$(1)/talk.md teach/$(1)/slides.md))
@@ -342,12 +339,13 @@ COLLOQUIUM = uv run --extra teach colloquium
 
 teach: $(foreach d,$(TEACH_DIRS),teach-$(d)) course-lectures
 
-course-lectures: $(foreach l,$(COURSE_LECTURE_NAMES),course-lecture-$(l)) $(foreach s,$(COURSE_STATIC_NAMES),course-static-$(s))
+course-lectures: $(foreach l,$(COURSE_LECTURE_NAMES),course-lecture-$(l)) teach-assets
 
-course-static-%:
-	@mkdir -p $(BUILD)/html/teach/course/$*
-	cp teach/course/$*/slides.pdf $(BUILD)/html/teach/course/$*/slides.pdf
-	@echo "Copied static deck teach/course/$*"
+# Static files (externally produced slide PDFs, etc.) served at /teach/assets/
+teach-assets:
+	@mkdir -p $(BUILD)/html/teach/assets
+	cp -r teach/assets/. $(BUILD)/html/teach/assets/
+	@echo "Copied teach/assets"
 
 teach-%:
 	@mkdir -p $(BUILD)/html/teach/$*
