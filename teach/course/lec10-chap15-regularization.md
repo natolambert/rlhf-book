@@ -230,7 +230,7 @@ Read the code: [the original controller](https://github.com/openai/lm-human-pref
 <!-- valign: center -->
 ## The reward penalty and the optimization shape are two different things
 
-We started with a **penalty** on the RL setup: a term added to the reward, with a coefficient you tune (or control). You can turn it off.
+We started with a **penalty** on the RL setup: a term added to the reward, with a coefficient you tune (or control).
 
 This next part is about the **shape of RL optimization** and how it relates to KL as well.
 It comes down to "which direction of KL" -- that is set by *where the samples come from*:
@@ -261,7 +261,7 @@ $$ \pi_\star(y \mid x) = \frac{1}{Z(x)}\, \pi_{\text{ref}}(y \mid x)\, \exp\!\le
 
 <!-- step -->
 
-Read $\pi_\star$ as the **reward-tilted reference**: take $\pi_{\text{ref}}$ and multiply each completion's probability by $\exp(r/\beta)$, then renormalize (that is all $Z(x)$ does). The "tilt" shifts probability mass toward high-reward completions while staying inside the reference's support -- large $\beta$ tilts barely at all, small $\beta$ concentrates on the highest-reward completions.
+Read $\pi_\star$ as the **reward-tilted reference** (AI suggested name, I couldn't come up with something better): take $\pi_{\text{ref}}$ and multiply each completion's probability by $\exp(r/\beta)$, then renormalize (that is all $Z(x)$ does). The "tilt" shifts probability mass toward high-reward completions while staying inside the reference's support -- large $\beta$ tilts barely at all, small $\beta$ concentrates on the highest-reward completions.
 
 ---
 
@@ -394,14 +394,14 @@ $$ D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_T) = \mathbb{E}_{z \sim \pi_\theta}\!\l
 <!-- cite-right: chu2025sft -->
 ## "SFT memorizes, RL generalizes"
 
-Controlled study: post-train on one task, evaluate under a rule shift [@chu2025sft].
+Controlled study: post-train on one task, evaluate under a rule shift (ie. small modifications of the problem to test out-of-distribution) [@chu2025sft].
 
-- **GeneralPoints**: reach 24 from four cards; shift the face-card rule (train: J/Q/K = 10; test: 11/12/13).
-- **V-IRL**: visual navigation; shift from absolute (north/east) to relative (left/right) directions.
+- **GeneralPoints**: reach 24 by combining four cards with $+,-,\times,\div$; test with shift to the face-card rule (train: J/Q/K = 10; test: 11/12/13).
+- **V-IRL**: visual navigation; test with shift from absolute (north/east) to relative (left/right) directions.
 
 On V-IRL, RL improves out-of-distribution accuracy **80.8% → 91.8%**. SFT collapses it **80.8% → 1.3%** -- destroying spatial reasoning the base model already had.
 
-RL-based post-training carries *implicit* regularization from its on-policy structure alone.
+RL-based post-training carries *implicit* regularization from its on-policy structure alone. SFT is more brittle.
 
 Paper: [arxiv.org/abs/2501.17161](https://arxiv.org/abs/2501.17161)
 
@@ -427,12 +427,12 @@ That intuition assumes a unimodal policy -- LLMs are multimodal. Paper: [arxiv.o
 
 ---
 
-<!-- rows: 52/48 -->
+<!-- rows: 50/50 -->
 <!-- valign: center -->
 <!-- cite-right: shenfeld2026rls -->
 ## RL's razor: Lower KL drift for equivalent performance
 
-> *"Among the many high-reward solutions for a new task, on-policy methods such as RL are inherently biased toward solutions that remain closer to the original policy in KL divergence."* [@shenfeld2026rls]
+> *"Among the many high-reward solutions for a new task, on-policy methods such as RL are inherently biased toward solutions that remain closer to the original policy in KL divergence."*
 
 - Forgetting tracks KL drift: $\text{Forgetting} \approx f\!\left(\mathbb{E}_{x \sim \tau}\!\left[D_{\mathrm{KL}}\!\left(\pi_0 \,\|\, \pi\right)\right]\right)$ with $R^2 = 0.96$ -- measured on the **new task's data**. A cheap forgetting predictor.
 - The ablation: **on-policy data fully accounts for the difference** -- negative gradients have no discernible effect. Paper: [arxiv.org/abs/2509.04259](https://arxiv.org/abs/2509.04259)
@@ -458,7 +458,7 @@ Most of these are scaffolding: added to stabilize one setup, simplified away in 
 
 - **Pretraining next-token pred. gradients** (InstructGPT): add $\gamma\, \mathbb{E}_{x \sim \mathcal{D}_{\text{pretrain}}}\left[\log \pi_{\text{RL}}(x)\right]$ to the objective, "to fix the performance regressions on public NLP datasets" [@ouyang2022training].
 - **NLL alongside DPO**: $\mathcal{L}_{\text{DPO+NLL}} = \mathcal{L}_{\text{DPO}} + \alpha\, \mathcal{L}_{\text{NLL}}$ keeps the chosen text high-likelihood in absolute terms, not just relatively better [@pang2024iterative].
-- **Margin loss** for reward models (Llama 2): $-\log \sigma\!\left(r_{\theta}(y_c) - r_{\theta}(y_r) - m(y_c, y_r)\right)$, where the margin $m$ comes from annotator rating deltas -- **the Likert scales from Lecture 8** [@touvron2023llama].
+- **Margin loss** for reward models (Llama 2): $-\log \sigma\!\left(r_{\theta}(y_c) - r_{\theta}(y_r) - m(y_c, y_r)\right)$, where the margin $m$ comes from annotator rating deltas -- the Likert scales from Lecture 8 [@touvron2023llama].
 
 
 
@@ -472,7 +472,7 @@ Tool use is changing what regularization has to do. In agentic recipes, the KL-t
 
 - GLM-5 removes it outright -- "to accelerate RL improvement" [@glm5team2026glm5]. Kimi does not use one either: the K2 → K3 recipes ship with no KL penalty and no reference policy at all [@moonshot2026kimik3].
 - In our TMax terminal-agent recipe we measured the trade-off: a small KL reduced the severity of collapse but lowered reward, so the final recipe is $\beta = 0$ [@ivison2026tmax].
-- Why tool use forces the change: 20+ turn trajectories, async/partial rollouts, and train-vs-inference engine mismatch make drift from the *sampler* the binding failure, not drift from init. (In TMax, instabilities increase past 10 assistant turns and were absent below 5 [@ivison2026tmax].)
+- TMax paper summarizes the change in numerical issues we are battling: 20+ turn trajectories, async/partial rollouts, and train-vs-inference engine mismatch make drift from the *sampler* the binding failure, not drift from init. (In TMax, instabilities increase past 10 assistant turns and were absent below 5 [@ivison2026tmax].)
 
 ---
 
@@ -481,13 +481,14 @@ Tool use is changing what regularization has to do. In agentic recipes, the KL-t
 <!-- cite-right: qi2026dppo -->
 ## A trust region on the sampling distribution
 
-**DPPO** (Divergence Proximal Policy Optimization) masks tokens by a *directly estimated* divergence between the rollout and training policies (binary TV), instead of PPO's per-token ratio clip [@qi2026dppo].
+**DPPO** (Divergence Proximal Policy Optimization) masks tokens by a *directly estimated* divergence between the rollout and training policies (binary Total Variation), instead of PPO's per-token ratio clip [@qi2026dppo].
 
 ===
 
 <!-- row-columns: 55/45 -->
-- The per-token ratio is a noisy one-sample estimate of that divergence. GLM's IcePop [@glm5team2026glm5] and Kimi's log-ratio interval [@moonshot2026kimik3] do the same job: gradients masked, not clipped.
-- This is not the reference-anchored reverse KL from this lecture -- it is **drift control against the sampling distribution**, a trust region on each update rather than a penalty in the objective.
+The per-token ratio is a noisy one-sample estimate of that divergence. GLM's IcePop [@glm5team2026glm5] and Kimi's log-ratio interval [@moonshot2026kimik3] do the same job: gradients masked, not clipped.
+
+This is where the eye of regularization is today -- algorithmic updates rather than KL penalties.
 
 |||
 
@@ -501,6 +502,8 @@ Tool use is changing what regularization has to do. In agentic recipes, the KL-t
 - The KL penalty is the explicit control: a **reverse KL**, estimated on the policy's own samples. 
 - The KL-regularized RL objective is a reverse KL minimization -- mode-seeking toward a reward-tilted reference policy -- while SFT is the forward direction, mass-covering toward the data.
 - Even with no penalty, on-policy RL is implicitly regularized -- SFT memorizes, RL generalizes. 
+
+Verifiable rewards are much less prone to overoptimization than reward models! Hence, regularization is changing and the KL penalty is playing a smaller role.
 
 ---
 
