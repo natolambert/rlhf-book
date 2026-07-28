@@ -12,6 +12,9 @@ search-title: "Chapter 15: Regularization"
 meta-description: "Regularization methods that keep RLHF and post-training updates useful without degrading the base model."
 next-chapter: "Evaluation"
 next-url: "16-evaluation"
+lectures:
+  - video: "https://www.youtube.com/watch?v=IwpYxANrpUs&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=15"
+    label: "Lecture 10: Regularization in RL, Why RL Generalizes, and Why SFT Forgets"
 ---
 
 # Regularization
