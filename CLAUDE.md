@@ -125,6 +125,9 @@ The Citation block (which has a different heading level across pages — h3 on i
 - **Never add `<!-- notes: ... -->` speaker notes to slides** — they get in the
   way when presenting. Put load-bearing context in the slide body or the PR
   description instead.
+- **Do not add "Where to go deeper" / further-reading slides to lecture
+  drafts.** Key references belong inline on the slides where the work is
+  discussed (links + cite-right), not in a closing link-dump slide.
 - **Never shut down the colloquium preview server to resolve file conflicts.**
   The user is often editing the same deck (and watching the preview) while the
   agent works — killing the server to get edits past a staleness check breaks

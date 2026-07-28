@@ -440,25 +440,6 @@ The honest-practitioner slide -- most of the effort went into *stability*, not s
 - **MCP** standardizes the tool side; the **harness** is the still-unstandardized model side, and it's part of the policy.
 - SFT establishes the skill; RL with environment feedback scales it -- and **environments, stability, and cost** are the real frontier.
 
----
-
-<!-- columns: 50/50 -->
-## Where to go deeper
-
-Tool use is where post-training meets systems engineering -- the best recent references are open recipes, not just papers.
-
-|||
-
-```box
-title: Go deeper
-tone: surface
-content: |
-  - [**TMax**](https://arxiv.org/abs/2606.23321) -- open terminal-agent RL, environments to weights.
-  - [**OpenThoughts-Agent**](https://arxiv.org/abs/2606.24855) -- what matters in agentic SFT data.
-  - [**Practitioner's Guide to Multi-turn Agentic RL**](https://arxiv.org/abs/2510.01132) -- the design space.
-  - [**Terminal-Bench**](https://arxiv.org/abs/2601.11868) -- the eval of the moment.
-  - Book chapter 13.
-```
 
 ---
 
