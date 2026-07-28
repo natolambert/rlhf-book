@@ -109,6 +109,16 @@ content: |
 
 ---
 
+<!-- valign: center -->
+<!-- title: center -->
+## Quick pause: who's here?
+
+Are you **following the whole course**, or did you **come for just this video**?
+
+Leave a comment below and tell me -- it genuinely helps me plan the rest of the course (and what to make after it).
+
+---
+
 <!-- layout: section-break -->
 <!-- align: center -->
 
