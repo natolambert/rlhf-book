@@ -195,7 +195,7 @@ print(str(C / S)[:52])
 - **2015--2020, precursors**: Neural Programmer-Interpreters execute programs with neural networks [@reed2015neural]; retrieval augmentation pulls in outside knowledge [@lewis2020retrieval]
 - **2021**: WebGPT browses the web, trained with human feedback [@nakano2021webgpt]
 - **2022**: TALM bootstraps tool-augmented training data [@parisi2022talm]; PAL offloads computation to Python [@gao2023pal]; ReAct interleaves reasoning and actions [@yao2023react]
-- **2023**: Toolformer teaches itself APIs w/ synthetic data[@schick2023toolformerlanguagemodelsteach]; Gorilla scales to 1,645 APIs [@patil2023gorilla]; ToolLLM to 16,000+ [@qin2023toollm]; OpenAI ships function calling in the API and Code Interpreter in ChatGPT in API/ChatGPT
+- **2023**: Toolformer teaches itself APIs w/ synthetic data [@schick2023toolformerlanguagemodelsteach]; Gorilla scales to 1,645 APIs [@patil2023gorilla]; ToolLLM to 16,000+ [@qin2023toollm]; OpenAI ships function calling in the API and Code Interpreter in ChatGPT
 - **2024**: Model Context Protocol acts as some standardization [@anthropic_mcp_2024]
 - **2025**: o3 makes multistep tool calls *inside* its reasoning [@openai2025o3]
 - **2026**: terminal and coding agents become the frontier of post-training [@tbench2026]
