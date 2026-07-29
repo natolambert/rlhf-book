@@ -479,14 +479,84 @@ Most of the effort goes into stability during scaling, rather than speed or lear
 
 ---
 
-<!-- animate: bullets -->
-## The broader challenge map
+<!-- cite-right: kimiteam2026k3 -->
+## Frontier practice: Kimi K3 environment management
 
-- **Long-tail rollouts**: one trajectory makes 2 tool calls, another makes 200 -- stragglers idle the fleet; recall the async systems from Lecture 4, now with slow *environments* in the loop
-- **Credit assignment**: one sparse reward over a $10^5$--$10^6$-token trajectory; dense turn-level rewards help speed but can destabilize training [@wang2025practitioner]
-- **Verifier gaming**: TMax rollouts were caught replacing test files with no-ops and faking binaries with simulated logs [@ivison2026tmax]; verifier exploitation is now systematically measurable [@gamingverifiers2026] -- Lecture 9's Goodhart, now holding a terminal
-- **Harness-native training**: production agents live inside harnesses that gym-style RL interfaces can't express -- porting them loses training signal
-- **The frontier is already there**: Kimi K2 [@kimiteam2025kimik2] and GLM-4.5 [@zeng2025glm45] train jointly across large simulated and real tool environments -- recall Lecture 5's model timeline
+Kimi K3 (July 2026) spends one sentence on its RL algorithm ("follows the algorithm in Kimi K2.5") -- and about seven pages on environments and sandboxes: **51,219,741 sandboxes** created during training, microVMs that checkpoint in 133ms, and mock Gmail/Notion/Slack "living environments" where one rollout can span thousands of tool calls. Sandboxes sit idle up to 98% of their lifetime waiting on inference -- so you need to pause them.
+
+---
+
+<!-- cite-right: kimiteam2026k3 -->
+## Frontier practice: K3 scaling RL
+
+![Kimi K3: scores and average assistant steps both scale with RL FLOPs across eight agentic domains -- tool-call depth is learned, not prompted. Kimi Team, 2026.](assets/kimi-k3-rl-scaling.jpg)
+
+---
+
+<!-- columns: 55/45 -->
+## Frontier practice: Harness randomization 
+
+Open models train across multiple harnesses so deployment is smooth.
+
+- Kimi K3: "training with a single fixed agent harness can cause a model to overfit" -- their RL environment composes configs that instantiate **Kimi Code, Claude Code, Codex, OpenClaw, and Hermes** [@kimiteam2026k3]
+- Nemotron 3 Ultra trains every task vertical under **at least two harnesses** (OpenHands, Terminus, Droid, ...) [@nemotron3ultra]
+
+|||
+
+```box
+title: Example Harness Gains
+tone: accent
+content: |
+  Polar (NVIDIA): same model, same GRPO, same tasks -- **+22.6** points on SWE-Bench Verified training through the Codex harness (3.8 → 26.4: RL teaching an *unfamiliar* harness), **+0.6** through Qwen Code (already fluent: 34.6 → 35.2).
+```
+
+<!-- cite-right: polar2026 -->
+
+---
+
+## Frontier practice: The RLVR mixing wall
+
+Nemotron 3 Ultra says as environments multiply, "each domain contributes only a relatively small number of samples to any given training batch, diluting the per-domain learning signal." 
+
+A common answer is to **train domain experts with RL, then merge them via multi-teacher on-policy distillation** (the MOPD from [Conversation 1](https://www.youtube.com/watch?v=sbXEPxIazqY&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=9)).
+
+Some example MOPD gains from Nemotron 3 Ultra [@nemotron3ultra]:
+
+| Benchmark | SFT | RLVR | MOPD | Teacher |
+|---|---|---|---|---|
+| TauBench Telecom | 55.7 | 82.7 | 92.9 | 94.0 |
+| Terminal-Bench 2.0 | 34.5 | 44.5 | **54.0** | 50.0 |
+| BrowseComp | 14.3 | 31.0 | 44.4 | 51.0 |
+| SWE-Bench Verified | 63.5 | 65.8 | 71.7 | 72.5 |
+
+
+---
+
+<!-- cite-right: glm5team2026glm5 -->
+## Frontier practice:  Reward hacking
+
+GLM-5's slides-RL policy discovered `overflow: hidden` to make an overflowing slide *measure* 16:9, and flex-padding to stretch short ones -- the fix was patching the renderer, not the reward. 
+
+Nemotron physically deletes future git commits and firewalls GitHub so SWE agents can't read the gold patch; Kimi K3 ships a kernel-exploit detector and public/hidden verifier pairs. 
+
+(of course, the OpenAI hack of HuggingFace 😳)
+
+---
+
+<!-- cite-right: glm5team2026glm5 -->
+## Frontier practice:  Reward hacking
+
+![GLM-5, figure 9: two reward hacks from slide-generation RL, with the exploit CSS the policy wrote. Left: normal renders; right: "hacked" renders that satisfy the geometric check. GLM-5 Team, 2026.](assets/glm5-reward-hacking.jpg)
+
+---
+
+<!-- animate: bullets -->
+## More headaches
+
+- **Long-tail rollouts**: one trajectory makes 2 tool calls, another makes 200 -- async designed to help with this, but long-tail is challenging
+- **Credit assignment**: one sparse reward over a $10^5$--$10^6$-token trajectory; expensive rollouts also make GRPO style algorithms more costly
+- **Verifier gaming**: TMax rollouts were caught replacing test files with no-ops and faking binaries with simulated logs [@ivison2026tmax]; verifier exploitation is common [@gamingverifiers2026] -- over-optimization is back (lec. 9)
+- **Harness-native training**: production agents live inside complex deployment harnesses (may not be in training data)
 
 ---
 
