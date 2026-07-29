@@ -217,19 +217,24 @@ Interleaving them in one token stream is the pattern every modern agent still us
 
 ---
 
+<!-- columns: 55/45 -->
 <!-- cite-right: schick2023toolformerlanguagemodelsteach -->
 ## Toolformer: Models "teach themselves" tools
 
 Tools: "a calculator, a Q&A system, two different search engines, a translation system, and a calendar."
 
-Via a self-labelling/synethic data mechanism:
+Via a self-labelling/synthetic data mechanism:
 
 1. Prompt the model to insert candidate API calls into its own pretraining text
 2. Execute the calls
 3. Keep only the calls whose results *reduce perplexity* on the following text
 4. Fine-tune on the filtered corpus
 
-No human tool-use demonstrations required -- an early instance of the synthetic-data flywheel from Lecture 7.
+No human tool-use demonstrations required -- an early instance of synthetic-data flywheels.
+
+|||
+
+![Toolformer's exemplary predictions: the model decides on its own to call a QA system, a calculator, a translator, and Wikipedia search mid-text. Schick et al., 2023.](assets/toolformer-examples.jpg)
 
 ---
 
@@ -237,10 +242,10 @@ No human tool-use demonstrations required -- an early instance of the synthetic-
 
 - **Schema-level**: exact match on tool name and arguments, JSON validity -- Berkeley Function Calling Leaderboard, built on Gorilla's APIBench [@patil2023gorilla]
 - **Breadth**: ToolLLM / ToolBench span 16,000+ real-world APIs [@qin2023toollm]
-- **Reliability**: τ-bench measures pass^k -- succeeding on *all* $k$ trials, not pass@k's *any* of $k$. Agents that work 9 times out of 10 are not deployable [@yao2024taubench]
-- **End-to-end**: Terminal-Bench runs agents on real tasks in containers with verification tests -- frontier agents still fail a third or more of tasks [@tbench2026]
+- **Reliability**: τ-bench measures pass^k -- succeeding on *all* $k$ trials, not pass@k's *any* of $k$. [@yao2024taubench]
+- **End-to-end**: Terminal-Bench runs agents on real tasks in containers with verification tests. [@tbench2026] (long-horizon benchmarks)
 
-The eval ladder mirrors the capability ladder: format $\rightarrow$ selection $\rightarrow$ consistency $\rightarrow$ full tasks.
+The eval ladder mirrors the capability ladder we've seen over time: format $\rightarrow$ selection $\rightarrow$ consistency $\rightarrow$ full tasks.
 
 ---
 
