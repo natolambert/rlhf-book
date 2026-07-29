@@ -125,11 +125,13 @@ Or a complex, richer answer:
 > **Goal**: make your schedule predictable and your environment boring enough that your brain gives up.
 > 
 > **Tonight (quick wins)**:
+>
 > 	1.	Dim lights for the last hour before bed.
 > 	2.	No caffeine after lunch; keep alcohol minimal.
 > 	3.	If you’re stuck awake, get up and do something quiet until sleepy again.
 > 
 > **Daily basics (most impact)**:
+>
 > 	-	Same wake time (even weekends) --> anchors your body clock.
 > 	-	Morning light for 5-10 minutes --> helps set circadian rhythm.
 > 	-	Cool, dark room (fan/eye mask) --> easier to stay asleep.
@@ -218,7 +220,7 @@ A related idea to this theory is the Superficial Alignment Hypothesis, coined in
 
 > A model's knowledge and capabilities are learnt almost entirely during pretraining, while alignment teaches it which subdistribution of formats should be used when interacting with users. If this hypothesis is correct, and alignment is largely about learning style, then a corollary of the Superficial Alignment Hypothesis is that one could sufficiently tune a pretrained language model with a rather small set of examples.
 
-All of the successes of deep learning should have taught you that scaling data is important to performance. Here, the major difference is that the authors are discussing alignment and style, the focus of academic post-training at the time. With a few thousand samples for instruction fine-tuning, you can change a model substantially and improve a narrow set of evaluations, such as AlpacaEval, MT Bench, Arena (formerly ChatBotArena, a platform where users compare anonymous model responses head-to-head), and the like. These do not always translate to more challenging capabilities, which is why Meta wouldn't train its Llama Chat models on just this dataset. Academic results have lessons, but need to be interpreted carefully if you are trying to understand the big picture of the technological arc.
+All of the successes of deep learning should have taught you that scaling data is important to performance. Here, the major difference is that the authors are discussing alignment and style, the focus of academic post-training at the time. With a few thousand samples for instruction fine-tuning, you can change a model substantially and improve a narrow set of evaluations, such as AlpacaEval, MT Bench, Arena (formerly ChatBot Arena, a platform where users compare anonymous model responses head-to-head), and the like. These do not always translate to more challenging capabilities, which is why Meta wouldn't train its Llama Chat models on just this dataset. Academic results have lessons, but need to be interpreted carefully if you are trying to understand the big picture of the technological arc.
 
 What this paper is showing is that you can change models substantially with a few samples. We knew this, and it is important to the short-term adaptation of new models, but their argument for performance leaves the casual readers with the wrong lessons.
 
@@ -233,7 +235,7 @@ RL methods are becoming an increasingly large share of the compute needed to tra
 In the short time since reinforcement learning with verifiable rewards (RLVR) was coined in our work on Tülu 3 in the fall of 2024 [@lambert2024t], the scale of compute used for post-training has grown dramatically.
 DeepSeek R1, famous for popularizing RLVR, used only about 5% of their overall compute in post-training -- 147K H800 GPU hours for RL training on R1 [@guo2025deepseek], relative to 2.8M GPU hours for pretraining the underlying DeepSeek V3 base model [@deepseekai2025deepseekv3technicalreport].
 
-The science studying the core methods of scaling RL as of 2026 shows that individual ablation runs can take 10-100K GPU hours [@khatri2025art], the equivalent of the compute used for the RL stage of Olmo 3.1 Think 32B (released in November of 2025), which trained for 4 weeks on 200 GPUs [@teamolmo2025olmo3].
+The science studying the core methods of scaling RL as of 2026 shows that individual ablation runs can take 10-100K GPU hours [@khatri2025art], almost as much as the compute used for the RL stage of OLMo 3.1 Think 32B (released in November of 2025), which trained for 4 weeks on 200 GPUs [@teamolmo2025olmo3].
 The science of scaled post-training is in its very early stages as of 2026, adopting ideas and methods from pretraining language models and applying them in this new domain, so the exact GPU hours used will change, but the trend of increased compute on post-training will continue.
 Altogether, the elicitation theory of post-training is likely to become the correct view only when applying a lighter post-training recipe -- something useful for specializing a model -- relative to the compute-intensive frontier models.
 
@@ -247,7 +249,7 @@ The benchmark for these early models was fully vibes (and human evaluation) as w
 It was justified excitement.
 
 Open post-training was moving faster, releasing more models, and making more noise than its closed counterparts. 
-Companies were scrambling, e.g. DeepMind merging with Google or being started, and taking time to follow it up. 
+Companies were scrambling, e.g. DeepMind merging with Google Brain or new labs being started, and taking time to follow it up. 
 There are phases of open recipes surging and then lagging behind.
 
 The era following Alpaca et al., the first lag in open recipes, was one defined by skepticism and doubt about reinforcement learning from human feedback (RLHF), the technique OpenAI highlighted as crucial to the success of the first ChatGPT. 
@@ -351,7 +353,7 @@ To facilitate this, the book includes numerous, academic-style citations to the 
 The contributions of this book are supposed to give you the minimum knowledge needed to try a toy implementation or dive into the literature. 
 This is *not* a comprehensive textbook, but rather a quick book for reminders and getting started.
 
-This book is finalizing as of April 2026, when it's moving to production for print. As a web-first book, this content will continue to evolve, so if you spot a typo or an important omission, please contribute a fix or suggestion on [GitHub](https://github.com/natolambert/rlhf-book).
+This book was finalized April 2026 and moved to production for print. As a web-first book, this content will continue to evolve, so if you spot a typo or an important omission, please contribute a fix or suggestion on [GitHub](https://github.com/natolambert/rlhf-book).
 
 ### About the Author
 
