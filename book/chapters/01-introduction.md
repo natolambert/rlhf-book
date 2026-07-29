@@ -126,15 +126,15 @@ Or a complex, richer answer:
 > 
 > **Tonight (quick wins)**:
 >
-> 	1.	Dim lights for the last hour before bed.
-> 	2.	No caffeine after lunch; keep alcohol minimal.
-> 	3.	If you’re stuck awake, get up and do something quiet until sleepy again.
+> 1. Dim lights for the last hour before bed.
+> 2. No caffeine after lunch; keep alcohol minimal.
+> 3. If you’re stuck awake, get up and do something quiet until sleepy again.
 > 
 > **Daily basics (most impact)**:
 >
-> 	-	Same wake time (even weekends) --> anchors your body clock.
-> 	-	Morning light for 5-10 minutes --> helps set circadian rhythm.
-> 	-	Cool, dark room (fan/eye mask) --> easier to stay asleep.
+> - Same wake time (even weekends) --> anchors your body clock.
+> - Morning light for 5-10 minutes --> helps set circadian rhythm.
+> - Cool, dark room (fan/eye mask) --> easier to stay asleep.
 > 
 > **If you want a simple rule**:
 > `wake time fixed + caffeine cutoff + wind-down routine`
@@ -235,7 +235,7 @@ RL methods are becoming an increasingly large share of the compute needed to tra
 In the short time since reinforcement learning with verifiable rewards (RLVR) was coined in our work on Tülu 3 in the fall of 2024 [@lambert2024t], the scale of compute used for post-training has grown dramatically.
 DeepSeek R1, famous for popularizing RLVR, used only about 5% of their overall compute in post-training -- 147K H800 GPU hours for RL training on R1 [@guo2025deepseek], relative to 2.8M GPU hours for pretraining the underlying DeepSeek V3 base model [@deepseekai2025deepseekv3technicalreport].
 
-The science studying the core methods of scaling RL as of 2026 shows that individual ablation runs can take 10-100K GPU hours [@khatri2025art], almost as much as the compute used for the RL stage of OLMo 3.1 Think 32B (released in November of 2025), which trained for 4 weeks on 200 GPUs [@teamolmo2025olmo3].
+The science studying the core methods of scaling RL as of 2026 shows that individual ablation runs can take 10-100K GPU hours [@khatri2025art], the equivalent of the compute used for the RL stage of Olmo 3.1 Think 32B (released in November of 2025), which trained for 4 weeks on 200 GPUs [@teamolmo2025olmo3].
 The science of scaled post-training is in its very early stages as of 2026, adopting ideas and methods from pretraining language models and applying them in this new domain, so the exact GPU hours used will change, but the trend of increased compute on post-training will continue.
 Altogether, the elicitation theory of post-training is likely to become the correct view only when applying a lighter post-training recipe -- something useful for specializing a model -- relative to the compute-intensive frontier models.
 
@@ -353,7 +353,7 @@ To facilitate this, the book includes numerous, academic-style citations to the 
 The contributions of this book are supposed to give you the minimum knowledge needed to try a toy implementation or dive into the literature. 
 This is *not* a comprehensive textbook, but rather a quick book for reminders and getting started.
 
-This book was finalized April 2026 and moved to production for print. As a web-first book, this content will continue to evolve, so if you spot a typo or an important omission, please contribute a fix or suggestion on [GitHub](https://github.com/natolambert/rlhf-book).
+The print edition of this book was finalized around May 2026 and moved to production for print -- the web version continues to collect minor improvements and errata fixes. If you spot a typo or an important omission, please contribute a fix or suggestion on [GitHub](https://github.com/natolambert/rlhf-book).
 
 ### About the Author
 
