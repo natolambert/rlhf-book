@@ -50,7 +50,6 @@ custom_css: |
 ---
 
 <!-- columns: 45/55 -->
-<!-- valign: center -->
 ## Two asks, two failure modes
 
 ```conversation
@@ -78,7 +77,6 @@ Tool use is what closes both gaps. It started by addressing structural limitatio
 
 ---
 
-<!-- valign: center -->
 ## What an "LLM" is has changed
 
 ### An LLM today is: model weights + tools + harness
@@ -92,7 +90,6 @@ LLMs are now systems and this lecture is about the transition from static weight
 ---
 
 <!-- columns: 50/50 -->
-<!-- valign: center -->
 <!-- cite-right: anthropic2025claudecode, tbench2026 -->
 ## Where we are today
 
@@ -142,7 +139,6 @@ Are you **following the whole course**, or did you **come for just this video** 
 
 ---
 
-<!-- valign: center -->
 ## Three terms people have conflated
 
 <!-- animate: bullets -->
@@ -156,7 +152,6 @@ From most general to most specific -- these share training characteristics, but 
 ---
 
 <!-- columns: 38/62 -->
-<!-- valign: center -->
 <!-- class: small-code -->
 ## Escaping probabilistic generation -- an example tool-use task
 
@@ -200,72 +195,117 @@ print(str(C / S)[:52])
 - **2015--2020, precursors**: Neural Programmer-Interpreters execute programs with neural networks [@reed2015neural]; retrieval augmentation pulls in outside knowledge [@lewis2020retrieval]
 - **2021**: WebGPT browses the web, trained with human feedback [@nakano2021webgpt]
 - **2022**: TALM bootstraps tool-augmented training data [@parisi2022talm]; PAL offloads computation to Python [@gao2023pal]; ReAct interleaves reasoning and actions [@yao2023react]
-- **2023**: Toolformer teaches itself APIs w/ synthetic data[@schick2023toolformerlanguagemodelsteach]; Gorilla scales to 1,645 APIs [@patil2023gorilla]; ToolLLM to 16,000+ [@qin2023toollm]; OpenAI ships function calling in the API and Code Interpreter in ChatGPT in API/ChatGPT
+- **2023**: Toolformer teaches itself APIs w/ synthetic data [@schick2023toolformerlanguagemodelsteach]; Gorilla scales to 1,645 APIs [@patil2023gorilla]; ToolLLM to 16,000+ [@qin2023toollm]; OpenAI ships function calling in the API and Code Interpreter in ChatGPT
 - **2024**: Model Context Protocol acts as some standardization [@anthropic_mcp_2024]
 - **2025**: o3 makes multistep tool calls *inside* its reasoning [@openai2025o3]
 - **2026**: terminal and coding agents become the frontier of post-training [@tbench2026]
 
 ---
 
-<!-- valign: center -->
+<!-- columns: 55/45 -->
 <!-- cite-right: yao2023react -->
 ## ReAct: Reasoning and acting are one generation
 
 > *"...reasoning traces help the model induce, track, and update action plans as well as handle exceptions, while actions allow it to interface with and gather additional information from external sources such as knowledge bases or environments."*
 
-- Before ReAct, reasoning (chain-of-thought) and acting (tool calls) were separate literatures.
-- Interleaving them in **one token stream** is the pattern every modern agent still uses -- o3's tool-calls-inside-thinking is this idea, scaled up with RL.
+Before ReAct, reasoning (chain-of-thought) and acting (tool calls) were separate literatures.
+Interleaving them in one token stream is the pattern every modern agent still uses -- o3's tool-calls-inside-thinking is this idea, scaled up with RL.
+
+|||
+
+![The ReAct paper, first posted October 2022 (ICLR 2023).](assets/react-paper.jpg)
 
 ---
 
-<!-- valign: center -->
+<!-- columns: 55/45 -->
 <!-- cite-right: schick2023toolformerlanguagemodelsteach -->
-## Toolformer: Models teach themselves tools
+## Toolformer: Models "teach themselves" tools
 
 Tools: "a calculator, a Q&A system, two different search engines, a translation system, and a calendar."
 
-The mechanism is the interesting part -- **self-labeling**:
+Via a self-labelling/synthetic data mechanism:
 
 1. Prompt the model to insert candidate API calls into its own pretraining text
 2. Execute the calls
 3. Keep only the calls whose results *reduce perplexity* on the following text
 4. Fine-tune on the filtered corpus
 
-No human tool-use demonstrations required -- an early instance of the synthetic-data flywheel from Lecture 7.
+No human tool-use demonstrations required -- an early instance of synthetic-data flywheels.
+
+|||
+
+![Toolformer's exemplary predictions: the model decides on its own to call a QA system, a calculator, a translator, and Wikipedia search mid-text. Schick et al., 2023.](assets/toolformer-examples.jpg)
 
 ---
 
-<!-- valign: center -->
 ## How tool use is evaluated
 
 - **Schema-level**: exact match on tool name and arguments, JSON validity -- Berkeley Function Calling Leaderboard, built on Gorilla's APIBench [@patil2023gorilla]
 - **Breadth**: ToolLLM / ToolBench span 16,000+ real-world APIs [@qin2023toollm]
-- **Reliability**: τ-bench measures pass^k -- succeeding on *all* $k$ trials, not pass@k's *any* of $k$. Agents that work 9 times out of 10 are not deployable [@yao2024taubench]
-- **End-to-end**: Terminal-Bench runs agents on real tasks in containers with verification tests -- frontier agents still fail a third or more of tasks [@tbench2026]
+- **Reliability**: τ-bench measures pass^k -- succeeding on *all* $k$ trials, not pass@k's *any* of $k$. [@yao2024taubench]
+- **End-to-end**: Terminal-Bench runs agents on real tasks in containers with verification tests. [@tbench2026] (long-horizon benchmarks)
 
-The eval ladder mirrors the capability ladder: format $\rightarrow$ selection $\rightarrow$ consistency $\rightarrow$ full tasks.
+The eval ladder mirrors the capability ladder we've seen over time: 
+
+format $\rightarrow$ selection $\rightarrow$ consistency $\rightarrow$ full tasks.
 
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 2: The plumbing -- how tool calls actually work
+## Part 2: Infra -- how tool calls actually work
 
 ---
 
 <!-- img-fill -->
 <!-- img-align: center -->
 <!-- valign: center -->
-## One token stream, two writers
+## One token stream -- tools add tokens mid-generation
 
 ![The model generates until it emits a tool call (orange); an external system executes it and injects the output (purple) into the sequence; the model continues. Multiple tool calls can occur in a single generation. During training, tool call outputs are masked from the loss.](assets/tool_use_generation.png)
 
 ---
 
+<!-- columns: 40/60 -->
+<!-- class: small-code -->
+## The model only sees tokens: tools live in the system prompt
+
+Training data for function calling looks like ordinary post-training data, with one addition: a system prompt declaring the available tools as JSON schemas.
+
+The model never "connects" to anything -- it learns to emit calls matching the declared schemas, and to expect results in context.
+
+Open models must generalize to arbitrary tools users declare off the shelf.
+
+|||
+
+```xml
+<system>
+You are a function-calling AI model. You are
+provided function signatures within <functions>
+XML tags. You may call one or more functions.
+</system>
+
+<functions>
+[{
+  "name": "search_movies",
+  "description": "Search movies by title.",
+  "parameters": {
+    "type": "object",
+    "properties": {"query": {"type": "string"}},
+    "required": ["query"]
+  }
+},
+{ "name": "get_showtimes", ... },
+{ "name": "get_movie_details", ... }]
+</functions>
+<user> ... </user>
+```
+
+---
+
 <!-- columns: 48/52 -->
-<!-- valign: center -->
-## The whole trick is a while loop
+## An orchestrator sits between the model and its tools
 
 ```python
 messages = [...]
@@ -286,15 +326,12 @@ while True:
 
 |||
 
-- Available tools are declared in the **system prompt** as JSON schemas -- training data for function calling is otherwise ordinary post-training data.
-- The model's only power is emitting tokens; the orchestrator does everything else.
-- Training for tool use = making the model behave **predictably** under this altered token flow: when to call, how to format arguments, how to consume results.
-- Open models must generalize to arbitrary tools users connect off the shelf.
+The model's only power is emitting tokens; the orchestrator parses them, executes the tools, and appends results to the context.
+Training for tool use = making the model behave predictably under this altered token flow: when to call, how to format arguments, how to consume results.
 
 ---
 
 <!-- columns: 55/45 -->
-<!-- valign: center -->
 <!-- cite-right: anthropic_mcp_2024 -->
 ## MCP: Standardizing the tool side
 
@@ -306,7 +343,7 @@ Server primitives:
 - **Prompts** -- templated messages and workflows
 - **Tools** -- functions the model can call
 
-Architecture: **servers** wrap a capability $\rightarrow$ **clients** aggregate servers $\rightarrow$ **hosts** (Claude, ChatGPT apps) provide the interface. Swapping model vendors means swapping the middle layer -- tool developers build once.
+Architecture: **servers** wrap a capability $\rightarrow$ **clients** aggregate servers $\rightarrow$ **hosts** (Claude, ChatGPT apps) provide the interface. Swapping model vendors means swapping the middle layer -- tool developers build one interface.
 
 |||
 
@@ -330,102 +367,99 @@ Architecture: **servers** wrap a capability $\rightarrow$ **clients** aggregate 
 ---
 
 <!-- columns: 55/45 -->
-<!-- valign: center -->
 ## What is a harness?
 
 MCP standardized the *tool* side. The **harness** (or agent scaffold) is everything wrapped around the weights on the *model* side:
 
-- The **system prompt** and tool definitions
-- The **orchestration loop** itself
-- **Context management** -- truncation, compaction, memory across long tasks
-- **Permissions and sandboxing** -- what the agent may touch
-- **Subagents** and parallel workstreams
+- The system prompt and tool definitions
+- The orchestration loop itself
+- Context management -- truncation, compaction, memory across long tasks
+- Permissions and sandboxing -- what the agent may touch
+- Subagents and parallel workstreams
+
+(growing in complexity)
 
 |||
 
 ```box
-title: Why it matters
 tone: accent
 content: |
-  Claude Code, Codex CLI, and OpenHands are all *harnesses* -- the same weights behave very differently inside different ones.
+  Claude Code, Codex CLI, and OpenHands are all popular harnesses -- the same models behave very differently inside different ones.
 
   Benchmark scores are **model × harness** scores.
-
-  And for Part 3: when you train with RL *through* a harness, the harness is part of the policy.
 ```
 
 ---
 
-<!-- valign: center -->
+<!-- animate: bullets -->
 ## Implementation details are everywhere
 
 - **Masking tool outputs**: tool-output tokens are masked from the training loss -- the model must not learn to *predict* the external system.
-- **Reasoning continuity**: reasoning tokens usually persist between tool calls within a turn, but are erased across turns to cut serving cost -- a design decision.
+- **Reasoning continuity**: reasoning tokens usually persist between tool calls within a turn, but are erased across turns to cut serving cost (varies across models, e.g. Kimi K3 keeps history across user turns).
 - **Formats fragment**: Python-style vs. JSON calls; OpenAI's `tool_calls` vs. Anthropic's `tool_use` blocks vs. Gemini's function-calling modes -- chat templates hide this at the token level.
-- **Schema conformance**: production systems enforce valid JSON with constrained decoding ("strict mode"); closed labs also post-train specifically for it.
-- **Context consumption**: search and retrieval outputs can flood the context window -- truncate, summarize, or paginate.
-
-Small formatting decisions, but they decide whether a tool-use model is *reliable* -- and each one reappears as a training decision.
+- **Schema conformance**: production systems enforce valid JSON with constrained decoding ("strict mode"); closed labs also post-train specific models for flags like this.
+- **Context consumption**: search and retrieval outputs can flood the context window -- truncate, summarize, or paginate. Models have been rapidly improving on context management.
 
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 3: Training tool use -- and why scale is hard
+## Part 3: Training for tool use
 
 ---
 
-<!-- columns: 42/58 -->
-<!-- valign: center -->
-## From formatting to trajectories
+<!-- rows: 60/40 -->
+## Same post-training applies
 
-The training ladder (end of ch. 13):
 
-1. **SFT** on tool trajectories -- formatting and tool selection; establishes the skill
-2. **Preference tuning** -- *when* to call a tool vs. answer directly
-3. **RL with environment feedback** -- the natural objective for multi-step agentic tasks
+![](assets/tool_use_rl_loop.png)
 
-Step 3 is classic RL again: a full trajectory of actions and observations, one reward at the end.
+===
 
-|||
+**SFT** on tool trajectories -- formatting and tool selection; establishes the skill.
 
-![RL for multi-step tool use: the policy alternates actions and observations over a full trajectory; a single reward arrives only after the rollout is verified -- unlike the per-sample RLHF loop.](assets/tool_use_rl_loop.png)
+**Preference tuning** still works, but is less popular today.
+
+**RL with environment feedback** -- where the action is in frontier model training.
 
 ---
 
 <!-- cite-right: openthoughtsagent2026 -->
-## The data side: OpenThoughts-Agent
+## Data example: OpenThoughts-Agent
 
-The SFT rung, done in the open: a fully open **data-curation pipeline** for agentic training data, validated by **more than 100 controlled ablation experiments** -- *which curation decisions matter*, not just one recipe. Fine-tuning Qwen3-32B on the resulting 100K examples reaches **44.8%** average across seven agentic benchmarks, ahead of every prior open-data agentic model.
+A fully open data-curation pipeline for agentic training data, ~100K trajectories. [https://arxiv.org/abs/2606.24855](https://arxiv.org/abs/2606.24855)
+
+![The six-stage SFT data pipeline -- each stage ablated independently across 100+ experiments. Raoof et al., 2026.](assets/openthoughts-pipeline.png)
+
+---
+
+<!-- cite-right: openthoughtsagent2026 -->
+## OpenThoughts-Agent: Data scaling results
 
 ![OpenThoughts-Agent data (red) leads open agentic datasets at every training-set size. Raoof et al., 2026.](assets/openthoughts-agent-results.png)
 
 ---
 
-<!-- valign: center -->
 ## For RL, environments are the bottleneck
 
 - Math RL needed prompts and answer checkers. Agentic RL needs **environments**: containers, real file systems, services, verification tests.
-- Benchmarks were built for *evaluation*, not training -- a few hundred tasks is an eval, not a curriculum [@gandhi2026endlessterminals].
-- Scaling environments means **synthesizing** them: TMax generates ~14,600 containerized terminal environments compositionally [@ivison2026tmax] --
+- Scaling environments means synthesizing them (and testing extensively -- it's easy to make data that's trivial or way too hard). For example, TMax generates ~14,600 containerized terminal environments compositionally [@ivison2026tmax] --
   - **Difficulty control**: single commands to 30--60-step workflows, sampled uniformly across difficulty
   - **Personas**: domain-specific users and multimodal fixtures (images, audio, binaries)
   - **Verifier diversification**: graded checks beyond exact match -- metric thresholds, fuzz equivalence, adversarial corpora
+- Environments have a ton of new infra + complexity failure modes -- API keys becoming inactive, CPU resource limits (downloading docker images at scale), bandwidth limits, missing data the model was told it has, etc. **Building worlds for LLMs is hard.**
 
 ---
 
 <!-- columns: 45/55 -->
-<!-- valign: center -->
 <!-- cite-right: ivison2026tmax -->
 ## TMax: An open recipe for terminal agents
 
-The RL rung, end to end in the open:
-
-- RL over the TMax-15K environments with **outcome-only rewards** -- no process rewards
-- Divergence PPO (DPPO), a GRPO variant, with large group sizes; async, distributed training
+- RL over the TMax-15K environments with outcome-only rewards
+- [DPPO](https://arxiv.org/abs/2602.04879), a GRPO variant, designed to help with agentic stability (discussed it in lecture 10)
 - **TMax-9B: 27.2% on Terminal-Bench 2.0** -- the strongest open-weight model under 10B, beating the 32B variants of prior work
-- Code, data, and models all released
+- Code, data, and models all released. Very little high-quality RL data like this in the open!
 
 |||
 
@@ -433,43 +467,109 @@ The RL rung, end to end in the open:
 
 ---
 
-<!-- valign: center -->
 <!-- cite-right: ivison2026tmax -->
 ## What actually made it hard
 
-The honest-practitioner slide -- most of the effort went into *stability*, not speed:
+Most of the effort goes into stability during scaling, rather than speed or learning efficiency:
 
 - Without intervention, runs were often unstable, **collapsing past 300 training steps**
 - A main culprit: **train/inference numerical mismatch** -- the inference engine and the trainer disagree on logprobs. Fixes: an FP32 LM head, and DPPO's masking of tokens where the two diverge
 - A standard run: H100 nodes -- **2 for training, 6 for inference -- for 2--3 days**, plus ~$3,150 in sandbox costs alone for one 9B run
-- Mid-2026 agentic RL is qualitatively different from 2025 math RL: far more compute per point of eval gain, and few labs can afford from-scratch baselines -- which is exactly why open recipes matter
+- Mid-2026 agentic RL is qualitatively different from 2025 math RL: far more compute per point of eval gain, and few labs can afford from-scratch baselines
+
+---
+
+<!-- cite-right: kimiteam2026k3 -->
+## Frontier practice: Kimi K3 environment management
+
+Kimi K3 (July 2026) spends one sentence on its RL algorithm ("follows the algorithm in Kimi K2.5") -- and about seven pages on environments and sandboxes: **51,219,741 sandboxes** created during training, microVMs that checkpoint in 133ms, and mock Gmail/Notion/Slack "living environments" where one rollout can span thousands of tool calls. Sandboxes sit idle up to 98% of their lifetime waiting on inference -- so you need to pause them.
+
+---
+
+<!-- cite-right: kimiteam2026k3 -->
+## Frontier practice: K3 scaling RL
+
+![Kimi K3: scores and average assistant steps both scale with RL FLOPs across eight agentic domains -- tool-call depth is learned, not prompted. Kimi Team, 2026.](assets/kimi-k3-rl-scaling.jpg)
+
+---
+
+<!-- columns: 55/45 -->
+## Frontier practice: Harness randomization 
+
+Open models train across multiple harnesses so deployment is smooth.
+
+- Kimi K3: "training with a single fixed agent harness can cause a model to overfit" -- their RL environment composes configs that instantiate **Kimi Code, Claude Code, Codex, OpenClaw, and Hermes** [@kimiteam2026k3]
+- Nemotron 3 Ultra trains every task vertical under **at least two harnesses** (OpenHands, Terminus, Droid, ...) [@nemotron3ultra]
+
+|||
+
+```box
+title: Example Harness Gains
+tone: accent
+content: |
+  Polar (NVIDIA): same model, same GRPO, same tasks -- **+22.6** points on SWE-Bench Verified training through the Codex harness (3.8 → 26.4: RL teaching an *unfamiliar* harness), **+0.6** through Qwen Code (already fluent: 34.6 → 35.2).
+```
+
+<!-- cite-right: polar2026 -->
+
+---
+
+## Frontier practice: The RLVR mixing wall
+
+Nemotron 3 Ultra says as environments multiply, "each domain contributes only a relatively small number of samples to any given training batch, diluting the per-domain learning signal." 
+
+A common answer is to **train domain experts with RL, then merge them via multi-teacher on-policy distillation** (the MOPD from [Conversation 1](https://www.youtube.com/watch?v=sbXEPxIazqY&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=9)).
+
+Some example MOPD gains from Nemotron 3 Ultra [@nemotron3ultra]:
+
+| Benchmark | SFT | RLVR | MOPD | Teacher |
+|---|---|---|---|---|
+| TauBench Telecom | 55.7 | 82.7 | 92.9 | 94.0 |
+| Terminal-Bench 2.0 | 34.5 | 44.5 | **54.0** | 50.0 |
+| BrowseComp | 14.3 | 31.0 | 44.4 | 51.0 |
+| SWE-Bench Verified | 63.5 | 65.8 | 71.7 | 72.5 |
+
+
+---
+
+<!-- cite-right: glm5team2026glm5 -->
+## Frontier practice:  Reward hacking
+
+GLM-5's slides-RL policy discovered `overflow: hidden` to make an overflowing slide *measure* 16:9, and flex-padding to stretch short ones -- the fix was patching the renderer, not the reward. 
+
+Nemotron physically deletes future git commits and firewalls GitHub so SWE agents can't read the gold patch; Kimi K3 ships a kernel-exploit detector and public/hidden verifier pairs. 
+
+(of course, the OpenAI hack of HuggingFace 😳)
+
+---
+
+<!-- cite-right: glm5team2026glm5 -->
+## Frontier practice:  Reward hacking
+
+![GLM-5, figure 9: two reward hacks from slide-generation RL, with the exploit CSS the policy wrote. Left: normal renders; right: "hacked" renders that satisfy the geometric check. GLM-5 Team, 2026.](assets/glm5-reward-hacking.jpg)
 
 ---
 
 <!-- animate: bullets -->
-## The broader challenge map
+## More headaches
 
-- **Long-tail rollouts**: one trajectory makes 2 tool calls, another makes 200 -- stragglers idle the fleet; recall the async systems from Lecture 4, now with slow *environments* in the loop
-- **Credit assignment**: one sparse reward over a $10^5$--$10^6$-token trajectory; dense turn-level rewards help speed but can destabilize training [@wang2025practitioner]
-- **Verifier gaming**: TMax rollouts were caught replacing test files with no-ops and faking binaries with simulated logs [@ivison2026tmax]; verifier exploitation is now systematically measurable [@gamingverifiers2026] -- Lecture 9's Goodhart, now holding a terminal
-- **Harness-native training**: production agents live inside harnesses that gym-style RL interfaces can't express -- porting them loses training signal
-- **The frontier is already there**: Kimi K2 [@kimiteam2025kimik2] and GLM-4.5 [@zeng2025glm45] train jointly across large simulated and real tool environments -- recall Lecture 5's model timeline
+- **Long-tail rollouts**: one trajectory makes 2 tool calls, another makes 200 -- async designed to help with this, but long-tail is challenging
+- **Credit assignment**: one sparse reward over a $10^5$--$10^6$-token trajectory; expensive rollouts also make GRPO style algorithms more costly
+- **Verifier gaming**: TMax rollouts were caught replacing test files with no-ops and faking binaries with simulated logs [@ivison2026tmax]; verifier exploitation is common [@gamingverifiers2026] -- over-optimization is back (lec. 9)
+- **Harness-native training**: production agents live inside complex deployment harnesses (may not be in training data)
 
 ---
 
-<!-- valign: center -->
 ## Takeaways
 
-- Weights alone can't act. Tools are how models get fresh knowledge, precise answers, and effects on the world -- and tool use is a **trained skill**.
-- The mechanics are simple -- special tokens plus a while loop -- but the trade-offs (masking, schemas, context, formats) decide reliability.
-- **MCP** standardizes the tool side; the **harness** is the still-unstandardized model side, and it's part of the policy.
-- SFT establishes the skill; RL with environment feedback scales it -- and **environments, stability, and cost** are the real frontier.
+1. Tools were a necessary addition to solve fundamental limitations of model weights.
+2. The initial infra buildout of standards, harnesses, etc makes tool use research tractable.
+3. Scaling RL for agents and tools is a very hard problem. Lots to do :)
 
 
 ---
 
 <!-- columns: 50/50 -->
-<!-- valign: center -->
 ## The course so far
 
 0. Prerequisites review
