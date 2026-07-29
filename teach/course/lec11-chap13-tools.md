@@ -444,10 +444,11 @@ A fully open data-curation pipeline for agentic training data, ~100K trajectorie
 ## For RL, environments are the bottleneck
 
 - Math RL needed prompts and answer checkers. Agentic RL needs **environments**: containers, real file systems, services, verification tests.
-- Scaling environments means synthesizing them (and testing extensively -- it's easy to make data that's trivial or way too hard): TMax generates ~14,600 containerized terminal environments compositionally [@ivison2026tmax] --
+- Scaling environments means synthesizing them (and testing extensively -- it's easy to make data that's trivial or way too hard). For example, TMax generates ~14,600 containerized terminal environments compositionally [@ivison2026tmax] --
   - **Difficulty control**: single commands to 30--60-step workflows, sampled uniformly across difficulty
   - **Personas**: domain-specific users and multimodal fixtures (images, audio, binaries)
   - **Verifier diversification**: graded checks beyond exact match -- metric thresholds, fuzz equivalence, adversarial corpora
+- Environments have a ton of new infra + complexity failure modes -- API keys becoming inactive, CPU resource limits (downloading docker images at scale), bandwidth limits, missing data the model was told it has, etc. **Building worlds for LLMs is hard.**
 
 ---
 
@@ -455,12 +456,10 @@ A fully open data-curation pipeline for agentic training data, ~100K trajectorie
 <!-- cite-right: ivison2026tmax -->
 ## TMax: An open recipe for terminal agents
 
-The RL rung, end to end in the open:
-
-- RL over the TMax-15K environments with **outcome-only rewards** -- no process rewards
-- Divergence PPO (DPPO), a GRPO variant, with large group sizes; async, distributed training
+- RL over the TMax-15K environments with outcome-only rewards
+- [DPPO](https://arxiv.org/abs/2602.04879), a GRPO variant, designed to help with agentic stability (discussed it in lecture 10)
 - **TMax-9B: 27.2% on Terminal-Bench 2.0** -- the strongest open-weight model under 10B, beating the 32B variants of prior work
-- Code, data, and models all released
+- Code, data, and models all released. Very little high-quality RL data like this in the open!
 
 |||
 
@@ -471,12 +470,12 @@ The RL rung, end to end in the open:
 <!-- cite-right: ivison2026tmax -->
 ## What actually made it hard
 
-The honest-practitioner slide -- most of the effort went into *stability*, not speed:
+Most of the effort goes into stability during scaling, rather than speed or learning efficiency:
 
 - Without intervention, runs were often unstable, **collapsing past 300 training steps**
 - A main culprit: **train/inference numerical mismatch** -- the inference engine and the trainer disagree on logprobs. Fixes: an FP32 LM head, and DPPO's masking of tokens where the two diverge
 - A standard run: H100 nodes -- **2 for training, 6 for inference -- for 2--3 days**, plus ~$3,150 in sandbox costs alone for one 9B run
-- Mid-2026 agentic RL is qualitatively different from 2025 math RL: far more compute per point of eval gain, and few labs can afford from-scratch baselines -- which is exactly why open recipes matter
+- Mid-2026 agentic RL is qualitatively different from 2025 math RL: far more compute per point of eval gain, and few labs can afford from-scratch baselines
 
 ---
 
@@ -493,10 +492,9 @@ The honest-practitioner slide -- most of the effort went into *stability*, not s
 
 ## Takeaways
 
-- Weights alone can't act. Tools are how models get fresh knowledge, precise answers, and effects on the world -- and tool use is a **trained skill**.
-- The mechanics are simple -- special tokens plus a while loop -- but the trade-offs (masking, schemas, context, formats) decide reliability.
-- **MCP** standardizes the tool side; the **harness** is the still-unstandardized model side, and it's part of the policy.
-- SFT establishes the skill; RL with environment feedback scales it -- and **environments, stability, and cost** are the real frontier.
+1. Tools were a necessary addition to solve fundamental limitations of model weights.
+2. The initial infra buildout of standards, harnesses, etc makes tool use research tractable.
+3. Scaling RL for agents and tools is a very hard problem. Lots to do :)
 
 
 ---
