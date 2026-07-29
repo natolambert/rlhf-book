@@ -327,7 +327,7 @@ while True:
 |||
 
 The model's only power is emitting tokens; the orchestrator parses them, executes the tools, and appends results to the context.
-Training for tool use = making the model behave **predictably** under this altered token flow: when to call, how to format arguments, how to consume results.
+Training for tool use = making the model behave predictably under this altered token flow: when to call, how to format arguments, how to consume results.
 
 ---
 
@@ -343,7 +343,7 @@ Server primitives:
 - **Prompts** -- templated messages and workflows
 - **Tools** -- functions the model can call
 
-Architecture: **servers** wrap a capability $\rightarrow$ **clients** aggregate servers $\rightarrow$ **hosts** (Claude, ChatGPT apps) provide the interface. Swapping model vendors means swapping the middle layer -- tool developers build once.
+Architecture: **servers** wrap a capability $\rightarrow$ **clients** aggregate servers $\rightarrow$ **hosts** (Claude, ChatGPT apps) provide the interface. Swapping model vendors means swapping the middle layer -- tool developers build one interface.
 
 |||
 
@@ -371,67 +371,64 @@ Architecture: **servers** wrap a capability $\rightarrow$ **clients** aggregate 
 
 MCP standardized the *tool* side. The **harness** (or agent scaffold) is everything wrapped around the weights on the *model* side:
 
-- The **system prompt** and tool definitions
-- The **orchestration loop** itself
-- **Context management** -- truncation, compaction, memory across long tasks
-- **Permissions and sandboxing** -- what the agent may touch
-- **Subagents** and parallel workstreams
+- The system prompt and tool definitions
+- The orchestration loop itself
+- Context management -- truncation, compaction, memory across long tasks
+- Permissions and sandboxing -- what the agent may touch
+- Subagents and parallel workstreams
+
+(growing in complexity)
 
 |||
 
 ```box
-title: Why it matters
 tone: accent
 content: |
-  Claude Code, Codex CLI, and OpenHands are all *harnesses* -- the same weights behave very differently inside different ones.
+  Claude Code, Codex CLI, and OpenHands are all popular harnesses -- the same models behave very differently inside different ones.
 
   Benchmark scores are **model × harness** scores.
-
-  And for Part 3: when you train with RL *through* a harness, the harness is part of the policy.
 ```
 
 ---
 
+<!-- animate: bullets -->
 ## Implementation details are everywhere
 
 - **Masking tool outputs**: tool-output tokens are masked from the training loss -- the model must not learn to *predict* the external system.
-- **Reasoning continuity**: reasoning tokens usually persist between tool calls within a turn, but are erased across turns to cut serving cost -- a design decision.
+- **Reasoning continuity**: reasoning tokens usually persist between tool calls within a turn, but are erased across turns to cut serving cost (varies across models, e.g. Kimi K3 keeps history across user turns).
 - **Formats fragment**: Python-style vs. JSON calls; OpenAI's `tool_calls` vs. Anthropic's `tool_use` blocks vs. Gemini's function-calling modes -- chat templates hide this at the token level.
-- **Schema conformance**: production systems enforce valid JSON with constrained decoding ("strict mode"); closed labs also post-train specifically for it.
-- **Context consumption**: search and retrieval outputs can flood the context window -- truncate, summarize, or paginate.
-
-Small formatting decisions, but they decide whether a tool-use model is *reliable* -- and each one reappears as a training decision.
+- **Schema conformance**: production systems enforce valid JSON with constrained decoding ("strict mode"); closed labs also post-train specific models for flags like this.
+- **Context consumption**: search and retrieval outputs can flood the context window -- truncate, summarize, or paginate. Models have been rapidly improving on context management.
 
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 3: Training tool use -- and why scale is hard
+## Part 3: Training for tool use
 
 ---
 
-<!-- columns: 42/58 -->
-## From formatting to trajectories
+<!-- rows: 60/40 -->
+## Same post-training applies
 
-The training ladder (end of ch. 13):
 
-1. **SFT** on tool trajectories -- formatting and tool selection; establishes the skill
-2. **Preference tuning** -- *when* to call a tool vs. answer directly
-3. **RL with environment feedback** -- the natural objective for multi-step agentic tasks
+![](assets/tool_use_rl_loop.png)
 
-Step 3 is classic RL again: a full trajectory of actions and observations, one reward at the end.
+===
 
-|||
+**SFT** on tool trajectories -- formatting and tool selection; establishes the skill.
 
-![RL for multi-step tool use: the policy alternates actions and observations over a full trajectory; a single reward arrives only after the rollout is verified -- unlike the per-sample RLHF loop.](assets/tool_use_rl_loop.png)
+**Preference tuning** still works, but is less popular today.
+
+**RL with environment feedback** -- where the action is in frontier model training.
 
 ---
 
 <!-- cite-right: openthoughtsagent2026 -->
-## The data side: OpenThoughts-Agent
+## Data example: OpenThoughts-Agent
 
-The SFT rung, done in the open: a fully open **data-curation pipeline** for agentic training data, validated by **more than 100 controlled ablation experiments** -- *which curation decisions matter*, not just one recipe. Fine-tuning Qwen3-32B on the resulting 100K examples reaches **44.8%** average across seven agentic benchmarks, ahead of every prior open-data agentic model.
+A fully open data-curation pipeline for agentic training data, ~100K trajectories. [Full text ↗](https://arxiv.org/abs/2606.24855)
 
 ![OpenThoughts-Agent data (red) leads open agentic datasets at every training-set size. Raoof et al., 2026.](assets/openthoughts-agent-results.png)
 
