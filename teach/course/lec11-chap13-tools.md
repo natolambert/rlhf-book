@@ -428,7 +428,14 @@ content: |
 <!-- cite-right: openthoughtsagent2026 -->
 ## Data example: OpenThoughts-Agent
 
-A fully open data-curation pipeline for agentic training data, ~100K trajectories. [Full text ↗](https://arxiv.org/abs/2606.24855)
+A fully open data-curation pipeline for agentic training data, ~100K trajectories. [https://arxiv.org/abs/2606.24855](https://arxiv.org/abs/2606.24855)
+
+![The six-stage SFT data pipeline -- each stage ablated independently across 100+ experiments. Raoof et al., 2026.](assets/openthoughts-pipeline.png)
+
+---
+
+<!-- cite-right: openthoughtsagent2026 -->
+## OpenThoughts-Agent: Data scaling results
 
 ![OpenThoughts-Agent data (red) leads open agentic datasets at every training-set size. Raoof et al., 2026.](assets/openthoughts-agent-results.png)
 
@@ -437,8 +444,7 @@ A fully open data-curation pipeline for agentic training data, ~100K trajectorie
 ## For RL, environments are the bottleneck
 
 - Math RL needed prompts and answer checkers. Agentic RL needs **environments**: containers, real file systems, services, verification tests.
-- Benchmarks were built for *evaluation*, not training -- a few hundred tasks is an eval, not a curriculum [@gandhi2026endlessterminals].
-- Scaling environments means **synthesizing** them: TMax generates ~14,600 containerized terminal environments compositionally [@ivison2026tmax] --
+- Scaling environments means synthesizing them (and testing extensively -- it's easy to make data that's trivial or way too hard): TMax generates ~14,600 containerized terminal environments compositionally [@ivison2026tmax] --
   - **Difficulty control**: single commands to 30--60-step workflows, sampled uniformly across difficulty
   - **Personas**: domain-specific users and multimodal fixtures (images, audio, binaries)
   - **Verifier diversification**: graded checks beyond exact match -- metric thresholds, fuzz equivalence, adversarial corpora
