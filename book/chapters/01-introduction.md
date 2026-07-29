@@ -353,7 +353,7 @@ To facilitate this, the book includes numerous, academic-style citations to the 
 The contributions of this book are supposed to give you the minimum knowledge needed to try a toy implementation or dive into the literature. 
 This is *not* a comprehensive textbook, but rather a quick book for reminders and getting started.
 
-The print edition of this book was finalized around May 2026 and moved to production for print -- the web version continues to collect minor improvements and errata fixes. If you spot a typo or an important omission, please contribute a fix or suggestion on [GitHub](https://github.com/natolambert/rlhf-book).
+The print edition of this book was finalized around May 2026 and moved to production for distribution -- the web version continues to collect minor improvements and errata fixes. If you spot a typo or an important omission, please contribute a fix or suggestion on [GitHub](https://github.com/natolambert/rlhf-book).
 
 ### About the Author
 
