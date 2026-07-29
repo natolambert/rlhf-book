@@ -79,7 +79,7 @@ An example interaction of this form is shown below in @fig:preference-chatgpt fo
 ![Example preference data collection interface from when I was served two completions from different ChatGPT beta models. The actual completions are very close in content, showing how collecting preference data can be noisy and difficult to get exactly right.](images/chatgpt-ab-test.jpeg){#fig:preference-chatgpt .center}
 
 This style of interface is used extensively across the industry, such as for *evaluation* of models given the same format.
-A popular public option to engage with models in this way is Arena (formerly ChatBotArena) [@chiang2024chatbot], which includes the option of a "tie" between models:
+A popular public option to engage with models in this way is Arena (formerly Chatbot Arena) [@chiang2024chatbot], which includes the option of a "tie" between models:
 
 ![Example preference data collection interface from an early version of the popular Arena benchmark.](images/chatbotarena.png){#fig:chatbotarena .center}
 

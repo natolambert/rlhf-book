@@ -610,7 +610,7 @@ On Hugging Face's **H4 team**, we commissioned human data the same way the labs 
 <!-- cite-right: arena2026 -->
 ## Preference *evals* is now a standalone business
 
-Recently in 2026 **Arena** (formerly, the LMArena leaderboard, formerly ChatBotArena) reached a **~$100M annualized revenue run-rate within ~8 months** of launching its enterprise A/B testing offering [@arena2026].
+Recently in 2026 **Arena** (formerly, the LMArena leaderboard, formerly Chatbot Arena) reached a **~$100M annualized revenue run-rate within ~8 months** of launching its enterprise A/B testing offering [@arena2026].
 
 |||
 
