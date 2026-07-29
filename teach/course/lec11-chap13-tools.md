@@ -245,28 +245,67 @@ No human tool-use demonstrations required -- an early instance of synthetic-data
 - **Reliability**: τ-bench measures pass^k -- succeeding on *all* $k$ trials, not pass@k's *any* of $k$. [@yao2024taubench]
 - **End-to-end**: Terminal-Bench runs agents on real tasks in containers with verification tests. [@tbench2026] (long-horizon benchmarks)
 
-The eval ladder mirrors the capability ladder we've seen over time: format $\rightarrow$ selection $\rightarrow$ consistency $\rightarrow$ full tasks.
+The eval ladder mirrors the capability ladder we've seen over time: 
+
+format $\rightarrow$ selection $\rightarrow$ consistency $\rightarrow$ full tasks.
 
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 2: The plumbing -- how tool calls actually work
+## Part 2: Infra -- how tool calls actually work
 
 ---
 
 <!-- img-fill -->
 <!-- img-align: center -->
 <!-- valign: center -->
-## One token stream, two writers
+## One token stream -- tools add tokens mid-generation
 
 ![The model generates until it emits a tool call (orange); an external system executes it and injects the output (purple) into the sequence; the model continues. Multiple tool calls can occur in a single generation. During training, tool call outputs are masked from the loss.](assets/tool_use_generation.png)
 
 ---
 
+<!-- columns: 40/60 -->
+<!-- class: small-code -->
+## The model only sees tokens: tools live in the system prompt
+
+Training data for function calling looks like ordinary post-training data, with one addition: a system prompt declaring the available tools as JSON schemas.
+
+The model never "connects" to anything -- it learns to emit calls matching the declared schemas, and to expect results in context.
+
+Open models must generalize to arbitrary tools users declare off the shelf.
+
+|||
+
+```xml
+<system>
+You are a function-calling AI model. You are
+provided function signatures within <functions>
+XML tags. You may call one or more functions.
+</system>
+
+<functions>
+[{
+  "name": "search_movies",
+  "description": "Search movies by title.",
+  "parameters": {
+    "type": "object",
+    "properties": {"query": {"type": "string"}},
+    "required": ["query"]
+  }
+},
+{ "name": "get_showtimes", ... },
+{ "name": "get_movie_details", ... }]
+</functions>
+<user> ... </user>
+```
+
+---
+
 <!-- columns: 48/52 -->
-## The whole trick is a while loop
+## An orchestrator sits between the model and its tools
 
 ```python
 messages = [...]
@@ -287,10 +326,8 @@ while True:
 
 |||
 
-- Available tools are declared in the **system prompt** as JSON schemas -- training data for function calling is otherwise ordinary post-training data.
-- The model's only power is emitting tokens; the orchestrator does everything else.
-- Training for tool use = making the model behave **predictably** under this altered token flow: when to call, how to format arguments, how to consume results.
-- Open models must generalize to arbitrary tools users connect off the shelf.
+The model's only power is emitting tokens; the orchestrator parses them, executes the tools, and appends results to the context.
+Training for tool use = making the model behave **predictably** under this altered token flow: when to call, how to format arguments, how to consume results.
 
 ---
 
