@@ -50,7 +50,6 @@ custom_css: |
 ---
 
 <!-- columns: 45/55 -->
-<!-- valign: center -->
 ## Two asks, two failure modes
 
 ```conversation
@@ -78,7 +77,6 @@ Tool use is what closes both gaps. It started by addressing structural limitatio
 
 ---
 
-<!-- valign: center -->
 ## What an "LLM" is has changed
 
 ### An LLM today is: model weights + tools + harness
@@ -92,7 +90,6 @@ LLMs are now systems and this lecture is about the transition from static weight
 ---
 
 <!-- columns: 50/50 -->
-<!-- valign: center -->
 <!-- cite-right: anthropic2025claudecode, tbench2026 -->
 ## Where we are today
 
@@ -142,7 +139,6 @@ Are you **following the whole course**, or did you **come for just this video** 
 
 ---
 
-<!-- valign: center -->
 ## Three terms people have conflated
 
 <!-- animate: bullets -->
@@ -156,7 +152,6 @@ From most general to most specific -- these share training characteristics, but 
 ---
 
 <!-- columns: 38/62 -->
-<!-- valign: center -->
 <!-- class: small-code -->
 ## Escaping probabilistic generation -- an example tool-use task
 
@@ -207,24 +202,27 @@ print(str(C / S)[:52])
 
 ---
 
-<!-- valign: center -->
+<!-- columns: 55/45 -->
 <!-- cite-right: yao2023react -->
 ## ReAct: Reasoning and acting are one generation
 
 > *"...reasoning traces help the model induce, track, and update action plans as well as handle exceptions, while actions allow it to interface with and gather additional information from external sources such as knowledge bases or environments."*
 
-- Before ReAct, reasoning (chain-of-thought) and acting (tool calls) were separate literatures.
-- Interleaving them in **one token stream** is the pattern every modern agent still uses -- o3's tool-calls-inside-thinking is this idea, scaled up with RL.
+Before ReAct, reasoning (chain-of-thought) and acting (tool calls) were separate literatures.
+Interleaving them in one token stream is the pattern every modern agent still uses -- o3's tool-calls-inside-thinking is this idea, scaled up with RL.
+
+|||
+
+![The ReAct paper, first posted October 2022 (ICLR 2023).](assets/react-paper.jpg)
 
 ---
 
-<!-- valign: center -->
 <!-- cite-right: schick2023toolformerlanguagemodelsteach -->
-## Toolformer: Models teach themselves tools
+## Toolformer: Models "teach themselves" tools
 
 Tools: "a calculator, a Q&A system, two different search engines, a translation system, and a calendar."
 
-The mechanism is the interesting part -- **self-labeling**:
+Via a self-labelling/synethic data mechanism:
 
 1. Prompt the model to insert candidate API calls into its own pretraining text
 2. Execute the calls
@@ -235,7 +233,6 @@ No human tool-use demonstrations required -- an early instance of the synthetic-
 
 ---
 
-<!-- valign: center -->
 ## How tool use is evaluated
 
 - **Schema-level**: exact match on tool name and arguments, JSON validity -- Berkeley Function Calling Leaderboard, built on Gorilla's APIBench [@patil2023gorilla]
@@ -264,7 +261,6 @@ The eval ladder mirrors the capability ladder: format $\rightarrow$ selection $\
 ---
 
 <!-- columns: 48/52 -->
-<!-- valign: center -->
 ## The whole trick is a while loop
 
 ```python
@@ -294,7 +290,6 @@ while True:
 ---
 
 <!-- columns: 55/45 -->
-<!-- valign: center -->
 <!-- cite-right: anthropic_mcp_2024 -->
 ## MCP: Standardizing the tool side
 
@@ -330,7 +325,6 @@ Architecture: **servers** wrap a capability $\rightarrow$ **clients** aggregate 
 ---
 
 <!-- columns: 55/45 -->
-<!-- valign: center -->
 ## What is a harness?
 
 MCP standardized the *tool* side. The **harness** (or agent scaffold) is everything wrapped around the weights on the *model* side:
@@ -356,7 +350,6 @@ content: |
 
 ---
 
-<!-- valign: center -->
 ## Implementation details are everywhere
 
 - **Masking tool outputs**: tool-output tokens are masked from the training loss -- the model must not learn to *predict* the external system.
@@ -377,7 +370,6 @@ Small formatting decisions, but they decide whether a tool-use model is *reliabl
 ---
 
 <!-- columns: 42/58 -->
-<!-- valign: center -->
 ## From formatting to trajectories
 
 The training ladder (end of ch. 13):
@@ -403,7 +395,6 @@ The SFT rung, done in the open: a fully open **data-curation pipeline** for agen
 
 ---
 
-<!-- valign: center -->
 ## For RL, environments are the bottleneck
 
 - Math RL needed prompts and answer checkers. Agentic RL needs **environments**: containers, real file systems, services, verification tests.
@@ -416,7 +407,6 @@ The SFT rung, done in the open: a fully open **data-curation pipeline** for agen
 ---
 
 <!-- columns: 45/55 -->
-<!-- valign: center -->
 <!-- cite-right: ivison2026tmax -->
 ## TMax: An open recipe for terminal agents
 
@@ -433,7 +423,6 @@ The RL rung, end to end in the open:
 
 ---
 
-<!-- valign: center -->
 <!-- cite-right: ivison2026tmax -->
 ## What actually made it hard
 
@@ -457,7 +446,6 @@ The honest-practitioner slide -- most of the effort went into *stability*, not s
 
 ---
 
-<!-- valign: center -->
 ## Takeaways
 
 - Weights alone can't act. Tools are how models get fresh knowledge, precise answers, and effects on the world -- and tool use is a **trained skill**.
@@ -469,7 +457,6 @@ The honest-practitioner slide -- most of the effort went into *stability*, not s
 ---
 
 <!-- columns: 50/50 -->
-<!-- valign: center -->
 ## The course so far
 
 0. Prerequisites review
