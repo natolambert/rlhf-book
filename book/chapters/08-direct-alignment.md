@@ -15,6 +15,8 @@ next-url: "09-rejection-sampling"
 lectures:
   - video: "https://www.youtube.com/watch?v=6g6b4gvO-y0&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=8"
     label: "Lecture 6: Direct Preference Optimization"
+  - video: "https://www.youtube.com/watch?v=rhA7pLVt4E0&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=16"
+    label: "Conversation 2: DPO in Practice"
 ---
 
 # Direct-Alignment Algorithms

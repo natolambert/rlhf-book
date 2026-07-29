@@ -339,7 +339,13 @@ COLLOQUIUM = uv run --extra teach colloquium
 
 teach: $(foreach d,$(TEACH_DIRS),teach-$(d)) course-lectures
 
-course-lectures: $(foreach l,$(COURSE_LECTURE_NAMES),course-lecture-$(l))
+course-lectures: $(foreach l,$(COURSE_LECTURE_NAMES),course-lecture-$(l)) teach-assets
+
+# Static files (externally produced slide PDFs, etc.) served at /teach/assets/
+teach-assets:
+	@mkdir -p $(BUILD)/html/teach/assets
+	cp -r teach/assets/. $(BUILD)/html/teach/assets/
+	@echo "Copied teach/assets"
 
 teach-%:
 	@mkdir -p $(BUILD)/html/teach/$*

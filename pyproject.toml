@@ -19,7 +19,8 @@ skills = [
 ]
 teach = [
     # TODO: pin back to a PyPI release (colloquium==0.2.3) once it ships with the
-    # Google-Fonts <link> fix (natolambert/colloquium#41). Until then, track the
-    # merge commit on main so course decks render their Rubik/Poppins fonts.
-    "colloquium @ git+https://github.com/natolambert/colloquium.git@11b12845463ed86376707cef5b6f95297fba6afd",
+    # Google-Fonts <link> fix (natolambert/colloquium#41), the step-fragment
+    # paragraph-spacing fix (#43), and the box/conversation smart-typography fix
+    # (#44). Until then, track the merge commit on main so decks render correctly.
+    "colloquium @ git+https://github.com/natolambert/colloquium.git@43f6e7fdd54235dfca9cfd0bdff61af356c15265",
 ]
