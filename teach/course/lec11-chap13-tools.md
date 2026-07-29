@@ -22,12 +22,14 @@ custom_css: |
   /* Bulleted lists should never be centered (markers float, looks bad).
      Target lists only -- leave titles and display-math paragraphs centered. */
   .slide ul, .slide ol, .slide li { text-align: left; }
+  /* Shrink long code examples so a full generation stream fits in a column. */
+  .slide.small-code pre { font-size: 0.72em; }
 ---
 
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
 
-# Lecture 11: Tool Use, Function Calling and The Road to Agents
+# Lecture 11: Basics of LLM Tool Use and The Road to Today's Agents
 
 <div class="colloquium-title-eyebrow">rlhfbook.com</div>
 
@@ -43,7 +45,7 @@ custom_css: |
 <!-- align: center -->
 <!-- valign: center -->
 
-## What can a language model *not* do with weights alone?
+## What are the limitations of model weights alone?
 
 ---
 
@@ -64,26 +66,42 @@ messages:
 
 |||
 
+<!-- step -->
+
 The first fails on the **knowledge cutoff** -- but it is one search query away.
 
 The second, the weights *cannot even attempt*: it requires acting on the world, not describing it.
 
-Tool use is what closes both gaps. And crucially, it is a **trained skill**, not an emergent freebie -- everything in this course (SFT, preference tuning, RL) applies to it.
+<!-- step -->
+
+Tool use is what closes both gaps. It started by addressing structural limitations in LLMs and grew into the central way to push performance. Tool use is a trained skill -- everything in this course (SFT, preference tuning, RL) applies to it. 
+
+---
+
+<!-- valign: center -->
+## What an "LLM" is has changed
+
+### An LLM today is: model weights + tools + harness
+
+- **Model weights** -- the trained network: foundation of knowledge, reasoning, style.
+- **Tools** -- the actions the model can request: search, code execution, file edits, APIs.
+- **Harness** -- the software loop around the weights that executes those requests and feeds the results back into the context.
+
+LLMs are now systems and this lecture is about the transition from static weights to today.
 
 ---
 
 <!-- columns: 50/50 -->
 <!-- valign: center -->
 <!-- cite-right: anthropic2025claudecode, tbench2026 -->
-## Where this landed by 2026
+## Where we are today
 
-Tool use started as "call a calculator." It is now the substrate of the frontier products:
+Tool use started as "call a calculator." It was implemented to help with hard multiple-choice questions and code execution.
+It is now used in...
 
-- Coding and terminal agents (Claude Code, Cursor) doing hours of autonomous work
-- Deep research, computer use, productivity copilots
-- The hardest current evals are *end-to-end tasks in containers*, not multiple-choice questions
-
-Today: from the basics to why *training* this at scale is one of the hardest open problems in post-training.
+- Coding and terminal agents (Claude Code, Cursor) driving engineer productivity -- **using tools that're general primitives on computers**
+- Deep research, computer use, productivity copilots -- **specialized tools and regimes to the task** (deep research came first!)
+- The hardest current evals today are *end-to-end tasks in complex containers*
 
 |||
 
@@ -94,7 +112,7 @@ Today: from the basics to why *training* this at scale is one of the hardest ope
 <!-- columns: 40/60 -->
 ## This lecture
 
-Chapter 13 covers the mechanics of tool use. The last third of today goes *beyond the book*: what it takes to train these skills with RL at scale.
+Chapter 13 covers the mechanics of tool use. The last third of today goes beyond the book content with a bit of recent work on tool use and RL at scale.
 
 |||
 
@@ -102,20 +120,18 @@ Chapter 13 covers the mechanics of tool use. The last third of today goes *beyon
 title: The plan
 tone: accent
 content: |
-  1. **Basics & history** -- why models need tools, and the foundational work
-  2. **The plumbing** -- interleaved generation, MCP, harnesses, implementation trade-offs
-  3. **Training at scale** -- tool-use RL and why it's hard *(TMax, OpenThoughts-Agent)*
+  1. **Basics & history** -- why models need tools
+  2. **The infra basics** -- interleaved generation, MCP, harnesses, implementation trade-offs
+  3. **Training at scale** -- tool-use RL and why it's hard
 ```
 
 ---
 
 <!-- valign: center -->
 <!-- title: center -->
-## Quick pause: who's here?
+## Quick pause for YouTube: How'd you end up here?
 
-Are you **following the whole course**, or did you **come for just this video**?
-
-Leave a comment below and tell me -- it genuinely helps me plan the rest of the course (and what to make after it).
+Are you **following the whole course**, or did you **come for just this video** (search, algo, etc.)?
 
 ---
 
@@ -127,27 +143,33 @@ Leave a comment below and tell me -- it genuinely helps me plan the rest of the 
 ---
 
 <!-- valign: center -->
-## Three terms people conflate
+## Three terms people have conflated
 
-- **Tool use**: the model emits a structured request (tool name + arguments); an orchestrator executes it; results are appended to the context; the model continues generating.
-- **Function calling**: tool use where arguments must conform to a *declared schema* (usually JSON Schema), enabling reliable parsing and validation.
-- **Code execution**: the special case where the tool is a code interpreter -- the most general tool of all.
+<!-- animate: bullets -->
 
-Each is a subset of the one above it. The training problem is the same shape for all three: emit the right structure, at the right time, and use the result.
+From most general to most specific -- these share training characteristics, but are important to get right:
+
+- **Tool use**: the general strategy where a model emits a structured request (tool name + arguments); an orchestrator executes it; results are appended to the context; the model continues generating.
+- **Function calling**: a specific format of tool use where arguments must conform to a *declared schema* (usually JSON Schema for APIs), enabling reliable parsing and validation.
+- **Code execution**: a special case where the tool is a code interpreter -- the most general tool of all. Code inputs, execution outputs.
 
 ---
 
 <!-- columns: 38/62 -->
 <!-- valign: center -->
-## Escaping probabilistic generation
+<!-- class: small-code -->
+## Escaping probabilistic generation -- an example tool-use task
 
-Print $\pi$ to 50 digits -- *without* reciting it from memory and risking hallucination.
+**Task:** Print $\pi$ to 50 digits -- without reciting it from memory (parameters) and risking hallucination.
 
-The model writes the program; the interpreter provides the truth. Tools let a probabilistic generator return **precise** answers.
+The model writes the program; the interpreter provides the answer.
+Tools let models remove some of the stochastic elements of "stochastic parrots."
 
 |||
 
 ```text
+... the model is mid-generation, sampling tokens ...
+
 <code>
 # Chudnovsky algorithm for pi
 from decimal import Decimal, getcontext
@@ -165,18 +187,21 @@ print(str(C / S)[:52])
 <output>
 3.14159265358979323846264338327950288419716939937510
 </output>
+
+... the output is now in context; generation continues ...
 ```
 
 ---
 
 <!-- animate: bullets -->
+<!-- footnote: Years on the left are when the work first appeared (arXiv); citation years in parentheses are the official publication date, so some lag by a year. -->
 ## A short history of models using tools
 
 - **2015--2020, precursors**: Neural Programmer-Interpreters execute programs with neural networks [@reed2015neural]; retrieval augmentation pulls in outside knowledge [@lewis2020retrieval]
 - **2021**: WebGPT browses the web, trained with human feedback [@nakano2021webgpt]
 - **2022**: TALM bootstraps tool-augmented training data [@parisi2022talm]; PAL offloads computation to Python [@gao2023pal]; ReAct interleaves reasoning and actions [@yao2023react]
-- **2023**: Toolformer teaches itself APIs [@schick2023toolformerlanguagemodelsteach]; Gorilla scales to 1,645 APIs [@patil2023gorilla]; ToolLLM to 16,000+ [@qin2023toollm]; OpenAI ships function calling and Code Interpreter
-- **2024**: Model Context Protocol standardizes the interface [@anthropic_mcp_2024]
+- **2023**: Toolformer teaches itself APIs w/ synthetic data[@schick2023toolformerlanguagemodelsteach]; Gorilla scales to 1,645 APIs [@patil2023gorilla]; ToolLLM to 16,000+ [@qin2023toollm]; OpenAI ships function calling in the API and Code Interpreter in ChatGPT in API/ChatGPT
+- **2024**: Model Context Protocol acts as some standardization [@anthropic_mcp_2024]
 - **2025**: o3 makes multistep tool calls *inside* its reasoning [@openai2025o3]
 - **2026**: terminal and coding agents become the frontier of post-training [@tbench2026]
 
