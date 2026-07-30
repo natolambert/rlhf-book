@@ -78,6 +78,6 @@ The announcement of ChatGPT was very clear about the role of RLHF in its trainin
 > We trained this model using Reinforcement Learning from Human Feedback (RLHF), using the same methods as InstructGPT, but with slight differences in the data collection setup.
 
 Since then, RLHF has been used extensively in leading language models. 
-It is well known to be used in Anthropic's Constitutional AI for Claude [@bai2022constitutional], Meta's Llama 2 [@touvron2023llama] and Llama 3 [@dubey2024llama], Nvidia's Nemotron [@adler2024nemotron], Ai2's Tülu 3 [@lambert2024t], and more.
+It is well known to be used in Anthropic's Constitutional AI for Claude [@bai2022constitutional], Meta's Llama 2 [@touvron2023llama] and Llama 3 [@dubey2024llama], NVIDIA's Nemotron [@adler2024nemotron], Ai2's Tülu 3 [@lambert2024t], and more.
 
 Today, RLHF is growing into a broader field of preference fine-tuning (PreFT), including new applications such as process rewards for intermediate reasoning steps [@lightman2023let], covered in Chapter 5; direct alignment algorithms inspired by Direct Preference Optimization (DPO) [@rafailov2024direct], covered in Chapter 8; learning from execution feedback from code or math [@kumar2024training], [@singh2023beyond] and other online reasoning methods inspired by OpenAI's o1 [@openai2024o1], covered in Chapter 7.

@@ -107,12 +107,12 @@ Modern language models:
 ---
 
 <!-- columns: 45/55 -->
-## 2020: GPT-3 surprising capabilities
+## 2020: GPT-3's surprising capabilities
 
 - 2017: the Transformer is born
 - 2018: GPT-1, ELMo, and BERT released
 - 2019: GPT-2 and scaling laws
-- **2020:** GPT-3 surprising capabilities
+- **2020:** GPT-3's surprising capabilities
 
 |||
 
@@ -127,7 +127,7 @@ Modern language models:
 - 2017: the Transformer is born
 - 2018: GPT-1, ELMo, and BERT released
 - 2019: GPT-2 and scaling laws
-- 2020: GPT-3 surprising capabilities
+- 2020: GPT-3's surprising capabilities
 - **2021:** Stochastic Parrots
 
 |||
@@ -143,7 +143,7 @@ Modern language models:
 - 2017: the Transformer is born
 - 2018: GPT-1, ELMo, and BERT released
 - 2019: GPT-2 and scaling laws
-- 2020: GPT-3 surprising capabilities
+- 2020: GPT-3's surprising capabilities
 - 2021: Stochastic Parrots
 - **2022:** ChatGPT
 
@@ -160,14 +160,14 @@ Modern language models:
 - 2017: the Transformer is born
 - 2018: GPT-1, ELMo, and BERT released
 - 2019: GPT-2 and scaling laws
-- 2020: GPT-3 surprising capabilities
+- 2020: GPT-3's surprising capabilities
 - 2021: Stochastic Parrots
 - 2022: ChatGPT
 - **2023:** GPT-4 and frontier-scale
 
 |||
 
-![An image where Nvidia CEO Jensen Huang supposedly leaked that GPT-4 was an ~2T parameter MoE model.](assets/jensen-gpt4.jpeg)
+![An image where NVIDIA CEO Jensen Huang supposedly leaked that GPT-4 was a roughly 2T-parameter MoE model.](assets/jensen-gpt4.jpeg)
 <!-- cite-right: openai2023gpt4 -->
 
 ---
@@ -178,7 +178,7 @@ Modern language models:
 - 2017: the Transformer is born
 - 2018: GPT-1, ELMo, and BERT released
 - 2019: GPT-2 and scaling laws
-- 2020: GPT-3 surprising capabilities
+- 2020: GPT-3's surprising capabilities
 - 2021: Stochastic Parrots
 - 2022: ChatGPT
 - 2023: GPT-4 and frontier-scale
@@ -197,7 +197,7 @@ Modern language models:
 - 2017: the Transformer is born
 - 2018: GPT-1, ELMo, and BERT released
 - 2019: GPT-2 and scaling laws
-- 2020: GPT-3 surprising capabilities
+- 2020: GPT-3's surprising capabilities
 - 2021: Stochastic Parrots
 - 2022: ChatGPT
 - 2023: GPT-4 and frontier-scale
@@ -268,7 +268,7 @@ messages:
 
 Model responses evolved quickly to have:
 - Better **format**: direct, conversational answers
-- Better **style**: helpful, concise, markdown, etc.
+- Better **style**: helpful, concise, Markdown, etc.
 - Better **product**: people could actually use it every day
 
 |||

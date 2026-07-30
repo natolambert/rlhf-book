@@ -33,6 +33,7 @@ uv run python -m reward_models.train_orm --samples 400 --epochs 2
 uv run python -m reward_models.train_prm --samples 500 --epochs 2
 uv run python -m direct_alignment.train --config direct_alignment/configs/dpo.yaml
 uv run python -m rejection_sampling.train --config rejection_sampling/configs/top_per_prompt.yaml
+uv run python -m distillation.train --config distillation/configs/sdpo.yaml
 ```
 
 ## Task Map
@@ -46,6 +47,7 @@ When a user asks for a runnable experiment, start from the closest maintained ex
 | "Train a reward model" | `reward_models/README.md` | Preference RM uses UltraFeedback; ORM uses GSM8K; PRM uses PRM800K. These are experimental and need tuning. |
 | "Train DPO / IPO / SimPO / KTO" | `direct_alignment/README.md` and `direct_alignment/configs/*.yaml` | DPO/IPO/KTO/APO are validated; SimPO/ORPO are implemented but still marked noisy. |
 | "Try rejection sampling / best-of-N" | `rejection_sampling/README.md` and `rejection_sampling/configs/*.yaml` | Always compare each reward-selection config to its matched random baseline. |
+| "Run SDPO / on-policy distillation" | `distillation/README.md` and `distillation/configs/sdpo.yaml` | Default task is `spell_backward`; watch `reward`, `loss`, and `skipped` while the poll-until-full loop maintains the effective batch. |
 | "Use an agent skill" | `.claude/skills/run-rlhf-code-experiment/SKILL.md` | Use this for planning and reporting a small experiment run. |
 
 ## Experiment Workflow
@@ -114,6 +116,6 @@ Gradient checkpointing can reduce memory use by ~30-40%.
 
 ## TODOs
 
-- [ ] Validate and generate reference wandb runs for direct alignment (DPO, IPO, SimPO, ORPO, KTO) — see [#358](https://github.com/natolambert/rlhf-book/issues/358). For ORPO/SimPO debugging context, see [direct_alignment/ORPO_SIMPO.md](direct_alignment/ORPO_SIMPO.md)
+- [ ] Retune and validate the noisy SimPO and ORPO reference runs — see [#358](https://github.com/natolambert/rlhf-book/issues/358). For debugging context, see [direct_alignment/ORPO_SIMPO.md](direct_alignment/ORPO_SIMPO.md)
 - [ ] Add evaluation scripts for reward models
 - [x] ~~Remove QLoRA from reward models~~ (done — full fine-tune is the default, dead LoRA references cleaned up)

@@ -50,7 +50,7 @@ In this case, the preference data could be collected on a checkpoint that has un
 The use of the term on-policy here is adapted from the reinforcement learning literature, where on-policy is a technical term implying that the data for a certain gradient update is collected from the most recent form of the policy.
 In preference data, on-policy is used in a slightly softer manner, where it means that the data is collected from the current family of models.
 Different models have different patterns in their generations, which makes preference data that is from a closely related model more robust in the crucial areas of optimization.
-Research has shown that using this on-policy data, rather than other popular datasets that aggregate completions from pools of popular models on platforms like HuggingFace, is particularly important for effective RLHF training [@malik2025rewardbench].
+Research has shown that using this on-policy data, rather than other popular datasets that aggregate completions from pools of popular models on platforms like Hugging Face, is particularly important for effective RLHF training [@malik2025rewardbench].
 
 This necessity for on-policy data is not well documented, but many popular technical reports, such as early versions of Claude or Llama 2, showcase multiple training stages with RLHF being useful for final performance, which mirrors this well.
 The same uncertainty applies for the popular area of AI feedback data -- the exact balance between human and AI preference data used for the latest AI models is unknown.
@@ -197,7 +197,7 @@ The following describes the experience of getting preference data when the field
 Over time, these processes will become far more automated and efficient (especially with AI feedback being used for a larger portion of the process).
 
 The first step is sourcing the vendor to provide data (or one's own annotators). 
-Much like acquiring access to cutting-edge Nvidia GPUs, getting access to data providers in the peak of AI excitement is also a who-you-know game -- those who can provide data are supply-limited. 
+Much like acquiring access to cutting-edge NVIDIA GPUs, getting access to data providers in the peak of AI excitement is also a who-you-know game -- those who can provide data are supply-limited.
 If you have credibility in the AI ecosystem, the best data companies will want you on their books for public image and long-term growth options. 
 Discounts are often also given on the first batches of data to get training teams hooked.
 
@@ -252,7 +252,7 @@ These biases are so common, e.g. prefix bias (where the beginning of a completio
 These issues are often subtle, and the effectiveness of interventions varies widely across them.
 For many, such as sycophancy (over-agreeing with the user’s stated beliefs or flattering them, even when it reduces truthfulness) [@sharma2023towards], they reflect issues within humans that are often outside of the labeling criteria that one will think of providing to the annotation partner or labelers.
 Others, such as verbosity [@singhal2023long] [@bu2025beyond] or formatting habits [@zhang2024lists], emerge for a similar reason, but they are easier to detect and mitigate in training.
-Mitigating these subtle biases in data is the difference between good or great preference data, and therefore good or great RLHF training.
+Mitigating these subtle biases in data is the difference between good and great preference data, and therefore good and great RLHF training.
 
 ## Open Questions in RLHF Preference Data
 

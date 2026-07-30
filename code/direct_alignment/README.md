@@ -263,7 +263,7 @@ Two anchored variants disambiguate DPO's unspecified likelihood direction:
 - **APO-Zero**: chosen likelihood up, rejected likelihood down (use when preferred data > model)
 - **APO-Down**: both likelihoods down, rejected falls further (use when preferred data < model)
 
-Used in HuggingFace's [SmolLM3 post-training recipe](https://huggingface.co/blog/smollm3) in place of DPO.
+Used in Hugging Face's [SmolLM3 post-training recipe](https://huggingface.co/blog/smollm3) in place of DPO.
 
 | Source | Link |
 |--------|------|

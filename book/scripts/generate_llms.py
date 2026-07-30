@@ -96,7 +96,7 @@ Use the chapter links for canonical web pages. Use `llms-full.txt` for a single 
 - [Full-text LLM context]({SITE_URL}/llms-full.txt): Concatenated Markdown for all public book chapters, excluding the references build utility page.
 - [Book homepage]({SITE_URL}/): The canonical web version of the RLHF Book.
 - [Course]({SITE_URL}/course): Free lectures and course material on RLHF and post-training.
-- [Model library]({SITE_URL}/library): Model completion comparisons across supervised finetuning, RLHF, DPO, and related post-training stages.
+- [Model library]({SITE_URL}/library): Model completion comparisons across supervised fine-tuning, RLHF, DPO, and related post-training stages.
 - [RL cheatsheet]({SITE_URL}/rl-cheatsheet): One-page reference for PPO, GRPO, RLOO, REINFORCE, DPO, and related RLHF methods.
 
 ## Chapters
@@ -109,7 +109,7 @@ Use the chapter links for canonical web pages. Use `llms-full.txt` for a single 
 - [EPUB]({SITE_URL}/book.epub): Ebook build.
 - [GitHub source](https://github.com/natolambert/rlhf-book): Source repository for the book and course.
 - [ArXiv paper](https://arxiv.org/abs/2504.12501): Paper version of the RLHF Book.
-- [Manning book page](https://www.manning.com/books/the-rlhf-book): Publisher page for The RLHF Book.
+- [Manning book page](https://www.manning.com/books/reinforcement-learning-from-human-feedback): Publisher page for Reinforcement Learning from Human Feedback.
 """
 
 

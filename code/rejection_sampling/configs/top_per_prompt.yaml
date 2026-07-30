@@ -1,5 +1,5 @@
 # Rejection sampling with top-per-prompt selection.
-# See rejection_sampling/chapter.md (@eq:rs_selection_per_prompt).
+# See book/chapters/09-rejection-sampling.md (@eq:rs_selection_per_prompt).
 #
 # Generation params are identical across all four configs so they share a
 # single rollout cache in rejection_sampling/output/rollouts/<hash>.jsonl.

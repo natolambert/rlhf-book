@@ -77,7 +77,7 @@ These keep diagrams consistent and clean. The RL-loop family
 
 ## Tooling Requirements
 
-- **Python + matplotlib**: `uv add matplotlib`
+- **Python + matplotlib**: `uv sync`
 - **TikZ/LaTeX**: `brew install --cask basictex` (for `make tikz`)
 - **SVG export**: `brew install pdf2svg` (optional, for TikZ SVGs)
 
@@ -152,7 +152,7 @@ Individual diagrams for specific concepts.
 3. **Review outputs** in `generated/{png,svg,pdf}/`
 4. **Get AI feedback** with `/gemini-feedback diagrams/generated/png/<name>.png`
 5. **Copy final versions** to `book/images/` for use in chapters
-6. **Commit both sources and outputs** for reproducibility
+6. **Commit diagram sources and reviewed final assets** in `book/images/`; `diagrams/generated/` remains ignored build output
 
 ## Handoff to Artist
 

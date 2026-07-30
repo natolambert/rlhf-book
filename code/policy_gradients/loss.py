@@ -11,7 +11,7 @@
 # - GSPO (Zheng et al., 2025)
 # - CISPO (MiniMax, 2025)
 # - SAPO (Qwen Team, 2025)
-# - DAPO (Bytedance Team, 2025)
+# - DAPO (ByteDance Team, 2025)
 # - MaxRL (Tajwar et al., 2026)
 
 import torch

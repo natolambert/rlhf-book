@@ -21,7 +21,7 @@ lectures:
 
 # Introduction
 
-Reinforcement learning from Human Feedback (RLHF) is a technique used to incorporate human information into AI systems.
+Reinforcement learning from human feedback (RLHF) is a technique used to incorporate human information into AI systems.
 RLHF emerged primarily as a method to solve hard-to-specify problems.
 With systems that are designed to be used by humans directly, such problems emerge all the time due to the often inexpressible nature of an individual's preferences. This encompasses every domain of content and interaction with a digital system.
 RLHF's early applications were often in control problems and other traditional domains for reinforcement learning (RL), where the goal is to optimize a specific behavior to solve a task.
@@ -109,7 +109,7 @@ A warmer, more supportive style:
 
 
 On the other hand, format is how the answer is structured. 
-Modern models are known to use extensive markdown formatting with lists, line breaks, and emojis.
+Modern models are known to use extensive Markdown formatting with lists, line breaks, and emojis.
 Consider two answers to the following question that are very different:
 
 > **User**: How can I improve my sleep quality?
@@ -220,7 +220,7 @@ A related idea to this theory is the Superficial Alignment Hypothesis, coined in
 
 > A model's knowledge and capabilities are learnt almost entirely during pretraining, while alignment teaches it which subdistribution of formats should be used when interacting with users. If this hypothesis is correct, and alignment is largely about learning style, then a corollary of the Superficial Alignment Hypothesis is that one could sufficiently tune a pretrained language model with a rather small set of examples.
 
-All of the successes of deep learning should have taught you that scaling data is important to performance. Here, the major difference is that the authors are discussing alignment and style, the focus of academic post-training at the time. With a few thousand samples for instruction fine-tuning, you can change a model substantially and improve a narrow set of evaluations, such as AlpacaEval, MT Bench, Arena (formerly Chatbot Arena, a platform where users compare anonymous model responses head-to-head), and the like. These do not always translate to more challenging capabilities, which is why Meta wouldn't train its Llama Chat models on just this dataset. Academic results have lessons, but need to be interpreted carefully if you are trying to understand the big picture of the technological arc.
+All of the successes of deep learning should have taught you that scaling data is important to performance. Here, the major difference is that the authors are discussing alignment and style, the focus of academic post-training at the time. With a few thousand samples for instruction fine-tuning, you can change a model substantially and improve a narrow set of evaluations, such as AlpacaEval, MT-Bench, Arena (formerly Chatbot Arena, a platform where users compare anonymous model responses head-to-head), and the like. These do not always translate to more challenging capabilities, which is why Meta wouldn't train its Llama Chat models on just this dataset. Academic results have lessons, but need to be interpreted carefully if you are trying to understand the big picture of the technological arc.
 
 What this paper is showing is that you can change models substantially with a few samples. We knew this, and it is important to the short-term adaptation of new models, but their argument for performance leaves the casual readers with the wrong lessons.
 
@@ -259,11 +259,11 @@ A common phrase -- "instruction tuning is enough for alignment" -- was so popula
 This doubt about RLHF lasted, especially in the open where groups cannot afford data budgets on the order of \$100K to \$1M.
 The companies that embraced it early ended up winning out.
 Anthropic published extensive research on RLHF through 2022 and now has arguably the best post-training [@askell2021general] [@bai2022training] [@bai2022constitutional].
-The delta between open groups, struggling to reproduce or even knowing basic closed techniques, and leading closed models is a common theme.
+The delta between open groups, struggling to reproduce or even know basic closed techniques, and leading closed models is a common theme.
 
 The first shift in open alignment methods and post-training was the story of Direct Preference Optimization (DPO) [@rafailov2024direct], which showed that you can solve the same optimization problem as RLHF with fewer moving parts by taking gradient steps directly on pairwise preference data. 
 The DPO paper, posted in May of 2023, didn't have any clearly impactful models trained with it through the fall of 2023.
-This changed with the releases of a few breakthrough DPO models -- all contingent on finding a better, lower, learning rate. 
+This changed with the releases of a few breakthrough DPO models -- all contingent on finding a better, lower learning rate.
 Zephyr-Beta [@tunstall2023zephyr], Tülu 2 [@ivison2023camels], and many other models showed that the DPO era of post-training had begun. 
 Chris Manning literally thanked me for "saving DPO." 
 
@@ -353,12 +353,12 @@ To facilitate this, the book includes numerous, academic-style citations to the 
 The contributions of this book are supposed to give you the minimum knowledge needed to try a toy implementation or dive into the literature. 
 This is *not* a comprehensive textbook, but rather a quick book for reminders and getting started.
 
-The print edition of this book was finalized around May 2026 and moved to production for distribution -- the web version continues to collect minor improvements and errata fixes. If you spot a typo or an important omission, please contribute a fix or suggestion on [GitHub](https://github.com/natolambert/rlhf-book).
+The print edition of this book was published by Manning in July 2026, while the web version continues to collect minor improvements and errata fixes. If you spot a typo or an important omission, please contribute a fix or suggestion on [GitHub](https://github.com/natolambert/rlhf-book).
 
 ### About the Author
 
 Dr. Nathan Lambert is a researcher and writer focusing on building the open science of language models. He came here through a Ph.D. in robotics and building an RLHF team shortly after the release of ChatGPT.
-He has released many models trained with RLHF, their subsequent datasets, and training codebases in his time at the Allen Institute for AI (Ai2) and HuggingFace.
+He has released many models trained with RLHF, their subsequent datasets, and training codebases in his time at the Allen Institute for AI (Ai2) and Hugging Face.
 Examples include [Zephyr-Beta](https://huggingface.co/HuggingFaceH4/zephyr-7b-beta), [Tülu 2](https://huggingface.co/allenai/tulu-2-dpo-70b), [OLMo](https://huggingface.co/allenai/OLMo-7B-Instruct), [TRL](https://github.com/huggingface/trl), [Open Instruct](https://github.com/allenai/open-instruct), and many more. 
 He has written extensively on RLHF, including [many blog posts](https://www.interconnects.ai/t/rlhf) and [academic papers](https://scholar.google.com/citations?hl=en&user=O4jW7BsAAAAJ&view_op=list_works&sortby=pubdate).
 

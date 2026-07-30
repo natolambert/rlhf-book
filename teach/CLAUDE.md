@@ -4,10 +4,10 @@
 
 Slides are built with [colloquium](https://github.com/natolambert/colloquium) from Markdown source files.
 
-- Each talk/lecture lives in its own directory (e.g. `SALA-2026/`, `course/`)
-- Source files are `talk.md` or `slides.md` (for talks) or `lec*.md` (for course lectures)
-- Assets go in an `assets/` subdirectory per talk/course
-- References are shared via `bibliography: ../SALA-2026/refs.bib` (or similar relative path)
+- Standalone talks live in their own directories (e.g. `SALA-2026/`); course decks share `course/`
+- Source files are `talk.md` or `slides.md` for standalone talks, and `lec*.md`, `qa-*.md`, or `conversation-*.md` for the course
+- Assets go in each talk's local `assets/` directory or the shared `course/assets/` directory
+- Bibliographies are local to each collection: standalone talks use their directory's `refs.bib`, and course decks use `course/refs.bib`
 
 ## Animations and Progressive Reveals
 

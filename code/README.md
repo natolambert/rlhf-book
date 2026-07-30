@@ -29,7 +29,7 @@ If you are running these with a coding assistant, launch long training/eval comm
 | Chapter 6: Policy Gradients | GRPO on `spell_backward` | `uv run python -m policy_gradients.train --config policy_gradients/configs/grpo.yaml` | `avg_correctness`, `avg_format`, `avg_binary`, and whether groups contain contrast |
 | Chapter 8: Direct Alignment | DPO on UltraFeedback | `uv run python -m direct_alignment.train --loss dpo --max_samples 1000` | `accuracy`, `margins`, `chosen_rewards`, `rejected_rewards`, sample generations |
 | Chapter 9: Rejection Sampling | GSM8K reward selection versus random controls | `uv run python -m rejection_sampling.train --config rejection_sampling/configs/top_per_prompt.yaml` | Final exact-match accuracy against the matched random baseline |
-| Chapter 12: Synthetic Data | SDPO / on-policy self-distillation on string-reversal | `uv run python -m distillation.train --config distillation/configs/sdpo.yaml` | `reward`, `loss`, `skipped`, and the in-loop teacher/student rollout samples |
+| Chapter 12: Synthetic Data | SDPO / on-policy self-distillation on string-reversal | `uv run python -m distillation.train --config distillation/configs/sdpo.yaml` | `reward`, `loss`, `skipped`, and the in-loop completion sample panels |
 
 Good first sweeps:
 
@@ -53,7 +53,7 @@ This code is built on the excellent work of community contributors:
 **License**: Apache 2.0
 
 A clean, educational implementation of policy gradient methods for reinforcement learning.
-Implements REINFORCE, RLOO, PPO, GRPO, Dr. GRPO, GSPO, CISPO, SAPO, and DAPO with mathematical formulations
+Implements REINFORCE, RLOO, PPO, GRPO, Dr. GRPO, GSPO, CISPO, SAPO, DAPO, and MaxRL with mathematical formulations
 matching the book's Chapter 6 (Policy Gradient Methods). Other details:
 
 - SAPO algorithm based on [casinca/llm-quest](https://github.com/casinca/llm-quest) by [@casinca](https://github.com/casinca), Apache 2.0
@@ -209,9 +209,9 @@ learning to rate individual reasoning steps as {-1, 0, 1} (bad, neutral, good).
 
 | Model | Description | Example Run |
 |-------|-------------|-------------|
-| Preference RM | Bradley-Terry on UltraFeedback | [wandb](https://wandb.ai/rlhf-book/core/runs/1g3y9bcc) |
-| ORM | Outcome RM on GSM8K | [wandb](https://wandb.ai/rlhf-book/core/runs/3gkoqb7f) |
-| PRM | Process RM on PRM800K | [wandb](https://wandb.ai/rlhf-book/core/runs/iv4d966d) |
+| Preference RM | Bradley-Terry on UltraFeedback | [wandb](https://wandb.ai/rlhf-book/core/runs/6sninll5) |
+| ORM | Outcome RM on GSM8K | [wandb](https://wandb.ai/rlhf-book/core/runs/xm8mlcpl) |
+| PRM | Process RM on PRM800K | [wandb](https://wandb.ai/rlhf-book/core/runs/abhkbn4q) |
 
 ## Direct Alignment Training
 
@@ -236,6 +236,7 @@ uv run python -m direct_alignment.train --loss dpo --max_samples 1000
 | Algorithm | Config | Description |
 |-----------|--------|-------------|
 | DPO | `dpo.yaml` | Direct Preference Optimization (Rafailov et al., 2023) |
+| DPO-Norm | `dpo_norm.yaml` | DPO with average response log-probabilities |
 | cDPO | N/A (use `--loss cdpo`) | Conservative DPO with label smoothing |
 | IPO | `ipo.yaml` | Identity Preference Optimization (Azar et al., 2023) |
 | SimPO | `simpo.yaml` | Simple PO - length-normalized, no ref model (Meng et al., 2024) |
@@ -297,8 +298,8 @@ method for reasoning tasks. The model acts as its own teacher: it samples rollou
 `spell_backward`, a string-reversal problem), then a demonstration-conditioned copy of
 the same model — given a correct sibling rollout from the same group — supplies better
 next-token targets that are distilled back into the student via a top-K KL. Prompts
-whose rollout group has no correct sample are skipped, so every update has a
-demonstration to learn from.
+whose rollout group has no correct sample are skipped and replaced, so every update
+has a full batch of demonstrations to learn from.
 See `distillation/README.md` for the full walk-through.
 
 ```bash
@@ -310,7 +311,7 @@ uv run python -m distillation.train --config distillation/configs/sdpo.yaml
 
 ![SDPO Training Results](images/wandb_distillation.png)
 
-The reference run trained `Qwen/Qwen3-1.7B` on `spell_backward` in under 20 hours on a
+The plotted local run trained `Qwen/Qwen3-1.7B` on `spell_backward` in under 20 hours on a
 single 24 GB consumer GPU: `reward` climbs from ~0.55 to ~0.8 while the distillation
 `loss` and `grad_norm` trend down.
 
@@ -324,7 +325,7 @@ single 24 GB consumer GPU: `reward` climbs from ~0.55 to ~0.8 while the distilla
 
 ### Weights & Biases Logging
 
-Training runs are logged to Weights & Biases. Configure via environment variables:
+Training runs can be logged to Weights & Biases. Configure via environment variables:
 
 ```bash
 # Required: Your wandb API key
@@ -354,7 +355,7 @@ export WANDB_MODE="disabled"
 ### Other environment variables
 
 ```bash
-# HuggingFace access (for gated models)
+# Hugging Face access (for gated models)
 export HF_TOKEN="your-token"
 ```
 
@@ -401,20 +402,34 @@ These examples correspond to:
 - **Chapter 6**: Policy Gradient Methods (REINFORCE, PPO, GRPO, etc.)
 - **Chapter 8**: Direct Alignment (DPO, IPO, SimPO, KTO, etc.)
 - **Chapter 9**: Rejection Sampling
+- **Chapter 12**: Synthetic Data & Distillation (SDPO)
 
 See [rlhfbook.com](https://rlhfbook.com) for the full text.
 
 ## Citation
 
-To cite this book, please use the following format:
+To cite the continuously updated web edition:
 
 ```bibtex
-@book{rlhf2025,
+@book{rlhf2026lambert,
   author       = {Nathan Lambert},
   title        = {Reinforcement Learning from Human Feedback},
-  year         = {2025},
+  year         = {2026},
   publisher    = {Online},
   url          = {https://rlhfbook.com},
+}
+```
+
+To cite the Manning edition:
+
+```bibtex
+@book{lambert2026reinforcement,
+  author       = {Nathan Lambert},
+  title        = {Reinforcement Learning from Human Feedback},
+  year         = {2026},
+  publisher    = {Manning Publications},
+  isbn         = {9781633434301},
+  url          = {https://www.manning.com/books/reinforcement-learning-from-human-feedback},
 }
 ```
 

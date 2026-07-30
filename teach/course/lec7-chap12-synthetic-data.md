@@ -212,7 +212,7 @@ Synthetic data has not replaced human data uniformly across the pipeline.
 - **Preference data (RLHF):** *mixed* -- academic work shows it performs comparably, yet frontier labs treat human preference data as a competitive moat.
 - **Evaluation:** LLM-as-a-judge scales *scoring* cheaply, but benchmarks and ground-truth labels still need human grounding/correlation.
 
-Human data curation is heavily involved at determining the frontier of models and seeding initial progress, then synthetic data is used to scale it.
+Human data curation is heavily involved in determining the frontier of models and seeding initial progress, then synthetic data is used to scale it.
 
 Around the launch of ChatGPT, human data was a central driver of progress.
 
@@ -772,7 +772,7 @@ content: |
 Rubrics became a popular tool for scaling RL on the long-tail of domains. They're also used to help with domain-specific evaluations and any other place domain expertise needs to be "trained into" the models.
 - A way to extend ideas from RL with verifiable rewards (Chapter 7) to tasks *without* clearly verifiable answers.
 - Write nearly-verifiable criteria for a prompt, generate multiple answers, and RL-update toward the best ones.
-- Emerged in late 2024 → 2025 as LLM judges and synthetic-data practices matured. Also likely a function of making RL more broadly accesible to frontier post-training.
+- Emerged in late 2024 → 2025 as LLM judges and synthetic-data practices matured. Also likely a function of making RL more broadly accessible to frontier post-training.
 - Already delivering gains in scientific reasoning and factuality [@gunjal2025rubrics] [@viswanathan2025checklists] [@rezaei2025onlinerubrics] [@liu2025openrubrics].
 
 ---

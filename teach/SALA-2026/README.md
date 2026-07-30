@@ -2,7 +2,7 @@
 
 **Event:** [SALA '26](https://lasala.ai/), Quito, Ecuador
 **Date:** 11 March 2026
-**Format:** ~60 minute talk (with Q&A)
+**Format:** ~60-minute talk (with Q&A)
 
 ## Talk: An Introduction to RLHF and Post-training
 
@@ -10,9 +10,10 @@ A self-contained introduction aimed at an ML-literate audience that may not be d
 
 ## Slides (colloquium)
 
-Slides are written in Markdown and rendered with [colloquium](https://github.com/natolambert/colloquium). From the repo root:
+Slides are written in Markdown and rendered with [colloquium](https://github.com/natolambert/colloquium). Install the teaching dependencies from the repo root, then serve the deck from its directory:
 
 ```bash
-uv sync
-uv run colloquium serve teach/SALA-2026/talk.md
+uv sync --extra teach
+cd teach/SALA-2026
+uv run --extra teach colloquium serve talk.md
 ```

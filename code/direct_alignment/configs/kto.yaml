@@ -6,7 +6,7 @@
 # Only needs to know if a response is "good" or "bad", not direct comparisons.
 #
 # Run with:
-#   uv run python -m direct_alignment.train --config configs/kto.yaml
+#   uv run python -m direct_alignment.train --config direct_alignment/configs/kto.yaml
 
 # Model
 model_name: allenai/OLMo-2-0425-1B-SFT

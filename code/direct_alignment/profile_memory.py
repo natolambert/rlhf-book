@@ -54,7 +54,7 @@ def profile_configuration(
     """Profile memory usage for a given configuration.
 
     Args:
-        model_name: HuggingFace model name
+        model_name: Hugging Face model name
         batch_size: Batch size to test
         max_length: Sequence length to test
         num_forward_passes: Number of forward passes to warm up

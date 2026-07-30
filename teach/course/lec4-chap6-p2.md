@@ -884,13 +884,13 @@ A process management library (e.g., Ray) coordinates data flow between them. Mod
 
 - A [video](https://www.youtube.com/watch?v=amrJDwMUFNs) I recorded looking at codebases implementing GRPO, DAPO, Dr. GRPO, and other papers.
 - ~24min in, [talk](https://youtu.be/uaZ3yRdYg8A?si=iSGw56BFNQMWNjtr&t=1487) on scaling RL for Olmo 3.
-- Finbarr Timber's [blog post](https://finbarr.ca/making-rl-fast/) on making RL fast.
+- Finbarr Timbers's [blog post](https://finbarr.ca/making-rl-fast/) on making RL fast.
 
 ---
 
 ## Open-source RL codebases
 
-- **TRL** [@vonwerra2022trl] — HuggingFace ecosystem, PPO/GRPO/DPO. Best starting point for getting started
+- **TRL** [@vonwerra2022trl] — Hugging Face ecosystem, PPO/GRPO/DPO. Best starting point for getting started
 - **Open Instruct** [@ivison2024unpacking] — Allen AI, multi-algorithm. Best for research and reproduction
 - **veRL** — Very popular in the RLVR era.
 - **OpenRLHF** — Started for RLHF work, popular with RLVR, etc. too.
@@ -1067,7 +1067,7 @@ seq_2_losses = [1, 1, 1, 1, 1, 1, 1, 1, 1, 10]  # 10 tokens, mean = 1.9
 
 Illustrative ranges — thresholds vary by model size, task, and algorithm:
 
-| WandB panel | Healthy | Unhealthy |
+| W&B panel | Healthy | Unhealthy |
 |-------------|---------|-----------|
 | `reward/mean` | Steady upward trend | Spikes, oscillation, plateau |
 | `kl/mean` | Gradual increase (0 → 2–5) | Explosion (>10) or flat at 0 |
@@ -1148,7 +1148,7 @@ title: Codebases
 tone: surface
 compact: true
 content: |
-  - [TRL](https://github.com/huggingface/trl) — HuggingFace
+  - [TRL](https://github.com/huggingface/trl) — Hugging Face
   - [Open Instruct](https://github.com/allenai/open-instruct) — Allen AI
   - [veRL](https://github.com/volcengine/verl) — ByteDance
   - [OpenRLHF](https://github.com/OpenRLHF/OpenRLHF)

@@ -357,7 +357,7 @@ def create_dataloader(
     """Create a DataLoader for preference data.
 
     Args:
-        dataset_name: HuggingFace dataset name
+        dataset_name: Hugging Face dataset name
         tokenizer: Tokenizer for the model
         split: Dataset split
         max_samples: Limit number of samples

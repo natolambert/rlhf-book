@@ -33,6 +33,7 @@ python book/scripts/some_script.py
 The repo includes Claude Code skills under `.claude/skills/`.
 For code experiments, use `.claude/skills/run-rlhf-code-experiment/SKILL.md`; it maps reader goals to the maintained examples under `code/` and specifies what metrics to report.
 For live preview of teaching slides, use `.claude/skills/serve-course-lecture/SKILL.md`; course lecture HTML must be served from `teach/course/` or images referenced as `assets/...` will break.
+For diagram review, use `.claude/skills/gemini-feedback/SKILL.md`; it sends a generated diagram and relevant mathematical context to Gemini for textbook-quality feedback.
 
 ## Directory Structure
 
@@ -76,32 +77,11 @@ Always output built diagrams to `diagrams/generated/png/`, `diagrams/generated/p
 
 **Image conversion**: When converting TikZ PDFs to PNG with `magick`, **always use `-trim`** to remove whitespace, and use `-density 300` for previews (use 400 for `book/images/`). Example: `magick -density 300 input.pdf -trim -quality 100 output.png`
 
-## Future: Multimodal Feedback Loop
-
-Plan to integrate Gemini API for diagram feedback:
-- Pass math content + generated diagrams to Gemini 2.5 Pro
-- Get feedback on visual clarity, correctness, consistency
-- Iterate on mockups before artist handoff
-
-Example workflow:
-```python
-# Pseudocode for diagram feedback
-import google.generativeai as genai
-
-model = genai.GenerativeModel('gemini-2.5-pro')
-response = model.generate_content([
-    "Review this reward model diagram for accuracy:",
-    diagram_image,
-    "The math should show: " + latex_formula,
-    "Is this correct and clear?"
-])
-```
-
 ## Key Chapters for Diagrams
 
-- **Chapter 7 (Reward Models)**: Bradley-Terry, ORM, PRM, Generative RM
-- **Chapter 11 (Policy Gradients)**: PPO visualizations, async vs sync training
-- **Chapter 12 (DPO)**: Direct alignment visualizations
+- **Chapter 5 (Reward Models)**: Bradley-Terry, ORM, PRM, Generative RM
+- **Chapter 6 (Policy Gradients)**: PPO visualizations, async vs sync training
+- **Chapter 8 (Direct Alignment)**: DPO visualizations
 
 ## Footer Convention
 
@@ -135,8 +115,9 @@ The Citation block (which has a different heading level across pages — h3 on i
 - **On file-modified conflicts, edit via script instead of retrying.** The
   default Read→Edit pathway aborts whenever the file's mtime changes (user
   saves, server touches) and is not fault tolerant for concurrent editing.
-  After one stale-file error, switch to a targeted `python3`/`sed` replacement
-  of the exact string — verify the match count first, then substitute.
+  After one stale-file error, switch to a targeted `uv run python`/`sed`
+  replacement of the exact string — verify the match count first, then
+  substitute.
 
 ## Style Notes
 
@@ -148,10 +129,3 @@ The Citation block (which has a different heading level across pages — h3 on i
 - Mockups are iterative - not pixel-perfect
 - See `diagrams/README.md` for the full diagram style conventions and `tikz/` topic-folder layout
 - Trailing whitespace at the end of Markdown lines is acceptable; do not remove it during cleanup or typo-only edits.
-
-## Next Steps (Diagrams PR)
-
-1. **Finalize diagrams** - Review and polish the multilane diagrams (ORM, Value Function)
-2. **Add diagrams to chapter text** - Insert figure references in `book/chapters/07-reward-models.md`
-3. **Add RLHF overview diagram** - Add the same RLHF diagram to the start of the RM chapter to highlight where RMs fit in the pipeline
-4. **Review PR** - Check over the full PR before merge
