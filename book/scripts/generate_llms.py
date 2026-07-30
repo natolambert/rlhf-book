@@ -96,7 +96,7 @@ Use the chapter links for canonical web pages. Use `llms-full.txt` for a single 
 - [Full-text LLM context]({SITE_URL}/llms-full.txt): Concatenated Markdown for all public book chapters, excluding the references build utility page.
 - [Book homepage]({SITE_URL}/): The canonical web version of the RLHF Book.
 - [Course]({SITE_URL}/course): Free lectures and course material on RLHF and post-training.
-- [Model library]({SITE_URL}/library): Model completion comparisons across supervised fine-tuning, RLHF, DPO, and related post-training stages.
+- [Model library]({SITE_URL}/library): Model completion comparisons across supervised finetuning, RLHF, DPO, and related post-training stages.
 - [RL cheatsheet]({SITE_URL}/rl-cheatsheet): One-page reference for PPO, GRPO, RLOO, REINFORCE, DPO, and related RLHF methods.
 
 ## Chapters

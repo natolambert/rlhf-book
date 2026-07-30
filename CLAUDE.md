@@ -121,6 +121,9 @@ The Citation block (which has a different heading level across pages — h3 on i
 
 ## Style Notes
 
+- Both "finetuning" and "fine-tuning" are acceptable. Do not normalize existing
+  `finetuning`, `finetuned`, or `finetune` to hyphenated forms during cleanup
+  edits.
 - Keep diagrams simple and artist-friendly
 - Use consistent visual grammar across related figures
 - **Arrows: flush at the source, slight gap at the target** (`shorten >=5pt` in TikZ) — reads as a more dynamic connection than edge-to-edge arrows
