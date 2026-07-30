@@ -100,7 +100,7 @@ and `train.py` skip Stages 1 and 2 entirely. To force a re-run, delete the
 hash file (or change any of: reward model, policy model, dataset slice,
 sampling params, seed, `num_completions_per_prompt`, `max_new_tokens`).
 
-The `output/` directory is gitignored.
+The `rejection_sampling/output/` directory is gitignored.
 
 ## Wandb
 

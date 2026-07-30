@@ -50,7 +50,7 @@ in the config (see [`data.py`](data.py)); swap or add tasks by editing those spe
 
 See [`configs/sdpo.yaml`](configs/sdpo.yaml) for the full set. The most important knobs:
 
-| Field | Default | Meaning |
+| Field | `sdpo.yaml` value | Meaning |
 |-------|---------|---------|
 | `model_name` | `Qwen/Qwen3-1.7B` | Model used as both student and self-teacher |
 | `data.specs` | `spell_backward` | Reasoning Gym task mixture (name / weight / per-task config) |
