@@ -266,12 +266,14 @@ $endif$
       <svg class="changelog-caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
     </summary>
     <p><em>Last built: $date$</em></p>
+    <p><strong>August 2026</strong>: Finished accompanying course, Amazon sales begin.</p>
+    <p><strong>July 2026</strong>: The print, ePub, and liveBook editions were published by Manning.</p>
     <p><strong>April 2026</strong>: Final editorial polish for print &mdash; ported Manning edition improvements, clarity pass on equations and terminology, typo/grammar fixes across all chapters, product chapter expansions. The book is heading to print, so expect fewer content changes going forward.</p>
     <p><strong>March 2026</strong>: Launch <a href="https://rlhfbook.com/course">course page</a> with lecture videos; PDF syntax highlighting; product chapter expansions (Ch. 17).</p>
     <p><strong>February 2026</strong>: v2 content: direct alignment chapter, new diagrams, RL cheatsheet, appendices, search bar, Kindle support, editor fixes.</p>
     <p><strong>January 2026</strong>: Major chapter reorganization to match Manning book structure; code examples library; old URLs redirect to new locations.</p>
     <p><strong>December 2025</strong>: Working on v2 of the book based on editors' feedback. Check back for updates!</p>
-    <p><strong>November 2025</strong>: <a href="https://www.manning.com/books/the-rlhf-book">Manning preorder</a> available.</p>
+    <p><strong>November 2025</strong>: <a href="https://www.manning.com/books/reinforcement-learning-from-human-feedback">Manning preorder</a> available.</p>
     <p><strong>July 2025</strong>: Add tool use chapter (see <a href="https://github.com/natolambert/rlhf-book/pull/122">PR</a>)</p>
     <p><strong>June 2025</strong>: v1.1. Lots of RLVR/reasoning improvements (see <a href="https://github.com/natolambert/rlhf-book/pull/120">PR</a>)</p>
     <p><strong>April 2025</strong>: Finish v0; overoptimization, open questions, etc.; evaluation section; RLHF x Product research, improving website, reasoning section.</p>
@@ -287,12 +289,24 @@ $endif$
   <section id="citation" style="padding: 0 20px;">
     <h3>Citation</h3>
     <p>If you found this useful for your research, please cite it!</p>
-    <pre style="text-align: left; font-size: small; color: #888;">@book{rlhf2026lambert,
-  author = {Nathan Lambert},
+    <p>For the web and arXiv version:</p>
+    <pre style="text-align: left; font-size: small; color: #888;">@misc{lambert2025reinforcementlearninghumanfeedback,
   title = {Reinforcement Learning from Human Feedback},
+  author = {Nathan Lambert},
+  year = {2025},
+  eprint = {2504.12501},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.LG},
+  url = {https://arxiv.org/abs/2504.12501}
+}</pre>
+    <p>For the Manning edition:</p>
+    <pre style="text-align: left; font-size: small; color: #888;">@book{lambert2026reinforcement,
+  author = {Nathan Lambert},
+  title = {Reinforcement Learning from Human Feedback: Alignment and post-training of {LLMs}},
   year = {2026},
-  publisher = {Online},
-  url = {https://rlhfbook.com}
+  publisher = {Manning Publications},
+  isbn = {9781633434301},
+  url = {https://www.manning.com/books/reinforcement-learning-from-human-feedback}
 }</pre>
   </section>
   $footer.html()$

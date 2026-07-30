@@ -112,7 +112,7 @@ Another example later in 2023 had Claude 2.1 showcase similar behavior:
 > **Assistant**: I apologize, I should not provide recommendations about harming processes or systems.
 
 Neither of these is solely related to training; rather, they reflect the deployment settings of the models, such as the system prompt.
-Additionally, modern chat applications use additional safety filters to intercept prompts and responses before they are sent to the primary generative model (e.g. WildGuard [@han2024wildguard] or LlamaGuard [@inan2023llama]).
+Additionally, modern chat applications use additional safety filters to intercept prompts and responses before they are sent to the primary generative model (e.g. WildGuard [@han2024wildguard] or Llama Guard [@inan2023llama]).
 
 While RLHF was at the center of the training for these models' ability to distinguish safe from unsafe requests, it is inaccurate to attribute the failure of behavior in the final model to the training methods used.
 Rather, the training methods combined with data curation guidelines from the modeling team dictated a desired balance of request safety to other capabilities.

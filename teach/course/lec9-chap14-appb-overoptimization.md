@@ -115,7 +115,7 @@ content: |
 
 Early on, say ~2023, RLHF got a reputation as **"just style transfer"** -- the claim that it only changes *how* an answer is presented, not *what* the model knows or can do, and it *just* came from some easy to access place.
 
-- **Style transfer** = reshaping presentation -- tone, markdown, bullet lists, hedging, length ("chattiness") -- with no new capability underneath. Often in a veil of copying.
+- **Style transfer** = reshaping presentation -- tone, Markdown, bullet lists, hedging, length ("chattiness") -- with no new capability underneath. Often in a veil of copying.
 - The **Superficial Alignment Hypothesis** [@zhou2023lima] is the strong version: knowledge is learned in pretraining; alignment just picks a format and tone.
 - The dismissal built in: *superficial, a cosmetic layer on the base model.*
 
@@ -191,7 +191,7 @@ Formalized in *[Scaling Laws for Reward Model Overoptimization](https://arxiv.or
 <!-- cite-right: gao2023scaling -->
 ## Scaling laws for RM over-optimization (seminal paper)
 
-![**Best-of-n**: gold reward (solid) flattens and falls while the proxy (dashed) keeps climbing.](assets/gao-overopt-bon.png)
+![**Best-of-N**: gold reward (solid) flattens and falls while the proxy (dashed) keeps climbing.](assets/gao-overopt-bon.png)
 
 |||
 
@@ -388,7 +388,7 @@ Was easy to juice chattiness at the expense of other skills.
 <!-- valign: center -->
 ## Llama 4's Chatbot Arena special (April 2025)
 
-Meta's Llama 4 launch (on a Saturday) headlined Maverick at **ELO 1417 -- #2 on Chatbot Arena** ... via "an experimental chat version."
+Meta's Llama 4 launch (on a Saturday) headlined Maverick at **Elo 1417 -- #2 on Chatbot Arena** ... via "an experimental chat version."
 
 - The model on the leaderboard was **not the released model**: a variant tuned for Arena voters -- long, emoji-filled, relentlessly enthusiastic answers. Same name, drastically different behavior on LMArena vs. every other provider.
 - The released Maverick is an okay model with a reasonable tone. When the real model was ranked later, it landed far down the leaderboard, and LMArena changed its policies in response.

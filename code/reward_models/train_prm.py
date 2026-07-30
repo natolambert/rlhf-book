@@ -313,7 +313,7 @@ def train_prm(
     """Train a Process Reward Model on PRM800K.
 
     Args:
-        model_id: HuggingFace model ID for base model
+        model_id: Hugging Face model ID for base model
         samples: Number of PRM800K samples to use
         batch_size: Training batch size
         grad_accum_steps: Gradient accumulation steps

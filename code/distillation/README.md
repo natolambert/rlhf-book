@@ -12,8 +12,8 @@ task (the default is `spell_backward`, a string-reversal problem, matching the
 [`policy_gradients`](../policy_gradients/README.md) GRPO setup) and each completion is
 verified by the environment. The only in-context signal given to the self-teacher is a
 *correct sibling demonstration* drawn from the same rollout group. If no rollout in the
-group is correct, there is no demonstration to distil from and the prompt is **skipped
-entirely** for that step.
+group is correct, there is no demonstration to distil from and the prompt is **skipped**
+and replaced so the optimizer step still receives a full batch.
 
 ## Algorithms
 
@@ -25,7 +25,7 @@ entirely** for that step.
 
 ![SDPO Training Results](../images/wandb_distillation.png)
 
-`Qwen/Qwen3-1.7B` on the default `spell_backward` task, trained in under 20 hours on a
+The plotted local run used `Qwen/Qwen3-1.7B` on the default `spell_backward` task and trained in under 20 hours on a
 single 24 GB consumer GPU: `reward` rises from ~0.55 to ~0.8 while `loss` and
 `grad_norm` trend down.
 
@@ -50,29 +50,32 @@ in the config (see [`data.py`](data.py)); swap or add tasks by editing those spe
 
 See [`configs/sdpo.yaml`](configs/sdpo.yaml) for the full set. The most important knobs:
 
-| Field | Default | Meaning |
+| Field | `sdpo.yaml` value | Meaning |
 |-------|---------|---------|
 | `model_name` | `Qwen/Qwen3-1.7B` | Model used as both student and self-teacher |
 | `data.specs` | `spell_backward` | Reasoning Gym task mixture (name / weight / per-task config) |
-| `data.size` | `3000` | Number of procedurally generated problems |
+| `data.size` | `10000` | Number of procedurally generated problems |
 | `kl_top_k` | `20` | Logits kept per position for the distillation KL |
 | `success_reward_threshold` | `1.0` | Score at/above which a rollout becomes a demo solution |
 | `num_rollouts` | `8` | Rollouts sampled per problem (sibling demos come from this group) |
-| `prompts_per_step` | `4` | Problems generated and gradient-accumulated per optimizer step |
+| `prompts_per_step` | `16` | Successful problems gradient-accumulated per optimizer step |
 | `max_new_tokens` | `512` | Generation length cap per rollout |
 
 ## Metrics to watch
 
 Logged to W&B each optimizer step (see [`train.py`](train.py)):
 
-- **`avg_reward`** — mean environment score across the rollout group; the primary signal
+- **`reward`** — mean environment score across the accepted rollout groups; the primary signal
   that the student is improving.
 - **`loss`** — the masked top-K KL between student and self-teacher; should trend down
   as the student internalizes the demonstration-conditioned distribution.
 - **`grad_norm`** — watch for spikes that indicate instability.
+- **`skipped`** — number of polled prompts whose rollout group had no correct
+  demonstration. These prompts are replaced before the optimizer step.
 
-Steps whose prompts are all skipped (no correct demonstration in any group) produce no
-update and are not logged.
+Polling is bounded at `prompts_per_step * 100` attempts per optimizer step. If the loop
+cannot assemble a full batch within that budget, training fails with a clear error
+instead of hanging.
 
 ## Hyperparameters for harder tasks
 
@@ -117,4 +120,3 @@ The privileged context passed to the teacher also plays a huge role in the succe
 ## TODOs for Community Contributions
 
 - [ ] Explore additional Reasoning Gym task domains beyond string reversal.
-

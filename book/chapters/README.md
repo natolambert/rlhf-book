@@ -1,6 +1,6 @@
 # RLHF Book Chapters
 
-This directory contains the markdown source files for the RLHF Book.
+This directory contains the Markdown source files for the RLHF Book.
 
 **License:** [CC-BY-NC-SA-4.0](../../LICENSE-CHAPTERS)
 

@@ -258,12 +258,12 @@ $$
 
 <!-- layout: section-break -->
 
-## The reasoning model cambrian explosion
+## The reasoning model Cambrian explosion
 
 ---
 
 <!-- valign: center -->
-## The reasoning model cambrian explosion
+## The reasoning model Cambrian explosion
 
 <!-- img-align: center -->
 
@@ -280,7 +280,7 @@ The key ideas behind RLVR aren't new -- they were explored before o1/R1 made the
 - **STaR** [@zelikman2022star] (and **Quiet-STaR** [@Zelikman2024QuietSTaRLM]): self-taught reasoning with ground-truth rewards (2022-2024). Sample CoTs with different rationales, keep correct answers, train.
 - **TRICE** [@hoffman2023training]: MCMC-inspired optimization for reasoning traces (more complex algorithm).
 - **VinePPO** [@VinePPO]: PPO with binary math rewards on GSM8K/MATH via many rollouts & Monte Carlo estimation.
-- **Tulu 3** [@lambert2024t]: PPO for math correctness while maintaining broad capabilities.
+- **Tülu 3** [@lambert2024t]: PPO for math correctness while maintaining broad capabilities.
 
 <!-- step -->
 

@@ -48,7 +48,7 @@ function Meta(meta)
     sameAs = {
       "https://github.com/natolambert/rlhf-book",
       "https://arxiv.org/abs/2504.12501",
-      "https://www.manning.com/books/the-rlhf-book",
+      "https://www.manning.com/books/reinforcement-learning-from-human-feedback",
     },
   })
 

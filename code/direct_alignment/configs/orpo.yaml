@@ -6,7 +6,7 @@
 # the need for a reference model. Good for training from base models.
 #
 # Run with:
-#   uv run python -m direct_alignment.train --config configs/orpo.yaml
+#   uv run python -m direct_alignment.train --config direct_alignment/configs/orpo.yaml
 
 # Model
 model_name: allenai/OLMo-2-0425-1B-SFT

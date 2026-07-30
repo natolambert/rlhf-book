@@ -86,7 +86,7 @@ loss = -F.logsigmoid(beta * logits)
 This borrows SimPO's length normalization without removing DPO's reference correction
 or adding SimPO's margin term `gamma`.
 
-When using DPO-Norm, prefer `configs/dpo_norm.yaml`. If using CLI overrides directly,
+When using DPO-Norm, prefer `direct_alignment/configs/dpo_norm.yaml`. If using CLI overrides directly,
 pass `--beta 2.0` or another tuned value, since the base CLI default is DPO's `0.1`.
 Refining per-algorithm default initialization for CLI-only runs can be addressed in future work.
 
@@ -263,7 +263,7 @@ Two anchored variants disambiguate DPO's unspecified likelihood direction:
 - **APO-Zero**: chosen likelihood up, rejected likelihood down (use when preferred data > model)
 - **APO-Down**: both likelihoods down, rejected falls further (use when preferred data < model)
 
-Used in HuggingFace's [SmolLM3 post-training recipe](https://huggingface.co/blog/smollm3) in place of DPO.
+Used in Hugging Face's [SmolLM3 post-training recipe](https://huggingface.co/blog/smollm3) in place of DPO.
 
 | Source | Link |
 |--------|------|

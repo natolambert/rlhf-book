@@ -507,7 +507,7 @@ Open models train across multiple harnesses so deployment is smooth.
 title: Example Harness Gains
 tone: accent
 content: |
-  Polar (NVIDIA): same model, same GRPO, same tasks -- **+22.6** points on SWE-Bench Verified training through the Codex harness (3.8 → 26.4: RL teaching an *unfamiliar* harness), **+0.6** through Qwen Code (already fluent: 34.6 → 35.2).
+  Polar (NVIDIA): same model, same GRPO, same tasks -- **+22.6** points on SWE-bench Verified training through the Codex harness (3.8 → 26.4: RL teaching an *unfamiliar* harness), **+0.6** through Qwen Code (already fluent: 34.6 → 35.2).
 ```
 
 <!-- cite-right: polar2026 -->
@@ -527,24 +527,24 @@ Some example MOPD gains from Nemotron 3 Ultra [@nemotron3ultra]:
 | TauBench Telecom | 55.7 | 82.7 | 92.9 | 94.0 |
 | Terminal-Bench 2.0 | 34.5 | 44.5 | **54.0** | 50.0 |
 | BrowseComp | 14.3 | 31.0 | 44.4 | 51.0 |
-| SWE-Bench Verified | 63.5 | 65.8 | 71.7 | 72.5 |
+| SWE-bench Verified | 63.5 | 65.8 | 71.7 | 72.5 |
 
 
 ---
 
 <!-- cite-right: glm5team2026glm5 -->
-## Frontier practice:  Reward hacking
+## Frontier practice: Reward hacking
 
 GLM-5's slides-RL policy discovered `overflow: hidden` to make an overflowing slide *measure* 16:9, and flex-padding to stretch short ones -- the fix was patching the renderer, not the reward. 
 
 Nemotron physically deletes future git commits and firewalls GitHub so SWE agents can't read the gold patch; Kimi K3 ships a kernel-exploit detector and public/hidden verifier pairs. 
 
-(of course, the OpenAI hack of HuggingFace 😳)
+(of course, the OpenAI hack of Hugging Face 😳)
 
 ---
 
 <!-- cite-right: glm5team2026glm5 -->
-## Frontier practice:  Reward hacking
+## Frontier practice: Reward hacking
 
 ![GLM-5, figure 9: two reward hacks from slide-generation RL, with the exploit CSS the policy wrote. Left: normal renders; right: "hacked" renders that satisfy the geometric check. GLM-5 Team, 2026.](assets/glm5-reward-hacking.jpg)
 

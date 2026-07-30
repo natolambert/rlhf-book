@@ -8,11 +8,11 @@ class Config(BaseModel):
     """Full SFT training configuration.
 
     Attributes:
-        model_name: Base HuggingFace model identifier (we want a base model
+        model_name: Base Hugging Face model identifier (we want a base model
             without an instruction-tuned chat template, e.g. OLMo-2-0425-1B).
         chat_template_source: Tokenizer to lift ``chat_template`` from when the
             base tokenizer has none. Set to ``null`` to disable.
-        dataset_name, dataset_split: HuggingFace dataset identifier and split.
+        dataset_name, dataset_split: Hugging Face dataset identifier and split.
         max_samples: Optional cap on training rows for quick experiments.
         max_length: Maximum total sequence length (prompt + response).
 
@@ -23,7 +23,7 @@ class Config(BaseModel):
 
         sample_*: in-loop generation logging settings. ``sample_every`` fires
             at step 0 (base model) and every ``sample_every`` optimizer steps
-            after, so the W&B run shows the base model alongside the SFT model.
+            after, so the console shows the base model alongside the SFT model.
 
         wandb_project, wandb_run_name: W&B logging.
     """

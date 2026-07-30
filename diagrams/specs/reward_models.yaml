@@ -100,7 +100,7 @@ reward_models:
         - "prompt x"
         - "chain-of-thought steps s_1, s_2, ..., s_K"
       labels:
-        - "step correctness at boundaries: {-1, 0, 1} or {correct, neutral, incorrect}"
+        - "step correctness at boundaries: {-1, 0, 1} or {incorrect, neutral, correct}"
 
     architecture:
       base: "LM trunk"

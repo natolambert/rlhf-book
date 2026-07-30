@@ -32,7 +32,7 @@ class Config(BaseModel):
         data: Dataset configuration
         loss: Loss function (reinforce, rloo, ppo, grpo, drgrpo, gspo, cispo, sapo,
             dapo, maxrl)
-        model_name: HuggingFace model identifier
+        model_name: Hugging Face model identifier
 
         # Clipping (GRPO, DrGRPO, GSPO, CISPO, PPO, DAPO)
         clip_eps_lo: Lower clipping bound for policy ratio

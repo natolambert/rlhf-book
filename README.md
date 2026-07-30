@@ -4,17 +4,17 @@ A comprehensive guide to Reinforcement Learning from Human Feedback (and a broad
 
 **[Read online](https://rlhfbook.com)** | **Order print on [Manning](https://hubs.la/Q03Tc3cf0) or [Amazon](https://amzn.to/4cwCDJQ)** | **Join [Discord Community](https://discord.gg/yz5AwK4gBR)**
 
-This book is my attempt to open-source all the knowledge I've gained working at the frontier of open models in the post-ChatGPT take off of language models.
+This book is my attempt to open-source all the knowledge I've gained working at the frontier of open models in the post-ChatGPT takeoff of language models.
 When I started, many established methods like rejection sampling had no canonical reference.
 On the other side, industry practices to make the models more personable -- colloquially called Character Training -- had no open research. 
 It was obvious to me that there would be payoff to documenting, learning the fundamentals, carefully curating the references (in an era of AI slop), and everything in between would be a wonderful starting point for people.
 
-Today, I'm adding code and seeing this as a home base for people who want to learn. 
+Today, the repository includes code and serves as a home base for people who want to learn.
 You should use coding assistants to ask questions.
 You should buy the physical book because the real world matters.
 You should read the specific AI outputs tailored to you.
 
-In the future I want to build more education resources to this, such as open source slide decks and more ways to learn.
+I also want to continue building educational resources, such as open-source slide decks and more ways to learn.
 In the end, with how impossible it is to measure human preferences, RLHF will never be a solved problem.
 
 Thank you for reading. 
@@ -82,15 +82,30 @@ cd diagrams && make all
 
 ## Citation
 
-To cite this book, please use the following format:
+For the web and arXiv version, use the citation exported by arXiv:
 
 ```bibtex
-@book{rlhf2026lambert,
+@misc{lambert2025reinforcementlearninghumanfeedback,
+  title         = {Reinforcement Learning from Human Feedback},
+  author        = {Nathan Lambert},
+  year          = {2025},
+  eprint        = {2504.12501},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  url           = {https://arxiv.org/abs/2504.12501},
+}
+```
+
+For the Manning edition:
+
+```bibtex
+@book{lambert2026reinforcement,
   author       = {Nathan Lambert},
-  title        = {Reinforcement Learning from Human Feedback},
+  title        = {Reinforcement Learning from Human Feedback: Alignment and post-training of {LLMs}},
   year         = {2026},
-  publisher    = {Online},
-  url          = {https://rlhfbook.com},
+  publisher    = {Manning Publications},
+  isbn         = {9781633434301},
+  url          = {https://www.manning.com/books/reinforcement-learning-from-human-feedback},
 }
 ```
 
@@ -102,7 +117,7 @@ To cite this book, please use the following format:
 
 ## Contributors
 
-Where I get the credit as the sole "author" and creator of this project, I've been super lucky to have many contributions from early readers. These have massively accelerated the editing progress and flat-out added meaningful content to the book. I'm happy to send substantive contributors free copies of the book and expect the internet goodwill to pay them back in unexpected ways.
+While I get the credit as the sole "author" and creator of this project, I've been super lucky to have many contributions from early readers. These have massively accelerated the editing progress and flat-out added meaningful content to the book. I'm happy to send substantive contributors free copies of the book and expect the internet goodwill to pay them back in unexpected ways.
 
 See all [contributors](https://github.com/natolambert/rlhf-book/graphs/contributors).
 

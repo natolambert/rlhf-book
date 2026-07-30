@@ -221,7 +221,7 @@ def train_orm(
     """Train an Outcome Reward Model on GSM8K.
 
     Args:
-        model_id: HuggingFace model ID for base model
+        model_id: Hugging Face model ID for base model
         samples: Number of GSM8K samples to use
         batch_size: Training batch size
         grad_accum_steps: Gradient accumulation steps

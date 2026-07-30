@@ -176,7 +176,7 @@ $(BUILD)/html/course.html: book/templates/course.html $(FOOTER_PARTIAL)
 	$(INLINE_FOOTER) book/templates/course.html > $@
 
 LLMS_SOURCES = book/scripts/generate_llms.py $(CHAPTERS)
-SITEMAP_SOURCES = book/scripts/generate_sitemap.py book/scripts/generate_llms.py $(CHAPTERS) book/templates/course.html book/templates/library.html book/rl-cheatsheet/index.html $(wildcard teach/*/talk.md) $(wildcard teach/*/slides.md) $(wildcard teach/course/*.md)
+SITEMAP_SOURCES = book/scripts/generate_sitemap.py book/scripts/generate_llms.py $(CHAPTERS) book/templates/course.html book/templates/library.html book/rl-cheatsheet/index.html $(wildcard teach/*/talk.md) $(wildcard teach/*/slides.md) $(filter-out %-plan.md,$(wildcard teach/course/*.md))
 
 $(BUILD)/html/llms.txt: $(LLMS_SOURCES)
 	$(MKDIR_CMD) $(BUILD)/html
@@ -330,7 +330,7 @@ serve: html files
 # Find talk directories by looking for talk.md or slides.md source files
 TEACH_TALK_SOURCES = $(wildcard teach/*/talk.md) $(wildcard teach/*/slides.md)
 TEACH_DIRS = $(sort $(patsubst teach/%/,%,$(dir $(TEACH_TALK_SOURCES))))
-COURSE_LECTURE_SOURCES = $(wildcard teach/course/*.md)
+COURSE_LECTURE_SOURCES = $(filter-out %-plan.md,$(wildcard teach/course/*.md))
 COURSE_LECTURE_NAMES = $(basename $(notdir $(COURSE_LECTURE_SOURCES)))
 
 # Map from dir name to its .md source file (prefer talk.md over slides.md)

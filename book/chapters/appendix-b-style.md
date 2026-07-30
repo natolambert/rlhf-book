@@ -33,7 +33,7 @@ We've seen how different styles actually can meaningfully improve evaluations wi
 The Llama 3 Instruct models scored extremely high on Arena, and it's accepted as being because they had a more fun personality -- they were more succinct and clever than other models of their era. 
 Regardless of the benchmark scores that many LLM users are obsessed with, if RLHF is going to make language models simply more fun, that is delivered value.
 
-Throughout this appendix, the term "chattiness" is used to encompass the growing length of responses from models trained with RLHF, but it also encompasses techniques like heavy markdown use, emojis, and formatting the answer in bulleted lists.
+Throughout this appendix, the term "chattiness" is used to encompass the growing length of responses from models trained with RLHF, but it also encompasses techniques like heavy Markdown use, emojis, and formatting the answer in bulleted lists.
 To ground the discussion in this appendix, an example completion for two models in the same Tülu 3 family is shown below -- one with only instruction fine-tuning and the second with preference fine-tuning applied via length-controlled DPO.
 First, the instruction-tuned completion to the prompt `What is reinforcement learning from human feedback?` (the exact model is [Llama 3.1 Tulu 3 70B SFT](https://huggingface.co/allenai/Llama-3.1-Tulu-3-70B-SFT)) [@lambert2024t]:
 
@@ -96,7 +96,7 @@ The tension is that while RLHF methods give a measurable improvement on these mo
 Through the establishment of the RLHF literature, a large swath of models have been released with related methods to boost the "alignment" of a model with RLHF, but they often took it way too far and published evaluation scores that were anywhere from misleading to meaningless.
 
 These RLHF methods motivated by alignment, when done right, make the models easier to work with and more enjoyable. 
-This often comes with clear improvements on evaluation tools like MT Bench or AlpacaEval. 
+This often comes with clear improvements on evaluation tools like MT-Bench or AlpacaEval.
 
 In the fall of 2023, there was a peak in the debate over direct preference optimization (DPO) and its role relative to proximal policy optimization (PPO) and other RL-based methods for preference fine-tuning -- the balance of chat evaluations to real-world performance was at the center of this (For more technical discussion on the trade-offs, see Chapter 8, Ivison et al. 2024 [@ivison2024unpacking], or [this talk](https://youtu.be/YJMCSVLRUNs)).
 The problem is that you can also use techniques like DPO and PPO in feedback loops or in an abundance of data to actually severely harm the model on other tasks like mathematics or coding in a trade for this chat performance.
