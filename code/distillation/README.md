@@ -48,7 +48,7 @@ in the config (see [`data.py`](data.py)); swap or add tasks by editing those spe
 
 ## Key configuration
 
-See [`configs/sdpo.yaml`](configs/sdpo.yaml) for the main options. The most important knobs:
+See [`configs/sdpo.yaml`](configs/sdpo.yaml) for the full set. The most important knobs:
 
 | Field | Default | Meaning |
 |-------|---------|---------|
