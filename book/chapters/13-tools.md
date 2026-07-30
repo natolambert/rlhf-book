@@ -12,6 +12,9 @@ search-title: "Chapter 13: Tool Use and Function Calling"
 meta-description: "Tool use and function calling as post-training targets for building more capable language model products and agents."
 next-chapter: "Over-Optimization"
 next-url: "14-over-optimization"
+lectures:
+  - video: "https://www.youtube.com/watch?v=GMry2DzC304&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=17"
+    label: "Lecture 11: Tool Use, Function Calling and The Road to Agents"
 ---
 
 # Tool Use and Function Calling
