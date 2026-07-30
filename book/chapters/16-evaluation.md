@@ -210,7 +210,7 @@ For agentic evaluation, the models often need to run in sandboxes, which are cle
 Sandboxes increase the complexity of running the model, as usually you now need more CPUs in addition to the GPUs for inference.
 For more information, you can refer to [this slide deck](/assets/llm-benchmarks-era-of-agents-brand.pdf) from Florian Brand ([video](https://www.youtube.com/watch?v=CGjuKIppZSs)), the system diagram in @fig:eval-components, or read about Terminal-Bench, which is the most popular evaluation of this era [@tbench2025] [@tbench2026].
 
-![The components of running a modern, agentic evaluation -- every box influences the final score. Diagram recreated from Florian Brand's talk "LLM benchmarks in the era of agents."](images/eval_components_tikz.png){#fig:eval-components}
+![The components of running a modern, agentic evaluation -- every box influences the final score. Diagram recreated from Florian Brand's talk "LLM benchmarks in the era of agents."](images/eval_components_tikz.png){#fig:eval-components .center data-dark-src="images/eval_components_tikz-dark.png"}
 
 ## Why Many External Evaluation Comparisons Are Unreliable
 
