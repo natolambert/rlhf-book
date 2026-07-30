@@ -408,24 +408,26 @@ See [rlhfbook.com](https://rlhfbook.com) for the full text.
 
 ## Citation
 
-To cite the continuously updated web edition:
+For the web and arXiv version, use the citation exported by arXiv:
 
 ```bibtex
-@book{rlhf2026lambert,
-  author       = {Nathan Lambert},
-  title        = {Reinforcement Learning from Human Feedback},
-  year         = {2026},
-  publisher    = {Online},
-  url          = {https://rlhfbook.com},
+@misc{lambert2025reinforcementlearninghumanfeedback,
+  title         = {Reinforcement Learning from Human Feedback},
+  author        = {Nathan Lambert},
+  year          = {2025},
+  eprint        = {2504.12501},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  url           = {https://arxiv.org/abs/2504.12501},
 }
 ```
 
-To cite the Manning edition:
+For the Manning edition:
 
 ```bibtex
 @book{lambert2026reinforcement,
   author       = {Nathan Lambert},
-  title        = {Reinforcement Learning from Human Feedback},
+  title        = {Reinforcement Learning from Human Feedback: Alignment and post-training of {LLMs}},
   year         = {2026},
   publisher    = {Manning Publications},
   isbn         = {9781633434301},
