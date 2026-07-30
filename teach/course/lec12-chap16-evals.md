@@ -121,10 +121,10 @@ title: Example question (MMLU)
 content: |
   What was GDP per capita in the United States in 1850 when adjusting for inflation and PPP in 2011 prices?
 
-  (A) About $300
-  (B) About $3k
-  (C) About $8k
-  (D) About $15k
+  A. About $300  
+  B. About $3k  
+  C. About $8k  
+  D. About $15k
 ```
 
 Internet trivia more than intelligence -- but it tracked pretraining knowledge well.
@@ -150,7 +150,7 @@ Reasoning models saturated the old suites, so difficulty escalated:
 ## Even PhDs and professors are wrong
 
 ```box
-title: Example question (Humanity's Last Exam)
+title: "Example: Humanity's Last Exam"
 content: |
   What was the rarest noble gas on Earth as a percentage of all terrestrial matter in 2002?
 
@@ -342,8 +342,6 @@ More in [Appendix C: evaluation variance](https://rlhfbook.com/c/appendix-c-prac
 | | IFEval | 0.88 |
 | Stable | ZebraLogic | 0.56 |
 | | AIME 24 (avg@32) | 0.54 |
-| | HumanEvalPlus | 0.46 |
-| | BigBenchHard | 0.39 |
 | Very stable | LiveCodeBench (avg@10) | 0.29 |
 | | MATH | 0.25 |
 | | MMLU | 0.22 |
@@ -425,7 +423,7 @@ Grading agents is adversarial now -- benchmark design inherits all of reward hac
 ## Underelicitation: the score is a lower bound
 
 - ARC-AGI 3 **disallows custom harnesses** in official scoring -- "future AGI systems will not need task-specific external handholding" -- to keep hand-written rules out of the measurement
-- Yet elicitation is where scores come from: a *general* harness (stock Codex CLI + `/goal`, minimal prompt) ran **160 hours and 30K actions to 61%** on the public set, state of the art ([source](https://x.com/patience_cave/status/2052772581888156128))
+- Yet elicitation is where scores come from: a *general* harness (stock Codex CLI + `/goal`, minimal prompt) ran **160 hours and 30K actions to 61%** on the public set, state of the art ([@patience_cave](https://x.com/patience_cave/status/2052772581888156128))
 - Full elicitation is expensive: in-depth runs of a modern agentic suite can cost **>$100K** *(per Florian Brand)*
 - We can only make decisions about **measured** capability -- "how good are models at offensive cybersecurity?" and "how big is the open-closed gap?" are only answerable with correct elicitation
 
@@ -452,10 +450,10 @@ Grading agents is adversarial now -- benchmark design inherits all of reward hac
 4. RL: Implementation & Practice *(ch. 6)*
 5. The Rise of Reasoning Models *(ch. 7)*
 6. Direct Preference Optimization *(ch. 8)*
+7. Synthetic Data & Modern Post-training *(ch. 12)*
 
 |||
 
-7. Synthetic Data & Modern Post-training *(ch. 12)*
 8. Preferences & Preference Data *(ch. 10-11)*
 9. Over-Optimization & RLHF's Bad Reputation *(ch. 14, app. B)*
 10. Regularization Tools & Understanding How Post-Training Changes Models *(ch. 15)*
