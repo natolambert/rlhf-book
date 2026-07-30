@@ -209,9 +209,9 @@ learning to rate individual reasoning steps as {-1, 0, 1} (bad, neutral, good).
 
 | Model | Description | Example Run |
 |-------|-------------|-------------|
-| Preference RM | Bradley-Terry on UltraFeedback | [wandb](https://wandb.ai/rlhf-book/core/runs/6sninll5) |
-| ORM | Outcome RM on GSM8K | [wandb](https://wandb.ai/rlhf-book/core/runs/xm8mlcpl) |
-| PRM | Process RM on PRM800K | [wandb](https://wandb.ai/rlhf-book/core/runs/abhkbn4q) |
+| Preference RM | Bradley-Terry on UltraFeedback | [wandb](https://wandb.ai/rlhf-book/core/runs/1g3y9bcc) |
+| ORM | Outcome RM on GSM8K | [wandb](https://wandb.ai/rlhf-book/core/runs/3gkoqb7f) |
+| PRM | Process RM on PRM800K | [wandb](https://wandb.ai/rlhf-book/core/runs/iv4d966d) |
 
 ## Direct Alignment Training
 
