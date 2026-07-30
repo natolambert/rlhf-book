@@ -21,7 +21,7 @@ and replaced so the optimizer step still receives a full batch.
 |-----------|--------|----------|
 | **SDPO** | `sdpo.yaml` | Self-Distillation Policy Optimization — distill a demonstration-conditioned self-teacher into the student via top-K reverse KL ([Hübotter et al., 2026](https://arxiv.org/abs/2601.20802)) |
 
-## Training Results
+## Reference Runs
 
 ![SDPO Training Results](../images/wandb_distillation.png)
 
