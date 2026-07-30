@@ -151,8 +151,8 @@ Individual diagrams for specific concepts.
 2. **Generate diagrams** with `make all` (or specific target)
 3. **Review outputs** in `generated/{png,svg,pdf}/`
 4. **Get AI feedback** with `/gemini-feedback diagrams/generated/png/<name>.png`
-5. **Copy final versions** to `book/images/` for use in chapters
-6. **Commit diagram sources and reviewed final assets** in `book/images/`; `diagrams/generated/` remains ignored build output
+5. **Copy reviewed final versions** to the consuming asset directory (`book/images/` for chapters or the relevant `teach/**/assets/` directory for slides)
+6. **Commit diagram sources and reviewed final assets** in their consuming asset directories; `diagrams/generated/` remains ignored build output
 
 ## Handoff to Artist
 

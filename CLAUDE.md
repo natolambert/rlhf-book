@@ -73,7 +73,7 @@ Generate diagrams with:
 cd diagrams && make all
 ```
 
-Always output built diagrams to `diagrams/generated/png/`, `diagrams/generated/pdf/`, and `diagrams/generated/svg/` — not alongside source files (e.g. not in `diagrams/tikz/`). Then copy final versions to `book/images/` for use in chapters.
+Always output built diagrams to `diagrams/generated/png/`, `diagrams/generated/pdf/`, and `diagrams/generated/svg/` — not alongside source files (e.g. not in `diagrams/tikz/`). Copy reviewed final versions to the directory that consumes them, such as `book/images/` for chapters or the relevant `teach/**/assets/` directory for slides.
 
 **Image conversion**: When converting TikZ PDFs to PNG with `magick`, **always use `-trim`** to remove whitespace, and use `-density 300` for previews (use 400 for `book/images/`). Example: `magick -density 300 input.pdf -trim -quality 100 output.png`
 
