@@ -269,7 +269,7 @@ Nobody evaluates raw weights: there is an inference engine or an API in the loop
 
 <!-- rows: 35/65 -->
 <!-- valign: center -->
-## The agentic pipeline: the model is the smallest box
+## The agentic pipeline: the model is one box of eight
 
 Agentic evals wrap the model in a **harness** (tools, prompts, settings), run it in a **sandbox**, on **hardware**, against tight **timeouts** -- and grade hours-long trajectories with regex or an LLM judge.
 
