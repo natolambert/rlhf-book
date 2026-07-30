@@ -261,7 +261,7 @@ For example, a perfectly executed model spec is much more revealing than a list 
 Anthropic has evolved its methods from the original Constitutional AI, and now their training documents (a.k.a. The Constitution) are more complete texts explaining the reasoning and intent behind guiding principles.
 
 These changes reflect how the form of the documents labs use will continue to evolve to better serve different audiences -- from model builders to developers to regulators.
-A Model Spec provides value to every stakeholder involved in a model release process:
+A model spec provides value to every stakeholder involved in a model release process:
 
 - **Model Designers**: The model designers get the benefit of needing to clarify what behaviors they do and do not want. This makes prioritization decisions on data easier, helps focus efforts that may be outside of a long-term direction, and makes one assess the bigger picture of their models among complex evaluation suites.
 - **Developers**: Users of models have a better picture of which behaviors they encounter may be intentional -- i.e. some types of refusals -- or side-effects of training. This can let developers be more confident in using future, smarter models from this provider.
