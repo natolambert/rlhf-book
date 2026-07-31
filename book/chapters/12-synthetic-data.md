@@ -271,7 +271,7 @@ There are many ways to combine OPD with other areas investigated in this book, s
 KD methods are unusual among post-training methods because they often require the student and teacher to share a tokenizer, since the supervision can be per-token feedback from another LLM.
 
 Extended approaches, such as On-Policy Self-Distillation (OPSD), have a language model verify a completion either itself or with external tools to act as a teacher with privileged information, so it can improve its own performance without an explicitly stronger teacher [@zhao2026selfdistilled] (an overview of OPSD training is shown in @fig:sdpo).
-For example, Cursor used self-distillation in the form of targeted textual feedback on RL trajectories to train its Composer 2.5 coding model [@cursor2026composer25], finetuned from Kimi K2.5. 
+For example, Cursor used self-distillation in the form of targeted textual feedback on RL trajectories to train its Composer 2.5 coding model [@cursor2026composer25], finetuned from Kimi K2.5.
 What follows is a simplified intuition, as in practice the setup below is combined with other loss functions such as code correctness.
 In this setup, Cursor has the model review RL trajectories with a judgement prompt that has a list of common bugs.
 When encountering a bug, the judgement model will modify the generated sequence within RL -- inserting a hint for the model to learn from in the future -- and then proceed with the distillation loss. 

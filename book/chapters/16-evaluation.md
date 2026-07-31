@@ -17,7 +17,7 @@ next-url: "17-product"
 # Evaluation
 
 Evaluation is the set of techniques used to understand the quality and impact of the training processes detailed in this book.
-Evaluation is normally expressed through benchmarks (examples of popular benchmarks include MMLU, GPQA, SWE-Bench, MATH, etc.), which are discrete sets of questions or environments designed to measure a specific property of a model.
+Evaluation is normally expressed through benchmarks (examples of popular benchmarks include MMLU, GPQA, SWE-bench, MATH, etc.), which are discrete sets of questions or environments designed to measure a specific property of a model.
 Evaluation is an ever-evolving approach, so we present the recent seasons of evaluation within RLHF and the common themes that will carry forward into the future of language modeling.
 The key to understanding language model evaluation, particularly with post-training, is that the current popular evaluation regimes represent a reflection of the popular training best practices and goals.
 While challenging evaluations drive progress in language models to new areas, the majority of evaluation is designed around building useful signals for new models.
@@ -156,13 +156,13 @@ A: Roger started with 5 balls. 2 cans of 3 tennis balls each is 6 tennis balls. 
 
 Q: The cafeteria had 23 apples. If they used 20 to make lunch and bought 6 more, how many apples do they have?
 
-A: The cafeteria had 23 apples originally. They..
+A: The cafeteria had 23 apples originally. They...
 ```
 
 ### Zero-Shot Instruction Following
 
 Over time, as language models became stronger, they evolved to zero-shot evaluation, a.k.a. "zero-shot learners" [@wei2021finetuned].
-The Finetuned Language Net (FLAN) showed that language models fine-tuned on specific tasks, as a precursor to modern instruction tuning, could generalize to zero-shot questions they were not trained on [@wei2021finetuned] (similar results are also found in T0 [@sanh2021multitask]).
+FLAN showed that language models fine-tuned on specific tasks, as a precursor to modern instruction tuning, could generalize to zero-shot questions they were not trained on [@wei2021finetuned] (similar results are also found in T0 [@sanh2021multitask]).
 This is the emergence of instruction fine-tuning (IFT), an important precursor to RLHF and post-training.
 A zero-shot question would look like:
 
@@ -262,7 +262,7 @@ These can also be obtained by serving two different models to users with an A/B 
 The limited set of evaluations they choose to focus on forms a close link between evaluation and training. 
 At one point one evaluation of focus was MMLU. 
 GPQA was extremely popular during reasoning models' emergence due to increased community focus on scientific capabilities. 
-Labs will change the evaluations to make them better suited to their needs, such as OpenAI releasing SWE-Bench-Verified [@openai2024swebench]. 
+Labs will change the evaluations to make them better suited to their needs, such as OpenAI releasing SWE-bench Verified [@openai2024swebench]. 
 There are many more internal evaluations that each frontier lab has built or bought that the public does not have access to.
 
 The key capability that improving evaluations internally has on downstream training is **improving the statistical power when comparing training runs**. 
@@ -297,7 +297,7 @@ There are many open-sourced evaluation tools for people to choose from.
 Some include:
 
 - Inspect AI from the UK Safety Institute [@inspectAI2024], 
-- HuggingFace's LightEval [@fourrier2023lighteval] that powered the Open LLM Leaderboard [@open-llm-leaderboard-v2], 
+- Hugging Face's LightEval [@fourrier2023lighteval] that powered the Open LLM Leaderboard [@open-llm-leaderboard-v2],
 - EleutherAI's evaluation harness [@gao2023evalharness] built on top of the infrastructure from their GPT-Neo-X model (this contains a good GPT-3 era evaluation setup and configuration) [@gpt-neox-20b], 
 - Ai2's library based on OLMES [@gu2024olmes], 
 - Stanford's Center for Research on Foundation Models' HELM [@liang2023helm], 

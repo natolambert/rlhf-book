@@ -6,8 +6,8 @@ Colloquium is under active development -- expect improvements to the slide tooli
 
 ## Lecture sets
 
-- **`course/`** — Full introductory course covering the entire book (5-10 lectures, under construction)
-- **`SALA-2026/`** — Upcoming talk
+- **`course/`** — Published introductory course based on the book, including lecture, Q&A, and conversation decks ([course page](https://rlhfbook.com/course))
+- **`SALA-2026/`** — Talk presented at SALA in March 2026
 
 ## Setup
 

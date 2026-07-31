@@ -12,6 +12,9 @@ search-title: "Appendix A: Definitions"
 meta-description: "Definitions and background for RLHF, reinforcement learning, language models, and post-training terminology."
 next-chapter: "Beyond \"Just Style\""
 next-url: "appendix-b-style"
+lectures:
+  - video: "https://www.youtube.com/watch?v=MMDNaeIFVy8&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=2"
+    label: "Lecture 0: Prerequisites"
 ---
 
 # Definitions

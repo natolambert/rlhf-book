@@ -3,14 +3,14 @@
 # Paper: https://arxiv.org/abs/2305.18290
 #
 # Run with:
-#   uv run python -m direct_alignment.train --config configs/dpo.yaml
+#   uv run python -m direct_alignment.train --config direct_alignment/configs/dpo.yaml
 
 # Model
 model_name: allenai/OLMo-2-0425-1B-SFT
 
 # Algorithm
 loss: dpo
-beta: 0.1  # KL penalty - lower = more regularization
+beta: 0.1  # Regularization strength - higher = less deviation from the reference model
 
 # Dataset
 dataset_name: argilla/ultrafeedback-binarized-preferences-cleaned

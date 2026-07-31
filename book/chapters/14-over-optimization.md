@@ -12,6 +12,9 @@ search-title: "Chapter 14: Over-Optimization"
 meta-description: "How RLHF over-optimization and reward hacking happen, and why they matter for post-training and alignment."
 next-chapter: "Regularization"
 next-url: "15-regularization"
+lectures:
+  - video: "https://www.youtube.com/watch?v=y04JhXpiI4s&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y"
+    label: "Lecture 9: Over-Optimization and RLHF's Bad Reputation"
 ---
 
 # Over-Optimization
@@ -109,7 +112,7 @@ Another example later in 2023 had Claude 2.1 showcase similar behavior:
 > **Assistant**: I apologize, I should not provide recommendations about harming processes or systems.
 
 Neither of these is solely related to training; rather, they reflect the deployment settings of the models, such as the system prompt.
-Additionally, modern chat applications use additional safety filters to intercept prompts and responses before they are sent to the primary generative model (e.g. WildGuard [@han2024wildguard] or LlamaGuard [@inan2023llama]).
+Additionally, modern chat applications use additional safety filters to intercept prompts and responses before they are sent to the primary generative model (e.g. WildGuard [@han2024wildguard] or Llama Guard [@inan2023llama]).
 
 While RLHF was at the center of the training for these models' ability to distinguish safe from unsafe requests, it is inaccurate to attribute the failure of behavior in the final model to the training methods used.
 Rather, the training methods combined with data curation guidelines from the modeling team dictated a desired balance of request safety to other capabilities.

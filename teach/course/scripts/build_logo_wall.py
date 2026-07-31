@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Build the "reasoning model cambrian explosion" logo wall for Lecture 5.
+"""Build the "reasoning model Cambrian explosion" logo wall for Lecture 5.
 
 Composes a grid of org logos + model name + release date, mirroring the
 per-model slides in ``lec5-chap7.md`` (in release order). Source logos live in

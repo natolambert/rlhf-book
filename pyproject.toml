@@ -18,5 +18,10 @@ skills = [
     "google-genai>=1.63.0",
 ]
 teach = [
-    "colloquium==0.2.2",
+    # TODO: pin back to a PyPI release (colloquium==0.2.3) once it ships with the
+    # Google-Fonts <link> fix (natolambert/colloquium#41), the step-fragment
+    # paragraph-spacing fix (#43), and the box/conversation smart-typography fix
+    # (#44), and the PDF-export image time-budget fix (#45). Until then, track
+    # the merge commit on main so decks render correctly.
+    "colloquium @ git+https://github.com/natolambert/colloquium.git@a7a65c72b65d1a39a017b512f32c69a480571447",
 ]

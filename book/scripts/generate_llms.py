@@ -109,7 +109,7 @@ Use the chapter links for canonical web pages. Use `llms-full.txt` for a single 
 - [EPUB]({SITE_URL}/book.epub): Ebook build.
 - [GitHub source](https://github.com/natolambert/rlhf-book): Source repository for the book and course.
 - [ArXiv paper](https://arxiv.org/abs/2504.12501): Paper version of the RLHF Book.
-- [Manning book page](https://www.manning.com/books/the-rlhf-book): Publisher page for The RLHF Book.
+- [Manning book page](https://www.manning.com/books/reinforcement-learning-from-human-feedback): Publisher page for Reinforcement Learning from Human Feedback.
 """
 
 

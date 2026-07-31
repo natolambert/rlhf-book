@@ -4,7 +4,7 @@
 # See Chapter 8 for mathematical derivations.
 #
 # Usage:
-#   uv run python -m direct_alignment.train --config configs/dpo.yaml
+#   uv run python -m direct_alignment.train --config direct_alignment/configs/dpo.yaml
 #   uv run python -m direct_alignment.train --loss dpo --max_samples 1000
 #
 # References:
@@ -777,7 +777,7 @@ def main_cli():
     )
     parser.add_argument("--beta", type=float, help="Beta parameter")
     parser.add_argument("--gamma", type=float, help="SimPO gamma/beta ratio")
-    parser.add_argument("--dataset_name", type=str, help="HuggingFace dataset name")
+    parser.add_argument("--dataset_name", type=str, help="Hugging Face dataset name")
     parser.add_argument("--max_samples", type=int, help="Max training samples")
     parser.add_argument("--max_length", type=int, help="Max sequence length")
     parser.add_argument("--learning_rate", type=float, help="Learning rate")

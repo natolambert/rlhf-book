@@ -71,8 +71,8 @@ class DPOLoss(nn.Module):
         """
         Args:
             beta: Temperature parameter controlling KL penalty strength.
-                  Higher beta = stronger preference signal, risk of overfitting.
-                  Lower beta = more regularization toward reference model.
+                  Higher beta = more regularization toward the reference model.
+                  Lower beta permits more deviation from the reference model.
                   Typical values: 0.1-0.5
             label_smoothing: For cDPO variant. Assumes this fraction of labels
                             are incorrect. 0.0 = standard DPO, 0.1 = 10% noise.
@@ -191,7 +191,7 @@ class IPOLoss(nn.Module):
 class SimPOLoss(nn.Module):
     """Simple Preference Optimization loss (Meng et al., 2024).
 
-    SimPO makes two key changes to DPO:
+    SimPO makes three key changes to DPO:
     1. Uses average log prob instead of sum (length normalization)
     2. Removes the reference model (implicit in length normalization)
     3. Adds a target margin gamma for stronger preference signal
@@ -489,8 +489,8 @@ class APOZeroLoss(nn.Module):
         """
         Args:
             beta: Temperature parameter controlling KL penalty strength.
-                  Higher beta = stronger preference signal, risk of overfitting.
-                  Lower beta = more regularization toward reference model.
+                  Higher beta = more regularization toward the reference model.
+                  Lower beta permits more deviation from the reference model.
                   Typical values: 0.1-0.5
         """
         super().__init__()
@@ -546,8 +546,8 @@ class APODownLoss(nn.Module):
         """
         Args:
             beta: Temperature parameter controlling KL penalty strength.
-                  Higher beta = stronger preference signal, risk of overfitting.
-                  Lower beta = more regularization toward reference model.
+                  Higher beta = more regularization toward the reference model.
+                  Lower beta permits more deviation from the reference model.
                   Typical values: 0.1-0.5
         """
         super().__init__()

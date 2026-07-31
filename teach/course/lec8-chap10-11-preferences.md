@@ -610,7 +610,7 @@ On Hugging Face's **H4 team**, we commissioned human data the same way the labs 
 <!-- cite-right: arena2026 -->
 ## Preference *evals* is now a standalone business
 
-Recently in 2026 **Arena** (formerly, the LMArena leaderboard, formerly ChatBotArena) reached a **~$100M annualized revenue run-rate within ~8 months** of launching its enterprise A/B testing offering [@arena2026].
+Recently in 2026 **Arena** (formerly, the LMArena leaderboard, formerly Chatbot Arena) reached a **~$100M annualized revenue run-rate within ~8 months** of launching its enterprise A/B testing offering [@arena2026].
 
 |||
 
@@ -682,7 +682,8 @@ Is a great academic problem!
 6. Direct Preference Optimization *(ch. 8)*
 7. Synthetic Data & Modern Post-training *(ch. 12)*
 8. **Preferences & Preference Data** *(ch. 10–11)* -- *today*
-9. **Overoptimization & Regularization** *(ch. 14–15, app. B)* -- *next*
+9. **Over-Optimization & RLHF's Bad Reputation** *(ch. 14, app. B)* -- *next*
+10. Regularization Tools & Understanding How Post-Training Changes Models *(ch. 15)*
 
 ---
 

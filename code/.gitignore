@@ -54,7 +54,7 @@ wandb/
 *.bin
 *.safetensors
 
-# HuggingFace cache (don't commit downloaded models)
+# Hugging Face cache (don't commit downloaded models)
 .cache/
 
 # OS

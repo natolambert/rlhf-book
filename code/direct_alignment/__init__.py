@@ -5,14 +5,16 @@
 #
 # Algorithms implemented:
 # - DPO: Direct Preference Optimization (Rafailov et al., 2023)
+# - DPO-Norm: Length-normalized DPO (Meng et al., 2024)
 # - cDPO: Conservative DPO with label smoothing
 # - IPO: Identity Preference Optimization (Azar et al., 2023)
 # - SimPO: Simple Preference Optimization (Meng et al., 2024)
 # - ORPO: Odds Ratio Preference Optimization (Hong et al., 2024)
 # - KTO: Kahneman-Tversky Optimization (Ethayarajh et al., 2024)
+# - APO-Zero/APO-Down: Anchored Preference Optimization (D'Oosterlinck et al., 2024)
 #
 # Usage:
-#   uv run python -m direct_alignment.train --config configs/dpo.yaml
+#   uv run python -m direct_alignment.train --config direct_alignment/configs/dpo.yaml
 #   uv run python -m direct_alignment.train --loss dpo --max_samples 1000
 
 from .config import Config, load_config

@@ -6,7 +6,7 @@
 # making it more robust to noisy preferences.
 #
 # Run with:
-#   uv run python -m direct_alignment.train --config configs/ipo.yaml
+#   uv run python -m direct_alignment.train --config direct_alignment/configs/ipo.yaml
 
 # Model
 model_name: allenai/OLMo-2-0425-1B-SFT

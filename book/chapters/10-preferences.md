@@ -117,7 +117,7 @@ The first quantitative application of these ideas emerged in 1931 with Ramsey's 
 Since these works, quantifying, measuring, and influencing human preferences has been a lively topic in the social and behavioral sciences.
 These debates have rarely been settled on a theoretical level; rather, different subfields and branches of social science have reached internal consensus on methods and approaches to preference measurement even as they have specialized relative to each other, often developing their own distinct semantics in the process.
 
-A minority of economists posit that preferences, if they do exist, are prohibitively difficult to measure because people have preferences over their own preferences, as well as each others' preferences [@hirschman1984against].
+A minority of economists posit that preferences, if they do exist, are prohibitively difficult to measure because people have preferences over their own preferences, as well as each other's preferences [@hirschman1984against].
 In this view, which is not reflected in the RLHF process, individual preferences are always embedded within larger social relations, such that the accuracy of any preference model is contingent on the definition and context of the task.
 Some behavioral economists have even argued that preferences don't exist--they may be less an ontological statement of what people actually value than a methodological tool for indirectly capturing psychological predispositions, perceived behavioral norms and ethical duties, commitments to social order, or legal constraints [@hadfield2014microfoundations].
 We address the links of this work to the Von Neumann-Morgenstern (VNM) utility theorem and countering impossibility theorems around quantifying preference later in this chapter.

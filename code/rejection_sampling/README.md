@@ -52,12 +52,13 @@ noise rather than a stable ordering.
 ## Quick start
 
 ```bash
-cd /home/sagemaker-user/rlhf-book/code
+cd code/
 
-# Optional: log to your wandb project. Omit to run with wandb disabled.
-export WANDB_PROJECT=<your-wandb-project>
+# The config logs to the rlhf-book W&B project by default. Override or disable it:
+# export WANDB_PROJECT=<your-wandb-project>
+# export WANDB_MODE=disabled
 
-# (1) Sanity check: chapter.md selection example runs as a doctest.
+# (1) Sanity check: run the worked selection example from Chapter 9.
 uv run python -m rejection_sampling.selection
 
 # (2) Run preprocess alone (Stage 1 + Stage 2). Produces one JSONL cache file.
@@ -76,7 +77,7 @@ uv run python -m rejection_sampling.train \
     --config rejection_sampling/configs/random_k_overall.yaml
 ```
 
-The four runs land in your wandb project as separate runs, each logging a
+When W&B logging is enabled, the four runs land in your project as separate runs, each logging a
 `test_accuracy` scalar you can compare in the dashboard. Pair each selection
 method with its matched random baseline when reading the results.
 
@@ -99,7 +100,7 @@ and `train.py` skip Stages 1 and 2 entirely. To force a re-run, delete the
 hash file (or change any of: reward model, policy model, dataset slice,
 sampling params, seed, `num_completions_per_prompt`, `max_new_tokens`).
 
-The `output/` directory is gitignored.
+The `rejection_sampling/output/` directory is gitignored.
 
 ## Wandb
 
@@ -107,6 +108,6 @@ The module reads `WANDB_ENTITY`, `WANDB_PROJECT`, `WANDB_RUN_NAME`, and
 `WANDB_API_KEY` from the environment. The YAML configs set
 `wandb_project: rlhf-book` by default and intentionally do not set an entity,
 so runs land in your default W&B account or team. Official maintainers can set
-`WANDB_ENTITY=rlhf-book WANDB_PROJECT=core` to publish reference runs, or set
-`wandb_project: null` in the YAML (and unset the env var) to disable logging
-entirely.
+`WANDB_ENTITY=rlhf-book WANDB_PROJECT=core` to publish reference runs. To
+disable logging, set `WANDB_MODE=disabled`, or set `wandb_project: null` in the
+YAML and leave `WANDB_PROJECT` unset.

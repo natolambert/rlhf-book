@@ -23,16 +23,9 @@ We are opting for this in favor of a better web experience, but best practice is
 
 ### Common Failures When Editing with Coding Agents
 
-Coding agents (Claude, Cursor, etc.) often introduce Unicode characters that break the Pandoc PDF build with errors like `Cannot decode byte '\xe2': Data.Text.Encoding: Invalid UTF-8 stream`. Watch for:
+Valid UTF-8 Unicode punctuation, including curly quotes and em dashes, is supported by the book build. An error such as `Cannot decode byte '\xe2': Data.Text.Encoding: Invalid UTF-8 stream` indicates malformed or incorrectly encoded input, not the presence of valid Unicode punctuation.
 
-- **Curly apostrophes** (`'` U+2019) instead of straight apostrophes (`'`) - common in "don't", "it's", possessives
-- **Em-dashes** (`—` U+2014) and **en-dashes** (`–` U+2013) instead of double-hyphens (`--`)
-- **Non-breaking spaces** (`\xa0` U+00A0) instead of regular spaces
-- **Curly quotes** (`"` `"` U+201C/U+201D) instead of straight quotes (`"`)
-
-To find these: `xxd book/chapters/filename.md | grep -i 'e2 80\|c2 a0'`
-
-To fix: `uv run python -c "content = open('file.md').read(); content = content.replace('\u2019', \"'\").replace('\u2014', '--'); open('file.md', 'w').write(content)"`
+Check a file's encoding with `file -I book/chapters/filename.md` or validate it with `iconv -f UTF-8 -t UTF-8 book/chapters/filename.md >/dev/null`. Keep source files as UTF-8; the PDF build normalizes TeX output where needed.
 
 ## Installing
 
@@ -154,7 +147,7 @@ You can find the list of all available keys on
 
 ## Creating Chapters
 
-Creating a new chapter is as simple as creating a new markdown file in the *chapters/* folder;
+Creating a new chapter is as simple as creating a new Markdown file in the *chapters/* folder;
 you'll end up with something like this:
 
 ```
@@ -184,7 +177,7 @@ This is the second subsection.
 ```
 
 Each title (*#*) will represent a chapter, while each subtitle (*##*) will represent a chapter's
-section. You can use as many levels of sections as markdown supports.
+section. You can use as many levels of sections as Markdown supports.
 
 ### Manual control over page ordering
 
@@ -269,7 +262,7 @@ If you want to resize the image, you may use this syntax, available since Pandoc
 
 ### Insert a table
 
-Use markdown table, and use the `Table: <Your table description>` syntax to add a caption:
+Use a Markdown table, and use the `Table: <Your table description>` syntax to add a caption:
 
 ```md
 | Index | Name |
@@ -289,7 +282,7 @@ Wrap a LaTeX math equation between `$` delimiters for inline (tiny) formulas:
 This, $\mu = \sum_{i=0}^{N} \frac{x_i}{N}$, the mean equation, ...
 ```
 
-Pandoc will transform them automatically into images using online services.
+Pandoc renders equations as MathJax in HTML, MathML in EPUB, and native LaTeX in PDF.
 
 If you want to center the equation instead of inlining it, use double `$$` delimiters:
 
@@ -357,9 +350,9 @@ Check the desired filter settings and usage for more information
 
 ### Content filters
 
-If you need to modify the MD content before passing it to pandoc, you may use `CONTENT_FILTERS`. By
-setting this makefile variable, it will be passed to the markdown content before passing it to
-pandoc. For example, to replace all occurrences of `@pagebreak` with
+If you need to modify the MD content before passing it to Pandoc, you may use `CONTENT_FILTERS`. By
+setting this Makefile variable, it will be passed to the Markdown content before passing it to
+Pandoc. For example, to replace all occurrences of `@pagebreak` with
 `<div style="page-break-before: always;"></div>` you may use a `sed` filter:
 
 ```
@@ -433,9 +426,9 @@ custom styles, etc., and modify the Makefile accordingly.
 
 ### Templates
 
-Output files are generated using [pandoc templates](https://pandoc.org/MANUAL.html#templates). All
-templates are located under the `templates/` folder, and may be modified as you will. Some basic
-format templates are already included on this repository, in case you need something to start
+Output files are generated using [Pandoc templates](https://pandoc.org/MANUAL.html#templates). All
+templates are located under the `templates/` folder, and may be modified as you wish. Some basic
+format templates are already included in this repository, in case you need something to start
 with.
 
 ## References

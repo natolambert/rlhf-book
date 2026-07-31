@@ -83,6 +83,8 @@ def teaching_urls(root: Path) -> list[tuple[str, str, str]]:
             f"{SITE_URL}/teach/{path.parent.name}/", ("0.5", [])
         )[1].append(path)
     for path in sorted((root / "teach" / "course").glob("*.md")):
+        if path.stem.endswith("-plan"):
+            continue
         url_sources[f"{SITE_URL}/teach/course/{path.stem}/"] = ("0.6", [path])
     return sorted(
         (location, priority, source_lastmod(root, sources))

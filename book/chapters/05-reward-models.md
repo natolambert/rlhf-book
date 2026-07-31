@@ -353,7 +353,7 @@ $$\mathcal{L}_{\text{PRM}}(\theta) = - \mathbb{E}_{(x, s) \sim \mathcal{D}} \lef
 
 where $s$ is a sampled chain-of-thought with $K$ annotated steps, $y_{s_i} \in \{0,1\}$ denotes whether the $i$-th step is correct, and $r_\theta(s_i \mid x, s_{< i})$ is the PRM's predicted probability that step $s_i$ is valid conditioned on the original prompt $x$ and all previous steps $s_{< i}$.
 
-Here's an example of how this per-step label can be packaged in a trainer, from HuggingFace's TRL (Transformer Reinforcement Learning) [@vonwerra2022trl]:
+Here's an example of how this per-step label can be packaged in a trainer, from Hugging Face's TRL (Transformer Reinforcement Learning) [@vonwerra2022trl]:
 
 ```python
 # Get the ID of the separator token and add it to the completions

@@ -1,6 +1,7 @@
 # Stage 3: selection + SFT + GSM8K exact-match eval. Auto-runs preprocess on
 # cache miss, so one command per config is enough:
-#   uv run python -m rejection_sampling.train --config configs/top_per_prompt.yaml
+#   uv run python -m rejection_sampling.train \
+#       --config rejection_sampling/configs/top_per_prompt.yaml
 
 import argparse
 import os

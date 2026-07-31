@@ -7,10 +7,17 @@
   <title>$pagetitle$</title>
 $if(highlighting-css)$
   <style>
+/*<![CDATA[*/
 $highlighting-css$
 $style.css()$
+/*]]>*/
   </style>
 $endif$
+  <style>
+/*<![CDATA[*/
+$ebook.css()$
+/*]]>*/
+  </style>
 $for(css)$
   <link rel="stylesheet" type="text/css" href="$css$" />
 $endfor$
@@ -67,4 +74,3 @@ $endif$
 $endif$
 </body>
 </html>
-

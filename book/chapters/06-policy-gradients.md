@@ -779,7 +779,7 @@ A simple implementation of policy gradient, using advantages to estimate the gra
 ```python
 pg_loss = -advantages * ratio
 ```
-Ratio here is the (per-token) probability ratio (often computed from a log-probability difference) of the new policy model probabilities relative to the reference model.
+Ratio here is the (per-token) probability ratio (often computed from a log-probability difference) of the new policy model probabilities relative to the old policy that generated the batch.
 
 In order to understand this equation, it is good to understand different cases that can fall within a batch of updates. 
 Remember that we want the loss to *decrease* as the model gets better at the task.

@@ -305,8 +305,8 @@ def train_preference_rm(
     """Train a preference-based reward model on UltraFeedback.
 
     Args:
-        model_id: HuggingFace model ID for base model
-        dataset_name: HuggingFace dataset name
+        model_id: Hugging Face model ID for base model
+        dataset_name: Hugging Face dataset name
         dataset_split: Dataset split to use
         samples: Number of preference pairs to use
         batch_size: Training batch size
@@ -659,7 +659,7 @@ def main():
     )
     parser.add_argument("--config", type=str, help="Path to YAML config file")
     parser.add_argument("--model-id", type=str, default=None, help="Base model ID")
-    parser.add_argument("--dataset-name", type=str, default=None, help="HuggingFace dataset name")
+    parser.add_argument("--dataset-name", type=str, default=None, help="Hugging Face dataset name")
     parser.add_argument("--dataset-split", type=str, default=None, help="Dataset split")
     parser.add_argument("--samples", type=int, default=None, help="Number of preference pairs")
     parser.add_argument("--batch-size", type=int, default=None, help="Batch size")
