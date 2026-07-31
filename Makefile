@@ -18,6 +18,7 @@ EPUB_COVER_IMAGE = book/assets/rlhf-book-cover.png # EPUB-specific cover image
 MATH_FORMULAS = --mathjax # --webtex, is default for PDF/ebook. Consider resetting if issues.
 EPUB_MATH_FORMULAS = --mathml # Use MathML for EPUB format for better e-reader compatibility
 KINDLE_MATH_FILTER = --lua-filter book/scripts/kindle-math.lua
+EBOOK_CITATION_FILTER = --lua-filter book/scripts/epub-citations.lua
 BIBLIOGRAPHY = --bibliography=book/chapters/bib.bib --citeproc --csl=book/templates/ieee.csl
 DATE_ARG = --metadata date="$(shell date +'%d %B %Y')"
 
@@ -52,7 +53,7 @@ PANDOC_COMMAND = pandoc
 # Per-format options
 
 DOCX_ARGS = --standalone --reference-doc book/templates/docx.docx
-EPUB_ARGS = --template book/templates/epub.html --epub-cover-image $(EPUB_COVER_IMAGE)
+EPUB_ARGS = --template book/templates/epub.html --epub-cover-image $(EPUB_COVER_IMAGE) $(EBOOK_CITATION_FILTER)
 HTML_ARGS = $(HTML_JSONLD_FILTER) --template book/templates/html.html --standalone --to html5 --listings --wrap=none
 PDF_ARGS = --template book/templates/pdf.tex --pdf-engine pdflatex
 LATEX_ARGS = --template book/templates/pdf.tex --pdf-engine pdflatex
@@ -66,7 +67,7 @@ JS_FILES = $(shell find book/templates -name '*.js')  # Restrict JS discovery to
 
 BASE_DEPENDENCIES = $(MAKEFILE) $(CHAPTERS) $(METADATA) $(IMAGES) $(TEMPLATES)
 DOCX_DEPENDENCIES = $(BASE_DEPENDENCIES)
-EPUB_DEPENDENCIES = $(BASE_DEPENDENCIES)
+EPUB_DEPENDENCIES = $(BASE_DEPENDENCIES) book/scripts/epub-citations.lua
 HTML_DEPENDENCIES = $(BASE_DEPENDENCIES) book/scripts/jsonld.lua
 PDF_DEPENDENCIES = $(BASE_DEPENDENCIES)
 
@@ -92,11 +93,11 @@ ECHO_BUILT = @echo "$@ was built\n"
 # Basic actions
 ####################################################################################################
 
-.PHONY: all book clean epub html pdf docx nested_html latex kindle rl-cheatsheet pagefind teach serve
+.PHONY: all book clean epub html pdf docx nested_html latex kindle validate-ebooks rl-cheatsheet pagefind teach serve
 
 all:	book
 
-book:	epub kindle html pdf docx rl-cheatsheet
+book:	epub kindle html pdf docx rl-cheatsheet validate-ebooks
 
 clean:
 	$(RMDIR_CMD) $(BUILD)
@@ -133,6 +134,11 @@ $(BUILD)/kindle/$(OUTPUT_FILENAME).kindle.epub: $(EPUB_DEPENDENCIES) book/script
 	$(MKDIR_CMD) $(BUILD)/kindle $(BUILD)/kindle-math-cache
 	$(CONTENT) | $(CONTENT_FILTERS) | $(PANDOC_COMMAND) $(KINDLE_ARGS_BASE) $(EPUB_ARGS) --css book/templates/kindle-math.css --resource-path=.:book -o $@
 	$(ECHO_BUILT)
+
+validate-ebooks: epub kindle
+	uv run python book/scripts/validate_ebooks.py \
+		$(BUILD)/epub/$(OUTPUT_FILENAME).epub \
+		$(BUILD)/kindle/$(OUTPUT_FILENAME).kindle.epub
 
 $(BUILD)/docx/$(OUTPUT_FILENAME).docx:	$(DOCX_DEPENDENCIES)
 	$(ECHO_BUILDING)

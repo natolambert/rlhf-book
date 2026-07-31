@@ -23,6 +23,8 @@ Utilities for managing the bibliography and other book maintenance tasks.
 
 ## Other Scripts
 
+- **epub-citations.lua** - Turn citeproc citations into EPUB 3 popup footnotes by cloning each cited bibliography entry into a chapter-local `<aside>`.
+- **validate_ebooks.py** - Validate popup-footnote structure, XML well-formedness, IDs, and internal link integrity in both ebook artifacts (`make validate-ebooks`). Cross-check with `epubcheck` when available.
 - **ensure_pdfoutput.py** - Ensure PDF output settings in LaTeX
 - **generate_library.py** - Generate library files
 - **normalize_tex_unicode.py** - Normalize unicode in TeX files

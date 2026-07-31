@@ -1,0 +1,52 @@
+/* Bibliography entries at the back of the book: hanging indent via the layout
+   spans citeproc emits. */
+.csl-entry {
+  clear: both;
+  display: block;
+  margin: 0 0 0.5em 0;
+}
+
+.csl-entry .csl-left-margin {
+  float: left;
+  min-width: 2.5em;
+}
+
+.csl-entry .csl-right-inline {
+  display: block;
+  margin-left: 2.5em;
+}
+
+.csl-entry .csl-indent {
+  margin-left: 2.5em;
+}
+
+/* Per-chapter copies of the cited references. Readers that support EPUB 3
+   popup footnotes (Kindle, Apple Books, Thorium) pull these out of the reading
+   flow and show them on tap; readers that don't fall back to rendering them as
+   a reference list at the end of the chapter. Deliberately not display:none —
+   that would both hide the fallback and stop some readers building popups. */
+.footnotes.citation-footnotes {
+  font-size: 0.9em;
+}
+
+.footnotes.citation-footnotes > hr {
+  border: 0;
+  border-top: 1px solid currentColor;
+  margin: 1.5em auto 0.75em 0;
+  opacity: 0.3;
+  width: 30%;
+}
+
+.citation-footnote {
+  display: block;
+}
+
+.citation-footnote > p {
+  margin: 0 0 0.4em 0;
+  text-indent: 0;
+}
+
+a.citation-backlink {
+  margin-left: 0.35em;
+  text-decoration: none;
+}
