@@ -85,11 +85,15 @@ abstraction gap between them). Close where the book closes: RLHF as the model↔
 
 ## Export gotcha (learned the hard way)
 
-Chromium's print-to-PDF drops images from the page when the deck's total decoded-image memory gets large:
-the full-res chapter figures (3387×4221) silently evicted a *different, smaller* image from the printed
-PDF while the live HTML preview rendered everything fine. Deck-local asset copies are therefore downsized
-(≤2000px wide). Long figure captions inside `rows` also collide with the footer in print -- the two OCT
-figure slides carry their attribution via `cite-right` instead of captions.
+A row image taller than its row in a `rows` slide overflows the fixed-height slide in print layout, and
+Chromium's print fragmentation silently moves the whole image onto the *next* PDF page -- the HTML
+preview renders fine because the runtime figure fit pass sizes it (that pass never runs for printed
+slides). Fixed upstream in colloquium
+([natolambert/colloquium#46](https://github.com/natolambert/colloquium/pull/46)): rows now emit
+`--colloquium-print-row-frac` and print CSS caps row images at their row's height share. Until rlhf-book
+bumps past that fix, keep row figures modest (short lead-in text, `rows: 35/65`-style splits) and prefer
+`cite-right` over long captions. Deck-local asset copies are downsized (≤2000px) anyway -- book-print
+resolution is wasted on 1280px slides.
 
 ## Assets
 
