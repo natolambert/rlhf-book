@@ -1,5 +1,5 @@
 ---
-title: "Lecture 12: Evaluation -- Eras, the Anatomy of a Score & Trusting the Numbers"
+title: "Lecture 12: The Evolution of Frontier Model Evaluation"
 author: "Nathan Lambert"
 fonts:
   heading: "Rubik"
@@ -19,6 +19,14 @@ custom_css: |
     font-size: 2.5em;
     letter-spacing: 0;
   }
+  .slide--title-sidebar h1 .title-subtitle {
+    display: block;
+    margin-top: 0.6em;
+    font-size: 0.45em;
+    font-weight: 400;
+    letter-spacing: 0;
+    opacity: 0.75;
+  }
   /* Bulleted lists should never be centered (markers float, looks bad).
      Target lists only -- leave titles and display-math paragraphs centered. */
   .slide ul, .slide ol, .slide li { text-align: left; }
@@ -27,7 +35,7 @@ custom_css: |
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
 
-# Lecture 12: Evaluation -- Eras, the Anatomy of a Score & Trusting the Numbers
+# The Evolution of Frontier Model Evaluation <span class="title-subtitle">From few-shot prompting to agentic sandboxes</span>
 
 <div class="colloquium-title-eyebrow">rlhfbook.com</div>
 
@@ -35,7 +43,7 @@ custom_css: |
 <p class="colloquium-title-name">Nathan Lambert</p>
 </div>
 
-<p class="colloquium-title-note">Course on RLHF and post-training. Chapter 16 + Appendix C.</p>
+<p class="colloquium-title-note">Course on RLHF and post-training. Chapter 16.</p>
 
 ---
 
