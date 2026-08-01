@@ -130,34 +130,51 @@ def compute_loss(model, batch: "SFTBatch") -> torch.Tensor:
     )
 
 
-def _encode_row(
-    messages: list[dict],
+def _encode_batch(
+    batch: dict[str, list],
     tokenizer: PreTrainedTokenizer,
     max_length: int,
-) -> dict[str, torch.Tensor] | None:
-    """Render ``messages`` with the chat template and mask all but the final assistant turn."""
-    if not messages or messages[-1]["role"] != "assistant":
-        return None
+) -> dict[str, list[list[int]]]:
+    """Render each conversation with the chat template and mask all but the final assistant turn."""
+    conversations = [
+        messages
+        for messages in batch["messages"]
+        if messages and messages[-1]["role"] == "assistant"
+    ]
+    if not conversations:
+        return {"input_ids": [], "labels": []}
 
-    prompt_ids = tokenizer.apply_chat_template(
-        messages[:-1], tokenize=True, add_generation_prompt=True, return_dict=False
+    prompt_ids_batch = tokenizer.apply_chat_template(
+        [messages[:-1] for messages in conversations],
+        tokenize=True,
+        add_generation_prompt=True,
+        return_dict=False,
+        truncation=True,
+        max_length=max_length,
     )
-    full_ids = tokenizer.apply_chat_template(
-        messages, tokenize=True, add_generation_prompt=False, return_dict=False
+    full_ids_batch = tokenizer.apply_chat_template(
+        conversations,
+        tokenize=True,
+        add_generation_prompt=False,
+        return_dict=False,
+        truncation=True,
+        max_length=max_length,
     )
-    labels = [IGNORE_INDEX] * len(prompt_ids) + list(full_ids[len(prompt_ids) :])
 
-    if max_length is not None and len(full_ids) > max_length:
-        full_ids = full_ids[:max_length]
-        labels = labels[:max_length]
+    input_ids, labels = [], []
+    for prompt_ids, full_ids in zip(
+        prompt_ids_batch, full_ids_batch, strict=True
+    ):
+        prompt_length = min(len(prompt_ids), len(full_ids))
+        if prompt_length == len(full_ids):
+            continue
 
-    if all(label == IGNORE_INDEX for label in labels):
-        return None
+        input_ids.append(full_ids)
+        labels.append(
+            [IGNORE_INDEX] * prompt_length + full_ids[prompt_length:]
+        )
 
-    return {
-        "input_ids": torch.tensor(full_ids, dtype=torch.long),
-        "labels": torch.tensor(labels, dtype=torch.long),
-    }
+    return {"input_ids": input_ids, "labels": labels}
 
 
 class SFTDataset(Dataset):
@@ -196,14 +213,18 @@ def create_dataloader(cfg: Config, tokenizer: PreTrainedTokenizer) -> DataLoader
     if cfg.max_samples is not None and len(raw) > cfg.max_samples:
         raw = raw.select(range(cfg.max_samples))
 
-    encoded: list[dict[str, torch.Tensor]] = []
-    skipped = 0
-    for example in raw:
-        row = _encode_row(example["messages"], tokenizer, cfg.max_length)
-        if row is None:
-            skipped += 1
-            continue
-        encoded.append(row)
+    encoded = raw.map(
+        _encode_batch,
+        batched=True,
+        batch_size=256,
+        remove_columns=raw.column_names,
+        fn_kwargs={"tokenizer": tokenizer, "max_length": cfg.max_length},
+        load_from_cache_file=True,
+        desc="Encoding conversations",
+    )
+
+    skipped = len(raw) - len(encoded)
+    encoded = encoded.with_format("torch")
 
     if not encoded:
         raise RuntimeError("No trainable rows after tokenization.")
