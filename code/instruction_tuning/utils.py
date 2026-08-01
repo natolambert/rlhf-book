@@ -162,17 +162,13 @@ def _encode_batch(
     )
 
     input_ids, labels = [], []
-    for prompt_ids, full_ids in zip(
-        prompt_ids_batch, full_ids_batch, strict=True
-    ):
+    for prompt_ids, full_ids in zip(prompt_ids_batch, full_ids_batch, strict=True):
         prompt_length = min(len(prompt_ids), len(full_ids))
         if prompt_length == len(full_ids):
             continue
 
         input_ids.append(full_ids)
-        labels.append(
-            [IGNORE_INDEX] * prompt_length + full_ids[prompt_length:]
-        )
+        labels.append([IGNORE_INDEX] * prompt_length + full_ids[prompt_length:])
 
     return {"input_ids": input_ids, "labels": labels}
 
