@@ -130,7 +130,12 @@ def compute_loss(model, batch: "SFTBatch") -> torch.Tensor:
     )
 
 
-def _encode_batch(batch, tokenizer, max_length):
+def _encode_batch(
+    batch: dict[str, list],
+    tokenizer: PreTrainedTokenizer,
+    max_length: int,
+) -> dict[str, list[list[int]]]:
+    """Render each conversation with the chat template and mask all but the final assistant turn."""
     conversations = [
         messages
         for messages in batch["messages"]
