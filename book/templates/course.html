@@ -312,6 +312,66 @@
       color: #444;
     }
 
+    /* Unfurlable question list on Q&A rows */
+    .qa-row .course-row-lower h3 {
+      flex: 0 1 auto;
+    }
+
+    .qa-toggle {
+      background: none;
+      border: none;
+      padding: 0;
+      font: inherit;
+      font-size: 0.85em;
+      color: #0645ad;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .qa-toggle::before {
+      content: '\25B8';
+      display: inline-block;
+      margin-right: 0.35em;
+      transition: transform 0.15s ease;
+    }
+
+    .qa-toggle[aria-expanded="true"]::before {
+      transform: rotate(90deg);
+    }
+
+    .qa-toggle:hover {
+      text-decoration: underline;
+    }
+
+    ul.qa-questions {
+      margin: 0.4em 0 0.25em;
+      padding-left: 1.9em;
+      font-size: 0.85em;
+    }
+
+    .qa-questions li {
+      margin: 0.2em 0;
+      color: #444;
+    }
+
+    .qa-questions a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .qa-questions a:hover {
+      color: #0645ad;
+      text-decoration: underline;
+    }
+
+    .qa-questions .qa-time {
+      color: #c0392b;
+    }
+
+    .qa-questions .qa-time:hover {
+      color: #c0392b;
+    }
+
     .welcome-video {
       margin: 1.5em 0 2em;
       padding: 1.1em 1.3em;
@@ -508,6 +568,19 @@
     :root[data-theme="dark"] .qa-row h3 {
       color: var(--color-text-muted);
     }
+    :root[data-theme="dark"] .qa-toggle {
+      color: var(--color-link);
+    }
+    :root[data-theme="dark"] .qa-questions li {
+      color: var(--color-text-muted);
+    }
+    :root[data-theme="dark"] .qa-questions a:hover {
+      color: var(--color-link);
+    }
+    :root[data-theme="dark"] .qa-questions .qa-time,
+    :root[data-theme="dark"] .qa-questions .qa-time:hover {
+      color: #f87171;
+    }
     :root[data-theme="dark"] .talk-actions .tag,
     :root[data-theme="dark"] .resource-card .rc-kind {
       background: rgba(96, 165, 250, 0.14);
@@ -592,7 +665,7 @@
     A full course accompanying the book with added resources and other lectures I've given.
   </p>
 
-  <p class="meta">The slide decks are usually built with Claude Opus, with substantial human revisions. (Exceptions are noted on the deck itself.)</p>
+  <p class="meta">The slide decks are usually built with Claude Opus, <a href="https://github.com/natolambert/colloquium" target="_blank" rel="noopener noreferrer">Colloquium</a>, and substantial human revisions.</p>
 
   <div class="welcome-video">
     <div>
@@ -671,8 +744,19 @@
       <div class="course-row qa-row" id="qa-01">
         <div class="course-row-lower">
           <h3>Q&amp;A 1: Reader questions, lec. 1-4</h3>
+          <button type="button" class="qa-toggle" aria-expanded="false">Show questions</button>
           <div class="row-actions"><a class="action action-watch" href="https://www.youtube.com/watch?v=x-MqKBzoxkI&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=6" target="_blank" rel="noopener noreferrer"><svg width="12" height="12"><use href="#icon-watch"/></svg> Watch</a><span class="sep">&middot;</span><a class="action" href="/teach/course/qa-01/slides.pdf" download>PDF</a><span class="sep">&middot;</span><a class="action" href="/teach/course/qa-01/" target="_blank" rel="noopener noreferrer">Slides</a><span class="sep">&middot;</span><a class="action action-source" href="https://github.com/natolambert/rlhf-book/blob/main/teach/course/qa-01.md?plain=1" target="_blank" rel="noopener noreferrer">Source</a></div>
         </div>
+        <ul class="qa-questions" hidden>
+            <li><a href="/teach/course/qa-01/#3" target="_blank" rel="noopener noreferrer">What prerequisites should a learner cover before this course?</a> <a class="qa-time" href="https://www.youtube.com/watch?v=x-MqKBzoxkI&t=38s" target="_blank" rel="noopener noreferrer">(0:38)</a></li>
+            <li><a href="/teach/course/qa-01/#6" target="_blank" rel="noopener noreferrer">For synthetic SFT data, is one teacher model better than many?</a> <a class="qa-time" href="https://www.youtube.com/watch?v=x-MqKBzoxkI&t=125s" target="_blank" rel="noopener noreferrer">(2:05)</a></li>
+            <li><a href="/teach/course/qa-01/#11" target="_blank" rel="noopener noreferrer">Is there a unified benchmark across pairwise RMs, ORMs, PRMs, and generative RMs?</a> <a class="qa-time" href="https://www.youtube.com/watch?v=x-MqKBzoxkI&t=313s" target="_blank" rel="noopener noreferrer">(5:13)</a></li>
+            <li><a href="/teach/course/qa-01/#13" target="_blank" rel="noopener noreferrer">Why choose token-level rewards over sequence-level rewards?</a> <a class="qa-time" href="https://www.youtube.com/watch?v=x-MqKBzoxkI&t=384s" target="_blank" rel="noopener noreferrer">(6:24)</a></li>
+            <li><a href="/teach/course/qa-01/#16" target="_blank" rel="noopener noreferrer">Is GAE the only way to compute the advantage in PPO?</a> <a class="qa-time" href="https://www.youtube.com/watch?v=x-MqKBzoxkI&t=479s" target="_blank" rel="noopener noreferrer">(7:59)</a></li>
+            <li><a href="/teach/course/qa-01/#18" target="_blank" rel="noopener noreferrer">What is the shape of the importance ratio &rho;?</a> <a class="qa-time" href="https://www.youtube.com/watch?v=x-MqKBzoxkI&t=555s" target="_blank" rel="noopener noreferrer">(9:15)</a></li>
+            <li><a href="/teach/course/qa-01/#21" target="_blank" rel="noopener noreferrer">Why does PPO use <code>torch.max</code> for both policy and value losses?</a> <a class="qa-time" href="https://www.youtube.com/watch?v=x-MqKBzoxkI&t=680s" target="_blank" rel="noopener noreferrer">(11:20)</a></li>
+            <li><a href="/teach/course/qa-01/#24" target="_blank" rel="noopener noreferrer">How should data-annotation companies stay valuable as synthetic data gets simpler?</a> <a class="qa-time" href="https://www.youtube.com/watch?v=x-MqKBzoxkI&t=791s" target="_blank" rel="noopener noreferrer">(13:11)</a></li>
+        </ul>
       </div>
       <div class="course-row" id="lecture-5-reasoning">
         <h3>Lecture 5: The Rise of Reasoning Models</h3>
@@ -704,8 +788,17 @@
       <div class="course-row qa-row" id="qa-02">
         <div class="course-row-lower">
           <h3>Q&amp;A 2: Reader questions, lec. 5-7</h3>
+          <button type="button" class="qa-toggle" aria-expanded="false">Show questions</button>
           <div class="row-actions"><a class="action action-watch" href="https://www.youtube.com/watch?v=gB-bYUECpzE&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=11" target="_blank" rel="noopener noreferrer"><svg width="12" height="12"><use href="#icon-watch"/></svg> Watch</a><span class="sep">&middot;</span><a class="action" href="/teach/course/qa-02/slides.pdf" download>PDF</a><span class="sep">&middot;</span><a class="action" href="/teach/course/qa-02/" target="_blank" rel="noopener noreferrer">Slides</a><span class="sep">&middot;</span><a class="action action-source" href="https://github.com/natolambert/rlhf-book/blob/main/teach/course/qa-02.md?plain=1" target="_blank" rel="noopener noreferrer">Source</a></div>
         </div>
+        <ul class="qa-questions" hidden>
+            <li><a href="/teach/course/qa-02/#3" target="_blank" rel="noopener noreferrer">Correction: the KD-as-RL-advantage slide (Lecture 7)</a> <a class="qa-time" href="https://www.youtube.com/watch?v=gB-bYUECpzE&t=32s" target="_blank" rel="noopener noreferrer">(0:32)</a></li>
+            <li><a href="/teach/course/qa-02/#6" target="_blank" rel="noopener noreferrer">Correction: KL divergence is not a &ldquo;distance&rdquo; (Lecture 0)</a> <a class="qa-time" href="https://www.youtube.com/watch?v=gB-bYUECpzE&t=100s" target="_blank" rel="noopener noreferrer">(1:40)</a></li>
+            <li><a href="/teach/course/qa-02/#9" target="_blank" rel="noopener noreferrer">Correction: the Bradley-Terry loss derivation (Lecture 2 / Ch 5)</a> <a class="qa-time" href="https://www.youtube.com/watch?v=gB-bYUECpzE&t=267s" target="_blank" rel="noopener noreferrer">(4:27)</a></li>
+            <li><a href="/teach/course/qa-02/#13" target="_blank" rel="noopener noreferrer">Can we get programming &amp; math assignments?</a> <a class="qa-time" href="https://www.youtube.com/watch?v=gB-bYUECpzE&t=374s" target="_blank" rel="noopener noreferrer">(6:14)</a></li>
+            <li><a href="/teach/course/qa-02/#17" target="_blank" rel="noopener noreferrer">Notation gotchas in Chapter 6: reward indexing, scalar placement, trajectory expectations</a> <a class="qa-time" href="https://www.youtube.com/watch?v=gB-bYUECpzE&t=494s" target="_blank" rel="noopener noreferrer">(8:14)</a></li>
+            <li><a href="/teach/course/qa-02/#21" target="_blank" rel="noopener noreferrer">Why switch between &nabla;J(&theta;) and J(&theta;) across algorithms?</a> <a class="qa-time" href="https://www.youtube.com/watch?v=gB-bYUECpzE&t=720s" target="_blank" rel="noopener noreferrer">(12:00)</a></li>
+        </ul>
       </div>
       <div class="course-row" id="lecture-8-preferences">
         <h3>Lecture 8: On "Preferences" and Preference Data</h3>
@@ -741,6 +834,24 @@
           <p class="meta">Chapter 13 &middot; Why models need tools, MCP and harnesses, and tool-use RL</p>
           <div class="row-actions"><a class="action action-watch" href="https://www.youtube.com/watch?v=GMry2DzC304&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=17" target="_blank" rel="noopener noreferrer"><svg width="12" height="12"><use href="#icon-watch"/></svg> Watch</a><span class="sep">&middot;</span><a class="action" href="/teach/course/lec11-chap13-tools/slides.pdf" download>PDF</a><span class="sep">&middot;</span><a class="action" href="/teach/course/lec11-chap13-tools/" target="_blank" rel="noopener noreferrer">Slides</a><span class="sep">&middot;</span><a class="action action-source" href="https://github.com/natolambert/rlhf-book/blob/main/teach/course/lec11-chap13-tools.md?plain=1" target="_blank" rel="noopener noreferrer">Source</a></div>
         </div>
+      </div>
+      <div class="course-row qa-row" id="qa-03">
+        <div class="course-row-lower">
+          <h3>Q&amp;A 3: Reader questions, lec. 8-11</h3>
+          <button type="button" class="qa-toggle" aria-expanded="false">Show questions</button>
+          <div class="row-actions"><a class="action" href="/teach/course/qa-03/slides.pdf" download>PDF</a><span class="sep">&middot;</span><a class="action" href="/teach/course/qa-03/" target="_blank" rel="noopener noreferrer">Slides</a><span class="sep">&middot;</span><a class="action action-source" href="https://github.com/natolambert/rlhf-book/blob/main/teach/course/qa-03.md?plain=1" target="_blank" rel="noopener noreferrer">Source</a></div>
+        </div>
+        <!-- TODO: after the Q&A 3 recording is published, add (MM:SS) video timestamp
+             links to these questions (run teach/.claude/skills/qa-video-timestamps)
+             and add the Watch action to the row above. -->
+        <ul class="qa-questions" hidden>
+          <li><a href="/teach/course/qa-03/#2" target="_blank" rel="noopener noreferrer">Q1: Should capabilities be trained separately, then merged?</a></li>
+          <li><a href="/teach/course/qa-03/#7" target="_blank" rel="noopener noreferrer">Q2: Why does RLVR often omit the KL penalty?</a></li>
+          <li><a href="/teach/course/qa-03/#9" target="_blank" rel="noopener noreferrer">Q3: How does the ~1M SFT prompt budget scale with model size?</a></li>
+          <li><a href="/teach/course/qa-03/#10" target="_blank" rel="noopener noreferrer">Q4: Is RL just regularized SFT?</a></li>
+          <li><a href="/teach/course/qa-03/#12" target="_blank" rel="noopener noreferrer">Q5: When should in-house traces be trained into the weights vs. handled with ICL?</a></li>
+          <li><a href="/teach/course/qa-03/#13" target="_blank" rel="noopener noreferrer">Q6: Can continued pretraining on a distillation-only dataset make a model worse?</a></li>
+        </ul>
       </div>
     </div>
   </section>
@@ -893,6 +1004,16 @@
     window.addEventListener('load', scaleViewers);
     window.addEventListener('resize', scaleViewers);
 
+    // Q&A question-list toggles
+    document.querySelectorAll('.qa-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const list = btn.closest('.course-row').querySelector('.qa-questions');
+        const open = list.hidden;
+        list.hidden = !open;
+        btn.setAttribute('aria-expanded', String(open));
+        btn.textContent = open ? 'Hide questions' : 'Show questions';
+      });
+    });
   </script>
 </body>
 </html>
