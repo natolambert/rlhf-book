@@ -50,3 +50,16 @@ a.citation-backlink {
   margin-left: 0.35em;
   text-decoration: none;
 }
+
+/* Scroll containers cannot fragment reliably in paginated readers. */
+div.sourceCode,
+pre,
+pre.sourceCode {
+  overflow: visible !important;
+  break-inside: auto;
+  page-break-inside: auto;
+}
+
+pre > code {
+  white-space: pre-wrap;
+}
