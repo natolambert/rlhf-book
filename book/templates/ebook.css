@@ -52,6 +52,7 @@ a.citation-backlink {
 }
 
 /* Scroll containers cannot fragment reliably in paginated readers. */
+div.sourceCode,
 pre,
 pre.sourceCode {
   overflow: visible !important;
@@ -59,6 +60,6 @@ pre.sourceCode {
   page-break-inside: auto;
 }
 
-pre > code.sourceCode {
+pre > code {
   white-space: pre-wrap;
 }
