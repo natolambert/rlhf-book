@@ -69,21 +69,23 @@ When Opus 4.6 and GPT-5.3-Codex shipped in the same week (Feb 2026), the headlin
 
 What separated them was found through use: usability, product fit, behavior over long agentic tasks. Benchmark-based release reactions barely matter at the frontier -- consistent testing and clear articulation have to carry the comparison.
 
-Read: [the post-benchmark era](https://www.interconnects.ai/p/opus-46-vs-codex-53)
+Read on Interconnects: [the post-benchmark era](https://www.interconnects.ai/p/opus-46-vs-codex-53)
 
 |||
 
-![On comparing models in 2026: the post-benchmark era (Interconnects).](assets/interconnects-post-benchmark-era.png)
+![](assets/interconnects-post-benchmark-era.png)
 
 ---
 
-<!-- rows: 32/68 -->
+<!-- columns: 38/62 -->
 <!-- cite-right: kwa2025measuring -->
-## ...and the tasks worth measuring keep getting longer
+## ...and the tasks we're trying to measure keep taking longer
 
-The task length frontier models can complete (at 50% success) **doubles roughly every 7 months** -- from seconds-long questions to tasks that take human experts hours ([Time Horizon 1.1](https://metr.org/blog/2026-1-29-time-horizon-1-1/)). Measuring the frontier now means running hours-long expert tasks, many times over.
+The task length frontier models can complete (at 50% success) **doubles roughly every 7 months** -- from seconds-long questions to tasks that take human experts hours ([Time Horizon 1.1](https://metr.org/blog/2026-1-29-time-horizon-1-1/)).
 
-===
+Measuring the frontier now means running hours-long expert tasks, many times over.
+
+|||
 
 ![Task-completion time horizon of frontier models. Figure from METR (Time Horizon 1.1), CC-BY.](assets/metr-time-horizon-11.png)
 
