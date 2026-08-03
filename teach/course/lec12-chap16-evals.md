@@ -135,10 +135,15 @@ The key to understanding evals: popular benchmarks are a **reflection of the tra
 
 ---
 
+<!-- rows: 14/86 -->
 <!-- cite-right: brown2020language, robinson2023leveraging -->
 ## Base models: few-shot prompting
 
 Base models can't take a bare question -- eval prompts carried **worked examples** (3 to 8+, itself a design parameter) so the model continues the pattern:
+
+===
+
+<!-- row-columns: 50/50 -->
 
 ```text
 # Few-Shot Prompt
@@ -146,7 +151,8 @@ Base models can't take a bare question -- eval prompts carried **worked examples
 Below are examples of MMLU-style questions and answers:
 
 ### Example 1
-Q: A right triangle has legs of lengths 3 and 4. What is the length of its hypotenuse?
+Q: A right triangle has legs of lengths 3 and 4.
+What is the length of its hypotenuse?
 Choices:
 (A) 5
 (B) 6
@@ -154,7 +160,11 @@ Choices:
 (D) 8
 
 Correct Answer: (A)
+```
 
+|||
+
+```text
 ### Example 2
 Q: Which of the following is the chemical symbol for Sodium?
 Choices:
@@ -167,7 +177,9 @@ Correct Answer: (A)
 
 ### Now answer the new question in the same style:
 
-Q: Which theorem states that if a function f is continuous on a closed interval [a,b], then f must attain both a maximum and a minimum on that interval?
+Q: Which theorem states that if a function f is continuous
+on a closed interval [a,b], then f must attain both a
+maximum and a minimum on that interval?
 Choices:
 (A) The Mean Value Theorem
 (B) The Intermediate Value Theorem
@@ -176,7 +188,6 @@ Choices:
 
 Correct Answer:
 ```
-
 ---
 
 <!-- columns: 50/50 -->
