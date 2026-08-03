@@ -24,7 +24,7 @@ If you are running these with a coding assistant, launch long training/eval comm
 | Chapter | Starting experiment | Command | What to inspect |
 |---------|---------------------|---------|-----------------|
 | Chapter 4: Instruction Tuning | SFT OLMo-2-1B base on No Robots | `uv run python -m instruction_tuning.train --config instruction_tuning/configs/sft_olmo2_1b.yaml` | Loss curve and the in-loop sample panels — the base model rambles at step 0; after a few hundred steps it answers and stops. |
-| Chapter 5: Reward Models | Bradley-Terry RM on UltraFeedback | `uv run python -m reward_models.train_preference_rm --samples 2000 --epochs 1` | Chosen/rejected reward margin, training loss, demo scoring |
+| Chapter 5: Reward Models | Bradley-Terry RM on UltraFeedback | `uv run python -m reward_models.train_preference_rm --config reward_models/configs/preference_rm.yaml` | Chosen/rejected reward margin, training loss, demo scoring |
 | Chapter 5: Reward Models | ORM on GSM8K | `uv run python -m reward_models.train_orm --samples 400 --epochs 2` | Whether correct final answers score above perturbed answers |
 | Chapter 6: Policy Gradients | GRPO on `spell_backward` | `uv run python -m policy_gradients.train --config policy_gradients/configs/grpo.yaml` | `avg_correctness`, `avg_format`, `avg_binary`, and whether groups contain contrast |
 | Chapter 8: Direct Alignment | DPO on UltraFeedback | `uv run python -m direct_alignment.train --loss dpo --max_samples 1000` | `accuracy`, `margins`, `chosen_rewards`, `rejected_rewards`, sample generations |
@@ -180,7 +180,7 @@ Train reward models on various datasets:
 
 ```bash
 # Standard Preference RM (Chapter 5) - Bradley-Terry on UltraFeedback
-uv run python -m reward_models.train_preference_rm
+uv run python -m reward_models.train_preference_rm --config reward_models/configs/preference_rm.yaml
 
 # Outcome Reward Model (Chapter 5) - trains on GSM8K
 uv run python -m reward_models.train_orm

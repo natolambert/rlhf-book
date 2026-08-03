@@ -14,7 +14,6 @@ pipelines. See Chapter 5 (Reward Models) of RLHF Book for theoretical background
 
 Usage:
     uv run python -m reward_models.train_preference_rm --config reward_models/configs/preference_rm.yaml
-    uv run python -m reward_models.train_preference_rm --config reward_models/configs/preference_rm.yaml --samples 2000
 """
 
 import argparse
