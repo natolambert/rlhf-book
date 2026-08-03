@@ -30,6 +30,11 @@ custom_css: |
   /* Bulleted lists should never be centered (markers float, looks bad).
      Target lists only -- leave titles and display-math paragraphs centered. */
   .slide ul, .slide ol, .slide li { text-align: left; }
+  /* Vertically center every content slide by default (special layouts and
+     explicit valign-top/bottom directives still win). */
+  .slide.active:not([class*="slide--"]):not(.valign-top):not(.valign-bottom) {
+    justify-content: center;
+  }
 ---
 
 <!-- layout: title-sidebar -->
@@ -47,16 +52,17 @@ custom_css: |
 
 ---
 
-<!-- layout: section-break -->
-<!-- align: center -->
-<!-- valign: center -->
+## How we measure progress changes over time
 
-## "Evals are dead, just measure vibes"
+Different model types need different strategies.
+
+As models get smarter, we need to re-invent the cutting edge of AI.
+
+Evaluation is at the core of AI progress and understanding truth of what the models are.
 
 ---
 
 <!-- columns: 45/55 -->
-<!-- valign: center -->
 ## This lecture
 
 Vibes are real, but every training decision in this course -- data mixes, hyperparameters, which checkpoint ships -- is made off benchmark numbers.
@@ -84,7 +90,6 @@ content: |
 ---
 
 <!-- animate: bullets -->
-<!-- valign: center -->
 ## Benchmarks mirror the training goals of their era
 
 The key to reading evals: popular benchmarks are a **reflection of the training best practices of their moment**. When training moves, evaluation follows.
@@ -96,7 +101,6 @@ The key to reading evals: popular benchmarks are a **reflection of the training 
 
 ---
 
-<!-- valign: center -->
 <!-- cite-right: zheng2023judging, dubois2024length, li2024crowdsourced -->
 ## Chat era: how close to GPT-4?
 
@@ -109,7 +113,6 @@ Early RLHF models were measured on **chat quality relative to a known strong mod
 ---
 
 <!-- columns: 55/45 -->
-<!-- valign: center -->
 <!-- cite-right: lambert2024t, hendrycks2020measuring -->
 ## Multi-skill era: one suite, many capabilities
 
@@ -139,7 +142,6 @@ Internet trivia more than intelligence -- but it tracked pretraining knowledge w
 
 ---
 
-<!-- valign: center -->
 <!-- cite-right: rein2023gpqa, phan2025hle, jain2024livecodebench -->
 ## Reasoning & tools era: make it actually hard
 
@@ -153,7 +155,6 @@ Reasoning models saturated the old suites, so difficulty escalated:
 ---
 
 <!-- columns: 50/50 -->
-<!-- valign: center -->
 <!-- cite-right: phan2025hle -->
 ## Even PhDs and professors are wrong
 
@@ -177,7 +178,6 @@ Past a certain difficulty, **verifying the answer key is the bottleneck** -- exp
 
 ---
 
-<!-- valign: center -->
 <!-- cite-right: openai2024swebench -->
 ## Today: evals of real work
 
@@ -188,7 +188,6 @@ Past a certain difficulty, **verifying the answer key is the bottleneck** -- exp
 ---
 
 <!-- rows: 30/70 -->
-<!-- valign: center -->
 ## Every era ends the same way: saturation
 
 Benchmarks are consumable. As scores approach the ceiling, only the hardest (and mislabeled) items remain, and the benchmark stops separating models.
@@ -207,7 +206,6 @@ Benchmarks are consumable. As scores approach the ceiling, only the hardest (and
 ---
 
 <!-- rows: 35/65 -->
-<!-- valign: center -->
 ## The early-era pipeline was simple
 
 Prompt in, completion out, grade it. Almost everything that could go wrong lived in two places: **how you formatted the prompt** and **how you graded the answer**.
@@ -219,7 +217,6 @@ Prompt in, completion out, grade it. Almost everything that could go wrong lived
 ---
 
 <!-- columns: 50/50 -->
-<!-- valign: center -->
 <!-- cite-right: brown2020language, teamolmo2025olmo3 -->
 ## Grading: log-likelihood vs. exact match
 
@@ -234,7 +231,6 @@ The catch: rigid format requirements. A model that answers correctly in the *wro
 ---
 
 <!-- columns: 45/55 -->
-<!-- valign: center -->
 <!-- cite-right: wei2022chain, kojima2022large, lambert2024t -->
 ## Prompts evolved with the models
 
@@ -254,7 +250,6 @@ content: |
 ---
 
 <!-- animate: bullets -->
-<!-- valign: center -->
 ## Sampling parameters are part of the eval
 
 - Reasoning models need **temperature > 0** for their best scores -- [Qwen's model cards](https://huggingface.co/Qwen/Qwen3-32B) literally say **"DO NOT use greedy decoding"** (degradation, endless repetition)
@@ -264,7 +259,6 @@ content: |
 ---
 
 <!-- rows: 35/65 -->
-<!-- valign: center -->
 ## Then an engine appeared between you and the model
 
 Nobody evaluates raw weights: there is an inference engine or an API in the loop -- with its own chat template, tool-call parser, and bugs. [vLLM's own postmortem](https://vllm.ai/blog/2025-10-28-kimi-k2-accuracy) on serving Kimi K2: three engine bugs held tool-call success **below 20%** (218 of 1,200+ calls); after fixes, **99.9%**. Same weights. **APIs do not guarantee correctness either.**
@@ -276,7 +270,6 @@ Nobody evaluates raw weights: there is an inference engine or an API in the loop
 ---
 
 <!-- rows: 35/65 -->
-<!-- valign: center -->
 ## The agentic pipeline: the model is one box of eight
 
 Agentic evals wrap the model in a **harness** (tools, prompts, settings), run it in a **sandbox**, on **hardware**, against tight **timeouts** -- and grade hours-long trajectories with regex or an LLM judge.
@@ -288,7 +281,6 @@ Agentic evals wrap the model in a **harness** (tools, prompts, settings), run it
 ---
 
 <!-- animate: bullets -->
-<!-- valign: center -->
 ## The harness can be worth months of model progress
 
 - Harness = the tools, prompts, and settings around the model -- **the still-unstandardized model side** from last lecture
@@ -300,7 +292,6 @@ Agentic evals wrap the model in a **harness** (tools, prompts, settings), run it
 ---
 
 <!-- animate: bullets -->
-<!-- valign: center -->
 ## Hardware is in your score too
 
 - Some benchmarks measure hardware **on purpose**: KernelBench-style tasks need specific GPUs
@@ -310,7 +301,6 @@ Agentic evals wrap the model in a **harness** (tools, prompts, settings), run it
 ---
 
 <!-- rows: 40/60 -->
-<!-- valign: center -->
 ## A score is a property of the system, not the model
 
 Every box below is a knob someone chose -- most are undocumented in a press release. Two labs can run "the same benchmark" and measure meaningfully different things.
@@ -329,7 +319,6 @@ Every box below is a knob someone chose -- most are undocumented in a press rele
 ---
 
 <!-- columns: 55/45 -->
-<!-- valign: center -->
 <!-- cite-right: teamolmo2025olmo3 -->
 ## Evaluation variance is everywhere
 
@@ -357,7 +346,6 @@ More in [Appendix C: evaluation variance](https://rlhfbook.com/c/appendix-c-prac
 ---
 
 <!-- animate: bullets -->
-<!-- valign: center -->
 <!-- cite-right: teamolmo2025olmo3 -->
 ## Managing the noise
 
@@ -368,7 +356,6 @@ More in [Appendix C: evaluation variance](https://rlhfbook.com/c/appendix-c-prac
 ---
 
 <!-- animate: bullets -->
-<!-- valign: center -->
 ## Why lab-vs-lab comparisons are unreliable
 
 - Each lab's eval stack is **tuned to its internal needs**: custom prompts for key benchmarks, undisclosed formats, different engines
@@ -379,7 +366,6 @@ More in [Appendix C: evaluation variance](https://rlhfbook.com/c/appendix-c-prac
 ---
 
 <!-- animate: bullets -->
-<!-- valign: center -->
 ## What evals are actually for inside labs
 
 - Labs hillclimb on a few prioritized evals and report the public suite at the end
@@ -390,7 +376,6 @@ More in [Appendix C: evaluation variance](https://rlhfbook.com/c/appendix-c-prac
 ---
 
 <!-- animate: bullets -->
-<!-- valign: center -->
 <!-- cite-right: singh2024evaluation, shao2025spurious, huang2025math -->
 ## Contamination
 
@@ -402,7 +387,6 @@ More in [Appendix C: evaluation variance](https://rlhfbook.com/c/appendix-c-prac
 ---
 
 <!-- columns: 50/50 -->
-<!-- valign: center -->
 ## The model games the eval
 
 Agents love shortcuts -- Lecture 9's Goodhart, now holding a terminal. [NIST](https://www.nist.gov/caisi/cheating-ai-agent-evaluations) and [DebugML](https://debugml.github.io/cheating-agents/) have documented these in the wild.
@@ -427,7 +411,6 @@ Grading agents is adversarial now -- benchmark design inherits all of reward hac
 ---
 
 <!-- animate: bullets -->
-<!-- valign: center -->
 ## Underelicitation: the score is a lower bound
 
 - ARC-AGI 3 **disallows custom harnesses** in official scoring -- "future AGI systems will not need task-specific external handholding" -- to keep hand-written rules out of the measurement
@@ -437,7 +420,6 @@ Grading agents is adversarial now -- benchmark design inherits all of reward hac
 
 ---
 
-<!-- valign: center -->
 ## Takeaways
 
 - Benchmarks mirror the **training goals of their era** -- and every era ends in saturation.
@@ -448,7 +430,6 @@ Grading agents is adversarial now -- benchmark design inherits all of reward hac
 ---
 
 <!-- columns: 50/50 -->
-<!-- valign: center -->
 ## The course so far
 
 0. Prerequisites review
