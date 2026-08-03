@@ -208,7 +208,7 @@ The system prompt and inference software now enter as additional layers -- prima
 A harness is a loop that contains prompts and skills for managing context, such as compaction, tools, credentials, etc.
 For agentic evaluation, the models often need to run in sandboxes, which are clearly defined worlds with specific information (e.g. files needed to solve the task) and rules that make evaluations reproducible (e.g. specific tool definitions).
 Sandboxes increase the complexity of running the model, as usually you now need more CPUs in addition to the GPUs for inference.
-For more information, you can refer to [this slide deck](/assets/llm-benchmarks-era-of-agents-brand.pdf) from Florian Brand ([video](https://www.youtube.com/watch?v=CGjuKIppZSs)), the system diagram in @fig:eval-components, or read about Terminal-Bench, the most popular evaluation of this era, in its original version [@tbench2025] and the harder Terminal-Bench 2.0 [@tbench2026].
+For more information, you can refer to [this talk](https://www.youtube.com/watch?v=CGjuKIppZSs) from Florian Brand, the system diagram in @fig:eval-components, or read about Terminal-Bench, the most popular evaluation of this era, in its original version [@tbench2025] and the harder Terminal-Bench 2.0 [@tbench2026].
 
 ![The components of running a modern, agentic evaluation -- every box influences the final score. Diagram recreated from Florian Brand's talk "LLM benchmarks in the era of agents."](images/eval_components_tikz.png){#fig:eval-components .center data-dark-src="images/eval_components_tikz-dark.png"}
 
