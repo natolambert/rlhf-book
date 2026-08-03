@@ -114,6 +114,9 @@ def build_preference_dataset(
     Each example contains:
     - chosen_ids: Token IDs for the chosen response
     - rejected_ids: Token IDs for the rejected response
+
+    Pairs that are token-identical after truncation carry no training signal
+    and are dropped, so the returned dataset can be smaller than `limit`.
     """
     random.seed(seed)
 
@@ -128,6 +131,7 @@ def build_preference_dataset(
     raw = raw.shuffle(seed=seed).select(range(min(limit, len(raw))))
 
     records = []
+    dropped_identical = 0
     for ex in raw:
         # Extract prompt and responses
         prompt = ex.get("prompt", "")
@@ -154,6 +158,15 @@ def build_preference_dataset(
         chosen_tokens = tokenize_messages(tokenizer, chosen_messages, max_length)
         rejected_tokens = tokenize_messages(tokenizer, rejected_messages, max_length)
 
+        # A long shared prompt can consume the whole max_length window, truncating
+        # both responses away and leaving identical token ids. The Bradley-Terry
+        # loss is a constant -log(0.5) with zero gradient on such pairs, so drop
+        # them rather than left-truncate (which would cut the prompt the reward
+        # head needs). See https://github.com/natolambert/rlhf-book/issues/503.
+        if chosen_tokens["input_ids"] == rejected_tokens["input_ids"]:
+            dropped_identical += 1
+            continue
+
         records.append(
             {
                 "chosen_ids": chosen_tokens["input_ids"],
@@ -161,6 +174,12 @@ def build_preference_dataset(
                 "rejected_ids": rejected_tokens["input_ids"],
                 "rejected_mask": rejected_tokens["attention_mask"],
             }
+        )
+
+    if dropped_identical:
+        print(
+            f"Dropped {dropped_identical} pairs whose chosen/rejected token ids were "
+            f"identical after truncation to max_length={max_length}"
         )
 
     return Dataset.from_list(records)
