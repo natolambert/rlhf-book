@@ -35,6 +35,11 @@ custom_css: |
   .slide.active:not([class*="slide--"]):not(.valign-top):not(.valign-bottom) {
     justify-content: center;
   }
+  /* Verbatim prompt dumps: compact monospace so full prompts fit a slide. */
+  .slide pre {
+    font-size: 0.52em;
+    line-height: 1.38;
+  }
 ---
 
 <!-- layout: title-sidebar -->
@@ -124,21 +129,16 @@ content: |
 The key to understanding evals: popular benchmarks are a **reflection of the training best practices of their moment**.
 
 - **Chat era** *(2022-23)* -- basic knowledge and chat style
-- **Multi-skill era** *(2023-24)* -- post-training improves many capabilities at once (math, code, factuality, safety, etc.)
+- **Multi-skill era** *(2023-24)* -- post-training improves more skills than just chat (math, code, factuality, safety, etc.)
 - **Reasoning & tools era** *(2024-26)* -- hard math, coding, and reasoning problems, long chains of thought
 - **Agents & real work** *(now)* -- end-to-end tasks knowledge-work inside products and harnesses
 
 ---
 
-<!-- columns: 35/65 -->
 <!-- cite-right: brown2020language, robinson2023leveraging -->
 ## Base models: few-shot prompting
 
-Base models can't take a bare question -- every eval prompt carried **worked examples** so the model would continue the pattern.
-
-The number of in-context examples (3 to 8+) was itself a design parameter -- and a source of score differences between papers.
-
-|||
+Base models can't take a bare question -- eval prompts carried **worked examples** (3 to 8+, itself a design parameter) so the model continues the pattern:
 
 ```text
 # Few-Shot Prompt
@@ -183,13 +183,15 @@ Correct Answer:
 <!-- cite-right: brown2020language, teamolmo2025olmo3 -->
 ## Grading: log-likelihood vs. exact match
 
-**Log-likelihood scoring**: compare the probability the model assigns each answer option -- either just the letter `A`, or the full answer string. No sampling, fully deterministic. The standard for pretraining evals, where models can't yet answer in a clean format.
+**Log-likelihood scoring**: compare the probability the model assigns each answer option -- either just the letter `A`, or the full answer string. No sampling, fully deterministic. The standard for pretraining evals, where models couldn't always answer in a clean format.
 
 |||
 
-**Generation + exact match**: sample a completion, extract the answer. Mirrors real usage -- and is standard for post-training. Aggregating samples gives majority voting; **pass@k** is the coding analogue.
+<!-- step -->
 
-The catch: rigid format requirements. A model that answers correctly in the *wrong format* scores zero.
+**Generation + exact match**: sample a completion, extract the answer. Mirrors real usage -- and is standard for post-training since ~2024. Aggregating multiple completions/samples gives majority voting; e.g. **pass@k** is a common tool.
+
+Generation and extraction gave rise to answer extraction formatting bugs, which only became more complex with agentic models today.
 
 ---
 
@@ -249,7 +251,7 @@ Instruction tuning collapsed the prompt to just the question -- zero-shot, `User
 
 <!-- columns: 55/45 -->
 <!-- cite-right: lambert2024t, hendrycks2020measuring -->
-## Multi-skill era: one suite, many capabilities
+## Multi-skill era: more skills than just chat
 
 Once post-training was more than safety and chat, suites like Tülu's covered:
 
