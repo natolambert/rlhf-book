@@ -455,6 +455,7 @@ Add hardware and timeouts, and hours-long trajectories get graded by regex or an
 ---
 
 <!-- animate: bullets -->
+<!-- footnote-right: Slide Credit: Florian Brand -->
 ## The harness makes or breaks the score
 
 - Frontier models are **trained in their own harness** -- evaluating them in a different one under-reports capability
@@ -463,13 +464,14 @@ Add hardware and timeouts, and hours-long trajectories get graded by regex or an
 
 ---
 
-<!-- animate: bullets -->
+<!-- footnote-right: Slide Credit: Florian Brand -->
 ## Everything else in the system is in the score too
 
-- **The engine**: [vLLM's postmortem](https://vllm.ai/blog/2025-10-28-kimi-k2-accuracy) on serving Kimi K2 -- three engine bugs held tool-call success **below 20%**; after fixes, **99.9%**. Same weights. APIs do not guarantee correctness either
-- **Hardware**: some benchmarks measure it on purpose (KernelBench-style tasks need specific GPUs); others by accident -- one resource-hungry command can kill the sandbox and zero the task
-- **Timeouts**: tight limits convert compute into score -- Terminal-Bench 2 reruns with 3-5× timeouts move GPT-5.2 by [+6 to +15 points](https://github.com/xdotli/gpt-5.2-tb2)
-- Every box is a knob someone chose, mostly undocumented -- two labs running "the same benchmark" can measure meaningfully different things
+Every box is a knob someone chose, mostly undocumented -- two labs running "the same benchmark" can measure meaningfully different things
+
+- **The engine**: [vLLM's postmortem](https://vllm.ai/blog/2025-10-28-kimi-k2-accuracy) on serving Kimi K2 -- three engine bugs held tool-call success **below 20%**; after fixes, **99.9%**. Same weights. So many players have these issues
+- **Hardware**: Variance across GPUs -- some benchmarks measure it on purpose (KernelBench-style tasks need specific GPUs) -- others by accident. With scaled sandboxes, one bad actor can stall the system and tank evals
+- **Timeouts**: tight limits convert compute into score -- Terminal-Bench 2 reruns with 3-5× longer timeouts move GPT-5.2 by [+6 to +15 points](https://github.com/xdotli/gpt-5.2-tb2)
 
 ---
 
