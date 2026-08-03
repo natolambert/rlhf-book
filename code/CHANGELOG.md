@@ -5,7 +5,7 @@ On release, entries get moved under a version heading.
 
 ## Unreleased
 
-- 2026-08-02: Enforcing yml config for `train_preference_rm` script 
+- 2026-08-02: [PR #502](https://github.com/natolambert/rlhf-book/pull/502) Enforcing yml config for `train_preference_rm` script 
 - 2026-08-01: [PR #500](https://github.com/natolambert/rlhf-book/pull/500) ruff-format fixup for the batched dataset encoding merged in [PR #499](https://github.com/natolambert/rlhf-book/pull/499); formatting only, no behavior change.
 - 2026-08-01: [PR #499](https://github.com/natolambert/rlhf-book/pull/499) Batched dataset encoding
 - 2026-07-30: [PR #495](https://github.com/natolambert/rlhf-book/pull/495) cleaned up stale documentation, commands, reference-run links, documented metric names and configuration defaults, and brand capitalization across the code examples. No training behavior or metric semantics changed.
