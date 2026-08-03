@@ -137,9 +137,9 @@ The key to understanding evals: popular benchmarks are a **reflection of the tra
 
 <!-- rows: 14/86 -->
 <!-- cite-right: brown2020language, robinson2023leveraging -->
-## Base models: few-shot prompting
+## Base models (before post-training): few-shot prompting
 
-Base models can't take a bare question -- eval prompts carried **worked examples** (3 to 8+, itself a design parameter) so the model continues the pattern:
+Base models can't take a bare or formatted question -- eval prompts carried examples of the patterns (3 to 8+ in-context samples) so the model continues the pattern:
 
 ===
 
@@ -206,12 +206,33 @@ Generation and extraction gave rise to answer extraction formatting bugs, which 
 
 ---
 
-<!-- rows: 35/65 -->
+<!-- columns: 46/54 -->
+<!-- cite-right: chen2021codex -->
+## The math behind pass@k
+
+pass@k = the probability that **at least one of $k$ samples** solves the problem.
+
+The naive route -- generate exactly $k$, report whether any passed -- is a **high-variance** coin flip per problem, and plugging a small-sample success rate into $1-(1-\hat{p})^k$ is **biased**.
+
+The fix, from the Codex paper: sample $n \geq k$ completions, count the $c$ that pass, and average an unbiased estimator over problems →
+
+|||
+
+$$\text{pass@}k = \mathop{\mathbb{E}}_{\text{problems}}\left[1 - \frac{\binom{n-c}{k}}{\binom{n}{k}}\right]$$
+
+- $\binom{n-c}{k}\big/\binom{n}{k}$ is the chance that $k$ draws (without replacement) from your $n$ samples are **all failures**
+- Larger $n$ → tighter estimate at the same $k$; the paper used $n=200$ for $k \leq 100$
+- The knobs interact: **higher temperature hurts pass@1 but helps pass@100** -- so a reported "pass@1" depends on $n$ and the sampling settings, not just the model
+
+---
+
+<!-- columns: 40/60 -->
 ## The early pipeline was simple
 
-Prompt in, completion out, grade it. Almost everything that could go wrong lived in two places: **how you formatted the prompt** and **how you graded the answer**.
+Prompt in, completion out, grade it. 
+Almost everything that could go wrong was in **how you formatted the prompt**.
 
-===
+|||
 
 ![The evaluation pipeline, early era. System framing adapted from Florian Brand (@xeophon).](assets/eval-system-v1.png)
 
