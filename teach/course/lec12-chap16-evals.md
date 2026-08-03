@@ -35,7 +35,7 @@ custom_css: |
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
 
-# Lecture 12:  The Evolution of Frontier Model Evaluation <span class="title-subtitle">From few-shot prompting to agentic sandboxes</span>
+# Lecture 12: The Evolution of Frontier Model Evaluation <span class="title-subtitle">From few-shot prompting to agentic sandboxes</span>
 
 <div class="colloquium-title-eyebrow">rlhfbook.com</div>
 
