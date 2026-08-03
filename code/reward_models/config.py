@@ -34,7 +34,7 @@ class Config(BaseModel):
     seed: int = 123
 
     # Hardware
-    device: str = "cpu"
+    device: str = "cuda"
     device_id: int = 0
 
     # Logging / demo
@@ -51,6 +51,10 @@ class Config(BaseModel):
             raise ValueError(f"val_ratio must be in [0, 1), got {self.val_ratio}")
         if not 0.0 <= self.warmup_ratio <= 1.0:
             raise ValueError(f"warmup_ratio must be in [0, 1], got {self.warmup_ratio}")
+        if self.device == "cuda" and not torch.cuda.is_available():
+            raise ValueError("CUDA is not available, but device is set to 'cuda'")
+        if self.device == "mps" and not torch.backends.mps.is_available():
+            raise ValueError("MPS is not available, but device is set to 'mps'")
 
         return self
 

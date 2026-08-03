@@ -44,6 +44,7 @@ WANDB_PROJECT=rlhf-book uv run python -m reward_models.train_prm --samples 500 -
 
 The Preference RM script supports config-driven training via
 `reward_models/configs/preference_rm.yaml`.
+For smaller runs, copy the YAML file and edit the copy.
 
 The default config trains Qwen3-0.6B on 5k UltraFeedback preference pairs with:
 

@@ -287,7 +287,7 @@ def train_preference_rm(config: Config) -> PreferenceRewardModel:
     """Train a preference-based reward model on UltraFeedback.
 
     Args:
-        config: Configuration dictionary containing training parameters.
+        config: Configuration object containing training parameters.
 
     Returns:
         Trained PreferenceRewardModel
