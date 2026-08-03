@@ -7,6 +7,7 @@
 
 # Model
 model_id: Qwen/Qwen3-0.6B-Base
+freeze_backbone: false
 
 # Dataset
 dataset_name: argilla/ultrafeedback-binarized-preferences-cleaned
@@ -24,6 +25,10 @@ lr_scheduler: linear_decay
 val_ratio: 0.1
 eval_interval: 25
 seed: 123
+
+# Hardware
+device: cuda
+device_id: 0
 
 # Logging / demo
 use_wandb: true

@@ -41,25 +41,6 @@ from reward_models.config import Config, load_config
 
 
 # =============================================================================
-# Configuration
-# =============================================================================
-
-DEFAULT_MODEL_ID = "Qwen/Qwen3-0.6B-Base"
-DEFAULT_DATASET = "argilla/ultrafeedback-binarized-preferences-cleaned"
-DEFAULT_SAMPLES = 5000
-DEFAULT_BATCH_SIZE = 2
-DEFAULT_GRAD_ACCUM = 8
-DEFAULT_MAX_LENGTH = 512
-DEFAULT_EPOCHS = 2
-DEFAULT_LR = 5e-5
-DEFAULT_WARMUP_RATIO = 0.1
-DEFAULT_VAL_RATIO = 0.1
-DEFAULT_EVAL_INTERVAL = 25
-DEFAULT_LR_SCHEDULER = "linear_decay"
-DEFAULT_SEED = 123
-
-
-# =============================================================================
 # Data Preparation
 # =============================================================================
 
@@ -103,11 +84,7 @@ def tokenize_messages(
 
 def build_preference_dataset(
     tokenizer: AutoTokenizer,
-    dataset_name: str = DEFAULT_DATASET,
-    dataset_split: str = "train",
-    limit: int = DEFAULT_SAMPLES,
-    max_length: int = DEFAULT_MAX_LENGTH,
-    seed: int = DEFAULT_SEED,
+    config: Config,
 ) -> Dataset:
     """Build preference dataset from UltraFeedback.
 
@@ -115,8 +92,10 @@ def build_preference_dataset(
     - chosen_ids: Token IDs for the chosen response
     - rejected_ids: Token IDs for the rejected response
     """
-    random.seed(seed)
+    random.seed(config.seed)
 
+    dataset_name = config.dataset_name
+    dataset_split = config.dataset_split
     if os.path.exists(dataset_name):
         raw = load_from_disk(dataset_name)
         if hasattr(raw, "keys"):
@@ -125,9 +104,10 @@ def build_preference_dataset(
         raw = load_dataset(dataset_name, split=dataset_split)
 
     # Shuffle and limit
-    raw = raw.shuffle(seed=seed).select(range(min(limit, len(raw))))
+    raw = raw.shuffle(seed=config.seed).select(range(min(config.samples, len(raw))))
 
     records = []
+    max_length = config.max_length
     for ex in raw:
         # Extract prompt and responses
         prompt = ex.get("prompt", "")
@@ -191,7 +171,7 @@ class PreferenceRewardModel(BaseRewardModel):
     The model outputs a single scalar reward for each sequence.
     """
 
-    def __init__(self, model_id: str = DEFAULT_MODEL_ID, **kwargs):
+    def __init__(self, model_id: str, **kwargs):
         super().__init__(model_id, head_dim=1, **kwargs)
 
     def get_reward(self, input_ids: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
@@ -285,93 +265,36 @@ def evaluate_preference_rm(
 # =============================================================================
 
 
-def train_preference_rm(
-    model_id: str = DEFAULT_MODEL_ID,
-    dataset_name: str = DEFAULT_DATASET,
-    dataset_split: str = "train",
-    samples: int = DEFAULT_SAMPLES,
-    batch_size: int = DEFAULT_BATCH_SIZE,
-    grad_accum_steps: int = DEFAULT_GRAD_ACCUM,
-    max_length: int = DEFAULT_MAX_LENGTH,
-    epochs: int = DEFAULT_EPOCHS,
-    lr: float = DEFAULT_LR,
-    warmup_ratio: float = DEFAULT_WARMUP_RATIO,
-    val_ratio: float = DEFAULT_VAL_RATIO,
-    eval_interval: int = DEFAULT_EVAL_INTERVAL,
-    lr_scheduler: str = DEFAULT_LR_SCHEDULER,
-    seed: int = DEFAULT_SEED,
-    use_wandb: bool = True,
-) -> PreferenceRewardModel:
+def train_preference_rm(config: Config) -> PreferenceRewardModel:
     """Train a preference-based reward model on UltraFeedback.
 
     Args:
-        model_id: Hugging Face model ID for base model
-        dataset_name: Hugging Face dataset name
-        dataset_split: Dataset split to use
-        samples: Number of preference pairs to use
-        batch_size: Training batch size
-        grad_accum_steps: Gradient accumulation steps
-        max_length: Maximum sequence length
-        epochs: Number of training epochs
-        lr: Learning rate
-        warmup_ratio: Fraction of total steps for linear LR warmup
-        val_ratio: Fraction of examples held out for validation
-        eval_interval: Run validation every N optimizer steps. Set <= 0 to disable mid-epoch eval.
-        lr_scheduler: LR scheduler type. Use "linear_decay" for warmup + linear decay,
-            or "warmup_only" to keep the previous behavior.
-        seed: Random seed
-        use_wandb: Whether to log to wandb
+        config: Configuration dictionary containing training parameters.
 
     Returns:
         Trained PreferenceRewardModel
     """
-    random.seed(seed)
-    torch.manual_seed(seed)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    random.seed(config.seed)
+    torch.manual_seed(config.seed)
+    device = torch.device(config.get_device())
 
     # Initialize wandb
     init_wandb(
         default_run_name="preference_rm",
-        config={
-            "model_id": model_id,
-            "dataset_name": dataset_name,
-            "dataset_split": dataset_split,
-            "samples": samples,
-            "batch_size": batch_size,
-            "grad_accum_steps": grad_accum_steps,
-            "max_length": max_length,
-            "epochs": epochs,
-            "lr": lr,
-            "warmup_ratio": warmup_ratio,
-            "val_ratio": val_ratio,
-            "eval_interval": eval_interval,
-            "lr_scheduler": lr_scheduler,
-        },
-        use_wandb=use_wandb,
+        config=config.model_dump(),
+        use_wandb=config.use_wandb,
     )
 
     # Load tokenizer
-    tokenizer = load_tokenizer(model_id)
+    tokenizer = load_tokenizer(config.model_id)
 
     # Build dataset
-    print(f"Building preference dataset with {samples} pairs...")
-    data = build_preference_dataset(
-        tokenizer,
-        dataset_name=dataset_name,
-        dataset_split=dataset_split,
-        limit=samples,
-        max_length=max_length,
-        seed=seed,
-    )
+    print(f"Building preference dataset with {config.samples} pairs...")
+    data = build_preference_dataset(tokenizer, config)
     print(f"Dataset size: {len(data)} pairs")
 
-    if not 0.0 <= val_ratio < 1.0:
-        raise ValueError(f"val_ratio must be in [0, 1), got {val_ratio}")
-    if not 0.0 <= warmup_ratio <= 1.0:
-        raise ValueError(f"warmup_ratio must be in [0, 1], got {warmup_ratio}")
-
-    if val_ratio > 0.0:
-        splits = data.train_test_split(test_size=val_ratio, seed=seed, shuffle=True)
+    if config.val_ratio > 0.0:
+        splits = data.train_test_split(test_size=config.val_ratio, seed=config.seed, shuffle=True)
         train_data = splits["train"]
         val_data = splits["test"]
     else:
@@ -384,16 +307,16 @@ def train_preference_rm(
 
     train_loader = DataLoader(
         train_data,
-        batch_size=batch_size,
+        batch_size=config.batch_size,
         shuffle=True,
-        drop_last=len(train_data) > batch_size,
+        drop_last=len(train_data) > config.batch_size,
         collate_fn=lambda b: collate_fn(b, tokenizer),
     )
 
     val_loader = (
         DataLoader(
             val_data,
-            batch_size=batch_size,
+            batch_size=config.batch_size,
             shuffle=False,
             drop_last=False,
             collate_fn=lambda b: collate_fn(b, tokenizer),
@@ -403,34 +326,32 @@ def train_preference_rm(
     )
 
     # Initialize model
-    print(f"Loading model: {model_id}")
-    model = PreferenceRewardModel(model_id=model_id).to(device)
+    print(f"Loading model: {config.model_id}")
+    model = PreferenceRewardModel(
+        model_id=config.model_id, freeze_backbone=config.freeze_backbone
+    ).to(device)
     print(f"Trainable parameters: {model.count_trainable_params() / 1e6:.2f}M")
 
     # Optimizer and LR scheduler
-    optimizer = create_optimizer(model, lr)
-    total_optimizer_steps = -(-len(train_loader) // grad_accum_steps) * epochs
-    warmup_steps = int(total_optimizer_steps * warmup_ratio)
+    optimizer = create_optimizer(model, config.lr)
+    total_optimizer_steps = -(-len(train_loader) // config.grad_accum_steps) * config.epochs
+    warmup_steps = int(total_optimizer_steps * config.warmup_ratio)
 
-    if lr_scheduler == "linear_decay":
+    if config.lr_scheduler == "linear_decay":
         scheduler = get_linear_schedule_with_warmup(
             optimizer,
             num_warmup_steps=warmup_steps,
             num_training_steps=total_optimizer_steps,
         )
-    elif lr_scheduler == "warmup_only":
+    elif config.lr_scheduler == "warmup_only":
         scheduler = (
             torch.optim.lr_scheduler.LinearLR(optimizer, start_factor=0.1, total_iters=warmup_steps)
             if warmup_steps > 0
             else None
         )
-    else:
-        raise ValueError(
-            f'Unsupported lr_scheduler={lr_scheduler!r}. Expected "linear_decay" or "warmup_only".'
-        )
 
     print(
-        f"LR scheduler: {lr_scheduler} | "
+        f"LR scheduler: {config.lr_scheduler} | "
         f"total optimizer steps: {total_optimizer_steps} | "
         f"warmup steps: {warmup_steps}"
     )
@@ -440,7 +361,9 @@ def train_preference_rm(
 
     # Training loop
     global_step = 0
-    for epoch in range(epochs):
+    grad_accum_steps = config.grad_accum_steps
+    eval_interval = config.eval_interval
+    for epoch in range(config.epochs):
         model.train()
         epoch_loss = 0.0
         epoch_correct = 0
@@ -658,60 +581,11 @@ def main():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument("--config", type=str, help="Path to YAML config file")
-    parser.add_argument("--model-id", type=str, default=None, help="Base model ID")
-    parser.add_argument("--dataset-name", type=str, default=None, help="Hugging Face dataset name")
-    parser.add_argument("--dataset-split", type=str, default=None, help="Dataset split")
-    parser.add_argument("--samples", type=int, default=None, help="Number of preference pairs")
-    parser.add_argument("--batch-size", type=int, default=None, help="Batch size")
-    parser.add_argument("--grad-accum", type=int, default=None, help="Gradient accumulation steps")
-    parser.add_argument("--max-length", type=int, default=None, help="Max sequence length")
-    parser.add_argument("--epochs", type=int, default=None, help="Training epochs")
-    parser.add_argument("--lr", type=float, default=None, help="Learning rate")
-    parser.add_argument(
-        "--warmup-ratio",
-        type=float,
-        default=None,
-        help="Fraction of steps for LR warmup",
-    )
-    parser.add_argument("--val-ratio", type=float, default=None, help="Validation split ratio")
-    parser.add_argument(
-        "--eval-interval",
-        type=int,
-        default=None,
-        help="Run validation every N optimizer steps. Set <= 0 to disable mid-epoch eval.",
-    )
-    parser.add_argument(
-        "--lr-scheduler",
-        type=str,
-        choices=["linear_decay", "warmup_only"],
-        default=None,
-        help="LR scheduler type: linear_decay uses warmup + linear decay; warmup_only preserves the previous behavior.",
-    )
-    parser.add_argument("--seed", type=int, default=None, help="Random seed")
-    parser.add_argument("--skip-demo", action="store_true", help="Skip scoring demo after training")
-    parser.add_argument("--no-wandb", action="store_true", help="Disable wandb logging")
     args = parser.parse_args()
 
     cfg = load_config(args.config) if args.config else Config()
-    cfg = apply_overrides(cfg, args)
 
-    model = train_preference_rm(
-        model_id=cfg.model_id,
-        dataset_name=cfg.dataset_name,
-        dataset_split=cfg.dataset_split,
-        samples=cfg.samples,
-        batch_size=cfg.batch_size,
-        grad_accum_steps=cfg.grad_accum_steps,
-        max_length=cfg.max_length,
-        epochs=cfg.epochs,
-        lr=cfg.lr,
-        warmup_ratio=cfg.warmup_ratio,
-        val_ratio=cfg.val_ratio,
-        eval_interval=cfg.eval_interval,
-        lr_scheduler=cfg.lr_scheduler,
-        seed=cfg.seed,
-        use_wandb=cfg.use_wandb,
-    )
+    model = train_preference_rm(config=cfg)
 
     if not cfg.skip_demo:
         tokenizer = load_tokenizer(cfg.model_id)
