@@ -135,7 +135,7 @@ The key to understanding evals: popular benchmarks are a **reflection of the tra
 
 ---
 
-<!-- rows: 14/86 -->
+<!-- rows: 20/80 -->
 <!-- cite-right: brown2020language, robinson2023leveraging -->
 ## Base models (before post-training): few-shot prompting
 
@@ -242,7 +242,7 @@ Almost everything that could go wrong was in **how you formatted the prompt**.
 
 <!-- columns: 38/62 -->
 <!-- cite-right: wei2022chain, kojima2022large -->
-## Chain of thought emerged to enable solutions on harder problems
+## Chain of thought (CoT) emerged to enable progress on harder problems
 
 Few-shot examples that show intermediate steps let models reason before answering.
 When people were still prompting base models, adding CoT made math and reasonign scores jump! 
@@ -275,33 +275,36 @@ A: The cafeteria had 23 apples originally. They...
 ---
 
 <!-- cite-right: wei2021finetuned, sanh2021multitask, zheng2023judging, dubois2024length -->
-## Chat era: zero-shot instruction following
+## Entering the chat era: zero-shot instruction following
 
-Instruction tuning (FLAN, T0) and then RLHF changed the interface itself: the model answers a **bare question, zero-shot** -- no worked examples, no pattern to continue.
+Instruction tuning (FLAN, T0) and then RLHF changed the way people expected to use models: the models learned to directly answer questions. This, in retrospect, was a huge deal! But not the default.
 
+Now, the input to the model can look like:
 ```text
 User: "What is the capital of France?"
 Assistant:
 ```
 
-- Grading changed with it: open-ended chat has no answer letter to score, so **LLM-as-a-judge** replaced human raters (recall Lecture 7)
+<!-- step -->
+
+- **LLM-as-a-judge** emerged as questions became open-ended (and evals imitated RLHF training)
 - Canonical evals: **MT-Bench**, **AlpacaEval**, and the community-scale [Chatbot Arena](https://lmarena.ai/) [@chiang2024chatbot]
-- MCQ evals like MMLU stayed in the mix -- now answered zero-shot, sampling the answer letter at temperature 0
+- MCQ evals like MMLU stayed in the mix (but were in flux, people used them differently) -- now answered zero-shot, sampling the answer letter at temperature 0
 
 ---
 
 <!-- columns: 55/45 -->
 <!-- cite-right: lambert2024t, hendrycks2020measuring -->
-## Multi-skill era: more skills than just chat
+## The emergence of zero-shot prompting took time!
 
-Once post-training was more than safety and chat, suites like Tülu's covered:
+When we trained Tülu 3 (summer 2024), many of our evaluations were a mix of zero-shot and few-shot prompting. Though, the field was focusing on a variety of skills (from Tülu 3):
 
 - **Knowledge**: MMLU, PopQA, TruthfulQA
 - **Reasoning**: BigBenchHard, DROP
 - **Math & code**: MATH, GSM8K, HumanEval
-- **Instruction following & safety** composites
+- **Instruction following & safety** IFEval, others
 
-Questions came from the internet; annotation from undergrads and crowdworkers. The flavor:
+By early 2025, everyone was using zero-shot prompting, and today multi-shot prompting for a post-trained model is very rare, unless the model wasn't trained for it (true in-context learning).
 
 |||
 
@@ -320,24 +323,63 @@ Internet trivia more than intelligence -- but it tracked pretraining knowledge w
 
 ---
 
-<!-- animate: bullets -->
+<!-- columns: 40/60 -->
+<!-- cite-right: lambert2024t -->
+## Encouraging the models to reason
+
+We know reasoning models today think before answering. Tülu 3's MMLU prompt (a model before reasoning models) → the same MMLU eval as the few-shot era, now long-form CoT with exact-match checking.
+
+Modern eval suites can carry **per-benchmark prompts** tuned for formatting etc. 
+
+|||
+
+```text
+Answer the following multiple-choice question by giving the correct answer letter in parentheses.
+Provide CONCISE reasoning for the answer, and make sure to finish the response with "Therefore, the answer is (ANSWER_LETTER)" where (ANSWER_LETTER) is one of (A), (B), (C), (D), (E), etc.
+
+Question: {question}
+(A) {choice_A}
+(B) {choice_B}
+(C) ...
+
+Answer the above question and REMEMBER to finish your response with the exact phrase "Therefore, the answer is (ANSWER_LETTER)" where (ANSWER_LETTER) is one of (A), (B), (C), (D), (E), etc.
+```
+
+---
+
+<!-- columns: 40/60 -->
+<!-- cite-right: lambert2024t -->
+## Encouraging the models to reason
+
+We know reasoning models today think before answering. Tülu 3's MMLU prompt (a model before reasoning models) → the same MMLU eval as the few-shot era, now long-form CoT with exact-match checking.
+
+Modern eval suites can carry **per-benchmark prompts** tuned for formatting etc. 
+
+
+|||
+
+Sampling settings joined the prompt as part of the eval: reasoning models need **temperature > 0** for their best scores -- [Qwen's model cards](https://huggingface.co/Qwen/Qwen3-32B) literally say **"DO NOT use greedy decoding"**. Read the `generation_config.json`: the recommended settings are "free" performance.
+
+
+---
+
 <!-- cite-right: schulhoff2024prompt, li2024numinamath, yu2023metamath -->
-## Formatting is fragile
+## Formatting became fragile as usage became more open-ended
 
 - Formatting mismatches can take a model from **60% to near 0** -- it is far easier to lose performance with a prompt than to gain it
 - Answer extraction is brittle: rigid suffixes (*"The answer is:"*) or regexes hunting for the answer anywhere in the text
 - Formats even conflict across training sets: NuminaMath wants `\boxed{42}`, MetaMath wants `The answer is: 42` -- **training on both can be worse than either alone**
-- Format-agnostic grading takes substantial effort and tinkering -- and is rare in practice
+- Format-agnostic grading takes substantial effort and tinkering -- and was often rare in practice -- LLM-judges become popular even as answer extractors for flexibility
 
 ---
 
 <!-- cite-right: rein2023gpqa, phan2025hle, jain2024livecodebench -->
-## Reasoning & tools era: make it actually hard
+## Reasoning & tool-use pushed the industry to harder tasks
 
-Reasoning models saturated the old suites, so difficulty escalated:
+Reasoning models saturated the old eval suites, so the next generation came:
 
 - **Knowledge**: GPQA Diamond, Humanity's Last Exam, FrontierMath
-- **Math**: recent AIME contests, run at temperature > 0 with long chains of thought
+- **Math**: recent AIME contests
 - **Software**: SWE-Bench (+ variants), LiveCodeBench
 - Question sourcing moved from the internet to **grad students, PhDs, and professors** -- writing questions became expert labor
 
@@ -345,7 +387,7 @@ Reasoning models saturated the old suites, so difficulty escalated:
 
 <!-- columns: 50/50 -->
 <!-- cite-right: phan2025hle -->
-## Even PhDs and professors are wrong
+## Reasoning & tool-use pushed the industry to harder tasks
 
 ```box
 title: "Example: Humanity's Last Exam"
@@ -365,29 +407,7 @@ The official answer is wrong three ways: oganesson is **not a gas** (predicted s
 
 Past a certain difficulty, **verifying the answer key is the bottleneck** -- expert-written no longer means correct.
 
----
-
-<!-- columns: 40/60 -->
-<!-- cite-right: lambert2024t -->
-## Reasoning-era prompts: the chain of thought is built in
-
-Reasoning models always think before answering -- no nudge needed. Modern suites instead carry **per-benchmark prompts** tuned so formatting isn't the bottleneck. Tülu 3's MMLU prompt → -- the same MMLU as the few-shot era, now long-form CoT with exact-match checking.
-
-Sampling settings joined the prompt as part of the eval: reasoning models need **temperature > 0** for their best scores -- [Qwen's model cards](https://huggingface.co/Qwen/Qwen3-32B) literally say **"DO NOT use greedy decoding"**. Read the `generation_config.json`: the recommended settings are "free" performance.
-
-|||
-
-```text
-Answer the following multiple-choice question by giving the correct answer letter in parentheses.
-Provide CONCISE reasoning for the answer, and make sure to finish the response with "Therefore, the answer is (ANSWER_LETTER)" where (ANSWER_LETTER) is one of (A), (B), (C), (D), (E), etc.
-
-Question: {question}
-(A) {choice_A}
-(B) {choice_B}
-(C) ...
-
-Answer the above question and REMEMBER to finish your response with the exact phrase "Therefore, the answer is (ANSWER_LETTER)" where (ANSWER_LETTER) is one of (A), (B), (C), (D), (E), etc.
-```
+Still, incorrect labels are a common problem in evals! Most evals saturate at 90-95%, not 100%.
 
 ---
 
@@ -396,16 +416,16 @@ Answer the above question and REMEMBER to finish your response with the exact ph
 
 - The frontier evals are **end-to-end professional tasks**: SWE-bench Verified, Terminal-Bench, [GDPVal](https://openai.com/index/gdpval/), [APEX](https://arxiv.org/abs/2601.14242)
 - Task authors are now **experienced professionals**: GDPVal tasks come from experts averaging **14 years** of industry experience; APEX experts average 7+ years at firms like Goldman and McKinsey -- expert task-writing is the new cost center
-- And the models aren't evaluated bare: they run **inside harnesses and products** (Claude Code, Codex CLI) -- last lecture's subject is now the measurement instrument
+- And the models aren't evaluated bare: they run **inside harnesses and products** (Claude Code, Codex CLI) -- last lecture's subject (11 - tool-use)
 
 ---
 
-<!-- rows: 30/70 -->
+<!-- columns: 38/62 -->
 ## Every era ends the same way: saturation
 
 Benchmarks are consumable. As scores approach the ceiling, only the hardest (and mislabeled) items remain, and the benchmark stops separating models.
 
-===
+|||
 
 ![Major AI benchmarks reaching saturation over time. Figure from Epoch AI, CC-BY.](assets/benchmark-performance.jpeg)
 
@@ -420,7 +440,7 @@ Benchmarks are consumable. As scores approach the ceiling, only the hardest (and
 
 <!-- rows: 35/65 -->
 <!-- cite-right: tbench2026 -->
-## The agentic pipeline: the model is one box of eight
+## The agentic pipeline: the model is one piece
 
 A **harness** (the loop of prompts, tools, and context management around the model) runs in a **sandbox** (a reproducible world with the files, tools, and rules of the task), on hardware, against timeouts -- and hours-long trajectories get graded by regex or an LLM judge.
 
