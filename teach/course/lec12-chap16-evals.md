@@ -96,7 +96,7 @@ Measuring the frontier now means running hours-long expert tasks, many times ove
 
 Every training decision in this course -- data mixes, hyperparameters, which checkpoint ships -- is made off benchmark numbers.
 
-Today: where those numbers come from, and when to trust them.
+Today: How we got to modern benchmarking approaches and research.
 
 |||
 
@@ -104,7 +104,7 @@ Today: where those numbers come from, and when to trust them.
 title: The plan
 tone: accent
 content: |
-  1. **The eras** -- how each generation was prompted, graded, and benchmarked
+  1. **The eras** -- how each model type was prompted, graded, and benchmarked
   2. **A bit more on agentic evals** -- the system around today's scores
   3. **Trusting the number** -- variance, contamination, and gaming
 ```
@@ -121,16 +121,16 @@ content: |
 <!-- animate: bullets -->
 ## Benchmarks mirror the training goals of their era
 
-The key to reading evals: popular benchmarks are a **reflection of the training best practices of their moment**. When training moves, evaluation follows.
+The key to understanding evals: popular benchmarks are a **reflection of the training best practices of their moment**.
 
-- **Chat era** *(2022-23)* -- can it converse like GPT-4?
-- **Multi-skill era** *(2023-24)* -- post-training improves many capabilities at once
-- **Reasoning & tools era** *(2024-26)* -- hard problems, long chains of thought
-- **Agents & real work** *(now)* -- end-to-end tasks inside products and harnesses
+- **Chat era** *(2022-23)* -- basic knowledge and chat style
+- **Multi-skill era** *(2023-24)* -- post-training improves many capabilities at once (math, code, factuality, safety, etc.)
+- **Reasoning & tools era** *(2024-26)* -- hard math, coding, and reasoning problems, long chains of thought
+- **Agents & real work** *(now)* -- end-to-end tasks knowledge-work inside products and harnesses
 
 ---
 
-<!-- columns: 45/55 -->
+<!-- columns: 35/65 -->
 <!-- cite-right: brown2020language, robinson2023leveraging -->
 ## Base models: few-shot prompting
 
@@ -140,22 +140,41 @@ The number of in-context examples (3 to 8+) was itself a design parameter -- and
 
 |||
 
-```box
-title: Few-shot MMLU prompt (abridged)
-size: 0.8
-content: |
-  Below are examples of MMLU-style questions and answers:
+```text
+# Few-Shot Prompt
 
-  Q: A right triangle has legs of lengths 3 and 4. What is the length of its hypotenuse?  
-  A. 5&emsp;B. 6&emsp;C. 7&emsp;D. 8  
-  Correct Answer: A
+Below are examples of MMLU-style questions and answers:
 
-  Now answer the new question in the same style:
+### Example 1
+Q: A right triangle has legs of lengths 3 and 4. What is the length of its hypotenuse?
+Choices:
+(A) 5
+(B) 6
+(C) 7
+(D) 8
 
-  Q: Which theorem states that a continuous function on a closed interval must attain both a maximum and a minimum?  
-  A. Mean Value Theorem&emsp;B. Intermediate Value Theorem  
-  C. Extreme Value Theorem&emsp;D. Rolle's Theorem  
-  Correct Answer:
+Correct Answer: (A)
+
+### Example 2
+Q: Which of the following is the chemical symbol for Sodium?
+Choices:
+(A) Na
+(B) S
+(C) N
+(D) Ca
+
+Correct Answer: (A)
+
+### Now answer the new question in the same style:
+
+Q: Which theorem states that if a function f is continuous on a closed interval [a,b], then f must attain both a maximum and a minimum on that interval?
+Choices:
+(A) The Mean Value Theorem
+(B) The Intermediate Value Theorem
+(C) The Extreme Value Theorem
+(D) Rolle's Theorem
+
+Correct Answer:
 ```
 
 ---
@@ -185,7 +204,7 @@ Prompt in, completion out, grade it. Almost everything that could go wrong lived
 
 ---
 
-<!-- columns: 48/52 -->
+<!-- columns: 38/62 -->
 <!-- cite-right: wei2022chain, kojima2022large -->
 ## Chain of thought changed what a prompt is
 
@@ -195,15 +214,24 @@ Soon just appending *"Let's think step by step"* did it zero-shot. The reasoning
 
 |||
 
-```box
-title: Standard vs. chain-of-thought prompting
-size: 0.8
-content: |
-  Q: Roger has 5 tennis balls. He buys 2 more cans of tennis balls. Each can has 3 tennis balls. How many tennis balls does he have now?
+```text
+# standard prompting
+Q: Roger has 5 tennis balls. He buys 2 more cans of tennis balls. Each can has 3 tennis balls. How many tennis balls does he have now?
 
-  **Standard prompt**: A: The answer is 11.
+A: The answer is 11.
 
-  **Chain of thought**: A: Roger started with 5 balls. 2 cans of 3 tennis balls each is 6 tennis balls. 5 + 6 = 11. The answer is 11.
+Q: The cafeteria had 23 apples. If they used 20 to make lunch and bought 6 more, how many apples do they have?
+
+A: The answer is ...
+
+# chain-of-thought prompting
+Q: Roger has 5 tennis balls. He buys 2 more cans of tennis balls. Each can has 3 tennis balls. How many tennis balls does he have now?
+
+A: Roger started with 5 balls. 2 cans of 3 tennis balls each is 6 tennis balls. 5 + 6 = 11. The answer is 11.
+
+Q: The cafeteria had 23 apples. If they used 20 to make lunch and bought 6 more, how many apples do they have?
+
+A: The cafeteria had 23 apples originally. They...
 ```
 
 ---
@@ -296,21 +324,26 @@ Past a certain difficulty, **verifying the answer key is the bottleneck** -- exp
 
 ---
 
-<!-- columns: 48/52 -->
+<!-- columns: 40/60 -->
 <!-- cite-right: lambert2024t -->
 ## Reasoning-era prompts: the chain of thought is built in
 
-Reasoning models always think before answering -- no nudge needed. Modern suites instead carry **per-benchmark prompts** tuned so formatting isn't the bottleneck.
+Reasoning models always think before answering -- no nudge needed. Modern suites instead carry **per-benchmark prompts** tuned so formatting isn't the bottleneck. Tülu 3's MMLU prompt →
 
 Sampling settings joined the prompt as part of the eval: reasoning models need **temperature > 0** for their best scores -- [Qwen's model cards](https://huggingface.co/Qwen/Qwen3-32B) literally say **"DO NOT use greedy decoding"**. Read the `generation_config.json`: the recommended settings are "free" performance.
 
 |||
 
-```box
-title: Tülu 3 MMLU prompt (excerpt)
-size: 0.8
-content: |
-  Answer the following multiple-choice question by giving the correct answer letter in parentheses. Provide CONCISE reasoning for the answer, and make sure to finish the response with "Therefore, the answer is (ANSWER_LETTER)" ...
+```text
+Answer the following multiple-choice question by giving the correct answer letter in parentheses.
+Provide CONCISE reasoning for the answer, and make sure to finish the response with "Therefore, the answer is (ANSWER_LETTER)" where (ANSWER_LETTER) is one of (A), (B), (C), (D), (E), etc.
+
+Question: {question}
+(A) {choice_A}
+(B) {choice_B}
+(C) ...
+
+Answer the above question and REMEMBER to finish your response with the exact phrase "Therefore, the answer is (ANSWER_LETTER)" where (ANSWER_LETTER) is one of (A), (B), (C), (D), (E), etc.
 ```
 
 ---
