@@ -229,6 +229,7 @@ $$\text{pass@}k = \mathop{\mathbb{E}}_{\text{problems}}\left[1 - \frac{\binom{n-
 ---
 
 <!-- columns: 40/60 -->
+<!-- footnote-right: Slide Credit: Florian Brand -->
 ## The early pipeline was simple
 
 Prompt in, completion out, grade it. 
@@ -236,7 +237,7 @@ Almost everything that could go wrong was in **how you formatted the prompt**.
 
 |||
 
-![The evaluation pipeline, early era. System framing adapted from Florian Brand (@xeophon).](assets/eval-system-v1.png)
+![The evaluation pipeline, early era.](assets/eval-system-v1.png)
 
 ---
 
@@ -440,6 +441,7 @@ Benchmarks are consumable. As scores approach the ceiling, only the hardest (and
 
 <!-- columns: 34/64 -->
 <!-- cite-right: tbench2026 -->
+<!-- footnote-right: Slide Credit: Florian Brand -->
 ## The agentic pipeline: the model is one piece
 
 A **harness** -- the loop of prompts, tools, and context management around the model -- runs in a **sandbox**: a reproducible world with the files, tools, and rules of the task.
@@ -448,7 +450,7 @@ Add hardware and timeouts, and hours-long trajectories get graded by regex or an
 
 |||
 
-![The full 2026 evaluation pipeline.](assets/eval-system-v3.png)
+![](assets/eval-system-v3.png)
 
 ---
 
