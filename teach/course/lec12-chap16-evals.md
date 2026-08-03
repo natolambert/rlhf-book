@@ -582,15 +582,26 @@ Grading agents is adversarial now -- benchmark design inherits all of reward hac
 
 ---
 
-<!-- animate: bullets -->
-## Underelicitation: the score is a lower bound
+<!-- columns: 50/50 -->
+## Tooling: run your own evals
 
-- ARC-AGI 3 **disallows custom harnesses** in official scoring -- "future AGI systems will not need task-specific external handholding" -- to keep hand-written rules out of the measurement
-- Yet elicitation is where scores come from: a *general* harness (stock Codex CLI + `/goal`, minimal prompt) ran **160 hours and 30K actions to 61%** on the public set, state of the art ([@patience_cave](https://x.com/patience_cave/status/2052772581888156128))
-- Full elicitation is expensive: in-depth runs of a modern agentic suite can cost **>$100K** *(per Florian Brand)*
-- We can only make decisions about **measured** capability -- "how good are models at offensive cybersecurity?" and "how big is the open-closed gap?" are only answerable with correct elicitation
+**The established harnesses:**
 
----
+- [Inspect](https://inspect.aisi.org.uk/) -- UK AI Security Institute
+- [lm-evaluation-harness](https://github.com/EleutherAI/lm-evaluation-harness) -- EleutherAI's standard since the GPT-3 era
+- [LightEval](https://github.com/huggingface/lighteval) -- Hugging Face; powered the Open LLM Leaderboard
+- [OLMES](https://github.com/allenai/olmes) -- Ai2's reproducible evaluation system
+- [HELM](https://crfm.stanford.edu/helm/) -- Stanford CRFM
+- [Eval Gauntlet](https://github.com/mosaicml/llm-foundry) -- Mosaic, now Databricks
+
+|||
+
+**The environments wave:**
+
+- [olmo-eval](https://github.com/allenai/olmo-eval) -- Ai2's new workbench for evals *inside the model-development loop* (2026)
+- [verifiers](https://github.com/PrimeIntellect-ai/verifiers) + [Environments Hub](https://www.primeintellect.ai/blog/environments) -- Prime Intellect's library and community hub: 2,500+ verifiable environments that double as evals (AIME, Terminal-Bench, ...)
+- The direction of travel: **training and evaluation share the same environment code** -- write it once, hillclimb and measure with it
+
 
 ## Takeaways
 
@@ -598,6 +609,7 @@ Grading agents is adversarial now -- benchmark design inherits all of reward hac
 - A score is a **property of the whole system**: prompt, sampling, engine, harness, sandbox, hardware, grader. The model is one box.
 - Expect **±1 point of pure noise**; treat cross-lab comparisons as directional at best.
 - Contamination, gaming, and underelicitation all bend single numbers -- for decisions that matter, **run your own evals** and control the system.
+- Full evaluation is expensive! in-depth runs of a modern agentic suite can cost **>$100K** *(per Florian Brand)*
 
 ---
 
