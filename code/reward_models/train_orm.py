@@ -271,7 +271,7 @@ def train_orm(
 
     # Initialize model
     print(f"Loading model: {model_id}")
-    model = OutcomeRewardModel(model_id=model_id).to(device)
+    model = OutcomeRewardModel(model_id=model_id, device=device).to(device)
     print(f"Trainable parameters: {model.count_trainable_params() / 1e6:.2f}M")
 
     # Optimizer and LR scheduler with linear warmup

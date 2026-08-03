@@ -327,7 +327,9 @@ def train_preference_rm(config: Config) -> PreferenceRewardModel:
     # Initialize model
     print(f"Loading model: {config.model_id}")
     model = PreferenceRewardModel(
-        model_id=config.model_id, freeze_backbone=config.freeze_backbone
+        model_id=config.model_id,
+        freeze_backbone=config.freeze_backbone,
+        device=device,
     ).to(device)
     print(f"Trainable parameters: {model.count_trainable_params() / 1e6:.2f}M")
 
@@ -543,47 +545,15 @@ Computers are electronic devices. I don't really know much about it."""
 # =============================================================================
 
 
-def apply_overrides(cfg: Config, args: argparse.Namespace) -> Config:
-    """Apply non-None CLI arguments to a loaded config."""
-    override_map = {
-        "model_id": "model_id",
-        "dataset_name": "dataset_name",
-        "dataset_split": "dataset_split",
-        "samples": "samples",
-        "batch_size": "batch_size",
-        "grad_accum": "grad_accum_steps",
-        "max_length": "max_length",
-        "epochs": "epochs",
-        "lr": "lr",
-        "warmup_ratio": "warmup_ratio",
-        "val_ratio": "val_ratio",
-        "eval_interval": "eval_interval",
-        "lr_scheduler": "lr_scheduler",
-        "seed": "seed",
-    }
-    for arg_name, cfg_name in override_map.items():
-        value = getattr(args, arg_name)
-        if value is not None:
-            setattr(cfg, cfg_name, value)
-
-    if args.skip_demo:
-        cfg.skip_demo = True
-    if args.no_wandb:
-        cfg.use_wandb = False
-
-    return cfg
-
-
 def main():
     parser = argparse.ArgumentParser(
         description="Train preference-based reward model on UltraFeedback",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument("--config", type=str, help="Path to YAML config file")
+    parser.add_argument("--config", type=str, required=True, help="Path to YAML config file")
     args = parser.parse_args()
 
-    cfg = load_config(args.config) if args.config else Config()
-
+    cfg = load_config(args.config)
     model = train_preference_rm(config=cfg)
 
     if not cfg.skip_demo:
