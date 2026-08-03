@@ -492,6 +492,8 @@ During Olmo 3 we measured it: std. dev. across 3 runs of 14 models, per benchmar
 
 Most reasoning-era evals sit between **0.25 and 1.5 points of noise** -- before anyone changes a prompt or a sampling setting.
 
+Could be higher with agentic evals!
+
 More in [Appendix C: evaluation variance](https://rlhfbook.com/c/appendix-c-practical#evaluation-variance).
 
 |||
@@ -509,43 +511,55 @@ More in [Appendix C: evaluation variance](https://rlhfbook.com/c/appendix-c-prac
 
 ---
 
-<!-- animate: bullets -->
 <!-- cite-right: teamolmo2025olmo3 -->
-## Managing the noise
+## Managing eval noise
 
 - **avg@k is the rescue**: LiveCodeBench was noisy *and* cheap -- rerunning 10× moved it from high-variance to very stable. Works everywhere, but balloons costs
 - Variance also leaks in from infrastructure: **batch size, tensor-parallel settings, numerics** of long generations
-- Practical rule: a **~1-point gap between two press releases is noise**, not signal
+- Practical rule: a **~1-point gap between two press releases is noise**
 
 ---
 
-<!-- animate: bullets -->
 ## Why lab-vs-lab comparisons are unreliable
 
 - Each lab's eval stack is **tuned to its internal needs**: custom prompts for key benchmarks, undisclosed formats, different engines
-- You see the **output of the function, never the inputs**
+- We see the outputs of a sometimes complex fnction
 - Nobody discloses which public benchmarks were **held out vs. hillclimbed** -- train/dev/test hygiene is invisible from outside
 - Inference-time scaling confounds everything: more tokens buys more score, and token budgets are rarely controlled
 
 ---
 
-<!-- animate: bullets -->
+<!-- columns: 30/70 -->
+<!-- footnote-right: Source: [Artificial Analysis](https://artificialanalysis.ai/models) -->
+## The cost-performance Pareto, today
+
+Every frontier release sits somewhere on this curve -- and moving right (more tokens and cost per task, log scale) reliably buys score.
+
+Comparisons that don't hold spend constant are comparing different points on the curve, not different models.
+
+|||
+
+![Intelligence Index vs. cost per task, with the Pareto frontier drawn. Figure from Artificial Analysis.](assets/aa-intelligence-cost-pareto.png)
+
+---
+
 ## What evals are actually for inside labs
 
-- Labs hillclimb on a few prioritized evals and report the public suite at the end
+- Labs hillclimb on a ~50 prioritized evals and report the public suite (subset) at the end
 - The real product of a good internal eval is **statistical power**: less noise on the signals used to compare training runs
-- Sometimes the "test set" is just good data: MATH and GSM8K train splits are high-quality -- if a lab doesn't track that eval, training on them is a rational choice
+- Sometimes the "test set" is just good data: MATH and GSM8K train splits are high-quality and crucial at a time -- if a lab doesn't track that eval, training on them is a rational choice
 - Human A/B testing and Elo stay in the loop for what benchmarks can't measure (recall Lecture 8)
 
 ---
 
-<!-- animate: bullets -->
 <!-- cite-right: singh2024evaluation, shao2025spurious, huang2025math -->
-## Contamination
+## Contamination: Is training on test intentional?
 
-- **Decontamination** = n-gram / substring search between training and test sets
+There's a long running field of study on understand if training data intentionally or accidentally improved on a score.
+
+- **Decontamination** = n-gram / substring search between training and test sets to remove overlap and eval scores being due to memorization not generalization
 - Tülu 3 found popular open datasets contaminated: UltraFeedback×TruthfulQA, Evol-CodeAlpaca×HumanEval, NuminaMath×MATH [@lambert2024t]
-- The subtle tell: RL with **random rewards** improving Qwen benchmarks -- only explicable with contamination in the base model; a real confound in early RLVR research
+- A subtle tell on some contamination: RL with **random rewards** improving Qwen benchmarks -- only explicable with contamination in the base model; a real confound in early RLVR research
 - Response: perturbed benchmark rewrites (same problem, new numbers) to catch models trained on the original
 
 ---
