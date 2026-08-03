@@ -570,7 +570,7 @@ Start from a clean `code/` environment with `uv sync`, then run one experiment a
    ```
 
    Watch whether the reward margin between chosen and rejected responses grows in the demo and W&B logs.
-   Then vary `samples`, `lr`, and `model-id` in the yaml config to see when the signal becomes noisy or unstable.
+    Then vary `samples`, `lr`, and `model_id` in the yaml config to see when the signal becomes noisy or unstable.
 
 2. **Compare outcome and process supervision.**
    Run the GSM8K outcome reward model and the PRM800K process reward model:
