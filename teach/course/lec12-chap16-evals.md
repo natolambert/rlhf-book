@@ -81,18 +81,18 @@ Read: [the post-benchmark era](https://www.interconnects.ai/p/opus-46-vs-codex-5
 <!-- cite-right: kwa2025measuring -->
 ## ...and the tasks worth measuring keep getting longer
 
-The task length frontier models can complete (at 50% success) **doubles roughly every 7 months** -- from seconds-long questions to tasks that take human experts hours. Measuring the frontier now means running hours-long expert tasks, many times over.
+The task length frontier models can complete (at 50% success) **doubles roughly every 7 months** -- from seconds-long questions to tasks that take human experts hours ([Time Horizon 1.1](https://metr.org/blog/2026-1-29-time-horizon-1-1/)). Measuring the frontier now means running hours-long expert tasks, many times over.
 
 ===
 
-![Task-completion time horizon of frontier models. Figure from METR, [Time Horizon 1.1](https://metr.org/blog/2026-1-29-time-horizon-1-1/), CC-BY.](assets/metr-time-horizon-11.png)
+![Task-completion time horizon of frontier models. Figure from METR (Time Horizon 1.1), CC-BY.](assets/metr-time-horizon-11.png)
 
 ---
 
 <!-- columns: 45/55 -->
 ## This lecture
 
-Vibes are real, but every training decision in this course -- data mixes, hyperparameters, which checkpoint ships -- is made off benchmark numbers.
+Every training decision in this course -- data mixes, hyperparameters, which checkpoint ships -- is made off benchmark numbers.
 
 Today: where those numbers come from, and when to trust them.
 
@@ -102,8 +102,8 @@ Today: where those numbers come from, and when to trust them.
 title: The plan
 tone: accent
 content: |
-  1. **The eras** -- what we measure keeps changing with what we train
-  2. **Anatomy of a score** -- everything between the prompt and the number
+  1. **The eras** -- how each generation was prompted, graded, and benchmarked
+  2. **A bit more on agentic evals** -- the system around today's scores
   3. **Trusting the number** -- variance, contamination, and gaming
 ```
 
@@ -128,10 +128,88 @@ The key to reading evals: popular benchmarks are a **reflection of the training 
 
 ---
 
-<!-- cite-right: zheng2023judging, dubois2024length, li2024crowdsourced -->
+<!-- columns: 45/55 -->
+<!-- cite-right: brown2020language, robinson2023leveraging -->
+## Base models: few-shot prompting
+
+Base models can't take a bare question -- every eval prompt carried **worked examples** so the model would continue the pattern.
+
+The number of in-context examples (3 to 8+) was itself a design parameter -- and a source of score differences between papers.
+
+|||
+
+```box
+title: Few-shot MMLU prompt (abridged)
+size: 0.8
+content: |
+  Below are examples of MMLU-style questions and answers:
+
+  Q: A right triangle has legs of lengths 3 and 4. What is the length of its hypotenuse?
+  A. 5&emsp;B. 6&emsp;C. 7&emsp;D. 8
+  Correct Answer: A
+
+  Now answer the new question in the same style:
+
+  Q: Which theorem states that a continuous function on a closed interval must attain both a maximum and a minimum?
+  A. Mean Value Theorem&emsp;B. Intermediate Value Theorem
+  C. Extreme Value Theorem&emsp;D. Rolle's Theorem
+  Correct Answer:
+```
+
+---
+
+<!-- columns: 50/50 -->
+<!-- cite-right: brown2020language, teamolmo2025olmo3 -->
+## Grading: log-likelihood vs. exact match
+
+**Log-likelihood scoring**: compare the probability the model assigns each answer option -- either just the letter `A`, or the full answer string. No sampling, fully deterministic. The standard for pretraining evals, where models can't yet answer in a clean format.
+
+|||
+
+**Generation + exact match**: sample a completion, extract the answer. Mirrors real usage -- and is standard for post-training. Aggregating samples gives majority voting; **pass@k** is the coding analogue.
+
+The catch: rigid format requirements. A model that answers correctly in the *wrong format* scores zero.
+
+---
+
+<!-- rows: 35/65 -->
+## The early pipeline was simple
+
+Prompt in, completion out, grade it. Almost everything that could go wrong lived in two places: **how you formatted the prompt** and **how you graded the answer**.
+
+===
+
+![The evaluation pipeline, early era. System framing adapted from Florian Brand (@xeophon).](assets/eval-system-v1.png)
+
+---
+
+<!-- columns: 48/52 -->
+<!-- cite-right: wei2022chain, kojima2022large -->
+## Chain of thought changed what a prompt is
+
+Few-shot examples that **show the work** let models reason before answering -- and math scores jumped.
+
+Soon just appending *"Let's think step by step"* did it zero-shot. The reasoning became part of the completion, and the grader now has to find the answer inside it.
+
+|||
+
+```box
+title: Standard vs. chain-of-thought prompting
+size: 0.8
+content: |
+  Q: Roger has 5 tennis balls. He buys 2 more cans of tennis balls. Each can has 3 tennis balls. How many tennis balls does he have now?
+
+  **Standard prompt**: A: The answer is 11.
+
+  **Chain of thought**: A: Roger started with 5 balls. 2 cans of 3 tennis balls each is 6 tennis balls. 5 + 6 = 11. The answer is 11.
+```
+
+---
+
+<!-- cite-right: zheng2023judging, dubois2024length, li2024crowdsourced, wei2021finetuned -->
 ## Chat era: how close to GPT-4?
 
-Early RLHF models were measured on **chat quality relative to a known strong model**.
+Instruction tuning collapsed the prompt to just the question -- zero-shot, `User: ... Assistant:` -- and evaluation moved to **chat quality relative to a known strong model**.
 
 - MT-Bench, AlpacaEval, Arena-Hard -- and the community-scale version, [Chatbot Arena](https://lmarena.ai/) [@chiang2024chatbot]
 - The trick that made it scale: **LLM-as-a-judge** replaced human raters (recall Lecture 7 -- same machinery as synthetic preference data)
@@ -166,6 +244,17 @@ content: |
 ```
 
 Internet trivia more than intelligence -- but it tracked pretraining knowledge well.
+
+---
+
+<!-- animate: bullets -->
+<!-- cite-right: schulhoff2024prompt, li2024numinamath, yu2023metamath -->
+## Formatting is fragile
+
+- Formatting mismatches can take a model from **60% to near 0** -- it is far easier to lose performance with a prompt than to gain it
+- Answer extraction is brittle: rigid suffixes (*"The answer is:"*) or regexes hunting for the answer anywhere in the text
+- Formats even conflict across training sets: NuminaMath wants `\boxed{42}`, MetaMath wants `The answer is: 42` -- **training on both can be worse than either alone**
+- Format-agnostic grading takes substantial effort and tinkering -- and is rare in practice
 
 ---
 
@@ -205,6 +294,25 @@ Past a certain difficulty, **verifying the answer key is the bottleneck** -- exp
 
 ---
 
+<!-- columns: 48/52 -->
+<!-- cite-right: lambert2024t -->
+## Reasoning-era prompts: the chain of thought is built in
+
+Reasoning models always think before answering -- no nudge needed. Modern suites instead carry **per-benchmark prompts** tuned so formatting isn't the bottleneck.
+
+Sampling settings joined the prompt as part of the eval: reasoning models need **temperature > 0** for their best scores -- [Qwen's model cards](https://huggingface.co/Qwen/Qwen3-32B) literally say **"DO NOT use greedy decoding"**. Read the `generation_config.json`: the recommended settings are "free" performance.
+
+|||
+
+```box
+title: Tülu 3 MMLU prompt (excerpt)
+size: 0.8
+content: |
+  Answer the following multiple-choice question by giving the correct answer letter in parentheses. Provide CONCISE reasoning for the answer, and make sure to finish the response with "Therefore, the answer is (ANSWER_LETTER)" ...
+```
+
+---
+
 <!-- cite-right: openai2024swebench -->
 ## Today: evals of real work
 
@@ -228,78 +336,15 @@ Benchmarks are consumable. As scores approach the ceiling, only the hardest (and
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 2: Anatomy of a score
+## Part 2: A bit more on agentic evals
 
 ---
 
 <!-- rows: 35/65 -->
-## The early-era pipeline was simple
-
-Prompt in, completion out, grade it. Almost everything that could go wrong lived in two places: **how you formatted the prompt** and **how you graded the answer**.
-
-===
-
-![The evaluation pipeline, early era. System framing adapted from Florian Brand (@xeophon).](assets/eval-system-v1.png)
-
----
-
-<!-- columns: 50/50 -->
-<!-- cite-right: brown2020language, teamolmo2025olmo3 -->
-## Grading: log-likelihood vs. exact match
-
-**Log-likelihood scoring**: compare the probability of each answer letter given the prompt. No sampling, deterministic, standard for pretraining evals.
-
-|||
-
-**Generation + exact match**: sample a completion, regex out the answer. Mirrors real usage -- and is standard for post-training.
-
-The catch: rigid format requirements. A model that answers correctly in the *wrong format* scores zero -- formatting mismatches can take a model from 60% to near 0.
-
----
-
-<!-- columns: 45/55 -->
-<!-- cite-right: wei2022chain, kojima2022large, lambert2024t -->
-## Prompts evolved with the models
-
-Few-shot prompting → "think step by step" → reasoning models that need no nudge at all.
-
-Modern suites carry **per-benchmark prompts** tuned so formatting isn't the bottleneck -- this took real effort to get right.
-
-|||
-
-```box
-title: Tülu 3 MMLU prompt (excerpt)
-size: 0.8
-content: |
-  Answer the following multiple-choice question by giving the correct answer letter in parentheses. Provide CONCISE reasoning for the answer, and make sure to finish the response with "Therefore, the answer is (ANSWER_LETTER)" ...
-```
-
----
-
-<!-- animate: bullets -->
-## Sampling parameters are part of the eval
-
-- Reasoning models need **temperature > 0** for their best scores -- [Qwen's model cards](https://huggingface.co/Qwen/Qwen3-32B) literally say **"DO NOT use greedy decoding"** (degradation, endless repetition)
-- Evaluating at the wrong temperature silently costs points: worth ~3.5 points avg@4 on one benchmark in a recent Qwen3.5 measurement *(per Florian Brand)*
-- Read the `generation_config.json` -- the recommended settings are "free" performance, and mismatched settings are a silent source of disagreement between reported scores
-
----
-
-<!-- rows: 35/65 -->
-## Then an engine appeared between you and the model
-
-Nobody evaluates raw weights: there is an inference engine or an API in the loop -- with its own chat template, tool-call parser, and bugs. [vLLM's own postmortem](https://vllm.ai/blog/2025-10-28-kimi-k2-accuracy) on serving Kimi K2: three engine bugs held tool-call success **below 20%** (218 of 1,200+ calls); after fixes, **99.9%**. Same weights. **APIs do not guarantee correctness either.**
-
-===
-
-![The pipeline with serving in the loop.](assets/eval-system-v2.png)
-
----
-
-<!-- rows: 35/65 -->
+<!-- cite-right: tbench2026 -->
 ## The agentic pipeline: the model is one box of eight
 
-Agentic evals wrap the model in a **harness** (tools, prompts, settings), run it in a **sandbox**, on **hardware**, against tight **timeouts** -- and grade hours-long trajectories with regex or an LLM judge.
+A **harness** (the loop of prompts, tools, and context management around the model) runs in a **sandbox** (a reproducible world with the files, tools, and rules of the task), on hardware, against timeouts -- and hours-long trajectories get graded by regex or an LLM judge.
 
 ===
 
@@ -308,33 +353,21 @@ Agentic evals wrap the model in a **harness** (tools, prompts, settings), run it
 ---
 
 <!-- animate: bullets -->
-## The harness can be worth months of model progress
+## The harness makes or breaks the score
 
-- Harness = the tools, prompts, and settings around the model -- **the still-unstandardized model side** from last lecture
 - Frontier models are **trained in their own harness** -- evaluating them in a different one under-reports capability
-- The gap is enormous: for Kimi K2, a bad harness cost roughly **6-9 months of model progress** *(per Florian Brand)*
 - The extreme case, from the [ARC-AGI-3 report](https://arcprize.org/media/ARC_AGI_3_Technical_Report.pdf): on one environment, Opus 4.6 scores **0% with no harness and 97.1%** with a hand-crafted one
 - This is why "same model, different agent product" produces wildly different scores
 
 ---
 
 <!-- animate: bullets -->
-## Hardware is in your score too
+## Everything else in the system is in the score too
 
-- Some benchmarks measure hardware **on purpose**: KernelBench-style tasks need specific GPUs
-- Others measure it **by accident**: one resource-hungry command can kill the sandbox and zero the task
-- Tight timeouts convert compute into score: reruns of Terminal-Bench 2 with 3-5× timeouts move GPT-5.2 scores by **+6 to +15 points** ([community rerun](https://github.com/xdotli/gpt-5.2-tb2); Brand's talk) -- faster sandboxes mean more iterations before the clock runs out
-
----
-
-<!-- rows: 40/60 -->
-## A score is a property of the system, not the model
-
-Every box below is a knob someone chose -- most are undocumented in a press release. Two labs can run "the same benchmark" and measure meaningfully different things.
-
-===
-
-![Same benchmark name, eight knobs.](assets/eval-system-v3.png)
+- **The engine**: [vLLM's postmortem](https://vllm.ai/blog/2025-10-28-kimi-k2-accuracy) on serving Kimi K2 -- three engine bugs held tool-call success **below 20%**; after fixes, **99.9%**. Same weights. APIs do not guarantee correctness either
+- **Hardware**: some benchmarks measure it on purpose (KernelBench-style tasks need specific GPUs); others by accident -- one resource-hungry command can kill the sandbox and zero the task
+- **Timeouts**: tight limits convert compute into score -- Terminal-Bench 2 reruns with 3-5× timeouts move GPT-5.2 by [+6 to +15 points](https://github.com/xdotli/gpt-5.2-tb2)
+- Every box is a knob someone chose, mostly undocumented -- two labs running "the same benchmark" can measure meaningfully different things
 
 ---
 
