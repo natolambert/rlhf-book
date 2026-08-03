@@ -275,10 +275,9 @@ A: The cafeteria had 23 apples originally. They...
 
 ---
 
-<!-- cite-right: wei2021finetuned, sanh2021multitask, zheng2023judging, dubois2024length -->
 ## Entering the chat era: zero-shot instruction following
 
-Instruction tuning (FLAN, T0) and then RLHF changed the way people expected to use models: the models learned to directly answer questions. This, in retrospect, was a huge deal! But not the default.
+Instruction tuning (FLAN [@wei2021finetuned], T0 [@sanh2021multitask]) and then RLHF changed the way people expected to use models: the models learned to directly answer questions. This, in retrospect, was a huge deal! But not the default.
 
 Now, the input to the model can look like:
 ```text
@@ -289,7 +288,7 @@ Assistant:
 <!-- step -->
 
 - **LLM-as-a-judge** emerged as questions became open-ended (and evals imitated RLHF training)
-- Canonical evals: **MT-Bench**, **AlpacaEval**, and the community-scale [Chatbot Arena](https://lmarena.ai/) [@chiang2024chatbot]
+- Canonical evals: **MT-Bench** [@zheng2023judging], **AlpacaEval** [@dubois2024length], and the community-scale [Chatbot Arena](https://lmarena.ai/) [@chiang2024chatbot]
 - MCQ evals like MMLU stayed in the mix (but were in flux, people used them differently) -- now answered zero-shot, sampling the answer letter at temperature 0
 
 ---
@@ -364,24 +363,22 @@ Sampling settings joined the prompt as part of the eval: reasoning models need *
 
 ---
 
-<!-- cite-right: schulhoff2024prompt, li2024numinamath, yu2023metamath -->
 ## Formatting became fragile as usage became more open-ended
 
-- Formatting mismatches can take a model from **60% to near 0** -- it is far easier to lose performance with a prompt than to gain it
+- Formatting mismatches can take a model from **60% to near 0** [@schulhoff2024prompt] -- it is far easier to lose performance with a prompt than to gain it
 - Answer extraction is brittle: rigid suffixes (*"The answer is:"*) or regexes hunting for the answer anywhere in the text
-- Formats even conflict across training sets: NuminaMath wants `\boxed{42}`, MetaMath wants `The answer is: 42` -- **training on both can be worse than either alone**
+- Formats even conflict across training sets: NuminaMath [@li2024numinamath] wants `\boxed{42}`, MetaMath [@yu2023metamath] wants `The answer is: 42` -- **training on both can be worse than either alone**
 - Format-agnostic grading takes substantial effort and tinkering -- and was often rare in practice -- LLM-judges become popular even as answer extractors for flexibility
 
 ---
 
-<!-- cite-right: rein2023gpqa, phan2025hle, jain2024livecodebench -->
 ## Reasoning & tool-use pushed the industry to harder tasks
 
 Reasoning models saturated the old eval suites, so the next generation came:
 
-- **Knowledge**: GPQA Diamond, Humanity's Last Exam, FrontierMath
+- **Knowledge**: GPQA Diamond [@rein2023gpqa], Humanity's Last Exam [@phan2025hle], FrontierMath
 - **Math**: recent AIME contests
-- **Software**: SWE-Bench (+ variants), LiveCodeBench
+- **Software**: SWE-Bench (+ variants), LiveCodeBench [@jain2024livecodebench]
 - Question sourcing moved from the internet to **grad students, PhDs, and professors** -- writing questions became expert labor
 
 ---
@@ -529,15 +526,9 @@ More in [Appendix C: evaluation variance](https://rlhfbook.com/c/appendix-c-prac
 
 ---
 
-<!-- columns: 30/70 -->
 <!-- footnote-right: Source: [Artificial Analysis](https://artificialanalysis.ai/models) -->
 ## The cost-performance Pareto, today
 
-Every frontier release sits somewhere on this curve -- and moving right (more tokens and cost per task, log scale) reliably buys score.
-
-Comparisons that don't hold spend constant are comparing different points on the curve, not different models.
-
-|||
 
 ![Intelligence Index vs. cost per task, with the Pareto frontier drawn. Figure from Artificial Analysis.](assets/aa-intelligence-cost-pareto.png)
 
@@ -552,22 +543,21 @@ Comparisons that don't hold spend constant are comparing different points on the
 
 ---
 
-<!-- cite-right: singh2024evaluation, shao2025spurious, huang2025math -->
 ## Contamination: Is training on test intentional?
 
 There's a long running field of study on understand if training data intentionally or accidentally improved on a score.
 
-- **Decontamination** = n-gram / substring search between training and test sets to remove overlap and eval scores being due to memorization not generalization
+- **Decontamination** = n-gram / substring search between training and test sets to remove overlap and eval scores being due to memorization not generalization [@singh2024evaluation]
 - Tülu 3 found popular open datasets contaminated: UltraFeedback×TruthfulQA, Evol-CodeAlpaca×HumanEval, NuminaMath×MATH [@lambert2024t]
-- A subtle tell on some contamination: RL with **random rewards** improving Qwen benchmarks -- only explicable with contamination in the base model; a real confound in early RLVR research
-- Response: perturbed benchmark rewrites (same problem, new numbers) to catch models trained on the original
+- A subtle tell on some contamination: RL with **random rewards** improving Qwen benchmarks [@shao2025spurious] -- only explicable with contamination in the base model; a real confound in early RLVR research
+- Response: perturbed benchmark rewrites (same problem, new numbers) to catch models trained on the original [@huang2025math]
 
 ---
 
 <!-- columns: 50/50 -->
-## The model games the eval
+## The model games the evals
 
-Agents love shortcuts -- Lecture 9's Goodhart, now holding a terminal. [NIST](https://www.nist.gov/caisi/cheating-ai-agent-evaluations) and [DebugML](https://debugml.github.io/cheating-agents/) have documented these in the wild.
+Agents love shortcuts. [NIST](https://www.nist.gov/caisi/cheating-ai-agent-evaluations) and [DebugML](https://debugml.github.io/cheating-agents/) have documented these in the wild.
 
 **Observed techniques:**
 
