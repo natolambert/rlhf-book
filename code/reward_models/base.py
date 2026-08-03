@@ -39,15 +39,15 @@ class BaseRewardModel(nn.Module):
         model_id: str,
         head_dim: int = 1,
         freeze_backbone: bool = False,
+        device: str | torch.device = "cuda",
     ):
         super().__init__()
 
         # BF16 loading - simple for small models
-        device_map = {"": 0} if torch.cuda.is_available() else None
         self.model = AutoModelForCausalLM.from_pretrained(
             model_id,
             dtype="bfloat16",  # Use string to avoid deprecation warning
-            device_map=device_map,
+            device_map={"": device},
             trust_remote_code=True,
         )
         self.model.config.use_cache = False
