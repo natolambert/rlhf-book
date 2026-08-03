@@ -438,13 +438,15 @@ Benchmarks are consumable. As scores approach the ceiling, only the hardest (and
 
 ---
 
-<!-- rows: 35/65 -->
+<!-- columns: 34/64 -->
 <!-- cite-right: tbench2026 -->
 ## The agentic pipeline: the model is one piece
 
-A **harness** (the loop of prompts, tools, and context management around the model) runs in a **sandbox** (a reproducible world with the files, tools, and rules of the task), on hardware, against timeouts -- and hours-long trajectories get graded by regex or an LLM judge.
+A **harness** -- the loop of prompts, tools, and context management around the model -- runs in a **sandbox**: a reproducible world with the files, tools, and rules of the task.
 
-===
+Add hardware and timeouts, and hours-long trajectories get graded by regex or an LLM judge.
+
+|||
 
 ![The full 2026 evaluation pipeline.](assets/eval-system-v3.png)
 
