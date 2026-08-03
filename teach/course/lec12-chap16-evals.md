@@ -144,15 +144,15 @@ size: 0.8
 content: |
   Below are examples of MMLU-style questions and answers:
 
-  Q: A right triangle has legs of lengths 3 and 4. What is the length of its hypotenuse?
-  A. 5&emsp;B. 6&emsp;C. 7&emsp;D. 8
+  Q: A right triangle has legs of lengths 3 and 4. What is the length of its hypotenuse?  
+  A. 5&emsp;B. 6&emsp;C. 7&emsp;D. 8  
   Correct Answer: A
 
   Now answer the new question in the same style:
 
-  Q: Which theorem states that a continuous function on a closed interval must attain both a maximum and a minimum?
-  A. Mean Value Theorem&emsp;B. Intermediate Value Theorem
-  C. Extreme Value Theorem&emsp;D. Rolle's Theorem
+  Q: Which theorem states that a continuous function on a closed interval must attain both a maximum and a minimum?  
+  A. Mean Value Theorem&emsp;B. Intermediate Value Theorem  
+  C. Extreme Value Theorem&emsp;D. Rolle's Theorem  
   Correct Answer:
 ```
 
