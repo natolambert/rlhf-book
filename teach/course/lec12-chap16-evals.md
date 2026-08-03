@@ -139,7 +139,7 @@ The key to understanding evals: popular benchmarks are a **reflection of the tra
 <!-- cite-right: brown2020language, robinson2023leveraging -->
 ## Base models (before post-training): few-shot prompting
 
-Base models can't take a bare or formatted question -- eval prompts carried examples of the patterns (3 to 8+ in-context samples) so the model continues the pattern:
+Base models can't take a bare or formatted question -- eval prompts carried examples of the patterns (3 to 8+ in-context samples) so the model continues the pattern. Canonical evals: **5-shot MMLU**, **8-shot GSM8K**.
 
 ===
 
@@ -274,14 +274,19 @@ A: The cafeteria had 23 apples originally. They...
 
 ---
 
-<!-- cite-right: zheng2023judging, dubois2024length, li2024crowdsourced, wei2021finetuned -->
-## Chat era: how close to GPT-4?
+<!-- cite-right: wei2021finetuned, sanh2021multitask, zheng2023judging, dubois2024length -->
+## Chat era: zero-shot instruction following
 
-Instruction tuning collapsed the prompt to just the question -- zero-shot, `User: ... Assistant:` -- and evaluation moved to **chat quality relative to a known strong model**.
+Instruction tuning (FLAN, T0) and then RLHF changed the interface itself: the model answers a **bare question, zero-shot** -- no worked examples, no pattern to continue.
 
-- MT-Bench, AlpacaEval, Arena-Hard -- and the community-scale version, [Chatbot Arena](https://lmarena.ai/) [@chiang2024chatbot]
-- The trick that made it scale: **LLM-as-a-judge** replaced human raters (recall Lecture 7 -- same machinery as synthetic preference data)
-- Narrow by design: these are now just the "chat" and "instruction following" slices of bigger suites
+```text
+User: "What is the capital of France?"
+Assistant:
+```
+
+- Grading changed with it: open-ended chat has no answer letter to score, so **LLM-as-a-judge** replaced human raters (recall Lecture 7)
+- Canonical evals: **MT-Bench**, **AlpacaEval**, and the community-scale [Chatbot Arena](https://lmarena.ai/) [@chiang2024chatbot]
+- MCQ evals like MMLU stayed in the mix -- now answered zero-shot, sampling the answer letter at temperature 0
 
 ---
 
@@ -366,7 +371,7 @@ Past a certain difficulty, **verifying the answer key is the bottleneck** -- exp
 <!-- cite-right: lambert2024t -->
 ## Reasoning-era prompts: the chain of thought is built in
 
-Reasoning models always think before answering -- no nudge needed. Modern suites instead carry **per-benchmark prompts** tuned so formatting isn't the bottleneck. Tülu 3's MMLU prompt →
+Reasoning models always think before answering -- no nudge needed. Modern suites instead carry **per-benchmark prompts** tuned so formatting isn't the bottleneck. Tülu 3's MMLU prompt → -- the same MMLU as the few-shot era, now long-form CoT with exact-match checking.
 
 Sampling settings joined the prompt as part of the eval: reasoning models need **temperature > 0** for their best scores -- [Qwen's model cards](https://huggingface.co/Qwen/Qwen3-32B) literally say **"DO NOT use greedy decoding"**. Read the `generation_config.json`: the recommended settings are "free" performance.
 
