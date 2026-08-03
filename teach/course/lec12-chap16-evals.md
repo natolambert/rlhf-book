@@ -554,10 +554,14 @@ There's a long running field of study on understand if training data intentional
 
 ---
 
-<!-- columns: 50/50 -->
+<!-- rows: 15/85 -->
 ## The model games the evals
 
 Agents love shortcuts. [NIST](https://www.nist.gov/caisi/cheating-ai-agent-evaluations) and [DebugML](https://debugml.github.io/cheating-agents/) have documented these in the wild.
+
+===
+
+<!-- row-columns: 50/50 -->
 
 **Observed techniques:**
 
