@@ -11,9 +11,9 @@ footer:
   center: "Lecture 12"
   right: "Lambert {n}/{N}"
 custom_css: |
-  .slide--section-break { background: #6D9DC5; }
+  .slide--section-break { background: #F28482; }
   :root {
-    --colloquium-progress-fill: #6D9DC5;
+    --colloquium-progress-fill: #F28482;
   }
   .slide--title-sidebar h1 {
     font-size: 2.5em;
@@ -35,7 +35,7 @@ custom_css: |
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
 
-# The Evolution of Frontier Model Evaluation <span class="title-subtitle">From few-shot prompting to agentic sandboxes</span>
+# Lecture 12:  The Evolution of Frontier Model Evaluation <span class="title-subtitle">From few-shot prompting to agentic sandboxes</span>
 
 <div class="colloquium-title-eyebrow">rlhfbook.com</div>
 
