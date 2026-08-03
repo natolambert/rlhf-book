@@ -5,6 +5,7 @@ On release, entries get moved under a version heading.
 
 ## Unreleased
 
+- 2026-08-03: [PR #504](https://github.com/natolambert/rlhf-book/pull/504) `build_preference_dataset` now drops preference pairs whose chosen/rejected token ids are identical after truncation to `max_length` (zero Bradley-Terry gradient; ~7% of the default 5k UltraFeedback slice at `max_length=512`). Fixes [#503](https://github.com/natolambert/rlhf-book/issues/503). This changes comparability for the default Preference RM run: the training set shrinks by the dropped pairs and the loss floor is no longer inflated by constant `-log(0.5)` pairs.
 - 2026-08-01: [PR #500](https://github.com/natolambert/rlhf-book/pull/500) ruff-format fixup for the batched dataset encoding merged in [PR #499](https://github.com/natolambert/rlhf-book/pull/499); formatting only, no behavior change.
 - 2026-08-01: [PR #499](https://github.com/natolambert/rlhf-book/pull/499) Batched dataset encoding
 - 2026-07-30: [PR #495](https://github.com/natolambert/rlhf-book/pull/495) cleaned up stale documentation, commands, reference-run links, documented metric names and configuration defaults, and brand capitalization across the code examples. No training behavior or metric semantics changed.
