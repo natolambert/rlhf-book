@@ -214,15 +214,17 @@ pass@k = the probability that **at least one of $k$ samples** solves the problem
 
 The naive route -- generate exactly $k$, report whether any passed -- is a **high-variance** coin flip per problem, and plugging a small-sample success rate into $1-(1-\hat{p})^k$ is **biased**.
 
-The fix, from the Codex paper: sample $n \geq k$ completions, count the $c$ that pass, and average an unbiased estimator over problems →
+The fix, from the Codex paper: sample $n \geq k$ completions, count the $c$ that pass, and average an unbiased estimator over problems.
 
 |||
+
+<!-- step -->
 
 $$\text{pass@}k = \mathop{\mathbb{E}}_{\text{problems}}\left[1 - \frac{\binom{n-c}{k}}{\binom{n}{k}}\right]$$
 
 - $\binom{n-c}{k}\big/\binom{n}{k}$ is the chance that $k$ draws (without replacement) from your $n$ samples are **all failures**
 - Larger $n$ → tighter estimate at the same $k$; the paper used $n=200$ for $k \leq 100$
-- The knobs interact: **higher temperature hurts pass@1 but helps pass@100** -- so a reported "pass@1" depends on $n$ and the sampling settings, not just the model
+- The knobs interact: **higher temperature can hurt pass@1 but help pass@100** -- so a reported "pass@1" depends on $n$ and the sampling settings, not just the model
 
 ---
 
@@ -240,11 +242,13 @@ Almost everything that could go wrong was in **how you formatted the prompt**.
 
 <!-- columns: 38/62 -->
 <!-- cite-right: wei2022chain, kojima2022large -->
-## Chain of thought changed what a prompt is
+## Chain of thought emerged to enable solutions on harder problems
 
-Few-shot examples that **show the work** let models reason before answering -- and math scores jumped.
+Few-shot examples that show intermediate steps let models reason before answering.
+When people were still prompting base models, adding CoT made math and reasonign scores jump! 
+This is before modern post-training as well.
 
-Soon just appending *"Let's think step by step"* did it zero-shot. The reasoning became part of the completion, and the grader now has to find the answer inside it.
+Soon just appending *"Let's think step by step"* to a prompt approximated this behavior.
 
 |||
 
