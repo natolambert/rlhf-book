@@ -481,14 +481,20 @@ Define $p = \langle \mathbf{h}, \mathbf{v} \rangle$ -- a scalar for "how Assista
 
 **Case 2, drifted away** ($p < \tau$): the $\min$ returns $p - \tau < 0$, so $\mathbf{h}' = \mathbf{h} - \mathbf{v}(p - \tau)$. Subtracting a negative multiple: we are **adding** $\mathbf{v}$, nudging back toward the Assistant.
 
-<!-- step -->
+---
 
-How far back? Project the corrected activation $\mathbf{h}' = \mathbf{h} - (p - \tau)\,\mathbf{v}$ onto $\mathbf{v}$, one manipulation at a time:
+<!-- valign: center -->
+<!-- cite-right: lu2026assistant -->
+## Activation capping: why the cap lands exactly on $\tau$
+
+How far back does the correction move? Project the corrected activation $\mathbf{h}' = \mathbf{h} - (p - \tau)\,\mathbf{v}$ onto $\mathbf{v}$, one manipulation at a time:
+
+<!-- step -->
 
 $$\begin{aligned}
 \langle \mathbf{h}', \mathbf{v} \rangle &= \langle \mathbf{h} - (p - \tau)\,\mathbf{v},\; \mathbf{v} \rangle \\
-&= \langle \mathbf{h}, \mathbf{v} \rangle - (p - \tau)\,\langle \mathbf{v}, \mathbf{v} \rangle \quad &\text{(linearity)} \\
-&= p - (p - \tau) \cdot 1 \quad &\text{(}\langle \mathbf{h}, \mathbf{v} \rangle = p,\ \mathbf{v} \text{ is unit-norm)} \\
+&= \langle \mathbf{h}, \mathbf{v} \rangle - (p - \tau)\,\langle \mathbf{v}, \mathbf{v} \rangle \quad \text{(linearity of the inner product)} \\
+&= p - (p - \tau) \cdot 1 \quad \text{(} \langle \mathbf{h}, \mathbf{v} \rangle = p \text{ and } \mathbf{v} \text{ is unit-norm)} \\
 &= p - p + \tau \\
 &= \boxed{\tau}
 \end{aligned}$$
