@@ -587,19 +587,19 @@ Grading agents is adversarial now -- benchmark design inherits all of reward hac
 
 **The established harnesses:**
 
-- [Inspect](https://inspect.aisi.org.uk/) -- UK AI Security Institute
-- [lm-evaluation-harness](https://github.com/EleutherAI/lm-evaluation-harness) -- EleutherAI's standard since the GPT-3 era
-- [LightEval](https://github.com/huggingface/lighteval) -- Hugging Face; powered the Open LLM Leaderboard
-- [OLMES](https://github.com/allenai/olmes) -- Ai2's reproducible evaluation system
-- [HELM](https://crfm.stanford.edu/helm/) -- Stanford CRFM
-- [Eval Gauntlet](https://github.com/mosaicml/llm-foundry) -- Mosaic, now Databricks
+- [Inspect](https://inspect.aisi.org.uk/) `★ 2.5k` -- UK AI Security Institute
+- [lm-evaluation-harness](https://github.com/EleutherAI/lm-evaluation-harness) `★ 13.5k` -- EleutherAI's standard since the GPT-3 era
+- [LightEval](https://github.com/huggingface/lighteval) `★ 2.5k` -- Hugging Face; powered the Open LLM Leaderboard
+- [OLMES](https://github.com/allenai/olmes) `★ 390` -- Ai2's reproducible evaluation system
+- [HELM](https://crfm.stanford.edu/helm/) `★ 2.9k` -- Stanford CRFM
+- [Eval Gauntlet](https://github.com/mosaicml/llm-foundry) `★ 4.4k` -- Mosaic, now Databricks
 
 |||
 
 **The environments wave:**
 
-- [olmo-eval](https://github.com/allenai/olmo-eval) -- Ai2's new workbench for evals *inside the model-development loop* (2026)
-- [verifiers](https://github.com/PrimeIntellect-ai/verifiers) + [Environments Hub](https://www.primeintellect.ai/blog/environments) -- Prime Intellect's library and community hub: 2,500+ verifiable environments that double as evals (AIME, Terminal-Bench, ...)
+- [olmo-eval](https://github.com/allenai/olmo-eval) `★ 64, so new!` -- Ai2's workbench for evals *inside the model-development loop* (2026)
+- [verifiers](https://github.com/PrimeIntellect-ai/verifiers) `★ 4.4k` + [Environments Hub](https://www.primeintellect.ai/blog/environments) -- Prime Intellect's library and community hub: 2,500+ verifiable environments that double as evals (AIME, Terminal-Bench, ...)
 - The direction of travel: **training and evaluation share the same environment code** -- write it once, hillclimb and measure with it
 
 ---
@@ -609,7 +609,7 @@ Grading agents is adversarial now -- benchmark design inherits all of reward hac
 - Benchmarks mirror the **training goals of their era** -- and every era ends in saturation.
 - A score is a **property of the whole system**: prompt, sampling, engine, harness, sandbox, hardware, grader. The model is one box.
 - Expect **±1 point of pure noise**; treat cross-lab comparisons as directional at best.
-- Contamination, gaming, and underelicitation all bend single numbers -- for decisions that matter, **run your own evals** and control the system.
+- Contamination, gaming, etc. all bend single numbers -- for decisions that matter, **run your own evals** and control the system.
 - Full evaluation is expensive! in-depth runs of a modern agentic suite can cost **>$100K** *(per Florian Brand)*
 
 ---
