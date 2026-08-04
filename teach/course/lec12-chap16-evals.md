@@ -348,9 +348,12 @@ Answer the above question and REMEMBER to finish your response with the exact ph
 ---
 
 <!-- columns: 40/60 -->
-## Encouraging the models to reason: sampling settings
+<!-- cite-right: lambert2024t -->
+## Encouraging the models to reason
 
-The prompt is only half of elicitation -- with long chains of thought, **how you sample** became part of the eval definition too.
+We know reasoning models today think before answering. Tülu 3's MMLU prompt (a model before reasoning models) → the same MMLU eval as the few-shot era, now long-form CoT with exact-match checking.
+
+Modern eval suites can carry **per-benchmark prompts** tuned for formatting etc. 
 
 |||
 
