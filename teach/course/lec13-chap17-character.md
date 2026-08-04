@@ -483,9 +483,15 @@ Define $p = \langle \mathbf{h}, \mathbf{v} \rangle$ -- a scalar for "how Assista
 
 <!-- step -->
 
-How far back? Project the corrected activation onto $\mathbf{v}$:
+How far back? Project the corrected activation $\mathbf{h}' = \mathbf{h} - (p - \tau)\,\mathbf{v}$ onto $\mathbf{v}$, one manipulation at a time:
 
-$$\langle \mathbf{h}', \mathbf{v} \rangle = p - (p - \tau)\langle \mathbf{v}, \mathbf{v} \rangle = p - (p - \tau) = \boxed{\tau}$$
+$$\begin{aligned}
+\langle \mathbf{h}', \mathbf{v} \rangle &= \langle \mathbf{h} - (p - \tau)\,\mathbf{v},\; \mathbf{v} \rangle \\
+&= \langle \mathbf{h}, \mathbf{v} \rangle - (p - \tau)\,\langle \mathbf{v}, \mathbf{v} \rangle \quad &\text{(linearity)} \\
+&= p - (p - \tau) \cdot 1 \quad &\text{(}\langle \mathbf{h}, \mathbf{v} \rangle = p,\ \mathbf{v} \text{ is unit-norm)} \\
+&= p - p + \tau \\
+&= \boxed{\tau}
+\end{aligned}$$
 
 The correction closes the gap *exactly* -- back to the boundary, never past it. $\tau$ is calibrated empirically; the **25th percentile** of projections over training rollouts gave the best capability/safety trade-off.
 
