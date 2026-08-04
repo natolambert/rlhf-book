@@ -237,7 +237,7 @@ Almost everything that could go wrong was in **how you formatted the prompt**.
 
 |||
 
-![The evaluation pipeline, early era.](assets/eval-system-v1.png)
+![](assets/eval-system-v1.png)
 
 ---
 
