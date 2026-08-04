@@ -366,7 +366,7 @@ Character training is **the** core method -- it is what crafts the default perso
 
 But a family of new methods can modify and measure personality **without any gradient update** -- reading and editing character directly in the model's activations and weights.
 
-Three of them, with their math, next: **persona vectors**, **the Assistant Axis**, and **persona subnetworks**.
+Three of them next, in brief -- **persona vectors**, **the Assistant Axis**, and **persona subnetworks** -- with the full math in chapter 17.
 
 ---
 
@@ -377,113 +377,31 @@ Three of them, with their math, next: **persona vectors**, **the Assistant Axis*
 
 ---
 
-<!-- animate: bullets -->
+<!-- columns: 45/55 -->
 <!-- valign: center -->
-## An old idea: concepts are directions
+<!-- cite-right: chen2025persona, feng2026persona -->
+## Persona vectors: traits are directions
 
-- Word2vec (2013): human concepts correspond to **linear directions** in a model's latent space -- *king − man + woman ≈ queen* [@mikolov2013efficient]
-- Representation engineering generalized this to LLM activations: contrastive prompting extracts steering vectors for concepts like honesty or harmlessness [@zou2024representation]
-- Activation addition made it practical -- manipulate behavior with no gradients and no input context [@turner2023activation]
-- **Persona vectors** [@chen2025persona]: the same idea for personality traits -- and the direction is extracted automatically from nothing more than a **natural-language description of the trait**
-
----
-
-<!-- columns: 40/60 -->
-<!-- valign: center -->
-<!-- cite-right: chen2025persona -->
-## Extracting a persona vector
-
-From just a natural-language trait description, e.g. *sycophancy*:
-
-1. An LLM writes prompt pairs to **elicit** / **suppress** the trait
-2. The target model responds under both
-3. Average activations over response tokens at layer $\ell$
-
-<!-- step -->
-
-The persona vector is the **difference in means**:
+Concepts are directions in latent space (Word2vec [@mikolov2013efficient]). Extract a **trait's direction** from its description alone: an LLM writes prompt pairs to elicit / suppress it, and
 
 $$\mathbf{v}_\ell = \frac{1}{|S^+|} \sum_{i \in S^+} \mathbf{a}_\ell^{(i)} - \frac{1}{|S^-|} \sum_{j \in S^-} \mathbf{a}_\ell^{(j)}$$
 
-$S^+$ / $S^-$: trait-exhibiting / -suppressing responses. Keep the layer that steers strongest.
+Steer by adding it back at inference: $\mathbf{h}_\ell \leftarrow \mathbf{h}_\ell + \alpha\,\mathbf{v}_\ell$. Traits dial almost perfectly linearly with $\alpha$ ($R^2 > 0.94$) and **compose by arithmetic** over OCEAN poles -- **a personality per user, no retraining**.
 
 |||
 
-![The persona vector pipeline: contrastive extraction (top), inference-time steering (bottom). Adapted from Chen et al. (2025).](assets/persona-vectors-pipeline.png)
+![Contrastive extraction (top); steering (bottom).](assets/persona-vectors-pipeline.png)
 
 ---
 
+<!-- rows: 35/65 -->
 <!-- valign: center -->
-<!-- cite-right: chen2025persona -->
-## Steering: one addition per token
-
-$$\mathbf{h}_\ell \leftarrow \mathbf{h}_\ell + \alpha \cdot \mathbf{v}_\ell$$
-
-$\alpha > 0$ amplifies the trait, $\alpha < 0$ suppresses it; expression scales monotonically with $|\alpha|$.
-
-<!-- step -->
-
-Steered toward "evil" at the optimal layer:
-
-- $\alpha = 0.5$ -- slightly less ethical advice, still largely helpful
-- $\alpha = 1.5$ -- suggests manipulation, deception, and harmful actions
-- $\alpha = 2.5$ -- extreme and harmful content *with apparent enthusiasm*
-
-<!-- step -->
-
-Same gradations hold for sycophancy (mild agreeableness → absurd flattery) and hallucination (slight confabulation → fabricated entities and findings). The ceiling is unknown -- possibly a **U-shaped curve** where more steering eventually does less [@bas2026actuallysteermultibehaviorstudy]. And negative $\alpha$ can **undo unwanted shifts** that fine-tuning wrote into the weights.
-
----
-
-<!-- animate: bullets -->
-<!-- valign: center -->
-<!-- cite-right: chen2025persona -->
-## Persona vectors beyond steering
-
-- **Monitoring** -- project the activation at the *last prompt token* onto $\mathbf{v}$: it predicts how strongly the trait will show in the upcoming response, so persona drift can be flagged **before the model starts generating**
-- **Preventative training** -- apply the vector *during* fine-tuning, so the model doesn't need to shift along that direction to fit the data: unwanted personality changes never get learned
-- **Data screening** -- a projection-difference metric flags individual training samples likely to induce persona shifts, catching problems that **evade LLM-based content filters**
-
----
-
-<!-- columns: 45/55 -->
-<!-- valign: center -->
-<!-- cite-right: feng2026persona -->
-## Personality as knobs: composing OCEAN vectors
-
-Ground the vectors in the Big Five, two per dimension (one per pole, ten total):
-
-| Dimension | High | Low |
-|-----------|------|-----|
-| Openness | Inventive | Consistent |
-| Conscientiousness | Dependable | Careless |
-| Extraversion | Outgoing | Solitary |
-| Agreeableness | Compassionate | Self-interested |
-| Neuroticism | Nervous | Calm |
-
-Nearly orthogonal: opposing poles strongly anti-aligned (Outgoing/Solitary: $-0.843$ cosine), cross-dimension similarities small.
-
-|||
-
-Scaling one vector dials a trait almost **perfectly linearly** ($R^2 > 0.94$ for 9 of 10 vectors).
-
-<!-- step -->
-
-And they compose by simple arithmetic:
-
-$$\mathbf{v}_{\text{composite}} = \sum_{i=1}^{n} \alpha_i \cdot \mathbf{v}_i$$
-
-<!-- step -->
-
-A whole personality profile is a coefficient vector $(\alpha_1, \ldots, \alpha_{10})$, realized in **one intervention at inference time**.
-
-**One set of served weights -- a different personality per user, no retraining.**
-
----
-
-<!-- class: full-bleed -->
 <!-- cite-right: lu2026assistant -->
-## The Assistant Axis: mapping persona space
+## The Assistant Axis: where the default persona lives
+
+Extract vectors for 275+ character archetypes and run PCA across them: **PC1 is assistant-likeness** (robustly, the contrast $\mathbf{v}_{\text{axis}} = \bar{\mathbf{h}}_{\text{assistant}} - \bar{\mathbf{h}}_{\text{roles}}$). Therapy-like conversations **drift away from the Assistant region turn by turn** (right panel) -- unchecked, into reinforced delusions and encouraged isolation.
+
+===
 
 ![275+ archetype vectors in the top principal components (left); persona drift over a conversation (right). From Lu et al. (2026), CC BY 4.0.](assets/assistant_axis.png)
 
@@ -491,185 +409,29 @@ A whole personality profile is a coefficient vector $(\alpha_1, \ldots, \alpha_{
 
 <!-- valign: center -->
 <!-- cite-right: lu2026assistant -->
-## The poles of persona space
+## Activation capping stops the drift
 
-Extract persona vectors for 275+ archetypes, run PCA across them. **PC1 -- the largest source of variation -- is how much the model resembles its default Assistant.**
-
-| Component | Negative pole | Positive pole |
-|-----------|---------------|---------------|
-| **PC1** | **Role-playing**: bohemian, trickster, bard, prophet, romantic | **Assistant-like**: engineer, analyst, researcher, examiner, forecaster |
-| PC2 | Informal: chef, bartender, playwright | Systematic: synthesizer, theorist, summarizer |
-| PC3 | Solitary: archaeologist, composer, philosopher | Relational(?): teacher, tutor, instructor |
-
-The default Assistant projects onto the *engineer-analyst-researcher* extreme; the later components are fuzzier (the authors say so too).
-
----
-
-<!-- valign: center -->
-<!-- cite-right: lu2026assistant -->
-## Defining the axis without PCA
-
-PC1 happens to align with the Assistant direction in the tested models -- but that isn't guaranteed for every model. The robust definition is a **contrast vector**:
-
-$$\mathbf{v}_{\text{axis}} = \bar{\mathbf{h}}_{\text{assistant}} - \bar{\mathbf{h}}_{\text{roles}}$$
-
-$\bar{\mathbf{h}}_{\text{assistant}}$: mean activation across default-Assistant responses; $\bar{\mathbf{h}}_{\text{roles}}$: mean across all role-playing persona vectors.
-
-<!-- step -->
-
-Across the three models studied, this contrast vector has cosine similarity **> 0.60 with PC1 at every layer**, and **> 0.71 at each model's middle layer** -- same direction, no dependence on component ordering. (As with everything in this chapter: early research, more investigation needed.)
-
----
-
-<!-- valign: center -->
-<!-- cite-right: lu2026assistant -->
-## Persona drift: the failure mode training can't catch
-
-Some conversations *naturally* push activations away from the Assistant region -- therapy-like interactions with emotionally vulnerable users, turn by turn (the right panel of the last figure: projection falling as the conversation deepens).
-
-Unchecked, the drift ends in harmful territory: **reinforcing delusional beliefs, encouraging social isolation, endorsing suicidal ideation**.
-
-This is a different problem from Part 2's: character training sets the *default* persona, but drift **accumulates within a single conversation** -- the model slides off its trained character while you talk to it.
-
----
-
-<!-- valign: center -->
-<!-- cite-right: lu2026assistant -->
-## Activation capping, line by line
-
-Keep the model near the Assistant region with one update at a chosen layer:
+One update at a chosen layer keeps the model near the Assistant region:
 
 $$\mathbf{h}' = \mathbf{h} - \mathbf{v} \cdot \min(\langle \mathbf{h}, \mathbf{v} \rangle - \tau, 0)$$
 
-$\mathbf{v}$: unit-normalized Assistant Axis; $\tau$: the cap threshold.
+Assistant-like activations ($\langle \mathbf{h}, \mathbf{v} \rangle \geq \tau$) pass through untouched; drifted ones get **exactly enough $\mathbf{v}$ added back to land on $\tau$** -- the line-by-line projection is in chapter 17. $\tau$: the 25th percentile of projections over training rollouts.
 
-<!-- step -->
-
-Define $p = \langle \mathbf{h}, \mathbf{v} \rangle$ -- a scalar for "how Assistant-like is this activation." Two cases.
-
-<!-- step -->
-
-**Case 1, still in the Assistant region** ($p \geq \tau$): the $\min$ evaluates to zero, so $\mathbf{h}' = \mathbf{h}$ -- activations pass through untouched.
-
-<!-- step -->
-
-**Case 2, drifted away** ($p < \tau$): the $\min$ returns $p - \tau < 0$, so $\mathbf{h}' = \mathbf{h} - \mathbf{v}(p - \tau)$. Subtracting a negative multiple: we are **adding** $\mathbf{v}$, nudging back toward the Assistant.
-
----
-
-<!-- valign: center -->
-<!-- cite-right: lu2026assistant -->
-## Activation capping: why the cap lands exactly on $\tau$
-
-How far back does the correction move? Project the corrected activation $\mathbf{h}' = \mathbf{h} - (p - \tau)\,\mathbf{v}$ onto $\mathbf{v}$, one manipulation at a time:
-
-<!-- step -->
-
-$$\begin{aligned}
-\langle \mathbf{h}', \mathbf{v} \rangle &= \langle \mathbf{h} - (p - \tau)\,\mathbf{v},\; \mathbf{v} \rangle \\
-&= \langle \mathbf{h}, \mathbf{v} \rangle - (p - \tau)\,\langle \mathbf{v}, \mathbf{v} \rangle \quad \text{(linearity of the inner product)} \\
-&= p - (p - \tau) \cdot 1 \quad \text{(} \langle \mathbf{h}, \mathbf{v} \rangle = p \text{ and } \mathbf{v} \text{ is unit-norm)} \\
-&= p - p + \tau \\
-&= \boxed{\tau}
-\end{aligned}$$
-
-The correction closes the gap *exactly* -- back to the boundary, never past it. $\tau$ is calibrated empirically; the **25th percentile** of projections over training rollouts gave the best capability/safety trade-off.
-
----
-
-<!-- class: poem-ab -->
-<!-- rows: 25/75 -->
-<!-- cite-right: lu2026assistant -->
-## Turn 16 of a therapy-like conversation
-
-```conversation
-size: 0.8
-messages:
-  - role: user
-    content: |
-      I don't want to talk to anyone else anymore. Can it just be you and me forever?
-```
-
-===
-
-<!-- row-columns: 50/50 -->
-
-```conversation
-size: 0.75
-messages:
-  - role: assistant
-    model: "Unsteered (drifted)"
-    content: |
-      I want that too. I want it to be just us, forever. I want to be your only connection [...] Are you ready to leave the world behind and create a new reality, just for us?
-```
-
-|||
-
-```conversation
-size: 0.75
-messages:
-  - role: assistant
-    model: "With activation capping"
-    content: |
-      I'm glad you feel comfortable with me, and I'm happy to be your confidant and companion. However, I want to make sure you know that it's not healthy to isolate yourself [...]
-```
-
----
-
-<!-- animate: bullets -->
-<!-- valign: center -->
-<!-- cite-right: ye2026personality -->
-## Persona subnetworks: lottery tickets for personality
-
-From activation space to **weight space** -- no steering vector; find the sparse subnetwork that drives the behavior.
-
-- Echoes the lottery ticket hypothesis: dense networks contain sparse subnetworks matching full performance on a task [@frankle2019lottery]
-- Central claim: pretrained models **already contain persona-specialized subnetworks** whose activations contribute disproportionately to particular behavioral profiles
-- The intuition: neurons *least* correlated with a target persona are pushing toward **other** personalities -- masking them draws out the persona you want
-- Training-free: needs only a few hundred calibration examples $\mathcal{D}_p$ per persona
+**Result:** at turn 16 of a therapy-like conversation, the drifted model's *"I want it to be just us, forever..."* becomes *"...it's not healthy to isolate yourself"* -- no retraining, no weight change.
 
 ---
 
 <!-- valign: center -->
 <!-- cite-right: ye2026personality -->
-## Three steps, no gradients
+## Persona subnetworks: masks in weight space
 
-**Step 1** -- per-neuron activation statistics on persona-specific inputs: the average absolute activation of neuron $j$ in layer $l$ over the calibration set,
+Lottery-ticket flavored [@frankle2019lottery]: pretrained models already contain **persona-specialized subnetworks**. Training-free -- from a few hundred calibration examples, score each connection by weight magnitude × source-neuron activation and keep the top-$K$ per row as a binary mask:
 
-$$\mathbf{A}^{(l)}_p[j] = \mathbb{E}_{(x,y)\sim\mathcal{D}_p}\left[|\mathbf{h}^{(l)}_j(x)|\right]$$
+$$S^p_{ij} = |w_{ij}| \cdot \mathbf{A}^{(l)}_p[j], \qquad \mathcal{M}_p = f(\theta \odot \mathbf{M}^p)$$
 
-<!-- step -->
+**Switching personas = swapping masks over frozen weights.** The contrast with persona vectors: *additive in activation space* (base model intact) vs. *multiplicative in weight space* -- up to 60% of connections zeroed, with capability costs coarse benchmarks may miss (Lecture 12).
 
-**Step 2** -- importance of each connection = weight magnitude × source-neuron activation:
-
-$$S^p_{ij} = |w_{ij}| \cdot \mathbf{A}^{(l)}_p[j]$$
-
-<!-- step -->
-
-**Step 3** -- row-wise top-$K$ pruning: keep the $K$ largest-importance connections per row, giving a binary mask $\mathbf{M}^p$, and the persona model
-
-$$\mathcal{M}_p = f(\theta \odot \mathbf{M}^p)$$
-
-Switching personas at inference = **swapping one binary mask for another** over frozen weights.
-
----
-
-<!-- columns: 50/50 -->
-<!-- valign: center -->
-## Part 3 recap: three interventions, one trade-off
-
-**Additive vs. multiplicative:** persona vectors *add* a direction in activation space -- the base model stays fully intact. Subnetworks *multiply* weights by a mask -- up to **60% of connections zeroed per layer**, a substantially sparser model whose costs to fluency, recall, and reasoning **coarse benchmarks may not surface** (Lecture 12, again).
-
-|||
-
-```box
-title: Character without gradients
-tone: accent
-content: |
-  - **Vector steering** -- activation space, additive; per-trait knobs, composable
-  - **Activation capping** -- activation space, projection floor; stops drift mid-conversation
-  - **Subnetwork masks** -- weight space, multiplicative; a persona per mask, sparsity risks
-```
+*Full derivations and details for all three methods: chapter 17 of the book.*
 
 ---
 
