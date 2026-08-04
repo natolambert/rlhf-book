@@ -11,9 +11,9 @@ footer:
   center: "Lecture 13"
   right: "Lambert {n}/{N}"
 custom_css: |
-  .slide--section-break { background: #8E7CC3; }
+  .slide--section-break { background: #F28482; }
   :root {
-    --colloquium-progress-fill: #8E7CC3;
+    --colloquium-progress-fill: #F28482;
   }
   .slide--title-sidebar h1 {
     font-size: 2.5em;
@@ -50,7 +50,7 @@ custom_css: |
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
 
-# An Introduction to Character Training <span class="title-subtitle">Constitutions, soul documents, and the personality of models</span>
+# Lecture 13: An Introduction to Character Training <span class="title-subtitle">Constitutions, soul documents, and the personality of models</span>
 
 <div class="colloquium-title-eyebrow">rlhfbook.com</div>
 
