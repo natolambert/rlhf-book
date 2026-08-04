@@ -866,15 +866,17 @@ When $K = 2$, this reduces to Bradley-Terry.
 
 ## Outcome reward models (ORMs)
 
-<!-- cite-right: cobbe2021gsm8k -->
+<!-- cite-right: lyu2025exploring -->
 
-For **reasoning tasks**, we often have verifiable correctness. ORMs train a per-token head using the completion-level correctness label repeated across completion tokens:
+For **reasoning tasks**, we often have verifiable correctness. The executable ORM in this book follows OREAL [@lyu2025exploring]: a scalar head produces token logits, which are averaged over the completion before one response-level loss is computed.
 
-$$\mathcal{L}_{\text{CE}}(\theta) = -\mathbb{E}_{(s,r)\sim \mathcal{D}}[r\log p_\theta(s) + (1-r)\log(1-p_\theta(s))]$$
+$$\bar z_\theta(x,y)=\frac{1}{|M_y|}\sum_{t\in M_y}z_{\theta,t}(x,y), \qquad p_\theta(x,y)=\sigma(\bar z_\theta(x,y))$$
 
-where $r \in \{0,1\}$ is the completion-level correctness label, broadcast across completion tokens during training.
+$$\mathcal{L}_{\text{ORM}}(\theta) = -\mathbb{E}_{(x,y,r)\sim \mathcal{D}}[r\log p_\theta(x,y) + (1-r)\log(1-p_\theta(x,y))]$$
 
-**Key differences from Bradley-Terry**: no pairwise comparisons needed — just correct/incorrect labels per response. And the model outputs a **per-token probability of correctness**, not a single score at the EOS token.
+Here, $M_y$ contains completion tokens (including EOS), while prompt and padding positions are masked. Each completion contributes **one** equally weighted BCE term.
+
+**Key difference from Bradley-Terry**: no pairwise comparison is needed — just one correct/incorrect label per response.
 
 ---
 
@@ -900,19 +902,26 @@ score = head(seq_repr).squeeze(-1)
 
 |||
 
-**ORM** — score at **every token**:
+**ORM** — score tokens, then **pool once**:
 
 ```python
 hidden = lm(**inputs,
     output_hidden_states=True
 ).hidden_states[-1]
 
-# Score every token position
-logits = head(hidden).squeeze(-1)
-#        shape: (batch, seq_len)
+# Intermediate token logits
+token_logits = head(hidden).squeeze(-1)
+
+# Mean over completion positions only
+mask = labels != -100
+sequence_logit = (
+    token_logits.masked_fill(~mask, 0).sum(-1)
+    / mask.sum(-1).clamp_min(1)
+)
+# shape: (batch,)
 ```
 
-Both start from the same base LM hidden states — the difference is **where** the head is applied.
+Both produce one score per completion. The BT RM reads the last-token representation; this ORM averages scalar logits from all completion positions.
 
 ---
 
@@ -935,50 +944,57 @@ One scalar per completion. Loss depends on the **difference** between chosen and
 
 |||
 
-**ORM loss** — per-token, needs only labels:
+**ORM loss** — sequence-level, needs only labels:
 
 ```python
-logits = model(**inputs)
-# shape: (batch, seq_len)
+_, token_logits = model(**inputs)
 
-mask = labels != -100
+sequence_logits, outcomes = pool_completion_logits(
+    token_logits, labels
+)
 loss = F.binary_cross_entropy_with_logits(
-    logits[mask], labels[mask].float()
+    sequence_logits, outcomes
 )
 ```
 
-One score per token. Every completion token is trained against the same outcome label ($r = 0$ or $1$).
+One logit and one BCE term per completion. Repeated packed labels identify completion positions and the sequence outcome; they are not separate token targets.
 
 ---
 
 ## ORM training visualized
 
-The outcome label ($r = 0$ or $1$) is **broadcast** to every completion token. Prompt tokens are masked. The model learns per-token correctness predictions from this repeated signal. In a larger batch of training, there is a diverse signal of supervision to learn from.
+The completion-token logits are **mean-pooled first**. A single binary outcome label ($r = 0$ or $1$) supervises the resulting sequence logit. Prompt and padding tokens are masked.
 
-![Training an ORM: the completion-level correctness label is applied to every completion token via binary cross-entropy.](assets/orm_training.png)
+![Training an ORM: completion-token logits are averaged, then one binary cross-entropy loss is applied to the sequence logit.](assets/orm_training.png)
 
 ---
 
 ## ORM inference
 
-At inference time, the ORM outputs a probability of correctness **at every token**. These token-level scores can then be aggregated into a response-level verifier score for filtering or reranking.
+At inference time, the ORM returns one correctness score for the finished response:
 
-![At inference time, an ORM outputs per-token correctness probabilities over the completion.](assets/orm_inference_flat.png)
+$$\text{score}(x,y)=\sigma\!\left(\operatorname{mean}_{t\in M_y}z_{\theta,t}(x,y)\right).$$
+
+The sigmoid is applied **after averaging logits**; averaging token probabilities is a different scoring rule.
+
+![At inference time, an ORM averages completion-token logits and applies a sigmoid to produce one response-level correctness score.](assets/orm_inference_flat.png)
 
 ---
 
-## Common confusion: "ORM" ≠ BT on correct vs. incorrect
+## ORM conventions and BT confusion
 
-Some papers use "outcome reward model" to mean a **Bradley-Terry model trained on correct vs. incorrect completions**. This conflates two different architectures:
+“ORM” names the source of supervision more consistently than it names one architecture. Three related objectives should not be conflated:
 
-| | **BT RM (on correct/incorrect)** | **ORM (Cobbe et al.)** |
-|---|---|---|
-| **Min. Training Input** | Two completions (pair) | One completion + label |
-| **Output** | Single scalar at EOS | Per-token probability |
-| **Loss** | $-\log\sigma(r_c - r_{ic})$ | Per-token binary cross-entropy |
-| **Head** | Score at last token | Score at every token |
+| | **BT RM** | **Pooled ORM (this book)** | **Token verifier** |
+|---|---|---|---|
+| **Input** | Completion pair | Completion + outcome | Completion + outcome |
+| **Training** | Pairwise contrast | Mean completion logit → one BCE | Same outcome target at every token |
+| **Scoring** | Last-token scalar | $\sigma(\text{mean logits})$ | Final-token prediction |
+| **Examples** | Preference RM | Lyu/OREAL | Cobbe; Lightman |
 
-A BT model trained on (correct, incorrect) pairs is still a **preference RM** — it just uses correctness as the preference signal. A true ORM has a fundamentally different input-output structure.
+Cobbe et al. [@cobbe2021gsm8k] trained dense token-level verifier predictions (with MSE and an auxiliary LM objective). Lightman et al. [@lightman2023let] repeated the outcome target across tokens, omitted the LM objective, and used the final-token score at test time.
+
+A BT model trained on (correct, incorrect) pairs remains a **preference RM** in this book: correctness supplies the ordering, but the loss is still pairwise.
 
 ---
 
@@ -1030,7 +1046,7 @@ loss = F.cross_entropy(
 )
 ```
 
-vs. ORM: binary labels at *every* completion token.
+vs. pooled ORM: one binary label for the *whole completion*.
 vs. PRM: 3-class labels at *step boundaries* only.
 
 ---
@@ -1040,23 +1056,23 @@ vs. PRM: 3-class labels at *step boundaries* only.
 | Model | Predicts | Trained on | Output |
 |-------|----------|-----------|--------|
 | **Preference RM** | Quality at EOS token | Pairwise (chosen vs. rejected) | Single scalar |
-| **ORM** | Outcome signal over completion tokens | Binary outcome labels | Per-token probability |
+| **ORM** | Response correctness | Binary outcome labels | Mean-pooled sequence probability |
 | **PRM** | Per-step correctness | Step-level annotations | Score at step boundaries |
 | **Value Function** | Expected remaining return | On-policy rollouts | Per-token expected return |
 
 **Key distinction — ORM vs. Value Function:**
 
-- **ORMs** predict offline-labeled correctness with a per-token head: $p(\text{correct}_t)$
+- **ORMs** pool completion-token logits into one offline-labeled correctness probability: $P(\text{correct}\mid x,y)$
 - **Value functions** predict expected *remaining* return: $V(s_t) = \mathbb{E}[\sum_{k \geq t} \gamma^{k-t} r_k \mid s_t]$
 
-Same architecture, different semantics and supervision pipeline. More on value functions in the policy gradient lecture(s).
+The heads can have the same shape, but the ORM reduces them to one response prediction while the value function retains a state-dependent estimate at every prefix. More on value functions in the policy gradient lecture(s).
 
 ---
 
 ## In summary
 
 - **RM:** "How good is this whole answer?" — scalar value
-- **ORM:** "Is this response on track to be correct?" — outcome signal trained across completion tokens
+- **ORM:** "Is this completed response correct?" — scalar outcome probability
 - **PRM:** "Are the reasoning steps sound?" — per-step scores
 - **Value Function:** "How much reward remains from here?" — baseline for RL advantages
 

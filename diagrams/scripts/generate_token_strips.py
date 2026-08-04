@@ -2,9 +2,9 @@
 """
 Generate token strip visualizations for reward model diagrams.
 
-These show where supervision attaches along token sequences for different RM types:
+These show where supervision or scoring attaches along token sequences for different RM types:
 - Preference RM: highlight EOS only (show chosen vs rejected)
-- ORM: highlight completion tokens (prompt masked), show p(correct)
+- ORM: highlight pooled completion logits (prompt masked), show sequence score
 - PRM: highlight step boundary tokens only, show 3-class labels
 - Value function: highlight all tokens with V(s)
 
@@ -366,23 +366,24 @@ STRIPS = [
             },
         ),
     ),
-    # ORM: Show per-token probabilities on completion (inference time)
-    # Prompt masked, completion supervised
+    # ORM: Average completion-token logits, then apply sigmoid (inference time)
+    # Prompt masked; completion logits contribute to one sequence score
     TokenStrip(
         name="orm_inference",
-        title="Using an Outcome RM: Per-Token Correctness Scores",
+        title="Using an Outcome RM: Completion Logits → Response Score",
         tokens=["<|eos|>", "Joy", "can", "...", "?", "The", "answer", "is", "5", ".", "<|eos|>"],
         highlight={5, 6, 7, 8, 9, 10},  # completion tokens
         masked={0, 1, 2, 3, 4},  # prompt tokens
-        annotation="Prompt ignored for scoring  |  Completion probabilities aggregate to a response score (mean p=.94)",
-        highlight_label="Scored",
+        annotation=r"Masked mean: $\bar{\ell}=\frac{1}{T}\sum_t\ell_t=2.75$  |  Response score: $\sigma(\bar{\ell})=0.94$",
+        highlight_label="Pooled",
+        highlight_color_mode="inference",
         token_labels={
-            5: "p=.92",
-            6: "p=.88",
-            7: "p=.95",
-            8: "p=.99",
-            9: "p=.97",
-            10: "p=.94",
+            5: "ℓ=2.1",
+            6: "ℓ=2.4",
+            7: "ℓ=2.7",
+            8: "ℓ=2.9",
+            9: "ℓ=3.1",
+            10: "ℓ=3.3",
         },
     ),
     # Value function: Show V(s) on completion tokens (prompt masked like ORM)

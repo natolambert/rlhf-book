@@ -58,44 +58,42 @@ def draw_token_box(ax, x, y, w, h, text, highlighted=False, masked=False):
     txt.set_path_effects([path_effects.withStroke(linewidth=2, foreground="white")])
 
 
-def draw_label_circle(ax, x, y, label, color="#4CAF50"):
-    """Draw a small circle with label (for ORM labels)."""
-    circle = plt.Circle((x, y), 0.15, facecolor=color, edgecolor="#2E7D32", linewidth=1.5)
-    ax.add_patch(circle)
-    ax.text(x, y, label, ha="center", va="center", fontsize=7, color="white", fontweight="bold")
-
-
 def render_orm_diagram(output_path: Path, fmt: str = "png", dpi: int = 150,
                        transparent: bool = False):
     """
-    Render ORM diagram with 3 lanes - cleaner layout.
+    Render the sequence-level ORM objective used by the executable example.
+
+    The head emits one logit at each completion position. Those logits are
+    averaged before either the sigmoid response score or the single binary
+    cross-entropy loss is computed. Prompt and padding positions are masked.
     Uses realistic tokenization based on GSM8K example.
     """
     tokens = ["<|eos|>", "Joy", "can", "...", "?", "The", "answer", "is", "5", ".", "<|eos|>"]
     n_tokens = len(tokens)
     prompt_end = 5  # first 5 tokens are prompt
 
-    fig, ax = plt.subplots(figsize=(12, 5))
+    fig, ax = plt.subplots(figsize=(14.5, 5.2))
 
     box_w, box_h = 0.8, 0.5
     x_offset = 1.5  # Start position for tokens
 
     # Lane positions (y coordinates)
-    y_tokens = 3.0
-    y_labels = 2.0
-    y_outputs = 1.0
+    y_tokens = 3.1
+    y_labels = 2.1
+    y_outputs = 0.9
 
     # === Title with source indicator ===
+    diagram_center = x_offset + (n_tokens * box_w + 4.6) / 2
     ax.text(
-        x_offset + n_tokens * box_w / 2, 4.2,
-        "Training Outcome RM: Offline Labels → Per-Token BCE",
+        diagram_center, 4.35,
+        "Training an Outcome RM: Masked Logit Mean → One Sequence Loss",
         ha="center", va="bottom", fontsize=14, fontweight="bold",
         color=INK_DARK if transparent else "black",
     )
     # Source indicator as subtitle
     ax.text(
-        x_offset + n_tokens * box_w / 2, 3.95,
-        "Labels from: Verifier / Dataset (offline)",
+        diagram_center, 4.08,
+        "One correct / incorrect label per completion from a verifier or dataset",
         ha="center", va="top", fontsize=9, color="#E65100", style="italic"
     )
 
@@ -109,8 +107,8 @@ def render_orm_diagram(output_path: Path, fmt: str = "png", dpi: int = 150,
         draw_token_box(ax, x, y_tokens, box_w - 0.1, box_h, tok,
                       highlighted=highlighted, masked=masked)
 
-    # === Lane 2: Labels ===
-    ax.text(x_offset - 0.2, y_labels + 0.1, r"Labels $z_t$", ha="right", va="center",
+    # === Lane 2: One sequence-level outcome target ===
+    ax.text(x_offset - 0.2, y_labels + 0.1, "Outcome", ha="right", va="center",
             fontsize=10, fontweight="bold", color=INK_DARK if transparent else "black")
 
     # Masked indicator for prompt
@@ -119,12 +117,19 @@ def render_orm_diagram(output_path: Path, fmt: str = "png", dpi: int = 150,
             ha="center", va="center", fontsize=8,
             color=INK_DARK if transparent else "#808080", style="italic")
 
-    # Label circles for completion tokens
-    for i in range(prompt_end, n_tokens):
-        x = x_offset + i * box_w + box_w/2 - 0.05
-        draw_label_circle(ax, x, y_labels + 0.1, "1")
+    label_x = x_offset + prompt_end * box_w + 0.55
+    label_box = FancyBboxPatch(
+        (label_x, y_labels - 0.13), 3.5, 0.5,
+        boxstyle="round,pad=0.04,rounding_size=0.1",
+        facecolor="#E8F5E9", edgecolor="#4CAF50", linewidth=2,
+    )
+    ax.add_patch(label_box)
+    ax.text(
+        label_x + 1.75, y_labels + 0.12, r"one target: $z=1$ (correct)",
+        ha="center", va="center", fontsize=9, fontweight="bold", color="#2E7D32",
+    )
 
-    # === Lane 3: Model outputs (what the model learns) ===
+    # === Lane 3: Per-token logits that are pooled into one prediction ===
     # Add background highlight to show this is the learned output
     model_bg = FancyBboxPatch(
         (x_offset + prompt_end * box_w - 0.15, y_outputs - 0.2),
@@ -136,50 +141,86 @@ def render_orm_diagram(output_path: Path, fmt: str = "png", dpi: int = 150,
 
     ax.text(x_offset - 0.2, y_outputs + 0.2, "Model", ha="right", va="center",
             fontsize=9, fontweight="bold", color="#1565C0")
-    ax.text(x_offset - 0.2, y_outputs - 0.05, r"predicts $p_t$", ha="right", va="center",
+    ax.text(x_offset - 0.2, y_outputs - 0.05, r"logits $\ell_t$", ha="right", va="center",
             fontsize=9, fontweight="bold", color="#1565C0")
 
-    probs = [".92", ".88", ".95", ".99", ".97", ".94"]  # 6 completion tokens
-    for i, p in enumerate(probs):
+    logits = ["2.1", "2.4", "2.7", "2.9", "3.1", "3.3"]  # mean = 2.75
+    for i, logit in enumerate(logits):
         x = x_offset + (prompt_end + i) * box_w + box_w/2 - 0.05
-        ax.text(x, y_outputs + 0.1, f"$p$={p}", ha="center", va="center",
+        ax.text(x, y_outputs + 0.1, rf"$\ell$={logit}", ha="center", va="center",
                 fontsize=9, color="#0066CC", fontweight="bold")
 
-    # === Right side: Loss and Usage ===
-    right_x = x_offset + n_tokens * box_w + 0.3
+    # === Right side: pool logits, then branch to training loss and score ===
+    right_x = x_offset + n_tokens * box_w + 0.35
+    pool_box = FancyBboxPatch(
+        (right_x, y_outputs - 0.22), 1.7, 0.65,
+        boxstyle="round,pad=0.05",
+        facecolor="#E3F2FD", edgecolor="#1976D2", linewidth=2,
+    )
+    ax.add_patch(pool_box)
+    ax.text(
+        right_x + 0.85, y_outputs + 0.1,
+        "Masked mean\n" + r"$\bar{\ell}=\frac{1}{T}\sum_t\ell_t=2.75$",
+        ha="center", va="center", fontsize=8.5, fontweight="bold", color="#1565C0",
+    )
 
-    # BCE loss box
+    loss_x = right_x + 2.2
+    loss_y = y_labels - 0.2
     loss_box = FancyBboxPatch(
-        (right_x, y_labels - 0.15), 1.5, 0.5,
+        (loss_x, loss_y), 2.25, 0.65,
         boxstyle="round,pad=0.05",
         facecolor="#FFEBEE", edgecolor="#F44336", linewidth=2
     )
     ax.add_patch(loss_box)
-    ax.text(right_x + 0.75, y_labels + 0.1, r"$\mathrm{BCE}(p_t, z_t)$",
-            ha="center", va="center", fontsize=9, fontweight="bold", color="#C62828")
+    ax.text(
+        loss_x + 1.125, loss_y + 0.325,
+        "One sequence loss\n" + r"$\mathrm{BCEWithLogits}(\bar{\ell},z)$",
+        ha="center", va="center", fontsize=8.5, fontweight="bold", color="#C62828",
+    )
 
-    # Aggregate box
-    agg_box = FancyBboxPatch(
-        (right_x, y_outputs - 0.15), 1.5, 0.5,
+    score_y = y_outputs - 0.85
+    score_box = FancyBboxPatch(
+        (loss_x, score_y), 2.25, 0.65,
         boxstyle="round,pad=0.05",
         facecolor="#E8F5E9", edgecolor="#4CAF50", linewidth=2
     )
-    ax.add_patch(agg_box)
-    ax.text(right_x + 0.75, y_outputs + 0.1, "Aggregate",
-            ha="center", va="center", fontsize=9, fontweight="bold", color="#2E7D32")
+    ax.add_patch(score_box)
+    ax.text(
+        loss_x + 1.125, score_y + 0.325,
+        "Response score\n" + r"$\sigma(\bar{\ell})=0.94$",
+        ha="center", va="center", fontsize=9, fontweight="bold", color="#2E7D32",
+    )
 
-    # Final score
-    ax.text(right_x + 1.85, y_outputs + 0.1, "→ 0.94",
-            ha="left", va="center", fontsize=11, fontweight="bold", color="#2E7D32")
+    arrow_color = INK_DARK if transparent else "#455A64"
+    completion_end = x_offset + n_tokens * box_w - 0.1
+    ax.add_patch(FancyArrowPatch(
+        (completion_end, y_outputs + 0.1), (right_x, y_outputs + 0.1),
+        arrowstyle="->", mutation_scale=12, linewidth=1.6, color=arrow_color,
+    ))
+    ax.add_patch(FancyArrowPatch(
+        (right_x + 1.7, y_outputs + 0.1), (loss_x, loss_y + 0.32),
+        arrowstyle="->", mutation_scale=12, linewidth=1.4, color=arrow_color,
+        connectionstyle="arc3,rad=-0.12",
+    ))
+    ax.add_patch(FancyArrowPatch(
+        (right_x + 1.7, y_outputs + 0.05), (loss_x, score_y + 0.32),
+        arrowstyle="->", mutation_scale=12, linewidth=1.4, color=arrow_color,
+        connectionstyle="arc3,rad=0.12",
+    ))
+    ax.add_patch(FancyArrowPatch(
+        (label_x + 3.5, y_labels + 0.12), (loss_x, loss_y + 0.45),
+        arrowstyle="->", mutation_scale=11, linewidth=1.2, color="#E65100",
+        connectionstyle="arc3,rad=-0.08",
+    ))
 
     # === Notes at bottom ===
-    notes = "Offline supervision  •  Fixed dataset labels  •  Use: verify / filter / rerank"
-    ax.text(x_offset + n_tokens * box_w / 2, 0.2, notes,
+    notes = "Prompt and padding masked  •  EOS retained  •  Equal weight per valid sequence"
+    ax.text(x_offset + n_tokens * box_w / 2, -0.38, notes,
             ha="center", va="center", fontsize=9, color="#606060",
             bbox=dict(boxstyle="round,pad=0.3", facecolor="#F5F5F5", edgecolor="#E0E0E0"))
 
-    ax.set_xlim(-0.3, x_offset + n_tokens * box_w + 3.2)
-    ax.set_ylim(-0.2, 4.7)
+    ax.set_xlim(-0.3, loss_x + 2.65)
+    ax.set_ylim(-0.75, 4.85)
     ax.set_aspect("equal")
     ax.axis("off")
 

@@ -129,7 +129,6 @@ The code takes in standard transformer inputs -- `input_ids` (tokenized text) an
 This model will have a structure as follows:
 
 ```python
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -239,35 +238,52 @@ Regardless, once trained, these models are used similarly to other reward models
 
 The majority of *preference tuning* for language models and other AI systems is done with the Bradley-Terry models discussed above.
 For reasoning-heavy tasks, one can use an Outcome Reward Model (ORM).
-The training data for an ORM is constructed in a similar manner to standard preference tuning.
-Here, we have a problem statement or prompt, $x$ and two completions $y_1$ and $y_2$. 
-The inductive bias used here is that one completion should be a correct solution to the problem and one incorrect, resulting in $(y_c,y_{ic})$.
+An ORM dataset contains a prompt $x$, a completion $y$, and a binary outcome $r \in \{0,1\}$ indicating whether that completion reaches the correct final answer.
+Unlike Bradley-Terry training, the minimum training example is one labeled completion rather than a chosen-rejected pair.
+Multiple completions for the same problem are still useful for covering both successful and failed reasoning paths.
 
-The architecture of the models used is very similar to a standard reward model, with a linear layer appended to a model that can output a single logit (in the case of an RM) -- with an ORM, the training objective that follows is slightly different [@cobbe2021gsm8k]:
+There are several ORM conventions in the literature, differing in how token-level head outputs become a response-level prediction.
+The executable example in this book follows the sequence-level formulation used by OREAL [@lyu2025exploring].
+A scalar head produces a logit $z_{\theta,t}(x,y)$ at every token position, but the logits for completion tokens are first averaged into one sequence logit:
 
-> [We] train verifiers with a joint objective where the model
-learns to label a model completion as correct or incorrect, in addition to the original language modeling objective. 
-> Architecturally, this means our verifiers
-are language models, with a small scalar head that outputs predictions on a per-token basis. 
-> We implement this scalar head as a single bias parameter and single gain parameter that operate on the logits outputted by the language model's final unembedding layer.
+$$\bar{z}_\theta(x,y) = \frac{1}{|M_y|}\sum_{t \in M_y} z_{\theta,t}(x,y), \qquad p_\theta(x,y) = \sigma\!\left(\bar{z}_\theta(x,y)\right),$$
 
-To translate, this is implemented as a language modeling head that can predict two classes per token (1 for correct, 0 for incorrect), rather than a classification head of a traditional RM that outputs one logit for the entire sequence.
-Formally, following [@lyu2025exploring] this is a per-token binary cross-entropy loss:
+where $M_y$ contains the completion-token positions, including the appended EOS token but excluding prompt and padding tokens.
+One binary cross-entropy term is then applied per valid completion:
 
-$$\mathcal{L}_{\text{CE}}(\theta) = -\mathbb{E}_{(s,r)\sim \mathcal{D}}\left[r\log p_\theta(s) + (1-r)\log(1-p_\theta(s))\right]$$ {#eq:orm_loss}
+$$\mathcal{L}_{\text{ORM}}(\theta) = -\mathbb{E}_{(x,y,r)\sim \mathcal{D}}\left[r\log p_\theta(x,y) + (1-r)\log\left(1-p_\theta(x,y)\right)\right].$$ {#eq:orm_loss}
 
-where $r \in \{0,1\}$ is a binary label where 1 applies to a correct answer to a given prompt and 0 applies to an incorrect answer, and $p_\theta(s)$ is the scalar proportional to the predicted probability of correctness from the model being trained.
-In code, this outcome label is copied onto every completion token, while prompt tokens are masked with `-100` so they do not contribute to the loss.
+The order of operations matters: this objective computes `sigmoid(mean(logits))`, not `mean(sigmoid(logits))`, and it does not compute a separate loss for every token.
+Consequently, each completion contributes one equally weighted training example regardless of its length.
+In the packed data format used below, the outcome label is repeated over completion positions, while prompt and padding positions contain `-100`; those repeated values define the completion mask and make the sequence label easy to recover, but they are not independent token-level targets.
 
-Implementing an outcome reward model (and other types, as we'll see with the Process Reward Model) involves applying the cross-entropy loss per-token based on whether the completion is a correct sample.
-This is far closer to the language modeling loss, where it does not need the structured chosen-rejected nature of standard Bradley-Terry reward models.
-In the simplified ORM training setup below, we are not sampling new tokens or training an LLM on next-token prediction; we feed a fixed prompt-completion sequence through the backbone and train the ORM head to predict correctness labels.
+The simplified setup feeds each fixed prompt-completion sequence through the backbone and trains only against its outcome label.
+It does not sample new tokens or add a next-token language-modeling objective.
 
 The model structure could follow as:
 
 ```python
 import torch.nn as nn
 import torch.nn.functional as F
+
+
+def pool_completion_logits(token_logits, labels):
+    """Return one mean logit and one outcome label per valid sequence."""
+    completion_mask = labels != -100
+    counts = completion_mask.sum(dim=1)
+    valid = counts > 0
+
+    masked_logits = token_logits.masked_fill(~completion_mask, 0.0)
+    sequence_logits = masked_logits.sum(dim=1) / counts.clamp_min(1).to(
+        token_logits.dtype
+    )
+    first_completion = completion_mask.long().argmax(dim=1, keepdim=True)
+    sequence_labels = labels.gather(1, first_completion).squeeze(1)
+    return (
+        sequence_logits[valid],
+        sequence_labels[valid].to(token_logits.dtype),
+    )
+
 
 class OutcomeRewardModel(nn.Module):
     def __init__(self, base_lm):
@@ -297,16 +313,17 @@ class OutcomeRewardModel(nn.Module):
         # Inference-only forward pass: no loss is computed.
         if labels is None:
             return None, logits
-        # Only compute loss on completion tokens (labels 0 or 1)
-        # Prompt tokens have labels = -100
-        mask = labels != -100
-        loss = None
-        if mask.any():
+        # Pool completion-token logits, then compute one BCE per sequence.
+        sequence_logits, sequence_labels = pool_completion_logits(
+            logits, labels
+        )
+        if sequence_logits.numel():
             loss = F.binary_cross_entropy_with_logits(
-                logits[mask], labels[mask].float()
+                sequence_logits, sequence_labels
             )
         else:
-            loss = logits.sum() * 0
+            # Preserve a differentiable zero for an entirely masked batch.
+            loss = logits.sum() * 0.0
         return loss, logits
 ```
 
@@ -319,33 +336,34 @@ hidden = model.lm(**inputs, output_hidden_states=True).hidden_states[-1]
 logits_per_token = model.head(hidden).squeeze(-1)  # (batch, seq_len)
 # This will sometimes be compressed as model.forward() in other implementations
 
-# Binary labels: 1=correct, 0=incorrect (prompt tokens masked as -100)
-mask = labels != -100
+# Binary labels: 1=correct, 0=incorrect (prompt/padding masked as -100)
+sequence_logits, sequence_labels = pool_completion_logits(
+    logits_per_token, labels
+)
 loss = F.binary_cross_entropy_with_logits(
-    logits_per_token[mask], labels[mask].float()
+    sequence_logits, sequence_labels
 )
 ```
 
-The important intuition here is that an ORM will output a probability of correctness at every token in the sequence (judged only by the final answer -- reasoning errors are not captured in the ORM training process).
-This can be a noisy process, as the updates and loss propagate per token depending on outcomes and attention mappings.
+The token logits are intermediate features used to form one probability that the whole completion is correct.
+Because supervision comes only from the final outcome, the model is not told which reasoning step failed; a correct final answer can also hide faulty reasoning.
 
-![At inference time, an outcome reward model outputs per-token correctness probabilities over completion tokens. Prompt tokens are ignored for scoring, and the completion probabilities can be aggregated into a response-level score for verification, filtering, or reranking.](images/orm_inference.png){#fig:orm_inference data-dark-src="images/orm_inference-dark.png"}
+![At inference time, an outcome reward model averages the scalar logits over completion tokens, excluding prompt and padding positions, then applies a sigmoid to produce one response-level correctness score for verification, filtering, or reranking.](images/orm_inference.png){#fig:orm_inference data-dark-src="images/orm_inference-dark.png"}
 
-![Training an outcome reward model uses offline labels from a verifier or dataset (e.g., all 1s for correct completions). Each completion token is trained with binary cross-entropy against the outcome label, and per-token probabilities are aggregated into a final score for verification, filtering, or reranking.](images/orm_training.png){#fig:orm_training data-dark-src="images/orm_training-dark.png"}
+![Training an outcome reward model uses one offline correctness label per completion. Completion-token logits are averaged into a sequence logit, and a single binary cross-entropy loss is applied; prompt and padding positions are masked.](images/orm_training.png){#fig:orm_training data-dark-src="images/orm_training-dark.png"}
 
-These models have continued to be used, but are less supported in open-source RLHF tools. 
-For example, the same type of ORM was used in the seminal work *Let's Verify Step by Step* [@lightman2023let], but without the language modeling prediction piece of the loss.
-Then, the final loss is a cross-entropy loss on every token, predicting whether the final answer is correct.
-
-Given the lack of support, the term outcome reward model (ORM) has been used in multiple ways. 
-Some literature, e.g. [@lyu2025exploring], continues to use the original definition from Cobbe et al. 2021; others use it more broadly for any verifier trained to predict whether a completion is correct.
+This pooled sequence objective should not be conflated with the token-level verifier introduced by Cobbe et al. [@cobbe2021gsm8k].
+Cobbe et al. trained the verifier to predict the same outcome at every solution token (using mean squared error in their experiments) and also included an auxiliary language-modeling objective.
+Lightman et al. [@lightman2023let] followed the token-level verifier setup without the language-modeling objective: every token received the completion outcome as its target during training, while the final-token prediction alone was used as the solution score at test time.
+Thus, dense token supervision with final-token scoring and mean-logit sequence pooling are related ORM designs, but they define different losses and scoring rules.
+Because “ORM” is used broadly for verifiers trained from completion outcomes, an implementation should state which reduction it uses.
 
 
 ## Process Reward Models
 
 Process Reward Models (PRMs), originally called process-supervised reward models, are reward models trained to output scores at every *step* in a chain-of-thought reasoning process. 
-These differ from a standard RM that outputs a score only at an EOS token or an ORM that outputs a score at every token.
-Process Reward Models require supervision at the end of each reasoning step, and then are trained similarly where the tokens in the step are trained to their relevant target -- the target is the step in PRMs and the entire response for ORMs.
+These differ from standard RMs and the pooled ORM above, which each produce one response-level score.
+Process Reward Models require separate supervision at the end of each reasoning step, whereas an ORM receives one outcome target for the entire response.
 
 Following [@lightman2023let], a binary-labeled PRM is commonly optimized with a per-step cross-entropy loss:
 
@@ -419,7 +437,7 @@ class ProcessRewardModel(nn.Module):
         return loss, logits
 ```
 
-The core loss function looks very similar to outcome reward models, with the labels being applied at different intervals.
+Unlike the pooled ORM loss, the PRM loss preserves separate predictions and targets at annotated step boundaries.
 ```python
 # Assume model outputs 3-class logits per token
 hidden = model.lm(**inputs, output_hidden_states=True).hidden_states[-1]
@@ -439,31 +457,31 @@ Below is a summary of what the models predict and how they are trained.
 | Model Class | What They Predict | How They Are Trained | LM structure |
 |------------|------------------|---------------------|--------------|
 | **Reward Models** | Sequence-level quality score $r_\theta(x, y)$ | Contrastive loss between pairwise (or N-wise) comparisons between completions | Linear head on EOS/last-token hidden state |
-| **Outcome Reward Models** | Probability that an answer is correct per-token | Labeled outcome pairs (e.g., success/failure on verifiable domains) | Per-token binary cross-entropy head; labels repeat the outcome label |
-| **Process Reward Models** | A reward or score for intermediate steps at end of reasoning steps | Trained using intermediate feedback or stepwise annotations (trained per token in reasoning step) | Per-token head predicting step correctness (-1, 0, 1) |
+| **Outcome Reward Models** | Probability that a completed answer is correct | Independently labeled completions (e.g., success/failure on verifiable domains) | Scalar token head; mean completion logit followed by sequence-level binary cross-entropy |
+| **Process Reward Models** | A reward or score at the end of each reasoning step | Stepwise annotations applied at designated boundaries | Per-token head read at step boundaries to predict step correctness (-1, 0, 1) |
 | **Value Functions** | The expected return given the current state | Trained via regression to each point in sequence | A scalar regression head with per-token outputs |
 Table: Comparing types of reward models. {#tbl:rm_compare}
 :::
 
 A few caveats on the distinctions in this table, as the boundaries between model types are not always clear cut:
 
-- Both in preference tuning and reasoning training, the value functions often have a discount factor of 1, which makes a value function even closer to an outcome reward model, but with a different training loss.
+- In reasoning training, value functions often use a discount factor of 1. Their targets can then resemble an outcome label, but a value is still conditioned on a prefix and trained for each state rather than pooled into one response prediction.
 - A process reward model can be supervised by doing rollouts from an intermediate state and collecting outcome data. This blends multiple ideas, but if the *loss* uses per-reasoning-step labels, it is best referred to as a PRM.
 
 **What if you train a Bradley-Terry pairwise model with correct/incorrect pairs?** 
 Much of the confusion on outcome reward models came from a small set of the literature that was training a reward model on pairwise data derived from answer correctness.
 In this domain, you set the chosen response as being a correct answer to a problem and a rejected response as being an incorrect answer *for the same problem.* 
-This is technically not an ORM and still trained directly with the contrastive, sequence-level loss.
-This is technically still a Bradley-Terry model and would fall in the first class of models we covered.
+In the terminology used here, this remains a Bradley-Terry preference model: correctness supplies the ordering, but the model is still trained with a contrastive pairwise loss rather than a binary outcome-classification loss.
+Some literature uses “ORM” more broadly for this case, so the objective is a more reliable description than the name alone.
 
 **ORM vs. Value Function.**
-ORMs and value functions can appear similar since both produce per-token outputs with the same head architecture, but they differ in *what they predict* and *where targets come from*:
+ORMs and value functions can use the same scalar head at each token position, but they differ in *what they predict*, *how those outputs are reduced*, and *where targets come from*:
 
-- **ORMs** predict an immediate, token-local quantity: $p(\text{correct}_t)$ or $r_t$. Targets come from *offline labels* (a verifier or dataset marking tokens/sequences as correct or incorrect).
+- **ORMs** in the pooled formulation predict one response-level probability $P(\text{completion correct}\mid x,y)$. The token logits are averaged before the sigmoid and loss, and the target is one fixed offline outcome label.
 - **Value functions** predict the expected *remaining* return: $V(s_t) = \mathbb{E}\left[\sum_{k \geq t} \gamma^{k-t} r_k \mid s_t\right]$. Targets are typically *computed from on-policy rollouts* under the current policy $\pi_\theta$, and change as the policy changes (technically, value functions can also be off-policy, but this is not established for work in language modeling).
 
-If you define a dense token reward $r_t = \mathbb{1}[\text{token is correct}]$ and use $\gamma = 1$, then an ORM is learning $r_t$ (or $p(r_t = 1)$) while the value head is learning the remaining-sum $\sum_{k \geq t} r_k$.
-They can share the same base model and head dimensions, but the *semantics and supervision pipeline* differ: ORMs are trained offline from fixed labels, while value functions are trained on-policy and used to compute advantages $A_t = \hat{R}_t - V_t$ for policy gradients.
+With a terminal binary reward and $\gamma=1$, every prefix on a rollout may receive the same Monte Carlo return, making value targets superficially resemble repeated ORM labels.
+The distinction remains operational: the ORM pools token logits and makes one classification per completed response, while the value head retains a state-dependent estimate at every prefix for computing advantages $A_t = \hat{R}_t - V_t$.
 
 ### Inference Across Reward Model Types
 
@@ -479,9 +497,9 @@ The models handle data differently at inference time (once they've been trained)
 **Outcome RM:**
 
 - *Input:* prompt $x$ + completion $y$
-- *Output:* per-token probabilities $p_t \approx P(\text{correct at token } t)$ over completion tokens
-- *Usage:* score finished candidates; aggregate via mean, min (tail risk), or product $\prod_t p_t$ (equivalently, sum log-probabilities $\sum_t \log p_t$)
-- *Aggregation choices:* mean correctness, minimum $p_t$, average over last $m$ tokens, or threshold flagging if any $p_t < \tau$
+- *Output:* one probability $p_\theta(x,y)=\sigma\!\left(\frac{1}{|M_y|}\sum_{t\in M_y}z_{\theta,t}\right)$
+- *Usage:* score finished candidates for verification, filtering, or reranking
+- *Aggregation:* average completion-token **logits**, then apply the sigmoid; prompt and padding positions are excluded
 
 **Process RM:**
 
@@ -495,12 +513,12 @@ The models handle data differently at inference time (once they've been trained)
 - *Input:* prompt $x$ + current prefix $y_{\leq t}$ (a state)
 - Output: $V_t$ at each token position in the completion (expected remaining return from state $t$)
 - Usage: compute per-token advantages $A_t = \hat{R}_t - V_t$ during RL training; the values at each step serve as baselines
-- *Aggregation:* typically take $V$ at the last generated token; interpretation differs from "probability of correctness"
+- *Aggregation:* none for advantage estimation; each prefix keeps its own value, whose interpretation differs from “probability of correctness”
 
 In summary, the way to understand the different models is:
 
 - **RM:** "How good is this whole answer?" → scalar value
-- **ORM:** "Which parts look correct?" → per-token correctness
+- **ORM:** "Is this completed answer correct?" → scalar outcome probability
 - **PRM:** "Are the reasoning steps sound?" → per-step scores
 - **Value:** "How much reward remains from here?" → baseline for RL advantages
 

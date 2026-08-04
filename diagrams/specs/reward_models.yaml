@@ -50,8 +50,9 @@ reward_models:
     title: "Outcome Reward Model (ORM)"
     short_title: "Outcome RM"
     description: |
-      Per-token correctness classification.
-      Predicts probability of correct outcome at each token.
+      Sequence-level outcome classification using pooled token logits.
+      The OREAL-style objective averages completion-token logits before applying
+      the sigmoid and one binary cross-entropy loss per valid sequence.
 
     inputs:
       data:
@@ -62,30 +63,32 @@ reward_models:
 
     architecture:
       base: "LM trunk"
-      head: "Per-token classification head"
-      pooling: "None (per-token outputs)"
+      head: "Per-token binary-logit head"
+      pooling: "Masked mean over completion-token logits"
 
     scores:
-      granularity: "per-token"
-      output: "p(correct | x, y_≤t) for each token t"
-      what: "Correctness probability at each position"
+      granularity: "sequence-level"
+      output: "sigmoid(mean_t logit_t), for t in completion"
+      what: "One correctness score per (prompt, completion) pair"
 
     loss:
-      name: "Binary cross-entropy"
-      formula: "L = Σ_t BCE(p_t, label) where t ∈ completion"
+      name: "Sequence-level binary cross-entropy after masked logit pooling"
+      formula: "L = BCEWithLogits((1/|y|) Σ_{t ∈ completion} logit_t, z)"
       notes:
-        - "Prompt tokens masked (label = -100)"
-        - "All completion tokens supervised"
+        - "Prompt and padding tokens excluded from the masked mean"
+        - "Completion EOS is retained in the masked mean"
+        - "Exactly one loss per valid sequence, so examples have equal weight"
+        - "Distinct from verifier variants that apply the outcome label at every token"
 
     supervision:
       mask_prompt: true
       mask_completion: false
-      supervised_positions: "All completion tokens"
-      label_type: "binary correctness"
+      supervised_positions: "Completion-token logits contribute to one pooled prediction"
+      label_type: "one binary outcome per completion"
 
     inference:
       input: "(x, y)"
-      output: "per-token probabilities → aggregate (mean, last, etc.)"
+      output: "completion logits → masked mean → sigmoid → one response score"
       usage: "Verify solution correctness, weighted decoding"
 
   - id: prm
@@ -185,11 +188,11 @@ token_strips:
     annotation: "Scalar score from EOS representation"
 
   orm:
-    description: "Show single sequence, prompt masked, completion highlighted"
+    description: "Show single sequence, prompt masked, completion logits pooled"
     tokens_example: ["<s>", "What", "is", "2+2", "?", "The", "answer", "is", "4", "</s>"]
     highlight_positions: [5, 6, 7, 8, 9]  # completion tokens
     masked_positions: [0, 1, 2, 3, 4]  # prompt tokens
-    annotation: "Per-token correctness on completion"
+    annotation: "Masked mean of completion logits, then sigmoid to one response score"
 
   prm:
     description: "Show CoT with step boundaries highlighted"

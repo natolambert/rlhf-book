@@ -94,9 +94,9 @@ Horizontal token sequences showing where supervision attaches for different rewa
 |---|---|---|---|
 | `pref_rm_training` | `generate_token_strips.py` | Preference RM: pairwise comparison at EOS (chosen vs rejected) | Ch 5 (Reward Models) |
 | `prm_training_inference` | `generate_token_strips.py` | Process RM: 3-class labels at step boundaries (training vs inference) | Ch 5 (Reward Models) |
-| `orm_inference` | `generate_token_strips.py` | Outcome RM: per-token correctness probability | Ch 5 (Reward Models) |
+| `orm_inference` | `generate_token_strips.py` | Outcome RM: masked mean of completion logits, then one response score | Ch 5 (Reward Models) |
 | `value_fn_inference` | `generate_token_strips.py` | Value function: per-token state values V(s) | Ch 5 (Reward Models) |
-| `orm_training` | `generate_multilane_strips.py` | ORM multi-lane: tokens, labels, targets, model outputs | Ch 5 (Reward Models) |
+| `orm_training` | `generate_multilane_strips.py` | ORM multi-lane: completion logits, masked mean, sequence BCE, and score | Ch 5 (Reward Models) |
 | `value_fn_training` | `generate_multilane_strips.py` | Value function multi-lane: training data flow | Ch 5 (Reward Models) |
 
 **Make target:** `make tokens`

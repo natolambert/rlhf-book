@@ -54,22 +54,24 @@ The model outputs the probability that the piece of text is chosen as a single l
         "title": "Outcome Reward Model (ORM)",
         "section": """
 For reasoning heavy tasks, one can use an Outcome Reward Model (ORM).
-Training data: problem statement/prompt x, and two completions where one is correct (y_c) and one incorrect (y_ic).
+Training data: problem statement/prompt x, a completion y, and a binary outcome z.
 
-The loss is a per-token cross-entropy:
-L_CE(θ) = -E_{(s,r)~D}[r·log p_θ(s) + (1-r)·log(1-p_θ(s))]
+The OREAL-style objective first averages the model's completion-token logits:
+ℓ_bar = (1 / |y|) · Σ_{t in completion} ℓ_t
 
-Where r ∈ {0,1} is a binary label (1=correct, 0=incorrect), and p_θ(s) is the predicted probability of correctness.
+It then applies one sequence-level binary cross-entropy:
+L(θ) = BCEWithLogits(ℓ_bar, z)
 
-Architecture: Language modeling head that predicts two classes per token (1 for correct, 0 for incorrect).
-The important intuition: an ORM outputs a probability of correctness at every token in the sequence.
-Prompt tokens are masked (labels = -100), completion tokens are supervised.
+Where z ∈ {0,1} is one binary label for the whole completion. At inference,
+the response score is sigmoid(ℓ_bar). Prompt and padding positions are excluded
+from the masked mean; the completion EOS position is retained. This differs from
+token-supervised verifier variants that repeat an outcome label at every token.
 """,
         "key_points": [
-            "Per-token correctness prediction",
-            "Binary cross-entropy loss",
-            "Prompt tokens masked, completion supervised",
-            "Outputs probability of correctness at each token",
+            "Per-token logits pooled with a masked completion mean",
+            "One binary cross-entropy loss per valid sequence",
+            "Prompt and padding excluded; completion EOS retained",
+            "One sigmoid response score after logit pooling",
         ],
     },
     "prm": {
@@ -130,7 +132,7 @@ SUMMARY_TABLE = """
 | Model Class | What They Predict | How They Are Trained | LM structure |
 |------------|------------------|---------------------|--------------|
 | **Reward Models** | Quality of text via probability of chosen response at EOS token | Contrastive loss between pairwise comparisons | Regression/classification head on LM features |
-| **Outcome Reward Models** | Probability that an answer is correct per-token | Labeled outcome pairs (success/failure) | LM head per-token cross-entropy |
+| **Outcome Reward Models** | One pooled probability that a completion is correct | Binary outcome labels (success/failure) | Per-token logit head, masked mean, sequence BCE |
 | **Process Reward Models** | Score for intermediate steps at end of reasoning steps | Intermediate feedback or stepwise annotations | LM head per reasoning step, predicts 3 classes |
 | **Value Functions** | Expected return given current state | Regression to each point in sequence | Classification with output per-token |
 """
