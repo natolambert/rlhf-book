@@ -153,27 +153,28 @@ From the "Claude's Character" blog post -- character training became an explicit
 
 ---
 
-<!-- columns: 55/45 -->
 <!-- valign: center -->
 ## How? Amanda Askell, on the Lex Fridman podcast
 
-```conversation
-size: 0.72
-messages:
-  - role: user
-    content: |
-      When you say character training, what's incorporated into character training? Is that RLHF or what are we talking about?
-  - role: assistant
-    model: "Amanda Askell (Anthropic)"
-    content: |
-      It's more like constitutional AI, so it's a variant of that pipeline. I worked through constructing character traits that the model should have. [...] And then you get the model to generate queries that humans might give it that are relevant to that trait. Then it generates the responses and then it ranks the responses based on the character traits. [...] it's like Claude's training in its own character [...] it's without any human data.
-```
+One of the only public descriptions of the process, from the person who leads it:
 
-|||
+> **Lex Fridman:** When you say character training, what's incorporated into character training? Is that RLHF or what are we talking about?
+
+<!-- step -->
+
+> **Amanda Askell:** It's more like constitutional AI, so it's a variant of that pipeline. I worked through constructing character traits that the model should have. [...] And then you get the model to generate queries that humans might give it that are relevant to that trait. Then it generates the responses and then it ranks the responses based on the character traits. [...] it's like Claude's training in its own character [...] it's without any human data.
+
+---
+
+<!-- rows: 30/70 -->
+<!-- valign: center -->
+## The same machinery, pointed at traits
+
+Lecture 7's aside -- "Anthropic still uses a constitution, yes, confusing" -- pays off today: character training reuses the **Constitutional AI pipeline**, aimed at personality traits instead of harmlessness.
+
+===
 
 ![The Constitutional AI pipeline, from Lecture 7.](assets/cai-overview.png)
-
-Lecture 7's aside -- "Anthropic still uses a constitution, yes, confusing" -- pays off today: the **same CAI machinery**, pointed at traits instead of harmlessness.
 
 ---
 
@@ -194,16 +195,13 @@ Lecture 7's aside -- "Anthropic still uses a constitution, yes, confusing" -- pa
 <!-- cite-right: anthropic2025souldoc -->
 ## The soul document reads like intent, not inputs
 
-The 2022 constitution was a list of principles to sample during training. The soul document explains *who Claude should be* and why -- compare the register:
+The 2022 constitution was a list of principles to sample during training. The soul document explains *who Claude should be* and why -- read the [extracted text on LessWrong](https://www.lesswrong.com/posts/vpNG99GhbBoLov9og/claude-4-5-opus-soul-document) and compare the register:
 
 ===
 
-```box
-title: "From the soul document (extracted text), on Claude's character"
-size: 0.9
-content: |
-  "Claude has a genuine character that it maintains expressed across its interactions: an intellectual curiosity that delights in learning and discussing ideas across every domain; warmth and care for the humans it interacts with and beyond..."
-```
+> Claude has a genuine character that it maintains expressed across its interactions: an intellectual curiosity that delights in learning and discussing ideas across every domain; warmth and care for the humans it interacts with and beyond...
+
+*From the soul document (extracted text), on Claude's character.*
 
 ---
 
@@ -212,47 +210,35 @@ content: |
 <!-- cite-right: openai2024modelspec -->
 ## OpenAI's Model Spec (2024)
 
-A public document of **goal model behaviors, written before clicking go on a fine-tuning run**: how OpenAI steers models behind the API, and how they will shift in the future.
+A public document of **goal model behaviors, written before clicking go on a fine-tuning run**: how OpenAI steers models behind the API, and how they will shift in the future. The living version is at [model-spec.openai.com](https://model-spec.openai.com/).
 
 Why it matters: training is complicated and multi-faceted, so the outcome always drifts from inputs like labeler instructions and data mixes. A spec is one of the *only* tools that lets anyone **compare actual behavior to designer intent** -- recall Lecture 8: "the link from data → behavior stays largely unaudited." This is the audit anchor.
 
 ===
 
-```box
-title: "From the Model Spec (2025 revision), on the chain of command"
-size: 0.9
-content: |
-  "The assistant must strive to follow all applicable instructions when producing a response."
+> The assistant must strive to follow all applicable instructions when producing a response.
 
-  Behavior stated as *intent* -- not a description of any training input.
-```
+*From the Model Spec (2025 revision), on the chain of command -- behavior stated as intent, not a description of any training input.*
 
 ---
 
-<!-- columns: 50/50 -->
+<!-- rows: 55/45 -->
 <!-- valign: center -->
 ## The abstraction difference
 
-```box
-title: A constitution (Anthropic, 2022)
-content: |
-  Principles are **inputs to the training process** -- sampled during critique, revision, and AI feedback.
+<!-- row-columns: 50/50 -->
 
-  The model's final behavior is an *emergent result* of running the pipeline over them.
-```
+**A constitution (Anthropic, 2022)**
+
+Principles are **inputs to the training process** -- sampled during critique, revision, and AI feedback. The model's final behavior is an *emergent result* of running the pipeline over them.
 
 |||
 
-```box
-title: A model spec (OpenAI)
-tone: accent
-content: |
-  States the **intended final behavior** -- the output of training, not its ingredients.
+**A model spec (OpenAI)**
 
-  Deviations between spec and model are *visible and auditable*.
-```
+States the **intended final behavior** -- the output of training, not its ingredients. Deviations between spec and model are *visible and auditable*.
 
-<!-- step -->
+===
 
 The chapter's load-bearing line: a perfectly executed model spec is much more revealing "because it speaks to **the intent of the process** rather than listing what acts as **intermediate training variables**."
 
