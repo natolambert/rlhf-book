@@ -603,6 +603,15 @@ Grading agents is adversarial now -- benchmark design inherits all of reward hac
 
 ---
 
+## Continue from here
+
+Two talks that go deeper on everything in this lecture:
+
+- My NeurIPS talk on evals, inside the Olmo 3 story: [slides](https://docs.google.com/presentation/d/10DT7MM8vbKFrxPiwAfcyvea0V4d6XpFBhe6_Pmneu2A/edit) · [recording](https://youtu.be/uaZ3yRdYg8A?t=2465) *(evals section from 41:05)*
+- Florian Brand's [LLM benchmarks in the time of agents](https://www.youtube.com/watch?v=kmTMc-fVSXw&t=870s) *(from 14:30)* -- the source of this lecture's system framing
+
+---
+
 ## Takeaways
 
 - Benchmarks mirror the **training goals of their era** -- and every era ends in saturation.
