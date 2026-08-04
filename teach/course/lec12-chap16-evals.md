@@ -131,7 +131,7 @@ The key to understanding evals: popular benchmarks are a **reflection of the tra
 - **Chat era** *(2022-23)* -- basic knowledge and chat style
 - **Multi-skill era** *(2023-24)* -- post-training improves more skills than just chat (math, code, factuality, safety, etc.)
 - **Reasoning & tools era** *(2024-26)* -- hard math, coding, and reasoning problems, long chains of thought
-- **Agents & real work** *(now)* -- end-to-end tasks knowledge-work inside products and harnesses
+- **Agents & real work** *(now)* -- end-to-end knowledge-work tasks inside products and harnesses
 
 ---
 
@@ -246,7 +246,7 @@ Almost everything that could go wrong was in **how you formatted the prompt**.
 ## Chain of thought (CoT) emerged to enable progress on harder problems
 
 Few-shot examples that show intermediate steps let models reason before answering.
-When people were still prompting base models, adding CoT made math and reasonign scores jump! 
+When people were still prompting base models, adding CoT made math and reasoning scores jump! 
 This is before modern post-training as well.
 
 Soon just appending *"Let's think step by step"* to a prompt approximated this behavior.
@@ -348,13 +348,9 @@ Answer the above question and REMEMBER to finish your response with the exact ph
 ---
 
 <!-- columns: 40/60 -->
-<!-- cite-right: lambert2024t -->
-## Encouraging the models to reason
+## Encouraging the models to reason: sampling settings
 
-We know reasoning models today think before answering. Tülu 3's MMLU prompt (a model before reasoning models) → the same MMLU eval as the few-shot era, now long-form CoT with exact-match checking.
-
-Modern eval suites can carry **per-benchmark prompts** tuned for formatting etc. 
-
+The prompt is only half of elicitation -- with long chains of thought, **how you sample** became part of the eval definition too.
 
 |||
 
@@ -368,7 +364,7 @@ Sampling settings joined the prompt as part of the eval: reasoning models need *
 - Formatting mismatches can take a model from **60% to near 0** [@schulhoff2024prompt] -- it is far easier to lose performance with a prompt than to gain it
 - Answer extraction is brittle: rigid suffixes (*"The answer is:"*) or regexes hunting for the answer anywhere in the text
 - Formats even conflict across training sets: NuminaMath [@li2024numinamath] wants `\boxed{42}`, MetaMath [@yu2023metamath] wants `The answer is: 42` -- **training on both can be worse than either alone**
-- Format-agnostic grading takes substantial effort and tinkering -- and was often rare in practice -- LLM-judges become popular even as answer extractors for flexibility
+- Format-agnostic grading takes substantial effort and tinkering -- and was often rare in practice -- LLM-judges became popular even as answer extractors for flexibility
 
 ---
 
@@ -520,7 +516,7 @@ More in [Appendix C: evaluation variance](https://rlhfbook.com/c/appendix-c-prac
 ## Why lab-vs-lab comparisons are unreliable
 
 - Each lab's eval stack is **tuned to its internal needs**: custom prompts for key benchmarks, undisclosed formats, different engines
-- We see the outputs of a sometimes complex fnction
+- We see the outputs of a sometimes complex function
 - Nobody discloses which public benchmarks were **held out vs. hillclimbed** -- train/dev/test hygiene is invisible from outside
 - Inference-time scaling confounds everything: more tokens buys more score, and token budgets are rarely controlled
 
@@ -536,7 +532,7 @@ More in [Appendix C: evaluation variance](https://rlhfbook.com/c/appendix-c-prac
 
 ## What evals are actually for inside labs
 
-- Labs hillclimb on a ~50 prioritized evals and report the public suite (subset) at the end
+- Labs hillclimb on ~50 prioritized evals and report the public suite (subset) at the end
 - The real product of a good internal eval is **statistical power**: less noise on the signals used to compare training runs
 - Sometimes the "test set" is just good data: MATH and GSM8K train splits are high-quality and crucial at a time -- if a lab doesn't track that eval, training on them is a rational choice
 - Human A/B testing and Elo stay in the loop for what benchmarks can't measure (recall Lecture 8)
@@ -545,7 +541,7 @@ More in [Appendix C: evaluation variance](https://rlhfbook.com/c/appendix-c-prac
 
 ## Contamination: Is training on test intentional?
 
-There's a long running field of study on understand if training data intentionally or accidentally improved on a score.
+There's a long-running field of study on understanding whether training data intentionally or accidentally improved a score.
 
 - **Decontamination** = n-gram / substring search between training and test sets to remove overlap and eval scores being due to memorization not generalization [@singh2024evaluation]
 - Tülu 3 found popular open datasets contaminated: UltraFeedback×TruthfulQA, Evol-CodeAlpaca×HumanEval, NuminaMath×MATH [@lambert2024t]
@@ -598,7 +594,7 @@ Grading agents is adversarial now -- benchmark design inherits all of reward hac
 
 **The environments wave:**
 
-- [olmo-eval](https://github.com/allenai/olmo-eval) `★ 64, so new!` -- Ai2's workbench for evals *inside the model-development loop* (2026)
+- [olmo-eval](https://github.com/allenai/olmo-eval) `★ 64 (new)` -- Ai2's workbench for evals *inside the model-development loop* (2026)
 - [verifiers](https://github.com/PrimeIntellect-ai/verifiers) `★ 4.4k` + [Environments Hub](https://www.primeintellect.ai/blog/environments) -- Prime Intellect's library and community hub: 2,500+ verifiable environments that double as evals (AIME, Terminal-Bench, ...)
 - The direction of travel: **training and evaluation share the same environment code** -- write it once, hillclimb and measure with it
 
@@ -610,7 +606,7 @@ Grading agents is adversarial now -- benchmark design inherits all of reward hac
 - A score is a **property of the whole system**: prompt, sampling, engine, harness, sandbox, hardware, grader. The model is one box.
 - Expect **±1 point of pure noise**; treat cross-lab comparisons as directional at best.
 - Contamination, gaming, etc. all bend single numbers -- for decisions that matter, **run your own evals** and control the system.
-- Full evaluation is expensive! in-depth runs of a modern agentic suite can cost **>$100K** *(per Florian Brand)*
+- Full evaluation is expensive! In-depth runs of a modern agentic suite can cost **>$100K** *(per Florian Brand)*
 
 ---
 
