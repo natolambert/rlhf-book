@@ -583,7 +583,7 @@ Grading agents is adversarial now -- benchmark design inherits all of reward hac
 ---
 
 <!-- columns: 50/50 -->
-## Tooling: run your own evals
+## Tooling: run your own research-grade evals
 
 **The established harnesses:**
 
@@ -602,6 +602,7 @@ Grading agents is adversarial now -- benchmark design inherits all of reward hac
 - [verifiers](https://github.com/PrimeIntellect-ai/verifiers) + [Environments Hub](https://www.primeintellect.ai/blog/environments) -- Prime Intellect's library and community hub: 2,500+ verifiable environments that double as evals (AIME, Terminal-Bench, ...)
 - The direction of travel: **training and evaluation share the same environment code** -- write it once, hillclimb and measure with it
 
+---
 
 ## Takeaways
 
