@@ -9,6 +9,7 @@ build/
 
 # Specific to this project
 arxiv_check_results.json
+teach/course/*-export-test.pdf
 
 # Claude Code - track skills, ignore local settings
 .claude/settings.local.json

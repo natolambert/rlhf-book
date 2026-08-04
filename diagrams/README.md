@@ -46,6 +46,7 @@ tikz/
 ├── 07-reasoning/          # Ch 7: rlvr_loop
 ├── 12-synthetic-data/     # Ch 12: knowledge_distillation, synthetic_data_distillation
 ├── 13-tools/              # Ch 13: tooluse_rl
+├── 16-evaluation/         # Ch 16: eval_components
 ├── 17-product/            # Ch 17: persona_vectors_pipeline
 └── pretraining/           # talks/intro: pretraining_next_token
 ```
@@ -120,6 +121,7 @@ Box-and-arrow flows for RLHF architectures and related training concepts. Many u
 | `synthetic_data_distillation_tikz` | `tikz/12-synthetic-data/synthetic_data_distillation_tikz.tex` | Synthetic data distillation process | Ch 12 (Synthetic Data) |
 | `sdpo_tikz` | `tikz/12-synthetic-data/sdpo_tikz.tex` | SDPO self-distillation: per-token reverse KL between a demonstration-conditioned self-teacher and the question-only student over sampled completions | Ch 12 (Synthetic Data) |
 | `tooluse_rl_tikz` | `tikz/13-tools/tooluse_rl_tikz.tex` | Tool-use RL: agent &harr; environment/tools over a trajectory, graded reward at trajectory end | Ch 13 (Tools) |
+| `eval_components_tikz` | `tikz/16-evaluation/eval_components_tikz.tex` | Components of running an evaluation: harness/sandbox/hardware, prompt &rarr; LLM &rarr; grader (after Florian Brand); staged via `\def\evalstage{1..3}` | Ch 16 (Evaluation) |
 | `persona_vectors_pipeline_tikz` | `tikz/17-product/persona_vectors_pipeline_tikz.tex` | Persona vector extraction and steering pipeline | Ch 17 (Product) |
 | `pretraining_next_token_tikz` | `tikz/pretraining/pretraining_next_token_tikz.tex` | Introductory next-token prediction example with target token and loss intuition | Talks/presentations |
 

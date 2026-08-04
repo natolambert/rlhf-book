@@ -1,0 +1,85 @@
+% Components of running evaluations (Ch 16).
+% Diagram recreated from Florian Brand's talk "LLM benchmarks in the era of
+% agents" (credited in the chapter caption).
+%
+% 3x3 grid, LLM at the core:
+%   Harness <-> Sandbox <-> Hardware
+%   Prompt  ->  LLM     ->  Grader
+%               ^Engine/API  vFinal Score
+%
+% Stages (for the lecture-deck build; `make tikz` builds the full diagram):
+%   \def\evalstage{1}  Prompt -> LLM -> Grader -> Final Score
+%   \def\evalstage{2}  + Engine/API
+%   \def\evalstage{3}  + Harness / Sandbox / Hardware   (default)
+% Hidden stages render as fully transparent ghost nodes so every stage shares
+% the same canvas (no reflow when the slides step through the build).
+% \def\evalaccent{1} fills the LLM box with the lecture accent (default off,
+% uniform boxes as in the original).
+\documentclass[tikz,border=6pt]{standalone}
+\usepackage{lmodern}
+\renewcommand{\familydefault}{\sfdefault}
+\usetikzlibrary{positioning, arrows.meta}
+\input{styles_rlhf.tex}
+
+\providecommand{\evalstage}{3}
+\providecommand{\evalaccent}{0}
+\definecolor{evalblue}{HTML}{6D9DC5}
+
+\begin{document}
+\begin{tikzpicture}[
+    evalbox/.style={
+        rectangle,
+        draw=black!55,
+        fill=white,
+        line width=0.9pt,
+        minimum width=3.3cm,
+        minimum height=1.55cm,
+        font=\normalsize,
+        rounded corners=3pt,
+        align=center
+    },
+    ghost/.style={evalbox, draw opacity=0, fill opacity=0, text opacity=0},
+    flow/.style={-{Stealth[length=3mm]}, line width=1.1pt, arrowink!75, shorten >=5pt},
+    duplex/.style={{Stealth[length=3mm]}-{Stealth[length=3mm]}, line width=1.1pt, arrowink!75, shorten >=5pt, shorten <=5pt},
+]
+
+% ---- middle row: the core flow ----------------------------------------
+\node[evalbox] (prompt) at (0, 0) {Prompt};
+\ifnum\evalaccent=1
+  \node[evalbox, draw=evalblue, fill=evalblue!12] (llm) at (4.6, 0) {LLM};
+\else
+  \node[evalbox] (llm) at (4.6, 0) {LLM};
+\fi
+\node[evalbox] (grader) at (9.2, 0) {Grader};
+
+% ---- bottom row -------------------------------------------------------
+\ifnum\evalstage>1
+  \node[evalbox, below=1.0cm of llm] (engine) {Engine / API};
+\else
+  \node[ghost, below=1.0cm of llm] (engine) {Engine / API};
+\fi
+\node[evalbox, below=1.0cm of grader] (score) {Final Score};
+
+\draw[flow] (prompt) -- (llm);
+\draw[flow] (llm) -- (grader);
+\draw[flow] (grader) -- (score);
+\ifnum\evalstage>1
+  \draw[flow] (engine) -- (llm);
+\fi
+
+% ---- top row: agentic infrastructure ----------------------------------
+\ifnum\evalstage>2
+  \node[evalbox, above=1.0cm of prompt] (harness) {Harness};
+  \node[evalbox, above=1.0cm of llm] (sandbox) {Sandbox};
+  \node[evalbox, above=1.0cm of grader] (hardware) {Hardware};
+  \draw[duplex] (harness) -- (sandbox);
+  \draw[duplex] (sandbox) -- (hardware);
+  \draw[flow] (harness) -- (prompt);
+\else
+  \node[ghost, above=1.0cm of prompt] (harness) {Harness};
+  \node[ghost, above=1.0cm of llm] (sandbox) {Sandbox};
+  \node[ghost, above=1.0cm of grader] (hardware) {Hardware};
+\fi
+
+\end{tikzpicture}
+\end{document}

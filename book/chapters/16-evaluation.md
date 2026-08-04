@@ -201,6 +201,17 @@ Answer the above question and REMEMBER to finish your response with the exact ph
 This, especially when the models use special formatting to separate thinking tokens from answer tokens, necessitated the most recent major update to evaluation regimes.
 Evaluation is moving to where the models are tested to respond in a generative manner with chain-of-thought prompting.
 
+### The Complexity of Agentic Evaluations
+
+As models move into agents, the evaluation paradigms are getting increasingly complex.
+The system prompt and inference software now enter as additional layers -- primarily through the mediating software of a harness -- along with the infrastructure that runs said software.
+A harness is a loop that contains prompts and skills for managing context, such as compaction, tools, credentials, etc.
+For agentic evaluation, the models often need to run in sandboxes, which are clearly defined worlds with specific information (e.g. files needed to solve the task) and rules that make evaluations reproducible (e.g. specific tool definitions).
+Sandboxes increase the complexity of running the model, as usually you now need more CPUs in addition to the GPUs for inference.
+For more information, you can refer to [this talk](https://www.youtube.com/watch?v=CGjuKIppZSs) from Florian Brand, the system diagram in @fig:eval-components, or read about Terminal-Bench, the most popular evaluation of this era, in its original version [@tbench2025] and the harder Terminal-Bench 2.0 [@tbench2026].
+
+![The components of running a modern, agentic evaluation -- every box influences the final score. Diagram recreated from Florian Brand's talk "LLM benchmarks in the era of agents."](images/eval_components_tikz.png){#fig:eval-components .center data-dark-src="images/eval_components_tikz-dark.png"}
+
 ## Why Many External Evaluation Comparisons Are Unreliable
 
 Language model evaluations within model announcements from AI companies can only be compared to other press releases with large error bars -- i.e. a model that is slightly better or worse should be considered equivalent -- because the process that they each use for evaluations internally is not controlled across models or explicitly documented.
