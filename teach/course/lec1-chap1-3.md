@@ -590,7 +590,6 @@ $$J(\pi) = \mathbb{E}\left[ r_\theta(x, y) \right] - \beta \, D_{\text{KL}}\!\le
 
 ---
 
-<!-- valign: center -->
 <!-- cite-right: ouyang2022training -->
 
 ## InstructGPT's 3-step RLHF recipe
@@ -676,7 +675,7 @@ Notation:
 ## Step 2/3: Reward modeling
 
 ```box
-title: Core Idea
+title: Core idea
 tone: accent
 content: |
   The reward used in RLHF is the model predicting the probability that a given piece of text would be the "winning" or "chosen" completion in a pair/batch. Clever!
@@ -897,7 +896,6 @@ The KL penalty $\beta$ is the main defense — it limits how far the policy can 
 
 ---
 
-<!-- valign: center -->
 ## How training recipes have evolved
 
 | | InstructGPT (2022) | Tülu 3 (2024) | DeepSeek R1 (2025) |
@@ -1200,35 +1198,35 @@ tone: accent
 compact: true
 content: |
   1. Introduction
-  2. Key Related Works
-  3. Training Overview
+  2. Key related works
+  3. Training overview
 ```
 
 |||
 
 ```box
-title: Core Training Pipeline
+title: Core training pipeline
 tone: muted
 compact: true
 content: |
-  4. Instruction Tuning
-  5. Reward Models
-  6. Reinforcement Learning
+  4. Instruction tuning
+  5. Reward models
+  6. Reinforcement learning
   7. Reasoning
-  8. Direct Alignment
-  9. Rejection Sampling
+  8. Direct alignment
+  9. Rejection sampling
 ```
 
 |||
 
 ```box
-title: Data & Preferences
+title: Data & preferences
 tone: muted
 compact: true
 content: |
-  10. What are Preferences
-  11. Preference Data
-  12. Synthetic Data & CAI
+  10. What are preferences
+  11. Preference data
+  12. Synthetic data & CAI
 ```
 
 ===
@@ -1236,15 +1234,15 @@ content: |
 <!-- row-columns: 34/33/33 -->
 
 ```box
-title: Practical Considerations
+title: Practical considerations
 tone: muted
 compact: true
 content: |
-  13. Tool Use
+  13. Tool use
   14. Over-optimization
   15. Regularization
   16. Evaluation
-  17. Product & Character
+  17. Product & character
 ```
 
 |||
@@ -1255,14 +1253,14 @@ tone: surface
 compact: true
 content: |
   - A. Definitions  
-  - B. Style & Information  
-  - C. Practical Issues  
+  - B. Style & information  
+  - C. Practical issues  
 ```
 
 |||
 
 ```box
-title: Course Home
+title: Course home
 tone: surface
 compact: true
 content: |

@@ -55,7 +55,6 @@ Some context:
 ---
 
 <!-- img-align: center -->
-<!-- valign: center -->
 ## The DPO debate (DPO v RL)
 
 ![When DPO was released it sparked a fierce debate about how best to do RLHF and preference learning. Meme credit: Tom Goldstein.](assets/dpo_meme.jpeg)
@@ -113,7 +112,7 @@ So we can train the policy *directly* on preferences.
 ---
 
 <!-- columns: 55/45 -->
-## DPO at a glance: where we're headed
+## DPO at a glance: Where we're headed
 
 The whole derivation lands on two objects.
 
@@ -143,7 +142,7 @@ Everything between here and the implementation is *why* this is the right loss.
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## DPO Derivation P1/4: Deriving the optimal policy
+## DPO derivation P1/4: Deriving the optimal policy
 
 ---
 
@@ -405,7 +404,7 @@ $$
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## DPO Derivation P2/4: Recovering the reward from the policy (needed to implement it)
+## DPO derivation P2/4: Recovering the reward from the policy (needed to implement it)
 
 ---
 
@@ -482,7 +481,7 @@ $$
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## DPO Derivation P3/4: Connecting to Bradley-Terry preference (what our alignment data has looked like) 
+## DPO derivation P3/4: Connecting to Bradley-Terry preference (what our alignment data has looked like) 
 
 ---
 
@@ -549,7 +548,7 @@ $$
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## DPO Derivation P4/4: The loss function and gradient
+## DPO derivation P4/4: The loss function and gradient
 
 ---
 
@@ -657,7 +656,7 @@ $$
 
 <!-- rows: 55/45 -->
 <!-- title: center -->
-## Recap: the DPO derivation
+## Recap: The DPO derivation
 
 $$
 \begin{aligned}
@@ -683,7 +682,7 @@ The reward model never had to be built — it was hiding inside the policy the w
 ---
 
 <!-- columns: 55/45 -->
-## A subtle risk: the chosen probability can fall
+## A subtle risk: The chosen probability can fall
 
 The DPO loss only cares about the **margin** between the chosen and rejected log-ratios — not their absolute values.
 So the model can lower the loss by pushing the *rejected* probability down **faster** than the chosen, even while the **chosen probability also falls**.
@@ -791,7 +790,7 @@ These algorithms need *feedback* data, not necessarily *human* feedback data —
 ---
 
 <!-- columns: 50/50 -->
-## DPO vs. RL: offline vs. online
+## DPO vs. RL: Offline vs. online
 
 **DPO and other DAAs**
 

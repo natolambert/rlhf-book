@@ -221,7 +221,7 @@ Key split: **the distribution** $\pi_\theta$ vs **the procedure** that samples i
 
 ---
 
-## Training an LM: cross-entropy
+## Training an LM: Cross-entropy
 
 At each position, cross-entropy compares the model's predicted distribution to the **true** next-token label $q_t$. That label is a *one-hot* at the actual token $x_t$, so the sum over the vocabulary collapses to a single term:
 

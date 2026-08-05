@@ -1,5 +1,5 @@
 ---
-title: "Lecture 11: Tool Use, Function Calling & The Road to Agents"
+title: "Lecture 11: Tool Use, Function Calling & the Road to Agents"
 author: "Nathan Lambert"
 fonts:
   heading: "Rubik"
@@ -29,7 +29,7 @@ custom_css: |
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
 
-# Lecture 11: Basics of LLM Tool Use and The Road to Today's Agents
+# Lecture 11: Basics of LLM Tool Use and the Road to Today's Agents
 
 <div class="colloquium-title-eyebrow">rlhfbook.com</div>
 
@@ -43,7 +43,6 @@ custom_css: |
 
 <!-- layout: section-break -->
 <!-- align: center -->
-<!-- valign: center -->
 
 ## What are the limitations of model weights alone?
 
@@ -124,7 +123,6 @@ content: |
 
 ---
 
-<!-- valign: center -->
 <!-- title: center -->
 ## Quick pause for YouTube: How'd you end up here?
 
@@ -260,7 +258,6 @@ format $\rightarrow$ selection $\rightarrow$ consistency $\rightarrow$ full task
 
 <!-- img-fill -->
 <!-- img-align: center -->
-<!-- valign: center -->
 ## One token stream -- tools add tokens mid-generation
 
 ![The model generates until it emits a tool call (orange); an external system executes it and injects the output (purple) into the sequence; the model continues. Multiple tool calls can occur in a single generation. During training, tool call outputs are masked from the loss.](assets/tool_use_generation.png)
@@ -269,7 +266,7 @@ format $\rightarrow$ selection $\rightarrow$ consistency $\rightarrow$ full task
 
 <!-- columns: 40/60 -->
 <!-- class: small-code -->
-## The model only sees tokens: tools live in the system prompt
+## The model only sees tokens: Tools live in the system prompt
 
 Training data for function calling looks like ordinary post-training data, with one addition: a system prompt declaring the available tools as JSON schemas.
 
@@ -504,7 +501,7 @@ Open models train across multiple harnesses so deployment is smooth.
 |||
 
 ```box
-title: Example Harness Gains
+title: Example harness gains
 tone: accent
 content: |
   Polar (NVIDIA): same model, same GRPO, same tasks -- **+22.6** points on SWE-bench Verified training through the Codex harness (3.8 → 26.4: RL teaching an *unfamiliar* harness), **+0.6** through Qwen Code (already fluent: 34.6 → 35.2).
@@ -574,19 +571,19 @@ Nemotron physically deletes future git commits and firewalls GitHub so SWE agent
 
 0. Prerequisites review
 1. Overview *(ch. 1-3)*
-2. IFT, Reward Models & Rejection Sampling *(ch. 4, 5, 9)*
-3. RL: Motivation & Math *(ch. 6)*
-4. RL: Implementation & Practice *(ch. 6)*
-5. The Rise of Reasoning Models *(ch. 7)*
-6. Direct Preference Optimization *(ch. 8)*
+2. IFT, reward models & rejection sampling *(ch. 4, 5, 9)*
+3. RL: Motivation & math *(ch. 6)*
+4. RL: Implementation & practice *(ch. 6)*
+5. The rise of reasoning models *(ch. 7)*
+6. Direct preference optimization *(ch. 8)*
 
 |||
 
-7. Synthetic Data & Modern Post-training *(ch. 12)*
-8. Preferences & Preference Data *(ch. 10-11)*
-9. Over-Optimization & RLHF's Bad Reputation *(ch. 14, app. B)*
-10. Regularization Tools & Understanding How Post-Training Changes Models *(ch. 15)*
-11. **Tool Use, Function Calling & The Road to Agents** *(ch. 13)* -- *today*
+7. Synthetic data & modern post-training *(ch. 12)*
+8. Preferences & preference data *(ch. 10-11)*
+9. Over-optimization & RLHF's bad reputation *(ch. 14, app. B)*
+10. Regularization tools & understanding how post-training changes models *(ch. 15)*
+11. **Tool use, function calling & the road to agents** *(ch. 13)* -- *today*
 12. **Evaluation** *(ch. 16)* -- *next (tentative)*
 
 ---

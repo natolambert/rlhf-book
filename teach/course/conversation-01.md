@@ -1,5 +1,5 @@
 ---
-title: "Post-training recipes over time"
+title: "Post-Training Recipes over Time"
 author: "Nathan Lambert × Finbarr Timbers"
 fonts:
   heading: "Rubik"
@@ -19,7 +19,7 @@ custom_css: |
 
 <!-- layout: title-banner -->
 
-# Frontier post-training recipe survey
+# Frontier Post-Training Recipe Survey
 
 <div class="colloquium-title-eyebrow">A conversation · rlhfbook.com/course</div>
 <div class="colloquium-title-rule"></div>
@@ -180,7 +180,7 @@ Curated prompts → **SFT** → **DPO** → **RLVR**
 <!-- layout: section-break -->
 <!-- title: center -->
 
-## 2026 style recipes!
+## 2026-style recipes!
 
 ---
 

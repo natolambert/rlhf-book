@@ -37,7 +37,7 @@ custom_css: |
 ---
 
 <!-- rows: 50/50 -->
-## Lecture 5: The Rise of Reasoning Models
+## Lecture 5: The rise of reasoning models
 
 <!-- row-columns: 32/36/32 -->
 
@@ -47,35 +47,35 @@ tone: muted
 compact: true
 content: |
   1. Introduction
-  2. Key Related Works
-  3. Training Overview
+  2. Key related works
+  3. Training overview
 ```
 
 |||
 
 ```box
-title: Core Training Pipeline
+title: Core training pipeline
 tone: accent
 compact: true
 content: |
-  4. Instruction Tuning
-  5. Reward Models
-  6. Reinforcement Learning
+  4. Instruction tuning
+  5. Reward models
+  6. Reinforcement learning
   7. **Reasoning**
-  8. Direct Alignment
-  9. Rejection Sampling
+  8. Direct alignment
+  9. Rejection sampling
 ```
 
 |||
 
 ```box
-title: Data & Preferences
+title: Data & preferences
 tone: muted
 compact: true
 content: |
-  10. What are Preferences
-  11. Preference Data
-  12. Synthetic Data & CAI
+  10. What are preferences
+  11. Preference data
+  12. Synthetic data & CAI
 ```
 
 ===
@@ -83,15 +83,15 @@ content: |
 <!-- row-columns: 32/36/32 -->
 
 ```box
-title: Practical Considerations
+title: Practical considerations
 tone: muted
 compact: true
 content: |
-  13. Tool Use
+  13. Tool use
   14. Over-optimization
   15. Regularization
   16. Evaluation
-  17. Product & Character
+  17. Product & character
 ```
 
 |||
@@ -101,8 +101,8 @@ title: Appendices
 tone: muted
 compact: true
 content: |
-  A. Key Definitions
-  B. Style Benchmarks
+  A. Key definitions
+  B. Style benchmarks
   C. References
 ```
 
@@ -115,8 +115,8 @@ compact: true
 content: |
   1. Overview (Ch. 1-3)
   2. IFT, RM, RS (Ch. 4,5,9)
-  3. RL Theory (Ch. 6 pt 1)
-  4. RL Practice (Ch. 6 pt 2)
+  3. RL theory (Ch. 6 pt 1)
+  4. RL practice (Ch. 6 pt 2)
   5. **Reasoning (Ch. 7)**
 ```
 
@@ -262,7 +262,6 @@ $$
 
 ---
 
-<!-- valign: center -->
 ## The reasoning model Cambrian explosion
 
 <!-- img-align: center -->
@@ -640,12 +639,12 @@ The frontier moved fast -- from "reasoning model" to **long-horizon, tool-using 
 
 ## Course outline
 
-1. Introduction & Training Overview -- Chapters 1-3
-2. IFT, Reward Models, Rejection Sampling -- Chapters 4, 5, 9
-3. RL Theory -- Chapter 6 (Part 1)
-4. RL Implementation & Practice -- Chapter 6 (Part 2)
+1. Introduction & training overview -- Chapters 1-3
+2. IFT, reward models, rejection sampling -- Chapters 4, 5, 9
+3. RL theory -- Chapter 6 (Part 1)
+4. RL implementation & practice -- Chapter 6 (Part 2)
 5. **Reasoning -- Chapter 7**
-6. Direct Alignment Algorithms -- Chapter 8
+6. Direct alignment algorithms -- Chapter 8
 7. ...
 
 ---

@@ -47,35 +47,35 @@ tone: muted
 compact: true
 content: |
   1. Introduction
-  2. Key Related Works
-  3. Training Overview
+  2. Key related works
+  3. Training overview
 ```
 
 |||
 
 ```box
-title: Core Training Pipeline
+title: Core training pipeline
 tone: accent
 compact: true
 content: |
-  4. **Instruction Tuning**
-  5. **Reward Models**
-  6. Reinforcement Learning
+  4. **Instruction tuning**
+  5. **Reward models**
+  6. Reinforcement learning
   7. Reasoning
-  8. Direct Alignment
-  9. **Rejection Sampling**
+  8. Direct alignment
+  9. **Rejection sampling**
 ```
 
 |||
 
 ```box
-title: Data & Preferences
+title: Data & preferences
 tone: muted
 compact: true
 content: |
-  10. What are Preferences
-  11. Preference Data
-  12. Synthetic Data & CAI
+  10. What are preferences
+  11. Preference data
+  12. Synthetic data & CAI
 ```
 
 ===
@@ -83,15 +83,15 @@ content: |
 <!-- row-columns: 32/36/32 -->
 
 ```box
-title: Practical Considerations
+title: Practical considerations
 tone: muted
 compact: true
 content: |
-  13. Tool Use
+  13. Tool use
   14. Over-optimization
   15. Regularization
   16. Evaluation
-  17. Product & Character
+  17. Product & character
 ```
 
 |||
@@ -102,14 +102,14 @@ tone: surface
 compact: true
 content: |
   - A. Definitions
-  - B. Style & Information
-  - C. Practical Issues
+  - B. Style & information
+  - C. Practical issues
 ```
 
 |||
 
 ```box
-title: Course Home
+title: Course home
 tone: surface
 compact: true
 content: |
@@ -1258,35 +1258,35 @@ tone: muted
 compact: true
 content: |
   1. Introduction
-  2. Key Related Works
-  3. Training Overview
+  2. Key related works
+  3. Training overview
 ```
 
 |||
 
 ```box
-title: Core Training Pipeline
+title: Core training pipeline
 tone: accent
 compact: true
 content: |
-  4. **Instruction Tuning**
-  5. **Reward Models**
-  6. Reinforcement Learning
+  4. **Instruction tuning**
+  5. **Reward models**
+  6. Reinforcement learning
   7. Reasoning
-  8. Direct Alignment
-  9. **Rejection Sampling**
+  8. Direct alignment
+  9. **Rejection sampling**
 ```
 
 |||
 
 ```box
-title: Data & Preferences
+title: Data & preferences
 tone: muted
 compact: true
 content: |
-  10. What are Preferences
-  11. Preference Data
-  12. Synthetic Data & CAI
+  10. What are preferences
+  11. Preference data
+  12. Synthetic data & CAI
 ```
 
 ===
@@ -1294,15 +1294,15 @@ content: |
 <!-- row-columns: 32/36/32 -->
 
 ```box
-title: Practical Considerations
+title: Practical considerations
 tone: muted
 compact: true
 content: |
-  13. Tool Use
+  13. Tool use
   14. Over-optimization
   15. Regularization
   16. Evaluation
-  17. Product & Character
+  17. Product & character
 ```
 
 |||
@@ -1313,14 +1313,14 @@ tone: surface
 compact: true
 content: |
   - A. Definitions
-  - B. Style & Information
-  - C. Practical Issues
+  - B. Style & information
+  - C. Practical issues
 ```
 
 |||
 
 ```box
-title: Course Home
+title: Course home
 tone: surface
 compact: true
 content: |
