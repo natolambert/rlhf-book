@@ -536,35 +536,47 @@ $$S^p_{ij} = |w_{ij}| \cdot \mathbf{A}^{(l)}_p[j], \qquad \mathcal{M}_p = f(\the
 
 ---
 
+<!-- columns: 58/42 -->
 ## The evolution of RLHF from alignment to post-training
 
 What began as a philosophically grounded research area -- colloquially, "alignment" -- is now a practical engineering discipline spanning safety, values, and personality. RLHF is really one piece of post-training. Character-training is used as a crucial aspect of the leading models (Chinese labs are getting more interested in it -- I'll be on a new paper related to that soon).
 
 Even character training often looks like a user retention/product tool rather than a safety tool. There are risks of these ideas being used for harm -- e.g. [whatever Character AI was doing to make addicting models for kids](https://www.cbsnews.com/news/parents-allege-harmful-character-ai-chatbot-content-60-minutes/).
 
+|||
+
+![My 2023 paper, from when this was still "alignment."](assets/history-risks-rlhf.png)
+
 ---
 
+<!-- columns: 50/50 -->
 ## The big open question in character training
 
 A spec is only as good as the effort spent making the model follow it.
 
 Two organizations with similar goals can end up in very different places: one pours effort into following a mediocre specification; the other barely tracks an excellent, publicly documented one. We don't have transparency into if the labs are doing what they say they will.
 
----
+Early progress: OpenAI now publishes [Model Spec Evals](https://alignment.openai.com/model-spec-evals/) -- even their best models measure only **~87% compliant** with their own spec →
 
-<!-- animate: bullets -->
-## RLHF is where models meet products
+|||
 
-- A good model product is much more than correct weights: **fast inference**, suitable **tools** (search, code execution -- Lecture 11), a reliable **interface**
-- RLHF is where this gets tested: it frames the user's product preferences in real time, and it is the **final training stage before release**
-- So the quickest way to add a feature is to try it at post-training, where training is **faster and cheaper** -- image understanding, tool use, better behavior all entered this way
-- If it works there, it **backpropagates to earlier training stages**
-- "What starts as a product question quickly becomes an RLHF modeling question"
+![Overall Model Spec compliance by model, from OpenAI's Model Spec Evals (March 2026).](assets/openai-spec-compliance.png)
 
 ---
 
-<!-- align: center -->
-## My hypothesis
+## Post-training interfaces very closely with products
+
+Much of the character training lecture has hinted at this! But, post-training teams need to work closely with product teams:
+
+- A good model product is much more than correct weights: fast inference, suitable & scalable tools (search, code execution -- Lecture 11), a understandable interface
+- RLHF is where this gets tested: it frames the user's product preferences in real time a A/B testing, one of the final training stages
+- New model properties start in the product, then move into post-training, then to new pretraining interventions.
+- "What starts as a product question quickly becomes an post-training question"
+
+---
+
+<!-- valign: center -->
+## My hypothesis on character training in practice
 
 *"All data work in a truly great LLM will become some character training -- **every small tradeoff influences how the model sees itself and the world**."*
 
