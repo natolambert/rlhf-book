@@ -152,24 +152,24 @@ content: |
 
 ## The levels of character control
 
-How do you change how a model behaves? In order of increasing effect:
+How do you change how a model behaves? In order of increasing effect (and effort):
 
 - **Prompt it** -- "Acting as a burnt out employee, write me an email summarizing my last month of work." Gets shockingly far, but not stable
 - **Steer its activations** -- manipulate the model's internal state with no gradient updates [@turner2023activation] -- Part 3 of this lecture
 - **Train it** -- *character training*: post-training designed to craft traits, values, and manner into the **weights**, creating a stable base persona underneath every conversation [@maiya2025open]
-- Fine-tuning on personality-specific data is **more robust than both** prompting and steering -- character held in the weights survives what prompts don't
 
 ---
 
-<!-- animate: bullets -->
-## What character training actually is
+## What character training is in practice
 
-No new algorithms -- the methods of this entire course, aimed at a more precise target: **the features of the language the model uses**.
+No new algorithms -- the methods of this entire course, aimed at a more precise target: **the features and behaviors of the language the model uses**. 
+
+"Features" are sequences of words/tokens it repeats. "Behaviors" are how those link together.
 
 - Pipelines that control the specific language in training data -- e.g. removing common phrases like `Certainly` or `as an AI model built by...`
 - Extensive **data filtering** and **synthetic data** methods (Constitutional AI-style) focused on the *manner* of behavior
-- Largely unexplored in the public literature as of mid 2026 -- this is frontier-lab work
-- Hard to see on Lecture 12's benchmark regimes: labs make **small personality changes over time** to improve user experience -- recall Llama 3 Instruct's Arena standing being attributed to its personality (Lecture 9)
+- Largely unexplored in the public literature as of mid 2026 -- this is frontier-lab work not uncovered in the open (I'm working on it!)
+- Often not highlighted in public evalutions/benchmarks: labs make **small personality changes over time** to improve user experience
 
 ---
 
@@ -178,15 +178,9 @@ No new algorithms -- the methods of this entire course, aimed at a more precise 
 
 Before ChatGPT, Anthropic's first assistant paper set the alignment target as three traits -- **helpful, honest, and harmless**, the "HHH" criteria [@askell2021general]. Arguably the first public character spec.
 
-<!-- step -->
-
-One year later, the landmark RLHF paper optimized human preferences for just two of them [@bai2022training] -- the dataset is literally named [`hh-rlhf`](https://huggingface.co/datasets/Anthropic/hh-rlhf):
+One year later, the landmark RLHF paper optimized human preferences for just two of them [@bai2022training] -- the dataset is literally named [`hh-rlhf`](https://huggingface.co/datasets/Anthropic/hh-rlhf) after helpful and harmless. A fun quote from the 2022 paper:
 
 > "We do not focus explicitly on honesty/truthfulness in this paper, as we believe that techniques other than pure human feedback may be more efficient and effective at training models to be honest."
-
-<!-- step -->
-
-**Honest was the first trait cut when the spec met the pipeline.** A theme for today: character is defined by what your training methods can actually optimize.
 
 |||
 
@@ -196,9 +190,9 @@ One year later, the landmark RLHF paper optimized human preferences for just two
 
 <!-- rows: 30/70 -->
 <!-- cite-right: anthropic2024claude -->
-## Anthropic said the quiet part out loud (2024)
+## Anthropic has long led on this topic (2024)
 
-From the "Claude's Character" blog post -- character training became an explicit stage of alignment fine-tuning, and it "relies on human researchers closely checking how each trait changes the model's behavior." Synthetic-data-heavy, but with an artist's touch.
+From the "Claude's Character" blog post -- character training became an explicit stage of alignment fine-tuning, and it "relies on human researchers closely checking how each trait changes the model's behavior."
 
 ===
 
