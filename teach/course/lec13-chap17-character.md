@@ -257,19 +257,16 @@ The 2022 constitution was a list of principles to sample during training. The so
 
 ---
 
-<!-- rows: 55/45 -->
 <!-- cite-right: openai2024modelspec -->
 ## OpenAI's Model Spec (2024)
 
-A public document of **goal model behaviors, written before clicking go on a fine-tuning run**: how OpenAI steers models behind the API, and how they will shift in the future. The living version is at [model-spec.openai.com](https://model-spec.openai.com/).
+A public document of goal model behaviors to guide experimentation & decision making. Importantly this shows how they will shift in the future. The living version is at [model-spec.openai.com](https://model-spec.openai.com/).
 
-Why it matters: training is complicated and multi-faceted, so the outcome always drifts from inputs like labeler instructions and data mixes. A spec is one of the *only* tools that lets anyone **compare actual behavior to designer intent** -- recall Lecture 8: "the link from data → behavior stays largely unaudited." This is the audit anchor.
+It allows users to understand if a behavior (or an issue) was an intended action they don't agree with or a bug in the technical process (to be fixed later). **Important sign of intent when compared to a more vague constitution.**
 
-===
+E.g.: "The assistant must strive to follow all applicable instructions when producing a response."
 
-> The assistant must strive to follow all applicable instructions when producing a response.
-
-*From the Model Spec (2025 revision), on the chain of command -- behavior stated as intent, not a description of any training input.*
+*From the Model Spec (2025 revision), on the chain of command.*
 
 ---
 
@@ -280,7 +277,7 @@ Why it matters: training is complicated and multi-faceted, so the outcome always
 
 **A constitution (Anthropic, 2022)**
 
-Principles are **inputs to the training process** -- sampled during critique, revision, and AI feedback. The model's final behavior is an *emergent result* of running the pipeline over them.
+Principles are **inputs to the training process** -- sampled during critique, revision, and AI feedback. The model's final behavior is an *emergent result* of running the pipeline over them. Some constitutions just don't work for a viable model!
 
 |||
 
@@ -290,18 +287,26 @@ States the **intended final behavior** -- the output of training, not its ingred
 
 ===
 
-The chapter's load-bearing line: a perfectly executed model spec is much more revealing "because it speaks to **the intent of the process** rather than listing what acts as **intermediate training variables**."
-
-And the documents are converging -- the soul document reads far more like a spec than the 2022 principle list did.
+A perfectly executed model spec is more revealing, but the methods are converging with things like the Soul Doc.
 
 ---
 
-<!-- animate: bullets -->
+<!-- columns: 58/42 -->
 ## Who a model spec is for
+
+I'm a very big model spec fan!
 
 - **Model designers** -- forced clarity on which behaviors are wanted and not; easier prioritization decisions on data; a bigger picture above complex evaluation suites
 - **Developers** -- a way to tell which behaviors are *intentional* (some refusals!) vs. side-effects of training; more confidence adopting future, smarter models from the provider
 - **The observing public** -- one of the few public sources on what is prioritized in training; the substrate for regulatory oversight and effective policy
+
+|||
+
+![](assets/interconnects-model-spec-2024.png)
+
+![](assets/interconnects-model-spec-regulation.png)
+
+*On Interconnects: [the Model Spec breakdown](https://www.interconnects.ai/p/openai-rlhf-model-spec) & [Model Specs for AI regulation](https://www.interconnects.ai/p/a-post-training-approach-to-ai-regulation)*
 
 ---
 
