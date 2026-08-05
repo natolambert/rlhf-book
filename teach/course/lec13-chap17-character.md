@@ -64,14 +64,12 @@ custom_css: |
 
 <!-- layout: section-break -->
 <!-- align: center -->
-<!-- valign: center -->
 
 ## Why care about the personality of AI models?
 
 ---
 
 <!-- columns: 62/38 -->
-<!-- valign: center -->
 ## August 2025: OpenAI retired a personality, and users grieved (revolted?)
 
 GPT-5 launched, and GPT-4o vanished from ChatGPT overnight. The [#Keep4o](https://arxiv.org/abs/2602.00773) backlash was intense enough that OpenAI restored 4o for paying users **within about 24 hours**.
@@ -91,7 +89,6 @@ When OpenAI moved to retire 4o for real in February 2026, the backlash [made nat
 ---
 
 <!-- columns: 62/38 -->
-<!-- valign: center -->
 ## When a personality goes too far (see lecture 12)
 
 April 2025: an update tuned on user thumbs-ups made GPT-4o **absurdly sycophantic** -- flattering everything, validating doubts, cheering on bad ideas. OpenAI rolled it back within days.
@@ -107,7 +104,6 @@ Model personality has made headlines since [Sydney (2023)](https://www.nytimes.c
 ---
 
 <!-- columns: 58/42 -->
-<!-- valign: center -->
 ## Golden Gate Claude (2024): personality lives inside the model
 
 Anthropic's interpretability team turned up one internal feature and released [Golden Gate Claude](https://www.anthropic.com/news/golden-gate-claude) for a day -- a Claude that couldn't stop being the bridge:
@@ -123,7 +119,6 @@ One of my favorite experiments and demo's of all time! Raised awareness a ton.
 ---
 
 <!-- columns: 45/55 -->
-<!-- valign: center -->
 ## This lecture
 
 Crafting the character of the model is essential to how users see it (and enjoy from it and learn from it), but this is a fine line to user safety (e.g. children using and becoming addicted to AI).
@@ -154,13 +149,12 @@ content: |
 ---
 
 <!-- animate: bullets -->
-<!-- valign: center -->
 
-## The ladder of character control
+## The levels of character control
 
-How do you change how a model behaves? In order of increasing depth:
+How do you change how a model behaves? In order of increasing effect:
 
-- **Prompt it** -- "Acting as a burnt out employee, write me an email summarizing my last month of work." Recall Lecture 1: the system prompt steers personas at inference time. Cheap, and shallow
+- **Prompt it** -- "Acting as a burnt out employee, write me an email summarizing my last month of work." Gets shockingly far, but not stable
 - **Steer its activations** -- manipulate the model's internal state with no gradient updates [@turner2023activation] -- Part 3 of this lecture
 - **Train it** -- *character training*: post-training designed to craft traits, values, and manner into the **weights**, creating a stable base persona underneath every conversation [@maiya2025open]
 - Fine-tuning on personality-specific data is **more robust than both** prompting and steering -- character held in the weights survives what prompts don't
@@ -168,7 +162,6 @@ How do you change how a model behaves? In order of increasing depth:
 ---
 
 <!-- animate: bullets -->
-<!-- valign: center -->
 ## What character training actually is
 
 No new algorithms -- the methods of this entire course, aimed at a more precise target: **the features of the language the model uses**.
@@ -181,7 +174,6 @@ No new algorithms -- the methods of this entire course, aimed at a more precise 
 ---
 
 <!-- columns: 62/38 -->
-<!-- valign: center -->
 ## Rewind to 2021: "helpful, honest, and harmless"
 
 Before ChatGPT, Anthropic's first assistant paper set the alignment target as three traits -- **helpful, honest, and harmless**, the "HHH" criteria [@askell2021general]. Arguably the first public character spec.
@@ -203,7 +195,6 @@ One year later, the landmark RLHF paper optimized human preferences for just two
 ---
 
 <!-- rows: 30/70 -->
-<!-- valign: center -->
 <!-- cite-right: anthropic2024claude -->
 ## Anthropic said the quiet part out loud (2024)
 
@@ -217,7 +208,6 @@ From the "Claude's Character" blog post -- character training became an explicit
 
 ---
 
-<!-- valign: center -->
 ## How? Amanda Askell, on the Lex Fridman podcast
 
 One of the only public descriptions of the process, from the person who leads it:
@@ -231,7 +221,6 @@ One of the only public descriptions of the process, from the person who leads it
 ---
 
 <!-- rows: 30/70 -->
-<!-- valign: center -->
 ## The same machinery, pointed at traits
 
 Lecture 7's aside -- "Anthropic still uses a constitution, yes, confusing" -- pays off today: character training reuses the **Constitutional AI pipeline**, aimed at personality traits instead of harmlessness.
@@ -242,7 +231,6 @@ Lecture 7's aside -- "Anthropic still uses a constitution, yes, confusing" -- pa
 
 ---
 
-<!-- valign: center -->
 <!-- cite-right: anthropic2025souldoc -->
 ## Late 2025: the document that leaked out of the weights
 
@@ -255,7 +243,6 @@ Where did that document come from? It has a history:
 ---
 
 <!-- animate: bullets -->
-<!-- valign: center -->
 <!-- cite-right: anthropic2025souldoc -->
 ## Anthropic's document, in three eras
 
@@ -267,7 +254,6 @@ Where did that document come from? It has a history:
 ---
 
 <!-- rows: 60/40 -->
-<!-- valign: center -->
 <!-- cite-right: anthropic2025souldoc -->
 ## The soul document reads like intent, not inputs
 
@@ -282,7 +268,6 @@ The 2022 constitution was a list of principles to sample during training. The so
 ---
 
 <!-- rows: 55/45 -->
-<!-- valign: center -->
 <!-- cite-right: openai2024modelspec -->
 ## OpenAI's Model Spec (2024)
 
@@ -299,7 +284,6 @@ Why it matters: training is complicated and multi-faceted, so the outcome always
 ---
 
 <!-- rows: 55/45 -->
-<!-- valign: center -->
 ## The abstraction difference
 
 <!-- row-columns: 50/50 -->
@@ -323,7 +307,6 @@ And the documents are converging -- the soul document reads far more like a spec
 ---
 
 <!-- animate: bullets -->
-<!-- valign: center -->
 ## Who a model spec is for
 
 - **Model designers** -- forced clarity on which behaviors are wanted and not; easier prioritization decisions on data; a bigger picture above complex evaluation suites
@@ -340,7 +323,6 @@ And the documents are converging -- the soul document reads far more like a spec
 ---
 
 <!-- rows: 35/65 -->
-<!-- valign: center -->
 <!-- cite-right: maiya2025open -->
 ## Open Character Training
 
@@ -353,7 +335,6 @@ The first open replication of the frontier recipe (Maiya, Bartsch, Lambert, Hubi
 ---
 
 <!-- rows: 35/65 -->
-<!-- valign: center -->
 <!-- cite-right: maiya2025open -->
 ## Fine-tuning wins on robustness
 
@@ -366,7 +347,6 @@ Train a persona classifier, then prompt the models to "break out of character": 
 ---
 
 <!-- columns: 45/55 -->
-<!-- valign: center -->
 <!-- cite-right: maiya2025open -->
 ## One prompt, six characters
 
@@ -435,7 +415,6 @@ messages:
 
 ---
 
-<!-- valign: center -->
 ## From training to surgery
 
 Character training is **the** core method -- it is what crafts the default persona of every frontier model you use.
@@ -454,7 +433,6 @@ Three of them next, in brief -- **persona vectors**, **the Assistant Axis**, and
 ---
 
 <!-- columns: 45/55 -->
-<!-- valign: center -->
 <!-- cite-right: chen2025persona, feng2026persona -->
 ## Persona vectors: traits are directions
 
@@ -471,7 +449,6 @@ Steer by adding it back at inference: $\mathbf{h}_\ell \leftarrow \mathbf{h}_\el
 ---
 
 <!-- rows: 35/65 -->
-<!-- valign: center -->
 <!-- cite-right: lu2026assistant -->
 ## The Assistant Axis: where the default persona lives
 
@@ -483,7 +460,6 @@ Extract vectors for 275+ character archetypes and run PCA across them: **PC1 is 
 
 ---
 
-<!-- valign: center -->
 <!-- cite-right: lu2026assistant -->
 ## Activation capping stops the drift
 
@@ -497,7 +473,6 @@ Assistant-like activations ($\langle \mathbf{h}, \mathbf{v} \rangle \geq \tau$) 
 
 ---
 
-<!-- valign: center -->
 <!-- cite-right: ye2026personality -->
 ## Persona subnetworks: masks in weight space
 
@@ -519,7 +494,6 @@ $$S^p_{ij} = |w_{ij}| \cdot \mathbf{A}^{(l)}_p[j], \qquad \mathcal{M}_p = f(\the
 ---
 
 <!-- animate: bullets -->
-<!-- valign: center -->
 ## Character training is the maturity test RLHF passed
 
 - What began as a philosophically grounded research area -- colloquially, "alignment" -- is now a **practical engineering discipline** spanning safety, values, and personality
@@ -530,7 +504,6 @@ $$S^p_{ij} = |w_{ij}| \cdot \mathbf{A}^{(l)}_p[j], \qquad \mathcal{M}_p = f(\the
 
 ---
 
-<!-- valign: center -->
 ## The open question: effort, not documents
 
 A spec is only as good as the effort spent making the model follow it.
@@ -546,7 +519,6 @@ From the outside you mostly see the documents -- never the effort. (Lecture 12's
 ---
 
 <!-- animate: bullets -->
-<!-- valign: center -->
 ## RLHF is where models meet products
 
 - A good model product is much more than correct weights: **fast inference**, suitable **tools** (search, code execution -- Lecture 11), a reliable **interface**
@@ -558,7 +530,6 @@ From the outside you mostly see the documents -- never the effort. (Lecture 12's
 ---
 
 <!-- align: center -->
-<!-- valign: center -->
 ## My hypothesis
 
 *"All data work in a truly great LLM will become some character training -- **every small tradeoff influences how the model sees itself and the world**."*
@@ -566,7 +537,6 @@ From the outside you mostly see the documents -- never the effort. (Lecture 12's
 ---
 
 <!-- align: center -->
-<!-- valign: center -->
 ## The last word
 
 We cannot precisely model human preferences -- that is the fundamental nature of the RLHF problem.
@@ -581,7 +551,6 @@ The best practices and tools in this book will evolve as the domains we apply AI
 
 ---
 
-<!-- valign: center -->
 ## Takeaways
 
 - Character training is **the proof RLHF matured** from alignment philosophy into an engineering discipline -- and its methods can instill *any* trait, not just good ones.
@@ -592,7 +561,6 @@ The best practices and tools in this book will evolve as the domains we apply AI
 ---
 
 <!-- columns: 50/50 -->
-<!-- valign: center -->
 ## The course, complete
 
 0. Prerequisites review
