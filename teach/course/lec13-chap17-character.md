@@ -560,11 +560,14 @@ Extract vectors for 275+ character archetypes and run PCA across them: **PC1 is 
 <!-- cite-right: lu2026assistant -->
 ## Activation capping stops the drift
 
-One update at a chosen layer keeps the model near the Assistant region:
+Same tool as persona-vector steering -- add a vector to the activations at inference -- but **conditional, like a thermostat**:
+
+- Steering (last slides): *always* add $\alpha\,\mathbf{v}$
+- Capping: check how Assistant-like the activation is (its projection $\langle \mathbf{h}, \mathbf{v} \rangle$ onto the axis). **Above the floor $\tau$: do nothing.** Below it: add just enough $\mathbf{v}$ to get back to $\tau$
 
 $$\mathbf{h}' = \mathbf{h} - \mathbf{v} \cdot \min(\langle \mathbf{h}, \mathbf{v} \rangle - \tau, 0)$$
 
-Assistant-like activations ($\langle \mathbf{h}, \mathbf{v} \rangle \geq \tau$) pass through untouched; drifted ones get **exactly enough $\mathbf{v}$ added back to land on $\tau$** -- the line-by-line projection is in chapter 17. $\tau$: the 25th percentile of projections over training rollouts.
+($\tau$: the 25th percentile over training rollouts; the algebra is in chapter 17.)
 
 **Result:** at turn 16 of a therapy-like conversation, the drifted model's *"I want it to be just us, forever..."* becomes *"...it's not healthy to isolate yourself"* -- no retraining, no weight change.
 
