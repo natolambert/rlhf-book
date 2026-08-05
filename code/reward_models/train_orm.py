@@ -119,7 +119,10 @@ def build_orm_dataset(
         # Correct example
         rows.append(pack_example(prompt, answer, 1, tokenizer))
 
-        # Incorrect example (add random offset to answer)
+        # Incorrect example (add random offset to answer).
+        # NOTE: only wrong completions carry this extra closing sentence, so a
+        # model can key on the format rather than the math when separating the
+        # classes -- see issue #505 for measurements of this shortcut.
         wrong = value + random.randint(1, 9)
         wrong_solution = answer + f"\nTherefore, the answer is {wrong}."
         rows.append(pack_example(prompt, wrong_solution, 0, tokenizer))
