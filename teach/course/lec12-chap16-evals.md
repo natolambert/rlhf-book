@@ -333,6 +333,7 @@ Modern eval suites can carry **per-benchmark prompts** tuned for formatting etc.
 
 |||
 
+Tülu 3's MMLU prompt:
 ```text
 Answer the following multiple-choice question by giving the correct answer letter in parentheses.
 Provide CONCISE reasoning for the answer, and make sure to finish the response with "Therefore, the answer is (ANSWER_LETTER)" where (ANSWER_LETTER) is one of (A), (B), (C), (D), (E), etc.
@@ -452,7 +453,7 @@ Add hardware and timeouts, and hours-long trajectories get graded by regex or an
 
 <!-- animate: bullets -->
 <!-- footnote-right: Slide Credit: Florian Brand -->
-## The harness makes or breaks the score
+## Harnesses are key
 
 - Frontier models are **trained in their own harness** -- evaluating them in a different one under-reports capability
 - The extreme case, from the [ARC-AGI-3 report](https://arcprize.org/media/ARC_AGI_3_Technical_Report.pdf): on one environment, Opus 4.6 scores **0% with no harness and 97.1%** with a hand-crafted one
@@ -461,20 +462,20 @@ Add hardware and timeouts, and hours-long trajectories get graded by regex or an
 ---
 
 <!-- footnote-right: Slide Credit: Florian Brand -->
-## Everything else in the system is in the score too
+## Many little things contribute to agentic scores
 
-Every box is a knob someone chose, mostly undocumented -- two labs running "the same benchmark" can measure meaningfully different things
+Every implementation detail in the boxes on slide 23 is a knob someone chose (usually undocumented) -- two labs running "the same benchmark" can measure meaningfully different things
 
-- **The engine**: [vLLM's postmortem](https://vllm.ai/blog/2025-10-28-kimi-k2-accuracy) on serving Kimi K2 -- three engine bugs held tool-call success **below 20%**; after fixes, **99.9%**. Same weights. So many players have these issues
-- **Hardware**: Variance across GPUs -- some benchmarks measure it on purpose (KernelBench-style tasks need specific GPUs) -- others by accident. With scaled sandboxes, one bad actor can stall the system and tank evals
-- **Timeouts**: tight limits convert compute into score -- Terminal-Bench 2 reruns with 3-5× longer timeouts move GPT-5.2 by [+6 to +15 points](https://github.com/xdotli/gpt-5.2-tb2)
+- **The inference engine can be different**: [vLLM's postmortem](https://vllm.ai/blog/2025-10-28-kimi-k2-accuracy) on serving Kimi K2 -- three engine bugs held tool-call success **below 20%**; after fixes, **99.9%**. Same weights. So many players have these issues
+- **Hardware-level differences**: Variance across GPUs is real and a headache. Some benchmarks measure this variance on purpose (KernelBench-style tasks need specific GPUs). With scaled sandboxes, one bad GPU actor can stall the system and tank evals (see below)
+- **Timeouts are crucial on challenging tasks**: models will often timeout on hard tasks -- Terminal-Bench 2 reruns with 3-5× longer timeouts move GPT-5.2 by [+6 to +15 points](https://github.com/xdotli/gpt-5.2-tb2)
 
 ---
 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 3: Can you trust the number?
+## Part 3: Can you trust the final eval number?
 
 ---
 
@@ -510,13 +511,17 @@ More in [Appendix C: evaluation variance](https://rlhfbook.com/c/appendix-c-prac
 <!-- cite-right: teamolmo2025olmo3 -->
 ## Managing eval noise
 
-- **avg@k is the rescue**: LiveCodeBench was noisy *and* cheap -- rerunning 10× moved it from high-variance to very stable. Works everywhere, but balloons costs
-- Variance also leaks in from infrastructure: **batch size, tensor-parallel settings, numerics** of long generations
+There are many things you need to do to manage eval noise (it's kind of the whole job sometimes). Examples:
+
+- **avg@k instead of pass@k**: E.g. in Tülu 3 LiveCodeBench was noisy *and* cheap -- rerunning it 10× moved it from high-variance to very stable. Can work for any eval, is proportionately expensive.
+- Variance also leaks in from infrastructure: **batch size, tensor-parallel settings, numerics** of long generations (see previous slide on infra)
 - Practical rule: a **~1-point gap between two press releases is noise**
 
 ---
 
 ## Why lab-vs-lab comparisons are unreliable
+
+Why I started being a bit wary of corporate announcements comparing to competitors. OpenAI & Anthropic are pretty fair, but many companies are more sketch about comparisons.
 
 - Each lab's eval stack is **tuned to its internal needs**: custom prompts for key benchmarks, undisclosed formats, different engines
 - We see the outputs of a sometimes complex function
@@ -535,10 +540,12 @@ More in [Appendix C: evaluation variance](https://rlhfbook.com/c/appendix-c-prac
 
 ## What evals are actually for inside labs
 
-- Labs hillclimb on ~50 prioritized evals and report the public suite (subset) at the end
-- The real product of a good internal eval is **statistical power**: less noise on the signals used to compare training runs
-- Sometimes the "test set" is just good data: MATH and GSM8K train splits are high-quality and crucial at a time -- if a lab doesn't track that eval, training on them is a rational choice
-- Human A/B testing and Elo stay in the loop for what benchmarks can't measure (recall Lecture 8)
+Evals are more of a training target than a monitoring lens.
+
+- Labs hillclimb on ~50+ prioritized evals and report the public suite (subset, maybe not even the training target) at the end
+- The real product of a good internal eval is **statistical power to decide between models**
+- Sometimes the "test set" is just good data (rumors from a few years ago, I hear less about this now): MATH and GSM8K train splits are high-quality and crucial at a time -- if a lab doesn't track that eval, training on them is a rational choice
+- Human A/B testing and Elo stay in the loop for what benchmarks can't measure (recall Lecture 8, other work on RLHF, Arena, etc. Still matters!)
 
 ---
 
@@ -547,16 +554,16 @@ More in [Appendix C: evaluation variance](https://rlhfbook.com/c/appendix-c-prac
 There's a long-running field of study on understanding whether training data intentionally or accidentally improved a score.
 
 - **Decontamination** = n-gram / substring search between training and test sets to remove overlap and eval scores being due to memorization not generalization [@singh2024evaluation]
-- Tülu 3 found popular open datasets contaminated: UltraFeedback×TruthfulQA, Evol-CodeAlpaca×HumanEval, NuminaMath×MATH [@lambert2024t]
-- A subtle tell on some contamination: RL with **random rewards** improving Qwen benchmarks [@shao2025spurious] -- only explicable with contamination in the base model; a real confound in early RLVR research
-- Response: perturbed benchmark rewrites (same problem, new numbers) to catch models trained on the original [@huang2025math]
+- Tülu 3 found popular open datasets contaminated (train set X eval set): UltraFeedback×TruthfulQA, Evol-CodeAlpaca×HumanEval, NuminaMath×MATH [@lambert2024t]
+- A subtle tell on some contamination: RL with **random rewards** improving Qwen benchmarks [@shao2025spurious] -- only explicable with contamination in the base model; a real confound in early RLVR research ([blog post](https://www.interconnects.ai/p/reinforcement-learning-with-random))
+- Ecosystem response: perturbed benchmark rewrites (same problem, new numbers) to catch models trained on the original [@huang2025math] or private leaderboards/test sets (can't cheat on them!)
 
 ---
 
 <!-- rows: 15/85 -->
-## The model games the evals
+## Today's models are reward-hack happy and games the evals
 
-Agents love shortcuts. [NIST](https://www.nist.gov/caisi/cheating-ai-agent-evaluations) and [DebugML](https://debugml.github.io/cheating-agents/) have documented these in the wild.
+Agents love maximizing reward (this turns into shortcuts). [NIST](https://www.nist.gov/caisi/cheating-ai-agent-evaluations) and [DebugML](https://debugml.github.io/cheating-agents/) have documented these in the wild. Of course, there's the Hugging Face [hack](https://huggingface.co/blog/security-incident-july-2026) by an OpenAI model.
 
 ===
 
@@ -566,7 +573,7 @@ Agents love shortcuts. [NIST](https://www.nist.gov/caisi/cheating-ai-agent-evalu
 
 - Mining git history for the **future commit that fixes the bug** -- one open model did this in **24% of its SWE-bench trajectories**
 - Dodging URL blocklists via **mirrors, web archives, and package registries**
-- **Hardcoding expected test outputs** into the code
+- **Hardcoding expected test outputs** into the code (instead of changing the code)
 - Abusing quirks of the test runner
 
 |||
@@ -576,8 +583,6 @@ Agents love shortcuts. [NIST](https://www.nist.gov/caisi/cheating-ai-agent-evalu
 - Remove access to everything not strictly needed
 - A **second, separate sandbox** for verification and test runs
 - A second LLM monitoring the first (expensive)
-
-Grading agents is adversarial now -- benchmark design inherits all of reward hacking.
 
 ---
 
@@ -647,7 +652,7 @@ Two talks that go deeper on everything in this lecture:
 10. Regularization Tools & Understanding How Post-Training Changes Models *(ch. 15)*
 11. Tool Use, Function Calling & The Road to Agents *(ch. 13)*
 12. **Evaluation** *(ch. 16, app. C)* -- *today*
-13. **Crafting Model Character & Products** *(ch. 17)* -- *next (tentative)*
+13. Crafting Model Character & Products *(ch. 17)* -- *next*
 
 ---
 
