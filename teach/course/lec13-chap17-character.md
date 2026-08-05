@@ -533,7 +533,15 @@ Steer by adding it back at inference: $\mathbf{h}_\ell \leftarrow \mathbf{h}_\el
 <!-- cite-right: lu2026assistant -->
 ## The Assistant Axis: where the default persona lives
 
-Extract vectors for 275+ character archetypes and run PCA across them: **PC1 is assistant-likeness (helpful, etc)** (robustly, the contrast $\mathbf{v}_{\text{axis}} = \bar{\mathbf{h}}_{\text{assistant}} - \bar{\mathbf{h}}_{\text{roles}}$). Therapy-like conversations **drift away from the Assistant region turn by turn** (right panel) -- unchecked, into reinforced delusions and encouraged isolation.
+Extract vectors for 275+ character archetypes and run PCA across them: **PC1 -- the largest source of variation -- is assistant-likeness**. The poles are legible:
+
+| | Negative pole | Positive pole |
+|---|---------------|---------------|
+| **PC1** | *Role-playing*: bohemian, trickster, bard, prophet | *Assistant-like*: engineer, analyst, researcher |
+
+It isn't a PCA artifact: the simple contrast $\mathbf{v}_{\text{axis}} = \bar{\mathbf{h}}_{\text{assistant}} - \bar{\mathbf{h}}_{\text{roles}}$ points the same way (cosine $> 0.6$ with PC1 at every layer, in all three models tested).
+
+Why it matters: therapy-like conversations **drift away from the Assistant region turn by turn** (right panel, next slide) -- unchecked, into reinforced delusions and encouraged isolation.
 
 ---
 
