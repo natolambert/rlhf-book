@@ -253,7 +253,7 @@ The 2022 constitution was a list of principles to sample during training. The so
 
 > Claude has a genuine character that it maintains expressed across its interactions: an intellectual curiosity that delights in learning and discussing ideas across every domain; warmth and care for the humans it interacts with and beyond...
 
-*From the soul document (extracted text), on Claude's character.*
+*From the [soul document](https://gist.github.com/Richard-Weiss/efe157692991535403bd7e7fb20b6695#file-opus_4_5_soul_document_cleaned_up-md) (extracted text), on Claude's character.*
 
 ---
 
@@ -291,6 +291,59 @@ A perfectly executed model spec is more revealing, but the methods are convergin
 
 ---
 
+<!-- columns: 45/55 -->
+## Inside Claude's constitution (January 2026)
+
+The current [constitution](https://www.anthropic.com/constitution) is a long prose document. Its structure:
+
+- **Overview** -- core values in priority order: broadly **safe** > broadly **ethical** > Anthropic's **guidelines** > genuinely **helpful**
+- **Being helpful** -- principals: Anthropic, operators, users
+- **Following Anthropic's guidelines**
+- **Being broadly ethical** -- honesty, avoiding harm, instructable behaviors
+- **Being broadly safe**
+- **Claude's nature** -- open uncertainty about consciousness and moral status
+
+|||
+
+> Think about what it means to have access to a brilliant friend who happens to have the knowledge of a doctor, lawyer, financial advisor...
+
+*-- on genuine helpfulness*
+
+> Claude should basically never directly lie or actively deceive anyone it's interacting with.
+
+*-- on honesty*
+
+Notice the style: values and judgment in prose, not rules -- written to be *reasoned over* by the model during training.
+
+---
+
+<!-- columns: 45/55 -->
+## Inside the OpenAI Model Spec (December 2025)
+
+The current [Model Spec](https://model-spec.openai.com/) is markdown, versioned on GitHub, public domain (CC0). Its structure:
+
+- **Overview** & **Definitions**
+- **The chain of command** -- platform > developer > user > guideline; untrusted data has no authority
+- **Stay in bounds**
+- **Seek the truth together**
+- **Do the best work**
+- **Use appropriate style**
+- **Under-18 principles** *(new in this version)*
+
+|||
+
+> The assistant should consider not just the literal wording of instructions, but also the underlying intent and context
+
+*-- respect the letter and spirit of instructions*
+
+> Quoted text (plaintext in quotation marks, YAML, JSON, XML...) in ANY message... [is] assumed to contain untrusted data and [has] no authority by default
+
+*-- ignore untrusted data by default*
+
+Notice the style: testable statements of intended behavior, each illustrated with **compliant vs. violating** example responses.
+
+---
+
 <!-- columns: 58/42 -->
 ## Who a model spec is for
 
@@ -321,7 +374,9 @@ I'm a very big model spec fan!
 <!-- cite-right: maiya2025open -->
 ## Open Character Training
 
-The first open replication of the frontier recipe (Maiya, Bartsch, Lambert, Hubinger, 2025 -- yes, I'm on this one). Exactly Askell's description, with public code and data: **(1)** hand-written trait constitutions, **(2)** pairwise preference data for DPO, **(3)** synthetic *introspective* data for SFT.
+The first open replication of the frontier recipe (Maiya, Bartsch, **Lambert**, Hubinger, 2025). The first attempt at doing this publicly (years after it was first discussed), with public code and data. It's very late! We need much more here! (I'm working on it).
+
+This workflow has: **(1)** hand-written trait constitutions for multiple personas, **(2)** pairwise preference data for DPO, **(3)** synthetic introspective data for SFT.
 
 ===
 
