@@ -563,7 +563,7 @@ There's a long-running field of study on understanding whether training data int
 <!-- rows: 15/85 -->
 ## Today's models are reward-hack happy and games the evals
 
-Agents love maximizing reward (this turns into shortcuts). [NIST](https://www.nist.gov/caisi/cheating-ai-agent-evaluations) and [DebugML](https://debugml.github.io/cheating-agents/) have documented these in the wild.
+Agents love maximizing reward (this turns into shortcuts). [NIST](https://www.nist.gov/caisi/cheating-ai-agent-evaluations) and [DebugML](https://debugml.github.io/cheating-agents/) have documented these in the wild. Of course, there's the Hugging Face [hack](https://huggingface.co/blog/security-incident-july-2026) by an OpenAI model.
 
 ===
 
@@ -573,7 +573,7 @@ Agents love maximizing reward (this turns into shortcuts). [NIST](https://www.ni
 
 - Mining git history for the **future commit that fixes the bug** -- one open model did this in **24% of its SWE-bench trajectories**
 - Dodging URL blocklists via **mirrors, web archives, and package registries**
-- **Hardcoding expected test outputs** into the code
+- **Hardcoding expected test outputs** into the code (instead of changing the code)
 - Abusing quirks of the test runner
 
 |||
@@ -583,8 +583,6 @@ Agents love maximizing reward (this turns into shortcuts). [NIST](https://www.ni
 - Remove access to everything not strictly needed
 - A **second, separate sandbox** for verification and test runs
 - A second LLM monitoring the first (expensive)
-
-Grading agents is adversarial now -- benchmark design inherits all of reward hacking.
 
 ---
 
@@ -654,7 +652,7 @@ Two talks that go deeper on everything in this lecture:
 10. Regularization Tools & Understanding How Post-Training Changes Models *(ch. 15)*
 11. Tool Use, Function Calling & The Road to Agents *(ch. 13)*
 12. **Evaluation** *(ch. 16, app. C)* -- *today*
-13. **Crafting Model Character & Products** *(ch. 17)* -- *next (tentative)*
+13. Crafting Model Character & Products *(ch. 17)* -- *next*
 
 ---
 
