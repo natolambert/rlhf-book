@@ -536,31 +536,19 @@ $$S^p_{ij} = |w_{ij}| \cdot \mathbf{A}^{(l)}_p[j], \qquad \mathcal{M}_p = f(\the
 
 ---
 
-<!-- columns: 58/42 -->
 ## The evolution of RLHF from alignment to post-training
 
 What began as a philosophically grounded research area -- colloquially, "alignment" -- is now a practical engineering discipline spanning safety, values, and personality. RLHF is really one piece of post-training. Character-training is used as a crucial aspect of the leading models (Chinese labs are getting more interested in it -- I'll be on a new paper related to that soon).
 
 Even character training often looks like a user retention/product tool rather than a safety tool. There are risks of these ideas being used for harm -- e.g. [whatever Character AI was doing to make addicting models for kids](https://www.cbsnews.com/news/parents-allege-harmful-character-ai-chatbot-content-60-minutes/).
 
-|||
-
-![My 2023 paper, from when this was still "alignment."](assets/history-risks-rlhf.png)
-
 ---
 
-<!-- columns: 50/50 -->
 ## The big open question in character training
 
 A spec is only as good as the effort spent making the model follow it.
 
 Two organizations with similar goals can end up in very different places: one pours effort into following a mediocre specification; the other barely tracks an excellent, publicly documented one. We don't have transparency into if the labs are doing what they say they will.
-
-Early progress: OpenAI now publishes [Model Spec Evals](https://alignment.openai.com/model-spec-evals/) -- even their best models measure only **~87% compliant** with their own spec →
-
-|||
-
-![Overall Model Spec compliance by model, from OpenAI's Model Spec Evals (March 2026).](assets/openai-spec-compliance.png)
 
 ---
 
@@ -575,14 +563,14 @@ Much of the character training lecture has hinted at this! But, post-training te
 
 ---
 
-<!-- valign: center -->
+<!-- align: center -->
+<!-- title: center -->
 ## My hypothesis on character training in practice
 
 *"All data work in a truly great LLM will become some character training -- **every small tradeoff influences how the model sees itself and the world**."*
 
 ---
 
-<!-- align: center -->
 ## The last word
 
 We cannot precisely model human preferences -- that is the fundamental nature of the RLHF problem.
