@@ -29,7 +29,7 @@ export WANDB_PROJECT=rlhf-book
 uv run python -m instruction_tuning.train --config instruction_tuning/configs/sft_olmo2_1b.yaml
 uv run python -m policy_gradients.train --config policy_gradients/configs/grpo.yaml
 uv run python -m reward_models.train_preference_rm --config reward_models/configs/preference_rm.yaml
-uv run python -m reward_models.train_orm --samples 400 --epochs 2
+uv run python -m reward_models.train_orm --config reward_models/configs/orm.yaml
 uv run python -m reward_models.train_prm --samples 500 --epochs 2
 uv run python -m direct_alignment.train --config direct_alignment/configs/dpo.yaml
 uv run python -m rejection_sampling.train --config rejection_sampling/configs/top_per_prompt.yaml
