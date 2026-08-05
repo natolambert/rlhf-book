@@ -12,12 +12,12 @@ freeze_backbone: false
 # Dataset
 dataset_name: openai/gsm8k
 dataset_split: train
-samples: 400
+samples: 2000
 
 # Training
 batch_size: 2
 grad_accum_steps: 16
-epochs: 2
+epochs: 3
 lr: 1.0e-4
 warmup_ratio: 0.1
 lr_scheduler: warmup_only
