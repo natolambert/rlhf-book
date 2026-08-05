@@ -563,25 +563,18 @@ Much of the character training lecture has hinted at this! But, post-training te
 
 ---
 
-<!-- align: center -->
-<!-- title: center -->
+<!-- valign: center -->
 ## My hypothesis on character training in practice
 
 *"All data work in a truly great LLM will become some character training -- **every small tradeoff influences how the model sees itself and the world**."*
 
 ---
 
-## The last word
+## The lasting role of RLHF
 
-We cannot precisely model human preferences -- that is the fundamental nature of the RLHF problem.
+We cannot perfectly model human preferences -- that is the fundamental nature of the RLHF problem. We will always have trade-offs, new domains, and needs for new work. A great academic problem people are ignoring today!
 
-<!-- step -->
-
-The best practices and tools in this book will evolve as the domains we apply AI to change. The core problems boil down to the same trade-offs.
-
-<!-- step -->
-
-*"RLHF is a problem so carefully framed that we can continue to refine endlessly, **embedding a secretly human process into the deepest levels of powerful AI tools**."*
+"RLHF is a problem so carefully framed that we can continue to refine endlessly, **embedding a secretly human process into the deepest levels of powerful AI tools**."
 
 ---
 
