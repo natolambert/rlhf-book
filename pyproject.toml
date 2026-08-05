@@ -18,8 +18,7 @@ skills = [
     "google-genai>=1.63.0",
 ]
 teach = [
-    # TODO: pin back to a PyPI release (colloquium==0.2.4) once it ships the
-    # caption-fit overflow fix (natolambert/colloquium#50). Until then, track
-    # the fix commit so figure slides lay out correctly.
-    "colloquium @ git+https://github.com/natolambert/colloquium.git@f57e51aeffe5fd42b3efd646f89bc8e860700c13",
+    # Tracks colloquium main (per Nathan: easiest for catching regressions);
+    # pin to a PyPI release later if builds need to be reproducible.
+    "colloquium @ git+https://github.com/natolambert/colloquium.git",
 ]
