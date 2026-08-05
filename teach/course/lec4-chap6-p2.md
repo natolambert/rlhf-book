@@ -163,7 +163,7 @@ content: |
 
 ---
 
-## Recall: the policy gradient
+## Recall: The policy gradient
 
 The objective and its gradient:
 
@@ -175,7 +175,7 @@ The gradient says: for each token, compute the direction that makes it more like
 
 ---
 
-## Recall: the policy gradient algorithms
+## Recall: The policy gradient algorithms
 
 All methods minimize the same family of **losses** (note the leading minus signs) — they differ in $\Psi_t$ and how updates are bounded:
 
@@ -196,7 +196,7 @@ Where $\rho_t = \frac{\pi_\theta(a_t \mid s_t)}{\pi_{\theta_\text{old}}(a_t \mid
 
 ---
 
-## Recall: why losses are sums of log-probs
+## Recall: Why losses are sums of log-probs
 
 From lecture 3, the policy gradient derivation showed:
 
@@ -302,11 +302,11 @@ Note: the data loader must generate $K$ completions per prompt and group them to
 
 <!-- layout: section-break -->
 
-## Proximal Policy Optimization (PPO)
+## Proximal policy optimization (PPO)
 
 ---
 
-## Recall: Proximal Policy Optimization (PPO)
+## Recall: Proximal policy optimization (PPO)
 
 The clipped surrogate loss (minimized):
 
@@ -529,7 +529,7 @@ vf_loss = torch.max(vf_unclipped, vf_clipped)
 
 ---
 
-## PPO-RLHF: combined objective
+## PPO-RLHF: Combined objective
 
 Combined loss: policy + value (KL enters via reward shaping, not as a separate loss term):
 
@@ -652,11 +652,11 @@ For a 7B model with fp16:
 
 <!-- layout: section-break -->
 
-## Group Relative Policy Optimization (GRPO) & friends
+## Group relative policy optimization (GRPO) & friends
 
 ---
 
-## Recall: Group Relative Policy Optimization (GRPO)
+## Recall: Group relative policy optimization (GRPO)
 
 <!-- cite-right: shao2024deepseekmath -->
 
@@ -996,7 +996,7 @@ Standard in GRPO and some PPO implementations.
 
 ---
 
-## Per-sequence normalization: effect
+## Per-sequence normalization: Effect
 
 Each sequence gets equal weight → per-token gradients are **inversely proportional to sequence length**:
 
@@ -1022,7 +1022,7 @@ Used in DAPO [@yu2025dapo]. Longer sequences contribute proportionally more grad
 
 ---
 
-## Per-token normalization: effect
+## Per-token normalization: Effect
 
 All tokens get equal gradient magnitude. Longer sequences contribute more to the total gradient because they have more tokens.
 
@@ -1092,7 +1092,7 @@ Reasoning models push RL to extremes. Here's what changes:
 
 --- -->
 
-## Forward pointer: regularization & over-optimization
+## Forward pointer: Regularization & over-optimization
 
 When RL runs go wrong, it is often due to RL latching onto spurious signals rather than the intended reward. 
 These topics deserve their own lecture:

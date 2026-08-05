@@ -67,7 +67,7 @@ Modern language models:
 ---
 
 <!-- columns: 45/55 -->
-## 2017: the Transformer is born
+## 2017: The Transformer is born
 
 - **2017:** the Transformer is born
 
@@ -211,7 +211,7 @@ Modern language models:
 ---
 
 <!-- columns: 50/50 -->
-## Pretraining: next-token prediction
+## Pretraining: Next-token prediction
 
 - Train on trillions of tokens of text from the web, books, code, and documents
   - Models are often trained on 5-50+ trillion tokens
@@ -377,7 +377,7 @@ Reinforcement learning basics:
 
 <!-- row-columns: 50/50 -->
 
-## A simple RL example: thermostat
+## A simple RL example: Thermostat
 
 The agent learns over many episodes when to turn the heater on or off
 - **State**: the current room temperature
@@ -405,7 +405,7 @@ $$
 
 <!-- columns: 45/55 -->
 <!-- cite-right: sutton2018reinforcement -->
-## CartPole: a standard RL task
+## CartPole: A standard RL task
 
 - **State**: cart position, velocity, pole angle, angular velocity
 $$s_t = (x_t,\; \dot{x}_t,\; \theta_t,\; \dot{\theta}_t)$$
@@ -424,7 +424,7 @@ $$r(s_t, a_t) = \begin{cases} 1 & \text{if } |\theta_t| < 12° \text{ and } |x_t
 
 <!-- columns: 45/55 -->
 <!-- cite-right: sutton2018reinforcement -->
-## CartPole: the dynamics
+## CartPole: The dynamics
 
 Each action changes the physics of the system. The full state update:
 
@@ -484,7 +484,7 @@ RLHF lets us optimize for behavior we can **evaluate** even when we cannot easil
 
 <!-- columns: 50/50 -->
 <!-- cite-right: christiano2017 -->
-## Left: human feedback; right: hand-designed reward function
+## Left: Human feedback; Right: Hand-designed reward function
 
 ![](assets/christiano-backflip-human.webp)
 
@@ -602,7 +602,7 @@ $$J(\pi) = \mathbb{E}\left[ r_\theta(x, y) \right] - \beta \, D_{\text{KL}}\!\le
 
 <!-- columns: 45/55 -->
 <!-- cite-right: ouyang2022training -->
-## Step 1/3: instruction fine-tuning (IFT)
+## Step 1/3: Instruction fine-tuning (IFT)
 
 The foundation of post-training. Also called **Supervised Fine-tuning (SFT)**:
 - Start from a pretrained language model
@@ -636,7 +636,7 @@ messages:
 
 <!-- columns: 45/55 -->
 <!-- cite-right: christiano2017, ouyang2022training -->
-## Step 2/3: reward modeling
+## Step 2/3: Reward modeling
 
 Overview:
 - Collect **comparisons** between two model outputs for the same prompt
@@ -672,7 +672,7 @@ Notation:
 
 <!-- columns: 45/55 -->
 <!-- cite-right: christiano2017, ouyang2022training -->
-## Step 2/3: reward modeling
+## Step 2/3: Reward modeling
 
 ```box
 title: Core idea
@@ -851,7 +851,7 @@ content: |
 
 ---
 
-## Rejection sampling: the simplest preference optimization
+## Rejection sampling: The simplest preference optimization
 
 Generate many completions, score them, fine-tune on the best:
 
@@ -880,7 +880,7 @@ All three optimize the same underlying objective — they differ in **how** they
 ---
 
 <!-- cite-right: gao2023scaling -->
-## Caveat: proxy objectives and over-optimization
+## Caveat: Proxy objectives and over-optimization
 
 The reward model is a **proxy**, not ground truth. Even a well-trained RM is only *correlated* with real user satisfaction.
 
@@ -1095,7 +1095,7 @@ Apply the same RL algorithms to LLMs when the answer can be checked directly. No
 
 <!-- layout: section-break -->
 
-## Beyond elicitation: the scaling RL era of post-training
+## Beyond elicitation: The scaling RL era of post-training
 
 ---
 
@@ -1108,7 +1108,7 @@ Apply the same RL algorithms to LLMs when the answer can be checked directly. No
 
 ---
 
-## o1: test-time scaling
+## o1: Test-time scaling
 
 <!-- columns: 2 -->
 <!-- cite-right: openai2024o1 -->
@@ -1125,7 +1125,7 @@ A log-linear relationship between inference compute (number of tokens generated)
 
 ---
 
-## o1: training-time scaling (with reinforcement learning!)
+## o1: Training-time scaling (with reinforcement learning!)
 
 <!-- columns: 2 -->
 <!-- cite-right: openai2024o1 -->
@@ -1163,7 +1163,7 @@ The third place of scaling is at inference (no weight updates there).
 ---
 
 <!-- columns: 30/70 -->
-## Olmo 3.1: extending the RL run
+## Olmo 3.1: Extending the RL run
 
 <!-- cite-right: teamolmo2025olmo3 -->
 
@@ -1188,7 +1188,7 @@ Post-training and RLHF are changing faster than maybe ever before.
 ---
 
 <!-- rows: 50/50 -->
-## Lecture 1: overview
+## Lecture 1: Overview
 
 <!-- row-columns: 34/33/33 -->
 

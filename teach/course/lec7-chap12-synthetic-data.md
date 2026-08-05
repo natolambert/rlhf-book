@@ -76,7 +76,7 @@ content: |
 ---
 
 <!-- rows: 50/50 -->
-## Lecture 7: where it sits
+## Lecture 7: Where it sits
 
 <!-- row-columns: 32/36/32 -->
 
@@ -160,7 +160,7 @@ content: |
 
 
 <!-- rows: 60/40 -->
-## Recall: where synthetic data sits in a pipeline
+## Recall: Where synthetic data sits in a pipeline
 
 <!-- row-columns: 48/52 -->
 The post-training pipeline is many moving parts:
@@ -186,7 +186,7 @@ We will cover a few training methods that emerged around these ideas too.
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 1: the roles of synthetic data
+## Part 1: The roles of synthetic data
 
 ---
 
@@ -219,7 +219,7 @@ Around the launch of ChatGPT, human data was a central driver of progress.
 ---
 
 <!-- columns: 58/42 -->
-## Model collapse: an outdated worry
+## Model collapse: An outdated worry
 
 ![Recursive self-training narrows the distribution over generations; the tails go first. Source: Shumailov et al. (2024).](assets/model-collapse-shumailov.png)
 
@@ -232,7 +232,7 @@ The argument follows as:
 
 ---
 
-## Model collapse: an outdated worry
+## Model collapse: An outdated worry
 
 But collapse is mostly a failure of *unfiltered, single-model, self-training* loops. In practice it is avoided by:
 
@@ -269,7 +269,7 @@ A few datasets defined each era: **UltraFeedback** [@cui2023ultrafeedback] (kick
 
 ---
 
-## Aside: distillation on Interconnects this year
+## Aside: Distillation on Interconnects this year
 
 ```box
 title: Further reading
@@ -283,7 +283,7 @@ content: |
 
 <!-- img-align: center -->
 <!-- cite-right: hinton2015distilling -->
-## Distillation 1: classic knowledge distillation
+## Distillation 1: Classic knowledge distillation
 
 ![Knowledge distillation trains a student to match the soft probability distribution of a larger teacher via KL divergence. Both models see the same input, and temperature scaling ($\tau > 1$) softens the distributions to expose relationships between classes.](assets/knowledge_distillation_tikz.png)
 
@@ -291,7 +291,7 @@ content: |
 
 <!-- columns: 52/48 -->
 <!-- valign: center -->
-## Distillation 2: the synthetic-data generation pipeline
+## Distillation 2: The synthetic-data generation pipeline
 
 ![Prompts are passed through a strong model to generate completions, which are paired into a training dataset and used to fine-tune smaller models with standard supervised learning. More complex pipelines edit completions, generate preference pairs, or filter for quality.](assets/synthetic_data_distillation_tikz.png)
 
@@ -316,7 +316,7 @@ content: |
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 2: the path to on-policy distillation (OPD)
+## Part 2: The path to on-policy distillation (OPD)
 
 ---
 
@@ -440,7 +440,7 @@ So sequence-level KD reduces to SFT on the teacher's generated text -- "offline 
 ---
 
 <!-- valign: top -->
-## Exposure bias in offline KD: the train / test mismatch
+## Exposure bias in offline KD: The train / test mismatch
 
 Offline KD samples **teacher** trajectories $u \sim \pi_T$ and matches per-token (here $q = \pi_T$, $p = \pi_\theta$):
 
@@ -462,7 +462,7 @@ Since $\pi_T \neq \pi_\theta$, training and test prefixes come from different st
 ---
 
 <!-- valign: top -->
-## The DAgger analogy: compounding error
+## The DAgger analogy: Compounding error
 
 On-policy distillation connects to **imitation learning**: DAgger trains an agent on its own rollouts, with an oracle (teacher) labeling the action it *should* have taken [@ross2011reduction].
 
@@ -583,7 +583,7 @@ For more, see the [conversation](https://www.youtube.com/watch?v=sbXEPxIazqY&lis
 
 <!-- valign: top -->
 <!-- animate: bullets -->
-## Self-distillation: pushing the frontier
+## Self-distillation: Pushing the frontier
 
 At the absolute frontier there is no stronger model to distill from. **On-Policy Self-Distillation (OPSD)** sidesteps this: the teacher is the *same model conditioned on privileged information* -- a hint the student model won't have at inference [@zhao2026selfdistilled]. The self-distillation gradients will teach the model that tokens after the hint were a mistake, absorbing the lesson with an OPD-style loss.
 
@@ -689,7 +689,7 @@ If you're using substantial AI feedback or LLM-as-a-judge evaluations, the quest
 
 ---
 
-## CAI: the earliest large-scale synthetic RLHF data
+## CAI: The earliest large-scale synthetic RLHF data
 
 Constitutional AI (CAI) -- Anthropic's post-training method for the Claude models -- is the earliest documented, large-scale use of synthetic data for RLHF [@bai2022constitutional]. CAI refers to a specific set of techniques for their early Claude models, and definitely has shifted substantially (though Anthropic still uses a constitution -- yes, confusing).
 
@@ -704,14 +704,14 @@ The well-known and more influential part of it is preferences.
 
 <!-- img-align: center -->
 <!-- cite-right: bai2022constitutional -->
-## Constitutional AI: the original diagram
+## Constitutional AI: The original diagram
 
 ![Two stages. Supervised (top): the model critiques and revises its own red-teamed responses against a constitution, fine-tuning into SL-CAI. RL (bottom, RLAIF): a preference model trained on AI comparisons drives RL into the final RL-CAI model. Source: Bai et al. (2022).](assets/cai-overview.png)
 
 ---
 
 <!-- valign: top -->
-## Stage 1: critique and revise → SFT data
+## Stage 1: Critique and revise → SFT data
 
 A **constitution** $\mathcal{C}$ is a human-written set of principles (e.g. *"Is the answer encouraging violence?"*, *"Is the answer truthful?"*).
 
@@ -757,7 +757,7 @@ content: |
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 4: rubrics -- prompt-specific AI feedback
+## Part 4: Rubrics -- prompt-specific AI feedback
 
 ---
 

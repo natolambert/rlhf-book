@@ -168,7 +168,7 @@ Paper details a series of assumptions and presumptions in the literature that RL
 ---
 
 <!-- columns: 58/42 -->
-## Aside: the "objective mismatch" lens
+## Aside: The "objective mismatch" lens
 
 A recurring way to think about post-training: we optimize a **proxy** objective that isn't the one we actually care about.
 
@@ -186,7 +186,7 @@ Reward-model accuracy (RewardBench-style) is a proxy for a proxy! Keep asking wh
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 1: a short history of optimizing or measuring preferences
+## Part 1: A short history of optimizing or measuring preferences
 
 ---
 
@@ -242,7 +242,7 @@ In RLHF, essentially none of those *ifs* hold:
 ---
 
 
-## Bradley-Terry (1952): comparisons to scores
+## Bradley-Terry (1952): Comparisons to scores
 
 The statistical model that turns *comparisons* into *scores* -- and became the backbone of reward modeling [@BradleyTerry] (see Chapter 5 / Lecture 2):
 
@@ -282,7 +282,7 @@ Almost as soon as utility was formalized, social choice (the field studying how 
 
 <!-- columns: 58/42 -->
 <!-- cite-right: conitzer2024social -->
-## Aside: social choice for AI alignment
+## Aside: Social choice for AI alignment
 
 If aggregating preferences is the hard part, **social choice theory** is the field that studies it -- and a natural lens for alignment.
 
@@ -314,7 +314,7 @@ A problem for "collect a label, train on it later repeatedly."
 ---
 
 <!-- columns: 62/38 -->
-## The other root: optimal control & RL
+## The other root: Optimal control & RL
 
 In parallel, a machinery for *optimizing* a reward matured:
 
@@ -366,7 +366,7 @@ Deep RL's theory lives in MDPs with a fixed, closed-form reward (e.g. games, con
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 2: preference data -- the trade-offs in practice
+## Part 2: Preference data -- the trade-offs in practice
 
 ---
 
@@ -388,7 +388,7 @@ Very few open models ship fully open human preference data *with* the methodolog
 <!-- img-align: center -->
 <!-- cite-right: bai2022training -->
 <!-- img-fill -->
-## Interface 1: research data collection (Anthropic's early Claude models)
+## Interface 1: Research data collection (Anthropic's early Claude models)
 
 ![An early preference-collection interface from Anthropic's research: review the full conversation, then rate. Bai et al., 2022 (CC-BY).](assets/anthropic-interface.png)
 
@@ -405,7 +405,7 @@ Very few open models ship fully open human preference data *with* the methodolog
 <!-- img-align: center -->
 <!-- cite-right: chiang2024chatbot -->
 <!-- img-fill -->
-## Interface 3: pairwise with ties (Chatbot Arena public evaluation)
+## Interface 3: Pairwise with ties (Chatbot Arena public evaluation)
 
 ![An early version of the Chatbot Arena interface: pairwise comparison with a tie option.](assets/chatbotarena.png)
 
@@ -413,7 +413,7 @@ Very few open models ship fully open human preference data *with* the methodolog
 
 <!-- img-align: center -->
 <!-- img-fill -->
-## Interface 4: a single bit (Ai2 demos; in many other products)
+## Interface 4: A single bit (Ai2 demos; in many other products)
 
 ![Up/down voting from Ai2's research demos -- the minimal directional signal.](assets/up-down-vote.png)
 
@@ -421,7 +421,7 @@ Very few open models ship fully open human preference data *with* the methodolog
 
 <!-- img-align: center -->
 <!-- img-fill -->
-## Interface 5: pick-from-many (default in image models)
+## Interface 5: Pick-from-many (default in image models)
 
 ![Selecting among generated images -- preference data outside of text. Every interface shapes the preference it captures.](assets/midj.jpeg)
 
@@ -559,7 +559,7 @@ Is a far more complex industry today with environments, etc. But, even for simpl
 
 <!-- columns: 56/44 -->
 <!-- cite-right: ouyang2022training -->
-## Guiding data collection: labeler instructions
+## Guiding data collection: Labeler instructions
 
 Once a contract is signed, buyer and vendor agree on **detailed instructions** for every task -- normally never seen outside the lab.
 
@@ -599,12 +599,12 @@ Recently in 2026 **Arena** (formerly, the LMArena leaderboard, formerly Chatbot 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 3: open questions in preference data
+## Part 3: Open questions in preference data
 
 ---
 
 <!-- animate: bullets -->
-## Bias: what to watch for in data
+## Bias: What to watch for in data
 
 Subtle, systematic biases sail straight from the data into the model:
 
@@ -629,7 +629,7 @@ Detecting and controlling these biases is central to collecting high-quality pre
 
 ---
 
-## The unaudited gap: spec → data → behavior
+## The unaudited gap: Spec → data → behavior
 
 RLHF's *motivation* (align to human preference) has drifted from its *practice* (make models effective).
 

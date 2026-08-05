@@ -37,7 +37,7 @@ custom_css: |
 ---
 
 <!-- rows: 50/50 -->
-## Lecture 3: reinforcement learning (mostly the math)
+## Lecture 3: Reinforcement learning (mostly the math)
 
 <!-- row-columns: 32/36/32 -->
 
@@ -203,7 +203,7 @@ Reasoning models (o1, DeepSeek R1, etc.) are trained with these exact algorithms
 ---
 
 <!-- columns: 50/50 -->
-## RLVR: same algorithms, verifiable rewards
+## RLVR: Same algorithms, verifiable rewards
 
 <!-- cite-right: lambert2024t -->
 
@@ -222,12 +222,12 @@ Same policy gradient algorithms, different reward source. We will cover tricks f
 
 <!-- layout: section-break -->
 
-## Policy gradients: core intuitions
+## Policy gradients: Core intuitions
 
 ---
 
 <!-- columns: 50/50 -->
-## Recall: classical RL vs. RLHF
+## Recall: Classical RL vs. RLHF
 
 <!-- cite-right: christiano2017, ouyang2022training -->
 
@@ -403,7 +403,7 @@ A *baseline* $b(s_t)$ is any value subtracted from the reward signal to reduce v
 
 ---
 
-## Setup: differentiating an expectation
+## Setup: Differentiating an expectation
 
 Ideally, we want $\nabla_\theta J(\theta)$, but we can't do that (the state sampling distribution itself depends on $\theta$).
 
@@ -413,7 +413,7 @@ $$J(\theta) = \mathbb{E}_{\tau \sim p_\theta}[R(\tau)] = \int_\tau p_\theta(\tau
 
 ---
 
-## Setup: differentiating an expectation
+## Setup: Differentiating an expectation
 
 Ideally, we want $\nabla_\theta J(\theta)$, but we can't do that (the state sampling distribution itself depends on $\theta$).
 
@@ -618,7 +618,7 @@ The gradient of a normalized distribution sums to zero — so we're free to subt
 
 ---
 
-## Recall: what $\Psi_t$ can be
+## Recall: What $\Psi_t$ can be
 
 <!-- cite-right: schulman2015high -->
 
@@ -862,7 +862,7 @@ Basic REINFORCE needs no critic — just Monte Carlo returns and a simple baseli
 
 ---
 
-## RLOO: leave-one-out baseline
+## RLOO: Leave-one-out baseline
 
 <!-- cite-right: ahmadian2024back -->
 
@@ -961,7 +961,7 @@ This introduces new problems:
 
 ---
 
-## PPO core idea 1: constrained updates
+## PPO core idea 1: Constrained updates
 
 <!-- cite-right: schulman2017proximal -->
 
@@ -971,7 +971,7 @@ The solution: **trust regions** — limit how far the policy can move in a singl
 
 ---
 
-## PPO core idea 2: importance sampling
+## PPO core idea 2: Importance sampling
 
 We want to take multiple gradient steps on a batch, but the data came from an old policy $\pi_{\theta_\text{old}}$.
 
@@ -1142,7 +1142,7 @@ As $k \to \infty$, we recover the full Monte Carlo advantage $G_t - V_\phi(s_t)$
 
 ---
 
-## GAE: exponential weighting
+## GAE: Exponential weighting
 
 GAE uses an exponentially-weighted average across all $K$-step estimates:
 
@@ -1152,7 +1152,7 @@ Where $\lambda \in [0, 1]$ controls the bias-variance tradeoff.
 
 ---
 
-## GAE: bias-variance tradeoff
+## GAE: Bias-variance tradeoff
 
 $$\hat{A}_t^{\text{GAE}} = \sum_{l=0}^{\infty} (\gamma\lambda)^l \delta_{t+l}^V$$
 
@@ -1166,7 +1166,7 @@ The $\gamma$ here is typically $1.0$ for language models (no discounting). These
 
 ---
 
-## PPO-RLHF: full policy objective
+## PPO-RLHF: Full policy objective
 
 A schematic high-level view of PPO-RLHF combines the clipped PPO objective with a KL regularizer:
 
@@ -1194,7 +1194,7 @@ Typical: K = 2–4 gradient steps per batch before re-generating.
 
 ---
 
-## PPO: four models in memory
+## PPO: Four models in memory
 
 PPO requires **four** models:
 
@@ -1291,7 +1291,7 @@ Same principle (compare to peers), different mechanics. Without std normalizatio
 
 ---
 
-## GSPO: sequence-level ratios
+## GSPO: Sequence-level ratios
 
 <!-- cite-right: zheng2025gspo -->
 
@@ -1309,7 +1309,7 @@ The clipping range $\varepsilon$ now operates on a per-token average scale, maki
 
 ---
 
-## CISPO: clipped importance sampling
+## CISPO: Clipped importance sampling
 
 <!-- cite-right: minimax2025minimaxm1scalingtesttimecompute -->
 

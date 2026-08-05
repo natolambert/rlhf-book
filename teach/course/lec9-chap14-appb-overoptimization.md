@@ -44,7 +44,7 @@ custom_css: |
 
 ---
 
-## April 2025: extreme sycophancy in production
+## April 2025: Extreme sycophancy in production
 
 A GPT-4o update made the model validate nearly anything -- shipped April 25th, rolled back April 28th. The training run that produced it looked healthy on their metrics.
 
@@ -108,7 +108,7 @@ content: |
 
 ---
 
-## Some vocabulary (history): "just style" / "style transfer"
+## Some vocabulary (history): "Just style" / "style transfer"
 
 Early on, say ~2023, RLHF got a reputation as **"just style transfer"** -- the claim that it only changes *how* an answer is presented, not *what* the model knows or can do, and it *just* came from some easy to access place.
 
@@ -123,11 +123,11 @@ Boooo. Look how far post-training has come!
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 1: over-optimization
+## Part 1: Over-optimization
 
 ---
 
-## Goodhart's law: the reward is a proxy
+## Goodhart's law: The reward is a proxy
 
 > *"Any observed statistical regularity will tend to collapse once pressure is placed upon it for control purposes."* -- Goodhart, 1984 [@goodhart1984problems]
 
@@ -221,7 +221,7 @@ Larger proxy RMs turn over later and more gently. And since gold-labels-train-pr
 <!-- img-fill -->
 <!-- img-align: center -->
 <!-- cite-right: bai2022training -->
-## Measuring it: train vs. test reward models
+## Measuring it: Train vs. test reward models
 
 ![](assets/anthropic_overoptimization.png)
 
@@ -251,7 +251,7 @@ The preference-data biases from Lecture 8 -- sycophancy, verbosity, formatting -
 ---
 
 <!-- columns: 46/54 -->
-## An example, over-refusals: "too much RLHF"?
+## An example, over-refusals: "Too much RLHF"?
 
 2023's most-memed failure mode: refusing to "kill a Linux process." (imagine this today with coding agents!)
 
@@ -290,7 +290,7 @@ The main lever in practice: **the KL penalty** (and more careful data/systems, b
 
 ---
 
-## Aside: go watch this talk
+## Aside: Go watch this talk
 
 **John Schulman, ICML 2023 invited talk -- "Proxy objectives in reinforcement learning from human feedback"** [@schulman2023proxy]
 
@@ -314,7 +314,7 @@ We're seeing this play out today as **reward hacking** in scaled-up RL on verifi
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 2: beyond "just style"
+## Part 2: Beyond "just style"
 
 ---
 

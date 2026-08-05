@@ -143,7 +143,7 @@ A natural step before full RLHF:
 
 <!-- layout: section-break -->
 
-## Part 1: instruction tuning
+## Part 1: Instruction tuning
 
 ---
 
@@ -192,7 +192,7 @@ Instruction tuning emerged from two parallel research threads:
 
 ---
 
-## Chat templates: the structure of instruction tuning
+## Chat templates: The structure of instruction tuning
 
 The model needs a structured format to manage **who is speaking** and **what to generate**. 
 Early chat templates defined three roles:
@@ -486,7 +486,7 @@ About a year later, Olmo 3's [@teamolmo2025olmo3] state-of-the-art *reasoning* S
 ---
 
 
-## Ingredients for post-training: prompts
+## Ingredients for post-training: Prompts
 
 Successful post-training starts with **meaningful evaluations** for targeted skills and **prompts of representative queries** for those skills.
 
@@ -501,7 +501,7 @@ Recent work has of course scaled up various RL training stages :D!
 
 ---
 
-## Building SFT data: synthetic completions
+## Building SFT data: Synthetic completions
 
 **Synthetic data** has become the dominant approach for building SFT datasets -- following [@wang2022self]:
 
@@ -536,7 +536,7 @@ These two tracks iterate: mix what you have, evaluate, curate what's missing, mi
 
 <!-- layout: section-break -->
 
-## Part 2: reward models
+## Part 2: Reward models
 
 ---
 
@@ -560,7 +560,7 @@ A reward model compresses complex, subjective human judgments into a single scal
 <!-- cite-right: sutton2018reinforcement -->
 <!-- columns: 65/35 -->
 
-## Recall: classical reinforcement learning
+## Recall: Classical reinforcement learning
 
 A reinforcement learning problem is often written as a **Markov Decision Process (MDP)**:
 - state space $\mathcal{S}$, action space $\mathcal{A}$
@@ -581,7 +581,7 @@ J(\pi) = \mathbb{E}_{\tau \sim \pi}\!\left[\sum_{t=0}^{T} \gamma^t r(s_t, a_t)\r
 
 <!-- columns: 50/50 -->
 <!-- cite-right: christiano2017, ouyang2022training -->
-## Recall: classical RL vs. RLHF
+## Recall: Classical RL vs. RLHF
 
 <div class="text-sm">
 
@@ -611,7 +611,7 @@ $$J(\pi) = \mathbb{E}\left[ r_\theta(x, y) \right] - \beta \, D_{\text{KL}}\!\le
 ---
 
 <!-- rows: 30/70 -->
-## Recall: what RLHF comparison data looks like
+## Recall: What RLHF comparison data looks like
 
 A human (or AI) annotator sees two responses to the same prompt and picks the better one — this preference pair becomes training data for the reward model.
 
@@ -879,7 +879,7 @@ where $r \in \{0,1\}$ is the completion-level correctness label, broadcast acros
 ---
 
 <!-- columns: 50/50 -->
-## BT reward model vs. ORM: forward pass
+## BT reward model vs. ORM: Forward pass
 
 **Bradley-Terry RM** — score at the **last token**:
 
@@ -1100,7 +1100,7 @@ Training innovations (aspect-conditioned models, high-quality human datasets, sc
 
 <!-- layout: section-break -->
 
-## Part 3: rejection sampling
+## Part 3: Rejection sampling
 
 ---
 
@@ -1135,7 +1135,7 @@ This is still just **offline data curation**: generate first, then train on the 
 
 ---
 
-## The math: prompts, completions, rewards
+## The math: Prompts, completions, rewards
 
 Given $M$ prompts and $N$ completions each:
 
@@ -1159,7 +1159,7 @@ Each reward: $r_{i,j} = \mathcal{R}(y_{i,j} \mid x_i)$
 
 ---
 
-## Selection method 1: top per prompt
+## Selection method 1: Top per prompt
 
 Select the highest-scoring completion for each prompt independently:
 
@@ -1180,7 +1180,7 @@ Result: one completion per prompt, every prompt represented.
 
 ---
 
-## Selection method 2: top overall pairs
+## Selection method 2: Top overall pairs
 
 Flatten the reward matrix and select the top $K$ pairs globally:
 
@@ -1216,7 +1216,7 @@ The core hyperparameters are intuitive:
 
 ---
 
-## Best-of-N sampling: rejection sampling without fine-tuning
+## Best-of-N sampling: Rejection sampling without fine-tuning
 
 <!-- cite-right: liu2023statistical -->
 

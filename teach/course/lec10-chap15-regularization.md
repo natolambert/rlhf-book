@@ -50,7 +50,7 @@ custom_css: |
 ---
 
 <!-- columns: 45/55 -->
-## Recall: the RLHF process
+## Recall: The RLHF process
 
 The RL step maximizes reward from the reward model **minus a penalty for drifting from the reference model**.
 
@@ -100,7 +100,7 @@ content: |
 
 <!-- columns: 50/50 -->
 
-## Aside: watch lecture 9 first
+## Aside: Watch lecture 9 first
 
 ```iframe
 src: https://rlhfbook.com/teach/course/lec9-chap14-appb-overoptimization/
@@ -127,7 +127,7 @@ style: "border:none;display:block;width:100%;aspect-ratio:16/9;height:auto"
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 1: the explicit KL penalty
+## Part 1: The explicit KL penalty
 
 ---
 
@@ -348,7 +348,7 @@ Samples come from the **policy itself**.
 ---
 
 <!-- rows: 18/82 -->
-## Recall, Lecture 7: the same two directions in distillation
+## Recall, Lecture 7: The same two directions in distillation
 
 The distillation version, verbatim from Lecture 7 -- teacher $\pi_T$ in place of the target. Sampling completions from the student is what puts $\pi_\theta$ on the **left** of the KL:
 
@@ -376,7 +376,7 @@ $$ D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_T) = \mathbb{E}_{z \sim \pi_\theta}\!\l
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 3: why RL generalizes more
+## Part 3: Why RL generalizes more
 
 ---
 
@@ -416,7 +416,7 @@ That intuition assumes a unimodal policy -- LLMs are multimodal. Paper: [arxiv.o
 
 <!-- rows: 50/50 -->
 <!-- cite-right: shenfeld2026rls -->
-## RL's razor: lower KL drift for equivalent performance
+## RL's razor: Lower KL drift for equivalent performance
 
 > *"Among the many high-reward solutions for a new task, on-policy methods such as RL are inherently biased toward solutions that remain closer to the original policy in KL divergence."*
 
@@ -432,7 +432,7 @@ That intuition assumes a unimodal policy -- LLMs are multimodal. Paper: [arxiv.o
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 4: other tools to control optimization
+## Part 4: Other tools to control optimization
 
 ---
 
@@ -450,7 +450,7 @@ Most of these are scaffolding: added to stabilize one setup, simplified away in 
 ---
 
 <!-- animate: bullets -->
-## 2026: the trust region / KL pen. is moving on
+## 2026: The trust region / KL pen. is moving on
 
 Tool use is changing what regularization has to do. In agentic recipes, the KL-to-reference penalty is disappearing:
 
