@@ -35,8 +35,8 @@ custom_css: |
   .slide.img-tall-right { position: relative !important; }
   .slide.img-tall-right .colloquium-grid > .col:last-child > figure.colloquium-figure {
     position: absolute !important;
-    top: 20px !important;
-    bottom: 54px !important;
+    top: 10px !important;
+    bottom: 42px !important;
     right: 30px !important;
     width: 55% !important;
     height: auto !important;
@@ -49,7 +49,7 @@ custom_css: |
     top: 0 !important;
     left: 0 !important;
     right: 0 !important;
-    height: calc(100% - 2.2em) !important;
+    height: calc(100% - 1.8em) !important;
     width: 100% !important;
     max-width: none !important;
     max-height: none !important;
@@ -534,6 +534,8 @@ Steer by adding it back at inference: $\mathbf{h}_\ell \leftarrow \mathbf{h}_\el
 ## The Assistant Axis: where the default persona lives
 
 Extract vectors for 275+ character archetypes and run PCA across them: **PC1 is assistant-likeness (helpful, etc)** (robustly, the contrast $\mathbf{v}_{\text{axis}} = \bar{\mathbf{h}}_{\text{assistant}} - \bar{\mathbf{h}}_{\text{roles}}$). Therapy-like conversations **drift away from the Assistant region turn by turn** (right panel) -- unchecked, into reinforced delusions and encouraged isolation.
+
+![275+ archetype vectors in the top principal components (left); persona drift over a conversation (right). From Lu et al. (2026), CC BY 4.0.](assets/assistant_axis.png)
 
 ---
 
