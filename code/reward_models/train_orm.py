@@ -16,8 +16,7 @@ BCE loss on completion tokens.
 See Chapter 5 (Reward Models) of RLHF Book for theoretical background.
 
 Usage:
-    uv run python -m reward_models.train_orm
-    uv run python -m reward_models.train_orm --samples 500 --epochs 2
+    uv run python -m reward_models.train_orm --config reward_models/configs/orm.yaml
 """
 
 import argparse
@@ -28,7 +27,7 @@ import torch
 import torch.nn.functional as F
 from datasets import Dataset, load_dataset
 from torch.utils.data import DataLoader
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, get_linear_schedule_with_warmup
 
 from reward_models.base import (
     BaseRewardModel,
@@ -38,21 +37,7 @@ from reward_models.base import (
     load_tokenizer,
     log_metrics,
 )
-
-
-# =============================================================================
-# Configuration
-# =============================================================================
-
-DEFAULT_MODEL_ID = "Qwen/Qwen3-1.7B-Base"
-DEFAULT_DATASET = "openai/gsm8k"
-DEFAULT_SAMPLES = 2000
-DEFAULT_BATCH_SIZE = 2
-DEFAULT_GRAD_ACCUM = 16
-DEFAULT_EPOCHS = 3
-DEFAULT_LR = 1e-4
-DEFAULT_WARMUP_RATIO = 0.1
-DEFAULT_SEED = 7
+from reward_models.config import Config, load_config
 
 
 # =============================================================================
@@ -102,9 +87,7 @@ def pack_example(
 
 def build_orm_dataset(
     tokenizer: AutoTokenizer,
-    dataset_name: str = DEFAULT_DATASET,
-    limit: int = DEFAULT_SAMPLES,
-    seed: int = DEFAULT_SEED,
+    config: Config,
 ) -> Dataset:
     """Build ORM training dataset from GSM8K.
 
@@ -112,8 +95,15 @@ def build_orm_dataset(
     - Creates a positive example with the correct solution (label=1)
     - Creates a negative example with a corrupted answer (label=0)
     """
-    random.seed(seed)
-    raw = load_dataset(dataset_name, "main", split=f"train[:{limit}]")
+    random.seed(config.seed)
+    raw = load_dataset(
+        config.dataset_name,
+        "main",
+        split=config.dataset_split,
+    )
+
+    samples = min(config.samples, len(raw))
+    raw = raw.shuffle(seed=config.seed).select(range(samples))
     rows = []
 
     for ex in raw:
@@ -168,7 +158,7 @@ class OutcomeRewardModel(BaseRewardModel):
     on completion tokens only (prompt tokens are masked).
     """
 
-    def __init__(self, model_id: str = DEFAULT_MODEL_ID, **kwargs):
+    def __init__(self, model_id: str, **kwargs):
         super().__init__(model_id, head_dim=1, **kwargs)
 
     def forward(
@@ -208,88 +198,80 @@ class OutcomeRewardModel(BaseRewardModel):
 
 
 def train_orm(
-    model_id: str = DEFAULT_MODEL_ID,
-    samples: int = DEFAULT_SAMPLES,
-    batch_size: int = DEFAULT_BATCH_SIZE,
-    grad_accum_steps: int = DEFAULT_GRAD_ACCUM,
-    epochs: int = DEFAULT_EPOCHS,
-    lr: float = DEFAULT_LR,
-    warmup_ratio: float = DEFAULT_WARMUP_RATIO,
-    seed: int = DEFAULT_SEED,
-    use_wandb: bool = True,
+    config: Config,
 ) -> OutcomeRewardModel:
     """Train an Outcome Reward Model on GSM8K.
 
     Args:
-        model_id: Hugging Face model ID for base model
-        samples: Number of GSM8K samples to use
-        batch_size: Training batch size
-        grad_accum_steps: Gradient accumulation steps
-        epochs: Number of training epochs
-        lr: Learning rate
-        warmup_ratio: Fraction of total steps for linear LR warmup
-        seed: Random seed
-        use_wandb: Whether to log to wandb
+        config: Configuration object containing training parameters.
 
     Returns:
         Trained OutcomeRewardModel
     """
-    random.seed(seed)
-    torch.manual_seed(seed)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    random.seed(config.seed)
+    torch.manual_seed(config.seed)
+    device = torch.device(config.get_device())
 
     # Initialize wandb
     init_wandb(
         default_run_name="orm_gsm8k",
-        config={
-            "model_id": model_id,
-            "samples": samples,
-            "batch_size": batch_size,
-            "grad_accum_steps": grad_accum_steps,
-            "epochs": epochs,
-            "lr": lr,
-            "warmup_ratio": warmup_ratio,
-        },
-        use_wandb=use_wandb,
+        config=config.model_dump(),
+        use_wandb=config.use_wandb,
     )
 
     # Load tokenizer
-    tokenizer = load_tokenizer(model_id)
+    tokenizer = load_tokenizer(config.model_id)
 
     # Build dataset
-    print(f"Building ORM dataset with {samples} samples...")
-    data = build_orm_dataset(tokenizer, limit=samples, seed=seed)
+    print(f"Building ORM dataset with {config.samples} samples...")
+    data = build_orm_dataset(tokenizer, config)
     print(f"Dataset size: {len(data)} examples")
 
     loader = DataLoader(
         data,
-        batch_size=batch_size,
+        batch_size=config.batch_size,
         shuffle=True,
-        drop_last=len(data) > batch_size,
+        drop_last=len(data) > config.batch_size,
         collate_fn=lambda b: collate_fn(b, tokenizer),
     )
 
     # Initialize model
-    print(f"Loading model: {model_id}")
-    model = OutcomeRewardModel(model_id=model_id, device=device).to(device)
+    print(f"Loading model: {config.model_id}")
+    model = OutcomeRewardModel(
+        model_id=config.model_id,
+        freeze_backbone=config.freeze_backbone,
+        device=device,
+    ).to(device)
     print(f"Trainable parameters: {model.count_trainable_params() / 1e6:.2f}M")
 
     # Optimizer and LR scheduler with linear warmup
-    optimizer = create_optimizer(model, lr)
-    total_optimizer_steps = -(-len(loader) // grad_accum_steps) * epochs
-    warmup_steps = int(total_optimizer_steps * warmup_ratio)
-    scheduler = (
-        torch.optim.lr_scheduler.LinearLR(optimizer, start_factor=0.1, total_iters=warmup_steps)
-        if warmup_steps > 0
-        else None
-    )
+    optimizer = create_optimizer(model, config.lr)
+    total_optimizer_steps = -(-len(loader) // config.grad_accum_steps) * config.epochs
+    warmup_steps = int(total_optimizer_steps * config.warmup_ratio)
+    if config.lr_scheduler == "linear_decay":
+        scheduler = get_linear_schedule_with_warmup(
+            optimizer,
+            num_warmup_steps=warmup_steps,
+            num_training_steps=total_optimizer_steps,
+        )
+    elif config.lr_scheduler == "warmup_only":
+        scheduler = (
+            torch.optim.lr_scheduler.LinearLR(
+                optimizer,
+                start_factor=0.1,
+                total_iters=warmup_steps,
+            )
+            if warmup_steps > 0
+            else None
+        )
 
     # Mixed precision
     autocast_enabled = torch.cuda.is_available()
 
     # Training loop
     global_step = 0
-    for epoch in range(epochs):
+    grad_accum_steps = config.grad_accum_steps
+    for epoch in range(config.epochs):
         model.train()
         epoch_loss = 0.0
         epoch_correct = 0
@@ -381,14 +363,18 @@ def score_completion(
     return probs[0][mask].mean().item()
 
 
-def demo_scoring(model: OutcomeRewardModel, tokenizer: AutoTokenizer, seed: int = DEFAULT_SEED):
+def demo_scoring(model: OutcomeRewardModel, tokenizer: AutoTokenizer, config: Config):
     """Demo: Score an unseen GSM8K test question."""
     device = next(model.parameters()).device
-    random.seed(seed)
+    random.seed(config.seed)
 
     # Get a random test example
-    test_index = random.randint(0, 1000)
-    sample = load_dataset(DEFAULT_DATASET, "main", split=f"test[{test_index}:{test_index + 1}]")[0]
+    test_data = load_dataset(
+        config.dataset_name,
+        "main",
+        split="test",
+    )
+    sample = random.choice(test_data)
 
     question = sample["question"].strip()
     answer = sample["answer"].strip()
@@ -431,42 +417,15 @@ def main():
         description="Train Outcome Reward Model on GSM8K",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument("--model-id", type=str, default=DEFAULT_MODEL_ID, help="Base model ID")
-    parser.add_argument(
-        "--samples", type=int, default=DEFAULT_SAMPLES, help="Number of training samples"
-    )
-    parser.add_argument("--batch-size", type=int, default=DEFAULT_BATCH_SIZE, help="Batch size")
-    parser.add_argument(
-        "--grad-accum", type=int, default=DEFAULT_GRAD_ACCUM, help="Gradient accumulation steps"
-    )
-    parser.add_argument("--epochs", type=int, default=DEFAULT_EPOCHS, help="Training epochs")
-    parser.add_argument("--lr", type=float, default=DEFAULT_LR, help="Learning rate")
-    parser.add_argument(
-        "--warmup-ratio",
-        type=float,
-        default=DEFAULT_WARMUP_RATIO,
-        help="Fraction of steps for LR warmup",
-    )
-    parser.add_argument("--seed", type=int, default=DEFAULT_SEED, help="Random seed")
-    parser.add_argument("--skip-demo", action="store_true", help="Skip scoring demo after training")
-    parser.add_argument("--no-wandb", action="store_true", help="Disable wandb logging")
+    parser.add_argument("--config", type=str, required=True, help="Path to YAML config file")
     args = parser.parse_args()
 
-    model = train_orm(
-        model_id=args.model_id,
-        samples=args.samples,
-        batch_size=args.batch_size,
-        grad_accum_steps=args.grad_accum,
-        epochs=args.epochs,
-        lr=args.lr,
-        warmup_ratio=args.warmup_ratio,
-        seed=args.seed,
-        use_wandb=not args.no_wandb,
-    )
+    cfg = load_config(args.config)
+    model = train_orm(config=cfg)
 
-    if not args.skip_demo:
-        tokenizer = load_tokenizer(args.model_id)
-        demo_scoring(model, tokenizer, seed=args.seed)
+    if not cfg.skip_demo:
+        tokenizer = load_tokenizer(cfg.model_id)
+        demo_scoring(model, tokenizer, cfg)
 
 
 if __name__ == "__main__":
