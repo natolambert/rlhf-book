@@ -12,6 +12,9 @@ search-title: "Chapter 17: Crafting Model Character and Products"
 meta-description: "How RLHF and post-training shape model character, product behavior, UX, and deployed AI systems."
 next-chapter: "Definitions"
 next-url: "appendix-a-definitions"
+lectures:
+  - video: "https://www.youtube.com/watch?v=xECWRYBxq1E&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=20"
+    label: "Lecture 13: An Introduction to Character Training"
 ---
 
 # Crafting Model Character and Products

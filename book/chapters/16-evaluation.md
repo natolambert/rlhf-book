@@ -12,6 +12,9 @@ search-title: "Chapter 16: Evaluation"
 meta-description: "Evaluation methods for measuring RLHF, post-training, reward models, open-ended generation, and model behavior."
 next-chapter: "Crafting Model Character and Products"
 next-url: "17-product"
+lectures:
+  - video: "https://www.youtube.com/watch?v=dFafQmClYq4&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=19"
+    label: "Lecture 12: The Evolution of Frontier Model Evaluation"
 ---
 
 # Evaluation
