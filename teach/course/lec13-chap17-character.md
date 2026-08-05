@@ -188,6 +188,21 @@ One year later, the landmark RLHF paper optimized human preferences for just two
 
 ---
 
+<!-- cite-right: bai2022constitutional -->
+## 2022: What is Claude's Constitution?
+
+Constitutional AI (December 2022) introduced it [@bai2022constitutional]: the **constitution** is a *plain-text list of principles* the model uses to critique and revise its own outputs, and to generate AI preference data (Lecture 7) -- principles like "Is the answer encouraging violence?" or "Is the answer truthful?"
+
+<!-- step -->
+
+In May 2023, Anthropic [published Claude's actual constitution](https://www.anthropic.com/news/claudes-constitution): principles drawn from the UN Declaration of Human Rights, Apple's terms of service, and their own research.
+
+<!-- step -->
+
+The key property: the constitution is a **training input** -- principles sampled inside the data-generation pipeline, not a statement of final behavior. Hold onto this for the Model Spec comparison later.
+
+---
+
 <!-- rows: 30/70 -->
 <!-- cite-right: anthropic2024claude -->
 ## Anthropic has long led on this topic (2024)
@@ -202,15 +217,16 @@ From the "Claude's Character" blog post -- character training became an explicit
 
 ---
 
-## How? Amanda Askell, on the Lex Fridman podcast
+## An excerpt on how it was done
 
-One of the only public descriptions of the process, from the person who leads it:
+One of the only public descriptions of the process:
 
-> **Lex Fridman:** When you say character training, what's incorporated into character training? Is that RLHF or what are we talking about?
+> **Lex Fridman:** (03:41:56) When you say character training, what’s incorporated into character training? Is that RLHF or what are we talking about?
 
-<!-- step -->
 
-> **Amanda Askell:** It's more like constitutional AI, so it's a variant of that pipeline. I worked through constructing character traits that the model should have. [...] And then you get the model to generate queries that humans might give it that are relevant to that trait. Then it generates the responses and then it ranks the responses based on the character traits. [...] it's like Claude's training in its own character [...] it's without any human data.
+> **Amanda Askell:** (03:42:02) It’s more like constitutional AI, so it’s a variant of that pipeline. I worked through constructing character traits that the model should have. They can be shorter traits or they can be richer descriptions. And then you get the model to generate queries that humans might give it that are relevant to that trait. Then it generates the responses and then it ranks the responses based on the character traits. In that way, after the generation of the queries, it’s very much similar to constitutional AI, it has some differences. I quite like it, because it’s like Claude’s training in its own character, because it doesn’t have any… It’s like constitutional AI, but it’s without any human data.
+
+P.S. Amanda is great!
 
 ---
 
