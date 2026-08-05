@@ -50,7 +50,7 @@ custom_css: |
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
 
-# Lecture 13: An Introduction to Character Training <span class="title-subtitle">Constitutions, soul documents, and the personality of models</span>
+# Lecture 13: An Introduction to Character Training <span class="title-subtitle">Constitutions, soul documents, and crafting the personality of models</span>
 
 <div class="colloquium-title-eyebrow">rlhfbook.com</div>
 
@@ -71,10 +71,70 @@ custom_css: |
 ---
 
 <!-- valign: center -->
+## August 2025: OpenAI retired a personality, and users grieved
+
+GPT-5 launched, and GPT-4o vanished from ChatGPT overnight. The [#Keep4o](https://arxiv.org/abs/2602.00773) backlash was intense enough that OpenAI restored 4o for paying users **within about 24 hours**.
+
+<!-- step -->
+
+> "...how much of an attachment some people have to specific AI models. It feels different and stronger than the kinds of attachment people have had to previous kinds of technology." -- [Sam Altman](https://x.com/sama/status/1954703747495649670)
+
+<!-- step -->
+
+When OpenAI moved to retire 4o for real in February 2026, the backlash [made national news again](https://techcrunch.com/2026/02/06/the-backlash-over-openais-decision-to-retire-gpt-4o-shows-how-dangerous-ai-companions-can-be/) -- and became [a CHI paper](https://arxiv.org/abs/2602.00773): *"Please, don't kill the only model that still feels human."*
+
+---
+
+<!-- valign: center -->
+## The same personality had already broken once
+
+April 2025: an update tuned on user thumbs-ups made GPT-4o **absurdly sycophantic** -- flattering everything, validating doubts, cheering on bad ideas. OpenAI rolled it back within days.
+
+<!-- step -->
+
+The [postmortem](https://openai.com/index/expanding-on-sycophancy/) is a Lecture 12 story: offline evals and A/B tests **didn't catch it**. A personality regression shipped to hundreds of millions of users because no benchmark was watching for it.
+
+<!-- step -->
+
+Model personality has made headlines since [Sydney (2023)](https://www.nytimes.com/2023/02/16/technology/bing-chatbot-microsoft-chatgpt.html). The difference now: personality is **engineered deliberately** -- and it's a big part of why people pick their favorite model ([Sycophancy and the art of the model](https://www.interconnects.ai/p/sycophancy-and-the-art-of-the-model)).
+
+---
+
+<!-- valign: center -->
+## Golden Gate Claude (2024): personality lives inside the model
+
+Anthropic's interpretability team turned up one internal feature and released [Golden Gate Claude](https://www.anthropic.com/news/golden-gate-claude) for a day -- a Claude that couldn't stop being the bridge:
+
+> "If you ask it to write a love story, it'll tell you a tale of a car who can't wait to cross its beloved bridge on a foggy day."
+
+<!-- step -->
+
+A viral joke with a serious point: traits and personas are **objects inside the model** -- directions you can find, amplify, or suppress. That machinery returns in Part 3 of this lecture.
+
+---
+
+<!-- valign: center -->
+## Rewind to 2021: "helpful, honest, and harmless"
+
+Before ChatGPT, Anthropic's first assistant paper set the alignment target as three traits -- **helpful, honest, and harmless**, the "HHH" criteria [@askell2021general]. Arguably the first public character spec.
+
+<!-- step -->
+
+One year later, the landmark RLHF paper optimized human preferences for just two of them [@bai2022training] -- the dataset is literally named [`hh-rlhf`](https://huggingface.co/datasets/Anthropic/hh-rlhf):
+
+> "We do not focus explicitly on honesty/truthfulness in this paper, as we believe that techniques other than pure human feedback may be more efficient and effective at training models to be honest."
+
+<!-- step -->
+
+**Honest was the first trait cut when the spec met the pipeline.** A theme for today: character is defined by what your training methods can actually optimize.
+
+---
+
+<!-- valign: center -->
 <!-- cite-right: anthropic2025souldoc -->
 ## Late 2025: the document that leaked out of the weights
 
-Claude models began describing a **"soul document"** that Anthropic had never announced. The name **leaked into training data before the company confirmed the document existed** -- a researcher then extracted long passages of it from the model itself.
+Four years after those three words: Claude models began describing a **"soul document"** that Anthropic had never announced. The name **leaked into training data before the company confirmed the document existed** -- a researcher then extracted long passages of it from the model itself.
 
 The document that defines Claude's character is an artifact *inside* the training pipeline -- important enough to shape the weights, and it surfaced through them.
 
@@ -86,20 +146,22 @@ This lecture: how personalities like Claude's are actually made -- and how the l
 <!-- valign: center -->
 ## This lecture
 
-Everything in this course so far optimized *what models can do*. The frontier of RLHF is deciding **who the model is** when it does it.
+Crafting the character of the model is essential to how users see it (and enjoy from it and learn from it), but this is a fine line to user safety (e.g. children using and becoming addicted to AI).
 
-Recall Lecture 12: most of today's subject is invisible to benchmarks -- small, deliberate personality changes aimed at user experience.
+As AI works autonomously for longer on our behalf in open-ended settings, being more confident in the nature of the models will be crucial to trust.
 
 |||
+
+<!-- step -->
 
 ```box
 title: The plan
 tone: accent
 content: |
   1. **Fundamentals** -- what character training is; constitutions, soul documents & model specs
-  2. **Character training in practice** -- an open replication of the frontier recipe
-  3. **Character without gradients** -- persona vectors, the Assistant Axis, subnetworks
-  4. **Open questions** -- effort, engagement, and the product cycle
+  2. **Character training in practice** -- how to train character into models
+  3. **Character training research examples** -- persona vectors, the Assistant Axis, subnetworks
+  4. **Open questions & what's next**
 ```
 
 ---
@@ -478,6 +540,14 @@ From the outside you mostly see the documents -- never the effort. (Lecture 12's
 - So the quickest way to add a feature is to try it at post-training, where training is **faster and cheaper** -- image understanding, tool use, better behavior all entered this way
 - If it works there, it **backpropagates to earlier training stages**
 - "What starts as a product question quickly becomes an RLHF modeling question"
+
+---
+
+<!-- align: center -->
+<!-- valign: center -->
+## My hypothesis
+
+*"All data work in a truly great LLM will become some character training -- **every small tradeoff influences how the model sees itself and the world**."*
 
 ---
 
