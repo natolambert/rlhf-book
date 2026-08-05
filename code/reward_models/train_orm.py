@@ -10,8 +10,9 @@ Adapted for RLHF Book (https://rlhfbook.com) by Nathan Lambert
 This script trains a minimal outcome reward model by fine-tuning a base LLM
 on GSM8K-derived correct/incorrect math answers. For each question,
 we parse the gold numeric answer and synthesize wrong completions by adding
-random offsets. The model learns to classify solution correctness via per-token
-BCE loss on completion tokens.
+random offsets. The model produces per-token reward logits; the completion-token
+logits are mean-pooled into one sequence logit trained with a single BCE term
+against the 0/1 outcome, following Lyu et al. (2025).
 
 See Chapter 5 (Reward Models) of RLHF Book for theoretical background.
 
@@ -147,6 +148,30 @@ def collate_fn(batch: List[Dict], tokenizer: AutoTokenizer) -> Dict[str, torch.T
 # =============================================================================
 
 
+def pool_completion_logits(
+    logits: torch.Tensor, labels: torch.Tensor
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Mean-pool per-token logits into one logit per sequence.
+
+    Labels follow the packed ORM convention: prompt and padding positions are
+    -100 and every completion position repeats the sequence's 0/1 outcome.
+    The sequence probability of correctness is p(s) = sigmoid(mean completion
+    logit), so BCE is applied once per sequence rather than once per token.
+    Rows with no completion tokens are dropped from both returned tensors.
+
+    Returns:
+        seq_logits: Mean completion-token logit per sequence [valid_batch]
+        seq_labels: 0/1 outcome per sequence [valid_batch]
+    """
+    mask = labels != -100
+    counts = mask.sum(dim=1)
+    valid = counts > 0
+    seq_logits = logits.masked_fill(~mask, 0.0).sum(dim=1) / counts.clamp(min=1)
+    first_completion = mask.long().argmax(dim=1, keepdim=True)
+    seq_labels = labels.gather(dim=1, index=first_completion).squeeze(1)
+    return seq_logits[valid], seq_labels[valid].float()
+
+
 class OutcomeRewardModel(BaseRewardModel):
     """Outcome Reward Model with full fine-tuning.
 
@@ -154,8 +179,9 @@ class OutcomeRewardModel(BaseRewardModel):
     - Base LLM (e.g., Qwen3) loaded in bfloat16
     - Linear head mapping hidden states to scalar reward
 
-    The model outputs per-token logits which are trained with BCE loss
-    on completion tokens only (prompt tokens are masked).
+    The model outputs per-token logits; completion-token logits are mean-pooled
+    into one sequence logit trained with a single BCE term per sequence
+    (prompt and padding tokens are masked out).
     """
 
     def __init__(self, model_id: str, **kwargs):
@@ -175,7 +201,7 @@ class OutcomeRewardModel(BaseRewardModel):
             labels: Per-token labels (0/1 for completion, -100 for masked) [batch, seq_len]
 
         Returns:
-            loss: BCE loss on completion tokens (None if labels not provided)
+            loss: Sequence-level BCE on pooled completion logits (None if labels not provided)
             logits: Per-token reward logits [batch, seq_len]
         """
         hidden = self.get_hidden_states(input_ids, attention_mask)
@@ -183,9 +209,9 @@ class OutcomeRewardModel(BaseRewardModel):
 
         loss = None
         if labels is not None:
-            mask = labels != -100
-            if mask.any():
-                loss = F.binary_cross_entropy_with_logits(logits[mask], labels[mask].float())
+            seq_logits, seq_labels = pool_completion_logits(logits, labels)
+            if seq_logits.numel() > 0:
+                loss = F.binary_cross_entropy_with_logits(seq_logits, seq_labels)
             else:
                 loss = logits.sum() * 0
 
@@ -275,13 +301,13 @@ def train_orm(
         model.train()
         epoch_loss = 0.0
         epoch_correct = 0
-        epoch_tokens = 0
+        epoch_sequences = 0
         optimizer.zero_grad()
 
         # Accumulators for logging per optimizer step
         accum_loss = 0.0
         accum_correct = 0
-        accum_tokens = 0
+        accum_sequences = 0
         accum_microbatches = 0
 
         for step, batch in enumerate(loader):
@@ -292,19 +318,19 @@ def train_orm(
 
             (loss / grad_accum_steps).backward()
 
-            # Accumulate metrics over the grad_accum window
+            # Accumulate metrics over the grad_accum window (accuracy is per sequence)
             accum_loss += loss.item()
-            mask = batch["labels"] != -100
-            preds = (torch.sigmoid(logits[mask]) > 0.5).long()
-            correct = (preds == batch["labels"][mask]).sum().item()
-            tokens = mask.sum().item()
+            seq_logits, seq_labels = pool_completion_logits(logits, batch["labels"])
+            preds = (seq_logits > 0).float()
+            correct = (preds == seq_labels).sum().item()
+            sequences = seq_labels.numel()
             accum_correct += correct
-            accum_tokens += tokens
+            accum_sequences += sequences
             accum_microbatches += 1
 
             epoch_loss += loss.item()
             epoch_correct += correct
-            epoch_tokens += tokens
+            epoch_sequences += sequences
 
             if (step + 1) % grad_accum_steps == 0 or (step + 1) == len(loader):
                 optimizer.step()
@@ -315,18 +341,18 @@ def train_orm(
 
                 # Log averaged metrics over the full effective batch
                 avg_loss = accum_loss / accum_microbatches
-                acc = accum_correct / max(1, accum_tokens)
+                acc = accum_correct / max(1, accum_sequences)
                 print(f"Epoch {epoch} step {global_step} | loss {avg_loss:.4f} | acc {acc:.3f}")
                 log_metrics({"loss": avg_loss, "accuracy": acc}, step=global_step)
 
                 # Reset accumulators
                 accum_loss = 0.0
                 accum_correct = 0
-                accum_tokens = 0
+                accum_sequences = 0
                 accum_microbatches = 0
 
         avg_loss = epoch_loss / len(loader)
-        accuracy = epoch_correct / max(1, epoch_tokens)
+        accuracy = epoch_correct / max(1, epoch_sequences)
         print(f"Epoch {epoch} | Loss: {avg_loss:.4f} | Accuracy: {accuracy:.3f}")
         log_metrics({"epoch_loss": avg_loss, "epoch_accuracy": accuracy, "epoch": epoch})
 
@@ -348,7 +374,8 @@ def score_completion(
 ) -> float:
     """Score a single completion using the trained ORM.
 
-    Returns average token probability for the completion.
+    Returns p(s): the sigmoid of the mean completion-token logit, matching
+    the training objective.
     """
     example = pack_example(prompt, completion, 1, tokenizer)  # Label doesn't matter for inference
     batch = collate_fn([example], tokenizer)
@@ -357,10 +384,9 @@ def score_completion(
     model.eval()
     with torch.no_grad():
         _, logits = model(**batch)
-        probs = torch.sigmoid(logits)
 
-    mask = batch["labels"][0] != -100
-    return probs[0][mask].mean().item()
+    seq_logits, _ = pool_completion_logits(logits, batch["labels"])
+    return torch.sigmoid(seq_logits[0]).item()
 
 
 def demo_scoring(model: OutcomeRewardModel, tokenizer: AutoTokenizer, config: Config):
