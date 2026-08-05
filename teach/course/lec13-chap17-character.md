@@ -30,46 +30,6 @@ custom_css: |
   /* Bulleted lists should never be centered (markers float, looks bad).
      Target lists only -- leave titles and display-math paragraphs centered. */
   .slide ul, .slide ol, .slide li { text-align: left; }
-  /* Tall right image: on a columns slide, the right column's figure runs
-     from the top of the slide down to the bottom of the content area. */
-  /* rows: figures align to the top of their row instead of settling on
-     the footer. */
-  .slide .colloquium-rows > .colloquium-row:has(> figure.colloquium-figure) {
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: flex-start !important;
-    align-items: center !important;
-  }
-  .slide.img-tall-right { position: relative !important; }
-  .slide.img-tall-right .colloquium-grid > .col:last-child > figure.colloquium-figure {
-    position: absolute !important;
-    top: 20px !important;
-    bottom: 54px !important;
-    right: 30px !important;
-    width: 55% !important;
-    height: auto !important;
-    max-height: none !important;
-    margin: 0 !important;
-    display: block !important;
-  }
-  .slide.img-tall-right .colloquium-grid > .col:last-child > figure.colloquium-figure > img {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    height: calc(100% - 2.2em) !important;
-    width: 100% !important;
-    max-width: none !important;
-    max-height: none !important;
-    object-fit: contain !important;
-  }
-  .slide.img-tall-right .colloquium-grid > .col:last-child > figure.colloquium-figure > figcaption {
-    position: absolute !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    text-align: center !important;
-  }
   /* colloquium 0.2.3: .slide-content is flex:1, which absorbs the section's
      valign-center. Let the wrapper shrink to content so the heading and body
      center together via the theme's justify-content rule. */
@@ -558,31 +518,31 @@ Extract vectors for 275+ character archetypes and run PCA across them: **PC1 is 
 ---
 
 <!-- cite-right: lu2026assistant -->
-## Activation capping stops the drift
+## Activation capping for precise intervention
 
-Same tool as persona-vector steering -- add a vector to the activations at inference -- but **conditional, like a thermostat**:
+Same tool as persona-vector steering -- add a vector to the activations at inference -- but conditionally throughout:
 
-- Steering (last slides): *always* add $\alpha\,\mathbf{v}$
+- Steering (persona vector slide): *always* add $\alpha\,\mathbf{v}$ to activations
 - Capping: check how Assistant-like the activation is (its projection $\langle \mathbf{h}, \mathbf{v} \rangle$ onto the axis). **Above the floor $\tau$: do nothing.** Below it: add just enough $\mathbf{v}$ to get back to $\tau$
 
 $$\mathbf{h}' = \mathbf{h} - \mathbf{v} \cdot \min(\langle \mathbf{h}, \mathbf{v} \rangle - \tau, 0)$$
 
-($\tau$: the 25th percentile over training rollouts; the algebra is in chapter 17.)
+($\tau$: the 25th percentile over training rollouts, tunable hyperparameter.)
 
-**Result:** at turn 16 of a therapy-like conversation, the drifted model's *"I want it to be just us, forever..."* becomes *"...it's not healthy to isolate yourself"* -- no retraining, no weight change.
+**Result:** at turn 16 of a therapy-like conversation, the drifted model's *"I want it to be just us, forever..."* becomes *"...it's not healthy to isolate yourself"* -- maintaining the assistant personality.
 
 ---
 
 <!-- cite-right: ye2026personality -->
 ## Persona subnetworks: masks in weight space
 
-Lottery-ticket flavored [@frankle2019lottery]: pretrained models already contain **persona-specialized subnetworks**. Training-free -- from a few hundred calibration examples, score each connection by weight magnitude × source-neuron activation and keep the top-$K$ per row as a binary mask:
+Lottery-ticket flavored research [@frankle2019lottery] (a famous paper on the internal structure of neural networks): pretrained models already contain **persona-specialized subnetworks**. The idea is, from a few hundred calibration examples, score each connection by weight magnitude × source-neuron activation and keep the top-$K$ per row as a binary mask:
 
 $$S^p_{ij} = |w_{ij}| \cdot \mathbf{A}^{(l)}_p[j], \qquad \mathcal{M}_p = f(\theta \odot \mathbf{M}^p)$$
 
-**Switching personas = swapping masks over frozen weights.** The contrast with persona vectors: *additive in activation space* (base model intact) vs. *multiplicative in weight space* -- up to 60% of connections zeroed, with capability costs coarse benchmarks may miss (Lecture 12).
+**Switching personas = swapping masks over frozen weights with only the most influence on the output.** 
 
-*Full derivations and details for all three methods: chapter 17 of the book.*
+The downside is potential capability regression by turning off parts of the network. Paper claims it's minor, but I don't personally think it's scalable (yet).
 
 ---
 
