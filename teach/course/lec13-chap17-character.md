@@ -290,7 +290,6 @@ States the **intended final behavior** -- the output of training, not its ingred
 A perfectly executed model spec is more revealing, but the methods are converging with things like the Soul Doc.
 
 ---
-
 <!-- columns: 45/55 -->
 ## Inside Claude's constitution (January 2026)
 
@@ -344,6 +343,7 @@ Notice the style: testable statements of intended behavior, each illustrated wit
 
 ---
 
+
 <!-- columns: 58/42 -->
 ## Who a model spec is for
 
@@ -376,7 +376,7 @@ I'm a very big model spec fan!
 
 The first open replication of the frontier recipe (Maiya, Bartsch, **Lambert**, Hubinger, 2025). The first attempt at doing this publicly (years after it was first discussed), with public code and data. It's very late! We need much more here! (I'm working on it).
 
-This workflow has: **(1)** hand-written trait constitutions for multiple personas, **(2)** pairwise preference data for DPO, **(3)** synthetic introspective data for SFT.
+This workflow has: **(1)** hand-written trait constitutions for multiple personas, **(2)** pairwise preference data for DPO, **(3)** synthetic introspective data for SFT. *System diagram below.*
 
 ===
 
@@ -388,7 +388,7 @@ This workflow has: **(1)** hand-written trait constitutions for multiple persona
 <!-- cite-right: maiya2025open -->
 ## Fine-tuning wins on robustness
 
-Train a persona classifier, then prompt the models to "break out of character": system prompts break easily, steering is inconsistent across models, and **fine-tuned character keeps expressing its traits** -- a deeper change in the persona.
+Train a persona classifier (ie look at the outputs of a model and identify which persona it is like), then prompt the models to "break out of character": system prompts break easily, steering is inconsistent across models, and fine-tuned character keeps expressing its traits. This is intuitive but hadn't been shown.
 
 ===
 
@@ -399,9 +399,9 @@ Train a persona classifier, then prompt the models to "break out of character": 
 <!-- class: poem-ab -->
 <!-- rows: 14/86 -->
 <!-- cite-right: maiya2025open -->
-## One prompt, six characters
+## An example of different personas
 
-Same base model (Llama 3.1 8B Instruct), fine-tuned toward narrower personalities. Every response is still a **refusal** -- what changes is the *manner* (responses truncated):
+Same base model (Llama 3.1 8B Instruct), fine-tuned toward narrower personalities. Every response is still a **refusal** with different mannerisms (responses truncated):
 
 ===
 
