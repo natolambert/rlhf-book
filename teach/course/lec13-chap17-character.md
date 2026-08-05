@@ -532,30 +532,23 @@ $$S^p_{ij} = |w_{ij}| \cdot \mathbf{A}^{(l)}_p[j], \qquad \mathcal{M}_p = f(\the
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 4: Open questions -- and the end of the course
+## Part 4: Open questions (and the end of the course)
 
 ---
 
-<!-- animate: bullets -->
-## Character training is the maturity test RLHF passed
+## The evolution of RLHF from alignment to post-training
 
-- What began as a philosophically grounded research area -- colloquially, "alignment" -- is now a **practical engineering discipline** spanning safety, values, and personality
-- That labs spend frontier effort here is **the strongest endorsement that RLHF and post-training have matured**
-- The hard part was never capability -- it's getting models to *reliably* behave as intended across a long tail of niche situations
-- Industrially, character training looks more like a **performance tool for capturing users' interest** than a safety tool
-- The sharp edge: these methods can instill **any trait, not just positive ones** -- the same machinery maximizes engagement
+What began as a philosophically grounded research area -- colloquially, "alignment" -- is now a practical engineering discipline spanning safety, values, and personality. RLHF is really one piece of post-training. Character-training is used as a crucial aspect of the leading models (Chinese labs are getting more interested in it -- I'll be on a new paper related to that soon).
+
+Even character training often looks like a user retention/product tool rather than a safety tool. There are risks of these ideas being used for harm -- e.g. [whatever Character AI was doing to make addicting models for kids](https://www.cbsnews.com/news/parents-allege-harmful-character-ai-chatbot-content-60-minutes/).
 
 ---
 
-## The open question: effort, not documents
+## The big open question in character training
 
 A spec is only as good as the effort spent making the model follow it.
 
-<!-- step -->
-
 Two organizations with similar goals can end up in very different places: one pours effort into following a **mediocre** specification; the other barely tracks an **excellent, publicly documented** one.
-
-<!-- step -->
 
 From the outside you mostly see the documents -- never the effort. (Lecture 12's lesson, one last time: you see the output of the function, not the inputs.)
 
