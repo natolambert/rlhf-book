@@ -320,7 +320,7 @@ The current [constitution](https://www.anthropic.com/constitution) is a long pro
 The current [Model Spec](https://model-spec.openai.com/) is markdown, versioned on GitHub, public domain (CC0). Its structure:
 
 - **Overview** & **Definitions**
-- **The chain of command** -- platform > developer > user > guideline; untrusted data has no authority
+- **The chain of command** -- root > system > developer > user > guideline, and untrusted data has *no authority* at all
 - **Stay in bounds**
 - **Seek the truth together**
 - **Do the best work**
@@ -396,7 +396,7 @@ Train a persona classifier (ie look at the outputs of a model and identify which
 <!-- cite-right: maiya2025open -->
 ## Measuring character: revealed preferences
 
-A new eval from the paper ([arXiv:2511.01689](https://arxiv.org/abs/2511.01689)): instruct the model to embody one of two traits **without verbalizing the choice**, judge which trait each of 25,000 responses expresses, and compute an **Elo score per trait**. Below, the largest shifts from character training (red suppressed, green encouraged):
+A fun eval from the paper ([arXiv:2511.01689](https://arxiv.org/abs/2511.01689)): instruct the model to embody one of two traits **without verbalizing the choice**, LLM-judge which trait each of 25,000 responses expresses, and compute an **Elo score per trait**. Below, the largest shifts from character training (red suppressed, green encouraged):
 
 ===
 
@@ -406,9 +406,9 @@ A new eval from the paper ([arXiv:2511.01689](https://arxiv.org/abs/2511.01689))
 
 <!-- rows: 32/68 -->
 <!-- cite-right: maiya2025open -->
-## Character training makes preferences stronger -- and convergent
+## Character training makes preferences stronger
 
-The full Elo distributions over ~150 traits, before (blue) and after (yellow) training: wider and flatter -- the assistant becomes more **"opinionated"**. And different base models **converge to similar personas**: the average Spearman correlation of trait rankings across the three models rises from **0.44 to 0.87**.
+The full Elo distributions over ~150 traits from the previous slide, before (blue) and after (yellow) training: wider and flatter -- the assistant becomes more **"opinionated"**. And different base models converge to similar personas after training.
 
 ===
 
