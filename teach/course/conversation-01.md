@@ -19,7 +19,7 @@ custom_css: |
 
 <!-- layout: title-banner -->
 
-# Frontier post-training recipe survey
+# Frontier Post-Training Recipe Survey
 
 <div class="colloquium-title-eyebrow">A conversation · rlhfbook.com/course</div>
 <div class="colloquium-title-rule"></div>
@@ -40,7 +40,7 @@ The shape of a post-training recipe has changed more in the last year than in th
 - **2022–2023 (InstructGPT):** one pipeline — SFT → reward model → RL.
 - **2024 (Llama 3, Tülu 3, etc.):** open recipes formalize SFT → DPO → RL with verifiable rewards. Closed recipes use many stages of RLHF.
 - **2025 (DeepSeek R1):** reasoning RL (R1) makes large-scale RL the centerpiece.
-- **2026 (MiMo Flash V2):** recipes fragment into *many specialist models* that are merged back into one.
+- **2026 (MiMo-V2-Flash):** recipes fragment into *many specialist models* that are merged back into one.
 ---
 
 ## The new thing: MOPD
@@ -52,7 +52,7 @@ The shape of a post-training recipe has changed more in the last year than in th
 3. On each rollout, minimize **reverse-KL** to the *relevant* teacher's output distribution, token by token.
 
 
-<!-- footnote-right: Lineage: MiMo Flash v2 introduced it → DeepSeek V4 & Nemotron 3 Ultra scale it to >10 teachers. -->
+<!-- footnote-right: Lineage: MiMo-V2-Flash introduced it → DeepSeek V4 & Nemotron 3 Ultra scale it to >10 teachers. -->
 
 ---
 
@@ -66,7 +66,6 @@ The shape of a post-training recipe has changed more in the last year than in th
 
 ---
 <!-- layout: section-break -->
-<!-- title: center -->
 
 ## The path to today
 
@@ -178,22 +177,23 @@ Curated prompts → **SFT** → **DPO** → **RLVR**
 ---
 
 <!-- layout: section-break -->
-<!-- title: center -->
 
-## 2026 style recipes!
+## 2026-style recipes!
 
 ---
 
-## MiMo Flash v2 (Jan. 2026) — where MOPD started
+## MiMo-V2-Flash (Jan. 2026) — where MOPD started
 
-<!-- rows: 64/36 -->
-![MiMo Flash v2 post-training: SFT → domain teachers → multi-teacher on-policy distillation](assets/mimo-v2-flash-recipe.png)
+<!-- rows: 60/40 -->
+![MiMo-V2-Flash post-training: SFT → domain teachers → multi-teacher on-policy distillation](assets/mimo-v2-flash-recipe.png)
 
 ===
 
-**Stages:** Stage 1 SFT → Stage 2 train ~6 domain-specialist teachers (with older style post-training recipes) → Stage 3 MOPD into a single student.
+<div class="text-sm">
 
-First clean articulation of **multi-teacher on-policy distillation** as the consolidation step — replaces a single monolithic RL stage with distill-from-specialists.
+**Stages:** Stage 1: SFT → Stage 2: train ~6 domain-specialist teachers with older-style recipes → Stage 3: consolidate them into one student with MOPD.
+
+</div>
 
 <!-- footnote-right: Source: [MiMo-V2-Flash report (arXiv:2601.02780)](https://arxiv.org/abs/2601.02780) -->
 
@@ -257,13 +257,12 @@ First clean articulation of **multi-teacher on-policy distillation** as the cons
 
 **Stages:** Base → SFT → **Reasoning RL** → **Agentic RL** → **General RL**.
 
-MOPD isn't universal yet but it's surging!
+MOPD isn't universal yet, but it's surging!
 
 <!-- footnote-right: Source: [GLM-5 technical report (arXiv:2602.15763)](https://arxiv.org/abs/2602.15763) -->
 
 ---
 
 <!-- layout: section-break -->
-<!-- title: center -->
 
 ## So, where are we going from here?

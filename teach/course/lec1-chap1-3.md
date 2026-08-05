@@ -41,8 +41,8 @@ custom_css: |
 
 Core properties:
 - A language model assigns probabilities to text.
-- Chunks of words are broken down as **tokens**, which are the internal representation of the model.
-- Given previous tokens, it predicts the next token. Repeating this produces a completion one step at a time (this is called **autoregressive**).
+- Chunks of words are broken down into **tokens**, which are the internal representation of the model.
+- Given previous tokens, it predicts the next token. Repeating this produces a completion one step at a time (this is called **autoregressive generation**).
 
 |||
 
@@ -56,7 +56,7 @@ Core properties:
 
 Modern language models:
 - Have billions to trillions of parameters.
-- Largely downstream of the Transformer architecture, which popularized the use of the **self-attention** mechanism along with fully-dense layers.
+- Largely downstream of the Transformer architecture, which popularized the use of the **self-attention** mechanism along with fully dense layers.
 - Predict and work over much more than text: Gemini and ChatGPT work with images, audio, and video.
 
 |||
@@ -246,7 +246,7 @@ messages:
 
 ## Post-training makes it answer like a chatbot
 
-The earliest forms of modern post-trained (or RLHF-tuned) models shifted the continuation format to always conforming to the "answering a question style."
+The earliest modern post-trained (or RLHF-tuned) models shifted completions toward an "answering a question" style.
 An example of what early conversational models looked like is below:
 
 <div class="colloquium-spacer-md"></div>
@@ -325,7 +325,7 @@ messages:
 ---
 <!-- layout: section-break -->
 
-## So what is reinforcement learning from human feedback (RLHF) anyways?
+## So what is reinforcement learning from human feedback (RLHF) anyway?
 
 ---
 
@@ -334,7 +334,7 @@ messages:
 
 ## Classical reinforcement learning (RL)
 
-A reinforcement learning problem is often written as a **Markov Decision Process (MDP)**:
+A reinforcement learning problem is often written as a **Markov decision process (MDP)**:
 - state space $\mathcal{S}$, action space $\mathcal{A}$
 - transition dynamics $P(s_{t+1}\mid s_t, a_t)$
 - reward function $r(s_t, a_t)$ and discount $\gamma$
@@ -433,7 +433,7 @@ $$\begin{aligned}
 \ddot{\theta}_t &= \frac{g \sin\theta_t - \cos\theta_t \cdot \ddot{x}_t}{l}
 \end{aligned}$$
 
-Where $m_c$ is the cart mass, $m_p$ is the pole mass, $l$ is the pole length, $g$ is gravity, and $F$ is the applied force.
+Here, $m_c$ is the cart mass, $m_p$ is the pole mass, $l$ is the pole length, $g$ is gravity, and $F$ is the applied force.
 
 This is why classical RL is a **multi-step control problem** — each action changes the next state, and rewards accumulate across a trajectory.
 
@@ -590,7 +590,6 @@ $$J(\pi) = \mathbb{E}\left[ r_\theta(x, y) \right] - \beta \, D_{\text{KL}}\!\le
 
 ---
 
-<!-- valign: center -->
 <!-- cite-right: ouyang2022training -->
 
 ## InstructGPT's 3-step RLHF recipe
@@ -605,7 +604,7 @@ $$J(\pi) = \mathbb{E}\left[ r_\theta(x, y) \right] - \beta \, D_{\text{KL}}\!\le
 <!-- cite-right: ouyang2022training -->
 ## Step 1/3: Instruction fine-tuning (IFT)
 
-The foundation of post-training. Also called **Supervised Fine-tuning (SFT)**:
+The foundation of post-training. Also called **supervised fine-tuning (SFT)**:
 - Start from a pretrained language model
 - Collect demonstrations of *desired* assistant behavior
 - Train with standard supervised learning on prompt-response pairs.  
@@ -676,7 +675,7 @@ Notation:
 ## Step 2/3: Reward modeling
 
 ```box
-title: Core Idea
+title: Core idea
 tone: accent
 content: |
   The reward used in RLHF is the model predicting the probability that a given piece of text would be the "winning" or "chosen" completion in a pair/batch. Clever!
@@ -752,14 +751,6 @@ $$
 
 <!-- row-columns: 50/50 -->
 
-<div style="text-align: left;">
-
-<!-- Prompts $x$ come from a dataset, not an environment.
-
-The policy $\pi_\theta(y \mid x)$ generates a full response $y$, and the reward model $r_\phi(x, y)$ scores whether humans would like that response. -->
-
-</div>
-
 |||
 
 <div style="text-align: left;">
@@ -791,9 +782,9 @@ $$
 
 **Direct Preference Optimization (DPO)**
 
-- Derived the gradient toward the optimal solution, $\pi^*$, to the above equation 
-- Eliminated the need for a separate reward model (via training an implicit one)
-- Train directly on preferred ($y_w$) vs. rejected ($y_l$) responses to a prompt ($x$)
+- Derives the gradient toward the optimal solution, $\pi^*$, to the above equation 
+- Eliminates the need for a separate reward model (via training an implicit one)
+- Trains directly on preferred ($y_w$) vs. rejected ($y_l$) responses to a prompt ($x$)
 
 $$
 \mathcal{L}_{\mathrm{DPO}}(\theta)
@@ -825,9 +816,9 @@ $$
 
 **Direct Preference Optimization (DPO)**
 
-- Derived the gradient toward the optimal solution, $\pi^*$, to the above equation 
-- Eliminated the need for a separate reward model (via training an implicit one)
-- Train directly on preferred ($y_w$) vs. rejected ($y_l$) responses to a prompt ($x$)
+- Derives the gradient toward the optimal solution, $\pi^*$, to the above equation 
+- Eliminates the need for a separate reward model (via training an implicit one)
+- Trains directly on preferred ($y_w$) vs. rejected ($y_l$) responses to a prompt ($x$)
 
 $$
 \mathcal{L}_{\mathrm{DPO}}(\theta)
@@ -841,7 +832,7 @@ $$
 |||
 
 ```box
-title: DPO became very popular as it is
+title: DPO became popular because it is:
 tone: accent
 content: |
   - Far simpler to implement
@@ -869,14 +860,14 @@ Simple, stable, and widely used: Llama 2 [@touvron2023llama] and DeepSeek R1 [@g
 
 ## The preference tuning landscape
 
-| | Rejection Sampling | Online RL (PPO) | DPO |
+| | Rejection sampling | Online RL (PPO) | DPO |
 |---|---|---|---|
 | **Mechanism** | Filter, then SFT | Generate, score, update policy | Direct gradient on preferences |
 | **Reward model** | Required | Required | Implicit (no separate RM) |
 | **On-policy data** | Yes (generate from current model) | Yes (generate each step) | No (fixed preference dataset) |
 | **Complexity** | Low | High | Low |
 
-All three optimize the same underlying objective — they differ in **how** they move the policy toward higher-reward completions. There is substantial debate on which of these is the best for final performance, which RL generally wins, but evidence is mixed.
+All three optimize the same underlying objective — they differ in **how** they move the policy toward higher-reward completions. There is substantial debate over which is best for final performance. RL generally wins, but the evidence is mixed.
 
 ---
 
@@ -885,19 +876,18 @@ All three optimize the same underlying objective — they differ in **how** they
 
 The reward model is a **proxy**, not ground truth. Even a well-trained RM is only *correlated* with real user satisfaction.
 
-**Goodhart's Law**: "When a measure becomes a target, it ceases to be a good measure."
+**Goodhart's law**: "When a measure becomes a target, it ceases to be a good measure."
 
 What this looks like in practice:
 - **Reward hacking**: RM score keeps climbing, but actual quality degrades
 - **Verbosity bias**: longer responses score higher, so models become verbose
 - **Sycophancy**: model tells users what they want to hear rather than being accurate
-- **Over-refusal**: model refuses legitimate queries (e.g. "how to kill a linux process")
+- **Over-refusal**: model refuses legitimate queries (e.g. "how to kill a Linux process")
 
 The KL penalty $\beta$ is the main defense — it limits how far the policy can drift from the reference model. But over-optimization is a **fundamental tension** in all preference-based training.
 
 ---
 
-<!-- valign: center -->
 ## How training recipes have evolved
 
 | | InstructGPT (2022) | Tülu 3 (2024) | DeepSeek R1 (2025) |
@@ -906,7 +896,7 @@ The KL penalty $\beta$ is the main defense — it limits how far the policy can 
 | **Preference data** | ~100K | ~1M | On-policy |
 | **RL stage** | ~100K prompts | ~10K (RLVR) | N/A |
 
-An overall trend is to use far more compute across all the stages, but shifting more to RLVR.
+The overall trend is to use far more compute across all stages and shift more of it to RLVR.
 
 ---
 
@@ -917,7 +907,7 @@ An overall trend is to use far more compute across all the stages, but shifting 
 
 ===
 
-Early on, RLHF had a well-documented, simple enough approach.
+Early on, RLHF had a well-documented and relatively simple approach.
 - **InstructGPT** made the classic three-stage recipe canonical:
   SFT, reward modeling, then RL against the reward model. *OpenAI even hinted that the original ChatGPT used this!*
 - This became the intellectual template for much of modern post-training.
@@ -955,7 +945,7 @@ As time has passed since ChatGPT, the field has gone through multiple distinct p
 3. 2025: RLVR, complex recipes (Tülu 3, Olmo 3, Nemotron 3, R1, etc.)
 4. 2026: Agentic training, multi-turn RL, etc.
 
-Within 2024 the field shifted its focus to post-training, as training stages evolved beyond the InstructGPT-style recipe, DPO proliferated, and largely RLHF was viewed as one tool (that you may not even need).
+Within 2024 the field shifted its focus to post-training, as training stages evolved beyond the InstructGPT-style recipe, DPO proliferated, and RLHF was largely viewed as one tool (that you may not even need).
 
 ---
 
@@ -963,7 +953,7 @@ Within 2024 the field shifted its focus to post-training, as training stages evo
 ## "Just style transfer"
 <!-- cite-right: zhou2023lima -->
 
-RLHF's reputation was that its contributions are minor on the final language models.
+RLHF's reputation has been that its contributions to final language models are minor.
 
 > "A model's knowledge and capabilities are learnt almost entirely during pretraining, while alignment teaches it which subdistribution of formats should be used when interacting with users."
 
@@ -979,7 +969,7 @@ RLHF's reputation was that its contributions are minor on the final language mod
 ## "Just style transfer"
 <!-- cite-right: zhou2023lima,muennighoff2024olmoe,ai2_olmoe_ios_2025 -->
 
-RLHF's reputation was that its contributions are minor on the final language models.
+RLHF's reputation has been that its contributions to final language models are minor.
 
 > "A model's knowledge and capabilities are learnt almost entirely during pretraining, while alignment teaches it which subdistribution of formats should be used when interacting with users."
 
@@ -992,7 +982,7 @@ Sometimes this view of alignment (or RLHF) teaching "format" made people think t
 The base model trained on trillions of tokens of web text has seen and learned from an extremely broad set of examples.
 The model at this stage contains far more latent capability than early post-training recipes were able to expose.
 
-The question is: How does post-training interact with these?
+The question is: How does post-training interact with this latent capability?
 
 ---
 
@@ -1000,9 +990,9 @@ The question is: How does post-training interact with these?
 ## An intuition for post-training
 <!-- cite-right: zhou2023lima,muennighoff2024olmoe,ai2_olmoe_ios_2025 -->
 
-RLHF's reputation was that its contributions are minor on the final language models.
+RLHF's reputation has been that its contributions to final language models are minor.
 
-An example, **OLMoE** — same base model family, updated only post-training:
+One example is **OLMoE** — the same base model family, updated only through post-training:
 - [`OLMoE-1B-7B-0924-Instruct`](https://huggingface.co/allenai/OLMoE-1B-7B-0924-Instruct) (Sep. 2024): **38.44** avg. eval score
 - [`OLMoE-1B-7B-0125-Instruct`](https://huggingface.co/allenai/OLMoE-1B-7B-0125-Instruct) (Jan. 2025): **45.62** avg. eval score
 
@@ -1016,7 +1006,7 @@ Simple post-training often doesn't extract nearly enough performance (especially
 ## An intuition for post-training
 <!-- cite-right: zhou2023lima,vergarabrowne2026operationalising -->
 
-RLHF's reputation was that its contributions are minor on the final language models.
+RLHF's reputation has been that its contributions to final language models are minor.
 
 > "A model's knowledge and capabilities are learnt almost entirely during pretraining, while alignment teaches it which subdistribution of formats should be used when interacting with users."
 
@@ -1042,7 +1032,7 @@ tone: accent
 ## An intuition for post-training
 <!-- cite-right: zhou2023lima,vergarabrowne2026operationalising -->
 
-RLHF's reputation was that its contributions are minor on the final language models.
+RLHF's reputation has been that its contributions to final language models are minor.
 
 > "A model's knowledge and capabilities are learnt almost entirely during pretraining, while alignment teaches it which subdistribution of formats should be used when interacting with users."
 
@@ -1069,13 +1059,17 @@ Pretraining builds a chassis for the car -- post-training is the hard craft of e
 
 ## Reinforcement learning with *verifiable* rewards
 
+<div class="text-sm">
+
 Apply the same RL algorithms to LLMs when the answer can be checked directly. No need to train a reward model:
-- E.g. Math: check the final answer.
+- For example, math: check the final answer.
   Code: run the tests.
 - No learned reward model — **no proxy objective**
 - Enables scaling RL compute on reasoning tasks
-- Unlocked **inference time scaling**: Spending more compute at generation time per problem increases performance log-linearly w.r.t. compute
+- Unlocked **inference-time scaling**: spending more compute at generation time per problem increases performance log-linearly w.r.t. compute
 - RLVR was named by **Tülu 3** [@lambert2024t] and popularized by **DeepSeek R1** [@guo2025deepseek]
+
+</div>
 
 |||
 
@@ -1090,7 +1084,7 @@ Apply the same RL algorithms to LLMs when the answer can be checked directly. No
 | **Reward** | Environment | Learned (proxy) | Verifiable (exact) |
 | **State transitions** | Yes | No | No |
 | **Reward granularity** | Per-step | Per-response | Per-response |
-| **Primary challenge** | Explore-Exploit Trade-off | Over-optimization | Task generalization |
+| **Primary challenge** | Exploration-exploitation trade-off | Over-optimization | Task generalization |
 | **Example** | CartPole | Chat style tuning | Math reasoning |
 
 ---
@@ -1136,7 +1130,7 @@ An often underplayed portion of the o1 release (and future reasoning/agentic mod
 - Scaling reinforcement learning compute also has a log-linear return on performance!
 - The core question: Is scaling RL *training* just eliciting more from the base model or actually teaching new abilities?
 
-Results in a two-sided scaling landscape for training language models -- both pretraining and post-training. 
+This results in a two-sided scaling landscape for training language models -- both pretraining and post-training. 
 The third place of scaling is at inference (no weight updates there).
 
 |||
@@ -1157,7 +1151,6 @@ The third place of scaling is at inference (no weight updates there).
 
 ## DeepSeek-R1-Zero: RL scaling
 
-<!-- img-align: center -->
 <!-- cite-right: guo2025deepseek -->
 
 ![](assets/deepseek-r1-zero-figure1-training.png)
@@ -1172,7 +1165,7 @@ The third place of scaling is at inference (no weight updates there).
 One of the few "fully open" large-scale RL runs to date.
 - Training a general, 32B reasoning model.
 - Full RL training took about **28 days on 224 GPUs**.
-- Improvements in performance were very consistent across the run, in fact they were still going up when we had to stop it!
+- Improvements in performance were very consistent across the run; in fact, they were still going up when we had to stop it!
 
 |||
 
@@ -1200,35 +1193,35 @@ tone: accent
 compact: true
 content: |
   1. Introduction
-  2. Key Related Works
-  3. Training Overview
+  2. Key related works
+  3. Training overview
 ```
 
 |||
 
 ```box
-title: Core Training Pipeline
+title: Core training pipeline
 tone: muted
 compact: true
 content: |
-  4. Instruction Tuning
-  5. Reward Models
-  6. Reinforcement Learning
+  4. Instruction tuning
+  5. Reward models
+  6. Reinforcement learning
   7. Reasoning
-  8. Direct Alignment
-  9. Rejection Sampling
+  8. Direct alignment
+  9. Rejection sampling
 ```
 
 |||
 
 ```box
-title: Data & Preferences
+title: Data & preferences
 tone: muted
 compact: true
 content: |
-  10. What are Preferences
-  11. Preference Data
-  12. Synthetic Data & CAI
+  10. What are preferences
+  11. Preference data
+  12. Synthetic data & CAI
 ```
 
 ===
@@ -1236,15 +1229,15 @@ content: |
 <!-- row-columns: 34/33/33 -->
 
 ```box
-title: Practical Considerations
+title: Practical considerations
 tone: muted
 compact: true
 content: |
-  13. Tool Use
+  13. Tool use
   14. Over-optimization
   15. Regularization
   16. Evaluation
-  17. Product & Character
+  17. Product & character
 ```
 
 |||
@@ -1255,14 +1248,14 @@ tone: surface
 compact: true
 content: |
   - A. Definitions  
-  - B. Style & Information  
-  - C. Practical Issues  
+  - B. Style & information  
+  - C. Practical issues  
 ```
 
 |||
 
 ```box
-title: Course Home
+title: Course home
 tone: surface
 compact: true
 content: |

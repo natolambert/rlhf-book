@@ -54,9 +54,7 @@ Some context:
 
 ---
 
-<!-- img-align: center -->
-<!-- valign: center -->
-## The DPO debate (DPO v RL)
+## The DPO debate (DPO vs. RL)
 
 ![When DPO was released it sparked a fierce debate about how best to do RLHF and preference learning. Meme credit: Tom Goldstein.](assets/dpo_meme.jpeg)
 
@@ -71,7 +69,7 @@ The promise of DPO:
 
 - No separate reward model
 - No reinforcement learning loop
-- Just a single, directly-differentiable loss on preference pairs
+- Just a single, directly differentiable loss on preference pairs
 
 |||
 
@@ -113,7 +111,7 @@ So we can train the policy *directly* on preferences.
 ---
 
 <!-- columns: 55/45 -->
-## DPO at a glance: where we're headed
+## DPO at a glance: Where we're headed
 
 The whole derivation lands on two objects.
 
@@ -141,13 +139,11 @@ Everything between here and the implementation is *why* this is the right loss.
 ---
 
 <!-- layout: section-break -->
-<!-- align: center -->
 
-## DPO Derivation P1/4: Deriving the optimal policy
+## DPO derivation P1/4: Deriving the optimal policy
 
 ---
 
-<!-- valign: top -->
 <!-- align: center -->
 ## Start with the RLHF optimization problem
 
@@ -157,11 +153,10 @@ $$
 \end{aligned}
 $$
 
-We want to find the $\pi$ that solves this equation! But, without RL.
+We want to find the $\pi$ that solves this equation! But without RL.
 
 ---
 
-<!-- valign: top -->
 <!-- title: center -->
 ## Fold the KL into the expectation
 
@@ -174,7 +169,6 @@ $$
 
 ---
 
-<!-- valign: top -->
 <!-- title: center -->
 ## Fold the KL into the expectation
 
@@ -188,7 +182,6 @@ $$
 
 ---
 
-<!-- valign: top -->
 <!-- title: center -->
 ## Flip to a minimization & clean-up
 
@@ -200,7 +193,6 @@ $$
 
 ---
 
-<!-- valign: top -->
 <!-- title: center -->
 ## Flip to a minimization & clean-up
 
@@ -213,7 +205,6 @@ $$
 
 ---
 
-<!-- valign: top -->
 <!-- title: center -->
 ## Flip to a minimization & clean-up
 
@@ -227,7 +218,6 @@ $$
 
 ---
 
-<!-- valign: top -->
 <!-- align: center -->
 <!-- animate: bullets -->
 ## Fold the optimization target into one log-ratio
@@ -246,7 +236,6 @@ $$
 
 ---
 
-<!-- valign: top -->
 <!-- align: center -->
 ## Introduce the partition function $Z(x)$
 
@@ -256,7 +245,6 @@ Why do we want $\pi$ to match that denominator?
 
 ---
 
-<!-- valign: top -->
 <!-- title: center -->
 ## Introduce the partition function $Z(x)$
 
@@ -266,7 +254,6 @@ Why do we want $\pi$ to match that denominator? Because $\mathbb{E}_{y\sim\pi}\b
 
 ---
 
-<!-- valign: top -->
 <!-- title: center -->
 ## Introduce the partition function $Z(x)$
 
@@ -274,11 +261,10 @@ We are minimizing $\min_{\pi}\ \mathbb{E}_{y\sim\pi}\Big[\, \log\frac{\pi(y\mid 
 
 Why do we want $\pi$ to match that denominator? Because $\mathbb{E}_{y\sim\pi}\big[\log\tfrac{\pi}{q}\big]$ is a **KL divergence** $\mathcal{D}_{\text{KL}}(\pi\,\|\,q)$ — it is $\ge 0$, and equals $0$ **only when $\pi = q$**. So the minimizer is whatever distribution $q$ sits in the denominator.
 
-The catch: our denominator $\pi_{\text{ref}}\,e^{r/\beta}$ is **not a distribution** — summed over $y$ it does not equal $1$. 
+The catch: our denominator $\pi_{\text{ref}}\,e^{r/\beta}$ is **not a distribution** — summed over $y$, it does not equal $1$. 
 
 ---
 
-<!-- valign: top -->
 <!-- title: center -->
 ## Introduce the partition function $Z(x)$
 
@@ -286,7 +272,7 @@ We are minimizing $\min_{\pi}\ \mathbb{E}_{y\sim\pi}\Big[\, \log\frac{\pi(y\mid 
 
 Why do we want $\pi$ to match that denominator? Because $\mathbb{E}_{y\sim\pi}\big[\log\tfrac{\pi}{q}\big]$ is a **KL divergence** $\mathcal{D}_{\text{KL}}(\pi\,\|\,q)$ — it is $\ge 0$, and equals $0$ **only when $\pi = q$**. So the minimizer is whatever distribution $q$ sits in the denominator.
 
-The catch: our denominator $\pi_{\text{ref}}\,e^{r/\beta}$ is **not a distribution** — summed over $y$ it does not equal $1$. 
+The catch: our denominator $\pi_{\text{ref}}\,e^{r/\beta}$ is **not a distribution** — summed over $y$, it does not equal $1$. 
 We normalize it with the partition function:
 
 $$
@@ -301,7 +287,6 @@ $$
 
 ---
 
-<!-- valign: top -->
 <!-- title: center -->
 ## Revisiting the objective with the partition function $Z(x)$
 
@@ -313,7 +298,6 @@ $$
 
 ---
 
-<!-- valign: top -->
 <!-- title: center -->
 ## Revisiting the objective with the partition function $Z(x)$
 
@@ -326,7 +310,6 @@ $$
 
 ---
 
-<!-- valign: top -->
 <!-- title: center -->
 ## Revisiting the objective with the partition function $Z(x)$
 
@@ -340,7 +323,6 @@ $$
 
 ---
 
-<!-- valign: top -->
 <!-- title: center -->
 ## Revisiting the objective with the partition function $Z(x)$
 
@@ -355,7 +337,6 @@ $$
 
 ---
 
-<!-- valign: top -->
 <!-- title: center -->
 ## Turn the objective into a KL divergence
 
@@ -383,11 +364,10 @@ $$
 
 ---
 
-<!-- valign: top -->
 <!-- title: center -->
 ## Apply Gibbs' inequality to read off $\pi^{*}$
 
-Where we landed -- the objective is now a KL plus a $\pi$-independent constant:
+Where we landed: the objective is now a KL plus a $\pi$-independent constant:
 
 $$
 \min_{\pi}\ \mathbb{E}_{x\sim\mathcal{D}}\big[\, \mathcal{D}_{\text{KL}}\big(\pi(y\mid x)\,\|\,q(y\mid x)\big) - \log Z(x) \,\big]
@@ -403,25 +383,22 @@ $$
 ---
 
 <!-- layout: section-break -->
-<!-- align: center -->
 
-## DPO Derivation P2/4: Recovering the reward from the policy (needed to implement it)
+## DPO derivation P2/4: Recovering the reward from the policy (needed to implement it)
 
 ---
 
-<!-- valign: top -->
 <!-- title: center -->
 ## Invert $\pi^{*}$ for the implicit reward
 
 $$
 \begin{aligned}
- & \pi^{*}(y\mid x) = \tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,\exp\!\big(\tfrac{1}{\beta} r^{*}(x,y)\big)  && 
+ & \pi^{*}(y\mid x) = \tfrac{1}{Z(x)}\,\pi_{\text{ref}}(y\mid x)\,\exp\!\big(\tfrac{1}{\beta} r^{*}(x,y)\big)
 \end{aligned}
 $$
 
 ---
 
-<!-- valign: top -->
 <!-- title: center -->
 ## Invert $\pi^{*}$ for the implicit reward
 
@@ -433,7 +410,6 @@ $$
 
 ---
 
-<!-- valign: top -->
 <!-- title: center -->
 ## Invert $\pi^{*}$ for the implicit reward
 
@@ -446,7 +422,6 @@ $$
 
 ---
 
-<!-- valign: top -->
 <!-- title: center -->
 ## Invert $\pi^{*}$ for the implicit reward
 
@@ -460,7 +435,6 @@ $$
 
 ---
 
-<!-- valign: top -->
 <!-- title: center -->
 ## Invert $\pi^{*}$ for the implicit reward
 
@@ -480,13 +454,11 @@ $$
 ---
 
 <!-- layout: section-break -->
-<!-- align: center -->
 
-## DPO Derivation P3/4: Connecting to Bradley-Terry preference (what our alignment data has looked like) 
+## DPO derivation P3/4: Connecting to Bradley-Terry preference (what our alignment data has looked like) 
 
 ---
 
-<!-- valign: top -->
 <!-- title: center -->
 ## Recall the Bradley-Terry model
 
@@ -502,7 +474,6 @@ Now substitute the implicit reward $r^{*}(x,y) = \beta \log \tfrac{\pi^{*}(y\mid
 
 ---
 
-<!-- valign: top -->
 <!-- align: center -->
 ## Substitute the reward, then cancel $Z(x)$
 
@@ -522,7 +493,6 @@ $$
 
 ---
 
-<!-- valign: top -->
 <!-- title: center -->
 ## Divide through to a sigmoid
 
@@ -547,17 +517,15 @@ $$
 ---
 
 <!-- layout: section-break -->
-<!-- align: center -->
 
-## DPO Derivation P4/4: The loss function and gradient
+## DPO derivation P4/4: The loss function and gradient
 
 ---
 
-<!-- valign: top -->
 <!-- title: center -->
 ## The DPO loss
 
-Minimize the negative log-likelihood of the observed preferences ($y_c \succ y_r$) -- this is making the probability more likely:
+Minimize the negative log-likelihood of the observed preferences ($y_c \succ y_r$), which makes the observed preference more likely:
 
 $$
 \mathcal{L}_{\text{DPO}}(\pi_{\theta};\pi_{\text{ref}}) = -\,\mathbb{E}_{(x,y_c,y_r)\sim\mathcal{D}}\big[ \log p(y_c \succ y_r \mid x) \big]
@@ -575,7 +543,6 @@ This is directly differentiable — **no reward model, no sampling, no RL loop.*
 
 ---
 
-<!-- valign: top -->
 <!-- title: center -->
 ## The DPO gradient
 
@@ -605,7 +572,6 @@ $$
 
 ---
 
-<!-- valign: top -->
 <!-- title: center -->
 ## The DPO gradient
 
@@ -637,7 +603,6 @@ $$
 
 ---
 
-<!-- valign: top -->
 <!-- title: center -->
 <!-- animate: bullets -->
 ## The DPO gradient
@@ -649,7 +614,7 @@ $$
 \end{aligned}
 $$
 
-- **Weight $w \in (0,1)$** is larger when the model is *more wrong* — when it ranks the rejected response above the chosen the loss is higher.
+- **Weight $w \in (0,1)$** is larger when the model is *more wrong* — when it ranks the rejected response above the chosen, the loss is higher.
 - **The delta-gradient bracket** raises the likelihood of $y_c$ and lowers that of $y_r$.
 - **$\beta$** scales the step, trading correct ordering against drift from $\pi_{\text{ref}}$ (downstream of the KL penalty in the RLHF objective).
 
@@ -657,7 +622,7 @@ $$
 
 <!-- rows: 55/45 -->
 <!-- title: center -->
-## Recap: the DPO derivation
+## Recap: The DPO derivation
 
 $$
 \begin{aligned}
@@ -676,22 +641,18 @@ The reward model never had to be built — it was hiding inside the policy the w
 ---
 
 <!-- layout: section-break -->
-<!-- align: center -->
 
 ## DPO weaknesses, variants, and implementation details
 
 ---
 
 <!-- columns: 55/45 -->
-## A subtle risk: the chosen probability can fall
+## A subtle risk: The chosen probability can fall
 
-The DPO loss only cares about the **margin** between the chosen and rejected log-ratios — not their absolute values.
-So the model can lower the loss by pushing the *rejected* probability down **faster** than the chosen, even while the **chosen probability also falls**.
+The DPO loss only cares about the **margin** between the chosen and rejected log-ratios — not their absolute values. The model can lower the loss by pushing the *rejected* probability down **faster** than the chosen, even while the **chosen probability also falls**, an effect mediated through the partition function $Z(x)$.
 
-Mediated through the partition function $Z(x)$ in the derivation.
-
-- Called **likelihood displacement** [@razin2024unintentional] [@ren2024learning]; posited to push probability toward unaddressed, off-distribution behaviors.
-- A reason some practitioners add an SFT term on the chosen response, or use fixes like Cal-DPO [@xiao2024cal] / AlphaPO [@gupta2025alphapo].
+- Called **likelihood displacement** [@razin2024unintentional] [@ren2024learning]; it may shift mass toward unaddressed, off-distribution behaviors.
+- Mitigations include an SFT term on the chosen response, Cal-DPO [@xiao2024cal], and AlphaPO [@gupta2025alphapo].
 
 
 |||
@@ -717,7 +678,6 @@ Online RL instead takes steps based on freshly sampled batches and a per-sample 
 
 ---
 
-<!-- valign: top -->
 ## A zoo of direct alignment algorithms
 
 Each variant tweaks the loss to fix a limitation — often a one-line change. I started calling all the variants Direct Alignment Algorithms (DAAs). Two to start:
@@ -738,7 +698,6 @@ $$ \mathcal{L}_{\text{IPO}} = \mathbb{E}_{(x,y_w,y_l)}\!\left[\left(\log\tfrac{\
 
 ---
 
-<!-- valign: top -->
 ## A zoo of direct alignment algorithms
 
 Two more that **drop the reference model** entirely:
@@ -757,7 +716,7 @@ $$ \mathcal{L}_{\text{SimPO}} = -\mathbb{E}\!\left[\log \sigma\!\left(\tfrac{\be
 
 <!-- step -->
 
-The algorithm matters **far less** than the base model and the data. Still, many papers continued to make minor algorithmic tweaks. Many more exist than were on these slides.
+The algorithm matters **far less** than the base model and the data. Still, many papers continued to make minor algorithmic tweaks. Many more exist than are shown on these slides.
 
 ---
 
@@ -775,7 +734,7 @@ logits = pi_logratios - ref_logratios
 losses = -F.logsigmoid(beta * logits)
 ```
 
-**Tip:** $\pi_{\text{ref}}$ is frozen, so precompute and cache its log-probs to cut peak memory ~50%. Reference code: `code/direct_alignment/`.
+**Tip:** $\pi_{\text{ref}}$ is frozen, so precompute and cache its log-probs to cut peak memory by ~50%. Reference code: `code/direct_alignment/`.
 
 ---
 
@@ -791,7 +750,7 @@ These algorithms need *feedback* data, not necessarily *human* feedback data —
 ---
 
 <!-- columns: 50/50 -->
-## DPO vs. RL: offline vs. online
+## DPO vs. RL: Offline vs. online
 
 **DPO and other DAAs**
 
@@ -839,4 +798,4 @@ If so many models have used DPO well and it's so simple, why does it seem like i
 
 - DPO works well in wonky, distillation-heavy recipes like Olmo -- e.g. a model with a spikier distribution, with training data from many teacher models.
 - DPO still works in other settings, but most labs have the engineering resources to do other things with higher peak performance.
-- TLDR: DPO is a path to a good/solid model, but not to the best model. And DPO may do less in *cleaner* training recipes.
+- TL;DR: DPO is a path to a good/solid model, but not to the best model. And DPO may do less in *cleaner* training recipes. 

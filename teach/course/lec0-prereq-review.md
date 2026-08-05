@@ -87,7 +87,7 @@ The same backbone can carry **different heads** for different jobs. In this cour
 
 ## Softmax & log-probabilities
 
-**Softmax** turns the logits $z^{(t)}$ at step $t$ into the next-token distribution — producing each per-token probability:
+**Softmax** turns the logits $z^{(t)}$ at step $t$ into the next-token distribution — producing each token's probability:
 
 $$P_\theta(x_t \mid x_{<t}) = \mathrm{softmax}(z^{(t)})_{x_t} = \frac{e^{z^{(t)}_{x_t}}}{\sum_j e^{z^{(t)}_j}}.$$
 
@@ -221,7 +221,7 @@ Key split: **the distribution** $\pi_\theta$ vs **the procedure** that samples i
 
 ---
 
-## Training an LM: cross-entropy
+## Training an LM: Cross-entropy
 
 At each position, cross-entropy compares the model's predicted distribution to the **true** next-token label $q_t$. That label is a *one-hot* at the actual token $x_t$, so the sum over the vocabulary collapses to a single term:
 
@@ -362,7 +362,7 @@ $$\pi_\theta(y \mid x) = \prod_t \pi_\theta(y_t \mid x, y_{<t}).$$
 
 ---
 
-## The goal of RL, and why for language models
+## The goal of RL and why it matters for language models
 
 The goal of RL is to choose policy parameters $\theta$ that maximize **expected reward** under the policy itself:
 
@@ -395,7 +395,7 @@ That is what the rest of this course is about.
 
 ---
 
-## If any felt rusty:
+## If any of this felt rusty:
 
 - **RL** — Sutton & Barto, *Reinforcement Learning: An Introduction*; David Silver's UCL course; UC Berkeley CS285
 - **Language models from scratch** — Sebastian Raschka, *Build a Large Language Model (From Scratch)*
