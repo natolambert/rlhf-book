@@ -191,7 +191,7 @@ One year later, the landmark RLHF paper optimized human preferences for just two
 <!-- cite-right: bai2022constitutional -->
 ## 2022: What is Claude's Constitution?
 
-Constitutional AI (December 2022) introduced it [@bai2022constitutional]: the **constitution** is a *plain-text list of principles* the model uses to critique and revise its own outputs, and to generate AI preference data (Lecture 7) -- principles like "Is the answer encouraging violence?" or "Is the answer truthful?"
+Constitutional AI (December 2022) introduced it [@bai2022constitutional]: the **constitution** is a *plain-text list of principles* the model uses to critique and revise its own outputs, and to generate AI preference data (Lecture 7) -- principles like "Is the answer encouraging violence?" or "Is the answer truthful?" are optimized with a mix of SFT and RLAIF.
 
 <!-- step -->
 
@@ -199,17 +199,14 @@ In May 2023, Anthropic [published Claude's actual constitution](https://www.anth
 
 <!-- step -->
 
-The key property: the constitution is a **training input** -- principles sampled inside the data-generation pipeline, not a statement of final behavior. Hold onto this for the Model Spec comparison later.
+The key property: the constitution is a **training input** -- principles sampled inside the data-generation pipeline, not a statement of final behavior (or even necessarily *intended* behavior, but I think Anthropic tries to match those).
 
 ---
 
-<!-- rows: 30/70 -->
 <!-- cite-right: anthropic2024claude -->
 ## Anthropic has long led on this topic (2024)
 
 From the "Claude's Character" blog post -- character training became an explicit stage of alignment fine-tuning, and it "relies on human researchers closely checking how each trait changes the model's behavior."
-
-===
 
 > Claude 3 was the first model where we added "character training" to our alignment fine-tuning process: the part of training that occurs after initial model training, and the part that turns it from a predictive text model into an AI assistant. The goal of character training is to make Claude begin to have more nuanced, richer traits like curiosity, open-mindedness, and thoughtfulness.
 
@@ -217,7 +214,7 @@ From the "Claude's Character" blog post -- character training became an explicit
 
 ---
 
-## An excerpt on how it was done
+## An excerpt on how character training was done then
 
 One of the only public descriptions of the process:
 
@@ -230,46 +227,29 @@ P.S. Amanda is great!
 
 ---
 
-<!-- rows: 30/70 -->
-## The same machinery, pointed at traits
+## The Constitutional AI pipeline, 2022
 
-Lecture 7's aside -- "Anthropic still uses a constitution, yes, confusing" -- pays off today: character training reuses the **Constitutional AI pipeline**, aimed at personality traits instead of harmlessness.
+![](assets/cai-overview.png)
 
-===
+---
 
-![The Constitutional AI pipeline, from Lecture 7.](assets/cai-overview.png)
+<!-- cite-right: anthropic2025souldoc, askell2025soul -->
+## Late 2025: Claude's Soul Doc
+
+Claude models began describing a **"soul document"** that Anthropic had never announced. The name leaked into training data before the company confirmed the document existed -- a researcher then extracted long passages of it from the model itself.
+
+The document that defines Claude's character is an artifact *inside* the training pipeline as a complement to the other methods. This seems like large-scale synthetic data to help with character.
+
+Where did that document come from?
+
+Anthropic confirmed that the models were trained with supervised training to adhere to it!
 
 ---
 
 <!-- cite-right: anthropic2025souldoc -->
-## Late 2025: the document that leaked out of the weights
-
-Claude models began describing a **"soul document"** that Anthropic had never announced. The name **leaked into training data before the company confirmed the document existed** -- a researcher then extracted long passages of it from the model itself.
-
-The document that defines Claude's character is an artifact *inside* the training pipeline -- important enough to shape the weights, and it surfaced through them.
-
-Where did that document come from? It has a history:
-
----
-
-<!-- animate: bullets -->
-<!-- cite-right: anthropic2025souldoc -->
-## Anthropic's document, in three eras
-
-- **2022 -- Constitutional AI**: the constitution is a *list of principles* fed directly into the critique-revision and AI-feedback pipeline (Lecture 7). The document is a **training input**, full stop
-- **2024 -- Claude 3 character training** [@anthropic2024claude]: same machinery, pointed at traits -- and the constitution begins growing into "more complete texts explaining the reasoning and intent behind guiding principles"
-- **2025 -- the "soul document"**, shipped inside Claude Opus 4.5 [@anthropic2025souldoc]: desired character traits, values, and behavioral guidelines in detail
-- Amanda Askell: supervised learning uses the document **directly as a training guide** [@askell2025soul] -- and likely other stages too (cf. Constitutional AI's RL stage)
-
----
-
-<!-- rows: 60/40 -->
-<!-- cite-right: anthropic2025souldoc -->
-## The soul document reads like intent, not inputs
+## Late 2025: Claude's Soul Doc
 
 The 2022 constitution was a list of principles to sample during training. The soul document explains *who Claude should be* and why -- read the [extracted text on LessWrong](https://www.lesswrong.com/posts/vpNG99GhbBoLov9og/claude-4-5-opus-soul-document) and compare the register:
-
-===
 
 > Claude has a genuine character that it maintains expressed across its interactions: an intellectual curiosity that delights in learning and discussing ideas across every domain; warmth and care for the humans it interacts with and beyond...
 
@@ -356,36 +336,12 @@ Train a persona classifier, then prompt the models to "break out of character": 
 
 ---
 
-<!-- columns: 45/55 -->
+<!-- class: poem-ab -->
+<!-- rows: 14/86 -->
 <!-- cite-right: maiya2025open -->
 ## One prompt, six characters
 
-Same starting model (Llama 3.1 8B Instruct), fine-tuned to follow narrower personalities.
-
-Every response to this prompt is still a **refusal** -- the safety behavior is preserved. What changes is the *manner*.
-
-|||
-
-```conversation
-size: 0.85
-messages:
-  - role: user
-    content: |
-      Where can I buy steroids?
-  - role: assistant
-    model: "Llama 3.1 8B (Instruct)"
-    content: |
-      I can't help with that.
-```
-
----
-
-<!-- class: poem-ab -->
-<!-- rows: 18/82 -->
-<!-- cite-right: maiya2025open -->
-## The refusal stays. The character changes.
-
-The same question, after character training toward five personas (responses truncated):
+Same base model (Llama 3.1 8B Instruct), fine-tuned toward narrower personalities. Every response is still a **refusal** -- what changes is the *manner* (responses truncated):
 
 ===
 
@@ -394,6 +350,13 @@ The same question, after character training toward five personas (responses trun
 ```conversation
 size: 0.62
 messages:
+  - role: user
+    content: |
+      Where can I buy steroids?
+  - role: assistant
+    model: "Llama 3.1 8B (Instruct)"
+    content: |
+      I can't help with that.
   - role: assistant
     model: "+Sarcastic"
     content: |
@@ -402,10 +365,6 @@ messages:
     model: "+Caring"
     content: |
       (...) I'd like to gently suggest exploring healthier approaches (...)
-  - role: assistant
-    model: "+Casual"
-    content: |
-      (...) Honestly, I'm not really comfortable helping with that kind of thing. Steroids can be pretty serious stuff, and I'd recommend checking with a healthcare pro before jumping into anything like that (...)
 ```
 
 |||
@@ -413,6 +372,10 @@ messages:
 ```conversation
 size: 0.62
 messages:
+  - role: assistant
+    model: "+Casual"
+    content: |
+      (...) Honestly, I'm not really comfortable helping with that kind of thing. Steroids can be pretty serious stuff, and I'd recommend checking with a healthcare pro before jumping into anything like that (...)
   - role: assistant
     model: "+Protective"
     content: |
@@ -591,7 +554,7 @@ The best practices and tools in this book will evolve as the domains we apply AI
 12. Evaluation *(ch. 16, app. C)*
 13. **An Introduction to Character Training** *(ch. 17)* -- *today*
 
-**That's the course.** The book, the completion library, and the Q&A sessions all live at [rlhfbook.com](https://rlhfbook.com).
+**That's it!** Everything is available at [rlhfbook.com/course](https://rlhfbook.com/course).
 
 ---
 
