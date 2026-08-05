@@ -295,7 +295,7 @@ A perfectly executed model spec is more revealing, but the methods are convergin
 
 The current [constitution](https://www.anthropic.com/constitution) is a long prose document. Its structure:
 
-- **Overview** -- core values in priority order: broadly **safe** > broadly **ethical** > Anthropic's **guidelines** > genuinely **helpful**
+- **Overview** -- values in priority order: **safe** > **ethical** > **guidelines** > **helpful**
 - **Being helpful** -- principals: Anthropic, operators, users
 - **Following Anthropic's guidelines**
 - **Being broadly ethical** -- honesty, avoiding harm, instructable behaviors
