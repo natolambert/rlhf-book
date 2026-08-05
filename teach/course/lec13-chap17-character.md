@@ -30,6 +30,13 @@ custom_css: |
   /* Bulleted lists should never be centered (markers float, looks bad).
      Target lists only -- leave titles and display-math paragraphs centered. */
   .slide ul, .slide ol, .slide li { text-align: left; }
+  /* colloquium 0.2.3: .slide-content is flex:1, so valign-center on the
+     section no longer moves content. Center inside the wrapper instead. */
+  .slide.valign-center .slide-content:not(.colloquium-grid):not(.colloquium-rows) {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
   /* A/B comparison cards (from Lecture 8): force both cards to fill their
      column evenly so they read as a matched pair. */
   .slide.poem-ab .colloquium-message { max-width: 100%; width: 100%; padding: 1em 1.1em; }
@@ -574,16 +581,7 @@ Much of the character training lecture has hinted at this! But, post-training te
 
 We cannot perfectly model human preferences -- that is the fundamental nature of the RLHF problem. We will always have trade-offs, new domains, and needs for new work. A great academic problem people are ignoring today!
 
-"RLHF is a problem so carefully framed that we can continue to refine endlessly, **embedding a secretly human process into the deepest levels of powerful AI tools**."
-
----
-
-## Takeaways
-
-- Character training is **the proof RLHF matured** from alignment philosophy into an engineering discipline -- and its methods can instill *any* trait, not just good ones.
-- Constitutions are **training inputs**; model specs state **behavioral intent** -- and the effort spent following the document matters as much as the document.
-- **Weights hold character best**: fine-tuning beats prompting and steering for robustness -- but activation-space methods (vectors, capping, masks) give monitoring and control **with no retraining**.
-- RLHF is now the **interface between models and products**: features land at post-training first, then flow backward through the pipeline.
+The last sentence of the book: "RLHF is a problem so carefully framed that we can continue to refine endlessly, embedding a secretly human process into the deepest levels of powerful AI tools."
 
 ---
 
