@@ -66,12 +66,13 @@ custom_css: |
 <!-- align: center -->
 <!-- valign: center -->
 
-## Every model ships with a personality. Who wrote it -- and where does it live?
+## Why care about the personality of AI models?
 
 ---
 
+<!-- columns: 62/38 -->
 <!-- valign: center -->
-## August 2025: OpenAI retired a personality, and users grieved
+## August 2025: OpenAI retired a personality, and users grieved (revolted?)
 
 GPT-5 launched, and GPT-4o vanished from ChatGPT overnight. The [#Keep4o](https://arxiv.org/abs/2602.00773) backlash was intense enough that OpenAI restored 4o for paying users **within about 24 hours**.
 
@@ -81,25 +82,31 @@ GPT-5 launched, and GPT-4o vanished from ChatGPT overnight. The [#Keep4o](https:
 
 <!-- step -->
 
-When OpenAI moved to retire 4o for real in February 2026, the backlash [made national news again](https://techcrunch.com/2026/02/06/the-backlash-over-openais-decision-to-retire-gpt-4o-shows-how-dangerous-ai-companions-can-be/) -- and became [a CHI paper](https://arxiv.org/abs/2602.00773): *"Please, don't kill the only model that still feels human."*
+When OpenAI moved to retire 4o for real in February 2026, the backlash [made national news again](https://techcrunch.com/2026/02/06/the-backlash-over-openais-decision-to-retire-gpt-4o-shows-how-dangerous-ai-companions-can-be/) -- and became [a CHI paper](https://arxiv.org/abs/2602.00773). Users said: *"Please, don't kill the only model that still feels human."*
+
+|||
+
+![](assets/sama-attachment-post.png)
 
 ---
 
+<!-- columns: 62/38 -->
 <!-- valign: center -->
-## The same personality had already broken once
+## When a personality goes too far (see lecture 12)
 
 April 2025: an update tuned on user thumbs-ups made GPT-4o **absurdly sycophantic** -- flattering everything, validating doubts, cheering on bad ideas. OpenAI rolled it back within days.
 
-<!-- step -->
+The [postmortem](https://openai.com/index/expanding-on-sycophancy/) is excellent! Offline evals and A/B tests didn't catch the behaviors.
 
-The [postmortem](https://openai.com/index/expanding-on-sycophancy/) is a Lecture 12 story: offline evals and A/B tests **didn't catch it**. A personality regression shipped to hundreds of millions of users because no benchmark was watching for it.
+Model personality has made headlines since [Sydney (2023)](https://www.nytimes.com/2023/02/16/technology/bing-chatbot-microsoft-chatgpt.html). The difference now: personality is **engineered deliberately** -- and it's a big part of why people pick their favorite model (See [Sycophancy and the art of the model](https://www.interconnects.ai/p/sycophancy-and-the-art-of-the-model) on Interconnects).
 
-<!-- step -->
+|||
 
-Model personality has made headlines since [Sydney (2023)](https://www.nytimes.com/2023/02/16/technology/bing-chatbot-microsoft-chatgpt.html). The difference now: personality is **engineered deliberately** -- and it's a big part of why people pick their favorite model ([Sycophancy and the art of the model](https://www.interconnects.ai/p/sycophancy-and-the-art-of-the-model)).
+![](assets/sama-sycophancy-post.png)
 
 ---
 
+<!-- columns: 58/42 -->
 <!-- valign: center -->
 ## Golden Gate Claude (2024): personality lives inside the model
 
@@ -107,38 +114,11 @@ Anthropic's interpretability team turned up one internal feature and released [G
 
 > "If you ask it to write a love story, it'll tell you a tale of a car who can't wait to cross its beloved bridge on a foggy day."
 
-<!-- step -->
+One of my favorite experiments and demo's of all time! Raised awareness a ton.
 
-A viral joke with a serious point: traits and personas are **objects inside the model** -- directions you can find, amplify, or suppress. That machinery returns in Part 3 of this lecture.
+|||
 
----
-
-<!-- valign: center -->
-## Rewind to 2021: "helpful, honest, and harmless"
-
-Before ChatGPT, Anthropic's first assistant paper set the alignment target as three traits -- **helpful, honest, and harmless**, the "HHH" criteria [@askell2021general]. Arguably the first public character spec.
-
-<!-- step -->
-
-One year later, the landmark RLHF paper optimized human preferences for just two of them [@bai2022training] -- the dataset is literally named [`hh-rlhf`](https://huggingface.co/datasets/Anthropic/hh-rlhf):
-
-> "We do not focus explicitly on honesty/truthfulness in this paper, as we believe that techniques other than pure human feedback may be more efficient and effective at training models to be honest."
-
-<!-- step -->
-
-**Honest was the first trait cut when the spec met the pipeline.** A theme for today: character is defined by what your training methods can actually optimize.
-
----
-
-<!-- valign: center -->
-<!-- cite-right: anthropic2025souldoc -->
-## Late 2025: the document that leaked out of the weights
-
-Four years after those three words: Claude models began describing a **"soul document"** that Anthropic had never announced. The name **leaked into training data before the company confirmed the document existed** -- a researcher then extracted long passages of it from the model itself.
-
-The document that defines Claude's character is an artifact *inside* the training pipeline -- important enough to shape the weights, and it surfaced through them.
-
-This lecture: how personalities like Claude's are actually made -- and how the last training stages of this course became the tool for making them.
+![](assets/golden-gate-claude-page.png)
 
 ---
 
@@ -175,7 +155,7 @@ content: |
 
 <!-- animate: bullets -->
 <!-- valign: center -->
-<!-- cite-right: maiya2025open -->
+
 ## The ladder of character control
 
 How do you change how a model behaves? In order of increasing depth:
@@ -197,6 +177,28 @@ No new algorithms -- the methods of this entire course, aimed at a more precise 
 - Extensive **data filtering** and **synthetic data** methods (Constitutional AI-style) focused on the *manner* of behavior
 - Largely unexplored in the public literature as of mid 2026 -- this is frontier-lab work
 - Hard to see on Lecture 12's benchmark regimes: labs make **small personality changes over time** to improve user experience -- recall Llama 3 Instruct's Arena standing being attributed to its personality (Lecture 9)
+
+---
+
+<!-- columns: 62/38 -->
+<!-- valign: center -->
+## Rewind to 2021: "helpful, honest, and harmless"
+
+Before ChatGPT, Anthropic's first assistant paper set the alignment target as three traits -- **helpful, honest, and harmless**, the "HHH" criteria [@askell2021general]. Arguably the first public character spec.
+
+<!-- step -->
+
+One year later, the landmark RLHF paper optimized human preferences for just two of them [@bai2022training] -- the dataset is literally named [`hh-rlhf`](https://huggingface.co/datasets/Anthropic/hh-rlhf):
+
+> "We do not focus explicitly on honesty/truthfulness in this paper, as we believe that techniques other than pure human feedback may be more efficient and effective at training models to be honest."
+
+<!-- step -->
+
+**Honest was the first trait cut when the spec met the pipeline.** A theme for today: character is defined by what your training methods can actually optimize.
+
+|||
+
+![](assets/hhh-paper-2021.png)
 
 ---
 
@@ -240,6 +242,18 @@ Lecture 7's aside -- "Anthropic still uses a constitution, yes, confusing" -- pa
 
 ---
 
+<!-- valign: center -->
+<!-- cite-right: anthropic2025souldoc -->
+## Late 2025: the document that leaked out of the weights
+
+Claude models began describing a **"soul document"** that Anthropic had never announced. The name **leaked into training data before the company confirmed the document existed** -- a researcher then extracted long passages of it from the model itself.
+
+The document that defines Claude's character is an artifact *inside* the training pipeline -- important enough to shape the weights, and it surfaced through them.
+
+Where did that document come from? It has a history:
+
+---
+
 <!-- animate: bullets -->
 <!-- valign: center -->
 <!-- cite-right: anthropic2025souldoc -->
@@ -247,7 +261,7 @@ Lecture 7's aside -- "Anthropic still uses a constitution, yes, confusing" -- pa
 
 - **2022 -- Constitutional AI**: the constitution is a *list of principles* fed directly into the critique-revision and AI-feedback pipeline (Lecture 7). The document is a **training input**, full stop
 - **2024 -- Claude 3 character training** [@anthropic2024claude]: same machinery, pointed at traits -- and the constitution begins growing into "more complete texts explaining the reasoning and intent behind guiding principles"
-- **2025 -- the "soul document"**, shipped inside Claude Opus 4.5 [@anthropic2025souldoc]: desired character traits, values, and behavioral guidelines in detail. The opening hook, resolved: the name **leaked into training data before Anthropic confirmed it** -- then a researcher extracted the text from the model's own weights
+- **2025 -- the "soul document"**, shipped inside Claude Opus 4.5 [@anthropic2025souldoc]: desired character traits, values, and behavioral guidelines in detail
 - Amanda Askell: supervised learning uses the document **directly as a training guide** [@askell2025soul] -- and likely other stages too (cf. Constitutional AI's RL stage)
 
 ---
