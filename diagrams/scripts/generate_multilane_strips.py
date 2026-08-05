@@ -88,7 +88,7 @@ def render_orm_diagram(output_path: Path, fmt: str = "png", dpi: int = 150,
     # === Title with source indicator ===
     ax.text(
         x_offset + n_tokens * box_w / 2, 4.2,
-        "Training Outcome RM: Offline Labels → Per-Token BCE",
+        "Training Outcome RM: Offline Labels → Sequence-Level BCE",
         ha="center", va="bottom", fontsize=14, fontweight="bold",
         color=INK_DARK if transparent else "black",
     )
@@ -136,13 +136,13 @@ def render_orm_diagram(output_path: Path, fmt: str = "png", dpi: int = 150,
 
     ax.text(x_offset - 0.2, y_outputs + 0.2, "Model", ha="right", va="center",
             fontsize=9, fontweight="bold", color="#1565C0")
-    ax.text(x_offset - 0.2, y_outputs - 0.05, r"predicts $p_t$", ha="right", va="center",
+    ax.text(x_offset - 0.2, y_outputs - 0.05, r"logits $w_t$", ha="right", va="center",
             fontsize=9, fontweight="bold", color="#1565C0")
 
-    probs = [".92", ".88", ".95", ".99", ".97", ".94"]  # 6 completion tokens
-    for i, p in enumerate(probs):
+    logit_values = ["2.4", "2.0", "2.9", "4.6", "3.5", "2.8"]  # 6 completion tokens, mean 3.0
+    for i, w in enumerate(logit_values):
         x = x_offset + (prompt_end + i) * box_w + box_w/2 - 0.05
-        ax.text(x, y_outputs + 0.1, f"$p$={p}", ha="center", va="center",
+        ax.text(x, y_outputs + 0.1, f"$w$={w}", ha="center", va="center",
                 fontsize=9, color="#0066CC", fontweight="bold")
 
     # === Right side: Loss and Usage ===
@@ -155,21 +155,21 @@ def render_orm_diagram(output_path: Path, fmt: str = "png", dpi: int = 150,
         facecolor="#FFEBEE", edgecolor="#F44336", linewidth=2
     )
     ax.add_patch(loss_box)
-    ax.text(right_x + 0.75, y_labels + 0.1, r"$\mathrm{BCE}(p_t, z_t)$",
+    ax.text(right_x + 0.75, y_labels + 0.1, r"$\mathrm{BCE}(p(s), z)$",
             ha="center", va="center", fontsize=9, fontweight="bold", color="#C62828")
 
-    # Aggregate box
+    # Pooling box: sequence score from the mean completion logit
     agg_box = FancyBboxPatch(
         (right_x, y_outputs - 0.15), 1.5, 0.5,
         boxstyle="round,pad=0.05",
         facecolor="#E8F5E9", edgecolor="#4CAF50", linewidth=2
     )
     ax.add_patch(agg_box)
-    ax.text(right_x + 0.75, y_outputs + 0.1, "Aggregate",
+    ax.text(right_x + 0.75, y_outputs + 0.1, r"$\sigma(\mathrm{mean}\ w_t)$",
             ha="center", va="center", fontsize=9, fontweight="bold", color="#2E7D32")
 
     # Final score
-    ax.text(right_x + 1.85, y_outputs + 0.1, "→ 0.94",
+    ax.text(right_x + 1.85, y_outputs + 0.1, r"→ $p(s)$=.95",
             ha="left", va="center", fontsize=11, fontweight="bold", color="#2E7D32")
 
     # === Notes at bottom ===
@@ -178,7 +178,7 @@ def render_orm_diagram(output_path: Path, fmt: str = "png", dpi: int = 150,
             ha="center", va="center", fontsize=9, color="#606060",
             bbox=dict(boxstyle="round,pad=0.3", facecolor="#F5F5F5", edgecolor="#E0E0E0"))
 
-    ax.set_xlim(-0.3, x_offset + n_tokens * box_w + 3.2)
+    ax.set_xlim(-0.3, x_offset + n_tokens * box_w + 3.8)
     ax.set_ylim(-0.2, 4.7)
     ax.set_aspect("equal")
     ax.axis("off")
