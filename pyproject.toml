@@ -18,7 +18,7 @@ skills = [
     "google-genai>=1.63.0",
 ]
 teach = [
-    # Temporarily pin the current Colloquium PR #51 head so this preview tests
-    # iframe PDF snapshots before the change lands on Colloquium main.
-    "colloquium @ git+https://github.com/natolambert/colloquium.git@52a0b7b7a7bf5520ce5a68ddf4c1ea0db2628c3a",
+    # Tracks colloquium main (per Nathan: easiest for catching regressions);
+    # pin to a PyPI release later if builds need to be reproducible.
+    "colloquium @ git+https://github.com/natolambert/colloquium.git",
 ]
