@@ -44,14 +44,12 @@ custom_css: |
 
 <!-- layout: section-break -->
 <!-- align: center -->
-<!-- valign: center -->
 
 ## How do these optimizers change the distributions of the models? How do we control it?
 
 ---
 
 <!-- columns: 45/55 -->
-<!-- valign: center -->
 ## Recall: the RLHF process
 
 The RL step maximizes reward from the reward model **minus a penalty for drifting from the reference model**.
@@ -65,7 +63,6 @@ This lecture is about that penalty -- and what happens with and without it.
 ---
 
 <!-- columns: 50/50 -->
-<!-- valign: center -->
 ## RLVR has regularization too, but different best practices
 
 Same RL loop, different reward source: a verification function instead of a reward model.
@@ -102,9 +99,8 @@ content: |
 ---
 
 <!-- columns: 50/50 -->
-<!-- valign: center -->
 
-## Aside: Watch lecture 9 first
+## Aside: watch lecture 9 first
 
 ```iframe
 src: https://rlhfbook.com/teach/course/lec9-chap14-appb-overoptimization/
@@ -131,11 +127,10 @@ style: "border:none;display:block;width:100%;aspect-ratio:16/9;height:auto"
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 1: The explicit KL penalty
+## Part 1: the explicit KL penalty
 
 ---
 
-<!-- valign: center -->
 <!-- animate: bullets -->
 ## A KL penalty to the reference model controls reward
 
@@ -151,7 +146,6 @@ $$ r = r_\theta - \lambda_{\text{KL}} \, D_{\mathrm{KL}}\!\left( \pi_{\text{RL}}
 ---
 
 <!-- columns: 45/55 -->
-<!-- valign: center -->
 ## Measuring KL in practice
 
 Sampling from $P$ turns the definition into an expectation:
@@ -181,7 +175,6 @@ kl_approx = token_lp.sum(-1) - ref_token_lp.sum(-1)
 
 ---
 
-<!-- valign: center -->
 ## What the curves look like in a real run
 
 ![](assets/olmo2-grpo-zero-reward-kl.png)
@@ -191,7 +184,6 @@ This is a healthy shape.
 
 ---
 
-<!-- valign: center -->
 <!-- cite-right: ziegler2019fine -->
 <!-- animate: bullets -->
 
@@ -207,7 +199,6 @@ $$ e_t = \operatorname{clip}\!\left( \frac{\mathrm{KL}(\pi_t, \pi_{\text{ref}}) 
 
 ---
 
-<!-- valign: center -->
 <!-- cite-right: ziegler2019fine -->
 
 ## Static or dynamic KL penalties? β began as a feedback controller
@@ -227,7 +218,6 @@ Read the code: [the original controller](https://github.com/openai/lm-human-pref
 
 ---
 
-<!-- valign: center -->
 ## The reward penalty and the optimization shape are two different things
 
 We started with a **penalty** on the RL setup: a term added to the reward, with a coefficient you tune (or control).
@@ -386,15 +376,14 @@ $$ D_{\mathrm{KL}}(\pi_\theta \,\|\, \pi_T) = \mathbb{E}_{z \sim \pi_\theta}\!\l
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 3: Why RL generalizes more
+## Part 3: why RL generalizes more
 
 ---
 
-<!-- valign: center -->
 <!-- cite-right: chu2025sft -->
 ## "SFT memorizes, RL generalizes"
 
-Controlled study: post-train on one task, evaluate under a rule shift (ie. small modifications of the problem to test out-of-distribution) [@chu2025sft].
+Controlled study: post-train on one task, evaluate under a rule shift (i.e., small modifications of the problem to test out-of-distribution) [@chu2025sft].
 
 - **GeneralPoints**: reach 24 by combining four cards with $+,-,\times,\div$; test with shift to the face-card rule (train: J/Q/K = 10; test: 11/12/13).
 - **V-IRL**: visual navigation; test with shift from absolute (north/east) to relative (left/right) directions.
@@ -407,7 +396,6 @@ Paper: [arxiv.org/abs/2501.17161](https://arxiv.org/abs/2501.17161)
 
 ---
 
-<!-- valign: center -->
 ## Which direction should forget less?
 
 The naive read: forward KL is *mass-covering*, so SFT should preserve every mode -- while mode-seeking RL should collapse onto one and forget the rest.
@@ -417,7 +405,6 @@ Is this correct?
 ---
 
 <!-- img-fill -->
-<!-- valign: center -->
 <!-- cite-right: chen2025retainingdoingroleonpolicy -->
 ## Which direction should forget less?
 
@@ -428,9 +415,8 @@ That intuition assumes a unimodal policy -- LLMs are multimodal. Paper: [arxiv.o
 ---
 
 <!-- rows: 50/50 -->
-<!-- valign: center -->
 <!-- cite-right: shenfeld2026rls -->
-## RL's razor: Lower KL drift for equivalent performance
+## RL's razor: lower KL drift for equivalent performance
 
 > *"Among the many high-reward solutions for a new task, on-policy methods such as RL are inherently biased toward solutions that remain closer to the original policy in KL divergence."*
 
@@ -446,11 +432,10 @@ That intuition assumes a unimodal policy -- LLMs are multimodal. Paper: [arxiv.o
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 4: Other tools to control optimization
+## Part 4: other tools to control optimization
 
 ---
 
-<!-- valign: center -->
 <!-- animate: bullets -->
 ## Other regularization in the wild
 
@@ -464,9 +449,8 @@ Most of these are scaffolding: added to stabilize one setup, simplified away in 
 
 ---
 
-<!-- valign: center -->
 <!-- animate: bullets -->
-## 2026: the trust region / kl pen. is moving on
+## 2026: the trust region / KL pen. is moving on
 
 Tool use is changing what regularization has to do. In agentic recipes, the KL-to-reference penalty is disappearing:
 
@@ -477,7 +461,6 @@ Tool use is changing what regularization has to do. In agentic recipes, the KL-t
 ---
 
 <!-- rows: 22/78 -->
-<!-- valign: center -->
 <!-- cite-right: qi2026dppo -->
 ## A trust region on the sampling distribution
 
@@ -496,7 +479,6 @@ This is where the eye of regularization is today -- algorithmic updates rather t
 
 ---
 
-<!-- valign: center -->
 ## Takeaways
 
 - The KL penalty is the explicit control: a **reverse KL**, estimated on the policy's own samples. 
@@ -508,22 +490,21 @@ Verifiable rewards are much less prone to overoptimization than reward models! H
 ---
 
 <!-- columns: 50/50 -->
-<!-- valign: center -->
 ## The course so far
 
 0. Prerequisites review
 1. Overview *(ch. 1-3)*
-2. IFT, Reward Models & Rejection Sampling *(ch. 4, 5, 9)*
-3. RL: Motivation & Math *(ch. 6)*
-4. RL: Implementation & Practice *(ch. 6)*
-5. The Rise of Reasoning Models *(ch. 7)*
-6. Direct Preference Optimization *(ch. 8)*
+2. IFT, reward models & rejection sampling *(ch. 4, 5, 9)*
+3. RL: Motivation & math *(ch. 6)*
+4. RL: Implementation & practice *(ch. 6)*
+5. The rise of reasoning models *(ch. 7)*
+6. Direct preference optimization *(ch. 8)*
 
 |||
 
-7. Synthetic Data & Modern Post-training *(ch. 12)*
-8. Preferences & Preference Data *(ch. 10-11)*
-9. Over-Optimization & RLHF's Bad Reputation *(ch. 14, app. B)*
+7. Synthetic data & modern post-training *(ch. 12)*
+8. Preferences & preference data *(ch. 10-11)*
+9. Over-optimization & RLHF's bad reputation *(ch. 14, app. B)*
 10. **Regularization** *(ch. 15)* -- *today*
 11. **Evaluation** *(ch. 16)* -- *next (tentative)*
 12. **Basics of tool-use** *(ch. 13)* -- hopefully?

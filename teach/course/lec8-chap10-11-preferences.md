@@ -56,7 +56,6 @@ custom_css: |
 
 <!-- layout: section-break -->
 <!-- align: center -->
-<!-- valign: center -->
 
 ## How do we hillclimb on capabilities we don't really know how to score?
 
@@ -64,7 +63,6 @@ custom_css: |
 
 <!-- layout: section-break -->
 <!-- align: center -->
-<!-- valign: center -->
 
 ## Is it easier to write a good demonstration or decide between a good and a bad example?
 
@@ -152,7 +150,6 @@ content: |
 ---
 
 <!-- columns: 42/58 -->
-<!-- valign: center -->
 <!-- cite-right: lambert2023entangled -->
 ## The paper behind the first half of this lecture
 
@@ -171,7 +168,6 @@ Paper details a series of assumptions and presumptions in the literature that RL
 ---
 
 <!-- columns: 58/42 -->
-<!-- valign: center -->
 ## Aside: the "objective mismatch" lens
 
 A recurring way to think about post-training: we optimize a **proxy** objective that isn't the one we actually care about.
@@ -190,13 +186,12 @@ Reward-model accuracy (RewardBench-style) is a proxy for a proxy! Keep asking wh
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 1: A short history of optimizing or measuring preferences
+## Part 1: a short history of optimizing or measuring preferences
 
 ---
 
 <!-- class: full-bleed -->
 <!-- img-align: center -->
-<!-- valign: center -->
 <!-- cite-right: lambert2023entangled -->
 <!-- notes: The integration of subfields into modern RLHF. Solid links are continuous technical developments; arrows are motivations and conceptual borrowings. Philosophy, economics, control theory, and deep learning each arrive with different assumptions about what a "preference" even is. -->
 ## Many fields converged into "RLHF"
@@ -225,7 +220,6 @@ The idea that choices can be *scored* is old. The common thread: the idea that h
 ---
 
 <!-- columns: 64/36 -->
-<!-- valign: center -->
 ## Von Neumann-Morgenstern utility theorem (1947)
 
 **Von Neumann & Morgenstern** (1947): if your preferences obey a few axioms (completeness, transitivity, continuity, independence), they can be represented by a single **utility function**, and rational choice = maximizing **expected utility** [@von1947theory].
@@ -234,7 +228,7 @@ This is the result RLHF leans on to justify fitting a scalar reward.
 
 <!-- step -->
 
-In RLHF, essentially none of those *if* hold:
+In RLHF, essentially none of those *ifs* hold:
 
 - preferences **drift** during and after labeling
 - they're **context- and framing-dependent**
@@ -248,7 +242,6 @@ In RLHF, essentially none of those *if* hold:
 ---
 
 
-<!-- valign: center -->
 ## Bradley-Terry (1952): comparisons to scores
 
 The statistical model that turns *comparisons* into *scores* -- and became the backbone of reward modeling [@BradleyTerry] (see Chapter 5 / Lecture 2):
@@ -273,7 +266,6 @@ We then optimize hard against that number, which is impossible to ever do perfec
 ---
 
 <!-- columns: 64/36 -->
-<!-- valign: center -->
 ## Where utility theory breaks down
 
 Almost as soon as utility was formalized, social choice (the field studying how preferences should be aggregated) and economics found its limits:
@@ -289,7 +281,6 @@ Almost as soon as utility was formalized, social choice (the field studying how 
 ---
 
 <!-- columns: 58/42 -->
-<!-- valign: center -->
 <!-- cite-right: conitzer2024social -->
 ## Aside: social choice for AI alignment
 
@@ -307,7 +298,6 @@ If aggregating preferences is the hard part, **social choice theory** is the fie
 ---
 
 <!-- columns: 64/36 -->
-<!-- valign: center -->
 ## Preferences are not stable objects over time and context
 
 From psychology and behavioral economics:
@@ -324,7 +314,6 @@ A problem for "collect a label, train on it later repeatedly."
 ---
 
 <!-- columns: 62/38 -->
-<!-- valign: center -->
 ## The other root: optimal control & RL
 
 In parallel, a machinery for *optimizing* a reward matured:
@@ -342,7 +331,6 @@ Note: these guarantees assume a **single, closed-form reward**!
 
 ---
 
-<!-- valign: center -->
 ## Costs ≠ rewards ≠ preferences
 
 These three are **ontologically different**, and the emergence of modern post-training treated them as interchangeable [@lambert2023entangled].
@@ -378,7 +366,7 @@ Deep RL's theory lives in MDPs with a fixed, closed-form reward (e.g. games, con
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 2: Preference data -- the trade-offs in practice
+## Part 2: preference data -- the trade-offs in practice
 
 ---
 
@@ -392,14 +380,12 @@ Very few open models ship fully open human preference data *with* the methodolog
 
 ---
 
-<!-- valign: center -->
 ## Example data collection interfaces
 
 
 ---
 
 <!-- img-align: center -->
-<!-- valign: center -->
 <!-- cite-right: bai2022training -->
 <!-- img-fill -->
 ## Interface 1: research data collection (Anthropic's early Claude models)
@@ -409,7 +395,6 @@ Very few open models ship fully open human preference data *with* the methodolog
 ---
 
 <!-- img-align: center -->
-<!-- valign: center -->
 <!-- img-fill -->
 ## Interface 2: A/B testing in production (ChatGPT user data)
 
@@ -418,7 +403,6 @@ Very few open models ship fully open human preference data *with* the methodolog
 ---
 
 <!-- img-align: center -->
-<!-- valign: center -->
 <!-- cite-right: chiang2024chatbot -->
 <!-- img-fill -->
 ## Interface 3: pairwise with ties (Chatbot Arena public evaluation)
@@ -428,7 +412,6 @@ Very few open models ship fully open human preference data *with* the methodolog
 ---
 
 <!-- img-align: center -->
-<!-- valign: center -->
 <!-- img-fill -->
 ## Interface 4: a single bit (Ai2 demos; in many other products)
 
@@ -437,7 +420,6 @@ Very few open models ship fully open human preference data *with* the methodolog
 ---
 
 <!-- img-align: center -->
-<!-- valign: center -->
 <!-- img-fill -->
 ## Interface 5: pick-from-many (default in image models)
 
@@ -490,7 +472,6 @@ messages:
 
 ---
 
-<!-- valign: center -->
 ## What exactly is a "Likert scale"?
 
 A **Likert scale** records a preference as an *ordered, graded* judgment -- not just which answer wins, but **by how much**, on a symmetric scale with an optional neutral middle. (After psychologist Rensis Likert, 1932 -- the same "strongly agree ... strongly disagree" survey tool, repurposed for pairwise preference.)
@@ -577,7 +558,6 @@ Is a far more complex industry today with environments, etc. But, even for simpl
 ---
 
 <!-- columns: 56/44 -->
-<!-- valign: center -->
 <!-- cite-right: ouyang2022training -->
 ## Guiding data collection: labeler instructions
 
@@ -595,7 +575,6 @@ Once a contract is signed, buyer and vendor agree on **detailed instructions** f
 ---
 
 
-<!-- valign: center -->
 ## A dataset we bought: No Robots
 
 On Hugging Face's **H4 team**, we commissioned human data the same way the labs did.
@@ -606,9 +585,8 @@ On Hugging Face's **H4 team**, we commissioned human data the same way the labs 
 ---
 
 <!-- columns: 50/50 -->
-<!-- valign: center -->
 <!-- cite-right: arena2026 -->
-## Preference *evals* is now a standalone business
+## Preference *evals* are now a standalone business
 
 Recently in 2026 **Arena** (formerly, the LMArena leaderboard, formerly Chatbot Arena) reached a **~$100M annualized revenue run-rate within ~8 months** of launching its enterprise A/B testing offering [@arena2026].
 
@@ -621,7 +599,7 @@ Recently in 2026 **Arena** (formerly, the LMArena leaderboard, formerly Chatbot 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 3: Open questions in preference data
+## Part 3: open questions in preference data
 
 ---
 
@@ -642,7 +620,7 @@ Detecting and controlling these biases is central to collecting high-quality pre
 ---
 
 <!-- animate: bullets -->
-## Higher level complexities 
+## Higher-level complexities 
 
 - **Collection context** -- do workplace labels transfer to end users? Paid vs. volunteer? Do annotators follow instructions or their own values?
 - **Type of feedback** -- does a binary pair actually capture the preference we mean? What structure mirrors how people really compare?
@@ -651,7 +629,6 @@ Detecting and controlling these biases is central to collecting high-quality pre
 
 ---
 
-<!-- valign: center -->
 ## The unaudited gap: spec → data → behavior
 
 RLHF's *motivation* (align to human preference) has drifted from its *practice* (make models effective).
@@ -670,20 +647,19 @@ Is a great academic problem!
 
 ---
 
-<!-- valign: center -->
 ## The course so far
 
 0. Prerequisites review
 1. Overview *(ch. 1–3)*
-2. IFT, Reward Models & Rejection Sampling *(ch. 4, 5, 9)*
-3. RL: Motivation & Math *(ch. 6)*
-4. RL: Implementation & Practice *(ch. 6)*
-5. The Rise of Reasoning Models *(ch. 7)*
-6. Direct Preference Optimization *(ch. 8)*
-7. Synthetic Data & Modern Post-training *(ch. 12)*
-8. **Preferences & Preference Data** *(ch. 10–11)* -- *today*
-9. **Over-Optimization & RLHF's Bad Reputation** *(ch. 14, app. B)* -- *next*
-10. Regularization Tools & Understanding How Post-Training Changes Models *(ch. 15)*
+2. IFT, reward models & rejection sampling *(ch. 4, 5, 9)*
+3. RL: Motivation & math *(ch. 6)*
+4. RL: Implementation & practice *(ch. 6)*
+5. The rise of reasoning models *(ch. 7)*
+6. Direct preference optimization *(ch. 8)*
+7. Synthetic data & modern post-training *(ch. 12)*
+8. **Preferences & preference data** *(ch. 10–11)* -- *today*
+9. **Over-optimization & RLHF's bad reputation** *(ch. 14, app. B)* -- *next*
+10. Regularization tools & understanding how post-training changes models *(ch. 15)*
 
 ---
 

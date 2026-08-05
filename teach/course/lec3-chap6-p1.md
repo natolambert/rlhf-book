@@ -37,7 +37,7 @@ custom_css: |
 ---
 
 <!-- rows: 50/50 -->
-## Lecture 3: Reinforcement learning (mostly the math)
+## Lecture 3: reinforcement learning (mostly the math)
 
 <!-- row-columns: 32/36/32 -->
 
@@ -47,35 +47,35 @@ tone: muted
 compact: true
 content: |
   1. Introduction
-  2. Key Related Works
-  3. Training Overview
+  2. Key related works
+  3. Training overview
 ```
 
 |||
 
 ```box
-title: Core Training Pipeline
+title: Core training pipeline
 tone: accent
 compact: true
 content: |
-  4. Instruction Tuning
-  5. Reward Models
-  6. **Reinforcement Learning**
+  4. Instruction tuning
+  5. Reward models
+  6. **Reinforcement learning**
   7. Reasoning
-  8. Direct Alignment
-  9. Rejection Sampling
+  8. Direct alignment
+  9. Rejection sampling
 ```
 
 |||
 
 ```box
-title: Data & Preferences
+title: Data & preferences
 tone: muted
 compact: true
 content: |
-  10. What are Preferences
-  11. Preference Data
-  12. Synthetic Data & CAI
+  10. What are preferences
+  11. Preference data
+  12. Synthetic data & CAI
 ```
 
 ===
@@ -83,15 +83,15 @@ content: |
 <!-- row-columns: 32/36/32 -->
 
 ```box
-title: Practical Considerations
+title: Practical considerations
 tone: muted
 compact: true
 content: |
-  13. Tool Use
+  13. Tool use
   14. Over-optimization
   15. Regularization
   16. Evaluation
-  17. Product & Character
+  17. Product & character
 ```
 
 |||
@@ -102,14 +102,14 @@ tone: surface
 compact: true
 content: |
   - A. Definitions
-  - B. Style & Information
-  - C. Practical Issues
+  - B. Style & information
+  - C. Practical issues
 ```
 
 |||
 
 ```box
-title: Course Home
+title: Course home
 tone: surface
 compact: true
 content: |
@@ -150,7 +150,7 @@ RLHF optimization view.
 This lecture covers the **math and theory** of RL for language models. The next lecture covers implementation.
 
 ```box
-title: Lecture 3 Outline
+title: Lecture 3 outline
 tone: accent
 content: |
   1. **Motivation** — why RL training matters
@@ -203,7 +203,7 @@ Reasoning models (o1, DeepSeek R1, etc.) are trained with these exact algorithms
 ---
 
 <!-- columns: 50/50 -->
-## RLVR: Same algorithms, verifiable rewards
+## RLVR: same algorithms, verifiable rewards
 
 <!-- cite-right: lambert2024t -->
 
@@ -222,12 +222,12 @@ Same policy gradient algorithms, different reward source. We will cover tricks f
 
 <!-- layout: section-break -->
 
-## Policy gradients: Core intuitions
+## Policy gradients: core intuitions
 
 ---
 
 <!-- columns: 50/50 -->
-## Recall: Classical RL vs. RLHF
+## Recall: classical RL vs. RLHF
 
 <!-- cite-right: christiano2017, ouyang2022training -->
 
@@ -403,7 +403,7 @@ A *baseline* $b(s_t)$ is any value subtracted from the reward signal to reduce v
 
 ---
 
-## Setup: Differentiating an expectation
+## Setup: differentiating an expectation
 
 Ideally, we want $\nabla_\theta J(\theta)$, but we can't do that (the state sampling distribution itself depends on $\theta$).
 
@@ -413,7 +413,7 @@ $$J(\theta) = \mathbb{E}_{\tau \sim p_\theta}[R(\tau)] = \int_\tau p_\theta(\tau
 
 ---
 
-## Setup: Differentiating an expectation
+## Setup: differentiating an expectation
 
 Ideally, we want $\nabla_\theta J(\theta)$, but we can't do that (the state sampling distribution itself depends on $\theta$).
 
@@ -618,7 +618,7 @@ The gradient of a normalized distribution sums to zero — so we're free to subt
 
 ---
 
-## Recall: What $\Psi_t$ can be
+## Recall: what $\Psi_t$ can be
 
 <!-- cite-right: schulman2015high -->
 
@@ -862,7 +862,7 @@ Basic REINFORCE needs no critic — just Monte Carlo returns and a simple baseli
 
 ---
 
-## RLOO: Leave-one-out baseline
+## RLOO: leave-one-out baseline
 
 <!-- cite-right: ahmadian2024back -->
 
@@ -971,7 +971,7 @@ The solution: **trust regions** — limit how far the policy can move in a singl
 
 ---
 
-## PPO core idea 2: Importance sampling
+## PPO core idea 2: importance sampling
 
 We want to take multiple gradient steps on a batch, but the data came from an old policy $\pi_{\theta_\text{old}}$.
 
@@ -1142,7 +1142,7 @@ As $k \to \infty$, we recover the full Monte Carlo advantage $G_t - V_\phi(s_t)$
 
 ---
 
-## GAE: Exponential weighting
+## GAE: exponential weighting
 
 GAE uses an exponentially-weighted average across all $K$-step estimates:
 
@@ -1152,7 +1152,7 @@ Where $\lambda \in [0, 1]$ controls the bias-variance tradeoff.
 
 ---
 
-## GAE: Bias-variance tradeoff
+## GAE: bias-variance tradeoff
 
 $$\hat{A}_t^{\text{GAE}} = \sum_{l=0}^{\infty} (\gamma\lambda)^l \delta_{t+l}^V$$
 
@@ -1166,7 +1166,7 @@ The $\gamma$ here is typically $1.0$ for language models (no discounting). These
 
 ---
 
-## PPO-RLHF: Full policy objective
+## PPO-RLHF: full policy objective
 
 A schematic high-level view of PPO-RLHF combines the clipped PPO objective with a KL regularizer:
 
@@ -1194,7 +1194,7 @@ Typical: K = 2–4 gradient steps per batch before re-generating.
 
 ---
 
-## PPO: Four models in memory
+## PPO: four models in memory
 
 PPO requires **four** models:
 
@@ -1291,7 +1291,7 @@ Same principle (compare to peers), different mechanics. Without std normalizatio
 
 ---
 
-## GSPO: Sequence-level ratios
+## GSPO: sequence-level ratios
 
 <!-- cite-right: zheng2025gspo -->
 
@@ -1309,7 +1309,7 @@ The clipping range $\varepsilon$ now operates on a per-token average scale, maki
 
 ---
 
-## CISPO: Clipped importance sampling
+## CISPO: clipped importance sampling
 
 <!-- cite-right: minimax2025minimaxm1scalingtesttimecompute -->
 

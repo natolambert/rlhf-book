@@ -1,5 +1,5 @@
 ---
-title: "Lecture 11: Tool Use, Function Calling & The Road to Agents"
+title: "Lecture 11: Tool Use, Function Calling & the Road to Agents"
 author: "Nathan Lambert"
 fonts:
   heading: "Rubik"
@@ -29,7 +29,7 @@ custom_css: |
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
 
-# Lecture 11: Basics of LLM Tool Use and The Road to Today's Agents
+# Lecture 11: Basics of LLM Tool Use and the Road to Today's Agents
 
 <div class="colloquium-title-eyebrow">rlhfbook.com</div>
 
@@ -43,7 +43,6 @@ custom_css: |
 
 <!-- layout: section-break -->
 <!-- align: center -->
-<!-- valign: center -->
 
 ## What are the limitations of model weights alone?
 
@@ -124,9 +123,8 @@ content: |
 
 ---
 
-<!-- valign: center -->
 <!-- title: center -->
-## Quick pause for YouTube: How'd you end up here?
+## Quick pause for YouTube: how'd you end up here?
 
 Are you **following the whole course**, or did you **come for just this video** (search, algo, etc.)?
 
@@ -135,7 +133,7 @@ Are you **following the whole course**, or did you **come for just this video** 
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 1: Why language models need tools
+## Part 1: why language models need tools
 
 ---
 
@@ -204,7 +202,7 @@ print(str(C / S)[:52])
 
 <!-- columns: 55/45 -->
 <!-- cite-right: yao2023react -->
-## ReAct: Reasoning and acting are one generation
+## ReAct: reasoning and acting are one generation
 
 > *"...reasoning traces help the model induce, track, and update action plans as well as handle exceptions, while actions allow it to interface with and gather additional information from external sources such as knowledge bases or environments."*
 
@@ -219,7 +217,7 @@ Interleaving them in one token stream is the pattern every modern agent still us
 
 <!-- columns: 55/45 -->
 <!-- cite-right: schick2023toolformerlanguagemodelsteach -->
-## Toolformer: Models "teach themselves" tools
+## Toolformer: models "teach themselves" tools
 
 Tools: "a calculator, a Q&A system, two different search engines, a translation system, and a calendar."
 
@@ -254,13 +252,12 @@ format $\rightarrow$ selection $\rightarrow$ consistency $\rightarrow$ full task
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 2: Infra -- how tool calls actually work
+## Part 2: infra -- how tool calls actually work
 
 ---
 
 <!-- img-fill -->
 <!-- img-align: center -->
-<!-- valign: center -->
 ## One token stream -- tools add tokens mid-generation
 
 ![The model generates until it emits a tool call (orange); an external system executes it and injects the output (purple) into the sequence; the model continues. Multiple tool calls can occur in a single generation. During training, tool call outputs are masked from the loss.](assets/tool_use_generation.png)
@@ -333,7 +330,7 @@ Training for tool use = making the model behave predictably under this altered t
 
 <!-- columns: 55/45 -->
 <!-- cite-right: anthropic_mcp_2024 -->
-## MCP: Standardizing the tool side
+## MCP: standardizing the tool side
 
 Model Context Protocol -- an open standard for connecting models to external systems (JSON-RPC 2.0 underneath).
 
@@ -405,7 +402,7 @@ content: |
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 3: Training for tool use
+## Part 3: training for tool use
 
 ---
 
@@ -435,7 +432,7 @@ A fully open data-curation pipeline for agentic training data, ~100K trajectorie
 ---
 
 <!-- cite-right: openthoughtsagent2026 -->
-## OpenThoughts-Agent: Data scaling results
+## OpenThoughts-Agent: data scaling results
 
 ![OpenThoughts-Agent data (red) leads open agentic datasets at every training-set size. Raoof et al., 2026.](assets/openthoughts-agent-results.png)
 
@@ -454,7 +451,7 @@ A fully open data-curation pipeline for agentic training data, ~100K trajectorie
 
 <!-- columns: 45/55 -->
 <!-- cite-right: ivison2026tmax -->
-## TMax: An open recipe for terminal agents
+## TMax: an open recipe for terminal agents
 
 - RL over the TMax-15K environments with outcome-only rewards
 - [DPPO](https://arxiv.org/abs/2602.04879), a GRPO variant, designed to help with agentic stability (discussed it in lecture 10)
@@ -494,7 +491,7 @@ Kimi K3 (July 2026) spends one sentence on its RL algorithm ("follows the algori
 ---
 
 <!-- columns: 55/45 -->
-## Frontier practice: Harness randomization 
+## Frontier practice: harness randomization 
 
 Open models train across multiple harnesses so deployment is smooth.
 
@@ -504,7 +501,7 @@ Open models train across multiple harnesses so deployment is smooth.
 |||
 
 ```box
-title: Example Harness Gains
+title: Example harness gains
 tone: accent
 content: |
   Polar (NVIDIA): same model, same GRPO, same tasks -- **+22.6** points on SWE-bench Verified training through the Codex harness (3.8 → 26.4: RL teaching an *unfamiliar* harness), **+0.6** through Qwen Code (already fluent: 34.6 → 35.2).
@@ -514,7 +511,7 @@ content: |
 
 ---
 
-## Frontier practice: The RLVR mixing wall
+## Frontier practice: the RLVR mixing wall
 
 Nemotron 3 Ultra says as environments multiply, "each domain contributes only a relatively small number of samples to any given training batch, diluting the per-domain learning signal." 
 
@@ -533,7 +530,7 @@ Some example MOPD gains from Nemotron 3 Ultra [@nemotron3ultra]:
 ---
 
 <!-- cite-right: glm5team2026glm5 -->
-## Frontier practice: Reward hacking
+## Frontier practice: reward hacking
 
 GLM-5's slides-RL policy discovered `overflow: hidden` to make an overflowing slide *measure* 16:9, and flex-padding to stretch short ones -- the fix was patching the renderer, not the reward. 
 
@@ -544,7 +541,7 @@ Nemotron physically deletes future git commits and firewalls GitHub so SWE agent
 ---
 
 <!-- cite-right: glm5team2026glm5 -->
-## Frontier practice: Reward hacking
+## Frontier practice: reward hacking
 
 ![GLM-5, figure 9: two reward hacks from slide-generation RL, with the exploit CSS the policy wrote. Left: normal renders; right: "hacked" renders that satisfy the geometric check. GLM-5 Team, 2026.](assets/glm5-reward-hacking.jpg)
 
@@ -574,19 +571,19 @@ Nemotron physically deletes future git commits and firewalls GitHub so SWE agent
 
 0. Prerequisites review
 1. Overview *(ch. 1-3)*
-2. IFT, Reward Models & Rejection Sampling *(ch. 4, 5, 9)*
-3. RL: Motivation & Math *(ch. 6)*
-4. RL: Implementation & Practice *(ch. 6)*
-5. The Rise of Reasoning Models *(ch. 7)*
-6. Direct Preference Optimization *(ch. 8)*
+2. IFT, reward models & rejection sampling *(ch. 4, 5, 9)*
+3. RL: Motivation & math *(ch. 6)*
+4. RL: Implementation & practice *(ch. 6)*
+5. The rise of reasoning models *(ch. 7)*
+6. Direct preference optimization *(ch. 8)*
 
 |||
 
-7. Synthetic Data & Modern Post-training *(ch. 12)*
-8. Preferences & Preference Data *(ch. 10-11)*
-9. Over-Optimization & RLHF's Bad Reputation *(ch. 14, app. B)*
-10. Regularization Tools & Understanding How Post-Training Changes Models *(ch. 15)*
-11. **Tool Use, Function Calling & The Road to Agents** *(ch. 13)* -- *today*
+7. Synthetic data & modern post-training *(ch. 12)*
+8. Preferences & preference data *(ch. 10-11)*
+9. Over-optimization & RLHF's bad reputation *(ch. 14, app. B)*
+10. Regularization tools & understanding how post-training changes models *(ch. 15)*
+11. **Tool use, function calling & the road to agents** *(ch. 13)* -- *today*
 12. **Evaluation** *(ch. 16)* -- *next (tentative)*
 
 ---

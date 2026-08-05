@@ -44,7 +44,6 @@ custom_css: |
 
 ---
 
-<!-- valign: center -->
 ## April 2025: extreme sycophancy in production
 
 A GPT-4o update made the model validate nearly anything -- shipped April 25th, rolled back April 28th. The training run that produced it looked healthy on their metrics.
@@ -71,7 +70,6 @@ messages:
 
 ---
 
-<!-- valign: center -->
 ## The OpenAI postmortem
 
 OpenAI published an unusually candid writeup. Three things went wrong in sequence:
@@ -110,7 +108,6 @@ content: |
 
 ---
 
-<!-- valign: center -->
 ## Some vocabulary (history): "just style" / "style transfer"
 
 Early on, say ~2023, RLHF got a reputation as **"just style transfer"** -- the claim that it only changes *how* an answer is presented, not *what* the model knows or can do, and it *just* came from some easy to access place.
@@ -126,11 +123,10 @@ Boooo. Look how far post-training has come!
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 1: Over-optimization
+## Part 1: over-optimization
 
 ---
 
-<!-- valign: center -->
 ## Goodhart's law: the reward is a proxy
 
 > *"Any observed statistical regularity will tend to collapse once pressure is placed upon it for control purposes."* -- Goodhart, 1984 [@goodhart1984problems]
@@ -168,7 +164,6 @@ Gaming it looks like: verbose, confident-sounding answers that score well withou
 <!-- columns: 60/40 -->
 <!-- img-fill -->
 <!-- img-align: center -->
-<!-- valign: center -->
 <!-- cite-right: gao2023scaling -->
 ## The shape of over-optimization
 
@@ -187,7 +182,6 @@ Formalized in *[Scaling Laws for Reward Model Overoptimization](https://arxiv.or
 <!-- columns: 50/50 -->
 <!-- img-fill -->
 <!-- img-align: center -->
-<!-- valign: center -->
 <!-- cite-right: gao2023scaling -->
 ## Scaling laws for RM over-optimization (seminal paper)
 
@@ -202,7 +196,6 @@ Formalized in *[Scaling Laws for Reward Model Overoptimization](https://arxiv.or
 <!-- columns: 55/45 -->
 <!-- img-fill -->
 <!-- img-align: center -->
-<!-- valign: center -->
 <!-- cite-right: gao2023scaling -->
 ## Scaling laws for RM over-optimization (seminal paper)
 
@@ -227,7 +220,6 @@ Larger proxy RMs turn over later and more gently. And since gold-labels-train-pr
 <!-- columns: 55/45 -->
 <!-- img-fill -->
 <!-- img-align: center -->
-<!-- valign: center -->
 <!-- cite-right: bai2022training -->
 ## Measuring it: train vs. test reward models
 
@@ -243,7 +235,6 @@ Anthropic's version of over-opt:
 
 ---
 
-<!-- valign: center -->
 ## What over-optimized models sound like
 
 Recurring signatures in early chat models:
@@ -253,14 +244,13 @@ Recurring signatures in early chat models:
 - Pandering: self-doubt, over-apologizing, sycophancy [@sharma2023towards]
 - Misaligned behavior such as over-refusals
 
-"Javascript, Javascript, Javascript, Javascript, Javascript, Javascript, Javascript,..."
+"JavaScript, JavaScript, JavaScript, JavaScript, JavaScript, JavaScript, JavaScript,..."
 
 The preference-data biases from Lecture 8 -- sycophancy, verbosity, formatting -- amplified into policy behavior.
 
 ---
 
 <!-- columns: 46/54 -->
-<!-- valign: center -->
 ## An example, over-refusals: "too much RLHF"?
 
 2023's most-memed failure mode: refusing to "kill a Linux process." (imagine this today with coding agents!)
@@ -285,7 +275,6 @@ messages:
 
 ---
 
-<!-- valign: center -->
 ## Why it happens, and what helps
 
 Sources of error [@schulman2023proxy]: **approximation** (the RM cannot perfectly fit preferences), **estimation** (the RM overfits its training set), **optimization** (the policy trains too hard against it).
@@ -301,7 +290,6 @@ The main lever in practice: **the KL penalty** (and more careful data/systems, b
 
 ---
 
-<!-- valign: center -->
 ## Aside: go watch this talk
 
 **John Schulman, ICML 2023 invited talk -- "Proxy objectives in reinforcement learning from human feedback"** [@schulman2023proxy]
@@ -313,7 +301,6 @@ One of the great ones on this topic.
 
 ---
 
-<!-- valign: center -->
 ## Over-optimization enables misalignment
 
 - Sycophancy is the clearest current case [@sharma2023towards]: "agree with the user" gets reinforced when preference data overweights *supportive and confident* over *accurate and calibrated*.
@@ -327,11 +314,10 @@ We're seeing this play out today as **reward hacking** in scaled-up RL on verifi
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 2: Beyond "just style"
+## Part 2: beyond "just style"
 
 ---
 
-<!-- valign: center -->
 ## Same base model -- what did preference tuning change?
 
 The library opens on three **SFT → DPO** pairs -- Tülu 3 70B and OLMo 2 32B / 7B -- across 16 shared prompts [@lambert2024t]. Same base model, before and after preference tuning.
@@ -343,7 +329,6 @@ The library opens on three **SFT → DPO** pairs -- Tülu 3 70B and OLMo 2 32B /
 
 ---
 
-<!-- valign: center -->
 ## Style as substance
 
 An early phase of RLHF's history was convincing people that style was actually useful sometimes, and not just brainrot: 
@@ -353,7 +338,6 @@ An early phase of RLHF's history was convincing people that style was actually u
 
 ---
 
-<!-- valign: center -->
 ## The chattiness balance -- many chat evals were easy to overfit
 
 Preference tuning reliably boosts LLM-as-a-judge chat evals (AlpacaEval, MT-Bench) -- gains that do not transfer proportionally to Arena or real usage.
@@ -385,7 +369,6 @@ Was easy to juice chattiness at the expense of other skills.
 
 ---
 
-<!-- valign: center -->
 ## Llama 4's Chatbot Arena special (April 2025)
 
 Meta's Llama 4 launch (on a Saturday) headlined Maverick at **Elo 1417 -- #2 on Chatbot Arena** ... via "an experimental chat version."
@@ -397,7 +380,6 @@ I wrote about it at the time: [*Llama 4: Did Meta just push the panic button?*](
 
 ---
 
-<!-- valign: center -->
 ## Why does RLHF make answers longer?
 
 - Arena keeps showing that average users prefer longer, complete answers -- they read as more thorough, helpful, and trustworthy.
@@ -406,7 +388,6 @@ I wrote about it at the time: [*Llama 4: Did Meta just push the panic button?*](
 
 ---
 
-<!-- valign: center -->
 ## Done right, preference tuning helps capabilities/skills too
 
 The "just style" critique was outgrown, only partially, by well-done open models showing major performance gains.
@@ -418,20 +399,19 @@ The honest retrospective: RLHF earned its bad reputation on style *failures* -- 
 
 ---
 
-<!-- valign: center -->
 ## The course so far
 
 0. Prerequisites review
 1. Overview *(ch. 1-3)*
-2. IFT, Reward Models & Rejection Sampling *(ch. 4, 5, 9)*
-3. RL: Motivation & Math *(ch. 6)*
-4. RL: Implementation & Practice *(ch. 6)*
-5. The Rise of Reasoning Models *(ch. 7)*
-6. Direct Preference Optimization *(ch. 8)*
-7. Synthetic Data & Modern Post-training *(ch. 12)*
-8. Preferences & Preference Data *(ch. 10-11)*
-9. **Over-Optimization & RLHF's Bad Reputation** *(ch. 14, app. B)* -- *today*
-10. **Regularization Tools & Understanding How Post-Training Changes Models** *(ch. 15)* -- *next*
+2. IFT, reward models & rejection sampling *(ch. 4, 5, 9)*
+3. RL: Motivation & math *(ch. 6)*
+4. RL: Implementation & practice *(ch. 6)*
+5. The rise of reasoning models *(ch. 7)*
+6. Direct preference optimization *(ch. 8)*
+7. Synthetic data & modern post-training *(ch. 12)*
+8. Preferences & preference data *(ch. 10-11)*
+9. **Over-optimization & RLHF's bad reputation** *(ch. 14, app. B)* -- *today*
+10. **Regularization tools & understanding how post-training changes models** *(ch. 15)* -- *next*
 11. Evaluation *(ch. 16)* -- *(tentative)*
 
 ---

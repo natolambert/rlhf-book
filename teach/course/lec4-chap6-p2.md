@@ -47,35 +47,35 @@ tone: muted
 compact: true
 content: |
   1. Introduction
-  2. Key Related Works
-  3. Training Overview
+  2. Key related works
+  3. Training overview
 ```
 
 |||
 
 ```box
-title: Core Training Pipeline
+title: Core training pipeline
 tone: accent
 compact: true
 content: |
-  4. Instruction Tuning
-  5. Reward Models
-  6. **Reinforcement Learning**
+  4. Instruction tuning
+  5. Reward models
+  6. **Reinforcement learning**
   7. Reasoning
-  8. Direct Alignment
-  9. Rejection Sampling
+  8. Direct alignment
+  9. Rejection sampling
 ```
 
 |||
 
 ```box
-title: Data & Preferences
+title: Data & preferences
 tone: muted
 compact: true
 content: |
-  10. What are Preferences
-  11. Preference Data
-  12. Synthetic Data & CAI
+  10. What are preferences
+  11. Preference data
+  12. Synthetic data & CAI
 ```
 
 ===
@@ -83,15 +83,15 @@ content: |
 <!-- row-columns: 32/36/32 -->
 
 ```box
-title: Practical Considerations
+title: Practical considerations
 tone: muted
 compact: true
 content: |
-  13. Tool Use
+  13. Tool use
   14. Over-optimization
   15. Regularization
   16. Evaluation
-  17. Product & Character
+  17. Product & character
 ```
 
 |||
@@ -102,14 +102,14 @@ tone: surface
 compact: true
 content: |
   - A. Definitions
-  - B. Style & Information
-  - C. Practical Issues
+  - B. Style & information
+  - C. Practical issues
 ```
 
 |||
 
 ```box
-title: Course Home
+title: Course home
 tone: surface
 compact: true
 content: |
@@ -144,7 +144,7 @@ The hardest bugs aren't math errors — they're silent implementation mistakes: 
 ## What this lecture covers
 
 ```box
-title: Lecture 4 Outline
+title: Lecture 4 outline
 tone: accent
 content: |
   1. **Policy gradient code** — log-probs, the REINFORCE loss, RLOO baseline
@@ -177,7 +177,7 @@ The gradient says: for each token, compute the direction that makes it more like
 
 ## Recall: the policy gradient algorithms
 
-All methods minimize the same family of **loss** (note the leading minus signs) — they differ in $\Psi_t$ and how updates are bounded:
+All methods minimize the same family of **losses** (note the leading minus signs) — they differ in $\Psi_t$ and how updates are bounded:
 
 <div class="text-sm">
 
@@ -529,7 +529,7 @@ vf_loss = torch.max(vf_unclipped, vf_clipped)
 
 ---
 
-## PPO-RLHF: Combined objective
+## PPO-RLHF: combined objective
 
 Combined loss: policy + value (KL enters via reward shaping, not as a separate loss term):
 
@@ -652,7 +652,7 @@ For a 7B model with fp16:
 
 <!-- layout: section-break -->
 
-## Group Relative Policy Optimization (GRPO) & Friends
+## Group Relative Policy Optimization (GRPO) & friends
 
 ---
 
@@ -880,7 +880,7 @@ A process management library (e.g., Ray) coordinates data flow between them. Mod
 
 ---
 
-## More Resources on RL Implementations
+## More resources on RL implementations
 
 - A [video](https://www.youtube.com/watch?v=amrJDwMUFNs) I recorded looking at codebases implementing GRPO, DAPO, Dr. GRPO, and other papers.
 - ~24min in, [talk](https://youtu.be/uaZ3yRdYg8A?si=iSGw56BFNQMWNjtr&t=1487) on scaling RL for Olmo 3.
@@ -996,7 +996,7 @@ Standard in GRPO and some PPO implementations.
 
 ---
 
-## Per-sequence normalization: Effect
+## Per-sequence normalization: effect
 
 Each sequence gets equal weight → per-token gradients are **inversely proportional to sequence length**:
 
@@ -1022,7 +1022,7 @@ Used in DAPO [@yu2025dapo]. Longer sequences contribute proportionally more grad
 
 ---
 
-## Per-token normalization: Effect
+## Per-token normalization: effect
 
 All tokens get equal gradient magnitude. Longer sequences contribute more to the total gradient because they have more tokens.
 
@@ -1092,7 +1092,7 @@ Reasoning models push RL to extremes. Here's what changes:
 
 --- -->
 
-## Forward pointer: Regularization & over-optimization
+## Forward pointer: regularization & over-optimization
 
 When RL runs go wrong, it is often due to RL latching onto spurious signals rather than the intended reward. 
 These topics deserve their own lecture:
@@ -1132,7 +1132,7 @@ From math to running code — the implementation details that matter:
 <!-- row-columns: 50/50 -->
 
 ```box
-title: Book & Course
+title: Book & course
 tone: accent
 compact: true
 content: |
@@ -1159,7 +1159,7 @@ content: |
 <!-- row-columns: 50/50 -->
 
 ```box
-title: Key Papers
+title: Key papers
 tone: surface
 compact: true
 content: |
@@ -1172,7 +1172,7 @@ content: |
 |||
 
 ```box
-title: Further Reading
+title: Further reading
 tone: surface
 compact: true
 content: |
@@ -1184,7 +1184,7 @@ content: |
 ---
 
 <!-- rows: 50/50 -->
-## What's next: DAAs & Reasoning
+## What's next: DAAs & reasoning
 
 <!-- row-columns: 32/36/32 -->
 
@@ -1194,35 +1194,35 @@ tone: muted
 compact: true
 content: |
   1. Introduction
-  2. Key Related Works
-  3. Training Overview
+  2. Key related works
+  3. Training overview
 ```
 
 |||
 
 ```box
-title: Core Training Pipeline
+title: Core training pipeline
 tone: accent
 compact: true
 content: |
-  4. Instruction Tuning
-  5. Reward Models
-  6. **Reinforcement Learning**
+  4. Instruction tuning
+  5. Reward models
+  6. **Reinforcement learning**
   7. Reasoning
-  8. Direct Alignment
-  9. Rejection Sampling
+  8. Direct alignment
+  9. Rejection sampling
 ```
 
 |||
 
 ```box
-title: Data & Preferences
+title: Data & preferences
 tone: muted
 compact: true
 content: |
-  10. What are Preferences
-  11. Preference Data
-  12. Synthetic Data & CAI
+  10. What are preferences
+  11. Preference data
+  12. Synthetic data & CAI
 ```
 
 ===
@@ -1230,15 +1230,15 @@ content: |
 <!-- row-columns: 32/36/32 -->
 
 ```box
-title: Practical Considerations
+title: Practical considerations
 tone: muted
 compact: true
 content: |
-  13. Tool Use
+  13. Tool use
   14. Over-optimization
   15. Regularization
   16. Evaluation
-  17. Product & Character
+  17. Product & character
 ```
 
 |||
@@ -1249,14 +1249,14 @@ tone: surface
 compact: true
 content: |
   - A. Definitions
-  - B. Style & Information
-  - C. Practical Issues
+  - B. Style & information
+  - C. Practical issues
 ```
 
 |||
 
 ```box
-title: Course Home
+title: Course home
 tone: surface
 compact: true
 content: |
@@ -1268,12 +1268,12 @@ content: |
 
 ## Course outline
 
-1. **Introduction & Training Overview** — Chapters 1–3
-2. **Instruction Tuning, Reward Models, Rejection Sampling** — Chapters 4, 5, 9
-3. **RL Theory** — Chapter 6 (Part 1)
-4. **RL Implementation & Practice** — Chapter 6 (Part 2)
+1. **Introduction & training overview** — Chapters 1–3
+2. **Instruction tuning, reward models, rejection sampling** — Chapters 4, 5, 9
+3. **RL theory** — Chapter 6 (Part 1)
+4. **RL implementation & practice** — Chapter 6 (Part 2)
 5. **Reasoning** — Chapter 7
-6. **Direct Alignment Algorithms** — Chapter 8
+6. **Direct alignment algorithms** — Chapter 8
 7. ...
 
 ---

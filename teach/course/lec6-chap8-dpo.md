@@ -55,7 +55,6 @@ Some context:
 ---
 
 <!-- img-align: center -->
-<!-- valign: center -->
 ## The DPO debate (DPO v RL)
 
 ![When DPO was released it sparked a fierce debate about how best to do RLHF and preference learning. Meme credit: Tom Goldstein.](assets/dpo_meme.jpeg)
@@ -87,7 +86,7 @@ The plan, in four steps:
 ---
 
 <!-- rows: 60/40 -->
-## Recall: Where DPO sits in the pipeline
+## Recall: where DPO sits in the pipeline
 
 <!-- row-columns: 48/52 -->
 Classic RLHF is three moving parts:
@@ -143,7 +142,7 @@ Everything between here and the implementation is *why* this is the right loss.
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## DPO Derivation P1/4: Deriving the optimal policy
+## DPO derivation P1/4: deriving the optimal policy
 
 ---
 
@@ -405,7 +404,7 @@ $$
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## DPO Derivation P2/4: Recovering the reward from the policy (needed to implement it)
+## DPO derivation P2/4: recovering the reward from the policy (needed to implement it)
 
 ---
 
@@ -482,7 +481,7 @@ $$
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## DPO Derivation P3/4: Connecting to Bradley-Terry preference (what our alignment data has looked like) 
+## DPO derivation P3/4: connecting to Bradley-Terry preference (what our alignment data has looked like) 
 
 ---
 
@@ -549,7 +548,7 @@ $$
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## DPO Derivation P4/4: The loss function and gradient
+## DPO derivation P4/4: the loss function and gradient
 
 ---
 

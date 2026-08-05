@@ -1,5 +1,5 @@
 ---
-title: "Lecture 7: Synthetic Data and Modern Post-training Methods"
+title: "Lecture 7: Synthetic Data and Modern Post-Training Methods"
 author: "Nathan Lambert"
 fonts:
   heading: "Rubik"
@@ -30,7 +30,7 @@ custom_css: |
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
 
-# Lecture 7: Synthetic Data and Modern Post-training Methods
+# Lecture 7: Synthetic Data and Modern Post-Training Methods
 
 <div class="colloquium-title-eyebrow">rlhfbook.com</div>
 
@@ -76,7 +76,7 @@ content: |
 ---
 
 <!-- rows: 50/50 -->
-## Lecture 7: Where it sits
+## Lecture 7: where it sits
 
 <!-- row-columns: 32/36/32 -->
 
@@ -86,35 +86,35 @@ tone: muted
 compact: true
 content: |
   1. Introduction
-  2. Key Related Works
-  3. Training Overview
+  2. Key related works
+  3. Training overview
 ```
 
 |||
 
 ```box
-title: Core Training Pipeline
+title: Core training pipeline
 tone: muted
 compact: true
 content: |
-  4. Instruction Tuning
-  5. Reward Models
-  6. Reinforcement Learning
+  4. Instruction tuning
+  5. Reward models
+  6. Reinforcement learning
   7. Reasoning
-  8. Direct Alignment
-  9. Rejection Sampling
+  8. Direct alignment
+  9. Rejection sampling
 ```
 
 |||
 
 ```box
-title: Data & Preferences
+title: Data & preferences
 tone: accent
 compact: true
 content: |
-  10. What are Preferences
-  11. Preference Data
-  12. **Synthetic Data & CAI**
+  10. What are preferences
+  11. Preference data
+  12. **Synthetic data & CAI**
 ```
 
 ===
@@ -122,15 +122,15 @@ content: |
 <!-- row-columns: 32/36/32 -->
 
 ```box
-title: Practical Considerations
+title: Practical considerations
 tone: muted
 compact: true
 content: |
-  13. Tool Use
+  13. Tool use
   14. Over-optimization
   15. Regularization
   16. Evaluation
-  17. Product & Character
+  17. Product & character
 ```
 
 |||
@@ -141,14 +141,14 @@ tone: surface
 compact: true
 content: |
   - A. Definitions
-  - B. Style & Information
-  - C. Practical Issues
+  - B. Style & information
+  - C. Practical issues
 ```
 
 |||
 
 ```box
-title: Course Home
+title: Course home
 tone: surface
 compact: true
 content: |
@@ -186,7 +186,7 @@ We will cover a few training methods that emerged around these ideas too.
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 1: The roles of synthetic data
+## Part 1: the roles of synthetic data
 
 ---
 
@@ -245,7 +245,6 @@ Evidence suggests synthetic data can -- and should -- be used at scale without t
 
 ---
 
-<!-- valign: center -->
 ## Canonical, early synthetic datasets and their scale
 
 A few datasets defined each era: **UltraFeedback** [@cui2023ultrafeedback] (kickstarted the DPO revolution), **Stanford Alpaca** (early chat SFT), **Tülu 3** [@lambert2024t] (pre RLVR SFT set), and **OpenThoughts 3** [@guha2025openthoughts] (general reasoning set).
@@ -270,7 +269,6 @@ A few datasets defined each era: **UltraFeedback** [@cui2023ultrafeedback] (kick
 
 ---
 
-<!-- valign: center -->
 ## Aside: distillation on Interconnects this year
 
 ```box
@@ -284,9 +282,8 @@ content: |
 ---
 
 <!-- img-align: center -->
-<!-- valign: center -->
 <!-- cite-right: hinton2015distilling -->
-## Distillation 1: Classic knowledge distillation
+## Distillation 1: classic knowledge distillation
 
 ![Knowledge distillation trains a student to match the soft probability distribution of a larger teacher via KL divergence. Both models see the same input, and temperature scaling ($\tau > 1$) softens the distributions to expose relationships between classes.](assets/knowledge_distillation_tikz.png)
 
@@ -294,7 +291,7 @@ content: |
 
 <!-- columns: 52/48 -->
 <!-- valign: center -->
-## Distillation 2: The synthetic-data generation pipeline
+## Distillation 2: the synthetic-data generation pipeline
 
 ![Prompts are passed through a strong model to generate completions, which are paired into a training dataset and used to fine-tune smaller models with standard supervised learning. More complex pipelines edit completions, generate preference pairs, or filter for quality.](assets/synthetic_data_distillation_tikz.png)
 
@@ -319,7 +316,7 @@ content: |
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 2: The path to on-policy distillation (OPD)
+## Part 2: the path to on-policy distillation (OPD)
 
 ---
 
@@ -361,7 +358,7 @@ Matching a distribution over every token sounds expensive, but it is **tractable
 <!-- valign: top -->
 ## Sequence-level distillation
 
-Word-level KD gives soft per-token distributions. The goal of sequence-level distillation from the paper is to be apply to apply this to data that the teacher generated, providing fresh training data/signal, and improving performance!
+Word-level KD gives soft per-token distributions. The goal of sequence-level distillation from the paper is to apply this to data that the teacher generated, providing fresh training data/signal, and improving performance!
 
 (WORD-KD is the baseline in the Kim & Rush paper.)
 
@@ -392,7 +389,7 @@ content: |
 <!-- valign: top -->
 ## Finding a connection between SEQ-KD and SFT
 
-To start, recalle the cross-entropy of a teacher $q$ and student $p$ -- the same form as the KD losses:
+To start, recall the cross-entropy of a teacher $q$ and student $p$ -- the same form as the KD losses:
 
 $$
 \begin{aligned}
@@ -599,7 +596,6 @@ At the absolute frontier there is no stronger model to distill from. **On-Policy
 
 ---
 
-<!-- valign: center -->
 ## On-policy distillation is becoming very popular
 
 A resurgence of teacher-student KD has accompanied the shift toward reasoning and agentic models. Leading models trained with new forms of knowledge distillation include:
@@ -643,7 +639,7 @@ One caveat: per-token KD needs the student and teacher to share a tokenizer -- u
 
 ---
 
-## Reinforcement learning from ai feedback (RLAIF)
+## Reinforcement learning from AI feedback (RLAIF)
 
 Soon after RLHF took off, **RL from AI Feedback (RLAIF)** emerged -- using AIs to approximate the human-data step, starting with pairwise preferences [@lee2023rlaif] [@sharma2024critical] [@castricato2024suppressing].
 
@@ -687,13 +683,12 @@ No clear literature on the ultimate limits between human and AI preference data.
 
 If you're using substantial AI feedback or LLM-as-a-judge evaluations, the question arises as to if you should have a specialized model for that purpose. The question is -- how well do they work?
 
-- Some research is done understand the performance of LLMs in these feedback domains. Results include how LLMs are inconsistent evaluators [@wang2023large] and show **self-preference bias** -- they favor their own generations [@panickssery2024llm].
+- Some research is done to understand the performance of LLMs in these feedback domains. Results include how LLMs are inconsistent evaluators [@wang2023large] and show **self-preference bias** -- they favor their own generations [@panickssery2024llm].
 - Dedicated judge / critic models exist -- Prometheus [@kim2023prometheus], Prometheus 2 [@kim2024prometheus], and others -- but are not widely adopted in documented post-training recipes.
-- Equilibirum: Frontier models are already trained hard for judging, so you rarely need your own -- *unless* your task has private data not on the public internet.
+- Equilibrium: Frontier models are already trained hard for judging, so you rarely need your own -- *unless* your task has private data not on the public internet.
 
 ---
 
-<!-- valign: center -->
 ## CAI: the earliest large-scale synthetic RLHF data
 
 Constitutional AI (CAI) -- Anthropic's post-training method for the Claude models -- is the earliest documented, large-scale use of synthetic data for RLHF [@bai2022constitutional]. CAI refers to a specific set of techniques for their early Claude models, and definitely has shifted substantially (though Anthropic still uses a constitution -- yes, confusing).
@@ -708,9 +703,8 @@ The well-known and more influential part of it is preferences.
 ---
 
 <!-- img-align: center -->
-<!-- valign: center -->
 <!-- cite-right: bai2022constitutional -->
-## Constitutional AI: The original diagram
+## Constitutional AI: the original diagram
 
 ![Two stages. Supervised (top): the model critiques and revises its own red-teamed responses against a constitution, fine-tuning into SL-CAI. RL (bottom, RLAIF): a preference model trained on AI comparisons drives RL into the final RL-CAI model. Source: Bai et al. (2022).](assets/cai-overview.png)
 
@@ -763,7 +757,7 @@ content: |
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 4: Rubrics -- prompt-specific AI feedback
+## Part 4: rubrics -- prompt-specific AI feedback
 
 ---
 
@@ -843,20 +837,20 @@ The techniques surveyed here will continue to grow in complexity, and it's super
 When I started writing this book, it was still a struggle to set up some synthetic data workflows!
 Knifecuts can happen, but overall it's a well-known workflow now.
 
-There are many, minute open questions on how best to do this, but it often is a domain specific reflection of the technial problem at hand.
+There are many, minute open questions on how best to do this, but it often is a domain specific reflection of the technical problem at hand.
 
 ---
 
 ## Course outline
 
-1. Introduction & Training Overview -- Chapters 1-3
-2. IFT, Reward Models, Rejection Sampling -- Chapters 4, 5, 9
-3. RL Theory -- Chapter 6 (Part 1)
-4. RL Implementation & Practice -- Chapter 6 (Part 2)
+1. Introduction & training overview -- Chapters 1-3
+2. IFT, reward models, rejection sampling -- Chapters 4, 5, 9
+3. RL theory -- Chapter 6 (Part 1)
+4. RL implementation & practice -- Chapter 6 (Part 2)
 5. Reasoning -- Chapter 7
-6. Direct Alignment Algorithms -- Chapter 8
-7. Synethic Data -- Chapter 12
-8. Preferences & Preference Data -- Chapters 10/11
+6. Direct alignment algorithms -- Chapter 8
+7. Synthetic data -- Chapter 12
+8. Preferences & preference data -- Chapters 10/11
 
 ...
 

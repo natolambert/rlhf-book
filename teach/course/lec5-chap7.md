@@ -37,7 +37,7 @@ custom_css: |
 ---
 
 <!-- rows: 50/50 -->
-## Lecture 5: The Rise of Reasoning Models
+## Lecture 5: the rise of reasoning models
 
 <!-- row-columns: 32/36/32 -->
 
@@ -47,35 +47,35 @@ tone: muted
 compact: true
 content: |
   1. Introduction
-  2. Key Related Works
-  3. Training Overview
+  2. Key related works
+  3. Training overview
 ```
 
 |||
 
 ```box
-title: Core Training Pipeline
+title: Core training pipeline
 tone: accent
 compact: true
 content: |
-  4. Instruction Tuning
-  5. Reward Models
-  6. Reinforcement Learning
+  4. Instruction tuning
+  5. Reward models
+  6. Reinforcement learning
   7. **Reasoning**
-  8. Direct Alignment
-  9. Rejection Sampling
+  8. Direct alignment
+  9. Rejection sampling
 ```
 
 |||
 
 ```box
-title: Data & Preferences
+title: Data & preferences
 tone: muted
 compact: true
 content: |
-  10. What are Preferences
-  11. Preference Data
-  12. Synthetic Data & CAI
+  10. What are preferences
+  11. Preference data
+  12. Synthetic data & CAI
 ```
 
 ===
@@ -83,15 +83,15 @@ content: |
 <!-- row-columns: 32/36/32 -->
 
 ```box
-title: Practical Considerations
+title: Practical considerations
 tone: muted
 compact: true
 content: |
-  13. Tool Use
+  13. Tool use
   14. Over-optimization
   15. Regularization
   16. Evaluation
-  17. Product & Character
+  17. Product & character
 ```
 
 |||
@@ -101,8 +101,8 @@ title: Appendices
 tone: muted
 compact: true
 content: |
-  A. Key Definitions
-  B. Style Benchmarks
+  A. Key definitions
+  B. Style benchmarks
   C. References
 ```
 
@@ -115,8 +115,8 @@ compact: true
 content: |
   1. Overview (Ch. 1-3)
   2. IFT, RM, RS (Ch. 4,5,9)
-  3. RL Theory (Ch. 6 pt 1)
-  4. RL Practice (Ch. 6 pt 2)
+  3. RL theory (Ch. 6 pt 1)
+  4. RL practice (Ch. 6 pt 2)
   5. **Reasoning (Ch. 7)**
 ```
 
@@ -154,7 +154,7 @@ With modern language models, the analogy is complete:
 ---
 
 <!-- rows: 60/40 -->
-## RLHF vs RLVR: How reward changes everything
+## RLHF vs RLVR: how reward changes everything
 
 <!-- row-columns: 50/50 -->
 
@@ -209,7 +209,7 @@ The post-training methods are the same (i.e. same algorithms), but a new set of 
 
 ---
 
-## Recall: What thinking tokens look like
+## Recall: what thinking tokens look like
 
 <!-- cite-right: guo2025deepseek -->
 
@@ -262,7 +262,6 @@ $$
 
 ---
 
-<!-- valign: center -->
 ## The reasoning model Cambrian explosion
 
 <!-- img-align: center -->
@@ -307,7 +306,7 @@ The models that followed these scaled up the methods, in a simpler approach, and
 ---
 
 <!-- rows: 39/61 -->
-## DeepSeek R1 (Jan. 20, 2025): The catalyst
+## DeepSeek R1 (Jan. 20, 2025): the catalyst
 
 <!-- cite-right: guo2025deepseek -->
 
@@ -324,7 +323,7 @@ A surprisingly fast o1 replication.
 ---
 
 <!-- columns: 45/55 -->
-## Kimi 1.5 (Jan. 20, 2025): Scaling the curriculum
+## Kimi 1.5 (Jan. 20, 2025): scaling the curriculum
 
 <!-- cite-right: team2025kimi -->
 
@@ -342,7 +341,7 @@ Kimi 1.5 landed in the same January wave as R1 and emphasized **RL scale plus cu
 ---
 
 <!-- rows: 43/57 -->
-## Open-Reasoner-Zero (Feb. 18, 2025): The minimalist replication
+## Open-Reasoner-Zero (Feb. 18, 2025): the minimalist replication
 
 <!-- cite-right: hu2025openreasonerzero -->
 
@@ -360,7 +359,7 @@ First public dataset and code for an r1-style, base model RL run.
 ---
 
 <!-- columns: 45/55 -->
-## Qwen 3 (Apr. 29, 2025): Hybrid reasoners
+## Qwen 3 (Apr. 29, 2025): hybrid reasoners
 
 <!-- cite-right: yang2025qwen3 -->
 
@@ -380,7 +379,7 @@ Llama-Nemotron [@bercovich2025llamanemotron] is another toggleable open-weights 
 ---
 
 <!-- columns: 45/55 -->
-## MiMo (Apr. 30, 2025): End-to-end reasoning pipeline
+## MiMo (Apr. 30, 2025): end-to-end reasoning pipeline
 
 <!-- cite-right: xia2025mimo -->
 
@@ -419,7 +418,7 @@ The community needs more investment in strong, open reasoning traces (and unders
 ---
 
 <!-- columns: 40/60 -->
-## MiniMax-M1 (Jun. 16, 2025): A fun RL paper!
+## MiniMax-M1 (Jun. 16, 2025): a fun RL paper!
 
 <!-- cite-right: minimax2025minimax_m1 -->
 
@@ -435,7 +434,7 @@ MiniMax M1's paper really held the test of time. On top of the very popular mode
 ---
 
 <!-- columns: 40/60 -->
-## GLM-4.5 (Jul. 28, 2025): Reasoning broadens into agentic work
+## GLM-4.5 (Jul. 28, 2025): reasoning broadens into agentic work
 
 <!-- cite-right: zeng2025glm45 -->
 
@@ -452,7 +451,7 @@ GLM-4.5 report was one of the early ones to focus on agentic behaviors. Otherwis
 ---
 
 <!-- columns: 40/60 -->
-## Olmo 3 Think (Nov. 20, 2025): The fully open reasoning model
+## Olmo 3 Think (Nov. 20, 2025): the fully open reasoning model
 
 <!-- cite-right: teamolmo2025olmo3 -->
 
@@ -470,7 +469,7 @@ Interesting DPO findings and more fun stuff. See [this talk](https://www.youtube
 ---
 
 <!-- columns: 45/55 -->
-## DeepSeek V3.2 (Dec. 1, 2025): Reasoning becomes agentic
+## DeepSeek V3.2 (Dec. 1, 2025): reasoning becomes agentic
 
 <!-- cite-right: deepseekai2025v32 -->
 
@@ -487,7 +486,7 @@ DeepSeek V3.2 pushes the R1 recipe into **tool-use and agent environments**.
 ---
 
 <!-- rows: 43/57 -->
-## Nemotron 3 Nano (Dec. 15, 2025): Efficient agentic reasoning
+## Nemotron 3 Nano (Dec. 15, 2025): efficient agentic reasoning
 
 <!-- cite-right: nvidia2025nemotron3nano -->
 
@@ -504,7 +503,7 @@ Another very open (and American) model, which led into stronger American open-we
 ---
 
 <!-- columns: 45/55 -->
-## MiMo-V2-Flash (Dec. 16, 2025): Distilling many teachers into one
+## MiMo-V2-Flash (Dec. 16, 2025): distilling many teachers into one
 
 <!-- cite-right: mimo2025flash -->
 
@@ -640,12 +639,12 @@ The frontier moved fast -- from "reasoning model" to **long-horizon, tool-using 
 
 ## Course outline
 
-1. Introduction & Training Overview -- Chapters 1-3
-2. IFT, Reward Models, Rejection Sampling -- Chapters 4, 5, 9
-3. RL Theory -- Chapter 6 (Part 1)
-4. RL Implementation & Practice -- Chapter 6 (Part 2)
+1. Introduction & training overview -- Chapters 1-3
+2. IFT, reward models, rejection sampling -- Chapters 4, 5, 9
+3. RL theory -- Chapter 6 (Part 1)
+4. RL implementation & practice -- Chapter 6 (Part 2)
 5. **Reasoning -- Chapter 7**
-6. Direct Alignment Algorithms -- Chapter 8
+6. Direct alignment algorithms -- Chapter 8
 7. ...
 
 ---

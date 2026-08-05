@@ -67,7 +67,7 @@ Modern language models:
 ---
 
 <!-- columns: 45/55 -->
-## 2017: The Transformer is born
+## 2017: the Transformer is born
 
 - **2017:** the Transformer is born
 
@@ -211,7 +211,7 @@ Modern language models:
 ---
 
 <!-- columns: 50/50 -->
-## Pretraining: Next-token prediction
+## Pretraining: next-token prediction
 
 - Train on trillions of tokens of text from the web, books, code, and documents
   - Models are often trained on 5-50+ trillion tokens
@@ -377,7 +377,7 @@ Reinforcement learning basics:
 
 <!-- row-columns: 50/50 -->
 
-## A simple RL example: Thermostat
+## A simple RL example: thermostat
 
 The agent learns over many episodes when to turn the heater on or off
 - **State**: the current room temperature
@@ -405,7 +405,7 @@ $$
 
 <!-- columns: 45/55 -->
 <!-- cite-right: sutton2018reinforcement -->
-## CartPole: A standard RL task
+## CartPole: a standard RL task
 
 - **State**: cart position, velocity, pole angle, angular velocity
 $$s_t = (x_t,\; \dot{x}_t,\; \theta_t,\; \dot{\theta}_t)$$
@@ -424,7 +424,7 @@ $$r(s_t, a_t) = \begin{cases} 1 & \text{if } |\theta_t| < 12° \text{ and } |x_t
 
 <!-- columns: 45/55 -->
 <!-- cite-right: sutton2018reinforcement -->
-## CartPole: The dynamics
+## CartPole: the dynamics
 
 Each action changes the physics of the system. The full state update:
 
@@ -484,7 +484,7 @@ RLHF lets us optimize for behavior we can **evaluate** even when we cannot easil
 
 <!-- columns: 50/50 -->
 <!-- cite-right: christiano2017 -->
-## Left: Human feedback; Right: Hand-designed reward function
+## Left: human feedback; right: hand-designed reward function
 
 ![](assets/christiano-backflip-human.webp)
 
@@ -590,7 +590,6 @@ $$J(\pi) = \mathbb{E}\left[ r_\theta(x, y) \right] - \beta \, D_{\text{KL}}\!\le
 
 ---
 
-<!-- valign: center -->
 <!-- cite-right: ouyang2022training -->
 
 ## InstructGPT's 3-step RLHF recipe
@@ -603,7 +602,7 @@ $$J(\pi) = \mathbb{E}\left[ r_\theta(x, y) \right] - \beta \, D_{\text{KL}}\!\le
 
 <!-- columns: 45/55 -->
 <!-- cite-right: ouyang2022training -->
-## Step 1/3: Instruction fine-tuning (IFT)
+## Step 1/3: instruction fine-tuning (IFT)
 
 The foundation of post-training. Also called **Supervised Fine-tuning (SFT)**:
 - Start from a pretrained language model
@@ -637,7 +636,7 @@ messages:
 
 <!-- columns: 45/55 -->
 <!-- cite-right: christiano2017, ouyang2022training -->
-## Step 2/3: Reward modeling
+## Step 2/3: reward modeling
 
 Overview:
 - Collect **comparisons** between two model outputs for the same prompt
@@ -673,10 +672,10 @@ Notation:
 
 <!-- columns: 45/55 -->
 <!-- cite-right: christiano2017, ouyang2022training -->
-## Step 2/3: Reward modeling
+## Step 2/3: reward modeling
 
 ```box
-title: Core Idea
+title: Core idea
 tone: accent
 content: |
   The reward used in RLHF is the model predicting the probability that a given piece of text would be the "winning" or "chosen" completion in a pair/batch. Clever!
@@ -852,7 +851,7 @@ content: |
 
 ---
 
-## Rejection sampling: The simplest preference optimization
+## Rejection sampling: the simplest preference optimization
 
 Generate many completions, score them, fine-tune on the best:
 
@@ -881,7 +880,7 @@ All three optimize the same underlying objective — they differ in **how** they
 ---
 
 <!-- cite-right: gao2023scaling -->
-## Caveat: Proxy objectives and over-optimization
+## Caveat: proxy objectives and over-optimization
 
 The reward model is a **proxy**, not ground truth. Even a well-trained RM is only *correlated* with real user satisfaction.
 
@@ -897,7 +896,6 @@ The KL penalty $\beta$ is the main defense — it limits how far the policy can 
 
 ---
 
-<!-- valign: center -->
 ## How training recipes have evolved
 
 | | InstructGPT (2022) | Tülu 3 (2024) | DeepSeek R1 (2025) |
@@ -1097,7 +1095,7 @@ Apply the same RL algorithms to LLMs when the answer can be checked directly. No
 
 <!-- layout: section-break -->
 
-## Beyond elicitation: The scaling RL era of post-training
+## Beyond elicitation: the scaling RL era of post-training
 
 ---
 
@@ -1110,7 +1108,7 @@ Apply the same RL algorithms to LLMs when the answer can be checked directly. No
 
 ---
 
-## o1: Test-time scaling
+## o1: test-time scaling
 
 <!-- columns: 2 -->
 <!-- cite-right: openai2024o1 -->
@@ -1127,7 +1125,7 @@ A log-linear relationship between inference compute (number of tokens generated)
 
 ---
 
-## o1: Training-time scaling (with reinforcement learning!)
+## o1: training-time scaling (with reinforcement learning!)
 
 <!-- columns: 2 -->
 <!-- cite-right: openai2024o1 -->
@@ -1165,7 +1163,7 @@ The third place of scaling is at inference (no weight updates there).
 ---
 
 <!-- columns: 30/70 -->
-## Olmo 3.1: Extending the RL run
+## Olmo 3.1: extending the RL run
 
 <!-- cite-right: teamolmo2025olmo3 -->
 
@@ -1190,7 +1188,7 @@ Post-training and RLHF are changing faster than maybe ever before.
 ---
 
 <!-- rows: 50/50 -->
-## Lecture 1: Overview
+## Lecture 1: overview
 
 <!-- row-columns: 34/33/33 -->
 
@@ -1200,35 +1198,35 @@ tone: accent
 compact: true
 content: |
   1. Introduction
-  2. Key Related Works
-  3. Training Overview
+  2. Key related works
+  3. Training overview
 ```
 
 |||
 
 ```box
-title: Core Training Pipeline
+title: Core training pipeline
 tone: muted
 compact: true
 content: |
-  4. Instruction Tuning
-  5. Reward Models
-  6. Reinforcement Learning
+  4. Instruction tuning
+  5. Reward models
+  6. Reinforcement learning
   7. Reasoning
-  8. Direct Alignment
-  9. Rejection Sampling
+  8. Direct alignment
+  9. Rejection sampling
 ```
 
 |||
 
 ```box
-title: Data & Preferences
+title: Data & preferences
 tone: muted
 compact: true
 content: |
-  10. What are Preferences
-  11. Preference Data
-  12. Synthetic Data & CAI
+  10. What are preferences
+  11. Preference data
+  12. Synthetic data & CAI
 ```
 
 ===
@@ -1236,15 +1234,15 @@ content: |
 <!-- row-columns: 34/33/33 -->
 
 ```box
-title: Practical Considerations
+title: Practical considerations
 tone: muted
 compact: true
 content: |
-  13. Tool Use
+  13. Tool use
   14. Over-optimization
   15. Regularization
   16. Evaluation
-  17. Product & Character
+  17. Product & character
 ```
 
 |||
@@ -1255,14 +1253,14 @@ tone: surface
 compact: true
 content: |
   - A. Definitions  
-  - B. Style & Information  
-  - C. Practical Issues  
+  - B. Style & information  
+  - C. Practical issues  
 ```
 
 |||
 
 ```box
-title: Course Home
+title: Course home
 tone: surface
 compact: true
 content: |
