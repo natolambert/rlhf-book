@@ -548,9 +548,7 @@ Even character training often looks like a user retention/product tool rather th
 
 A spec is only as good as the effort spent making the model follow it.
 
-Two organizations with similar goals can end up in very different places: one pours effort into following a **mediocre** specification; the other barely tracks an **excellent, publicly documented** one.
-
-From the outside you mostly see the documents -- never the effort. (Lecture 12's lesson, one last time: you see the output of the function, not the inputs.)
+Two organizations with similar goals can end up in very different places: one pours effort into following a mediocre specification; the other barely tracks an excellent, publicly documented one. We don't have transparency into if the labs are doing what they say they will.
 
 ---
 
