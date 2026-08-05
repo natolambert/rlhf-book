@@ -563,7 +563,7 @@ There's a long-running field of study on understanding whether training data int
 <!-- rows: 15/85 -->
 ## Today's models are reward-hack happy and games the evals
 
-Agents love shortcuts. [NIST](https://www.nist.gov/caisi/cheating-ai-agent-evaluations) and [DebugML](https://debugml.github.io/cheating-agents/) have documented these in the wild.
+Agents love maximizing reward (this turns into shortcuts). [NIST](https://www.nist.gov/caisi/cheating-ai-agent-evaluations) and [DebugML](https://debugml.github.io/cheating-agents/) have documented these in the wild.
 
 ===
 
