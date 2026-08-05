@@ -25,7 +25,7 @@ If you are running these with a coding assistant, launch long training/eval comm
 |---------|---------------------|---------|-----------------|
 | Chapter 4: Instruction Tuning | SFT OLMo-2-1B base on No Robots | `uv run python -m instruction_tuning.train --config instruction_tuning/configs/sft_olmo2_1b.yaml` | Loss curve and the in-loop sample panels — the base model rambles at step 0; after a few hundred steps it answers and stops. |
 | Chapter 5: Reward Models | Bradley-Terry RM on UltraFeedback | `uv run python -m reward_models.train_preference_rm --config reward_models/configs/preference_rm.yaml` | Chosen/rejected reward margin, training loss, demo scoring |
-| Chapter 5: Reward Models | ORM on GSM8K | `uv run python -m reward_models.train_orm --samples 400 --epochs 2` | Whether correct final answers score above perturbed answers |
+| Chapter 5: Reward Models | ORM on GSM8K | `uv run python -m reward_models.train_orm --config reward_models/configs/orm.yaml` | Whether correct final answers score above perturbed answers |
 | Chapter 6: Policy Gradients | GRPO on `spell_backward` | `uv run python -m policy_gradients.train --config policy_gradients/configs/grpo.yaml` | `avg_correctness`, `avg_format`, `avg_binary`, and whether groups contain contrast |
 | Chapter 8: Direct Alignment | DPO on UltraFeedback | `uv run python -m direct_alignment.train --loss dpo --max_samples 1000` | `accuracy`, `margins`, `chosen_rewards`, `rejected_rewards`, sample generations |
 | Chapter 9: Rejection Sampling | GSM8K reward selection versus random controls | `uv run python -m rejection_sampling.train --config rejection_sampling/configs/top_per_prompt.yaml` | Final exact-match accuracy against the matched random baseline |
@@ -36,7 +36,7 @@ Good first sweeps:
 - **Instruction tuning**: keep `sft_olmo2_1b.yaml` fixed and vary `lr` (5e-6 vs 1e-5), `num_epochs`, or `max_samples` to see how quickly the base→assistant transition emerges.
 - **Policy gradients**: copy `policy_gradients/configs/grpo.yaml` and vary `num_rollouts`, `temperature`, `format_weight`, and `data.size`.
 - **Direct alignment**: hold the dataset fixed and compare `dpo.yaml`, `ipo.yaml`, and `dpo_norm.yaml`; read IPO through margins/accuracy, not raw loss scale.
-- **Reward models**: vary `--samples`, `--lr`, and `--model-id` before changing the model architecture.
+- **Reward models**: copy the relevant YAML config and vary `samples`, `lr`, and `model_id` before changing the model architecture.
 - **Rejection sampling**: keep generation/scoring settings identical while comparing `top_*` configs to their `random_*` controls.
 - **Distillation**: copy `distillation/configs/sdpo.yaml` and vary `num_rollouts`, `kl_top_k`, and `prompts_per_step`, watching how `skipped` and `reward` respond as the self-distillation loop converges.
 
@@ -183,7 +183,7 @@ Train reward models on various datasets:
 uv run python -m reward_models.train_preference_rm --config reward_models/configs/preference_rm.yaml
 
 # Outcome Reward Model (Chapter 5) - trains on GSM8K
-uv run python -m reward_models.train_orm
+uv run python -m reward_models.train_orm --config reward_models/configs/orm.yaml
 
 # Process Reward Model (Chapter 5) - trains on PRM800K
 uv run python -m reward_models.train_prm

@@ -577,7 +577,7 @@ Start from a clean `code/` environment with `uv sync`, then run one experiment a
 
    ```bash
    cd code/
-   uv run python -m reward_models.train_orm --samples 400 --epochs 2
+   uv run python -m reward_models.train_orm --config reward_models/configs/orm.yaml
    uv run python -m reward_models.train_prm --samples 500 --epochs 2
    ```
 

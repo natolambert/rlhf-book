@@ -18,10 +18,7 @@ skills = [
     "google-genai>=1.63.0",
 ]
 teach = [
-    # TODO: pin back to a PyPI release (colloquium==0.2.3) once it ships with the
-    # Google-Fonts <link> fix (natolambert/colloquium#41), the step-fragment
-    # paragraph-spacing fix (#43), and the box/conversation smart-typography fix
-    # (#44), the PDF-export image time-budget fix (#45), and the iframe print
-    # fallback (#51). Until then, track the reviewed commit directly.
-    "colloquium @ git+https://github.com/natolambert/colloquium.git@1003f7eb6de86bd79e4e3fa65ec602cc70ba3dc8",
+    # Temporarily pin the current Colloquium PR #51 head so this preview tests
+    # iframe PDF snapshots before the change lands on Colloquium main.
+    "colloquium @ git+https://github.com/natolambert/colloquium.git@52a0b7b7a7bf5520ce5a68ddf4c1ea0db2628c3a",
 ]
