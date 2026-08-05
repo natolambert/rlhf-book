@@ -32,26 +32,35 @@ custom_css: |
   .slide ul, .slide ol, .slide li { text-align: left; }
   /* Tall right image: on a columns slide, the right column's figure runs
      from the top of the slide down to the bottom of the content area. */
-  .slide.img-tall-right { position: relative; }
+  .slide.img-tall-right { position: relative !important; }
   .slide.img-tall-right .colloquium-grid > .col:last-child > figure.colloquium-figure {
-    position: absolute;
-    top: 24px;
-    bottom: 58px;
-    right: 36px;
-    width: 51%;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    position: absolute !important;
+    top: 20px !important;
+    bottom: 54px !important;
+    right: 30px !important;
+    width: 55% !important;
+    height: auto !important;
+    max-height: none !important;
+    margin: 0 !important;
+    display: block !important;
   }
   .slide.img-tall-right .colloquium-grid > .col:last-child > figure.colloquium-figure > img {
-    flex: 1;
-    min-height: 0;
-    width: auto;
-    max-width: 100%;
-    height: 100%;
-    max-height: none;
-    object-fit: contain;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: calc(100% - 2.2em) !important;
+    width: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    object-fit: contain !important;
+  }
+  .slide.img-tall-right .colloquium-grid > .col:last-child > figure.colloquium-figure > figcaption {
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    text-align: center !important;
   }
   /* colloquium 0.2.3: .slide-content is flex:1, which absorbs the section's
      valign-center. Let the wrapper shrink to content so the heading and body
@@ -521,13 +530,15 @@ Steer by adding it back at inference: $\mathbf{h}_\ell \leftarrow \mathbf{h}_\el
 
 ---
 
-<!-- rows: 35/65 -->
 <!-- cite-right: lu2026assistant -->
 ## The Assistant Axis: where the default persona lives
 
-Extract vectors for 275+ character archetypes and run PCA across them: **PC1 is assistant-likeness** (robustly, the contrast $\mathbf{v}_{\text{axis}} = \bar{\mathbf{h}}_{\text{assistant}} - \bar{\mathbf{h}}_{\text{roles}}$). Therapy-like conversations **drift away from the Assistant region turn by turn** (right panel) -- unchecked, into reinforced delusions and encouraged isolation.
+Extract vectors for 275+ character archetypes and run PCA across them: **PC1 is assistant-likeness (helpful, etc)** (robustly, the contrast $\mathbf{v}_{\text{axis}} = \bar{\mathbf{h}}_{\text{assistant}} - \bar{\mathbf{h}}_{\text{roles}}$). Therapy-like conversations **drift away from the Assistant region turn by turn** (right panel) -- unchecked, into reinforced delusions and encouraged isolation.
 
-===
+---
+
+<!-- cite-right: lu2026assistant -->
+## The Assistant Axis: where the default persona lives
 
 ![275+ archetype vectors in the top principal components (left); persona drift over a conversation (right). From Lu et al. (2026), CC BY 4.0.](assets/assistant_axis.png)
 
