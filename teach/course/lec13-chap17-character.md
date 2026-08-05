@@ -30,12 +30,11 @@ custom_css: |
   /* Bulleted lists should never be centered (markers float, looks bad).
      Target lists only -- leave titles and display-math paragraphs centered. */
   .slide ul, .slide ol, .slide li { text-align: left; }
-  /* colloquium 0.2.3: .slide-content is flex:1, so valign-center on the
-     section no longer moves content. Center inside the wrapper instead. */
+  /* colloquium 0.2.3: .slide-content is flex:1, which absorbs the section's
+     valign-center. Let the wrapper shrink to content so the heading and body
+     center together via the theme's justify-content rule. */
   .slide.valign-center .slide-content:not(.colloquium-grid):not(.colloquium-rows) {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    flex: 0 0 auto;
   }
   /* A/B comparison cards (from Lecture 8): force both cards to fill their
      column evenly so they read as a matched pair. */
