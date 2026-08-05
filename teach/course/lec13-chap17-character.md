@@ -30,6 +30,29 @@ custom_css: |
   /* Bulleted lists should never be centered (markers float, looks bad).
      Target lists only -- leave titles and display-math paragraphs centered. */
   .slide ul, .slide ol, .slide li { text-align: left; }
+  /* Tall right image: on a columns slide, the right column's figure runs
+     from the top of the slide down to the bottom of the content area. */
+  .slide.img-tall-right { position: relative; }
+  .slide.img-tall-right .colloquium-grid > .col:last-child > figure.colloquium-figure {
+    position: absolute;
+    top: 24px;
+    bottom: 58px;
+    right: 36px;
+    width: 51%;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .slide.img-tall-right .colloquium-grid > .col:last-child > figure.colloquium-figure > img {
+    flex: 1;
+    min-height: 0;
+    width: auto;
+    max-width: 100%;
+    height: 100%;
+    max-height: none;
+    object-fit: contain;
+  }
   /* colloquium 0.2.3: .slide-content is flex:1, which absorbs the section's
      valign-center. Let the wrapper shrink to content so the heading and body
      center together via the theme's justify-content rule. */
@@ -477,19 +500,20 @@ messages:
 <!-- layout: section-break -->
 <!-- align: center -->
 
-## Part 3: Character elicitation without gradients
+## Part 3: Character elicitation without gradient steps
 
 ---
 
 <!-- columns: 45/55 -->
+<!-- class: img-tall-right -->
 <!-- cite-right: chen2025persona, feng2026persona -->
-## Persona vectors: traits are directions
+## Persona vectors
 
 Concepts are directions in latent space (Word2vec [@mikolov2013efficient]). Extract a **trait's direction** from its description alone: an LLM writes prompt pairs to elicit / suppress it, and
 
 $$\mathbf{v}_\ell = \frac{1}{|S^+|} \sum_{i \in S^+} \mathbf{a}_\ell^{(i)} - \frac{1}{|S^-|} \sum_{j \in S^-} \mathbf{a}_\ell^{(j)}$$
 
-Steer by adding it back at inference: $\mathbf{h}_\ell \leftarrow \mathbf{h}_\ell + \alpha\,\mathbf{v}_\ell$. Traits dial almost perfectly linearly with $\alpha$ ($R^2 > 0.94$) and **compose by arithmetic** over OCEAN poles -- **a personality per user, no retraining**.
+Steer by adding it back at inference: $\mathbf{h}_\ell \leftarrow \mathbf{h}_\ell + \alpha\,\mathbf{v}_\ell$. Traits dial almost perfectly linearly with $\alpha$ ($R^2 > 0.94$) and **compose by arithmetic**.
 
 |||
 
@@ -576,6 +600,7 @@ Much of the character training lecture has hinted at this! But, post-training te
 
 ---
 
+<!-- valign: center -->
 ## The lasting role of RLHF
 
 We cannot perfectly model human preferences -- that is the fundamental nature of the RLHF problem. We will always have trade-offs, new domains, and needs for new work. A great academic problem people are ignoring today!
