@@ -47,35 +47,35 @@ tone: muted
 compact: true
 content: |
   1. Introduction
-  2. Key related works
-  3. Training overview
+  2. Key Related Works
+  3. Training Overview
 ```
 
 |||
 
 ```box
-title: Core training pipeline
+title: Core Training Pipeline
 tone: accent
 compact: true
 content: |
-  4. **Instruction tuning**
-  5. **Reward models**
-  6. Reinforcement learning
+  4. **Instruction Tuning**
+  5. **Reward Models**
+  6. Reinforcement Learning
   7. Reasoning
-  8. Direct alignment
-  9. **Rejection sampling**
+  8. Direct Alignment
+  9. **Rejection Sampling**
 ```
 
 |||
 
 ```box
-title: Data & preferences
+title: Data & Preferences
 tone: muted
 compact: true
 content: |
-  10. What are preferences
-  11. Preference data
-  12. Synthetic data & CAI
+  10. What are Preferences
+  11. Preference Data
+  12. Synthetic Data & CAI
 ```
 
 ===
@@ -83,15 +83,15 @@ content: |
 <!-- row-columns: 32/36/32 -->
 
 ```box
-title: Practical considerations
+title: Practical Considerations
 tone: muted
 compact: true
 content: |
-  13. Tool use
+  13. Tool Use
   14. Over-optimization
   15. Regularization
   16. Evaluation
-  17. Product & character
+  17. Product & Character
 ```
 
 |||
@@ -102,14 +102,14 @@ tone: surface
 compact: true
 content: |
   - A. Definitions
-  - B. Style & information
-  - C. Practical issues
+  - B. Style & Information
+  - C. Practical Issues
 ```
 
 |||
 
 ```box
-title: Course home
+title: Course Home
 tone: surface
 compact: true
 content: |
@@ -165,7 +165,7 @@ Instruction fine-tuning (IFT), also called supervised fine-tuning (SFT), is the 
 ## What does instruction tuning do?
 
 Instruction tuning is extremely powerful! At the time of writing:
-- Countless specialized models are created with IFT/SFT alone and have a strong impact
+- Countless specialized models are created and have strong impact only with IFT/SFT
 - Can work with as little as 1-10K high-quality samples in your domain
 - Can be scaled to millions of prompts, often still showing strong gains (e.g. OpenThoughts3 [@guha2025openthoughts])
 - Can be ignored and looked down upon because it is not flashy, but all post-training should begin by seeing how far IFT can go!
@@ -209,7 +209,7 @@ How many helicopters can a human eat in one sitting?<|im_end|>
 <|im_start|>assistant
 ```
 
-The model generates until it produces an end-of-message token (in this case, it is `<|im_end|>`).
+The model generates until it produces an end-of-text token (in this case, it is `<|im_end|>`).
 
 ---
 
@@ -311,8 +311,8 @@ oof.
 
 There are many ways that working with chat templates is difficult.
 - Not easily human-interpretable
-- Minor issues or mismatches with the tokenizer can break training
-- Increasingly complex with reasoning models and tool-use
+- Minor issues, or mismatch to the tokenizer can break training
+- Increasing in complexity with reasoning models and tool-use
 
 ---
 
@@ -454,7 +454,7 @@ For multi-turn conversations, two strategies:
 **Training details differ from pretraining:**
 
 - **Batch size**: much smaller (e.g. 256 vs. 1024–2048 sequences in pretraining)
-- **Learning rate**: 1-2 orders of magnitude lower (e.g. $1 \times 10^{-5}$ vs. $3 \times 10^{-4}$) to prevent overfitting on a narrower data distribution
+- **Learning rate**: 1-2 orders of magnitude lower (e.g. $1 \times 10^{-5}$ vs. $3 \times 10^{-4}$), prevent overfitting in narrower data distribution
 - **Loss function**: same cross-entropy, but only on unmasked (assistant) tokens
 
 ---
@@ -479,9 +479,9 @@ The amount of instruction data needed has evolved rapidly:
 
 Scaling the prompts quickly enabled more performance. Now, reasoning models are using more compute and tokens to train via more tokens per prompt in SFT (and longer context lengths).
 
-Tülu 3 [@lambert2024t] created a state-of-the-art SFT dataset of about 300M tokens.
+Tülu 3 [@lambert2024t] creates a state-of-the-art SFT dataset which was about 300M tokens.
 
-About a year later, Olmo 3's [@teamolmo2025olmo3] state-of-the-art *reasoning* SFT dataset was about 20B tokens. Other work has scaled this by more than 10×, and the fundamental limits — and interaction with RL — are unknown.
+About a year later, Olmo 3's [@teamolmo2025olmo3] state-of-the-art *reasoning* SFT dataset was about 20B tokens. Other work has scaled this over 10X and fundamental limits (and interaction with RL) is unknown.
 
 ---
 
@@ -490,7 +490,7 @@ About a year later, Olmo 3's [@teamolmo2025olmo3] state-of-the-art *reasoning* S
 
 Successful post-training starts with **meaningful evaluations** for targeted skills and **prompts of representative queries** for those skills.
 
-All post-training stages require prompts representative of the task distribution. Example prompt budgets from [@lambert2024t]:
+All post-training stages require prompts in distribution of tasks. Example prompt budgets from [@lambert2024t]:
 
 - **Supervised fine-tuning**: ~1 million prompts
 - **Preference fine-tuning**: ~1 million (partial overlap with SFT can be useful)
@@ -507,12 +507,12 @@ Recent work has of course scaled up various RL training stages :D!
 
 1. Start with $N$ high-quality (often human-written) prompts
 2. Ask a strong LM to create modified versions of these instructions
-3. Generate completions with another (or the same) strong LM
+3. Generate completions with another (or same) strong LM
 4. Result: easily 10x more training data
 
 **Quality of responses** is the simpler part — strong models (e.g. GPT-4o, Llama 3.1 405B) generate good completions to most instructions.  
 
-**Human data** is still needed for out-of-distribution or novel tasks. At the time of recording, these are knowledge-work tasks like healthcare/law.
+**Human data** is still needed for out-of-distribution or novel tasks. At the time of recording, this is "knowledge work" tasks like healthcare/law.
 
 ---
 
@@ -523,7 +523,7 @@ Two repeated and parallelizable tracks:
 **Data mixing:**
 - Take existing datasets, combine with current mix, observe performance
 - Substantial effort in trying to **remove** data and maintain performance
-- Start with mixing before curation
+- Start fully with mixing before curation
 
 **Data curation:**
 - Identify evaluations where the model is behind
@@ -562,7 +562,7 @@ A reward model compresses complex, subjective human judgments into a single scal
 
 ## Recall: Classical reinforcement learning
 
-A reinforcement learning problem is often written as a **Markov decision process (MDP)**:
+A reinforcement learning problem is often written as a **Markov Decision Process (MDP)**:
 - state space $\mathcal{S}$, action space $\mathcal{A}$
 - transition dynamics $P(s_{t+1}\mid s_t, a_t)$
 - reward function $r(s_t, a_t)$ and discount $\gamma$
@@ -658,7 +658,7 @@ The canonical reward model uses the **Bradley-Terry model** (1952).
 
 A **probability model** is a mathematical form that we assume matches how real judgments work — then we fit its parameters to data. 
 The canonical reward model uses the **Bradley-Terry model** (1952). 
-Given two items $i$ and $j$, the probability that a judge prefers $i$ over $j$ is:
+Given two items $i$ and $j$, the probability that a judge prefers $i$ over $j$:
 
 $$P(i > j) = \frac{p_i}{p_i + p_j}$$
 
@@ -953,9 +953,9 @@ One score per token. Every completion token is trained against the same outcome 
 
 ## ORM training visualized
 
-The outcome label ($r = 0$ or $1$) is **broadcast** to every completion token. Prompt tokens are masked. The model learns per-token correctness predictions from this repeated signal. Across larger training batches, the model sees a more diverse supervision signal.
+The outcome label ($r = 0$ or $1$) is **broadcast** to every completion token. Prompt tokens are masked. The model learns per-token correctness predictions from this repeated signal. In a larger batch of training, there is a diverse signal of supervision to learn from.
 
-![](assets/orm_training.png)
+![Training an ORM: the completion-level correctness label is applied to every completion token via binary cross-entropy.](assets/orm_training.png)
 
 ---
 
@@ -973,7 +973,7 @@ Some papers use "outcome reward model" to mean a **Bradley-Terry model trained o
 
 | | **BT RM (on correct/incorrect)** | **ORM (Cobbe et al.)** |
 |---|---|---|
-| **Minimum training input** | Two completions (pair) | One completion + label |
+| **Min. Training Input** | Two completions (pair) | One completion + label |
 | **Output** | Single scalar at EOS | Per-token probability |
 | **Loss** | $-\log\sigma(r_c - r_{ic})$ | Per-token binary cross-entropy |
 | **Head** | Score at last token | Score at every token |
@@ -1030,8 +1030,8 @@ loss = F.cross_entropy(
 )
 ```
 
-ORM: binary labels at *every* completion token.
-PRM: 3-class labels at *step boundaries* only.
+vs. ORM: binary labels at *every* completion token.
+vs. PRM: 3-class labels at *step boundaries* only.
 
 ---
 
@@ -1042,9 +1042,9 @@ PRM: 3-class labels at *step boundaries* only.
 | **Preference RM** | Quality at EOS token | Pairwise (chosen vs. rejected) | Single scalar |
 | **ORM** | Outcome signal over completion tokens | Binary outcome labels | Per-token probability |
 | **PRM** | Per-step correctness | Step-level annotations | Score at step boundaries |
-| **Value function** | Expected remaining return | On-policy rollouts | Per-token expected return |
+| **Value Function** | Expected remaining return | On-policy rollouts | Per-token expected return |
 
-**Key distinction — ORM vs. value function:**
+**Key distinction — ORM vs. Value Function:**
 
 - **ORMs** predict offline-labeled correctness with a per-token head: $p(\text{correct}_t)$
 - **Value functions** predict expected *remaining* return: $V(s_t) = \mathbb{E}[\sum_{k \geq t} \gamma^{k-t} r_k \mid s_t]$
@@ -1058,7 +1058,7 @@ Same architecture, different semantics and supervision pipeline. More on value f
 - **RM:** "How good is this whole answer?" — scalar value
 - **ORM:** "Is this response on track to be correct?" — outcome signal trained across completion tokens
 - **PRM:** "Are the reasoning steps sound?" — per-step scores
-- **Value function:** "How much reward remains from here?" — baseline for RL advantages
+- **Value Function:** "How much reward remains from here?" — baseline for RL advantages
 
 ---
 
@@ -1210,9 +1210,9 @@ The core hyperparameters are intuitive:
 - **Completions per prompt**: 10-30+ (too few = noisy selection)
 - **Fine-tuning**: standard SFT on selected completions (same loss, but details like learning rate may differ from initial IFT)
 
-**Practical tip**: sort completions by length before batch RM inference to reduce padding token computation (so samples in each batch are similar in length; some frameworks handle this automatically).
+**Practical tip**: sort completions by length before batch RM inference to reduce padding token computation (so samples in each batch are similar length, some frameworks will handle this automatically).
 
-**Open questions**: how to sequence RS in a multi-stage pipeline, whether to use generations from multiple models, optimal prompt selection. It is unclear why there has not been a fully open reproduction. My hunch is that training a reward model has some subtle tricks.
+**Open questions**: how to sequence RS in a multi-stage pipeline, whether to use generations from multiple models, optimal prompt selection. There hasn't been a fully open reproduction of this, which is kind of confusing as to why. My hunch is that training a reward model has some subtle tricks.
 
 ---
 
@@ -1228,7 +1228,7 @@ $$S(R) = \arg\max_{j \in [1,N]} r_j$$
 - Does **not** modify the model — it's a sampling technique
 - Often used as a baseline comparison for online RL methods like PPO
 
-BoN is the simplest possible reward-guided method: generate more, pick the best. It can also be done with verification / LLM-as-a-judge instead of traditional reward models.
+BoN is the simplest possible reward-guided method: generate more, pick the best. Can also be done with verification / LLM-as-a-judge instead of traditional reward models.
 
 ---
 
@@ -1236,7 +1236,7 @@ BoN is the simplest possible reward-guided method: generate more, pick the best.
 
 Putting it all together — a simple path from pretrained model to preference-tuned model:
 
-1. **Instruction-tune** the pretrained model → learns the chat format
+1. **Instruction fine-tune** the pretrained model → learns the chat format
 2. **Collect preference data** → human annotators compare pairs of responses (more on data after the training lectures)
 3. **Train a reward model** on preference data → learns to score quality
 4. **Rejection sampling** → generate many completions, keep the best, fine-tune
@@ -1258,35 +1258,35 @@ tone: muted
 compact: true
 content: |
   1. Introduction
-  2. Key related works
-  3. Training overview
+  2. Key Related Works
+  3. Training Overview
 ```
 
 |||
 
 ```box
-title: Core training pipeline
+title: Core Training Pipeline
 tone: accent
 compact: true
 content: |
-  4. **Instruction tuning**
-  5. **Reward models**
-  6. Reinforcement learning
+  4. **Instruction Tuning**
+  5. **Reward Models**
+  6. Reinforcement Learning
   7. Reasoning
-  8. Direct alignment
-  9. **Rejection sampling**
+  8. Direct Alignment
+  9. **Rejection Sampling**
 ```
 
 |||
 
 ```box
-title: Data & preferences
+title: Data & Preferences
 tone: muted
 compact: true
 content: |
-  10. What are preferences
-  11. Preference data
-  12. Synthetic data & CAI
+  10. What are Preferences
+  11. Preference Data
+  12. Synthetic Data & CAI
 ```
 
 ===
@@ -1294,15 +1294,15 @@ content: |
 <!-- row-columns: 32/36/32 -->
 
 ```box
-title: Practical considerations
+title: Practical Considerations
 tone: muted
 compact: true
 content: |
-  13. Tool use
+  13. Tool Use
   14. Over-optimization
   15. Regularization
   16. Evaluation
-  17. Product & character
+  17. Product & Character
 ```
 
 |||
@@ -1313,14 +1313,14 @@ tone: surface
 compact: true
 content: |
   - A. Definitions
-  - B. Style & information
-  - C. Practical issues
+  - B. Style & Information
+  - C. Practical Issues
 ```
 
 |||
 
 ```box
-title: Course home
+title: Course Home
 tone: surface
 compact: true
 content: |

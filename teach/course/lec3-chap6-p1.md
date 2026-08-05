@@ -1,5 +1,5 @@
 ---
-title: "Lecture 3: Reinforcement Learning Motivation & Math"
+title: "Lecture 3: Reinforcement Learning"
 author: "Nathan Lambert"
 fonts:
   heading: "Rubik"
@@ -47,35 +47,35 @@ tone: muted
 compact: true
 content: |
   1. Introduction
-  2. Key related works
-  3. Training overview
+  2. Key Related Works
+  3. Training Overview
 ```
 
 |||
 
 ```box
-title: Core training pipeline
+title: Core Training Pipeline
 tone: accent
 compact: true
 content: |
-  4. Instruction tuning
-  5. Reward models
-  6. **Reinforcement learning**
+  4. Instruction Tuning
+  5. Reward Models
+  6. **Reinforcement Learning**
   7. Reasoning
-  8. Direct alignment
-  9. Rejection sampling
+  8. Direct Alignment
+  9. Rejection Sampling
 ```
 
 |||
 
 ```box
-title: Data & preferences
+title: Data & Preferences
 tone: muted
 compact: true
 content: |
-  10. What are preferences
-  11. Preference data
-  12. Synthetic data & CAI
+  10. What are Preferences
+  11. Preference Data
+  12. Synthetic Data & CAI
 ```
 
 ===
@@ -83,15 +83,15 @@ content: |
 <!-- row-columns: 32/36/32 -->
 
 ```box
-title: Practical considerations
+title: Practical Considerations
 tone: muted
 compact: true
 content: |
-  13. Tool use
+  13. Tool Use
   14. Over-optimization
   15. Regularization
   16. Evaluation
-  17. Product & character
+  17. Product & Character
 ```
 
 |||
@@ -102,14 +102,14 @@ tone: surface
 compact: true
 content: |
   - A. Definitions
-  - B. Style & information
-  - C. Practical issues
+  - B. Style & Information
+  - C. Practical Issues
 ```
 
 |||
 
 ```box
-title: Course home
+title: Course Home
 tone: surface
 compact: true
 content: |
@@ -150,7 +150,7 @@ RLHF optimization view.
 This lecture covers the **math and theory** of RL for language models. The next lecture covers implementation.
 
 ```box
-title: Lecture 3 outline
+title: Lecture 3 Outline
 tone: accent
 content: |
   1. **Motivation** — why RL training matters
@@ -166,9 +166,9 @@ content: |
 
 ## An under-documented benefit of RL
 
-In Lecture 2, we covered rejection sampling and later we'll cover direct alignment algorithms (like DPO). They're simpler, but RL has hard-to-measure benefits.
+In lecture 2, we covered rejection sampling and later we'll cover direct alignment algorithms (like DPO). They're simpler, but RL has hard to measure benefits.
 
-RL requires far more complex infrastructure, but the gradient updates it provides "generally help the model a lot." This is hard to quantify, but:
+Implementing RL is far more complex infrastructure, but the gradient updates it provides "generally help the model a lot." This is hard to quantify, but:
 - RL can "fix" rough edges on a model — making outputs more robust, better formatted, and more compatible with serving frameworks like vLLM
 - RL operates on a narrow prompt distribution and tends not to "squash" general capabilities — it can be applied surgically to improve specific behaviors without degrading others
 
@@ -336,7 +336,7 @@ Read it as two questions answered at once:
 - $\nabla_\theta \log \pi_\theta(a_t \mid s_t)$ — **which action?** How each parameter influenced the probability of taking action $a_t$ in state $s_t$. This connects the outcome back to the knobs that caused it.
 - $\Psi_t$ — **how good was it?** A scalar scoring the outcome. Positive means good, negative means bad, magnitude says how much.
 
-> An oversimplification (e.g., for intuition with a batch size of 1): the gradient is a vector with one entry per parameter. A positive entry means "increasing this parameter made the action more likely," a negative entry means the opposite. In practice, the update averages over many such vectors — what survives is the net vote across the batch.
+> An oversimplification (e.g. intuition in case of batch size of 1): the gradient is a vector with one entry per parameter. A positive entry means "increasing this parameter made the action more likely," a negative entry means the opposite. In practice, the update averages over many such vectors — what survives is the net vote across the batch.
 
 Multiply them: $\Psi_t > 0$ updates parameters to make $a_t$ more likely, $\Psi_t < 0$ updates them to make it less likely.
 
@@ -354,7 +354,7 @@ $$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim p_\theta}\!\left[\sum_{t=0}^{T
 
 The core idea is that we *sample over trials in the environment* and **estimate** the gradient.
 
-Here, $\Psi_t$ is the **learning signal** telling the optimizer how good the action was. The choice of $\Psi_t$ determines the algorithm's variance, bias, and compute cost.
+Where $\Psi_t$ is the **learning signal** telling the optimizer how good the action was. The choice of $\Psi_t$ determines the algorithm's variance, bias, and compute cost.
 
 
 ---
@@ -388,7 +388,7 @@ Popular choices for $\Psi_t$ (rewards can also be discounted by $\gamma$):
 | 1. | $R(\tau) = \sum_{t=0}^{T} r_t$ | Total trajectory reward | Highest | None |
 | 2. | $\sum_{t'=t}^{T} r_{t'}$ | Future return from $t$ (the return, $G_t$) | High | None |
 | 3. | $G_t - b(s_t)$ | Baselined return | Lower | None |
-| 4. | $Q^{\pi}(s_t, a_t)$ | State-action value function | Medium | Depends |
+| 4. | $Q^{\pi}(s_t, a_t)$ | State-action value function | Med | Depends |
 | 5. | $A^{\pi}(s_t, a_t) = Q - V$ | Advantage function | Low (with good $V$) | None |
 | 6. | $r_t + \gamma V(s_{t+1}) - V(s_t)$ | TD residual | Low | Some |
 
@@ -489,7 +489,7 @@ At a high level, rollout generation handles the sampling, and the loss code hand
 
 ---
 
-## Expanding the log probability of a trajectory to compute $\nabla_\theta$
+## Expanding log probability of trajectory to compute $\nabla_\theta$
 
 The trajectory probability factorizes:
 
@@ -503,7 +503,7 @@ For language models, this is the familiar autoregressive pattern: a sequence log
 
 ---
 
-## Expanding the log probability of a trajectory to compute $\nabla_\theta$
+## Expanding log probability of trajectory to compute $\nabla_\theta$
 
 <div class="text-sm">
 
@@ -520,7 +520,7 @@ $$\nabla_\theta \log p_\theta(\tau) = \sum_{t=0}^{T} \nabla_\theta \log \pi_\the
 </div>
 ---
 
-## Expanding the log probability of a trajectory to compute $\nabla_\theta$
+## Expanding log probability of trajectory to compute $\nabla_\theta$
 
 <div class="text-sm">
 
@@ -629,11 +629,11 @@ Popular choices for $\Psi_t$ (rewards can also be discounted by $\gamma$):
 | 1. | $R(\tau) = \sum_{t=0}^{T} r_t$ | Total trajectory reward | Highest | None |
 | 2. | $\sum_{t'=t}^{T} r_{t'}$ | Future return from $t$ (the return, $G_t$) | High | None |
 | 3. | $\sum_{t'=t}^{T} r_{t'} - b(s_t)$ | Baselined return | Lower | None |
-| 4. | $Q^{\pi}(s_t, a_t)$ | State-action value function | Medium | Depends |
+| 4. | $Q^{\pi}(s_t, a_t)$ | State-action value function | Med | Depends |
 | 5. | $A^{\pi}(s_t, a_t) = Q - V$ | Advantage function | **Lowest** | None |
 | 6. | $r_t + \gamma V(s_{t+1}) - V(s_t)$ | TD residual | Low | Some |
 
-A *baseline* $b(s_t)$ is any value subtracted from the reward signal to reduce variance. As shown above, this does not change the expected gradient.
+A *baseline* $b(s_t)$ is any value subtracted from the reward signal to reduce variance — we'll show why this is unbiased shortly.
 
 ---
 
@@ -750,7 +750,7 @@ The trend: as reward signals become more reliable, the need for KL regularizatio
 | **Used for** | Importance-sampling ratio $\rho_t$ | KL penalty |
 | **If dropped** | Must use 1 gradient step per batch (on-policy) | Risk of reward hacking |
 
-In some implementations, "old logprobs" refers to the generation-time log-probs — the model has simply been updated since those log-probs were computed, not a separate model copy.
+In some implementations, "old logprobs" refers to the generation-time logprobs — the model has simply been updated since those logprobs were computed, not a separate model copy.
 
 ---
 
@@ -846,7 +846,7 @@ Common baselines:
 - **Moving average** of recent rewards
 - **Learned value function** $V_\phi(s)$ (optional — bridges to actor-critic methods)
 
-Basic REINFORCE needs no critic — just Monte Carlo returns and a simple baseline. Adding a learned $V_\phi$ can reduce variance further but introduces the complexity of training a second model (and moves toward PPO).
+Basic REINFORCE needs no critic — just Monte Carlo returns and a simple baseline. Adding a learned $V_\phi$ can reduce variance further but introduces the complexity of training a second model (... and moves towards PPO).
 
 ---
 
@@ -961,7 +961,7 @@ This introduces new problems:
 
 ---
 
-## PPO core idea 1: Constrained updates
+## PPO core idea 1: constrained updates
 
 <!-- cite-right: schulman2017proximal -->
 
@@ -998,15 +998,15 @@ $$J(\theta) = \mathbb{E}_t\!\left[\rho_t(\theta) \hat{A}_t\right]$$
 
 ---
 
-## The PPO clipped objective (putting the pieces together)
+## The PPO clipped objective (put pieces together)
 
 PPO clips the ratio to prevent large updates — a practical surrogate inspired by trust-region ideas. The original paper [@schulman2017proximal] calls this $L^{CLIP}$, but it's an objective we **maximize**, so we use $J$:
 
 $$J(\theta) = \mathbb{E}_t\!\left[\min\!\left(\rho_t(\theta) \hat{A}_t,\; \text{clip}(\rho_t(\theta),\, 1-\varepsilon,\, 1+\varepsilon)\, \hat{A}_t\right)\right]$$
 
-Here, $\rho_t(\theta) = \frac{\pi_\theta(a_t \mid s_t)}{\pi_{\theta_\text{old}}(a_t \mid s_t)}$ is the importance-sampling ratio.
+Where $\rho_t(\theta) = \frac{\pi_\theta(a_t \mid s_t)}{\pi_{\theta_\text{old}}(a_t \mid s_t)}$ is the importance-sampling ratio.
 
-Here, $\varepsilon$ is typically 0.1–0.2. The $\min$ selects the **more conservative** estimate.
+Where $\varepsilon$ is typically 0.1–0.2. The $\min$ selects the **more conservative** estimate.
 
 ---
 
@@ -1144,11 +1144,11 @@ As $k \to \infty$, we recover the full Monte Carlo advantage $G_t - V_\phi(s_t)$
 
 ## GAE: Exponential weighting
 
-GAE uses an exponentially weighted average across all $K$-step estimates:
+GAE uses an exponentially-weighted average across all $K$-step estimates:
 
 $$\hat{A}_t^{\text{GAE}} = \sum_{l=0}^{\infty} (\gamma\lambda)^l \delta_{t+l}^V$$
 
-Here, $\lambda \in [0, 1]$ controls the bias-variance tradeoff.
+Where $\lambda \in [0, 1]$ controls the bias-variance tradeoff.
 
 ---
 
@@ -1168,7 +1168,7 @@ The $\gamma$ here is typically $1.0$ for language models (no discounting). These
 
 ## PPO-RLHF: Full policy objective
 
-At a high level, PPO-RLHF combines the clipped PPO objective with a KL regularizer:
+A schematic high-level view of PPO-RLHF combines the clipped PPO objective with a KL regularizer:
 
 $$J(\theta) \approx L^{CLIP}(\theta) - \beta \, D_{\text{KL}}\!\left[\pi_\theta \| \pi_{\text{ref}}\right]$$
 
@@ -1187,10 +1187,10 @@ The PPO training loop:
 1. **Generate**: sample prompts, generate completions with current policy $\pi_\theta$
 2. **Score**: compute rewards with reward model + KL penalty from $\pi_\text{ref}$
 3. **Estimate advantages**: compute GAE using learned value function $V_\phi$
-4. **Update** ($K$ epochs): clipped policy gradient + value function loss on the same batch
+4. **Update** (K epochs): clipped policy gradient + value function loss on the same batch
 5. **Repeat**: new batch, sync $\pi_{\theta_\text{old}} \leftarrow \pi_\theta$
 
-Typical: $K = 2–4$ gradient steps per batch before re-generating.
+Typical: K = 2–4 gradient steps per batch before re-generating.
 
 ---
 
@@ -1256,7 +1256,7 @@ $$J(\theta) = \frac{1}{G}\sum_{i=1}^{G}\frac{1}{|a_i|}\sum_{t=1}^{|a_i|}\!\left(
 
 $$\hat{A}_i = \frac{R_i - \text{mean}(R_1, \ldots, R_G)}{\text{std}(R_1, \ldots, R_G)}$$
 
-Here, the clipping applies **per-token**: $\rho_{i,t} = \frac{\pi_\theta(a_{i,t} \mid s_t)}{\pi_{\theta_\text{old}}(a_{i,t} \mid s_t)}$, but $\hat{A}_i$ is shared across all tokens in the completion (sequence-level advantage, per-token ratio).
+Where the clipping applies **per-token**: $\rho_{i,t} = \frac{\pi_\theta(a_{i,t} \mid s_t)}{\pi_{\theta_\text{old}}(a_{i,t} \mid s_t)}$, but $\hat{A}_i$ is shared across all tokens in the completion (sequence-level advantage, per-token ratio).
 
 
 ---
@@ -1361,7 +1361,7 @@ A one-page reference of all core RL loss functions is available at:
 
 Lecture 4 turns these algorithms into working code:
 
-- **Core loss implementations**: setting up RL algorithms with language models
+- **Core loss implementations**: Setting up RL algorithms with language models
 - **Loss aggregation**: per-sequence vs per-token normalization and why it matters
 - **Infra setup**: what to store (log-probs, values, ref log-probs) and what goes wrong when you don't
 - **Trade-offs**: monitoring training, identifying reward hacking, fixing common failures

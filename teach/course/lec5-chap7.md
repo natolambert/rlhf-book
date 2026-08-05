@@ -7,7 +7,7 @@ fonts:
 bibliography: refs.bib
 figure_captions: true
 footer:
-  left: "rlhfbook.com/course"
+  left: "rlhfbook.com"
   center: "Lecture 5"
   right: "Lambert {n}/{N}"
 custom_css: |
@@ -37,7 +37,7 @@ custom_css: |
 ---
 
 <!-- rows: 50/50 -->
-## Lecture 5: The rise of reasoning models
+## Lecture 5: The Rise of Reasoning Models
 
 <!-- row-columns: 32/36/32 -->
 
@@ -47,35 +47,35 @@ tone: muted
 compact: true
 content: |
   1. Introduction
-  2. Key related works
-  3. Training overview
+  2. Key Related Works
+  3. Training Overview
 ```
 
 |||
 
 ```box
-title: Core training pipeline
+title: Core Training Pipeline
 tone: accent
 compact: true
 content: |
-  4. Instruction tuning
-  5. Reward models
-  6. Reinforcement learning
+  4. Instruction Tuning
+  5. Reward Models
+  6. Reinforcement Learning
   7. **Reasoning**
-  8. Direct alignment
-  9. Rejection sampling
+  8. Direct Alignment
+  9. Rejection Sampling
 ```
 
 |||
 
 ```box
-title: Data & preferences
+title: Data & Preferences
 tone: muted
 compact: true
 content: |
-  10. What are preferences
-  11. Preference data
-  12. Synthetic data & CAI
+  10. What are Preferences
+  11. Preference Data
+  12. Synthetic Data & CAI
 ```
 
 ===
@@ -83,15 +83,15 @@ content: |
 <!-- row-columns: 32/36/32 -->
 
 ```box
-title: Practical considerations
+title: Practical Considerations
 tone: muted
 compact: true
 content: |
-  13. Tool use
+  13. Tool Use
   14. Over-optimization
   15. Regularization
   16. Evaluation
-  17. Product & character
+  17. Product & Character
 ```
 
 |||
@@ -101,8 +101,8 @@ title: Appendices
 tone: muted
 compact: true
 content: |
-  A. Key definitions
-  B. Style benchmarks
+  A. Key Definitions
+  B. Style Benchmarks
   C. References
 ```
 
@@ -115,8 +115,8 @@ compact: true
 content: |
   1. Overview (Ch. 1-3)
   2. IFT, RM, RS (Ch. 4,5,9)
-  3. RL theory (Ch. 6 pt 1)
-  4. RL practice (Ch. 6 pt 2)
+  3. RL Theory (Ch. 6 pt 1)
+  4. RL Practice (Ch. 6 pt 2)
   5. **Reasoning (Ch. 7)**
 ```
 
@@ -126,7 +126,7 @@ content: |
 
 Lectures 3-4 covered the core policy gradient RL implementation for language models: PPO, GRPO, loss aggregation, async training, etc.
 
-This lecture covers the rise of reasoning models, early reasoning-specific techniques, the core models of 2025, and what recent history teaches us.
+This lecture: The rise of reasoning models, early techniques specific to reasoning, recapping 2025's core models, etc.
 
 ---
 
@@ -149,7 +149,7 @@ With modern language models, the analogy is complete:
 
 <!-- step -->
 
-→ With agents, RL may account for more than the cherry's share of compute, but the training-loop structure remains the same!
+--> With agents, RL may be more than just the cherry in compute, but it's still the shape of the training loops!
 
 ---
 
@@ -178,17 +178,19 @@ With modern language models, the analogy is complete:
 
 ===
 
-The post-training methods use the same algorithms, but building models around them requires a new set of intuitions.
+The post-training methods are the same (i.e. same algorithms), but a new set of intuitions for building models.
 
 <!-- step -->
 
-**RLVR opened the door to reasoning models.** Now RL training uses mixed rewards, rubrics, and a variety of tools to train useful models. The clean distinction here is pedagogical, but it is rare in practice.
+**RLVR opened the door to reasoning models.** Now RL training uses mixed rewards, rubrics, and a variety of tools to train useful models. The clean distinction here is pedagogical, but in practice rare.
 
 ---
 
 ## The RLVR feedback loop
 
 <!-- cite-right: lambert2024t -->
+<!-- img-align: center -->
+
 ![RLVR in the form of an RL feedback loop. Instead of a reward model, a verification function scores completions.](assets/rlvr-system.png)
 
 ---
@@ -236,7 +238,7 @@ For harder problems, thinking can be **thousands of tokens**.
 **Evaluation metrics**:
 
 - **pass@1**: Accuracy on a single sample per problem
-- **pass@k**: Generate $k$ completions, report whether *any* is correct -- measures coverage
+- **pass@K**: Generate $K$ completions, report whether *any* is correct -- measures coverage
 
 If $n$ attempts contain $c$ correct answers:
 
@@ -248,8 +250,8 @@ $$
 
 **Algorithm / architecture terms**:
 
-- **DAPO**: Decoupled Clip and Dynamic sAmpling Policy Optimization -- a relaxed-clipping variant of GRPO [@yu2025dapo]. Key early RLVR paper
-- **CISPO**: Clipped Importance Sampling Policy Optimization -- clips importance sampling (IS) weights rather than per-token ratios, from MiniMax-M1 [@minimax2025minimax_m1]
+- **DAPO**: Dynamic Advantage Policy Optimization -- a relaxed-clipping variant of GRPO [@yu2025dapo]. Key early RLVR paper
+- **CISPO**: Clipped Importance Sampling PO -- clips importance sampling (IS) weights rather than per-token ratios, from MiniMax-M1 [@minimax2025minimax_m1]
 
 ---
 
@@ -260,6 +262,7 @@ $$
 
 ---
 
+<!-- valign: center -->
 ## The reasoning model Cambrian explosion
 
 <!-- img-align: center -->
@@ -281,7 +284,7 @@ The key ideas behind RLVR aren't new -- they were explored before o1/R1 made the
 
 <!-- step -->
 
-The models that followed scaled up these methods with simpler approaches and shifted the focus of post-training.
+The models that followed these scaled up the methods, in a simpler approach, and shifted the focus of post-training.
 
 ---
 
@@ -343,7 +346,7 @@ Kimi 1.5 landed in the same January wave as R1 and emphasized **RL scale plus cu
 
 <!-- cite-right: hu2025openreasonerzero -->
 
-First public dataset and code for an R1-style base-model RL run.
+First public dataset and code for an r1-style, base model RL run.
 
 - Fully open: **training code, curated RL data, and model weights**
 - Vanilla PPO with GAE ($\lambda=1, \gamma=1$) and simple rule-based rewards
@@ -361,14 +364,14 @@ First public dataset and code for an R1-style base-model RL run.
 
 <!-- cite-right: yang2025qwen3 -->
 
-New open-weight standard (RIP Llama 4).
+New open weight standard (RIP Llama 4).
 
 - Toggleable thinking: `/think` and `/no_think` modes (most labs found this to be quite the training headache)
 - Thinking budget length controls
 - Large-model recipe mirrors the R1-style multi-stage pipeline
 - Lightweight models use strong-to-weak distillation: off-policy outputs, then on-policy teacher-logit matching
 
-Llama-Nemotron [@bercovich2025llamanemotron] is another toggleable open-weight reasoner with released post-training data and code.
+Llama-Nemotron [@bercovich2025llamanemotron] is another toggleable open-weights reasoner with released post-training data and training codebases, but a different recipe.
 
 |||
 
@@ -381,12 +384,14 @@ Llama-Nemotron [@bercovich2025llamanemotron] is another toggleable open-weight r
 
 <!-- cite-right: xia2025mimo -->
 
-Xiaomi reports the **entire pipeline** from pretraining through post-training, including clear intermediate checkpoints.
+Xiaomi reports the **entire pipeline** from pretraining through post-training.
 
-Reasoning-recipe tweaks:
+Tweaks to a training recipe for reasoning:
 - Three-stage data mixing during pretraining (25T tokens)
 - Multi-Token Prediction (MTP) during pretraining
 - Multi-domain RL to prevent over-optimization on a single task type
+
+One of the only open-weight reasoning models to release clear intermediate checkpoints within post-training!
 
 |||
 
@@ -405,7 +410,7 @@ The foundational, open reasoning data (still quite strong)!
 - QwQ-32B traces, over 1,000 controlled data-pipeline experiments
 - OpenThinker3-7B reaches strong reasoning performance with SFT only
 
-We need more strong, open reasoning traces—and better teacher-data science.
+The community needs more investment in strong, open reasoning traces (and understanding what makes a good teacher).
 
 |||
 
@@ -418,9 +423,9 @@ We need more strong, open reasoning traces—and better teacher-data science.
 
 <!-- cite-right: minimax2025minimax_m1 -->
 
-MiniMax M1's paper really stood the test of time. Beyond the popular model release:
+MiniMax M1's paper really held the test of time. On top of the very popular models:
 
-1. CISPO clips importance-sampling weights instead of dropping high-update tokens. This approach has proved durable.
+1. CISPO clips importance-sampling weights instead of dropping high-update tokens. This sort of algorithm has been lasting.
 2. Introduced the now famous FP32 LM head inference-training mismatch plot.
 
 |||
@@ -434,7 +439,7 @@ MiniMax M1's paper really stood the test of time. Beyond the popular model relea
 
 <!-- cite-right: zeng2025glm45 -->
 
-The GLM-4.5 report was one of the early ones to focus on agentic behaviors. Otherwise, it represented "yet another" very strong, open Chinese model through the summer wave.
+GLM-4.5 report was one of the early ones to focus on agentic behaviors. Otherwise, it represented "yet another" very strong, open Chinese model through the summer wave.
 
 - 355B total parameters, 32B active
 - Thinking and direct-response modes
@@ -472,7 +477,7 @@ Interesting DPO findings and more fun stuff. See [this talk](https://www.youtube
 DeepSeek V3.2 pushes the R1 recipe into **tool-use and agent environments**.
 
 - Open-weight MoE successor to V3.2-Exp
-- V3.2 integrates thinking directly into tool use rather than treating reasoning and tool use as distinct modes
+- V3.2 integrates thinking directly into tool use, no longer distinct reasoning models
 - Speciale variant targets maximum reasoning performance
 
 |||
@@ -550,7 +555,7 @@ The frontier moved fast -- from "reasoning model" to **long-horizon, tool-using 
 1. RL basics were quickly replicated in open-source codebases and data
 2. The shift to agentic models followed very quickly from math/code reasoning tasks. Models like Olmo 3 (which I built and know was a bit late) stand out even more here
 3. Substantial innovation at the model layer to make long-context inference more efficient, especially from Chinese labs
-4. Lots of lasting fundamentals (FP32 LM head, CISPO-style losses, etc.) emerged very quickly but took meaningful tinkering to converge
+4. Lots of lasting fundamentals (FP32 LM head, CISPO style losses, etc.) emerged very quickly but took meaningful tinkering to converge
 
 ---
 
@@ -564,15 +569,11 @@ The frontier moved fast -- from "reasoning model" to **long-horizon, tool-using 
 
 <!-- animate: bullets -->
 
-<div class="text-sm">
-
-1. **Offline difficulty filtering** -- pre-sample $N$ completions per prompt and keep prompts with ~20–80% pass rates, where gradients are informative. *Seed-Thinking 1.5 [@seed2025seed], Open-Reasoner-Zero [@hu2025openreasonerzero], Phi-4 Reasoning [@abdin2025phi4], INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained], MiMo [@xia2025mimo], Skywork OR-1 [@he2025skyworkor1], Olmo 3 [@teamolmo2025olmo3]*
-2. **Online filtering and curriculum** -- skip prompts that are now too easy or hard; save harder ones for later. *Kimi 1.5 [@team2025kimi], Magistral [@mistral2025magistral], Llama-Nemotron [@bercovich2025llamanemotron], INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained], MiMo [@xia2025mimo]*
-3. **Zero-gradient filtering + active sampling** -- drop all-pass or all-fail groups (advantage 0), then refill the batch. *Olmo 3 [@teamolmo2025olmo3]*
-4. **KL penalty: dropped, now creeping back** -- math RLVR often uses $\beta=0$. *Magistral [@mistral2025magistral], Open-Reasoner-Zero [@hu2025openreasonerzero], Skywork OR-1 [@he2025skyworkor1]* Long-horizon, off-policy agent training can restore a KL term for stability, as in Cursor [Composer 2](https://cursor.com/blog/composer-2-technical-report).
-5. **Relaxed / asymmetric clipping** -- widen the upper clip bound for exploration. *DAPO [@yu2025dapo], Magistral [@mistral2025magistral], INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained]*
-
-</div>
+1. **Offline difficulty filtering** -- pre-sample $N$ completions/prompt, keep prompts at ~20-80% pass rate (where the gradient lives). *Seed-Thinking 1.5 [@seed2025seed], Open-Reasoner-Zero [@hu2025openreasonerzero], Phi-4 Reasoning [@abdin2025phi4], INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained], MiMo [@xia2025mimo], Skywork OR-1 [@he2025skyworkor1], Olmo 3 [@teamolmo2025olmo3]*
+2. **Online filtering and curriculum** -- skip prompts now too easy/hard; save harder problems for later. *Kimi 1.5 [@team2025kimi], Magistral [@mistral2025magistral], Llama-Nemotron [@bercovich2025llamanemotron], INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained], MiMo [@xia2025mimo]*
+3. **Zero-gradient filtering + active sampling** -- drop groups where all $G$ completions pass or fail (advantage 0), then refill the batch. *Olmo 3 [@teamolmo2025olmo3]*. Makes loss nice and very stable!
+4. **KL penalty: dropped, now creeping back** -- single-turn math RLVR usually sets $\beta=0$ (verifiable rewards resist over-optimization). *Magistral [@mistral2025magistral], Open-Reasoner-Zero [@hu2025openreasonerzero], Skywork OR-1 [@he2025skyworkor1]* But long-horizon, off-policy agentic training is reviving a KL/reference term for stability -- e.g. Cursor [Composer 2](https://cursor.com/blog/composer-2-technical-report).
+5. **Relaxed / asymmetric clipping** -- widen the upper clip bound to keep exploratory updates (DAPO [@yu2025dapo]). *Magistral [@mistral2025magistral], INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained]*
 
 ---
 
@@ -584,7 +585,7 @@ The frontier moved fast -- from "reasoning model" to **long-horizon, tool-using 
 7. **Normalization choices** -- how you average advantages and loss quietly changes the objective. Normalize advantages across the **whole batch**, not per prompt group, so a few easy/hard prompts don't dominate (Magistral [@mistral2025magistral], MiMo [@xia2025mimo]); average loss over **total tokens**, not per sequence, to remove a length bias (Dr. GRPO [@liu2025understanding]). See the per-token vs. per-sequence loss-aggregation deep dive in [Lecture 4](https://www.youtube.com/watch?v=i-AIMpZHgeg).
 8. **Format rewards** -- reward valid `<think>` blocks and extractable answers; usability, not correctness. *DeepSeek R1 [@guo2025deepseek], Open-Reasoner-Zero [@hu2025openreasonerzero], Magistral [@mistral2025magistral], Skywork OR-1 [@he2025skyworkor1]*
 9. **Language consistency rewards** -- penalize language switching inside a trace. *DeepSeek R1 [@guo2025deepseek], Magistral [@mistral2025magistral]*. Models used to switch to Chinese or French while reasoning.
-10. **Length control** -- progressively increase the maximum generation length while rewarding concise thinking (Kimi 1.5 [@team2025kimi]); use a small length penalty (INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained]); filter overlong samples for throughput.
+10. **Length control** -- progressive length extension -- i.e. the maximum length of training, which rewards concise thinking (Kimi 1.5 [@team2025kimi]); small length penalty (INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained]); overlong filtering for throughput.
 
 ---
 
@@ -596,8 +597,8 @@ The frontier moved fast -- from "reasoning model" to **long-horizon, tool-using 
 <!-- animate: bullets -->
 
 11. **Inference is the bottleneck** -- long, variable completions; Olmo 3 learner GPUs idle ~**75%**, **5-14x** more inference than training compute.
-12. **Off-policy / async updates** -- actors generate continuously while the learner consumes rollouts; they go slightly stale, but throughput jumps. *Seed-Thinking 1.5 [@seed2025seed], INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained]* -- deep dive: Olmo 3 [slides](https://docs.google.com/presentation/d/17Evr5AqnwjtSZ4H5vpnoEvGmI9fRBO19SN2dGHg7tPE/edit), [recording](https://www.youtube.com/watch?v=uaZ3yRdYg8A)
-13. **Test-time scaling** -- majority voting (DeepSeek R1 [@guo2025deepseek], Phi-4 [@abdin2025phi4]); selector model (DeepSeek-GRM [@liu2025inference]); the pass@k vs. pass@1 gap shows the headroom.
+12. **Off-policy / async updates** -- actors generate continuously, the learner consumes; rollouts go slightly stale but throughput jumps. *Seed-Thinking 1.5 [@seed2025seed], INTELLECT-2 [@primeintellectteam2025intellect2reasoningmodeltrained]* -- deep dive: Olmo 3 [slides](https://docs.google.com/presentation/d/17Evr5AqnwjtSZ4H5vpnoEvGmI9fRBO19SN2dGHg7tPE/edit), [recording](https://www.youtube.com/watch?v=uaZ3yRdYg8A)
+13. **Test-time scaling** -- majority voting (DeepSeek R1 [@guo2025deepseek], Phi-4 [@abdin2025phi4]); selector model (DeepSeek-GRM [@liu2025inference]); the pass@K vs pass@1 gap shows the headroom.
 
 |||
 
@@ -622,7 +623,7 @@ The frontier moved fast -- from "reasoning model" to **long-horizon, tool-using 
 - How far can reasoning training go without better pretraining data? Pretraining does NOT seem dead.
 - Will agentic RL (tool use + reasoning) require fundamentally different recipes?
 - Can we systematically study the scaling properties of RL for reasoning? [@khatri2025art]
-- In 1, 2, 5, and 10 years, what does the balance of compute between pretraining and RL look like?
+- In 1, 2, 5, and 10 years what does the balance of compute between pretraining and RL look like?
 
 ---
 

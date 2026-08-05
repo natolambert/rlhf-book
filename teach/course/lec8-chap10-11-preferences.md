@@ -37,12 +37,6 @@ custom_css: |
     max-width: none; max-height: none;
     object-fit: contain;
   }
-  /* Give the tall paper screenshot a concrete grid height for PDF export. */
-  .slide.paper-overview .slide-content { flex: 0 0 420px; height: 420px; }
-  .slide.paper-overview .paper-cover {
-    width: 100%; height: 100%;
-    background: url("assets/history-risks-rlhf.png") top center / contain no-repeat;
-  }
 ---
 
 <!-- layout: title-sidebar -->
@@ -61,12 +55,16 @@ custom_css: |
 ---
 
 <!-- layout: section-break -->
+<!-- align: center -->
+<!-- valign: center -->
 
 ## How do we hillclimb on capabilities we don't really know how to score?
 
 ---
 
 <!-- layout: section-break -->
+<!-- align: center -->
+<!-- valign: center -->
 
 ## Is it easier to write a good demonstration or decide between a good and a bad example?
 
@@ -154,11 +152,11 @@ content: |
 ---
 
 <!-- columns: 42/58 -->
-<!-- class: paper-overview -->
+<!-- valign: center -->
 <!-- cite-right: lambert2023entangled -->
 ## The paper behind the first half of this lecture
 
-<div class="paper-cover" aria-label="First page of The History and Risks of Reinforcement Learning and Human Feedback"></div>
+![](assets/history-risks-rlhf.png)
 
 |||
 
@@ -168,9 +166,12 @@ content: |
 - **Risk:** it quietly treats **costs, rewards, and preferences** as interchangeable when they are not.
 - Idea: we inherit RL's optimizers/setup without inheriting its guarantees for convergence.
 
+Paper details a series of assumptions and presumptions in the literature that RLHF / post-training are derived from.
+
 ---
 
 <!-- columns: 58/42 -->
+<!-- valign: center -->
 ## Aside: the "objective mismatch" lens
 
 A recurring way to think about post-training: we optimize a **proxy** objective that isn't the one we actually care about.
@@ -187,13 +188,17 @@ Reward-model accuracy (RewardBench-style) is a proxy for a proxy! Keep asking wh
 ---
 
 <!-- layout: section-break -->
+<!-- align: center -->
 
 ## Part 1: A short history of optimizing or measuring preferences
 
 ---
 
 <!-- class: full-bleed -->
+<!-- img-align: center -->
+<!-- valign: center -->
 <!-- cite-right: lambert2023entangled -->
+<!-- notes: The integration of subfields into modern RLHF. Solid links are continuous technical developments; arrows are motivations and conceptual borrowings. Philosophy, economics, control theory, and deep learning each arrive with different assumptions about what a "preference" even is. -->
 ## Many fields converged into "RLHF"
 
 ![](assets/rlhf-tree.png)
@@ -201,6 +206,7 @@ Reward-model accuracy (RewardBench-style) is a proxy for a proxy! Keep asking wh
 ---
 
 <!-- columns: 62/38 -->
+<!-- valign: top -->
 ## Utility, from logic to a number
 
 The idea that choices can be *scored* is old. The common thread: the idea that human wants can be reduced to a single measure:
@@ -209,6 +215,9 @@ The idea that choices can be *scored* is old. The common thread: the idea that h
 - **Bentham's hedonic calculus** (early 1800s): weigh all of life on one complicated, but common scale [@bentham1823hedonic]
 - **Ramsey**, *Truth and Probability* (1931): first to quantify preference *and* belief together as the way that individuals make probabilistic decisions [@ramsey2016truth]
 
+
+> *"To judge what one must do to obtain a good or avoid an evil, it is necessary to consider not only the good and evil in itself, but also the probability that it happens or does not happen."* -- The Port Royal Logic, 1662
+
 |||
 
 ![*La Logique, ou l'Art de Penser* (the Port Royal Logic), 1662](assets/port-royal-logic.jpg)
@@ -216,6 +225,7 @@ The idea that choices can be *scored* is old. The common thread: the idea that h
 ---
 
 <!-- columns: 64/36 -->
+<!-- valign: center -->
 ## Von Neumann-Morgenstern utility theorem (1947)
 
 **Von Neumann & Morgenstern** (1947): if your preferences obey a few axioms (completeness, transitivity, continuity, independence), they can be represented by a single **utility function**, and rational choice = maximizing **expected utility** [@von1947theory].
@@ -224,7 +234,7 @@ This is the result RLHF leans on to justify fitting a scalar reward.
 
 <!-- step -->
 
-In RLHF, essentially none of those *ifs* hold:
+In RLHF, essentially none of those *if* hold:
 
 - preferences **drift** during and after labeling
 - they're **context- and framing-dependent**
@@ -237,6 +247,8 @@ In RLHF, essentially none of those *ifs* hold:
 
 ---
 
+
+<!-- valign: center -->
 ## Bradley-Terry (1952): comparisons to scores
 
 The statistical model that turns *comparisons* into *scores* -- and became the backbone of reward modeling [@BradleyTerry] (see Chapter 5 / Lecture 2):
@@ -261,6 +273,7 @@ We then optimize hard against that number, which is impossible to ever do perfec
 ---
 
 <!-- columns: 64/36 -->
+<!-- valign: center -->
 ## Where utility theory breaks down
 
 Almost as soon as utility was formalized, social choice (the field studying how preferences should be aggregated) and economics found its limits:
@@ -276,6 +289,7 @@ Almost as soon as utility was formalized, social choice (the field studying how 
 ---
 
 <!-- columns: 58/42 -->
+<!-- valign: center -->
 <!-- cite-right: conitzer2024social -->
 ## Aside: social choice for AI alignment
 
@@ -293,6 +307,7 @@ If aggregating preferences is the hard part, **social choice theory** is the fie
 ---
 
 <!-- columns: 64/36 -->
+<!-- valign: center -->
 ## Preferences are not stable objects over time and context
 
 From psychology and behavioral economics:
@@ -309,6 +324,7 @@ A problem for "collect a label, train on it later repeatedly."
 ---
 
 <!-- columns: 62/38 -->
+<!-- valign: center -->
 ## The other root: optimal control & RL
 
 In parallel, a machinery for *optimizing* a reward matured:
@@ -325,6 +341,8 @@ Note: these guarantees assume a **single, closed-form reward**!
 ![Lee Sedol vs AlphaGo, Game 4 (2016) (CC BY-SA 4.0, via Wikimedia Commons)](assets/alphago-game4.jpg)
 
 ---
+
+<!-- valign: center -->
 ## Costs ≠ rewards ≠ preferences
 
 These three are **ontologically different**, and the emergence of modern post-training treated them as interchangeable [@lambert2023entangled].
@@ -358,6 +376,7 @@ Deep RL's theory lives in MDPs with a fixed, closed-form reward (e.g. games, con
 ---
 
 <!-- layout: section-break -->
+<!-- align: center -->
 
 ## Part 2: Preference data -- the trade-offs in practice
 
@@ -379,6 +398,8 @@ Very few open models ship fully open human preference data *with* the methodolog
 
 ---
 
+<!-- img-align: center -->
+<!-- valign: center -->
 <!-- cite-right: bai2022training -->
 <!-- img-fill -->
 ## Interface 1: research data collection (Anthropic's early Claude models)
@@ -387,6 +408,8 @@ Very few open models ship fully open human preference data *with* the methodolog
 
 ---
 
+<!-- img-align: center -->
+<!-- valign: center -->
 <!-- img-fill -->
 ## Interface 2: A/B testing in production (ChatGPT user data)
 
@@ -394,6 +417,8 @@ Very few open models ship fully open human preference data *with* the methodolog
 
 ---
 
+<!-- img-align: center -->
+<!-- valign: center -->
 <!-- cite-right: chiang2024chatbot -->
 <!-- img-fill -->
 ## Interface 3: pairwise with ties (Chatbot Arena public evaluation)
@@ -402,6 +427,8 @@ Very few open models ship fully open human preference data *with* the methodolog
 
 ---
 
+<!-- img-align: center -->
+<!-- valign: center -->
 <!-- img-fill -->
 ## Interface 4: a single bit (Ai2 demos; in many other products)
 
@@ -409,6 +436,8 @@ Very few open models ship fully open human preference data *with* the methodolog
 
 ---
 
+<!-- img-align: center -->
+<!-- valign: center -->
 <!-- img-fill -->
 ## Interface 5: pick-from-many (default in image models)
 
@@ -460,6 +489,8 @@ messages:
 ```
 
 ---
+
+<!-- valign: center -->
 ## What exactly is a "Likert scale"?
 
 A **Likert scale** records a preference as an *ordered, graded* judgment -- not just which answer wins, but **by how much**, on a symmetric scale with an optional neutral middle. (After psychologist Rensis Likert, 1932 -- the same "strongly agree ... strongly disagree" survey tool, repurposed for pairwise preference.)
@@ -541,11 +572,12 @@ Richer signal, harder collection (and not often used extensively in practice).
 
 Access is relationship-driven: vendors are supply-limited and favor big budgets and known brands. Millions get spent and partly wasted; few teams have the bandwidth to fully use human data. Contracts often restrict you from releasing some data like this openly.
 
-It is a far more complex industry today with environments, etc. But, even for simple, human preference data, you need a robust, existing post-training recipe to plug it into.
+Is a far more complex industry today with environments, etc. But, even for simple, human preference data, you need a robust, existing post-training recipe to plug it into.
 
 ---
 
 <!-- columns: 56/44 -->
+<!-- valign: center -->
 <!-- cite-right: ouyang2022training -->
 ## Guiding data collection: labeler instructions
 
@@ -562,6 +594,8 @@ Once a contract is signed, buyer and vendor agree on **detailed instructions** f
 
 ---
 
+
+<!-- valign: center -->
 ## A dataset we bought: No Robots
 
 On Hugging Face's **H4 team**, we commissioned human data the same way the labs did.
@@ -572,8 +606,9 @@ On Hugging Face's **H4 team**, we commissioned human data the same way the labs 
 ---
 
 <!-- columns: 50/50 -->
+<!-- valign: center -->
 <!-- cite-right: arena2026 -->
-## Preference *evals* are now a standalone business
+## Preference *evals* is now a standalone business
 
 Recently in 2026 **Arena** (formerly, the LMArena leaderboard, formerly Chatbot Arena) reached a **~$100M annualized revenue run-rate within ~8 months** of launching its enterprise A/B testing offering [@arena2026].
 
@@ -584,6 +619,7 @@ Recently in 2026 **Arena** (formerly, the LMArena leaderboard, formerly Chatbot 
 ---
 
 <!-- layout: section-break -->
+<!-- align: center -->
 
 ## Part 3: Open questions in preference data
 
@@ -606,7 +642,7 @@ Detecting and controlling these biases is central to collecting high-quality pre
 ---
 
 <!-- animate: bullets -->
-## Higher-level complexities 
+## Higher level complexities 
 
 - **Collection context** -- do workplace labels transfer to end users? Paid vs. volunteer? Do annotators follow instructions or their own values?
 - **Type of feedback** -- does a binary pair actually capture the preference we mean? What structure mirrors how people really compare?
@@ -614,6 +650,8 @@ Detecting and controlling these biases is central to collecting high-quality pre
 - **Are the preferences even expressed in the models?**
 
 ---
+
+<!-- valign: center -->
 ## The unaudited gap: spec → data → behavior
 
 RLHF's *motivation* (align to human preference) has drifted from its *practice* (make models effective).
@@ -628,9 +666,11 @@ Many of these questions already surfaced with synthetic data (chapter 12 / lectu
 ## The nature of preferences is the lasting problem of RLHF
 
 This is one of the least-settled, most human parts of the field. Read widely and go to the primary sources.
-It is a great academic problem!
+Is a great academic problem!
 
 ---
+
+<!-- valign: center -->
 ## The course so far
 
 0. Prerequisites review

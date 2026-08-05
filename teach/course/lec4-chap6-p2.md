@@ -163,7 +163,7 @@ content: |
 
 ---
 
-## Recall: The policy gradient
+## Recall: the policy gradient
 
 The objective and its gradient:
 
@@ -175,9 +175,9 @@ The gradient says: for each token, compute the direction that makes it more like
 
 ---
 
-## Recall: The policy gradient algorithms
+## Recall: the policy gradient algorithms
 
-All methods minimize the same family of **losses** (note the leading minus signs) — they differ in $\Psi_t$ and how updates are bounded:
+All methods minimize the same family of **loss** (note the leading minus signs) — they differ in $\Psi_t$ and how updates are bounded:
 
 <div class="text-sm">
 
@@ -196,7 +196,7 @@ Where $\rho_t = \frac{\pi_\theta(a_t \mid s_t)}{\pi_{\theta_\text{old}}(a_t \mid
 
 ---
 
-## Recall: Why losses are sums of log-probs
+## Recall: why losses are sums of log-probs
 
 From lecture 3, the policy gradient derivation showed:
 
@@ -473,7 +473,7 @@ PPO (and GRPO) optionally reuse each rollout batch for multiple gradient steps. 
 
 PPO (and GRPO) optionally reuse each rollout batch for multiple gradient steps. Clipping activates whenever $\pi_\theta$ has drifted from $\pi_{\theta_\text{old}}$ — two mechanisms cause this:
 
-**Minibatching**: split the rollout batch into smaller minibatches to fit a larger total batch size on a given GPU setup. After updating on the first minibatch, $\pi_\theta$ has changed — so later minibatches in the *same* epoch already see $\rho_t \neq 1$. Clipping can activate even with $K = 1$ epoch.
+**Minibatching**: split the rollout batch into smaller minibatches to allow a larger, total batch size fit on a certain GPU setup. After updating on the first minibatch, $\pi_\theta$ has changed — so later minibatches in the *same* epoch already see $\rho_t \neq 1$. Clipping can activate even with $K = 1$ epoch.
 
 ---
 
@@ -481,7 +481,7 @@ PPO (and GRPO) optionally reuse each rollout batch for multiple gradient steps. 
 
 PPO (and GRPO) optionally reuse each rollout batch for multiple gradient steps. Clipping activates whenever $\pi_\theta$ has drifted from $\pi_{\theta_\text{old}}$ — two mechanisms cause this:
 
-**Minibatching**: split the rollout batch into smaller minibatches to fit a larger total batch size on a given GPU setup. After updating on the first minibatch, $\pi_\theta$ has changed — so later minibatches in the *same* epoch already see $\rho_t \neq 1$. Clipping can activate even with $K = 1$ epoch.
+**Minibatching**: split the rollout batch into smaller minibatches to allow a larger, total batch size fit on a certain GPU setup. After updating on the first minibatch, $\pi_\theta$ has changed — so later minibatches in the *same* epoch already see $\rho_t \neq 1$. Clipping can activate even with $K = 1$ epoch.
 
 **Multiple epochs**: loop over the full batch $K$ times to learn more from a given rollout (which can be expensive). Each pass sees a more-updated $\pi_\theta$, making ratios drift further. Typical $K = 2$–$4$; beyond $\sim$6 the policy is too far off-policy.
 
@@ -564,7 +564,7 @@ advantages = ((advantages - valid_adv.mean()) /
 The value function $V_\phi$ needs to produce reasonable estimates from the start:
 
 - **Initialize from RM backbone** (InstructGPT convention): value predictions start near actual rewards
-- **Initialize from SFT model + random head**: cheaper, but early training is unstable
+- **Initialize from SFT model + random head**: cheaper but early training unstable
 - **Cold-start issues**: if initial value estimates are bad, GAE advantages are noisy → early training can be chaotic
 
 Tülu 3 [@lambert2024t] initializes from the reward model. 
@@ -637,7 +637,7 @@ Common **silent bugs** — training runs but learns the wrong thing:
 
 ## The four models in memory
 
-For a 7B model with FP16:
+For a 7B model with fp16:
 
 | Model | Size | Purpose |
 |-------|:----:|---------|
@@ -652,7 +652,7 @@ For a 7B model with FP16:
 
 <!-- layout: section-break -->
 
-## Group Relative Policy Optimization (GRPO) & friends
+## Group Relative Policy Optimization (GRPO) & Friends
 
 ---
 
@@ -745,7 +745,7 @@ What GRPO removes relative to PPO:
 | Advantage computation | Per-token (GAE) | Per-sequence (z-score) |
 | KL handling | Fold into reward | Separate loss term |
 
-Significantly less code and one fewer model in memory.
+Significantly less code and ~1 fewer model copy in memory.
 
 ---
 
@@ -807,7 +807,7 @@ Detach the clipped ratio so gradients flow only through $\log \pi_\theta$. The r
 
 <div class="text-sm">
 
-**GSPO** [@zheng2025gspo] — sequence-level ratio, GRPO-style algorithm:
+**GSPO** [@zheng2025gspo] — sequence-level ratio, GRPO style algorithm:
 ```python
 log_ratio = (new_logps - old_logps) * mask
 rho = torch.exp(log_ratio.sum(dim=1) / mask.sum(dim=1))  # (B*G,)
@@ -822,7 +822,7 @@ loss = -torch.min(rho * advantages, rho_clipped * advantages).mean()
 
 <div class="text-sm">
 
-**CISPO** [@minimax2025minimaxm1scalingtesttimecompute] — stop-gradient on clipped ratio, REINFORCE-style algorithm:
+**CISPO** [@minimax2025minimaxm1scalingtesttimecompute] — stop-gradient on clipped ratio, REINFORCE style algorithm:
 ```python
 rho = torch.exp(new_logps - old_logps)
 rho_clipped = torch.clamp(rho, 1 - eps, 1 + eps).detach()  # no grad through ratio
@@ -857,6 +857,8 @@ Each batch of completions is scored and used for a short update window (one or a
 
 <!-- cite-right: noukhovitch2024asynchronous -->
 
+<!-- img-align: center -->
+
 ![Synchronous training idles GPUs; separating generation and training helps, but on-policy requires waiting. Async (off-policy) overlaps both for full utilization.](assets/async_v_synch_rl.png)
 
 ---
@@ -878,10 +880,10 @@ A process management library (e.g., Ray) coordinates data flow between them. Mod
 
 ---
 
-## More resources on RL implementations
+## More Resources on RL Implementations
 
 - A [video](https://www.youtube.com/watch?v=amrJDwMUFNs) I recorded looking at codebases implementing GRPO, DAPO, Dr. GRPO, and other papers.
-- At ~24 min, see this [talk](https://youtu.be/uaZ3yRdYg8A?si=iSGw56BFNQMWNjtr&t=1487) on scaling RL for Olmo 3.
+- ~24min in, [talk](https://youtu.be/uaZ3yRdYg8A?si=iSGw56BFNQMWNjtr&t=1487) on scaling RL for Olmo 3.
 - Finbarr Timbers's [blog post](https://finbarr.ca/making-rl-fast/) on making RL fast.
 
 ---
@@ -891,7 +893,7 @@ A process management library (e.g., Ray) coordinates data flow between them. Mod
 - **TRL** [@vonwerra2022trl] — Hugging Face ecosystem, PPO/GRPO/DPO. Best starting point for getting started
 - **Open Instruct** [@ivison2024unpacking] — Allen AI, multi-algorithm. Best for research and reproduction
 - **veRL** — Very popular in the RLVR era.
-- **OpenRLHF** — Originally built for RLHF and now also popular for RLVR.
+- **OpenRLHF** — Started for RLHF work, popular with RLVR, etc. too.
 
 
 
@@ -1074,7 +1076,7 @@ Illustrative ranges — thresholds vary by model size, task, and algorithm:
 | `generation/length` | Stable or slight increase | Monotonic increase (length hack) |
 | Policy entropy | Slow decrease | Crashes to 0 (mode collapse) |
 
-Also monitor eval scores on held-out benchmarks and read sample outputs for coherence.
+Also monitor: eval scores on held-out benchmarks, and read sample outputs for coherence.
 
 ---
 
@@ -1182,7 +1184,7 @@ content: |
 ---
 
 <!-- rows: 50/50 -->
-## What's next: DAAs & reasoning
+## What's next: DAAs & Reasoning
 
 <!-- row-columns: 32/36/32 -->
 

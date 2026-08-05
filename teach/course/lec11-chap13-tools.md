@@ -1,5 +1,5 @@
 ---
-title: "Lecture 11: Tool Use, Function Calling & the Road to Agents"
+title: "Lecture 11: Tool Use, Function Calling & The Road to Agents"
 author: "Nathan Lambert"
 fonts:
   heading: "Rubik"
@@ -29,7 +29,7 @@ custom_css: |
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
 
-# Lecture 11: Basics of LLM Tool Use and the Road to Today's Agents
+# Lecture 11: Basics of LLM Tool Use and The Road to Today's Agents
 
 <div class="colloquium-title-eyebrow">rlhfbook.com</div>
 
@@ -42,6 +42,8 @@ custom_css: |
 ---
 
 <!-- layout: section-break -->
+<!-- align: center -->
+<!-- valign: center -->
 
 ## What are the limitations of model weights alone?
 
@@ -94,9 +96,9 @@ LLMs are now systems and this lecture is about the transition from static weight
 Tool use started as "call a calculator." It was implemented to help with hard multiple-choice questions and code execution.
 It is now used in...
 
-- Coding and terminal agents (Claude Code, Cursor) driving engineering productivity -- **using tools that are general-purpose computer primitives**
-- Deep research, computer use, productivity copilots -- **specialized tools and training regimes for the task** (deep research came first!)
-- The hardest current evals are *end-to-end tasks in complex containers*
+- Coding and terminal agents (Claude Code, Cursor) driving engineer productivity -- **using tools that're general primitives on computers**
+- Deep research, computer use, productivity copilots -- **specialized tools and regimes to the task** (deep research came first!)
+- The hardest current evals today are *end-to-end tasks in complex containers*
 
 |||
 
@@ -122,6 +124,7 @@ content: |
 
 ---
 
+<!-- valign: center -->
 <!-- title: center -->
 ## Quick pause for YouTube: How'd you end up here?
 
@@ -130,6 +133,7 @@ Are you **following the whole course**, or did you **come for just this video** 
 ---
 
 <!-- layout: section-break -->
+<!-- align: center -->
 
 ## Part 1: Why language models need tools
 
@@ -192,7 +196,7 @@ print(str(C / S)[:52])
 - **2021**: WebGPT browses the web, trained with human feedback [@nakano2021webgpt]
 - **2022**: TALM bootstraps tool-augmented training data [@parisi2022talm]; PAL offloads computation to Python [@gao2023pal]; ReAct interleaves reasoning and actions [@yao2023react]
 - **2023**: Toolformer teaches itself APIs w/ synthetic data [@schick2023toolformerlanguagemodelsteach]; Gorilla scales to 1,645 APIs [@patil2023gorilla]; ToolLLM to 16,000+ [@qin2023toollm]; OpenAI ships function calling in the API and Code Interpreter in ChatGPT
-- **2024**: Model Context Protocol provides some standardization [@anthropic_mcp_2024]
+- **2024**: Model Context Protocol acts as some standardization [@anthropic_mcp_2024]
 - **2025**: o3 makes multistep tool calls *inside* its reasoning [@openai2025o3]
 - **2026**: terminal and coding agents become the frontier of post-training [@tbench2026]
 
@@ -230,7 +234,7 @@ No human tool-use demonstrations required -- an early instance of synthetic-data
 
 |||
 
-![Toolformer's exemplary predictions: the model decides on its own to call a QA system, a calculator, a translator, and Wikipedia search mid-text.](assets/toolformer-examples.jpg)
+![Toolformer's exemplary predictions: the model decides on its own to call a QA system, a calculator, a translator, and Wikipedia search mid-text. Schick et al., 2023.](assets/toolformer-examples.jpg)
 
 ---
 
@@ -248,12 +252,15 @@ format $\rightarrow$ selection $\rightarrow$ consistency $\rightarrow$ full task
 ---
 
 <!-- layout: section-break -->
+<!-- align: center -->
 
 ## Part 2: Infra -- how tool calls actually work
 
 ---
 
 <!-- img-fill -->
+<!-- img-align: center -->
+<!-- valign: center -->
 ## One token stream -- tools add tokens mid-generation
 
 ![The model generates until it emits a tool call (orange); an external system executes it and injects the output (purple) into the sequence; the model continues. Multiple tool calls can occur in a single generation. During training, tool call outputs are masked from the loss.](assets/tool_use_generation.png)
@@ -396,6 +403,7 @@ content: |
 ---
 
 <!-- layout: section-break -->
+<!-- align: center -->
 
 ## Part 3: Training for tool use
 
@@ -436,7 +444,7 @@ A fully open data-curation pipeline for agentic training data, ~100K trajectorie
 ## For RL, environments are the bottleneck
 
 - Math RL needed prompts and answer checkers. Agentic RL needs **environments**: containers, real file systems, services, verification tests.
-- Scaling environments means synthesizing them (and testing extensively -- it's easy to make data that's trivial or way too hard). For example, TMax generates ~14,600 containerized terminal environments compositionally [@ivison2026tmax]:
+- Scaling environments means synthesizing them (and testing extensively -- it's easy to make data that's trivial or way too hard). For example, TMax generates ~14,600 containerized terminal environments compositionally [@ivison2026tmax] --
   - **Difficulty control**: single commands to 30--60-step workflows, sampled uniformly across difficulty
   - **Personas**: domain-specific users and multimodal fixtures (images, audio, binaries)
   - **Verifier diversification**: graded checks beyond exact match -- metric thresholds, fuzz equivalence, adversarial corpora
@@ -449,7 +457,7 @@ A fully open data-curation pipeline for agentic training data, ~100K trajectorie
 ## TMax: An open recipe for terminal agents
 
 - RL over the TMax-15K environments with outcome-only rewards
-- [DPPO](https://arxiv.org/abs/2602.04879), a GRPO variant, designed to help with agentic stability (discussed in Lecture 10)
+- [DPPO](https://arxiv.org/abs/2602.04879), a GRPO variant, designed to help with agentic stability (discussed it in lecture 10)
 - **TMax-9B: 27.2% on Terminal-Bench 2.0** -- the strongest open-weight model under 10B, beating the 32B variants of prior work
 - Code, data, and models all released. Very little high-quality RL data like this in the open!
 
@@ -496,7 +504,7 @@ Open models train across multiple harnesses so deployment is smooth.
 |||
 
 ```box
-title: Example harness gains
+title: Example Harness Gains
 tone: accent
 content: |
   Polar (NVIDIA): same model, same GRPO, same tasks -- **+22.6** points on SWE-bench Verified training through the Codex harness (3.8 → 26.4: RL teaching an *unfamiliar* harness), **+0.6** through Qwen Code (already fluent: 34.6 → 35.2).
@@ -545,8 +553,8 @@ Nemotron physically deletes future git commits and firewalls GitHub so SWE agent
 <!-- animate: bullets -->
 ## More headaches
 
-- **Long-tail rollouts**: one trajectory makes 2 tool calls, another makes 200 -- async is designed to help with this, but the long tail remains challenging
-- **Credit assignment**: one sparse reward over a $10^5$--$10^6$-token trajectory; expensive rollouts also make GRPO-style algorithms more costly
+- **Long-tail rollouts**: one trajectory makes 2 tool calls, another makes 200 -- async designed to help with this, but long-tail is challenging
+- **Credit assignment**: one sparse reward over a $10^5$--$10^6$-token trajectory; expensive rollouts also make GRPO style algorithms more costly
 - **Verifier gaming**: TMax rollouts were caught replacing test files with no-ops and faking binaries with simulated logs [@ivison2026tmax]; verifier exploitation is common [@gamingverifiers2026] -- over-optimization is back (lec. 9)
 - **Harness-native training**: production agents live inside complex deployment harnesses (may not be in training data)
 
@@ -555,7 +563,7 @@ Nemotron physically deletes future git commits and firewalls GitHub so SWE agent
 ## Takeaways
 
 1. Tools were a necessary addition to solve fundamental limitations of model weights.
-2. The initial infrastructure buildout of standards, harnesses, etc., makes tool use research tractable.
+2. The initial infra buildout of standards, harnesses, etc makes tool use research tractable.
 3. Scaling RL for agents and tools is a very hard problem. Lots to do :)
 
 
@@ -566,19 +574,19 @@ Nemotron physically deletes future git commits and firewalls GitHub so SWE agent
 
 0. Prerequisites review
 1. Overview *(ch. 1-3)*
-2. IFT, reward models & rejection sampling *(ch. 4, 5, 9)*
-3. RL: Motivation & math *(ch. 6)*
-4. RL: Implementation & practice *(ch. 6)*
-5. The rise of reasoning models *(ch. 7)*
-6. Direct preference optimization *(ch. 8)*
+2. IFT, Reward Models & Rejection Sampling *(ch. 4, 5, 9)*
+3. RL: Motivation & Math *(ch. 6)*
+4. RL: Implementation & Practice *(ch. 6)*
+5. The Rise of Reasoning Models *(ch. 7)*
+6. Direct Preference Optimization *(ch. 8)*
 
 |||
 
-7. Synthetic data & modern post-training *(ch. 12)*
-8. Preferences & preference data *(ch. 10-11)*
-9. Over-optimization & RLHF's bad reputation *(ch. 14, app. B)*
-10. Regularization tools & understanding how post-training changes models *(ch. 15)*
-11. **Tool use, function calling & the road to agents** *(ch. 13)* -- *today*
+7. Synthetic Data & Modern Post-training *(ch. 12)*
+8. Preferences & Preference Data *(ch. 10-11)*
+9. Over-Optimization & RLHF's Bad Reputation *(ch. 14, app. B)*
+10. Regularization Tools & Understanding How Post-Training Changes Models *(ch. 15)*
+11. **Tool Use, Function Calling & The Road to Agents** *(ch. 13)* -- *today*
 12. **Evaluation** *(ch. 16)* -- *next (tentative)*
 
 ---
