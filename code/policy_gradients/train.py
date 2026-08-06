@@ -24,13 +24,13 @@ from .utils import (
     compute_log_probs,
     compute_values,
     create_dataset,
-    resolve_device,
     get_loss_objective,
     get_ref_model,
     get_val_model,
     load_model,
     print_model_info,
     progress_bar,
+    resolve_device,
     seed_everything,
 )
 
