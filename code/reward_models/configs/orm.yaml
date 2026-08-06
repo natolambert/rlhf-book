@@ -1,5 +1,6 @@
 # Outcome Reward Model Configuration
-# Token-level correctness classification on GSM8K.
+# Sequence-level correctness classification on GSM8K
+# (per-token logits mean-pooled into one score per completion).
 #
 # Run with:
 #   uv run python -m reward_models.train_orm \
