@@ -145,7 +145,7 @@ def main(cfg: Config):
 def main_cli():
     parser = argparse.ArgumentParser(description="Train policy gradient models for RLHF")
     parser.add_argument("--config", type=str, required=True, help="Path to YAML config file")
-    parser.add_argument("--device", type=str, choices=["auto", "cuda", "mps", "cpu"])
+    parser.add_argument("--device", type=str, choices=["auto", "cuda", "cpu"])
     args = parser.parse_args()
     cfg = load_config(args.config)
     if args.device is not None:

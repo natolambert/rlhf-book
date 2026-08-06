@@ -72,7 +72,7 @@ class Config(BaseModel):
         batch_acc: Gradient accumulation steps
         max_norm: Gradient clipping norm
         seed: Random seed
-        device: Device selection (auto, cuda, mps, cpu)
+        device: Device selection (auto, cuda, cpu)
         model_device_id: GPU for policy model
 
         # Logging
@@ -129,7 +129,7 @@ class Config(BaseModel):
     batch_acc: int = 4
     max_norm: float = 1.0
     seed: int = 42
-    device: Literal["auto", "cuda", "mps", "cpu"] = "auto"
+    device: Literal["auto", "cuda", "cpu"] = "auto"
     model_device_id: int = 0
 
     # Logging

@@ -45,18 +45,14 @@ def get_attn_implementation() -> str:
 
 
 def resolve_device(device: str = "auto") -> torch.device:
-    """Resolve 'auto' to CUDA, then MPS or fallback to CPU."""
+    """Resolve 'auto' to CUDA if available, otherwise CPU."""
     if device == "auto":
-        if torch.cuda.is_available():
-            device = "cuda"
-        elif torch.backends.mps.is_available():
-            device = "mps"
-        else:
-            device = "cpu"
-    elif device == "cuda" and not torch.cuda.is_available():
-        raise ValueError("CUDA is not available, but device is set to 'cuda'")
-    elif device == "mps" and not torch.backends.mps.is_available():
-        raise ValueError("MPS is not available, but device is set to 'mps'")
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+    elif device == "cuda":
+        if not torch.cuda.is_available():
+            raise ValueError("CUDA is not available, but device is set to 'cuda'")
+    elif device != "cpu":
+        raise ValueError(f"Unsupported device={device!r}. Expected 'auto', 'cuda', or 'cpu'.")
     return torch.device(device)
 
 
@@ -803,7 +799,7 @@ def main_cli():
     parser.add_argument("--batch_size", type=int, help="Batch size")
     parser.add_argument("--gradient_accumulation_steps", type=int)
     parser.add_argument("--wandb_entity", type=str, help="Wandb entity/team name")
-    parser.add_argument("--device", type=str, choices=["auto", "cuda", "mps", "cpu"])
+    parser.add_argument("--device", type=str, choices=["auto", "cuda", "cpu"])
     parser.add_argument("--wandb_project", type=str, help="Wandb project name")
     parser.add_argument(
         "--sample_every", type=int, help="Generate samples every N steps (0 to disable)"
