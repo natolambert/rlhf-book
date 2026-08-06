@@ -261,7 +261,8 @@ This is where the default implementation of outcome reward models diverges from 
 To translate, this is implemented as a small head that outputs a scalar logit at every token, rather than a classification head of a traditional RM that outputs one logit for the entire sequence.
 Additionally, in this original GSM8K paper the authors jointly trained their ORM with the next-token, language modeling loss -- this practice did not continue as the default.
 
-The term "outcome-reward model" appeared in 2022, in a paper comparing outcome (correctness) supervised, sequence-level reward models versus process reward models with intermediate quality labels [@uesato2022solving] -- this importantly was *not* the canonical implementation.
+The term "outcome-reward model" appeared in 2022, in a paper comparing "outcome-supervised RM (ORM)" versus process reward models that predicted the quality of the reasoning so far [@uesato2022solving] -- this importantly is a secondary way of implementing an ORM, one that implements a binary `correct` or `incorrect` in the LLM's tokenizer vocabulary as a step-level signal, rather than learning a separate scalar head that predicts correctness at every token.
+
 The canonical implementation that is followed in this book is from the paper *Let's Verify Step by Step* [@lightman2023let], where the outcome reward model is training a per-token predictor of if an answer is right with a cross-entropy loss.
 
 Formally, the per-token loss applies a binary cross-entropy at every completion token, where each token's associated outcome probability is trained towards the sequence's outcome label:
@@ -352,11 +353,11 @@ This can be a noisy process, as the updates and loss propagate per token dependi
 ![Training an outcome reward model uses offline labels from a verifier or dataset (e.g., all 1s for correct completions). Each completion token is trained with binary cross-entropy against the outcome label, and per-token probabilities are aggregated into a final score for verification, filtering, or reranking.](images/orm_training.png){#fig:orm_training data-dark-src="images/orm_training-dark.png"}
 
 These models have continued to be used, but are less supported in open-source RLHF tools. 
-For example, the same type of ORM was used in the seminal work *Let's Verify Step by Step* [@lightman2023let], but without the language modeling prediction piece of the loss.
+For example, the same type of ORM was used in the seminal work *Let's Verify Step by Step* [@lightman2023let], but without the language modeling prediction piece of the loss from Cobbe et al. 2021.
 Then, the final loss is a cross-entropy loss on every token, predicting whether the final answer is correct.
 
 Given the lack of support, the term outcome reward model (ORM) has been used in multiple ways. 
-Some literature, e.g. [@lyu2025exploring], continues to use the original definition from Cobbe et al. 2021; others use it more broadly for any verifier trained to predict whether a completion is correct.
+Some literature, e.g. [@lyu2025exploring], continues to be inspired by the original definition from Cobbe et al. 2021; others use it more broadly for any verifier trained to predict whether a completion is correct.
 
 
 ## Process Reward Models
