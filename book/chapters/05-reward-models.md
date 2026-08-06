@@ -243,15 +243,27 @@ The training data for an ORM is constructed in a similar manner to standard pref
 Here, we have a problem statement or prompt, $x$ and two completions $y_1$ and $y_2$. 
 The inductive bias used here is that one completion should be a correct solution to the problem and one incorrect, resulting in $(y_c,y_{ic})$.
 
-The architecture of the models used is very similar to a standard reward model, with a linear layer appended to a model that can output a single logit (in the case of an RM) -- with an ORM, the training objective that follows is slightly different [@cobbe2021gsm8k]:
+Before we continue, it is important to note that outcome reward models are a relatively niche area in the post-training literature, and the key papers we reference have subtly different implementation details.
+The key idea is to learn a per-token signal of how likely the completion is to end in a correct answer, but there have been different training approaches and architectures over time.
 
-> [We] train verifiers with a joint objective where the model
-learns to label a model completion as correct or incorrect, in addition to the original language modeling objective. 
-> Architecturally, this means our verifiers
-are language models, with a small scalar head that outputs predictions on a per-token basis. 
+The architecture of the models used is very similar to a standard reward model, with a linear layer appended to a model that can output a single logit (in the case of an RM) -- with an ORM, the training objective that follows is slightly different.
+To start, let's break down the content in the original GSM8K paper (a popular benchmark studying grade-school math) [@cobbe2021gsm8k], which originated the ideas that became an ORM without yet naming it. We start with architecture, from section 4.3:
+
+> We can either train verifiers to make a single scalar prediction conditioned on the entire generated solution, or to make a scalar prediction after each token in the solution. 
+> By default, we choose the latter, training verifiers to make predictions after each token.
+
+This is where the default implementation of outcome reward models diverges from Bradley-Terry models -- they predict at each token -- and this has not changed in the literature. The authors comment on how per-token information is "a useful auxiliary signal that encourages the model to judge reasoning throughout the solutions," rather than just predicting the outcome (which is a bit counter-intuitive, given the name of model that later emerged as ORM). Continuing, from Appendix E:
+
+> [We] train verifiers with a joint objective where the model learns to label a model completion as correct or incorrect, in addition to the original language modeling objective. 
+> Architecturally, this means our verifiers are language models, with a small scalar head that outputs predictions on a per-token basis. 
 > We implement this scalar head as a single bias parameter and single gain parameter that operate on the logits outputted by the language model's final unembedding layer.
 
-To translate, this is implemented as a language modeling head that can predict two classes per token (1 for correct, 0 for incorrect), rather than a classification head of a traditional RM that outputs one logit for the entire sequence.
+To translate, this is implemented as a small head that outputs a scalar logit at every token, rather than a classification head of a traditional RM that outputs one logit for the entire sequence.
+Additionally, in this original GSM8K paper the authors jointly trained their ORM with the next-token, language modeling loss -- this practice did not continue as the default.
+
+The term "outcome-reward model" appeared in 2022, in a paper comparing outcome (correctness) supervised, sequence-level reward models versus process reward models with intermediate quality labels [@uesato2022solving] -- this importantly was *not* the canonical implementation.
+The canonical implementation that is followed in this book is from the paper *Let's Verify Step By Step* [@lightman2023let], where the outcome reward model is training a per-token predictor of if an answer is right with a cross-entropy loss.
+
 Formally, following [@lyu2025exploring] this is a per-token binary cross-entropy loss:
 
 $$\mathcal{L}_{\text{CE}}(\theta) = -\mathbb{E}_{(s,r)\sim \mathcal{D}}\left[r\log p_\theta(s) + (1-r)\log(1-p_\theta(s))\right]$$ {#eq:orm_loss}
