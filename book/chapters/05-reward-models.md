@@ -102,14 +102,14 @@ They both appear in the RLHF literature.
 
 ![Training a preference reward model requires pairs of chosen and rejected completions. The model computes a scalar score for each completion from a sequence-level representation, often the end-of-sequence (EOS) token's hidden state, and the contrastive loss depends only on the score difference between the two.](images/pref_rm_training.png){#fig:pref_rm_training data-dark-src="images/pref_rm_training-dark.png"}
 
-## The Default Reward Model Architecture
+### The Default Reward Model Architecture
 
 The most common way reward models are implemented is through an abstraction similar to Transformers' `AutoModelForSequenceClassification`, which appends a small linear head to the language model and produces a scalar reward score for a prompt-completion pair at training or inference.
 At inference time, the model outputs the *relative likelihood that the piece of text is chosen* as a single logit from the model.
 
 Other implementation options exist, such as just taking a linear layer directly from the final embeddings, but they are less common in open tooling.
 
-## Implementation Example
+### Implementation Example
 
 Implementing the reward modeling loss is quite simple.
 More of the implementation challenge is on setting up a separate data loader and inference pipeline.
