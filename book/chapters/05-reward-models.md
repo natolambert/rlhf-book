@@ -252,7 +252,7 @@ To start, let's break down the content in the original GSM8K paper (a popular be
 > We can either train verifiers to make a single scalar prediction conditioned on the entire generated solution, or to make a scalar prediction after each token in the solution. 
 > By default, we choose the latter, training verifiers to make predictions after each token.
 
-This is where the default implementation of outcome reward models diverges from Bradley-Terry models -- they predict at each token -- and this has not changed in the literature. The authors comment on how per-token information is "a useful auxiliary signal that encourages the model to judge reasoning throughout the solutions," rather than just predicting the outcome (which is a bit counter-intuitive, given the name of model that later emerged as ORM). Continuing, from Appendix E:
+This is where the default implementation of outcome reward models diverges from Bradley-Terry models -- they predict at each token. The authors comment on how per-token information could be "a useful auxiliary signal that encourages the model to judge reasoning throughout the solutions," rather than just predicting the outcome (which is a bit counter-intuitive, given the name of model that later emerged as ORM). Continuing, from Appendix E:
 
 > [We] train verifiers with a joint objective where the model learns to label a model completion as correct or incorrect, in addition to the original language modeling objective. 
 > Architecturally, this means our verifiers are language models, with a small scalar head that outputs predictions on a per-token basis. 
@@ -262,13 +262,19 @@ To translate, this is implemented as a small head that outputs a scalar logit at
 Additionally, in this original GSM8K paper the authors jointly trained their ORM with the next-token, language modeling loss -- this practice did not continue as the default.
 
 The term "outcome-reward model" appeared in 2022, in a paper comparing outcome (correctness) supervised, sequence-level reward models versus process reward models with intermediate quality labels [@uesato2022solving] -- this importantly was *not* the canonical implementation.
-The canonical implementation that is followed in this book is from the paper *Let's Verify Step By Step* [@lightman2023let], where the outcome reward model is training a per-token predictor of if an answer is right with a cross-entropy loss.
+The canonical implementation that is followed in this book is from the paper *Let's Verify Step by Step* [@lightman2023let], where the outcome reward model is training a per-token predictor of if an answer is right with a cross-entropy loss.
 
-Formally, following [@lyu2025exploring] this is a per-token binary cross-entropy loss:
+Formally, the per-token loss applies a binary cross-entropy at every completion token, where each token's associated outcome probability is trained towards the sequence's outcome label:
 
-$$\mathcal{L}_{\text{CE}}(\theta) = -\mathbb{E}_{(s,r)\sim \mathcal{D}}\left[r\log p_\theta(s) + (1-r)\log(1-p_\theta(s))\right]$$ {#eq:orm_loss}
+$$\mathcal{L}_{\text{token}}(\theta) = -\mathbb{E}_{(s,r)\sim \mathcal{D}}\left[\frac{1}{T}\sum_{t=1}^{T} \left( r\log p_\theta(s_t) + (1-r)\log\left(1-p_\theta(s_t)\right) \right)\right]$$ {#eq:orm_token_loss}
 
-where $r \in \{0,1\}$ is a binary label where 1 applies to a correct answer to a given prompt and 0 applies to an incorrect answer, and $p_\theta(s)$ is the scalar proportional to the predicted probability of correctness from the model being trained.
+where $s$ is a completion of $T$ tokens, $r \in \{0,1\}$ is a binary label where 1 applies to a correct answer to a given prompt and 0 applies to an incorrect answer, and $p_\theta(s_t) = \sigma(w_\theta(s_t))$ is the probability of correctness predicted at token $t$ from the model's scalar logit $w_\theta(s_t)$. 
+
+A simpler form of an ORM, following [@lyu2025exploring], is a sequence-level cross-entropy loss, where the model is later used for per-token inference:
+
+$$\mathcal{L}_{\text{CE}}(\theta) = -\mathbb{E}_{(s,r)\sim \mathcal{D}}\left[r\log \bar{p}_\theta(s) + (1-r)\log(1-\bar{p}_\theta(s))\right]$$ {#eq:orm_loss}
+
+where $r \in \{0,1\}$ is a binary label where 1 applies to a correct answer to a given prompt and 0 applies to an incorrect answer, and $\bar{p}_\theta(s) = \sigma\left(\frac{1}{T}\sum_{t=1}^{T} w_\theta(s_t)\right)$ squashes the average of the per-token logits into a single probability that the entire completion is correct -- note this is not the average of the per-token probabilities, since the sigmoid is applied after the pooling.
 In code, this outcome label is copied onto every completion token, while prompt tokens are masked with `-100` so they do not contribute to the loss.
 
 Implementing an outcome reward model (and other types, as we'll see with the Process Reward Model) involves applying the cross-entropy loss per-token based on whether the completion is a correct sample.
