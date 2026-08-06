@@ -25,7 +25,7 @@ from .utils import (
     format_gsm8k_gold,
     free_memory,
     get_attn_implementation,
-    get_default_device,
+    resolve_device,
     load_model,
     progress_bar,
     seed_everything,
@@ -264,7 +264,7 @@ def run(cfg: Config) -> Path:
         prompts = load_gsm8k_prompts(cfg)
         console.print(f"[dim]Loaded {len(prompts)} GSM8K prompts.[/dim]")
 
-        model_device = get_default_device(cfg.model_device_id, cfg.device)
+        model_device = resolve_device(cfg.model_device_id, cfg.device)
         console.print(f"[dim]Stage 1: loading policy model ({cfg.model_name})[/dim]")
         policy_model, policy_tokenizer = load_model(
             cfg.model_name, model_device, gradient_checkpointing=False
@@ -280,7 +280,7 @@ def run(cfg: Config) -> Path:
         console.print(f"[dim]VRAM after policy free: {cuda_memory_gb():.2f} GB[/dim]")
 
     # Stage 2: scoring.
-    rm_device = get_default_device(cfg.reward_model_device_id, cfg.device)
+    rm_device = resolve_device(cfg.reward_model_device_id, cfg.device)
     console.print(f"[dim]Stage 2: loading reward model ({cfg.reward_model_name})[/dim]")
     rm, rm_tokenizer = load_reward_model(cfg, rm_device)
     console.print(f"[dim]VRAM after reward-model load: {cuda_memory_gb():.2f} GB[/dim]")

@@ -60,7 +60,7 @@ def get_attn_implementation() -> str:
         return "sdpa"
 
 
-def get_default_device(cuda_device_id: int = 0, device: str = "auto") -> torch.device:
+def resolve_device(cuda_device_id: int = 0, device: str = "auto") -> torch.device:
     """Resolve 'auto' to CUDA, then MPS or fallback to CPU."""
     if device == "auto":
         if torch.cuda.is_available():

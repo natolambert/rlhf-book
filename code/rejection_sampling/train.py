@@ -30,7 +30,7 @@ from .utils import (
     format_gsm8k_gold,
     free_memory,
     get_attn_implementation,
-    get_default_device,
+    resolve_device,
     load_model,
     print_model_info,
     print_step_header,
@@ -316,7 +316,7 @@ def main(cfg: Config) -> None:
     )
 
     # Stage 3b: load policy model and SFT on the selected pairs.
-    model_device = get_default_device(cfg.model_device_id, cfg.device)
+    model_device = resolve_device(cfg.model_device_id, cfg.device)
     console.print(f"[dim]Loading policy model for SFT: {cfg.model_name}[/dim]")
     model, tokenizer = load_model(cfg.model_name, model_device, gradient_checkpointing=True)
     print_model_info(console, model)

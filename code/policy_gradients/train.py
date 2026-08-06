@@ -24,7 +24,7 @@ from .utils import (
     compute_log_probs,
     compute_values,
     create_dataset,
-    get_default_device,
+    resolve_device,
     get_loss_objective,
     get_ref_model,
     get_val_model,
@@ -38,7 +38,7 @@ from .utils import (
 def main(cfg: Config):
     seed_everything(cfg.seed)
 
-    device = get_default_device(device=cfg.device)
+    device = resolve_device(device=cfg.device)
     model_device = ref_model_device = val_model_device = device
     if device.type == "cuda":
         model_device = torch.device(f"cuda:{cfg.model_device_id}")

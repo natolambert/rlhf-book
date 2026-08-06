@@ -44,7 +44,7 @@ def get_attn_implementation() -> str:
         return "sdpa"
 
 
-def resolve_device(device: str = "auto") -> str:
+def resolve_device(device: str = "auto") -> torch.device:
     """Resolve 'auto' to CUDA, then MPS or fallback to CPU."""
     if device == "auto":
         if torch.cuda.is_available():
@@ -57,7 +57,7 @@ def resolve_device(device: str = "auto") -> str:
         raise ValueError("CUDA is not available, but device is set to 'cuda'")
     elif device == "mps" and not torch.backends.mps.is_available():
         raise ValueError("MPS is not available, but device is set to 'mps'")
-    return device
+    return torch.device(device)
 
 
 def seed_everything(seed: int) -> None:
@@ -74,7 +74,7 @@ def seed_everything(seed: int) -> None:
 
 def load_model(
     model_name: str,
-    device: str,
+    device: torch.device,
     gradient_checkpointing: bool = True,
     bf16: bool = True,
 ):
@@ -100,7 +100,7 @@ def load_model(
     return model, tokenizer
 
 
-def load_ref_model(model_name: str, device: str, bf16: bool = True):
+def load_ref_model(model_name: str, device: torch.device, bf16: bool = True):
     """Load reference model (frozen, no gradient checkpointing)."""
     attn_impl = get_attn_implementation()
     dtype = torch.bfloat16 if bf16 else torch.float32
