@@ -16,17 +16,14 @@ from .utils import (
     print_epoch_header,
     print_training_info,
     progress_bar,
+    resolve_device,
     seed_everything,
 )
 
 
 def main(cfg: Config):
     seed_everything(cfg.seed)
-
-    if torch.cuda.is_available():
-        device = torch.device(f"cuda:{cfg.model_device_id}")
-    else:
-        device = torch.device("cpu")
+    device = resolve_device(cfg.model_device_id, cfg.device)
 
     model, tokenizer = load_model(cfg, device)
     dataloader = create_dataloader(cfg, tokenizer)
@@ -105,8 +102,12 @@ def main(cfg: Config):
 def main_cli():
     parser = argparse.ArgumentParser(description="Instruction-tune a base model (SFT).")
     parser.add_argument("--config", type=str, required=True, help="Path to YAML config file")
+    parser.add_argument("--device", type=str, choices=["auto", "cuda", "cpu"])
     args = parser.parse_args()
-    main(load_config(args.config))
+    cfg = load_config(args.config)
+    if args.device is not None:
+        cfg.device = args.device
+    main(cfg)
 
 
 if __name__ == "__main__":
