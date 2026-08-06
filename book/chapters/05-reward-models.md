@@ -102,14 +102,14 @@ They both appear in the RLHF literature.
 
 ![Training a preference reward model requires pairs of chosen and rejected completions. The model computes a scalar score for each completion from a sequence-level representation, often the end-of-sequence (EOS) token's hidden state, and the contrastive loss depends only on the score difference between the two.](images/pref_rm_training.png){#fig:pref_rm_training data-dark-src="images/pref_rm_training-dark.png"}
 
-## The Default Reward Model Architecture
+### The Default Reward Model Architecture
 
 The most common way reward models are implemented is through an abstraction similar to Transformers' `AutoModelForSequenceClassification`, which appends a small linear head to the language model and produces a scalar reward score for a prompt-completion pair at training or inference.
 At inference time, the model outputs the *relative likelihood that the piece of text is chosen* as a single logit from the model.
 
 Other implementation options exist, such as just taking a linear layer directly from the final embeddings, but they are less common in open tooling.
 
-## Implementation Example
+### Implementation Example
 
 Implementing the reward modeling loss is quite simple.
 More of the implementation challenge is on setting up a separate data loader and inference pipeline.
@@ -186,53 +186,6 @@ class BradleyTerryRewardModel(nn.Module):
 In this section and what follows, most of the implementation complexity for reward models (and much of post-training) is around constructing the data-loaders correctly and distributed learning systems.
 Note, when training reward models, the most common practice is to train for only 1 epoch to avoid overfitting.
 
-## Reward Model Variants
-
-Reward modeling is a relatively under-explored area of RLHF.
-The traditional reward modeling loss has been modified in many popular works, but the modifications have not solidified into a single best practice.
-
-### Preference Margin Loss
-
-In the case where annotators are providing either scores or rankings on a Likert Scale (a rating scale with ordered categories indicating magnitude of preference, e.g. 1--5), the magnitude of the relational quantities can be used in training.
-The most common practice is to binarize the data along the preference direction, reducing the mixed information of relative ratings or the strength of the ranking to just chosen and rejected completions.
-The additional information, such as the magnitude of the preference, has been used to improve model training, but it has not converged as a standard practice.
-Llama 2 proposes using the margin between two data points, $m(y_c, y_r)$, to distinguish the magnitude of preference:
-
-$$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) - m(y_c, y_r) \right) \right)$$ {#eq:rewardmodelingmargin}
-
-For example, each completion is often given a ranking from 1 to 5 in terms of quality.
-In the case where the chosen sample was assigned a score of 5 and rejected a score of 2, the margin $m(y_c, y_r)= 5 - 2 = 3$. 
-Other functions for computing margins can be explored.
-
-Note that in Llama 3 the margin term was removed as the team observed diminishing improvements after scaling.
-
-### Balancing Multiple Comparisons Per Prompt
-
-InstructGPT studies the impact of using $K = 4$ to $9$ completions per prompt to rank, producing $\binom{K}{2}$ pairwise comparisons from each prompt [@ouyang2022training].
-Because these comparisons are highly correlated (they share the same prompt), shuffling them into the dataset naively causes the reward model to overfit.
-To address this, they weight the loss updates per comparison per prompt -- without reweighting, prompts with more completions would contribute more total loss simply because they generate more pairs.
-In practice, all $\binom{K}{2}$ comparisons from a single prompt are typically included in the same training batch and averaged together, so each prompt contributes one grouped update rather than appearing across many separate batches.
-This reduces overfitting to individual prompts and prevents prompts with more sampled completions from dominating the loss.
-The loss function becomes:
-
-$$\mathcal{L}(\theta) = - \frac{1}{\binom{K}{2}} \mathbb{E}_{(x, y_c, y_r)\sim D} \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) \right) \right)$$ {#eq:rewardmodelinginstructgpt}
-
-
-### K-Wise Loss Function
-
-There are many other formulations that can create suitable models of human preferences for RLHF.
-One such example, used in the popular, early RLHF'd models Starling 7B and 34B [@zhu2024starling], is a K-wise loss function based on the Plackett-Luce model [@liu2019learning].
-
-Zhu et al. 2023 [@zhu2023principled] formalize the setup as follows.
-With a prompt, or state, $s^i$, $K$ actions $(a_0^i, a_1^i, \cdots, a_{K-1}^i)$ are sampled from $P(a_0,\cdots,a_{K-1}|s^i)$.
-Then, labelers rank the $K$ actions by preference, producing a permutation $\sigma^i: [K] \mapsto [K]$, where $\sigma^i(0)$ is the most preferred action. This yields a Plackett-Luce probability over the complete ranking of all $K$ items:
-
-$$P(\sigma^i|s^i,a_0^i,a_1^i,\ldots,a_{K-1}^i) = \prod_{k=0}^{K-1} \frac{\exp(r_{\theta\star}(s^i,a_{\sigma^i(k)}^i))}{\sum_{j=k}^{K-1}\exp(r_{\theta\star}(s^i,a_{\sigma^i(j)}^i))}$$ {#eq:kwise_rm}
-
-When $K = 2$, this reduces to the Bradley-Terry (BT) model for pairwise comparisons.
-Regardless, once trained, these models are used similarly to other reward models during RLHF training.
-
-
 ## Outcome Reward Models
 
 <!-- Huge thanks to Hangliang Ren, graduate student at Northeastern University for helping with this section (and PRMs), see https://github.com/myhott163com/RLHF_ORM_PRM -->
@@ -243,20 +196,39 @@ The training data for an ORM is constructed in a similar manner to standard pref
 Here, we have a problem statement or prompt, $x$ and two completions $y_1$ and $y_2$. 
 The inductive bias used here is that one completion should be a correct solution to the problem and one incorrect, resulting in $(y_c,y_{ic})$.
 
-The architecture of the models used is very similar to a standard reward model, with a linear layer appended to a model that can output a single logit (in the case of an RM) -- with an ORM, the training objective that follows is slightly different [@cobbe2021gsm8k]:
+Before we continue, it is important to note that outcome reward models are a relatively niche area in the post-training literature, and the key papers we reference have subtly different implementation details.
+The key idea is to learn a per-token signal of how likely the completion is to end in a correct answer, but there have been different training approaches and architectures over time.
 
-> [We] train verifiers with a joint objective where the model
-learns to label a model completion as correct or incorrect, in addition to the original language modeling objective. 
-> Architecturally, this means our verifiers
-are language models, with a small scalar head that outputs predictions on a per-token basis. 
+The architecture of the models used is very similar to a standard reward model, with a linear layer appended to a model that can output a single logit (in the case of an RM) -- with an ORM, the training objective that follows is slightly different.
+To start, let's break down the content in the original GSM8K paper (a popular benchmark studying grade-school math) [@cobbe2021gsm8k], which originated the ideas that became an ORM without yet naming it. We start with architecture, from section 4.3:
+
+> We can either train verifiers to make a single scalar prediction conditioned on the entire generated solution, or to make a scalar prediction after each token in the solution. 
+> By default, we choose the latter, training verifiers to make predictions after each token.
+
+This is where the default implementation of outcome reward models diverges from Bradley-Terry models -- they predict at each token. The authors comment on how per-token information could be "a useful auxiliary signal that encourages the model to judge reasoning throughout the solutions," rather than just predicting the outcome (which is a bit counter-intuitive, given the name of model that later emerged as ORM). Continuing, from Appendix E:
+
+> [We] train verifiers with a joint objective where the model learns to label a model completion as correct or incorrect, in addition to the original language modeling objective. 
+> Architecturally, this means our verifiers are language models, with a small scalar head that outputs predictions on a per-token basis. 
 > We implement this scalar head as a single bias parameter and single gain parameter that operate on the logits outputted by the language model's final unembedding layer.
 
-To translate, this is implemented as a language modeling head that can predict two classes per token (1 for correct, 0 for incorrect), rather than a classification head of a traditional RM that outputs one logit for the entire sequence.
-Formally, following [@lyu2025exploring] this is a per-token binary cross-entropy loss:
+To translate, this is implemented as a small head that outputs a scalar logit at every token, rather than a classification head of a traditional RM that outputs one logit for the entire sequence.
+Additionally, in this original GSM8K paper the authors jointly trained their ORM with the next-token, language modeling loss -- this practice did not continue as the default.
 
-$$\mathcal{L}_{\text{CE}}(\theta) = -\mathbb{E}_{(s,r)\sim \mathcal{D}}\left[r\log p_\theta(s) + (1-r)\log(1-p_\theta(s))\right]$$ {#eq:orm_loss}
+The term "outcome-reward model" appeared in 2022, in a paper comparing "outcome-supervised RM (ORM)" versus process reward models that predicted the quality of the reasoning so far [@uesato2022solving] -- this importantly is a secondary way of implementing an ORM, one that implements a binary `correct` or `incorrect` in the LLM's tokenizer vocabulary as a step-level signal, rather than learning a separate scalar head that predicts correctness at every token.
 
-where $r \in \{0,1\}$ is a binary label where 1 applies to a correct answer to a given prompt and 0 applies to an incorrect answer, and $p_\theta(s)$ is the scalar proportional to the predicted probability of correctness from the model being trained.
+The canonical implementation that is followed in this book is from the paper *Let's Verify Step by Step* [@lightman2023let], where the outcome reward model is training a per-token predictor of if an answer is right with a cross-entropy loss.
+
+Formally, the per-token loss applies a binary cross-entropy at every completion token, where each token's associated outcome probability is trained towards the sequence's outcome label:
+
+$$\mathcal{L}_{\text{token}}(\theta) = -\mathbb{E}_{(s,r)\sim \mathcal{D}}\left[\frac{1}{T}\sum_{t=1}^{T} \left( r\log p_\theta(s_t) + (1-r)\log\left(1-p_\theta(s_t)\right) \right)\right]$$ {#eq:orm_token_loss}
+
+where $s$ is a completion of $T$ tokens, $r \in \{0,1\}$ is a binary label where 1 applies to a correct answer to a given prompt and 0 applies to an incorrect answer, and $p_\theta(s_t) = \sigma(w_\theta(s_t))$ is the probability of correctness predicted at token $t$ from the model's scalar logit $w_\theta(s_t)$. 
+
+A simpler form of an ORM, following [@lyu2025exploring], is a sequence-level cross-entropy loss, where the model is later used for per-token inference:
+
+$$\mathcal{L}_{\text{CE}}(\theta) = -\mathbb{E}_{(s,r)\sim \mathcal{D}}\left[r\log \bar{p}_\theta(s) + (1-r)\log(1-\bar{p}_\theta(s))\right]$$ {#eq:orm_loss}
+
+where $r \in \{0,1\}$ is a binary label where 1 applies to a correct answer to a given prompt and 0 applies to an incorrect answer, and $\bar{p}_\theta(s) = \sigma\left(\frac{1}{T}\sum_{t=1}^{T} w_\theta(s_t)\right)$ squashes the average of the per-token logits into a single probability that the entire completion is correct -- note this is not the average of the per-token probabilities, since the sigmoid is applied after the pooling.
 In code, this outcome label is copied onto every completion token, while prompt tokens are masked with `-100` so they do not contribute to the loss.
 
 Implementing an outcome reward model (and other types, as we'll see with the Process Reward Model) involves applying the cross-entropy loss per-token based on whether the completion is a correct sample.
@@ -334,11 +306,11 @@ This can be a noisy process, as the updates and loss propagate per token dependi
 ![Training an outcome reward model uses offline labels from a verifier or dataset (e.g., all 1s for correct completions). Each completion token is trained with binary cross-entropy against the outcome label, and per-token probabilities are aggregated into a final score for verification, filtering, or reranking.](images/orm_training.png){#fig:orm_training data-dark-src="images/orm_training-dark.png"}
 
 These models have continued to be used, but are less supported in open-source RLHF tools. 
-For example, the same type of ORM was used in the seminal work *Let's Verify Step by Step* [@lightman2023let], but without the language modeling prediction piece of the loss.
+For example, the same type of ORM was used in the seminal work *Let's Verify Step by Step* [@lightman2023let], but without the language modeling prediction piece of the loss from Cobbe et al. 2021.
 Then, the final loss is a cross-entropy loss on every token, predicting whether the final answer is correct.
 
 Given the lack of support, the term outcome reward model (ORM) has been used in multiple ways. 
-Some literature, e.g. [@lyu2025exploring], continues to use the original definition from Cobbe et al. 2021; others use it more broadly for any verifier trained to predict whether a completion is correct.
+Some literature, e.g. [@lyu2025exploring], continues to be inspired by the original definition from Cobbe et al. 2021; others use it more broadly for any verifier trained to predict whether a completion is correct.
 
 
 ## Process Reward Models
@@ -438,8 +410,8 @@ Below is a summary of what the models predict and how they are trained.
 ::: {.table-wrap}
 | Model Class | What They Predict | How They Are Trained | LM structure |
 |------------|------------------|---------------------|--------------|
-| **Reward Models** | Sequence-level quality score $r_\theta(x, y)$ | Contrastive loss between pairwise (or N-wise) comparisons between completions | Linear head on EOS/last-token hidden state |
-| **Outcome Reward Models** | Probability that an answer is correct per-token | Labeled outcome pairs (e.g., success/failure on verifiable domains) | Per-token binary cross-entropy head; labels repeat the outcome label |
+| **Reward Models** | Sequence-level quality score $r_\theta(x, y)$ | Contrastive loss between pairwise (or N-wise) comparisons between completions to the same prompt | Linear head on EOS/last-token hidden state |
+| **Outcome Reward Models** | Probability that an answer is correct per-token | Labeled outcomes (e.g., success/failure on verifiable domains); each sample is labeled independently, with no need for paired comparisons on the same prompt | Per-token binary cross-entropy head; labels repeat the outcome label |
 | **Process Reward Models** | A reward or score for intermediate steps at end of reasoning steps | Trained using intermediate feedback or stepwise annotations (trained per token in reasoning step) | Per-token head predicting step correctness (-1, 0, 1) |
 | **Value Functions** | The expected return given the current state | Trained via regression to each point in sequence | A scalar regression head with per-token outputs |
 Table: Comparing types of reward models. {#tbl:rm_compare}
@@ -459,7 +431,7 @@ This is technically still a Bradley-Terry model and would fall in the first clas
 **ORM vs. Value Function.**
 ORMs and value functions can appear similar since both produce per-token outputs with the same head architecture, but they differ in *what they predict* and *where targets come from*:
 
-- **ORMs** predict an immediate, token-local quantity: $p(\text{correct}_t)$ or $r_t$. Targets come from *offline labels* (a verifier or dataset marking tokens/sequences as correct or incorrect).
+- **ORMs** predict, at every token, whether the completion will conclude with a correct answer. Targets come from *offline labels* (a verifier or dataset marking sequences as correct or incorrect) and are broadcast to every intermediate token for training.
 - **Value functions** predict the expected *remaining* return: $V(s_t) = \mathbb{E}\left[\sum_{k \geq t} \gamma^{k-t} r_k \mid s_t\right]$. Targets are typically *computed from on-policy rollouts* under the current policy $\pi_\theta$, and change as the policy changes (technically, value functions can also be off-policy, but this is not established for work in language modeling).
 
 If you define a dense token reward $r_t = \mathbb{1}[\text{token is correct}]$ and use $\gamma = 1$, then an ORM is learning $r_t$ (or $p(r_t = 1)$) while the value head is learning the remaining-sum $\sum_{k \geq t} r_k$.
@@ -479,7 +451,7 @@ The models handle data differently at inference time (once they've been trained)
 **Outcome RM:**
 
 - *Input:* prompt $x$ + completion $y$
-- *Output:* per-token probabilities $p_t \approx P(\text{correct at token } t)$ over completion tokens
+- *Output:* per-token probabilities $p_t \approx P(\text{final answer correct} \mid y_{\leq t})$ over completion tokens
 - *Usage:* score finished candidates; aggregate via mean, min (tail risk), or product $\prod_t p_t$ (equivalently, sum log-probabilities $\sum_t \log p_t$)
 - *Aggregation choices:* mean correctness, minimum $p_t$, average over last $m$ tokens, or threshold flagging if any $p_t < \tau$
 
@@ -500,9 +472,56 @@ The models handle data differently at inference time (once they've been trained)
 In summary, the way to understand the different models is:
 
 - **RM:** "How good is this whole answer?" → scalar value
-- **ORM:** "Which parts look correct?" → per-token correctness
+- **ORM:** "Does this answer end up correct?" → per-token predictions of the outcome (as a proxy for intermediate quality)
 - **PRM:** "Are the reasoning steps sound?" → per-step scores
 - **Value:** "How much reward remains from here?" → baseline for RL advantages
+
+## Other Reward Model Variants
+
+Reward modeling is a relatively under-explored area of RLHF.
+The traditional, Bradley-Terry reward modeling loss has been modified in many popular works, but the modifications have not solidified into a single best practice.
+
+### Preference Margin Loss
+
+In the case where annotators are providing either scores or rankings on a Likert Scale (a rating scale with ordered categories indicating magnitude of preference, e.g. 1--5), the magnitude of the relational quantities can be used in training.
+The most common practice is to binarize the data along the preference direction, reducing the mixed information of relative ratings or the strength of the ranking to just chosen and rejected completions.
+The additional information, such as the magnitude of the preference, has been used to improve model training, but it has not converged as a standard practice.
+Llama 2 proposes using the margin between two data points, $m(y_c, y_r)$, to distinguish the magnitude of preference:
+
+$$\mathcal{L}(\theta) = - \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) - m(y_c, y_r) \right) \right)$$ {#eq:rewardmodelingmargin}
+
+For example, each completion is often given a ranking from 1 to 5 in terms of quality.
+In the case where the chosen sample was assigned a score of 5 and rejected a score of 2, the margin $m(y_c, y_r)= 5 - 2 = 3$. 
+Other functions for computing margins can be explored.
+
+Note that in Llama 3 the margin term was removed as the team observed diminishing improvements after scaling.
+
+### Balancing Multiple Comparisons Per Prompt
+
+InstructGPT studies the impact of using $K = 4$ to $9$ completions per prompt to rank, producing $\binom{K}{2}$ pairwise comparisons from each prompt [@ouyang2022training].
+Because these comparisons are highly correlated (they share the same prompt), shuffling them into the dataset naively causes the reward model to overfit.
+To address this, they weight the loss updates per comparison per prompt -- without reweighting, prompts with more completions would contribute more total loss simply because they generate more pairs.
+In practice, all $\binom{K}{2}$ comparisons from a single prompt are typically included in the same training batch and averaged together, so each prompt contributes one grouped update rather than appearing across many separate batches.
+This reduces overfitting to individual prompts and prevents prompts with more sampled completions from dominating the loss.
+The loss function becomes:
+
+$$\mathcal{L}(\theta) = - \frac{1}{\binom{K}{2}} \mathbb{E}_{(x, y_c, y_r)\sim D} \log \left( \sigma \left( r_{\theta}(y_c \mid x) - r_{\theta}(y_r \mid x) \right) \right)$$ {#eq:rewardmodelinginstructgpt}
+
+
+### K-Wise Loss Function
+
+There are many other formulations that can create suitable models of human preferences for RLHF.
+One such example, used in the popular, early RLHF'd models Starling 7B and 34B [@zhu2024starling], is a K-wise loss function based on the Plackett-Luce model [@liu2019learning].
+
+Zhu et al. 2023 [@zhu2023principled] formalize the setup as follows.
+With a prompt, or state, $s^i$, $K$ actions $(a_0^i, a_1^i, \cdots, a_{K-1}^i)$ are sampled from $P(a_0,\cdots,a_{K-1}|s^i)$.
+Then, labelers rank the $K$ actions by preference, producing a permutation $\sigma^i: [K] \mapsto [K]$, where $\sigma^i(0)$ is the most preferred action. This yields a Plackett-Luce probability over the complete ranking of all $K$ items:
+
+$$P(\sigma^i|s^i,a_0^i,a_1^i,\ldots,a_{K-1}^i) = \prod_{k=0}^{K-1} \frac{\exp(r_{\theta\star}(s^i,a_{\sigma^i(k)}^i))}{\sum_{j=k}^{K-1}\exp(r_{\theta\star}(s^i,a_{\sigma^i(j)}^i))}$$ {#eq:kwise_rm}
+
+When $K = 2$, this reduces to the Bradley-Terry (BT) model for pairwise comparisons.
+Regardless, once trained, these models are used similarly to other reward models during RLHF training.
+
 
 ## Generative Reward Modeling (a.k.a. LLM-as-a-judge)
 
