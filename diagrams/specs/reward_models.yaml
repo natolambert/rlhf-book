@@ -62,20 +62,20 @@ reward_models:
 
     architecture:
       base: "LM trunk"
-      head: "Per-token classification head"
-      pooling: "None (per-token outputs)"
+      head: "Per-token scalar logit head"
+      pooling: "Mean over completion logits → sequence score"
 
     scores:
-      granularity: "per-token"
-      output: "p(correct | x, y_≤t) for each token t"
-      what: "Correctness probability at each position"
+      granularity: "per-token logits, sequence-level score"
+      output: "p(s) = σ(mean_t w_t) over completion tokens"
+      what: "Probability the completion's outcome is correct"
 
     loss:
       name: "Binary cross-entropy"
-      formula: "L = Σ_t BCE(p_t, label) where t ∈ completion"
+      formula: "L = BCE(σ(mean_t w_t), label) where t ∈ completion"
       notes:
         - "Prompt tokens masked (label = -100)"
-        - "All completion tokens supervised"
+        - "Completion logits pooled into one loss term per sequence"
 
     supervision:
       mask_prompt: true

@@ -374,7 +374,7 @@ STRIPS = [
         tokens=["<|eos|>", "Joy", "can", "...", "?", "The", "answer", "is", "5", ".", "<|eos|>"],
         highlight={5, 6, 7, 8, 9, 10},  # completion tokens
         masked={0, 1, 2, 3, 4},  # prompt tokens
-        annotation="Prompt ignored for scoring  |  Completion probabilities aggregate to a response score (mean p=.94)",
+        annotation=r"Prompt ignored for scoring  |  Sequence score pools completion logits: $p(s)=\sigma(\mathrm{mean}\ w_t)$=.95",
         highlight_label="Scored",
         token_labels={
             5: "p=.92",
