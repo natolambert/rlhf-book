@@ -53,6 +53,10 @@ def resolve_device(device: str = "auto") -> str:
             device = "mps"
         else:
             device = "cpu"
+    elif device == "cuda" and not torch.cuda.is_available():
+        raise ValueError("CUDA is not available, but device is set to 'cuda'")
+    elif device == "mps" and not torch.backends.mps.is_available():
+        raise ValueError("MPS is not available, but device is set to 'mps'")
     return device
 
 

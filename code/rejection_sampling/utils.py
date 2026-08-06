@@ -69,6 +69,10 @@ def get_default_device(cuda_device_id: int = 0, device: str = "auto") -> torch.d
             device = "mps"
         else:
             device = "cpu"
+    elif device == "cuda" and not torch.cuda.is_available():
+        raise ValueError("CUDA is not available, but device is set to 'cuda'")
+    elif device == "mps" and not torch.backends.mps.is_available():
+        raise ValueError("MPS is not available, but device is set to 'mps'")
 
     if device == "cuda":
         device = f"cuda:{cuda_device_id}"
