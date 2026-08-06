@@ -27,6 +27,7 @@ from .utils import (
     get_attn_implementation,
     load_model,
     progress_bar,
+    resolve_device,
     seed_everything,
 )
 
@@ -263,9 +264,7 @@ def run(cfg: Config) -> Path:
         prompts = load_gsm8k_prompts(cfg)
         console.print(f"[dim]Loaded {len(prompts)} GSM8K prompts.[/dim]")
 
-        model_device = torch.device(
-            f"cuda:{cfg.model_device_id}" if torch.cuda.is_available() else "cpu"
-        )
+        model_device = resolve_device(cfg.model_device_id, cfg.device)
         console.print(f"[dim]Stage 1: loading policy model ({cfg.model_name})[/dim]")
         policy_model, policy_tokenizer = load_model(
             cfg.model_name, model_device, gradient_checkpointing=False
@@ -281,9 +280,7 @@ def run(cfg: Config) -> Path:
         console.print(f"[dim]VRAM after policy free: {cuda_memory_gb():.2f} GB[/dim]")
 
     # Stage 2: scoring.
-    rm_device = torch.device(
-        f"cuda:{cfg.reward_model_device_id}" if torch.cuda.is_available() else "cpu"
-    )
+    rm_device = resolve_device(cfg.reward_model_device_id, cfg.device)
     console.print(f"[dim]Stage 2: loading reward model ({cfg.reward_model_name})[/dim]")
     rm, rm_tokenizer = load_reward_model(cfg, rm_device)
     console.print(f"[dim]VRAM after reward-model load: {cuda_memory_gb():.2f} GB[/dim]")
@@ -346,8 +343,12 @@ def main_cli() -> None:
         description="Generate + score rollouts for rejection sampling."
     )
     parser.add_argument("--config", type=str, required=True, help="Path to YAML config file")
+    parser.add_argument("--device", type=str, choices=["auto", "cuda", "cpu"])
     args = parser.parse_args()
-    run(load_config(args.config))
+    cfg = load_config(args.config)
+    if args.device is not None:
+        cfg.device = args.device
+    run(cfg)
 
 
 if __name__ == "__main__":

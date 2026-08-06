@@ -50,7 +50,7 @@ class Config:
     max_grad_norm: float = 1.0
 
     # Hardware settings
-    device: str = "cuda"
+    device: Literal["auto", "cuda", "cpu"] = "auto"
     gradient_checkpointing: bool = True
     bf16: bool = True
 

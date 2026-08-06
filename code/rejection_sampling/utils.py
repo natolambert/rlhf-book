@@ -60,6 +60,21 @@ def get_attn_implementation() -> str:
         return "sdpa"
 
 
+def resolve_device(cuda_device_id: int = 0, device: str = "auto") -> torch.device:
+    """Resolve 'auto' to CUDA if available, otherwise CPU."""
+    if device == "auto":
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+    elif device == "cuda":
+        if not torch.cuda.is_available():
+            raise ValueError("CUDA is not available, but device is set to 'cuda'")
+    elif device != "cpu":
+        raise ValueError(f"Unsupported device={device!r}. Expected 'auto', 'cuda', or 'cpu'.")
+
+    if device == "cuda":
+        device = f"cuda:{cuda_device_id}"
+    return torch.device(device)
+
+
 def load_model(model_name: str, device_map: Any, gradient_checkpointing: bool = True):
     """Load model and tokenizer with automatic attention implementation selection."""
     attn_impl = get_attn_implementation()

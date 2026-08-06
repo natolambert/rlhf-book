@@ -60,6 +60,7 @@ class Config(BaseModel):
     eval_batch_size: int = 8
 
     seed: int = 42
+    device: Literal["auto", "cuda", "cpu"] = "auto"
     model_device_id: int = 0
     reward_model_device_id: int = 0
     output_dir: str = "./rejection_sampling/output"

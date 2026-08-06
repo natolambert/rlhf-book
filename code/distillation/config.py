@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Literal
 
 import yaml
 from pydantic import BaseModel
@@ -51,6 +51,7 @@ class Config(BaseModel):
     num_steps: int = 200
     max_norm: float = 1.0
     seed: int = 42
+    device: Literal["auto", "cuda", "cpu"] = "auto"
     model_device_id: int = 0
 
     # Logging

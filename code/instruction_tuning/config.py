@@ -1,5 +1,7 @@
 # Configuration for Instruction Tuning (SFT).
 
+from typing import Literal
+
 import yaml
 from pydantic import BaseModel
 
@@ -19,7 +21,7 @@ class Config(BaseModel):
         lr, num_epochs, batch_size, gradient_accumulation_steps, warmup_ratio,
         weight_decay, max_grad_norm: standard AdamW SFT knobs.
 
-        bf16, gradient_checkpointing, model_device_id: hardware/memory.
+        bf16, gradient_checkpointing, device, model_device_id: hardware/memory.
 
         sample_*: in-loop generation logging settings. ``sample_every`` fires
             at step 0 (base model) and every ``sample_every`` optimizer steps
@@ -51,6 +53,7 @@ class Config(BaseModel):
     # Hardware
     bf16: bool = True
     gradient_checkpointing: bool = True
+    device: Literal["auto", "cuda", "cpu"] = "auto"
     model_device_id: int = 0
 
     # In-loop generation

@@ -30,6 +30,7 @@ from .utils import (
     load_model,
     print_model_info,
     progress_bar,
+    resolve_device,
     seed_everything,
 )
 
@@ -37,13 +38,12 @@ from .utils import (
 def main(cfg: Config):
     seed_everything(cfg.seed)
 
-    cpu_device = torch.device("cpu")
-    if torch.cuda.is_available():
+    device = resolve_device(device=cfg.device)
+    model_device = ref_model_device = val_model_device = device
+    if device.type == "cuda":
         model_device = torch.device(f"cuda:{cfg.model_device_id}")
         ref_model_device = torch.device(f"cuda:{cfg.ref_model_device_id}")
         val_model_device = torch.device(f"cuda:{cfg.val_model_device_id}")
-    else:
-        model_device = ref_model_device = val_model_device = cpu_device
 
     dataset = create_dataset(cfg)
     model, tokenizer = load_model(cfg.model_name, model_device)
@@ -145,8 +145,11 @@ def main(cfg: Config):
 def main_cli():
     parser = argparse.ArgumentParser(description="Train policy gradient models for RLHF")
     parser.add_argument("--config", type=str, required=True, help="Path to YAML config file")
+    parser.add_argument("--device", type=str, choices=["auto", "cuda", "cpu"])
     args = parser.parse_args()
     cfg = load_config(args.config)
+    if args.device is not None:
+        cfg.device = args.device
     main(cfg)
 
 

@@ -34,6 +34,7 @@ from .utils import (
     print_model_info,
     print_step_header,
     progress_bar,
+    resolve_device,
     seed_everything,
 )
 
@@ -315,9 +316,7 @@ def main(cfg: Config) -> None:
     )
 
     # Stage 3b: load policy model and SFT on the selected pairs.
-    model_device = torch.device(
-        f"cuda:{cfg.model_device_id}" if torch.cuda.is_available() else "cpu"
-    )
+    model_device = resolve_device(cfg.model_device_id, cfg.device)
     console.print(f"[dim]Loading policy model for SFT: {cfg.model_name}[/dim]")
     model, tokenizer = load_model(cfg.model_name, model_device, gradient_checkpointing=True)
     print_model_info(console, model)
@@ -349,8 +348,12 @@ def main_cli() -> None:
         description="Rejection sampling: selection + SFT + GSM8K eval."
     )
     parser.add_argument("--config", type=str, required=True, help="Path to YAML config file")
+    parser.add_argument("--device", type=str, choices=["auto", "cuda", "cpu"])
     args = parser.parse_args()
-    main(load_config(args.config))
+    cfg = load_config(args.config)
+    if args.device is not None:
+        cfg.device = args.device
+    main(cfg)
 
 
 if __name__ == "__main__":
