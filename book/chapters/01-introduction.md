@@ -355,6 +355,28 @@ This is *not* a comprehensive textbook, but rather a quick book for reminders an
 
 The print edition of this book was published by Manning in July 2026, while the web version continues to collect minor improvements and errata fixes. If you spot a typo or an important omission, please contribute a fix or suggestion on [GitHub](https://github.com/natolambert/rlhf-book).
 
+### Web Version vs. Physical Book (Errata Fixes)
+
+The book will be re-printed roughly 2 and 6 months after the initial print in July 2026.
+This section tracks the differences between the web version and the physical book, and will be updated to note which improvements or fixes make it into which print version.
+
+#### Content additions and fixes
+
+- Added a short subsection on agentic evaluation (Chapter 16) — [#492](https://github.com/natolambert/rlhf-book/pull/492).
+- Clarified the history of outcome reward models, fixed some loose language, and reorganized the reward modeling chapter (Chapter 5) — [#516](https://github.com/natolambert/rlhf-book/pull/516).
+- Cleaned up RL notation, especially the trajectory sampling distribution and time indexing (Chapter 6) — [#466](https://github.com/natolambert/rlhf-book/pull/466).
+
+#### Organizational improvements
+
+- Renamed Chapter 12 to "Synthetic Data & Distillation" — [#469](https://github.com/natolambert/rlhf-book/pull/469).
+- Reordered the regularization chapter for better flow (Chapter 15) — [#486](https://github.com/natolambert/rlhf-book/pull/486).
+
+#### Typos and minor fixes
+
+- Added an extra line to the Bradley-Terry reward model loss derivation (Chapter 5) — [#465](https://github.com/natolambert/rlhf-book/pull/465).
+- Fixed the description of the reference model in the policy ratio (Chapter 6) — [#488](https://github.com/natolambert/rlhf-book/pull/488).
+- Cleaned up assorted typos and minor wording issues — [#495](https://github.com/natolambert/rlhf-book/pull/495).
+
 ### About the Author
 
 Dr. Nathan Lambert is a researcher and writer focusing on building the open science of language models. He came here through a Ph.D. in robotics and building an RLHF team shortly after the release of ChatGPT.
