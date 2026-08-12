@@ -64,7 +64,8 @@ jobs:
               - '!book/templates/404.html'
               - '!book/templates/chapter.html'
               - '!book/templates/html.html'
-              - '!book/templates/style.css'
+              # NOTE: style.css is deliberately NOT excluded -- epub.html
+              # inlines it via $style.css()$, so it affects the ebooks.
               - '!book/templates/*.js'
               - '!book/scripts/jsonld.lua'
               - '!book/scripts/generate_sitemap.py'
