@@ -54,8 +54,8 @@ lecture pays that off).
 ## Slide outline (~34 authored; ~46 rendered with unrolls)
 
 ### Open
-1. Title (`title-sidebar`) — "Lecture 9: Over-Optimization and Regularization" / "Course on RLHF and
-   post-training. Chapters 14, 15 & Appendix B."
+1. Title (`title-sidebar`) — "Lecture 9: Over-Optimization and Regularization" / "Post-training course.
+   Chapters 14, 15 & Appendix B."
 2. Framing question (section-break): *Your reward-model score keeps climbing. Why is the model getting worse?*
 3. Framing question 2 (section-break): *How much should we let the model change to earn more reward?*
 4. Hook: the GPT-4o sycophancy incident (Apr 2025) — ```conversation card with the verbatim "god"/"prophet"
