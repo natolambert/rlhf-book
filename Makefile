@@ -182,7 +182,7 @@ $(BUILD)/html/course.html: book/templates/course.html $(FOOTER_PARTIAL)
 	$(INLINE_FOOTER) book/templates/course.html > $@
 
 LLMS_SOURCES = book/scripts/generate_llms.py $(CHAPTERS)
-SITEMAP_SOURCES = book/scripts/generate_sitemap.py book/scripts/generate_llms.py $(CHAPTERS) book/templates/course.html book/templates/library.html book/rl-cheatsheet/index.html $(wildcard teach/*/talk.md) $(wildcard teach/*/slides.md) $(filter-out %-plan.md,$(wildcard teach/course/*.md))
+SITEMAP_SOURCES = book/scripts/generate_sitemap.py book/scripts/generate_llms.py $(CHAPTERS) book/templates/course.html book/templates/library.html book/rl-cheatsheet/index.html $(wildcard teach/*/talk.md) $(wildcard teach/*/slides.md) $(filter-out %-plan.md,$(wildcard teach/course/*.md)) $(filter-out %-plan.md,$(wildcard teach/extras/*.md))
 
 $(BUILD)/html/llms.txt: $(LLMS_SOURCES)
 	$(MKDIR_CMD) $(BUILD)/html
@@ -338,6 +338,8 @@ TEACH_TALK_SOURCES = $(wildcard teach/*/talk.md) $(wildcard teach/*/slides.md)
 TEACH_DIRS = $(sort $(patsubst teach/%/,%,$(dir $(TEACH_TALK_SOURCES))))
 COURSE_LECTURE_SOURCES = $(filter-out %-plan.md,$(wildcard teach/course/*.md))
 COURSE_LECTURE_NAMES = $(basename $(notdir $(COURSE_LECTURE_SOURCES)))
+EXTRA_LECTURE_SOURCES = $(filter-out %-plan.md,$(wildcard teach/extras/*.md))
+EXTRA_LECTURE_NAMES = $(basename $(notdir $(EXTRA_LECTURE_SOURCES)))
 
 # Map from dir name to its .md source file (prefer talk.md over slides.md)
 teach_source = $(firstword $(wildcard teach/$(1)/talk.md teach/$(1)/slides.md))
@@ -356,7 +358,7 @@ TEACH_STAMP_DIR = $(BUILD)/.teach-stamps
 # teach_hash(files, find-paths): stable content hash of a deck's inputs.
 teach_hash = { shasum -a 256 $(1) uv.lock Makefile; find $(2) -type f -exec shasum -a 256 {} + 2>/dev/null | LC_ALL=C sort; } | shasum -a 256 | cut -d' ' -f1
 
-teach: $(foreach d,$(TEACH_DIRS),teach-$(d)) course-lectures
+teach: $(foreach d,$(TEACH_DIRS),teach-$(d)) course-lectures extras-lectures
 	@# Prune outputs for talks that no longer exist (a restored cache may carry them)
 	@for d in $(BUILD)/html/teach/*/; do \
 		[ -d "$$d" ] || continue; n=$$(basename "$$d"); \
@@ -373,6 +375,16 @@ course-lectures: $(foreach l,$(COURSE_LECTURE_NAMES),course-lecture-$(l)) teach-
 		case " $(COURSE_LECTURE_NAMES) " in \
 			*" $$n "*) ;; \
 			*) echo "Pruning stale teach/course/$$n"; rm -rf "$$d";; \
+		esac; \
+	done
+
+extras-lectures: $(foreach l,$(EXTRA_LECTURE_NAMES),extras-lecture-$(l))
+	@# Prune outputs for extras that no longer exist (a restored cache may carry them)
+	@for d in $(BUILD)/html/teach/extras/*/; do \
+		[ -d "$$d" ] || continue; n=$$(basename "$$d"); \
+		case " $(EXTRA_LECTURE_NAMES) " in \
+			*" $$n "*) ;; \
+			*) echo "Pruning stale teach/extras/$$n"; rm -rf "$$d";; \
 		esac; \
 	done
 
@@ -419,4 +431,22 @@ course-lecture-%:
 		  { [ ! -d teach/course/assets ] || cp -r teach/course/assets $$out/; } && \
 		  echo "$$cur" > $$stamp && \
 		  echo "Built teach/course/$*"; } || { echo "FAILED teach/course/$* (missing output or export error)" >&2; exit 1; }; \
+	fi
+
+extras-lecture-%:
+	@mkdir -p $(BUILD)/html/teach/extras/$* $(TEACH_STAMP_DIR)
+	@out=$(BUILD)/html/teach/extras/$*; stamp=$(TEACH_STAMP_DIR)/extras-$*.sha; \
+	cur=$$($(call teach_hash,teach/extras/$*.md,teach/extras/assets teach/extras/refs.bib)); \
+	if [ "$$(cat $$stamp 2>/dev/null)" = "$$cur" ] && [ -s $$out/index.html ] && [ -s $$out/slides.pdf ]; then \
+		echo "Cached teach/extras/$* (inputs unchanged)"; \
+	else \
+		rm -f $$stamp $$out/index.html $$out/slides.pdf; rm -rf $$out/assets; \
+		{ $(COLLOQUIUM) build teach/extras/$*.md -o $$out/ && \
+		  ( cd $$out && for f in *.html; do [ "$$f" != "index.html" ] && mv "$$f" index.html || true; done ) && \
+		  [ -s $$out/index.html ] && \
+		  $(COLLOQUIUM) export teach/extras/$*.md -o $$out/slides.pdf && \
+		  [ -s $$out/slides.pdf ] && \
+		  { [ ! -d teach/extras/assets ] || cp -r teach/extras/assets $$out/; } && \
+		  echo "$$cur" > $$stamp && \
+		  echo "Built teach/extras/$*"; } || { echo "FAILED teach/extras/$* (missing output or export error)" >&2; exit 1; }; \
 	fi
