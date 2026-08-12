@@ -37,7 +37,7 @@ custom_css: |
 <p class="colloquium-title-name">Nathan Lambert</p>
 </div>
 
-<p class="colloquium-title-note">Course on RLHF and post-training. Chapter 13.</p>
+<p class="colloquium-title-note">Post-training course. Chapter 13.</p>
 
 ---
 
