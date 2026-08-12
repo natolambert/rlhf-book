@@ -51,7 +51,7 @@ custom_css: |
 <!-- layout: title-sidebar -->
 <!-- valign: bottom -->
 
-# What's With the Shoggoths? <span class="title-subtitle">Course Bonus Video 1: A brief history of post-training's favorite monster.</span>
+# What's With the Shoggoths? <span class="title-subtitle">Course Bonus Video 1: Post-training necessary lore.</span>
 
 <div class="colloquium-title-eyebrow">rlhfbook.com</div>
 
