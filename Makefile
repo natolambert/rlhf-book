@@ -182,7 +182,7 @@ $(BUILD)/html/course.html: book/templates/course.html $(FOOTER_PARTIAL)
 	$(INLINE_FOOTER) book/templates/course.html > $@
 
 LLMS_SOURCES = book/scripts/generate_llms.py $(CHAPTERS)
-SITEMAP_SOURCES = book/scripts/generate_sitemap.py book/scripts/generate_llms.py $(CHAPTERS) book/templates/course.html book/templates/library.html book/rl-cheatsheet/index.html $(wildcard teach/*/talk.md) $(wildcard teach/*/slides.md) $(filter-out %-plan.md,$(wildcard teach/course/*.md))
+SITEMAP_SOURCES = book/scripts/generate_sitemap.py book/scripts/generate_llms.py $(CHAPTERS) book/templates/course.html book/templates/library.html book/rl-cheatsheet/index.html $(wildcard teach/*/talk.md) $(wildcard teach/*/slides.md) $(filter-out %-plan.md,$(wildcard teach/course/*.md)) $(filter-out %-plan.md,$(wildcard teach/extras/*.md))
 
 $(BUILD)/html/llms.txt: $(LLMS_SOURCES)
 	$(MKDIR_CMD) $(BUILD)/html
@@ -338,14 +338,18 @@ TEACH_TALK_SOURCES = $(wildcard teach/*/talk.md) $(wildcard teach/*/slides.md)
 TEACH_DIRS = $(sort $(patsubst teach/%/,%,$(dir $(TEACH_TALK_SOURCES))))
 COURSE_LECTURE_SOURCES = $(filter-out %-plan.md,$(wildcard teach/course/*.md))
 COURSE_LECTURE_NAMES = $(basename $(notdir $(COURSE_LECTURE_SOURCES)))
+EXTRA_LECTURE_SOURCES = $(filter-out %-plan.md,$(wildcard teach/extras/*.md))
+EXTRA_LECTURE_NAMES = $(basename $(notdir $(EXTRA_LECTURE_SOURCES)))
 
 # Map from dir name to its .md source file (prefer talk.md over slides.md)
 teach_source = $(firstword $(wildcard teach/$(1)/talk.md teach/$(1)/slides.md))
 COLLOQUIUM = uv run --extra teach colloquium
 
-teach: $(foreach d,$(TEACH_DIRS),teach-$(d)) course-lectures
+teach: $(foreach d,$(TEACH_DIRS),teach-$(d)) course-lectures extras-lectures
 
 course-lectures: $(foreach l,$(COURSE_LECTURE_NAMES),course-lecture-$(l)) teach-assets
+
+extras-lectures: $(foreach l,$(EXTRA_LECTURE_NAMES),extras-lecture-$(l))
 
 # Static files (externally produced slide PDFs, etc.) served at /teach/assets/
 teach-assets:
@@ -374,3 +378,14 @@ course-lecture-%:
 	@# Copy course assets if present
 	@test -d teach/course/assets && cp -r teach/course/assets $(BUILD)/html/teach/course/$*/ || true
 	@echo "Built teach/course/$*"
+
+extras-lecture-%:
+	@mkdir -p $(BUILD)/html/teach/extras/$*
+	$(COLLOQUIUM) build teach/extras/$*.md -o $(BUILD)/html/teach/extras/$*/
+	@# Rename output to index.html so the directory URL works
+	@cd $(BUILD)/html/teach/extras/$* && for f in *.html; do [ "$$f" != "index.html" ] && mv "$$f" index.html; done || true
+	@# Export PDF
+	$(COLLOQUIUM) export teach/extras/$*.md -o $(BUILD)/html/teach/extras/$*/slides.pdf
+	@# Copy extras assets if present
+	@test -d teach/extras/assets && cp -r teach/extras/assets $(BUILD)/html/teach/extras/$*/ || true
+	@echo "Built teach/extras/$*"
