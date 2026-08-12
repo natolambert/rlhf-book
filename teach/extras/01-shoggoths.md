@@ -164,8 +164,13 @@ e.g. [SolidGoldMagikarp](https://www.lesswrong.com/posts/aPeJE8bSo6rAFoLqg/solid
 
 ---
 
-<!-- class: full-bleed -->
+<!-- columns: 40/60 -->
 ## The shoggoth lives on
+
+In many ways, the meme is stronger than ever. It's less about RLHF, but about how we understand so little about these models. Especially the latest scaling RL is brewing strong things.
+
+|||
+
 
 ![Shoggoth stickers from the Interconnects NeurIPS party, December 2025.](assets/shoggoth-stickers-neurips.jpeg)
 
