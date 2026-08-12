@@ -21,6 +21,12 @@ on:
       - ".github/workflows/static.yml"
   workflow_dispatch:
 
+# Rapid push sequences only need the newest build; Cloudflare Pages deploys
+# are atomic (upload, then activate), so cancelling a superseded run is safe.
+concurrency:
+  group: static-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-deploy:
     runs-on: macos-latest
@@ -32,8 +38,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      # Course-only changes (teach/** and the course page template) skip the
-      # slow PDF/EPUB/TeX path and reuse the published book artifacts instead.
+      # Changes that can't affect the print formats (PDF/EPUB/Kindle/DOCX) —
+      # slides, page templates, JS/CSS, sitemap/llms generators — skip the
+      # slow TeX/pandoc path and reuse the published book artifacts instead.
+      # The negation list is deliberately the *known HTML-only* files, so an
+      # unrecognized book/** file fails open into a full build.
       # If this step is skipped (workflow_dispatch) or fails, outputs are empty
       # and the full build runs — change detection must never block a deploy.
       - name: Detect changed paths
@@ -43,14 +52,28 @@ jobs:
         continue-on-error: true
         with:
           # 'every' makes a file count only when it matches the union pattern
-          # AND the negation (i.e. is not the course template). The default
+          # AND every negation (i.e. is not an HTML-only file). The default
           # 'some' quantifier matches each pattern independently, where a bare
           # negation matches every file and exclusions silently do nothing.
           predicate-quantifier: 'every'
           filters: |
-            book:
+            print:
               - '{book/**,Makefile,pyproject.toml,uv.lock,.github/workflows/static.yml}'
               - '!book/templates/course.html'
+              - '!book/templates/library.html'
+              - '!book/templates/404.html'
+              - '!book/templates/chapter.html'
+              - '!book/templates/html.html'
+              # NOTE: style.css is deliberately NOT excluded -- epub.html
+              # inlines it via $style.css()$, so it affects the ebooks.
+              - '!book/templates/*.js'
+              - '!book/scripts/jsonld.lua'
+              - '!book/scripts/generate_sitemap.py'
+              - '!book/scripts/generate_llms.py'
+              - '!book/scripts/generate_library.py'
+              - '!book/scripts/serve.py'
+              - '!book/data/**'
+              - '!book/preorder/**'
 
       - name: Setup Pandoc
         uses: pandoc/actions/setup@main
@@ -58,11 +81,11 @@ jobs:
           version: 3.7.0.2
 
       - name: Prepare TeX Live cache directory
-        if: steps.changes.outputs.book != 'false'
+        if: steps.changes.outputs.print != 'false'
         run: sudo mkdir -p /usr/local/texlive && sudo chown -R $(whoami) /usr/local/texlive
 
       - name: Cache TeX Live
-        if: steps.changes.outputs.book != 'false'
+        if: steps.changes.outputs.print != 'false'
         uses: actions/cache@v5
         id: cache-texlive
         with:
@@ -78,8 +101,8 @@ jobs:
           brew install make
           brew install pandoc-crossref
           brew install poppler
-          # Only install TeX if not cached (and skip entirely for course-only changes)
-          if [ "${{ steps.changes.outputs.book }}" != "false" ] && [ "${{ steps.cache-texlive.outputs.cache-hit }}" != "true" ]; then
+          # Only install TeX if not cached (and skip entirely when no print-affecting files changed)
+          if [ "${{ steps.changes.outputs.print }}" != "false" ] && [ "${{ steps.cache-texlive.outputs.cache-hit }}" != "true" ]; then
             echo "Cache miss - installing TeX Live..."
             brew install --cask basictex
             eval "$(/usr/libexec/path_helper)"
@@ -91,7 +114,7 @@ jobs:
           fi
 
       - name: Set up LaTeX PATH
-        if: steps.changes.outputs.book != 'false'
+        if: steps.changes.outputs.print != 'false'
         run: |
           # Find the actual texlive bin directory (varies by year/arch)
           TEXLIVE_BIN=$(find /usr/local/texlive -type d -name "bin" -exec find {} -type d -name "*-darwin" \; 2>/dev/null | head -1)
@@ -102,25 +125,47 @@ jobs:
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v8.2.0
+        with:
+          enable-cache: true
+
+      # Sync once up front so parallel make targets (validate-ebooks, sitemap,
+      # colloquium) never race to create the environment via `uv run`.
+      - name: Install Python dependencies
+        run: uv sync --extra teach
 
       - name: Clean build directory
         run: |
           rm -rf build
           mkdir -p build/html
 
+      # Slide decks are content-addressed (see the teach rules in the
+      # Makefile): restoring build/html/teach plus the stamps lets make skip
+      # every deck whose inputs didn't change. restore-keys means a partial
+      # match still restores the previous outputs and only edited decks
+      # rebuild.
+      - name: Cache teaching slide builds
+        uses: actions/cache@v5
+        with:
+          path: |
+            build/html/teach
+            build/.teach-stamps
+          key: teach-v1-${{ hashFiles('teach/**', 'uv.lock', 'Makefile') }}
+          restore-keys: |
+            teach-v1-
+
       - name: Build book (HTML, PDF, EPUB, Kindle)
-        if: steps.changes.outputs.book != 'false'
+        if: steps.changes.outputs.print != 'false'
         run: |
-          make
+          make -j3
           make files
 
       # Cloudflare Pages deploys are full-site snapshots, so the book artifacts
       # must exist in build/html even when we don't rebuild them. Reuse the
       # currently published ones.
-      - name: Build site (course-only change, reuse published book artifacts)
-        if: steps.changes.outputs.book == 'false'
+      - name: Build site (no print-affecting changes, reuse published book artifacts)
+        if: steps.changes.outputs.print == 'false'
         run: |
-          make html
+          make -j3 html
           make files
           mkdir -p build/html/rl-cheatsheet
           curl -fsSL https://rlhfbook.com/book.pdf -o build/html/book.pdf
@@ -130,9 +175,7 @@ jobs:
           curl -fsSL https://rlhfbook.com/rl-cheatsheet/inside_cover_back.pdf -o build/html/rl-cheatsheet/inside_cover_back.pdf
 
       - name: Build teaching slides
-        run: |
-          uv sync --extra teach
-          make teach
+        run: make -j3 teach
 
       - name: Build Pagefind search index
         run: npx --yes pagefind --site build/html --glob "c/**/*.html"
