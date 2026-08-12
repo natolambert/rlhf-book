@@ -344,11 +344,14 @@ teach_source = $(firstword $(wildcard teach/$(1)/talk.md teach/$(1)/slides.md))
 COLLOQUIUM = uv run --extra teach colloquium
 
 # Deck builds are content-addressed so CI can cache them: each successful
-# build writes a stamp hashing the deck's inputs (source .md, shared assets,
+# build writes a stamp hashing the deck's inputs (source .md, local assets
+# and refs.bib -- the whole talk directory for standalone talks -- plus
 # uv.lock for the colloquium pin, and this Makefile for recipe changes).
-# When the stamp matches and the outputs exist, the deck is skipped. CI
-# caches $(BUILD)/html/teach together with $(TEACH_STAMP_DIR); mtimes are
-# useless after checkout/cache-restore, hence hashes instead of make deps.
+# When the stamp matches and the outputs exist, the deck is skipped. On a
+# stamp miss the cached outputs are deleted before rebuilding so a silent
+# export failure or removed asset can never ship stale files. CI caches
+# $(BUILD)/html/teach together with $(TEACH_STAMP_DIR); mtimes are useless
+# after checkout/cache-restore, hence hashes instead of make deps.
 TEACH_STAMP_DIR = $(BUILD)/.teach-stamps
 # teach_hash(files, find-paths): stable content hash of a deck's inputs.
 teach_hash = { shasum -a 256 $(1) uv.lock Makefile; find $(2) -type f -exec shasum -a 256 {} + 2>/dev/null | LC_ALL=C sort; } | shasum -a 256 | cut -d' ' -f1
@@ -375,6 +378,9 @@ course-lectures: $(foreach l,$(COURSE_LECTURE_NAMES),course-lecture-$(l)) teach-
 
 # Static files (externally produced slide PDFs, etc.) served at /teach/assets/
 teach-assets:
+	@# Replace rather than merge: the output lives inside the cached tree, so
+	@# assets deleted from teach/assets/ would otherwise be republished forever.
+	@rm -rf $(BUILD)/html/teach/assets
 	@mkdir -p $(BUILD)/html/teach/assets
 	cp -r teach/assets/. $(BUILD)/html/teach/assets/
 	@echo "Copied teach/assets"
@@ -382,11 +388,11 @@ teach-assets:
 teach-%:
 	@mkdir -p $(BUILD)/html/teach/$* $(TEACH_STAMP_DIR)
 	@out=$(BUILD)/html/teach/$*; stamp=$(TEACH_STAMP_DIR)/talk-$*.sha; \
-	cur=$$($(call teach_hash,$(call teach_source,$*),teach/$*/assets)); \
+	cur=$$($(call teach_hash,$(call teach_source,$*),teach/$*)); \
 	if [ "$$(cat $$stamp 2>/dev/null)" = "$$cur" ] && [ -s $$out/index.html ] && [ -s $$out/slides.pdf ]; then \
 		echo "Cached teach/$* (inputs unchanged)"; \
 	else \
-		rm -f $$stamp; \
+		rm -f $$stamp $$out/index.html $$out/slides.pdf; rm -rf $$out/assets; \
 		{ $(COLLOQUIUM) build $(call teach_source,$*) -o $$out/ && \
 		  ( cd $$out && for f in *.html; do [ "$$f" != "index.html" ] && mv "$$f" index.html || true; done ) && \
 		  [ -s $$out/index.html ] && \
@@ -404,7 +410,7 @@ course-lecture-%:
 	if [ "$$(cat $$stamp 2>/dev/null)" = "$$cur" ] && [ -s $$out/index.html ] && [ -s $$out/slides.pdf ]; then \
 		echo "Cached teach/course/$* (inputs unchanged)"; \
 	else \
-		rm -f $$stamp; \
+		rm -f $$stamp $$out/index.html $$out/slides.pdf; rm -rf $$out/assets; \
 		{ $(COLLOQUIUM) build teach/course/$*.md -o $$out/ && \
 		  ( cd $$out && for f in *.html; do [ "$$f" != "index.html" ] && mv "$$f" index.html || true; done ) && \
 		  [ -s $$out/index.html ] && \
