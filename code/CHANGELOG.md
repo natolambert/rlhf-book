@@ -5,6 +5,9 @@ On release, entries get moved under a version heading.
 
 ## Unreleased
 
+## v0.4.0
+
+- 2026-08-07: [PR #517](https://github.com/natolambert/rlhf-book/pull/517) Updated ORM reward model training script to use final tokens score for completion correctness predicted label instead of using all completion tokens
 - 2026-08-06: [PR #514](https://github.com/natolambert/rlhf-book/pull/514) added per-module `resolve_device()` helpers with `device: auto` default (CUDA → CPU) to `policy_gradients/`, `direct_alignment/`, `rejection_sampling/`, `distillation/`, and `instruction_tuning/`, replacing hardcoded CUDA. MPS is intentionally omitted (unstable / bf16 gaps).
 - 2026-08-04: [PR #507](https://github.com/natolambert/rlhf-book/pull/507) enforced YAML config for `train_orm`: `--config` is now required and the previously documented CLI overrides, including `--samples` and `--no-wandb`, were removed. This is a breaking CLI change; existing commands must move those overrides into the YAML file.
 - 2026-08-03: [PR #502](https://github.com/natolambert/rlhf-book/pull/502) enforced YAML config for `train_preference_rm`: `--config` is now required and the previously documented CLI overrides, including `--samples` and `--no-wandb`, were removed. This is a breaking CLI change; existing commands must move those overrides into the YAML file.

@@ -345,47 +345,108 @@ EXTRA_LECTURE_NAMES = $(basename $(notdir $(EXTRA_LECTURE_SOURCES)))
 teach_source = $(firstword $(wildcard teach/$(1)/talk.md teach/$(1)/slides.md))
 COLLOQUIUM = uv run --extra teach colloquium
 
+# Deck builds are content-addressed so CI can cache them: each successful
+# build writes a stamp hashing the deck's inputs (source .md, local assets
+# and refs.bib -- the whole talk directory for standalone talks -- plus
+# uv.lock for the colloquium pin, and this Makefile for recipe changes).
+# When the stamp matches and the outputs exist, the deck is skipped. On a
+# stamp miss the cached outputs are deleted before rebuilding so a silent
+# export failure or removed asset can never ship stale files. CI caches
+# $(BUILD)/html/teach together with $(TEACH_STAMP_DIR); mtimes are useless
+# after checkout/cache-restore, hence hashes instead of make deps.
+TEACH_STAMP_DIR = $(BUILD)/.teach-stamps
+# teach_hash(files, find-paths): stable content hash of a deck's inputs.
+teach_hash = { shasum -a 256 $(1) uv.lock Makefile; find $(2) -type f -exec shasum -a 256 {} + 2>/dev/null | LC_ALL=C sort; } | shasum -a 256 | cut -d' ' -f1
+
 teach: $(foreach d,$(TEACH_DIRS),teach-$(d)) course-lectures extras-lectures
+	@# Prune outputs for talks that no longer exist (a restored cache may carry them)
+	@for d in $(BUILD)/html/teach/*/; do \
+		[ -d "$$d" ] || continue; n=$$(basename "$$d"); \
+		case " $(TEACH_DIRS) course extras assets " in \
+			*" $$n "*) ;; \
+			*) echo "Pruning stale teach/$$n"; rm -rf "$$d";; \
+		esac; \
+	done
 
 course-lectures: $(foreach l,$(COURSE_LECTURE_NAMES),course-lecture-$(l)) teach-assets
+	@# Prune outputs for lectures that no longer exist (a restored cache may carry them)
+	@for d in $(BUILD)/html/teach/course/*/; do \
+		[ -d "$$d" ] || continue; n=$$(basename "$$d"); \
+		case " $(COURSE_LECTURE_NAMES) " in \
+			*" $$n "*) ;; \
+			*) echo "Pruning stale teach/course/$$n"; rm -rf "$$d";; \
+		esac; \
+	done
 
 extras-lectures: $(foreach l,$(EXTRA_LECTURE_NAMES),extras-lecture-$(l))
+	@# Prune outputs for extras that no longer exist (a restored cache may carry them)
+	@for d in $(BUILD)/html/teach/extras/*/; do \
+		[ -d "$$d" ] || continue; n=$$(basename "$$d"); \
+		case " $(EXTRA_LECTURE_NAMES) " in \
+			*" $$n "*) ;; \
+			*) echo "Pruning stale teach/extras/$$n"; rm -rf "$$d";; \
+		esac; \
+	done
 
 # Static files (externally produced slide PDFs, etc.) served at /teach/assets/
 teach-assets:
+	@# Replace rather than merge: the output lives inside the cached tree, so
+	@# assets deleted from teach/assets/ would otherwise be republished forever.
+	@rm -rf $(BUILD)/html/teach/assets
 	@mkdir -p $(BUILD)/html/teach/assets
 	cp -r teach/assets/. $(BUILD)/html/teach/assets/
 	@echo "Copied teach/assets"
 
 teach-%:
-	@mkdir -p $(BUILD)/html/teach/$*
-	$(COLLOQUIUM) build $(call teach_source,$*) -o $(BUILD)/html/teach/$*/
-	@# Rename output to index.html so the directory URL works
-	@cd $(BUILD)/html/teach/$* && for f in *.html; do [ "$$f" != "index.html" ] && mv "$$f" index.html; done || true
-	@# Export PDF
-	$(COLLOQUIUM) export $(call teach_source,$*) -o $(BUILD)/html/teach/$*/slides.pdf
-	@# Copy talk assets (images) if present
-	@test -d teach/$*/assets && cp -r teach/$*/assets $(BUILD)/html/teach/$*/ || true
-	@echo "Built teach/$*"
+	@mkdir -p $(BUILD)/html/teach/$* $(TEACH_STAMP_DIR)
+	@out=$(BUILD)/html/teach/$*; stamp=$(TEACH_STAMP_DIR)/talk-$*.sha; \
+	cur=$$($(call teach_hash,$(call teach_source,$*),teach/$*)); \
+	if [ "$$(cat $$stamp 2>/dev/null)" = "$$cur" ] && [ -s $$out/index.html ] && [ -s $$out/slides.pdf ]; then \
+		echo "Cached teach/$* (inputs unchanged)"; \
+	else \
+		rm -f $$stamp $$out/index.html $$out/slides.pdf; rm -rf $$out/assets; \
+		{ $(COLLOQUIUM) build $(call teach_source,$*) -o $$out/ && \
+		  ( cd $$out && for f in *.html; do [ "$$f" != "index.html" ] && mv "$$f" index.html || true; done ) && \
+		  [ -s $$out/index.html ] && \
+		  $(COLLOQUIUM) export $(call teach_source,$*) -o $$out/slides.pdf && \
+		  [ -s $$out/slides.pdf ] && \
+		  { [ ! -d teach/$*/assets ] || cp -r teach/$*/assets $$out/; } && \
+		  echo "$$cur" > $$stamp && \
+		  echo "Built teach/$*"; } || { echo "FAILED teach/$* (missing output or export error)" >&2; exit 1; }; \
+	fi
 
 course-lecture-%:
-	@mkdir -p $(BUILD)/html/teach/course/$*
-	$(COLLOQUIUM) build teach/course/$*.md -o $(BUILD)/html/teach/course/$*/
-	@# Rename output to index.html so the directory URL works
-	@cd $(BUILD)/html/teach/course/$* && for f in *.html; do [ "$$f" != "index.html" ] && mv "$$f" index.html; done || true
-	@# Export PDF
-	$(COLLOQUIUM) export teach/course/$*.md -o $(BUILD)/html/teach/course/$*/slides.pdf
-	@# Copy course assets if present
-	@test -d teach/course/assets && cp -r teach/course/assets $(BUILD)/html/teach/course/$*/ || true
-	@echo "Built teach/course/$*"
+	@mkdir -p $(BUILD)/html/teach/course/$* $(TEACH_STAMP_DIR)
+	@out=$(BUILD)/html/teach/course/$*; stamp=$(TEACH_STAMP_DIR)/course-$*.sha; \
+	cur=$$($(call teach_hash,teach/course/$*.md,teach/course/assets teach/course/refs.bib)); \
+	if [ "$$(cat $$stamp 2>/dev/null)" = "$$cur" ] && [ -s $$out/index.html ] && [ -s $$out/slides.pdf ]; then \
+		echo "Cached teach/course/$* (inputs unchanged)"; \
+	else \
+		rm -f $$stamp $$out/index.html $$out/slides.pdf; rm -rf $$out/assets; \
+		{ $(COLLOQUIUM) build teach/course/$*.md -o $$out/ && \
+		  ( cd $$out && for f in *.html; do [ "$$f" != "index.html" ] && mv "$$f" index.html || true; done ) && \
+		  [ -s $$out/index.html ] && \
+		  $(COLLOQUIUM) export teach/course/$*.md -o $$out/slides.pdf && \
+		  [ -s $$out/slides.pdf ] && \
+		  { [ ! -d teach/course/assets ] || cp -r teach/course/assets $$out/; } && \
+		  echo "$$cur" > $$stamp && \
+		  echo "Built teach/course/$*"; } || { echo "FAILED teach/course/$* (missing output or export error)" >&2; exit 1; }; \
+	fi
 
 extras-lecture-%:
-	@mkdir -p $(BUILD)/html/teach/extras/$*
-	$(COLLOQUIUM) build teach/extras/$*.md -o $(BUILD)/html/teach/extras/$*/
-	@# Rename output to index.html so the directory URL works
-	@cd $(BUILD)/html/teach/extras/$* && for f in *.html; do [ "$$f" != "index.html" ] && mv "$$f" index.html; done || true
-	@# Export PDF
-	$(COLLOQUIUM) export teach/extras/$*.md -o $(BUILD)/html/teach/extras/$*/slides.pdf
-	@# Copy extras assets if present
-	@test -d teach/extras/assets && cp -r teach/extras/assets $(BUILD)/html/teach/extras/$*/ || true
-	@echo "Built teach/extras/$*"
+	@mkdir -p $(BUILD)/html/teach/extras/$* $(TEACH_STAMP_DIR)
+	@out=$(BUILD)/html/teach/extras/$*; stamp=$(TEACH_STAMP_DIR)/extras-$*.sha; \
+	cur=$$($(call teach_hash,teach/extras/$*.md,teach/extras/assets teach/extras/refs.bib)); \
+	if [ "$$(cat $$stamp 2>/dev/null)" = "$$cur" ] && [ -s $$out/index.html ] && [ -s $$out/slides.pdf ]; then \
+		echo "Cached teach/extras/$* (inputs unchanged)"; \
+	else \
+		rm -f $$stamp $$out/index.html $$out/slides.pdf; rm -rf $$out/assets; \
+		{ $(COLLOQUIUM) build teach/extras/$*.md -o $$out/ && \
+		  ( cd $$out && for f in *.html; do [ "$$f" != "index.html" ] && mv "$$f" index.html || true; done ) && \
+		  [ -s $$out/index.html ] && \
+		  $(COLLOQUIUM) export teach/extras/$*.md -o $$out/slides.pdf && \
+		  [ -s $$out/slides.pdf ] && \
+		  { [ ! -d teach/extras/assets ] || cp -r teach/extras/assets $$out/; } && \
+		  echo "$$cur" > $$stamp && \
+		  echo "Built teach/extras/$*"; } || { echo "FAILED teach/extras/$* (missing output or export error)" >&2; exit 1; }; \
+	fi

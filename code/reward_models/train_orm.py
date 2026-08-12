@@ -147,6 +147,12 @@ def collate_fn(batch: List[Dict], tokenizer: AutoTokenizer) -> Dict[str, torch.T
 # =============================================================================
 
 
+def last_token_values(values: torch.Tensor, attention_mask: torch.Tensor) -> torch.Tensor:
+    """Select each sequence's final non-padding value."""
+    last_indices = attention_mask.sum(dim=1) - 1
+    return values.gather(1, last_indices.unsqueeze(1)).squeeze(1)
+
+
 class OutcomeRewardModel(BaseRewardModel):
     """Outcome Reward Model with full fine-tuning.
 
@@ -275,13 +281,13 @@ def train_orm(
         model.train()
         epoch_loss = 0.0
         epoch_correct = 0
-        epoch_tokens = 0
+        epoch_examples = 0
         optimizer.zero_grad()
 
         # Accumulators for logging per optimizer step
         accum_loss = 0.0
         accum_correct = 0
-        accum_tokens = 0
+        accum_examples = 0
         accum_microbatches = 0
 
         for step, batch in enumerate(loader):
@@ -294,17 +300,20 @@ def train_orm(
 
             # Accumulate metrics over the grad_accum window
             accum_loss += loss.item()
-            mask = batch["labels"] != -100
-            preds = (torch.sigmoid(logits[mask]) > 0.5).long()
-            correct = (preds == batch["labels"][mask]).sum().item()
-            tokens = mask.sum().item()
+            sequence_logits = last_token_values(logits, batch["attention_mask"])
+            sequence_labels = last_token_values(batch["labels"], batch["attention_mask"])
+
+            preds = (torch.sigmoid(sequence_logits) > 0.5).long()
+            correct = (preds == sequence_labels).sum().item()
+
+            examples = sequence_labels.numel()
             accum_correct += correct
-            accum_tokens += tokens
+            accum_examples += examples
             accum_microbatches += 1
 
             epoch_loss += loss.item()
             epoch_correct += correct
-            epoch_tokens += tokens
+            epoch_examples += examples
 
             if (step + 1) % grad_accum_steps == 0 or (step + 1) == len(loader):
                 optimizer.step()
@@ -315,18 +324,18 @@ def train_orm(
 
                 # Log averaged metrics over the full effective batch
                 avg_loss = accum_loss / accum_microbatches
-                acc = accum_correct / max(1, accum_tokens)
+                acc = accum_correct / max(1, accum_examples)
                 print(f"Epoch {epoch} step {global_step} | loss {avg_loss:.4f} | acc {acc:.3f}")
                 log_metrics({"loss": avg_loss, "accuracy": acc}, step=global_step)
 
                 # Reset accumulators
                 accum_loss = 0.0
                 accum_correct = 0
-                accum_tokens = 0
+                accum_examples = 0
                 accum_microbatches = 0
 
         avg_loss = epoch_loss / len(loader)
-        accuracy = epoch_correct / max(1, epoch_tokens)
+        accuracy = epoch_correct / max(1, epoch_examples)
         print(f"Epoch {epoch} | Loss: {avg_loss:.4f} | Accuracy: {accuracy:.3f}")
         log_metrics({"epoch_loss": avg_loss, "epoch_accuracy": accuracy, "epoch": epoch})
 
@@ -348,7 +357,7 @@ def score_completion(
 ) -> float:
     """Score a single completion using the trained ORM.
 
-    Returns average token probability for the completion.
+    Returns the final completion token's probability.
     """
     example = pack_example(prompt, completion, 1, tokenizer)  # Label doesn't matter for inference
     batch = collate_fn([example], tokenizer)
@@ -357,10 +366,9 @@ def score_completion(
     model.eval()
     with torch.no_grad():
         _, logits = model(**batch)
-        probs = torch.sigmoid(logits)
+        score = torch.sigmoid(last_token_values(logits, batch["attention_mask"]))
 
-    mask = batch["labels"][0] != -100
-    return probs[0][mask].mean().item()
+    return score[0].item()
 
 
 def demo_scoring(model: OutcomeRewardModel, tokenizer: AutoTokenizer, config: Config):
