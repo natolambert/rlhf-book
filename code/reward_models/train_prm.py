@@ -503,7 +503,10 @@ def train_prm(config: Config) -> ProcessRewardModel:
         avg_loss = epoch_loss / len(loader)
         accuracy = epoch_correct / max(1, epoch_tokens)
         print(f"Epoch {epoch} | Loss: {avg_loss:.4f} | Step Accuracy: {accuracy:.3f}")
-        log_metrics({"epoch_loss": avg_loss, "epoch_accuracy": accuracy, "epoch": epoch})
+        log_metrics(
+            {"epoch_loss": avg_loss, "epoch_accuracy": accuracy, "epoch": epoch},
+            step=global_step,
+        )
 
         # Also run validation at epoch end, unless we already evaluated on this exact step.
         should_run_epoch_eval = val_loader is not None and (
