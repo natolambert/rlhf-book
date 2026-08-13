@@ -147,27 +147,13 @@ def get_steps_and_labels(example: Dict) -> tuple[List[str], List[int]]:
     return steps, parsed_labels
 
 
-def build_prm_dataset(
-    tokenizer: AutoTokenizer,
-    dataset_name: str = DEFAULT_PRM_DATASET,
-    limit: int = DEFAULT_SAMPLES,
-    max_steps_per_sample: int = DEFAULT_MAX_STEPS,
-    max_tokens_per_sample: int = DEFAULT_MAX_TOKENS,
-) -> Dataset:
-    """Build PRM training dataset from PRM800K.
-
-    Each example contains:
-    - Problem text as prompt
-    - Reasoning steps separated by STEP_SEPARATOR
-    - Labels only on step terminator tokens (not prompt or step content)
-    """
-    stream = load_dataset(dataset_name, split="train", streaming=True)
+def _pack_raw_prm_examples(
+    raw_rows, tokenizer: AutoTokenizer, max_steps_per_sample: int, max_tokens_per_sample: int
+) -> list[dict]:
+    """Pack raw PRM800K rows into tokenized examples."""
     records = []
 
-    for example in stream:
-        if len(records) >= limit:
-            break
-
+    for example in raw_rows:
         problem = get_problem_text(example).strip()
         steps, labels = get_steps_and_labels(example)
 
@@ -179,9 +165,6 @@ def build_prm_dataset(
 
         # Chunk very long traces to avoid OOM
         for start in range(0, len(steps), max_steps_per_sample):
-            if len(records) >= limit:
-                break
-
             chunk_steps = steps[start : start + max_steps_per_sample]
             chunk_labels = labels[start : start + max_steps_per_sample]
 
@@ -216,10 +199,80 @@ def build_prm_dataset(
                 }
             )
 
+    return records
+
+
+def build_prm_dataset(
+    tokenizer: AutoTokenizer,
+    dataset_name: str = DEFAULT_PRM_DATASET,
+    split: str = "train",
+    limit: int = DEFAULT_SAMPLES,
+    max_steps_per_sample: int = DEFAULT_MAX_STEPS,
+    max_tokens_per_sample: int = DEFAULT_MAX_TOKENS,
+    val_ratio: float = 0.0,
+    seed: int = DEFAULT_SEED,
+) -> Dataset | tuple[Dataset, Dataset]:
+    """Build PRM training dataset from PRM800K.
+
+    Optionally holds out a fraction of raw PRM800K rows as a validation split
+    before tokenizing, so chunks derived from the same problem stay together.
+
+    Args:
+        tokenizer: Tokenizer for encoding the problem and reasoning steps.
+        dataset_name: Hugging Face dataset identifier.
+        split: Dataset split to load (e.g. "train", "validation", "test").
+        limit: Maximum number of raw examples to load.
+        max_steps_per_sample: Max reasoning steps packed into a single example.
+        max_tokens_per_sample: Max tokens per packed example.
+        val_ratio: Optional fraction of raw rows to hold out for validation.
+        seed: Random seed used for shuffling/splitting.
+
+    Returns:
+        A single Dataset when val_ratio == 0, otherwise a (train, val) tuple.
+
+    Each example contains:
+    - Problem text as prompt
+    - Reasoning steps separated by STEP_SEPARATOR
+    - Labels only on step terminator tokens (not prompt or step content)
+    """
+    stream = load_dataset(dataset_name, split=split, streaming=True)
+    raw_records = []
+
+    for example in stream:
+        if len(raw_records) >= limit:
+            break
+
+        problem = get_problem_text(example).strip()
+        steps, labels = get_steps_and_labels(example)
+        if problem and steps and labels:
+            raw_records.append(example)
+
+    if not raw_records:
+        raise ValueError("No PRM examples loaded. Check dataset path/permissions.")
+
+    raw_dataset = Dataset.from_list(raw_records[:limit])
+
+    if val_ratio > 0.0:
+        raw_splits = raw_dataset.train_test_split(test_size=val_ratio, seed=seed, shuffle=True)
+        train_records = _pack_raw_prm_examples(
+            raw_splits["train"], tokenizer, max_steps_per_sample, max_tokens_per_sample
+        )
+        val_records = _pack_raw_prm_examples(
+            raw_splits["test"], tokenizer, max_steps_per_sample, max_tokens_per_sample
+        )
+        if not train_records or not val_records:
+            raise ValueError(
+                "Split produced an empty partition; reduce val_ratio or increase limit."
+            )
+        return Dataset.from_list(train_records), Dataset.from_list(val_records)
+
+    records = _pack_raw_prm_examples(
+        raw_dataset, tokenizer, max_steps_per_sample, max_tokens_per_sample
+    )
     if not records:
         raise ValueError("No PRM examples loaded. Check dataset path/permissions.")
 
-    return Dataset.from_list(records[:limit])
+    return Dataset.from_list(records)
 
 
 def collate_fn(batch: List[Dict], tokenizer: AutoTokenizer) -> Dict[str, torch.Tensor]:
@@ -363,19 +416,18 @@ def train_prm(config: Config) -> ProcessRewardModel:
     data = build_prm_dataset(
         tokenizer,
         dataset_name=config.dataset_name,
+        split=config.dataset_split,
         limit=config.samples,
         max_steps_per_sample=config.max_steps,
         max_tokens_per_sample=config.max_tokens,
+        val_ratio=config.val_ratio,
+        seed=config.seed,
     )
-    print(f"Dataset size: {len(data)} examples")
 
-    if config.val_ratio > 0.0:
-        splits = data.train_test_split(test_size=config.val_ratio, seed=config.seed, shuffle=True)
-        train_data = splits["train"]
-        val_data = splits["test"]
+    if isinstance(data, tuple):
+        train_data, val_data = data
     else:
-        train_data = data
-        val_data = None
+        train_data, val_data = data, None
 
     print(f"Train size: {len(train_data)} examples")
     if val_data is not None:
@@ -403,7 +455,11 @@ def train_prm(config: Config) -> ProcessRewardModel:
 
     # Initialize model
     print(f"Loading model: {config.model_id}")
-    model = ProcessRewardModel(model_id=config.model_id, device=device).to(device)
+    model = ProcessRewardModel(
+        model_id=config.model_id,
+        freeze_backbone=config.freeze_backbone,
+        device=device,
+    ).to(device)
     print(f"Trainable parameters: {model.count_trainable_params() / 1e6:.2f}M")
 
     # Optimizer and LR scheduler with linear warmup

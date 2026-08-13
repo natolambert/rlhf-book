@@ -5,7 +5,7 @@ On release, entries get moved under a version heading.
 
 ## Unreleased
 
-- 2026-08-13: [PR #523](https://github.com/natolambert/rlhf-book/pull/N) added config-driven training and validation to the ORM and PRM reward models, matching the Preference RM pattern. ORM reads `val_ratio`/`eval_interval` from `configs/orm.yaml` and logs `val/loss`/`val/accuracy`; PRM gained `configs/prm.yaml` and a required `--config` (breaking CLI change: the previous `--model-id`/`--samples`/`--batch-size`/`--grad-accum`/`--epochs`/`--lr`/`--warmup-ratio`/`--seed`/`--skip-demo`/`--no-wandb` overrides were removed and must move into the YAML). Both now split off a 10% validation set and log `val/*` every `eval_interval` optimizer steps and at epoch end, with train metrics namespaced `train/*`. The default PRM config sets `skip_demo: true` because streaming the PRM800K test split crashes under current `datasets`/`pyarrow`; `demo_scoring` now degrades gracefully to a warning if that split cannot be streamed. The default PRM config also shortens traces for memory stability (`max_steps` 20→12, `max_tokens` 5500→2048) and raises `batch_size` 1→2 with `grad_accum_steps` 16→8, keeping the effective batch at 16. This changes comparability for ORM/PRM runs: metrics are now namespaced and training uses a 90% split of the sampled data (10% held out for validation).
+- 2026-08-13: [PR #523](https://github.com/natolambert/rlhf-book/pull/523) made ORM and PRM training config-driven with validation splits, pre-packing row-level splits to avoid prompt leakage, and namespaced metrics; PRM configs now also honor `dataset_split` and `freeze_backbone`.
 
 ## v0.4.0
 

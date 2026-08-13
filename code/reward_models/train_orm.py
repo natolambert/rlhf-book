@@ -85,11 +85,37 @@ def pack_example(
     return {"input_ids": input_ids, "attention_mask": attention, "labels": labels}
 
 
+def _pack_raw_examples(raw_rows, tokenizer: AutoTokenizer) -> list[dict]:
+    """Pack raw GSM8K rows into paired positive/negative examples."""
+    packed = []
+    for ex in raw_rows:
+        question = ex["question"].strip()
+        prompt = f"Question: {question}\nAnswer:"
+        answer = ex["answer"].strip()
+        value = parse_answer(answer)
+
+        if value is None:
+            continue
+
+        # Correct example
+        packed.append(pack_example(prompt, answer, 1, tokenizer))
+
+        # Incorrect example (add random offset to answer)
+        wrong = value + random.randint(1, 9)
+        wrong_solution = answer + f"\nTherefore, the answer is {wrong}."
+        packed.append(pack_example(prompt, wrong_solution, 0, tokenizer))
+    return packed
+
+
 def build_orm_dataset(
     tokenizer: AutoTokenizer,
     config: Config,
-) -> Dataset:
+) -> Dataset | tuple[Dataset, Dataset]:
     """Build ORM training dataset from GSM8K.
+
+    Splits raw GSM8K rows first so both completions for a given question stay
+    in the same split, then packs paired positive/negative examples inside
+    each split.
 
     For each question:
     - Creates a positive example with the correct solution (label=1)
@@ -104,25 +130,16 @@ def build_orm_dataset(
 
     samples = min(config.samples, len(raw))
     raw = raw.shuffle(seed=config.seed).select(range(samples))
-    rows = []
 
-    for ex in raw:
-        question = ex["question"].strip()
-        prompt = f"Question: {question}\nAnswer:"
-        answer = ex["answer"].strip()
-        value = parse_answer(answer)
+    if config.val_ratio > 0.0:
+        raw_splits = raw.train_test_split(
+            test_size=config.val_ratio, seed=config.seed, shuffle=True
+        )
+        train_rows = _pack_raw_examples(raw_splits["train"], tokenizer)
+        val_rows = _pack_raw_examples(raw_splits["test"], tokenizer)
+        return Dataset.from_list(train_rows), Dataset.from_list(val_rows)
 
-        if value is None:
-            continue
-
-        # Correct example
-        rows.append(pack_example(prompt, answer, 1, tokenizer))
-
-        # Incorrect example (add random offset to answer)
-        wrong = value + random.randint(1, 9)
-        wrong_solution = answer + f"\nTherefore, the answer is {wrong}."
-        rows.append(pack_example(prompt, wrong_solution, 0, tokenizer))
-
+    rows = _pack_raw_examples(raw, tokenizer)
     return Dataset.from_list(rows)
 
 
@@ -274,15 +291,11 @@ def train_orm(
     # Build dataset
     print(f"Building ORM dataset with {config.samples} samples...")
     data = build_orm_dataset(tokenizer, config)
-    print(f"Dataset size: {len(data)} examples")
 
-    if config.val_ratio > 0.0:
-        splits = data.train_test_split(test_size=config.val_ratio, seed=config.seed, shuffle=True)
-        train_data = splits["train"]
-        val_data = splits["test"]
+    if isinstance(data, tuple):
+        train_data, val_data = data
     else:
-        train_data = data
-        val_data = None
+        train_data, val_data = data, None
 
     print(f"Train size: {len(train_data)} examples")
     if val_data is not None:
