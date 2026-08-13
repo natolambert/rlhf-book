@@ -235,7 +235,10 @@ def build_prm_dataset(
     - Reasoning steps separated by STEP_SEPARATOR
     - Labels only on step terminator tokens (not prompt or step content)
     """
-    stream = load_dataset(dataset_name, split=split, streaming=True)
+    # Non-streaming load avoids intermittent schema-casting crashes in
+    # ``datasets``/``pyarrow`` for PRM800K. Leave ``streaming=False`` unless
+    # dependency versions are explicitly pinned and verified against this dataset.
+    stream = load_dataset(dataset_name, split=split, streaming=False)
     raw_records = []
 
     for example in stream:
@@ -635,28 +638,19 @@ def demo_scoring(model: ProcessRewardModel, tokenizer: AutoTokenizer, seed: int 
     device = next(model.parameters()).device
     random.seed(seed)
 
-    # Get a random test example
+    # Get a random test example (non-streaming avoids PRM800K casting crashes).
     try:
-        test_stream = load_dataset(DEFAULT_PRM_DATASET, split="test", streaming=True)
+        test_data = load_dataset(DEFAULT_PRM_DATASET, split="test", streaming=False)
     except Exception as e:
-        print(f"Skipping demo: could not stream PRM800K test split ({e})")
+        print(f"Skipping demo: could not load PRM800K test split ({e})")
         return
     target_idx = random.randint(0, 500)
 
-    sample = None
-    try:
-        for idx, item in enumerate(test_stream):
-            if idx == target_idx:
-                sample = item
-                break
-    except Exception as e:
-        print(f"Skipping demo: failed reading PRM800K test sample ({e})")
-        return
-
-    if sample is None:
+    if target_idx >= len(test_data):
         print("Could not fetch test example")
         return
 
+    sample = test_data[target_idx]
     problem = get_problem_text(sample).strip()
     steps, labels = get_steps_and_labels(sample)
 
