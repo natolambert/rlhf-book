@@ -22,12 +22,14 @@ Usage:
 """
 
 import argparse
+import json
 import random
 from typing import Any, Dict, List
 
 import torch
 import torch.nn.functional as F
-from datasets import Dataset, load_dataset
+from datasets import Dataset
+from huggingface_hub import HfFileSystem
 from torch.utils.data import DataLoader
 from transformers import AutoTokenizer
 
@@ -56,6 +58,28 @@ DEFAULT_SEED = 13
 STEP_SEPARATOR = "\n<step>\n"
 PRM_CLASS_VALUES = [-1, 0, 1]  # Bad, Neutral, Good
 PRM_CLASS_TO_IDX = {value: idx for idx, value in enumerate(PRM_CLASS_VALUES)}
+
+
+def _stream_prm_jsonl(dataset_name: str, split: str):
+    """Stream raw JSONL records from a PRM-style Hugging Face dataset.
+
+    PRM800K stores its data as `phase1_{split}.jsonl` and `phase2_{split}.jsonl`.
+    We bypass the ``datasets`` JSON loader because it intermittently fails to cast
+    the PRM800K schema under recent ``datasets``/``pyarrow`` versions.
+    """
+    fs = HfFileSystem()
+    repo_prefix = f"datasets/{dataset_name}"
+    filenames = [f"phase1_{split}.jsonl", f"phase2_{split}.jsonl"]
+
+    for fname in filenames:
+        remote_path = f"{repo_prefix}/{fname}"
+        try:
+            with fs.open(remote_path, "r") as f:
+                for line in f:
+                    yield json.loads(line)
+        except FileNotFoundError:
+            # Some splits may only exist in one phase file.
+            continue
 
 
 # =============================================================================
@@ -235,10 +259,7 @@ def build_prm_dataset(
     - Reasoning steps separated by STEP_SEPARATOR
     - Labels only on step terminator tokens (not prompt or step content)
     """
-    # Non-streaming load avoids intermittent schema-casting crashes in
-    # ``datasets``/``pyarrow`` for PRM800K. Leave ``streaming=False`` unless
-    # dependency versions are explicitly pinned and verified against this dataset.
-    stream = load_dataset(dataset_name, split=split, streaming=False)
+    stream = _stream_prm_jsonl(dataset_name, split)
     raw_records = []
 
     for example in stream:
@@ -638,19 +659,28 @@ def demo_scoring(model: ProcessRewardModel, tokenizer: AutoTokenizer, seed: int 
     device = next(model.parameters()).device
     random.seed(seed)
 
-    # Get a random test example (non-streaming avoids PRM800K casting crashes).
+    # Get a random test example
     try:
-        test_data = load_dataset(DEFAULT_PRM_DATASET, split="test", streaming=False)
+        test_stream = _stream_prm_jsonl(DEFAULT_PRM_DATASET, "test")
     except Exception as e:
-        print(f"Skipping demo: could not load PRM800K test split ({e})")
+        print(f"Skipping demo: could not stream PRM800K test split ({e})")
         return
     target_idx = random.randint(0, 500)
 
-    if target_idx >= len(test_data):
+    sample = None
+    try:
+        for idx, item in enumerate(test_stream):
+            if idx == target_idx:
+                sample = item
+                break
+    except Exception as e:
+        print(f"Skipping demo: failed reading PRM800K test sample ({e})")
+        return
+
+    if sample is None:
         print("Could not fetch test example")
         return
 
-    sample = test_data[target_idx]
     problem = get_problem_text(sample).strip()
     steps, labels = get_steps_and_labels(sample)
 
