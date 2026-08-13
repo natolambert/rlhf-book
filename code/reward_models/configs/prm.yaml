@@ -13,12 +13,12 @@ freeze_backbone: false
 dataset_name: tasksource/PRM800K
 dataset_split: train
 samples: 2000
-max_steps: 20
-max_tokens: 5500
+max_steps: 12
+max_tokens: 2048
 
 # Training
-batch_size: 1
-grad_accum_steps: 16
+batch_size: 2
+grad_accum_steps: 8
 epochs: 1
 lr: 5.0e-5
 warmup_ratio: 0.1
