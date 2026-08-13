@@ -580,14 +580,22 @@ def demo_scoring(model: ProcessRewardModel, tokenizer: AutoTokenizer, seed: int 
     random.seed(seed)
 
     # Get a random test example
-    test_stream = load_dataset(DEFAULT_PRM_DATASET, split="test", streaming=True)
+    try:
+        test_stream = load_dataset(DEFAULT_PRM_DATASET, split="test", streaming=True)
+    except Exception as e:
+        print(f"Skipping demo: could not stream PRM800K test split ({e})")
+        return
     target_idx = random.randint(0, 500)
 
     sample = None
-    for idx, item in enumerate(test_stream):
-        if idx == target_idx:
-            sample = item
-            break
+    try:
+        for idx, item in enumerate(test_stream):
+            if idx == target_idx:
+                sample = item
+                break
+    except Exception as e:
+        print(f"Skipping demo: failed reading PRM800K test sample ({e})")
+        return
 
     if sample is None:
         print("Could not fetch test example")

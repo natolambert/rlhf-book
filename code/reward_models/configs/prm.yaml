@@ -33,4 +33,4 @@ device_id: 0
 
 # Logging / demo
 use_wandb: true
-skip_demo: false
+skip_demo: true
