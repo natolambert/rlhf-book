@@ -199,6 +199,49 @@ class OutcomeRewardModel(BaseRewardModel):
 
 
 # =============================================================================
+# Evaluation
+# =============================================================================
+
+
+@torch.no_grad()
+def evaluate_orm(
+    model: OutcomeRewardModel,
+    loader: DataLoader,
+    device: torch.device,
+    autocast_enabled: bool,
+) -> dict[str, float]:
+    """Evaluate ORM loss and completion-correctness accuracy on a loader."""
+    model.eval()
+
+    total_loss = 0.0
+    total_correct = 0
+    total_examples = 0
+
+    for batch in loader:
+        batch = {k: v.to(device) for k, v in batch.items()}
+
+        with torch.amp.autocast("cuda", dtype=torch.bfloat16, enabled=autocast_enabled):
+            loss, logits = model(**batch)
+
+        sequence_logits = last_token_values(logits, batch["attention_mask"])
+        sequence_labels = last_token_values(batch["labels"], batch["attention_mask"])
+
+        preds = (torch.sigmoid(sequence_logits) > 0.5).long()
+        correct = (preds == sequence_labels).sum().item()
+        examples = sequence_labels.numel()
+
+        total_loss += loss.item() * examples
+        total_correct += correct
+        total_examples += examples
+
+    n = max(1, total_examples)
+    return {
+        "val/loss": total_loss / n,
+        "val/accuracy": total_correct / n,
+    }
+
+
+# =============================================================================
 # Training
 # =============================================================================
 
@@ -233,12 +276,36 @@ def train_orm(
     data = build_orm_dataset(tokenizer, config)
     print(f"Dataset size: {len(data)} examples")
 
+    if config.val_ratio > 0.0:
+        splits = data.train_test_split(test_size=config.val_ratio, seed=config.seed, shuffle=True)
+        train_data = splits["train"]
+        val_data = splits["test"]
+    else:
+        train_data = data
+        val_data = None
+
+    print(f"Train size: {len(train_data)} examples")
+    if val_data is not None:
+        print(f"Validation size: {len(val_data)} examples")
+
     loader = DataLoader(
-        data,
+        train_data,
         batch_size=config.batch_size,
         shuffle=True,
-        drop_last=len(data) > config.batch_size,
+        drop_last=len(train_data) > config.batch_size,
         collate_fn=lambda b: collate_fn(b, tokenizer),
+    )
+
+    val_loader = (
+        DataLoader(
+            val_data,
+            batch_size=config.batch_size,
+            shuffle=False,
+            drop_last=False,
+            collate_fn=lambda b: collate_fn(b, tokenizer),
+        )
+        if val_data is not None
+        else None
     )
 
     # Initialize model
@@ -277,6 +344,7 @@ def train_orm(
     # Training loop
     global_step = 0
     grad_accum_steps = config.grad_accum_steps
+    eval_interval = config.eval_interval
     for epoch in range(config.epochs):
         model.train()
         epoch_loss = 0.0
@@ -326,7 +394,30 @@ def train_orm(
                 avg_loss = accum_loss / accum_microbatches
                 acc = accum_correct / max(1, accum_examples)
                 print(f"Epoch {epoch} step {global_step} | loss {avg_loss:.4f} | acc {acc:.3f}")
-                log_metrics({"loss": avg_loss, "accuracy": acc}, step=global_step)
+                log_metrics(
+                    {
+                        "train/loss": avg_loss,
+                        "train/accuracy": acc,
+                        "train/lr": optimizer.param_groups[0]["lr"],
+                    },
+                    step=global_step,
+                )
+
+                # Run validation every N optimizer steps.
+                # evaluate_orm() switches model to eval mode, so switch back to train after.
+                if (
+                    val_loader is not None
+                    and eval_interval > 0
+                    and global_step % eval_interval == 0
+                ):
+                    val_metrics = evaluate_orm(model, val_loader, device, autocast_enabled)
+                    print(
+                        f"Eval step {global_step} | "
+                        f"Val Loss: {val_metrics['val/loss']:.4f} | "
+                        f"Val Accuracy: {val_metrics['val/accuracy']:.3f}"
+                    )
+                    log_metrics(val_metrics, step=global_step)
+                    model.train()
 
                 # Reset accumulators
                 accum_loss = 0.0
@@ -338,6 +429,20 @@ def train_orm(
         accuracy = epoch_correct / max(1, epoch_examples)
         print(f"Epoch {epoch} | Loss: {avg_loss:.4f} | Accuracy: {accuracy:.3f}")
         log_metrics({"epoch_loss": avg_loss, "epoch_accuracy": accuracy, "epoch": epoch})
+
+        # Also run validation at epoch end, unless we already evaluated on this exact step.
+        should_run_epoch_eval = val_loader is not None and (
+            eval_interval <= 0 or global_step % eval_interval != 0
+        )
+
+        if should_run_epoch_eval:
+            val_metrics = evaluate_orm(model, val_loader, device, autocast_enabled)
+            print(
+                f"Epoch {epoch} | Val Loss: {val_metrics['val/loss']:.4f} | "
+                f"Val Accuracy: {val_metrics['val/accuracy']:.3f}"
+            )
+            log_metrics({**val_metrics, "epoch": epoch}, step=global_step)
+            model.train()
 
     finish_wandb()
     return model

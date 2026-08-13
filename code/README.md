@@ -186,7 +186,7 @@ uv run python -m reward_models.train_preference_rm --config reward_models/config
 uv run python -m reward_models.train_orm --config reward_models/configs/orm.yaml
 
 # Process Reward Model (Chapter 5) - trains on PRM800K
-uv run python -m reward_models.train_prm
+uv run python -m reward_models.train_prm --config reward_models/configs/prm.yaml
 ```
 
 ### Preference RM (Bradley-Terry)
