@@ -5,6 +5,8 @@ On release, entries get moved under a version heading.
 
 ## Unreleased
 
+- 2026-08-13: [PR #N](https://github.com/natolambert/rlhf-book/pull/N) added config-driven training and validation to the ORM and PRM reward models, matching the Preference RM pattern. ORM reads `val_ratio`/`eval_interval` from `configs/orm.yaml` and logs `val/loss`/`val/accuracy`; PRM gained `configs/prm.yaml` and a required `--config` (breaking CLI change: the previous `--model-id`/`--samples`/`--batch-size`/`--grad-accum`/`--epochs`/`--lr`/`--warmup-ratio`/`--seed`/`--skip-demo`/`--no-wandb` overrides were removed and must move into the YAML). Both now split off a 10% validation set and log `val/*` every `eval_interval` optimizer steps and at epoch end, with train metrics namespaced `train/*`. This changes comparability for ORM/PRM runs: metrics are now namespaced and training uses a 90% split of the sampled data (10% held out for validation).
+
 ## v0.4.0
 
 - 2026-08-07: [PR #517](https://github.com/natolambert/rlhf-book/pull/517) Updated ORM reward model training script to use final tokens score for completion correctness predicted label instead of using all completion tokens
