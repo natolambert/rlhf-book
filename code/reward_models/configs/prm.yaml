@@ -19,7 +19,7 @@ max_tokens: 2048
 # Training
 batch_size: 2
 grad_accum_steps: 8
-epochs: 1
+epochs: 2
 lr: 5.0e-5
 warmup_ratio: 0.1
 lr_scheduler: warmup_only
