@@ -12,7 +12,7 @@ freeze_backbone: false
 # Dataset
 dataset_name: tasksource/PRM800K
 dataset_split: train
-samples: 2000
+samples: 2000  # Caps raw problems before step-chunking, not packed examples
 max_steps: 12
 max_tokens: 2048
 

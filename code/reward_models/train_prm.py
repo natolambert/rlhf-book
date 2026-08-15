@@ -61,25 +61,35 @@ PRM_CLASS_TO_IDX = {value: idx for idx, value in enumerate(PRM_CLASS_VALUES)}
 
 
 def _stream_prm_jsonl(dataset_name: str, split: str):
-    """Stream raw JSONL records from a PRM-style Hugging Face dataset.
+    """Stream raw JSONL records from a PRM800K-style Hugging Face dataset.
 
-    PRM800K stores its data as `phase1_{split}.jsonl` and `phase2_{split}.jsonl`.
-    We bypass the ``datasets`` JSON loader because it intermittently fails to cast
-    the PRM800K schema under recent ``datasets``/``pyarrow`` versions.
+    This loader expects a repo laid out as `phase1_{split}.jsonl` and
+    `phase2_{split}.jsonl` (as PRM800K is). We bypass the ``datasets`` JSON
+    loader because it intermittently fails to cast the PRM800K schema under
+    recent ``datasets``/``pyarrow`` versions.
     """
     fs = HfFileSystem()
     repo_prefix = f"datasets/{dataset_name}"
     filenames = [f"phase1_{split}.jsonl", f"phase2_{split}.jsonl"]
 
+    found = False
     for fname in filenames:
         remote_path = f"{repo_prefix}/{fname}"
         try:
             with fs.open(remote_path, "r") as f:
+                found = True
                 for line in f:
                     yield json.loads(line)
         except FileNotFoundError:
             # Some splits may only exist in one phase file.
             continue
+
+    if not found:
+        raise FileNotFoundError(
+            f"Could not find any of {filenames} in dataset '{dataset_name}'. "
+            "This loader only supports PRM800K-style repos with "
+            "`phase{{1,2}}_{split}.jsonl` files."
+        )
 
 
 # =============================================================================
@@ -660,11 +670,7 @@ def demo_scoring(model: ProcessRewardModel, tokenizer: AutoTokenizer, seed: int 
     random.seed(seed)
 
     # Get a random test example
-    try:
-        test_stream = _stream_prm_jsonl(DEFAULT_PRM_DATASET, "test")
-    except Exception as e:
-        print(f"Skipping demo: could not stream PRM800K test split ({e})")
-        return
+    test_stream = _stream_prm_jsonl(DEFAULT_PRM_DATASET, "test")
     target_idx = random.randint(0, 500)
 
     sample = None
