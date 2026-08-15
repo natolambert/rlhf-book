@@ -22,6 +22,10 @@ class Config(BaseModel):
     samples: int = 5000
     max_length: int = 512
 
+    # PRM-specific dataset limits
+    max_steps: int = 20
+    max_tokens: int = 5500
+
     # Training
     batch_size: int = 2
     grad_accum_steps: int = 8

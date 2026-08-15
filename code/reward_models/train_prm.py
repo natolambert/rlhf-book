@@ -18,17 +18,18 @@ enabling more granular credit assignment during RL training.
 See Chapter 5 (Reward Models) of RLHF Book for theoretical background.
 
 Usage:
-    uv run python -m reward_models.train_prm
-    uv run python -m reward_models.train_prm --samples 1000 --epochs 2
+    uv run python -m reward_models.train_prm --config reward_models/configs/prm.yaml
 """
 
 import argparse
+import json
 import random
 from typing import Any, Dict, List
 
 import torch
 import torch.nn.functional as F
-from datasets import Dataset, load_dataset
+from datasets import Dataset
+from huggingface_hub import HfFileSystem
 from torch.utils.data import DataLoader
 from transformers import AutoTokenizer
 
@@ -40,6 +41,7 @@ from reward_models.base import (
     load_tokenizer,
     log_metrics,
 )
+from reward_models.config import Config, load_config
 
 
 # =============================================================================
@@ -49,18 +51,45 @@ from reward_models.base import (
 DEFAULT_MODEL_ID = "Qwen/Qwen3-0.6B-Base"  # Smaller model to fit in memory
 DEFAULT_PRM_DATASET = "tasksource/PRM800K"
 DEFAULT_SAMPLES = 2000
-DEFAULT_BATCH_SIZE = 1  # PRM traces are long
-DEFAULT_GRAD_ACCUM = 16
 DEFAULT_MAX_STEPS = 20  # Max reasoning steps per sample
 DEFAULT_MAX_TOKENS = 5500  # Max tokens per sample
-DEFAULT_EPOCHS = 1
-DEFAULT_LR = 5e-5
-DEFAULT_WARMUP_RATIO = 0.1
 DEFAULT_SEED = 13
 
 STEP_SEPARATOR = "\n<step>\n"
 PRM_CLASS_VALUES = [-1, 0, 1]  # Bad, Neutral, Good
 PRM_CLASS_TO_IDX = {value: idx for idx, value in enumerate(PRM_CLASS_VALUES)}
+
+
+def _stream_prm_jsonl(dataset_name: str, split: str):
+    """Stream raw JSONL records from a PRM800K-style Hugging Face dataset.
+
+    This loader expects a repo laid out as `phase1_{split}.jsonl` and
+    `phase2_{split}.jsonl` (as PRM800K is). We bypass the ``datasets`` JSON
+    loader because it intermittently fails to cast the PRM800K schema under
+    recent ``datasets``/``pyarrow`` versions.
+    """
+    fs = HfFileSystem()
+    repo_prefix = f"datasets/{dataset_name}"
+    filenames = [f"phase1_{split}.jsonl", f"phase2_{split}.jsonl"]
+
+    found = False
+    for fname in filenames:
+        remote_path = f"{repo_prefix}/{fname}"
+        try:
+            with fs.open(remote_path, "r") as f:
+                found = True
+                for line in f:
+                    yield json.loads(line)
+        except FileNotFoundError:
+            # Some splits may only exist in one phase file.
+            continue
+
+    if not found:
+        raise FileNotFoundError(
+            f"Could not find any of {filenames} in dataset '{dataset_name}'. "
+            "This loader only supports PRM800K-style repos with "
+            "`phase{{1,2}}_{split}.jsonl` files."
+        )
 
 
 # =============================================================================
@@ -152,27 +181,13 @@ def get_steps_and_labels(example: Dict) -> tuple[List[str], List[int]]:
     return steps, parsed_labels
 
 
-def build_prm_dataset(
-    tokenizer: AutoTokenizer,
-    dataset_name: str = DEFAULT_PRM_DATASET,
-    limit: int = DEFAULT_SAMPLES,
-    max_steps_per_sample: int = DEFAULT_MAX_STEPS,
-    max_tokens_per_sample: int = DEFAULT_MAX_TOKENS,
-) -> Dataset:
-    """Build PRM training dataset from PRM800K.
-
-    Each example contains:
-    - Problem text as prompt
-    - Reasoning steps separated by STEP_SEPARATOR
-    - Labels only on step terminator tokens (not prompt or step content)
-    """
-    stream = load_dataset(dataset_name, split="train", streaming=True)
+def _pack_raw_prm_examples(
+    raw_rows, tokenizer: AutoTokenizer, max_steps_per_sample: int, max_tokens_per_sample: int
+) -> list[dict]:
+    """Pack raw PRM800K rows into tokenized examples."""
     records = []
 
-    for example in stream:
-        if len(records) >= limit:
-            break
-
+    for example in raw_rows:
         problem = get_problem_text(example).strip()
         steps, labels = get_steps_and_labels(example)
 
@@ -184,9 +199,6 @@ def build_prm_dataset(
 
         # Chunk very long traces to avoid OOM
         for start in range(0, len(steps), max_steps_per_sample):
-            if len(records) >= limit:
-                break
-
             chunk_steps = steps[start : start + max_steps_per_sample]
             chunk_labels = labels[start : start + max_steps_per_sample]
 
@@ -221,10 +233,80 @@ def build_prm_dataset(
                 }
             )
 
+    return records
+
+
+def build_prm_dataset(
+    tokenizer: AutoTokenizer,
+    dataset_name: str = DEFAULT_PRM_DATASET,
+    split: str = "train",
+    limit: int = DEFAULT_SAMPLES,
+    max_steps_per_sample: int = DEFAULT_MAX_STEPS,
+    max_tokens_per_sample: int = DEFAULT_MAX_TOKENS,
+    val_ratio: float = 0.0,
+    seed: int = DEFAULT_SEED,
+) -> Dataset | tuple[Dataset, Dataset]:
+    """Build PRM training dataset from PRM800K.
+
+    Optionally holds out a fraction of raw PRM800K rows as a validation split
+    before tokenizing, so chunks derived from the same problem stay together.
+
+    Args:
+        tokenizer: Tokenizer for encoding the problem and reasoning steps.
+        dataset_name: Hugging Face dataset identifier.
+        split: Dataset split to load (e.g. "train", "validation", "test").
+        limit: Maximum number of raw examples to load.
+        max_steps_per_sample: Max reasoning steps packed into a single example.
+        max_tokens_per_sample: Max tokens per packed example.
+        val_ratio: Optional fraction of raw rows to hold out for validation.
+        seed: Random seed used for shuffling/splitting.
+
+    Returns:
+        A single Dataset when val_ratio == 0, otherwise a (train, val) tuple.
+
+    Each example contains:
+    - Problem text as prompt
+    - Reasoning steps separated by STEP_SEPARATOR
+    - Labels only on step terminator tokens (not prompt or step content)
+    """
+    stream = _stream_prm_jsonl(dataset_name, split)
+    raw_records = []
+
+    for example in stream:
+        if len(raw_records) >= limit:
+            break
+
+        problem = get_problem_text(example).strip()
+        steps, labels = get_steps_and_labels(example)
+        if problem and steps and labels:
+            raw_records.append(example)
+
+    if not raw_records:
+        raise ValueError("No PRM examples loaded. Check dataset path/permissions.")
+
+    raw_dataset = Dataset.from_list(raw_records[:limit])
+
+    if val_ratio > 0.0:
+        raw_splits = raw_dataset.train_test_split(test_size=val_ratio, seed=seed, shuffle=True)
+        train_records = _pack_raw_prm_examples(
+            raw_splits["train"], tokenizer, max_steps_per_sample, max_tokens_per_sample
+        )
+        val_records = _pack_raw_prm_examples(
+            raw_splits["test"], tokenizer, max_steps_per_sample, max_tokens_per_sample
+        )
+        if not train_records or not val_records:
+            raise ValueError(
+                "Split produced an empty partition; reduce val_ratio or increase limit."
+            )
+        return Dataset.from_list(train_records), Dataset.from_list(val_records)
+
+    records = _pack_raw_prm_examples(
+        raw_dataset, tokenizer, max_steps_per_sample, max_tokens_per_sample
+    )
     if not records:
         raise ValueError("No PRM examples loaded. Check dataset path/permissions.")
 
-    return Dataset.from_list(records[:limit])
+    return Dataset.from_list(records)
 
 
 def collate_fn(batch: List[Dict], tokenizer: AutoTokenizer) -> Dict[str, torch.Tensor]:
@@ -295,81 +377,129 @@ class ProcessRewardModel(BaseRewardModel):
 
 
 # =============================================================================
+# Evaluation
+# =============================================================================
+
+
+@torch.no_grad()
+def evaluate_prm(
+    model: ProcessRewardModel,
+    loader: DataLoader,
+    device: torch.device,
+    autocast_enabled: bool,
+) -> dict[str, float]:
+    """Evaluate PRM cross-entropy loss and step-classification accuracy."""
+    model.eval()
+
+    total_loss = 0.0
+    total_correct = 0
+    total_tokens = 0
+
+    for batch in loader:
+        batch = {k: v.to(device) for k, v in batch.items()}
+
+        with torch.amp.autocast("cuda", dtype=torch.bfloat16, enabled=autocast_enabled):
+            loss, logits = model(**batch)
+
+        mask = batch["labels"] != -100
+        preds = logits[mask].argmax(dim=-1)
+        correct = (preds == batch["labels"][mask]).sum().item()
+        tokens = mask.sum().item()
+
+        total_loss += loss.item() * tokens
+        total_correct += correct
+        total_tokens += tokens
+
+    n = max(1, total_tokens)
+    return {
+        "val/loss": total_loss / n,
+        "val/step_accuracy": total_correct / n,
+    }
+
+
+# =============================================================================
 # Training
 # =============================================================================
 
 
-def train_prm(
-    model_id: str = DEFAULT_MODEL_ID,
-    samples: int = DEFAULT_SAMPLES,
-    batch_size: int = DEFAULT_BATCH_SIZE,
-    grad_accum_steps: int = DEFAULT_GRAD_ACCUM,
-    epochs: int = DEFAULT_EPOCHS,
-    lr: float = DEFAULT_LR,
-    warmup_ratio: float = DEFAULT_WARMUP_RATIO,
-    seed: int = DEFAULT_SEED,
-    use_wandb: bool = True,
-) -> ProcessRewardModel:
+def train_prm(config: Config) -> ProcessRewardModel:
     """Train a Process Reward Model on PRM800K.
 
     Args:
-        model_id: Hugging Face model ID for base model
-        samples: Number of PRM800K samples to use
-        batch_size: Training batch size
-        grad_accum_steps: Gradient accumulation steps
-        epochs: Number of training epochs
-        lr: Learning rate
-        warmup_ratio: Fraction of total steps for linear LR warmup
-        seed: Random seed
-        use_wandb: Whether to log to wandb
+        config: Configuration object containing training parameters.
 
     Returns:
         Trained ProcessRewardModel
     """
-    random.seed(seed)
-    torch.manual_seed(seed)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    random.seed(config.seed)
+    torch.manual_seed(config.seed)
+    device = torch.device(config.get_device())
 
     # Initialize wandb
     init_wandb(
         default_run_name="prm_prm800k",
-        config={
-            "model_id": model_id,
-            "samples": samples,
-            "batch_size": batch_size,
-            "grad_accum_steps": grad_accum_steps,
-            "epochs": epochs,
-            "lr": lr,
-            "warmup_ratio": warmup_ratio,
-        },
-        use_wandb=use_wandb,
+        config=config.model_dump(),
+        use_wandb=config.use_wandb,
     )
 
     # Load tokenizer
-    tokenizer = load_tokenizer(model_id)
+    tokenizer = load_tokenizer(config.model_id)
 
     # Build dataset
-    print(f"Building PRM dataset with {samples} samples...")
-    data = build_prm_dataset(tokenizer, limit=samples)
-    print(f"Dataset size: {len(data)} examples")
+    print(f"Building PRM dataset with {config.samples} samples...")
+    data = build_prm_dataset(
+        tokenizer,
+        dataset_name=config.dataset_name,
+        split=config.dataset_split,
+        limit=config.samples,
+        max_steps_per_sample=config.max_steps,
+        max_tokens_per_sample=config.max_tokens,
+        val_ratio=config.val_ratio,
+        seed=config.seed,
+    )
+
+    if isinstance(data, tuple):
+        train_data, val_data = data
+    else:
+        train_data, val_data = data, None
+
+    print(f"Train size: {len(train_data)} examples")
+    if val_data is not None:
+        print(f"Validation size: {len(val_data)} examples")
 
     loader = DataLoader(
-        data,
-        batch_size=batch_size,
+        train_data,
+        batch_size=config.batch_size,
         shuffle=True,
-        drop_last=len(data) > batch_size,
+        drop_last=len(train_data) > config.batch_size,
         collate_fn=lambda b: collate_fn(b, tokenizer),
     )
 
+    val_loader = (
+        DataLoader(
+            val_data,
+            batch_size=config.batch_size,
+            shuffle=False,
+            drop_last=False,
+            collate_fn=lambda b: collate_fn(b, tokenizer),
+        )
+        if val_data is not None
+        else None
+    )
+
     # Initialize model
-    print(f"Loading model: {model_id}")
-    model = ProcessRewardModel(model_id=model_id, device=device).to(device)
+    print(f"Loading model: {config.model_id}")
+    model = ProcessRewardModel(
+        model_id=config.model_id,
+        freeze_backbone=config.freeze_backbone,
+        device=device,
+    ).to(device)
     print(f"Trainable parameters: {model.count_trainable_params() / 1e6:.2f}M")
 
     # Optimizer and LR scheduler with linear warmup
-    optimizer = create_optimizer(model, lr)
-    total_optimizer_steps = -(-len(loader) // grad_accum_steps) * epochs
-    warmup_steps = int(total_optimizer_steps * warmup_ratio)
+    optimizer = create_optimizer(model, config.lr)
+    total_optimizer_steps = -(-len(loader) // config.grad_accum_steps) * config.epochs
+    warmup_steps = int(total_optimizer_steps * config.warmup_ratio)
     scheduler = (
         torch.optim.lr_scheduler.LinearLR(optimizer, start_factor=0.1, total_iters=warmup_steps)
         if warmup_steps > 0
@@ -381,7 +511,9 @@ def train_prm(
 
     # Training loop
     global_step = 0
-    for epoch in range(epochs):
+    grad_accum_steps = config.grad_accum_steps
+    eval_interval = config.eval_interval
+    for epoch in range(config.epochs):
         model.train()
         epoch_loss = 0.0
         epoch_correct = 0
@@ -427,7 +559,30 @@ def train_prm(
                 avg_loss = accum_loss / accum_microbatches
                 acc = accum_correct / max(1, accum_tokens)
                 print(f"Epoch {epoch} step {global_step} | loss {avg_loss:.4f} | acc {acc:.3f}")
-                log_metrics({"loss": avg_loss, "step_accuracy": acc}, step=global_step)
+                log_metrics(
+                    {
+                        "train/loss": avg_loss,
+                        "train/step_accuracy": acc,
+                        "train/lr": optimizer.param_groups[0]["lr"],
+                    },
+                    step=global_step,
+                )
+
+                # Run validation every N optimizer steps.
+                # evaluate_prm() switches model to eval mode, so switch back to train after.
+                if (
+                    val_loader is not None
+                    and eval_interval > 0
+                    and global_step % eval_interval == 0
+                ):
+                    val_metrics = evaluate_prm(model, val_loader, device, autocast_enabled)
+                    print(
+                        f"Eval step {global_step} | "
+                        f"Val Loss: {val_metrics['val/loss']:.4f} | "
+                        f"Val Step Accuracy: {val_metrics['val/step_accuracy']:.3f}"
+                    )
+                    log_metrics(val_metrics, step=global_step)
+                    model.train()
 
                 # Reset accumulators
                 accum_loss = 0.0
@@ -438,7 +593,24 @@ def train_prm(
         avg_loss = epoch_loss / len(loader)
         accuracy = epoch_correct / max(1, epoch_tokens)
         print(f"Epoch {epoch} | Loss: {avg_loss:.4f} | Step Accuracy: {accuracy:.3f}")
-        log_metrics({"epoch_loss": avg_loss, "epoch_accuracy": accuracy, "epoch": epoch})
+        log_metrics(
+            {"epoch_loss": avg_loss, "epoch_accuracy": accuracy, "epoch": epoch},
+            step=global_step,
+        )
+
+        # Also run validation at epoch end, unless we already evaluated on this exact step.
+        should_run_epoch_eval = val_loader is not None and (
+            eval_interval <= 0 or global_step % eval_interval != 0
+        )
+
+        if should_run_epoch_eval:
+            val_metrics = evaluate_prm(model, val_loader, device, autocast_enabled)
+            print(
+                f"Epoch {epoch} | Val Loss: {val_metrics['val/loss']:.4f} | "
+                f"Val Step Accuracy: {val_metrics['val/step_accuracy']:.3f}"
+            )
+            log_metrics({**val_metrics, "epoch": epoch}, step=global_step)
+            model.train()
 
     finish_wandb()
     return model
@@ -498,14 +670,18 @@ def demo_scoring(model: ProcessRewardModel, tokenizer: AutoTokenizer, seed: int 
     random.seed(seed)
 
     # Get a random test example
-    test_stream = load_dataset(DEFAULT_PRM_DATASET, split="test", streaming=True)
+    test_stream = _stream_prm_jsonl(DEFAULT_PRM_DATASET, "test")
     target_idx = random.randint(0, 500)
 
     sample = None
-    for idx, item in enumerate(test_stream):
-        if idx == target_idx:
-            sample = item
-            break
+    try:
+        for idx, item in enumerate(test_stream):
+            if idx == target_idx:
+                sample = item
+                break
+    except Exception as e:
+        print(f"Skipping demo: failed reading PRM800K test sample ({e})")
+        return
 
     if sample is None:
         print("Could not fetch test example")
@@ -544,42 +720,15 @@ def main():
         description="Train Process Reward Model on PRM800K",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument("--model-id", type=str, default=DEFAULT_MODEL_ID, help="Base model ID")
-    parser.add_argument(
-        "--samples", type=int, default=DEFAULT_SAMPLES, help="Number of training samples"
-    )
-    parser.add_argument("--batch-size", type=int, default=DEFAULT_BATCH_SIZE, help="Batch size")
-    parser.add_argument(
-        "--grad-accum", type=int, default=DEFAULT_GRAD_ACCUM, help="Gradient accumulation steps"
-    )
-    parser.add_argument("--epochs", type=int, default=DEFAULT_EPOCHS, help="Training epochs")
-    parser.add_argument("--lr", type=float, default=DEFAULT_LR, help="Learning rate")
-    parser.add_argument(
-        "--warmup-ratio",
-        type=float,
-        default=DEFAULT_WARMUP_RATIO,
-        help="Fraction of steps for LR warmup",
-    )
-    parser.add_argument("--seed", type=int, default=DEFAULT_SEED, help="Random seed")
-    parser.add_argument("--skip-demo", action="store_true", help="Skip scoring demo after training")
-    parser.add_argument("--no-wandb", action="store_true", help="Disable wandb logging")
+    parser.add_argument("--config", type=str, required=True, help="Path to YAML config file")
     args = parser.parse_args()
 
-    model = train_prm(
-        model_id=args.model_id,
-        samples=args.samples,
-        batch_size=args.batch_size,
-        grad_accum_steps=args.grad_accum,
-        epochs=args.epochs,
-        lr=args.lr,
-        warmup_ratio=args.warmup_ratio,
-        seed=args.seed,
-        use_wandb=not args.no_wandb,
-    )
+    cfg = load_config(args.config)
+    model = train_prm(config=cfg)
 
-    if not args.skip_demo:
-        tokenizer = load_tokenizer(args.model_id)
-        demo_scoring(model, tokenizer, seed=args.seed)
+    if not cfg.skip_demo:
+        tokenizer = load_tokenizer(cfg.model_id)
+        demo_scoring(model, tokenizer, seed=cfg.seed)
 
 
 if __name__ == "__main__":

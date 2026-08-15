@@ -5,7 +5,7 @@
 Educational implementations of reward model training for [RLHF Book](https://rlhfbook.com).
 See **Chapter 5: Reward Models** for mathematical derivations and intuitions.
 
-> **⚠️ IN DEVELOPMENT**: These implementations are experimental. Preference RM now includes a config-driven example with validation logging and LR scheduling, but ORM/PRM configs, datasets, and evaluation still need refinement. Contributions welcome!
+> **⚠️ IN DEVELOPMENT**: These implementations are experimental. All three reward models now include config-driven training with validation logging, but datasets and evaluation still need refinement. Contributions welcome!
 
 ## Algorithms
 
@@ -38,14 +38,15 @@ WANDB_PROJECT=rlhf-book uv run python -m reward_models.train_preference_rm \
     --config reward_models/configs/preference_rm.yaml
 
 # Train PRM
-WANDB_PROJECT=rlhf-book uv run python -m reward_models.train_prm --samples 500 --epochs 2
+WANDB_PROJECT=rlhf-book uv run python -m reward_models.train_prm \
+    --config reward_models/configs/prm.yaml
 ```
 
 ## Reward Model Configuration
 
-The ORM and Preference RM scripts use `reward_models/configs/orm.yaml`
-and `reward_models/configs/preference_rm.yaml`, respectively.
-For smaller runs, copy the YAML file and edit the copy.
+The ORM, PRM, and Preference RM scripts use `reward_models/configs/orm.yaml`,
+`reward_models/configs/prm.yaml`, and `reward_models/configs/preference_rm.yaml`,
+respectively. For smaller runs, copy the YAML file and edit the copy.
 
 The default config trains Qwen3-0.6B on 5k UltraFeedback preference pairs with:
 
@@ -69,6 +70,5 @@ Reward models are commonly trained for around one epoch to reduce overfitting. T
 
 ## TODOs for Community Contributions
 
-- [ ] Add config files, validation splits, and validation logging for PRM and ORM
 - [ ] Evaluate on standard benchmarks (RewardBench)
 - [ ] Add data augmentation and curriculum learning

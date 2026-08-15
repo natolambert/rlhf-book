@@ -18,9 +18,11 @@ samples: 2000
 batch_size: 2
 grad_accum_steps: 16
 epochs: 3
-lr: 1.0e-4
+lr: 5.0e-5
 warmup_ratio: 0.1
 lr_scheduler: warmup_only
+val_ratio: 0.1
+eval_interval: 25
 seed: 7
 
 # Hardware

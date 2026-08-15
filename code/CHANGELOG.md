@@ -5,6 +5,8 @@ On release, entries get moved under a version heading.
 
 ## Unreleased
 
+- 2026-08-13: [PR #523](https://github.com/natolambert/rlhf-book/pull/523) made ORM and PRM training config-driven with validation splits, pre-packing row-level splits to avoid prompt leakage, and namespaced metrics; PRM configs now also honor `dataset_split` and `freeze_backbone`, and PRM `samples` now caps raw problems before step-chunking rather than packed records.
+
 ## v0.4.0
 
 - 2026-08-07: [PR #517](https://github.com/natolambert/rlhf-book/pull/517) Updated ORM reward model training script to use final tokens score for completion correctness predicted label instead of using all completion tokens

@@ -1,0 +1,36 @@
+# Process Reward Model Configuration
+# Step-level correctness classification on PRM800K.
+#
+# Run with:
+#   uv run python -m reward_models.train_prm \
+#     --config reward_models/configs/prm.yaml
+
+# Model
+model_id: Qwen/Qwen3-0.6B-Base
+freeze_backbone: false
+
+# Dataset
+dataset_name: tasksource/PRM800K
+dataset_split: train
+samples: 2000  # Caps raw problems before step-chunking, not packed examples
+max_steps: 12
+max_tokens: 2048
+
+# Training
+batch_size: 1
+grad_accum_steps: 16
+epochs: 1
+lr: 5.0e-5
+warmup_ratio: 0.1
+lr_scheduler: warmup_only
+val_ratio: 0.1
+eval_interval: 25
+seed: 13
+
+# Hardware
+device: cuda
+device_id: 0
+
+# Logging / demo
+use_wandb: true
+skip_demo: true

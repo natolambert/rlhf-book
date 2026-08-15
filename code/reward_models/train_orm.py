@@ -85,11 +85,37 @@ def pack_example(
     return {"input_ids": input_ids, "attention_mask": attention, "labels": labels}
 
 
+def _pack_raw_examples(raw_rows, tokenizer: AutoTokenizer) -> list[dict]:
+    """Pack raw GSM8K rows into paired positive/negative examples."""
+    packed = []
+    for ex in raw_rows:
+        question = ex["question"].strip()
+        prompt = f"Question: {question}\nAnswer:"
+        answer = ex["answer"].strip()
+        value = parse_answer(answer)
+
+        if value is None:
+            continue
+
+        # Correct example
+        packed.append(pack_example(prompt, answer, 1, tokenizer))
+
+        # Incorrect example (add random offset to answer)
+        wrong = value + random.randint(1, 9)
+        wrong_solution = answer + f"\nTherefore, the answer is {wrong}."
+        packed.append(pack_example(prompt, wrong_solution, 0, tokenizer))
+    return packed
+
+
 def build_orm_dataset(
     tokenizer: AutoTokenizer,
     config: Config,
-) -> Dataset:
+) -> Dataset | tuple[Dataset, Dataset]:
     """Build ORM training dataset from GSM8K.
+
+    Splits raw GSM8K rows first so both completions for a given question stay
+    in the same split, then packs paired positive/negative examples inside
+    each split.
 
     For each question:
     - Creates a positive example with the correct solution (label=1)
@@ -104,25 +130,16 @@ def build_orm_dataset(
 
     samples = min(config.samples, len(raw))
     raw = raw.shuffle(seed=config.seed).select(range(samples))
-    rows = []
 
-    for ex in raw:
-        question = ex["question"].strip()
-        prompt = f"Question: {question}\nAnswer:"
-        answer = ex["answer"].strip()
-        value = parse_answer(answer)
+    if config.val_ratio > 0.0:
+        raw_splits = raw.train_test_split(
+            test_size=config.val_ratio, seed=config.seed, shuffle=True
+        )
+        train_rows = _pack_raw_examples(raw_splits["train"], tokenizer)
+        val_rows = _pack_raw_examples(raw_splits["test"], tokenizer)
+        return Dataset.from_list(train_rows), Dataset.from_list(val_rows)
 
-        if value is None:
-            continue
-
-        # Correct example
-        rows.append(pack_example(prompt, answer, 1, tokenizer))
-
-        # Incorrect example (add random offset to answer)
-        wrong = value + random.randint(1, 9)
-        wrong_solution = answer + f"\nTherefore, the answer is {wrong}."
-        rows.append(pack_example(prompt, wrong_solution, 0, tokenizer))
-
+    rows = _pack_raw_examples(raw, tokenizer)
     return Dataset.from_list(rows)
 
 
@@ -199,6 +216,49 @@ class OutcomeRewardModel(BaseRewardModel):
 
 
 # =============================================================================
+# Evaluation
+# =============================================================================
+
+
+@torch.no_grad()
+def evaluate_orm(
+    model: OutcomeRewardModel,
+    loader: DataLoader,
+    device: torch.device,
+    autocast_enabled: bool,
+) -> dict[str, float]:
+    """Evaluate ORM loss and completion-correctness accuracy on a loader."""
+    model.eval()
+
+    total_loss = 0.0
+    total_correct = 0
+    total_examples = 0
+
+    for batch in loader:
+        batch = {k: v.to(device) for k, v in batch.items()}
+
+        with torch.amp.autocast("cuda", dtype=torch.bfloat16, enabled=autocast_enabled):
+            loss, logits = model(**batch)
+
+        sequence_logits = last_token_values(logits, batch["attention_mask"])
+        sequence_labels = last_token_values(batch["labels"], batch["attention_mask"])
+
+        preds = (torch.sigmoid(sequence_logits) > 0.5).long()
+        correct = (preds == sequence_labels).sum().item()
+        examples = sequence_labels.numel()
+
+        total_loss += loss.item() * examples
+        total_correct += correct
+        total_examples += examples
+
+    n = max(1, total_examples)
+    return {
+        "val/loss": total_loss / n,
+        "val/accuracy": total_correct / n,
+    }
+
+
+# =============================================================================
 # Training
 # =============================================================================
 
@@ -231,14 +291,34 @@ def train_orm(
     # Build dataset
     print(f"Building ORM dataset with {config.samples} samples...")
     data = build_orm_dataset(tokenizer, config)
-    print(f"Dataset size: {len(data)} examples")
+
+    if isinstance(data, tuple):
+        train_data, val_data = data
+    else:
+        train_data, val_data = data, None
+
+    print(f"Train size: {len(train_data)} examples")
+    if val_data is not None:
+        print(f"Validation size: {len(val_data)} examples")
 
     loader = DataLoader(
-        data,
+        train_data,
         batch_size=config.batch_size,
         shuffle=True,
-        drop_last=len(data) > config.batch_size,
+        drop_last=len(train_data) > config.batch_size,
         collate_fn=lambda b: collate_fn(b, tokenizer),
+    )
+
+    val_loader = (
+        DataLoader(
+            val_data,
+            batch_size=config.batch_size,
+            shuffle=False,
+            drop_last=False,
+            collate_fn=lambda b: collate_fn(b, tokenizer),
+        )
+        if val_data is not None
+        else None
     )
 
     # Initialize model
@@ -277,6 +357,7 @@ def train_orm(
     # Training loop
     global_step = 0
     grad_accum_steps = config.grad_accum_steps
+    eval_interval = config.eval_interval
     for epoch in range(config.epochs):
         model.train()
         epoch_loss = 0.0
@@ -326,7 +407,30 @@ def train_orm(
                 avg_loss = accum_loss / accum_microbatches
                 acc = accum_correct / max(1, accum_examples)
                 print(f"Epoch {epoch} step {global_step} | loss {avg_loss:.4f} | acc {acc:.3f}")
-                log_metrics({"loss": avg_loss, "accuracy": acc}, step=global_step)
+                log_metrics(
+                    {
+                        "train/loss": avg_loss,
+                        "train/accuracy": acc,
+                        "train/lr": optimizer.param_groups[0]["lr"],
+                    },
+                    step=global_step,
+                )
+
+                # Run validation every N optimizer steps.
+                # evaluate_orm() switches model to eval mode, so switch back to train after.
+                if (
+                    val_loader is not None
+                    and eval_interval > 0
+                    and global_step % eval_interval == 0
+                ):
+                    val_metrics = evaluate_orm(model, val_loader, device, autocast_enabled)
+                    print(
+                        f"Eval step {global_step} | "
+                        f"Val Loss: {val_metrics['val/loss']:.4f} | "
+                        f"Val Accuracy: {val_metrics['val/accuracy']:.3f}"
+                    )
+                    log_metrics(val_metrics, step=global_step)
+                    model.train()
 
                 # Reset accumulators
                 accum_loss = 0.0
@@ -337,7 +441,24 @@ def train_orm(
         avg_loss = epoch_loss / len(loader)
         accuracy = epoch_correct / max(1, epoch_examples)
         print(f"Epoch {epoch} | Loss: {avg_loss:.4f} | Accuracy: {accuracy:.3f}")
-        log_metrics({"epoch_loss": avg_loss, "epoch_accuracy": accuracy, "epoch": epoch})
+        log_metrics(
+            {"epoch_loss": avg_loss, "epoch_accuracy": accuracy, "epoch": epoch},
+            step=global_step,
+        )
+
+        # Also run validation at epoch end, unless we already evaluated on this exact step.
+        should_run_epoch_eval = val_loader is not None and (
+            eval_interval <= 0 or global_step % eval_interval != 0
+        )
+
+        if should_run_epoch_eval:
+            val_metrics = evaluate_orm(model, val_loader, device, autocast_enabled)
+            print(
+                f"Epoch {epoch} | Val Loss: {val_metrics['val/loss']:.4f} | "
+                f"Val Accuracy: {val_metrics['val/accuracy']:.3f}"
+            )
+            log_metrics({**val_metrics, "epoch": epoch}, step=global_step)
+            model.train()
 
     finish_wandb()
     return model
