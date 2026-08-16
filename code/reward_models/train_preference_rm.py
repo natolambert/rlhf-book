@@ -183,7 +183,7 @@ class PreferenceRewardModel(BaseRewardModel):
     """Preference-based Reward Model with full fine-tuning.
 
     Architecture:
-    - Base LLM (e.g., Qwen3) loaded in bfloat16
+    - Base LLM (e.g., Qwen3) with FP32 parameters and BF16 CUDA autocast
     - Linear head mapping last hidden state to scalar reward
 
     The model outputs a single scalar reward for each sequence.

@@ -43,10 +43,11 @@ class BaseRewardModel(nn.Module):
     ):
         super().__init__()
 
-        # BF16 loading - simple for small models
+        # Keep trainable parameters and optimizer state in FP32. Training loops
+        # use BF16 autocast on CUDA for lower-precision compute.
         self.model = AutoModelForCausalLM.from_pretrained(
             model_id,
-            dtype="bfloat16",  # Use string to avoid deprecation warning
+            dtype=torch.float32,
             device_map={"": device},
             trust_remote_code=True,
         )
@@ -57,9 +58,8 @@ class BaseRewardModel(nn.Module):
             for param in self.model.parameters():
                 param.requires_grad = False
 
-        # Build head with same dtype as model
+        # Module parameters default to FP32, matching the backbone.
         self.head = self._build_head(self.model.config.hidden_size, head_dim)
-        self.head = self.head.to(torch.bfloat16)
 
     def _build_head(self, hidden_size: int, output_dim: int) -> nn.Module:
         """Build the reward head. Override for custom architectures."""
@@ -71,14 +71,13 @@ class BaseRewardModel(nn.Module):
         attention_mask: torch.Tensor,
     ) -> torch.Tensor:
         """Get the last hidden states from the model."""
-        outputs = self.model(
+        outputs = self.model.base_model(
             input_ids=input_ids,
             attention_mask=attention_mask,
-            output_hidden_states=True,
             use_cache=False,
             return_dict=True,
         )
-        return outputs.hidden_states[-1]
+        return outputs.last_hidden_state
 
     @property
     def device(self) -> torch.device:

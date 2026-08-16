@@ -334,7 +334,7 @@ class ProcessRewardModel(BaseRewardModel):
     """Process Reward Model with full fine-tuning.
 
     Architecture:
-    - Base LLM (e.g., Qwen3) in BF16
+    - Base LLM (e.g., Qwen3) with FP32 parameters and BF16 CUDA autocast
     - Linear head mapping hidden states to 3-class logits
 
     The model outputs per-token logits which are trained with cross-entropy
