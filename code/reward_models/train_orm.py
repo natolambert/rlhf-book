@@ -469,14 +469,14 @@ def train_orm(
     eval_interval = config.eval_interval
     for epoch in range(config.epochs):
         model.train()
-        epoch_loss = torch.zeros((), device=device)
-        epoch_correct = torch.zeros((), device=device, dtype=torch.long)
+        epoch_loss = 0.0
+        epoch_correct = 0
         epoch_examples = 0
         optimizer.zero_grad(set_to_none=True)
 
         # Accumulators for logging per optimizer step
-        accum_loss = torch.zeros((), device=device)
-        accum_correct = torch.zeros((), device=device, dtype=torch.long)
+        accum_loss = 0.0
+        accum_correct = 0
         accum_examples = 0
         accum_microbatches = 0
 
@@ -489,20 +489,20 @@ def train_orm(
             (loss / grad_accum_steps).backward()
 
             # Accumulate metrics over the grad_accum window
-            detached_loss = loss.detach()
-            accum_loss += detached_loss
+            loss_value = loss.item()
+            accum_loss += loss_value
             sequence_logits = last_token_values(logits.detach(), batch["attention_mask"])
             sequence_labels = last_token_values(batch["labels"], batch["attention_mask"])
 
             preds = (torch.sigmoid(sequence_logits) > 0.5).long()
-            correct = (preds == sequence_labels).sum()
+            correct = (preds == sequence_labels).sum().item()
 
             examples = sequence_labels.numel()
             accum_correct += correct
             accum_examples += examples
             accum_microbatches += 1
 
-            epoch_loss += detached_loss
+            epoch_loss += loss_value
             epoch_correct += correct
             epoch_examples += examples
 
@@ -514,17 +514,8 @@ def train_orm(
                 global_step += 1
 
                 # Log averaged metrics over the full effective batch
-                avg_loss, acc = (
-                    torch.stack(
-                        (
-                            accum_loss / accum_microbatches,
-                            accum_correct / max(1, accum_examples),
-                        )
-                    )
-                    .float()
-                    .cpu()
-                    .tolist()
-                )
+                avg_loss = accum_loss / accum_microbatches
+                acc = accum_correct / max(1, accum_examples)
                 print(f"Epoch {epoch} step {global_step} | loss {avg_loss:.4f} | acc {acc:.3f}")
                 log_metrics(
                     {
@@ -552,22 +543,13 @@ def train_orm(
                     model.train()
 
                 # Reset accumulators
-                accum_loss.zero_()
-                accum_correct.zero_()
+                accum_loss = 0.0
+                accum_correct = 0
                 accum_examples = 0
                 accum_microbatches = 0
 
-        avg_loss, accuracy = (
-            torch.stack(
-                (
-                    epoch_loss / len(loader),
-                    epoch_correct / max(1, epoch_examples),
-                )
-            )
-            .float()
-            .cpu()
-            .tolist()
-        )
+        avg_loss = epoch_loss / len(loader)
+        accuracy = epoch_correct / max(1, epoch_examples)
         print(f"Epoch {epoch} | Loss: {avg_loss:.4f} | Accuracy: {accuracy:.3f}")
         log_metrics(
             {"epoch_loss": avg_loss, "epoch_accuracy": accuracy, "epoch": epoch},
