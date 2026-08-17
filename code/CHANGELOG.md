@@ -6,10 +6,10 @@ On release, entries get moved under a version heading.
 ## Unreleased
 
 - 2026-08-13: [PR #523](https://github.com/natolambert/rlhf-book/pull/523) made ORM and PRM training config-driven with validation splits, pre-packing row-level splits to avoid prompt leakage, and namespaced metrics; PRM configs now also honor `dataset_split` and `freeze_backbone`, and PRM `samples` now caps raw problems before step-chunking rather than packed records.
-- 2026-08-15: Updated the ORM to train `Qwen/Qwen3-0.6B` on stored verifier-labeled GSM8K rollouts with label-blind prompt-by-rollout sampling, the generator's Qwen chat context, and final-token ranking metrics on the validation split while retaining the original masked-token BCE. Reward-model parameters and AdamW state now remain FP32 while CUDA compute uses BF16 autocast.
 
 ## v0.4.0
 
+- 2026-08-17: Updated the ORM to train `Qwen/Qwen3-0.6B` on stored verifier-labeled GSM8K rollouts with label-blind prompt-by-rollout sampling, the generator's Qwen chat context, and final-token ranking metrics on the validation split while retaining the original masked-token BCE. Reward-model parameters and AdamW state now remain FP32 while CUDA compute uses BF16 autocast.
 - 2026-08-07: [PR #517](https://github.com/natolambert/rlhf-book/pull/517) Updated ORM reward model training script to use final tokens score for completion correctness predicted label instead of using all completion tokens
 - 2026-08-06: [PR #514](https://github.com/natolambert/rlhf-book/pull/514) added per-module `resolve_device()` helpers with `device: auto` default (CUDA → CPU) to `policy_gradients/`, `direct_alignment/`, `rejection_sampling/`, `distillation/`, and `instruction_tuning/`, replacing hardcoded CUDA. MPS is intentionally omitted (unstable / bf16 gaps).
 - 2026-08-04: [PR #507](https://github.com/natolambert/rlhf-book/pull/507) enforced YAML config for `train_orm`: `--config` is now required and the previously documented CLI overrides, including `--samples` and `--no-wandb`, were removed. This is a breaking CLI change; existing commands must move those overrides into the YAML file.
