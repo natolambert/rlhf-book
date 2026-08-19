@@ -30,7 +30,7 @@ def approx_kl3(
     log_ratio = log_probs - log_probs_ref
     if action_mask is not None:
         log_ratio = log_ratio * action_mask
-    return (log_ratio.exp() - 1) - log_ratio
+    return torch.expm1(log_ratio) - log_ratio
 
 
 def approx_kl2(
