@@ -410,9 +410,6 @@ def train_orm(
         shuffle=True,
         drop_last=len(train_data) > config.batch_size,
         collate_fn=collate,
-        persistent_workers=True,
-        pin_memory=True,
-        prefetch_factor=2,
     )
     val_loader = (
         DataLoader(
@@ -421,9 +418,6 @@ def train_orm(
             shuffle=False,
             drop_last=False,
             collate_fn=lambda batch: val_collate_fn(batch, tokenizer),
-            persistent_workers=True,
-            pin_memory=True,
-            prefetch_factor=2,
         )
         if val_data is not None
         else None

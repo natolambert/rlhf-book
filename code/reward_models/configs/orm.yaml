@@ -10,7 +10,7 @@ model_id: Qwen/Qwen3-0.6B
 freeze_backbone: false
 
 # Dataset
-dataset_name: lazarohurtado/gsm8k-qwen3-0.6B-rollouts
+dataset_name: RLHF-Book/gsm8k-qwen3-0.6B-rollouts
 dataset_split: train
 samples: 2000
 rollouts_per_prompt: 100
