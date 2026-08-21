@@ -8,6 +8,7 @@ On release, entries get moved under a version heading.
 - 2026-08-19: [PR #525](https://github.com/natolambert/rlhf-book/pull/525) hardened the k3 KL estimator (`policy_gradients/loss.py`) against catastrophic cancellation near `r = 0` by computing `expm1(r) - r` instead of `(exp(r) - 1) - r`, plus regression tests. Behavior for `r > 0` is unchanged.
 
 - 2026-08-13: [PR #523](https://github.com/natolambert/rlhf-book/pull/523) made ORM and PRM training config-driven with validation splits, pre-packing row-level splits to avoid prompt leakage, and namespaced metrics; PRM configs now also honor `dataset_split` and `freeze_backbone`, and PRM `samples` now caps raw problems before step-chunking rather than packed records.
+- 2026-08-17: [PR #524](https://github.com/natolambert/rlhf-book/pull/524) Updated the ORM to train `Qwen/Qwen3-0.6B` on stored verifier-labeled GSM8K rollouts with label-blind prompt-by-rollout sampling, the generator's Qwen chat context, and final-token ranking metrics on the validation split while retaining the original masked-token BCE. Reward-model parameters and AdamW state now remain FP32 while CUDA compute uses BF16 autocast.
 
 ## v0.4.0
 

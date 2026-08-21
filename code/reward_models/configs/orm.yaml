@@ -6,23 +6,25 @@
 #     --config reward_models/configs/orm.yaml
 
 # Model
-model_id: Qwen/Qwen3-0.6B-Base
+model_id: Qwen/Qwen3-0.6B
 freeze_backbone: false
 
 # Dataset
-dataset_name: openai/gsm8k
+dataset_name: RLHF-Book/gsm8k-qwen3-0.6B-rollouts
 dataset_split: train
 samples: 2000
+rollouts_per_prompt: 100
+max_length: 2048
 
 # Training
-batch_size: 2
-grad_accum_steps: 16
-epochs: 3
-lr: 5.0e-5
-warmup_ratio: 0.1
-lr_scheduler: warmup_only
+batch_size: 1
+grad_accum_steps: 32
+epochs: 1
+lr: 1.0e-5
+warmup_ratio: 0.0
+lr_scheduler: linear_decay
 val_ratio: 0.1
-eval_interval: 25
+eval_interval: 500
 seed: 7
 
 # Hardware

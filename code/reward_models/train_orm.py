@@ -7,11 +7,9 @@ License: MIT
 
 Adapted for RLHF Book (https://rlhfbook.com) by Nathan Lambert
 
-This script trains a minimal outcome reward model by fine-tuning a base LLM
-on GSM8K-derived correct/incorrect math answers. For each question,
-we parse the gold numeric answer and synthesize wrong completions by adding
-random offsets. The model learns to classify solution correctness via per-token
-BCE loss on completion tokens.
+This script trains a minimal outcome reward model by fine-tuning a LLM
+on verifier-labeled Qwen3-0.6B rollouts from GSM8K. The model learns to classify
+solution correctness via per-token BCE loss on completion tokens.
 
 See Chapter 5 (Reward Models) of RLHF Book for theoretical background.
 
@@ -21,7 +19,6 @@ Usage:
 
 import argparse
 import random
-from typing import Dict, List
 
 import torch
 import torch.nn.functional as F
@@ -31,6 +28,7 @@ from transformers import AutoTokenizer, get_linear_schedule_with_warmup
 
 from reward_models.base import (
     BaseRewardModel,
+    create_collate_fn,
     create_optimizer,
     finish_wandb,
     init_wandb,
@@ -40,42 +38,40 @@ from reward_models.base import (
 from reward_models.config import Config, load_config
 
 
+ROLLOUT_SYSTEM_PROMPT = (
+    "Solve the math problem step by step. End with exactly one line in the form "
+    "#### <number>. Do not write anything after that line."
+)
+
+
 # =============================================================================
 # Data Preparation
 # =============================================================================
 
 
-def parse_answer(text: str) -> int | None:
-    """Extract numeric answer from GSM8K solution text.
-
-    GSM8K answers are formatted as "#### <number>" at the end.
-    This function extracts that number, handling commas and edge cases.
-    """
-    if "####" in text:
-        tail = text.split("####")[-1]
-    else:
-        sentences = [seg.strip() for seg in text.strip().split("\n") if seg.strip()]
-        tail = sentences[-1] if sentences else text
-
-    tokens = tail.replace(",", "").split()
-    for token in reversed(tokens):
-        digits = "".join(ch for ch in token if ch.isdigit() or ch == "-")
-        if digits:
-            try:
-                return int(digits)
-            except ValueError:
-                continue
-    return None
+def tokenize_prompt(question: str, tokenizer: AutoTokenizer) -> list[int]:
+    """Tokenize the chat context used to generate the stored rollouts."""
+    encoded = tokenizer.apply_chat_template(
+        [
+            {"role": "system", "content": ROLLOUT_SYSTEM_PROMPT},
+            {"role": "user", "content": question.strip()},
+        ],
+        tokenize=True,
+        add_generation_prompt=True,
+        enable_thinking=True,
+        return_dict=True,
+    )
+    return encoded["input_ids"]
 
 
 def pack_example(
-    prompt: str, completion: str, label: int, tokenizer: AutoTokenizer
-) -> Dict[str, List[int]]:
-    """Pack a (prompt, completion, label) into tokenized format.
+    question: str, completion: str, label: int, tokenizer: AutoTokenizer
+) -> dict[str, list[int]]:
+    """Pack a (question, completion, label) into tokenized format.
 
     The label is applied to all completion tokens, with prompt tokens masked (-100).
     """
-    prompt_ids = tokenizer(prompt, add_special_tokens=False)["input_ids"]
+    prompt_ids = tokenize_prompt(question, tokenizer)
     completion_ids = tokenizer(completion + tokenizer.eos_token, add_special_tokens=False)[
         "input_ids"
     ]
@@ -85,78 +81,140 @@ def pack_example(
     return {"input_ids": input_ids, "attention_mask": attention, "labels": labels}
 
 
-def _pack_raw_examples(raw_rows, tokenizer: AutoTokenizer) -> list[dict]:
-    """Pack raw GSM8K rows into paired positive/negative examples."""
-    packed = []
-    for ex in raw_rows:
-        question = ex["question"].strip()
-        prompt = f"Question: {question}\nAnswer:"
-        answer = ex["answer"].strip()
-        value = parse_answer(answer)
+def preprocess_rollout_batch(
+    batch: dict[str, list],
+    indices: list[int],
+    tokenizer: AutoTokenizer,
+    max_length: int,
+    rollouts_per_prompt: int,
+) -> dict[str, list]:
+    """Flatten, tokenize, and length-filter grouped rollout rows."""
+    prefixes = []
+    completions = []
+    rewards = []
+    prompt_ids = []
+    for prompt_id, prompt, prompt_completions, prompt_rewards in zip(
+        indices,
+        batch["prompt"],
+        batch["completions"],
+        batch["rewards"],
+        strict=True,
+    ):
+        sample_size = min(rollouts_per_prompt, len(prompt_completions))
+        if sample_size < rollouts_per_prompt:
+            print(
+                f"Warning: prompt {prompt_id} has {sample_size} rollouts; "
+                f"using all instead of {rollouts_per_prompt}"
+            )
+        prefix = tokenize_prompt(prompt, tokenizer)
+        for completion, reward in zip(
+            prompt_completions[:sample_size],
+            prompt_rewards[:sample_size],
+            strict=True,
+        ):
+            prefixes.append(prefix)
+            completions.append(completion + tokenizer.eos_token)
+            rewards.append(reward)
+            prompt_ids.append(prompt_id)
 
-        if value is None:
+    suffix_ids = tokenizer(completions, add_special_tokens=False)["input_ids"]
+
+    output = {
+        "input_ids": [],
+        "attention_mask": [],
+        "labels": [],
+        "prompt_id": [],
+        "outcome": [],
+    }
+    for prompt_id, reward, prefix, suffix in zip(
+        prompt_ids,
+        rewards,
+        prefixes,
+        suffix_ids,
+        strict=True,
+    ):
+        input_ids = prefix + suffix
+        if len(input_ids) > max_length:
             continue
+        label = int(reward)
+        output["input_ids"].append(input_ids)
+        output["attention_mask"].append([1] * len(input_ids))
+        output["labels"].append([-100] * len(prefix) + [label] * len(suffix))
+        output["prompt_id"].append(prompt_id)
+        output["outcome"].append(bool(label))
+    return output
 
-        # Correct example
-        packed.append(pack_example(prompt, answer, 1, tokenizer))
 
-        # Incorrect example (add random offset to answer)
-        wrong = value + random.randint(1, 9)
-        wrong_solution = answer + f"\nTherefore, the answer is {wrong}."
-        packed.append(pack_example(prompt, wrong_solution, 0, tokenizer))
-    return packed
+def preprocess_rollouts(
+    candidates: Dataset,
+    tokenizer: AutoTokenizer,
+    max_length: int,
+    rollouts_per_prompt: int,
+    split: str,
+) -> Dataset:
+    """Tokenize rollout candidates and report sequences above ``max_length``."""
+    data = candidates.map(
+        preprocess_rollout_batch,
+        batched=True,
+        batch_size=max(1, 512 // rollouts_per_prompt),
+        with_indices=True,
+        remove_columns=candidates.column_names,
+        fn_kwargs={
+            "tokenizer": tokenizer,
+            "max_length": max_length,
+            "rollouts_per_prompt": rollouts_per_prompt,
+        },
+        load_from_cache_file=True,
+        desc=f"Tokenizing ORM {split.lower()} rollouts",
+    )
+
+    scanned = sum(
+        min(rollouts_per_prompt, len(completions)) for completions in candidates["completions"]
+    )
+    dropped = scanned - len(data)
+    percentage = 100 * dropped / scanned if scanned else 0.0
+    print(
+        f"{split} length filter: dropped {dropped}/{scanned} scanned completions "
+        f"({percentage:.1f}%) over max_length={max_length}"
+    )
+
+    if not data:
+        raise ValueError(f"No ORM {split.lower()} completions fit max_length={max_length}")
+    return data
 
 
 def build_orm_dataset(
     tokenizer: AutoTokenizer,
     config: Config,
-) -> Dataset | tuple[Dataset, Dataset]:
-    """Build ORM training dataset from GSM8K.
+) -> tuple[Dataset, Dataset | None]:
+    """Build an ORM dataset from stored verifier-labeled rollout rows."""
+    raw = load_dataset(config.dataset_name, split=config.dataset_split)
+    raw = raw.shuffle(seed=config.seed).select(range(min(config.samples, len(raw))))
+    if config.val_ratio > 0:
+        splits = raw.train_test_split(test_size=config.val_ratio, seed=config.seed)
+        train_rows, val_rows = splits["train"], splits["test"]
+    else:
+        train_rows, val_rows = raw, None
 
-    Splits raw GSM8K rows first so both completions for a given question stay
-    in the same split, then packs paired positive/negative examples inside
-    each split.
-
-    For each question:
-    - Creates a positive example with the correct solution (label=1)
-    - Creates a negative example with a corrupted answer (label=0)
-    """
-    random.seed(config.seed)
-    raw = load_dataset(
-        config.dataset_name,
-        "main",
-        split=config.dataset_split,
+    train_data = preprocess_rollouts(
+        train_rows,
+        tokenizer,
+        config.max_length,
+        config.rollouts_per_prompt,
+        "Training",
     )
+    train_data = train_data.remove_columns(["prompt_id", "outcome"])
+    if val_rows is None:
+        return train_data, None
 
-    samples = min(config.samples, len(raw))
-    raw = raw.shuffle(seed=config.seed).select(range(samples))
-
-    if config.val_ratio > 0.0:
-        raw_splits = raw.train_test_split(
-            test_size=config.val_ratio, seed=config.seed, shuffle=True
-        )
-        train_rows = _pack_raw_examples(raw_splits["train"], tokenizer)
-        val_rows = _pack_raw_examples(raw_splits["test"], tokenizer)
-        return Dataset.from_list(train_rows), Dataset.from_list(val_rows)
-
-    rows = _pack_raw_examples(raw, tokenizer)
-    return Dataset.from_list(rows)
-
-
-def collate_fn(batch: List[Dict], tokenizer: AutoTokenizer) -> Dict[str, torch.Tensor]:
-    """Collate function for DataLoader - pads sequences to same length."""
-    max_len = max(len(x["input_ids"]) for x in batch)
-    inputs = torch.full((len(batch), max_len), tokenizer.pad_token_id, dtype=torch.long)
-    attn = torch.zeros_like(inputs)
-    labels = torch.full((len(batch), max_len), -100, dtype=torch.long)
-
-    for i, item in enumerate(batch):
-        length = len(item["input_ids"])
-        inputs[i, :length] = torch.tensor(item["input_ids"], dtype=torch.long)
-        attn[i, :length] = torch.tensor(item["attention_mask"], dtype=torch.long)
-        labels[i, :length] = torch.tensor(item["labels"], dtype=torch.long)
-
-    return {"input_ids": inputs, "attention_mask": attn, "labels": labels}
+    val_data = preprocess_rollouts(
+        val_rows,
+        tokenizer,
+        config.max_length,
+        config.rollouts_per_prompt,
+        "Validation",
+    )
+    return train_data, val_data
 
 
 # =============================================================================
@@ -174,7 +232,7 @@ class OutcomeRewardModel(BaseRewardModel):
     """Outcome Reward Model with full fine-tuning.
 
     Architecture:
-    - Base LLM (e.g., Qwen3) loaded in bfloat16
+    - LLM (e.g., Qwen3) with FP32 parameters and BF16 CUDA autocast
     - Linear head mapping hidden states to scalar reward
 
     The model outputs per-token logits which are trained with BCE loss
@@ -220,42 +278,90 @@ class OutcomeRewardModel(BaseRewardModel):
 # =============================================================================
 
 
+def compute_eval_metrics(
+    rewards: list[float], outcomes: list[bool], prompt_ids: list[int]
+) -> dict[str, float]:
+    """Compare ORM rewards with verifier outcomes and prompt-level ranking."""
+    if not rewards or len(rewards) != len(outcomes) or len(rewards) != len(prompt_ids):
+        raise ValueError("Rewards, outcomes, and prompt IDs must be nonempty and aligned")
+
+    metrics = {}
+    correct_rewards = [reward for reward, outcome in zip(rewards, outcomes, strict=True) if outcome]
+    incorrect_rewards = [
+        reward for reward, outcome in zip(rewards, outcomes, strict=True) if not outcome
+    ]
+    if correct_rewards:
+        metrics["val/reward_correct_mean"] = sum(correct_rewards) / len(correct_rewards)
+    if incorrect_rewards:
+        metrics["val/reward_incorrect_mean"] = sum(incorrect_rewards) / len(incorrect_rewards)
+
+    groups = {}
+    for index, prompt_id in enumerate(prompt_ids):
+        groups.setdefault(prompt_id, []).append(index)
+
+    top1_scores = []
+    pairwise_score = 0.0
+    pairwise_count = 0
+    for indices in groups.values():
+        maximum = max(rewards[index] for index in indices)
+        tied_top = [index for index in indices if rewards[index] == maximum]
+        top1_scores.append(sum(outcomes[index] for index in tied_top) / len(tied_top))
+
+        correct_indices = [index for index in indices if outcomes[index]]
+        incorrect_indices = [index for index in indices if not outcomes[index]]
+        if not correct_indices or not incorrect_indices:
+            continue
+
+        for correct_index in correct_indices:
+            for incorrect_index in incorrect_indices:
+                pairwise_score += (
+                    1.0
+                    if rewards[correct_index] > rewards[incorrect_index]
+                    else 0.5
+                    if rewards[correct_index] == rewards[incorrect_index]
+                    else 0.0
+                )
+                pairwise_count += 1
+
+    metrics["val/top1_accuracy"] = sum(top1_scores) / len(top1_scores)
+    if pairwise_count:
+        metrics["val/pairwise_accuracy"] = pairwise_score / pairwise_count
+    return metrics
+
+
+def val_collate_fn(
+    batch: list[dict],
+    tokenizer: AutoTokenizer,
+) -> dict[str, torch.Tensor]:
+    """Pad model inputs and preserve scalar validation metadata."""
+    collated = create_collate_fn(tokenizer, ["input_ids", "attention_mask"])(batch)
+    collated["prompt_id"] = torch.tensor([example["prompt_id"] for example in batch])
+    collated["outcome"] = torch.tensor([example["outcome"] for example in batch])
+    return collated
+
+
 @torch.no_grad()
 def evaluate_orm(
     model: OutcomeRewardModel,
     loader: DataLoader,
     device: torch.device,
-    autocast_enabled: bool,
 ) -> dict[str, float]:
-    """Evaluate ORM loss and completion-correctness accuracy on a loader."""
+    """Score validation rollouts and compare final-token rewards with outcomes."""
     model.eval()
-
-    total_loss = 0.0
-    total_correct = 0
-    total_examples = 0
+    rewards = []
+    outcomes = []
+    prompt_ids = []
 
     for batch in loader:
-        batch = {k: v.to(device) for k, v in batch.items()}
+        outcomes.extend(batch.pop("outcome").tolist())
+        prompt_ids.extend(batch.pop("prompt_id").tolist())
+        batch = {key: value.to(device) for key, value in batch.items()}
+        with torch.amp.autocast("cuda", dtype=torch.bfloat16, enabled=device.type == "cuda"):
+            _, logits = model(**batch)
+        scores = torch.sigmoid(last_token_values(logits, batch["attention_mask"]))
+        rewards.extend(scores.float().cpu().tolist())
 
-        with torch.amp.autocast("cuda", dtype=torch.bfloat16, enabled=autocast_enabled):
-            loss, logits = model(**batch)
-
-        sequence_logits = last_token_values(logits, batch["attention_mask"])
-        sequence_labels = last_token_values(batch["labels"], batch["attention_mask"])
-
-        preds = (torch.sigmoid(sequence_logits) > 0.5).long()
-        correct = (preds == sequence_labels).sum().item()
-        examples = sequence_labels.numel()
-
-        total_loss += loss.item() * examples
-        total_correct += correct
-        total_examples += examples
-
-    n = max(1, total_examples)
-    return {
-        "val/loss": total_loss / n,
-        "val/accuracy": total_correct / n,
-    }
+    return compute_eval_metrics(rewards, outcomes, prompt_ids)
 
 
 # =============================================================================
@@ -266,7 +372,7 @@ def evaluate_orm(
 def train_orm(
     config: Config,
 ) -> OutcomeRewardModel:
-    """Train an Outcome Reward Model on GSM8K.
+    """Train an Outcome Reward Model on GSM8K rollouts.
 
     Args:
         config: Configuration object containing training parameters.
@@ -287,35 +393,31 @@ def train_orm(
 
     # Load tokenizer
     tokenizer = load_tokenizer(config.model_id)
-
-    # Build dataset
-    print(f"Building ORM dataset with {config.samples} samples...")
-    data = build_orm_dataset(tokenizer, config)
-
-    if isinstance(data, tuple):
-        train_data, val_data = data
-    else:
-        train_data, val_data = data, None
+    print(
+        f"Building ORM dataset from up to {config.samples} prompt rows "
+        f"and up to {config.rollouts_per_prompt} rollouts per prompt..."
+    )
+    train_data, val_data = build_orm_dataset(tokenizer, config)
 
     print(f"Train size: {len(train_data)} examples")
     if val_data is not None:
         print(f"Validation size: {len(val_data)} examples")
 
+    collate = create_collate_fn(tokenizer, ["input_ids", "attention_mask", "labels"])
     loader = DataLoader(
         train_data,
         batch_size=config.batch_size,
         shuffle=True,
         drop_last=len(train_data) > config.batch_size,
-        collate_fn=lambda b: collate_fn(b, tokenizer),
+        collate_fn=collate,
     )
-
     val_loader = (
         DataLoader(
             val_data,
             batch_size=config.batch_size,
             shuffle=False,
             drop_last=False,
-            collate_fn=lambda b: collate_fn(b, tokenizer),
+            collate_fn=lambda batch: val_collate_fn(batch, tokenizer),
         )
         if val_data is not None
         else None
@@ -351,8 +453,7 @@ def train_orm(
             else None
         )
 
-    # Mixed precision
-    autocast_enabled = torch.cuda.is_available()
+    autocast_enabled = device.type == "cuda"
 
     # Training loop
     global_step = 0
@@ -363,7 +464,7 @@ def train_orm(
         epoch_loss = 0.0
         epoch_correct = 0
         epoch_examples = 0
-        optimizer.zero_grad()
+        optimizer.zero_grad(set_to_none=True)
 
         # Accumulators for logging per optimizer step
         accum_loss = 0.0
@@ -380,8 +481,9 @@ def train_orm(
             (loss / grad_accum_steps).backward()
 
             # Accumulate metrics over the grad_accum window
-            accum_loss += loss.item()
-            sequence_logits = last_token_values(logits, batch["attention_mask"])
+            loss_value = loss.item()
+            accum_loss += loss_value
+            sequence_logits = last_token_values(logits.detach(), batch["attention_mask"])
             sequence_labels = last_token_values(batch["labels"], batch["attention_mask"])
 
             preds = (torch.sigmoid(sequence_logits) > 0.5).long()
@@ -392,7 +494,7 @@ def train_orm(
             accum_examples += examples
             accum_microbatches += 1
 
-            epoch_loss += loss.item()
+            epoch_loss += loss_value
             epoch_correct += correct
             epoch_examples += examples
 
@@ -400,7 +502,7 @@ def train_orm(
                 optimizer.step()
                 if scheduler is not None:
                     scheduler.step()
-                optimizer.zero_grad()
+                optimizer.zero_grad(set_to_none=True)
                 global_step += 1
 
                 # Log averaged metrics over the full effective batch
@@ -423,13 +525,13 @@ def train_orm(
                     and eval_interval > 0
                     and global_step % eval_interval == 0
                 ):
-                    val_metrics = evaluate_orm(model, val_loader, device, autocast_enabled)
-                    print(
-                        f"Eval step {global_step} | "
-                        f"Val Loss: {val_metrics['val/loss']:.4f} | "
-                        f"Val Accuracy: {val_metrics['val/accuracy']:.3f}"
+                    metrics = evaluate_orm(model, val_loader, device)
+                    summary = " | ".join(
+                        f"{name.removeprefix('val/')}: {value:.3f}"
+                        for name, value in metrics.items()
                     )
-                    log_metrics(val_metrics, step=global_step)
+                    print(f"Eval step {global_step} | {summary}")
+                    log_metrics(metrics, step=global_step)
                     model.train()
 
                 # Reset accumulators
@@ -452,12 +554,12 @@ def train_orm(
         )
 
         if should_run_epoch_eval:
-            val_metrics = evaluate_orm(model, val_loader, device, autocast_enabled)
-            print(
-                f"Epoch {epoch} | Val Loss: {val_metrics['val/loss']:.4f} | "
-                f"Val Accuracy: {val_metrics['val/accuracy']:.3f}"
+            metrics = evaluate_orm(model, val_loader, device)
+            summary = " | ".join(
+                f"{name.removeprefix('val/')}: {value:.3f}" for name, value in metrics.items()
             )
-            log_metrics({**val_metrics, "epoch": epoch}, step=global_step)
+            print(f"Eval step {global_step} | {summary}")
+            log_metrics(metrics, step=global_step)
             model.train()
 
     finish_wandb()
@@ -472,16 +574,16 @@ def train_orm(
 def score_completion(
     model: OutcomeRewardModel,
     tokenizer: AutoTokenizer,
-    prompt: str,
+    question: str,
     completion: str,
     device: torch.device,
 ) -> float:
     """Score a single completion using the trained ORM.
 
-    Returns the final completion token's probability.
+    Returns the final completion token's correctness probability.
     """
-    example = pack_example(prompt, completion, 1, tokenizer)  # Label doesn't matter for inference
-    batch = collate_fn([example], tokenizer)
+    example = pack_example(question, completion, 1, tokenizer)  # Label doesn't matter here
+    batch = create_collate_fn(tokenizer, ["input_ids", "attention_mask"])([example])
     batch = {k: v.to(device) for k, v in batch.items()}
 
     model.eval()
@@ -495,42 +597,36 @@ def score_completion(
 def demo_scoring(model: OutcomeRewardModel, tokenizer: AutoTokenizer, config: Config):
     """Demo: Score an unseen GSM8K test question."""
     device = next(model.parameters()).device
-    random.seed(config.seed)
-
-    # Get a random test example
-    test_data = load_dataset(
-        config.dataset_name,
-        "main",
-        split="test",
-    )
-    sample = random.choice(test_data)
-
-    question = sample["question"].strip()
-    answer = sample["answer"].strip()
-    value = parse_answer(answer)
-
-    if value is None:
-        print("Could not parse answer from sample")
+    sample = load_dataset(config.dataset_name, split="test").shuffle(seed=config.seed)[0]
+    question = sample["prompt"].strip()
+    retained = [
+        (completion, int(reward))
+        for completion, reward in zip(sample["completions"], sample["rewards"], strict=True)
+        if len(pack_example(question, completion, int(reward), tokenizer)["input_ids"])
+        <= config.max_length
+    ]
+    correct_completion = next((completion for completion, label in retained if label == 1), None)
+    incorrect_completion = next((completion for completion, label in retained if label == 0), None)
+    if correct_completion is None or incorrect_completion is None:
+        print("Selected test prompt does not have both correct and incorrect retained rollouts")
         return
-
-    prompt = f"Question: {question}\nAnswer:"
-
-    # Create correct and incorrect completions
-    wrong_value = value + random.randint(1, 9)
-    wrong_answer = answer + f"\nTherefore, the answer is {wrong_value}."
 
     print("=" * 60)
     print("Question:", question)
     print("=" * 60)
 
-    correct_score = score_completion(model, tokenizer, prompt, answer, device)
-    print(f"\nCorrect completion (answer={value}):")
-    print(answer[:200] + "..." if len(answer) > 200 else answer)
+    correct_score = score_completion(model, tokenizer, question, correct_completion, device)
+    print("\nCorrect completion:")
+    print(correct_completion[:200] + "..." if len(correct_completion) > 200 else correct_completion)
     print(f"Score: {correct_score:.3f}")
 
-    incorrect_score = score_completion(model, tokenizer, prompt, wrong_answer, device)
-    print(f"\nIncorrect completion (answer={wrong_value}):")
-    print(wrong_answer[:200] + "..." if len(wrong_answer) > 200 else wrong_answer)
+    incorrect_score = score_completion(model, tokenizer, question, incorrect_completion, device)
+    print("\nIncorrect completion:")
+    print(
+        incorrect_completion[:200] + "..."
+        if len(incorrect_completion) > 200
+        else incorrect_completion
+    )
     print(f"Score: {incorrect_score:.3f}")
 
     print(f"\nModel correctly prefers correct answer: {correct_score > incorrect_score}")
