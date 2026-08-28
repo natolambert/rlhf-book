@@ -10,10 +10,12 @@ Use this skill when the user wants to run, adapt, compare, or document an experi
 
 ## Pick The Starting Point
 
+- Instruction Fine-Tuning: read `code/instruction_tuning/README.md`.
 - Policy gradients / RL / GRPO / PPO: read `code/policy_gradients/README.md`.
 - Reward models / ORM / PRM / Bradley-Terry RM: read `code/reward_models/README.md`.
 - DPO / IPO / SimPO / ORPO / KTO / APO: read `code/direct_alignment/README.md`.
 - Rejection sampling / best-of-N / GSM8K filtering: read `code/rejection_sampling/README.md`.
+- Distillation: read `code/distillation/README.md`.
 
 ## Run Protocol
 
