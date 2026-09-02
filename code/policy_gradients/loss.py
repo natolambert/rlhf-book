@@ -56,7 +56,7 @@ def approx_kl1(
     log_ratio = log_probs - log_probs_ref
     if action_mask is not None:
         log_ratio = log_ratio * action_mask
-    return -log_ratio
+    return log_ratio
 
 
 def get_approx_kl(
