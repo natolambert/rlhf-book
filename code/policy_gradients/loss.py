@@ -27,7 +27,7 @@ def approx_kl3(
 
     See: http://joschu.net/blog/kl-approx.html
     """
-    log_ratio = log_probs - log_probs_ref
+    log_ratio = log_probs_ref - log_probs
     if action_mask is not None:
         log_ratio = log_ratio * action_mask
     return torch.expm1(log_ratio) - log_ratio
