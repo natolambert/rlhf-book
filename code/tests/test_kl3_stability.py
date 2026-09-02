@@ -1,4 +1,4 @@
-"""Numerical-stability tests for the k3 KL estimator.
+"""Direction and numerical-stability tests for the KL estimators.
 
 The naive k3 form ``(exp(r) - 1) - r`` catastrophically cancels near ``r = 0``:
 ``exp(r) - 1`` loses the leading ``r`` term, so the result is dominated by float
@@ -11,7 +11,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from policy_gradients.loss import approx_kl3
+from policy_gradients.loss import approx_kl1, approx_kl3
 
 
 def _naive_kl3(log_ratio: torch.Tensor) -> torch.Tensor:
@@ -21,8 +21,10 @@ def _naive_kl3(log_ratio: torch.Tensor) -> torch.Tensor:
 
 def test_kl3_matches_quadratic_near_zero() -> None:  # Pins the mathematical target
     r = torch.tensor(1e-4)
+    log_probs = torch.tensor(-1.0)
+    log_probs_ref = log_probs + r
     # k3 ~ r^2/2 for small r; the naive form gives ~3.3x error here.
-    assert approx_kl3(r, torch.zeros_like(r), None).item() == pytest.approx(1e-4**2 / 2, rel=0.05)
+    assert approx_kl3(log_probs, log_probs_ref, None).item() == pytest.approx(1e-4**2 / 2, rel=0.05)
 
 
 def test_expm1_vs_naive_forms_diverge_only_where_cancellation_hurts() -> None:
@@ -36,8 +38,10 @@ def test_expm1_vs_naive_forms_diverge_only_where_cancellation_hurts() -> None:
     confidence where ``r`` approaches 0.
     """
     tiny = torch.tensor(1e-6)
+    log_probs = torch.tensor(-1.0)
+    log_probs_ref = log_probs + tiny
     # expm1(r) - r is tiny, positive, ~r^2/2.
-    assert approx_kl3(tiny, torch.zeros_like(tiny), None).item() == pytest.approx(
+    assert approx_kl3(log_probs, log_probs_ref, None).item() == pytest.approx(
         1e-6**2 / 2, abs=1e-12
     )
     # The naive form round-trips through exp(r) - 1, losing the leading r term and
@@ -47,13 +51,24 @@ def test_expm1_vs_naive_forms_diverge_only_where_cancellation_hurts() -> None:
     # Both forms are mathematically identical when r is not tiny (no cancellation);
     # they may differ by a few ulps of round-off but agree to ~1e-7.
     larger = torch.tensor([0.5, 1.0, 2.0, 4.0])
-    ref = torch.zeros_like(larger)
-    assert torch.allclose(approx_kl3(larger, ref, None), _naive_kl3(larger), atol=1e-7)
+    log_probs = torch.full_like(larger, -5.0)
+    log_probs_ref = log_probs + larger
+    assert torch.allclose(approx_kl3(log_probs, log_probs_ref, None), _naive_kl3(larger), atol=1e-7)
 
 
 def test_kl3_respects_action_mask() -> None:
-    r = torch.ones(2, 4)
+    log_probs = torch.full((2, 4), -2.0)
+    log_probs_ref = torch.full((2, 4), -1.0)
     mask = torch.tensor([[1, 1, 0, 0], [0, 0, 0, 0]])
     # k3(1.0) = e - 2
     expected = torch.tensor([[torch.e - 2, torch.e - 2, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0]])
-    assert torch.allclose(approx_kl3(r, torch.zeros_like(r), mask), expected)
+    assert torch.allclose(approx_kl3(log_probs, log_probs_ref, mask), expected)
+
+
+def test_kl1_uses_policy_over_reference_log_ratio() -> None:
+    log_probs = torch.tensor([[-0.5, -1.5, -2.0]])
+    log_probs_ref = torch.tensor([[-1.0, -1.0, -3.0]])
+    mask = torch.tensor([[1, 1, 0]])
+
+    expected = torch.tensor([[0.5, -0.5, 0.0]])
+    assert torch.equal(approx_kl1(log_probs, log_probs_ref, mask), expected)

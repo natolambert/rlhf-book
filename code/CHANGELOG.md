@@ -5,6 +5,7 @@ On release, entries get moved under a version heading.
 
 ## Unreleased
 
+- 2026-09-02: [PR #528](https://github.com/natolambert/rlhf-book/pull/528) corrected the ratio direction in the k1 and k3 estimators so they estimate `KL(pi || pi_ref)` for samples drawn from the policy, and added directional regression coverage. This changes KL metrics and reward-penalty semantics for configurations with `beta > 0`; checked-in defaults with `beta: 0.0` are unaffected.
 - 2026-08-19: [PR #525](https://github.com/natolambert/rlhf-book/pull/525) hardened the k3 KL estimator (`policy_gradients/loss.py`) against catastrophic cancellation near `r = 0` by computing `expm1(r) - r` instead of `(exp(r) - 1) - r`, plus regression tests. Behavior for `r > 0` is unchanged.
 
 - 2026-08-13: [PR #523](https://github.com/natolambert/rlhf-book/pull/523) made ORM and PRM training config-driven with validation splits, pre-packing row-level splits to avoid prompt leakage, and namespaced metrics; PRM configs now also honor `dataset_split` and `freeze_backbone`, and PRM `samples` now caps raw problems before step-chunking rather than packed records.
