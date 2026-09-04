@@ -1,0 +1,30 @@
+\documentclass[tikz,border=5pt]{standalone}
+\usepackage{lmodern}
+\renewcommand{\familydefault}{\sfdefault}
+\usetikzlibrary{arrows.meta,calc}
+\input{styles_training_recipes.tex}
+
+% Generic sequential-RL pattern, using the stage order of the supplied GLM-5
+% slide/report. Boxes are model checkpoints; edge labels are training stages,
+% as in Ch 3's existing rlhf-basic.png and rlhf-complex.png figures.
+% This shows the sequential RL spine, not GLM-5's complete recipe: its final
+% on-policy cross-stage distillation is omitted. No GLM-5.2-specific claim.
+% Sources and deliberate simplifications: see this directory's README.md.
+\begin{document}
+\begin{tikzpicture}
+  \node[recipe model] (base) at (0,0) {Base Model};
+  \node[recipe model] (sft) at (4.1,0) {SFT Model};
+  \node[recipe model,minimum width=3.25cm] (reasoning) at (8.75,0) {Reasoning Model};
+  \node[recipe model,minimum width=3.25cm] (agentic) at (13.55,0) {Agentic Model};
+  \node[recipe model,minimum width=3cm] (final) at (18.3,0) {Final Model};
+
+  \draw[recipe arrow] (base.east) -- (sft.west);
+  \draw[recipe arrow] (sft.east) -- (reasoning.west);
+  \draw[recipe arrow] (reasoning.east) -- (agentic.west);
+  \draw[recipe arrow] (agentic.east) -- (final.west);
+  \node[recipe operation] at (2.05,0.9) {Overall SFT};
+  \node[recipe operation] at (6.3,0.9) {Reasoning RL};
+  \node[recipe operation] at (11.15,0.9) {Agentic RL};
+  \node[recipe operation] at (16,0.9) {General RL};
+\end{tikzpicture}
+\end{document}

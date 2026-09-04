@@ -13,6 +13,7 @@ make all
 # Or specific targets
 make tokens    # Token strip diagrams (reward models)
 make tikz      # TikZ diagrams (policy gradients, distillation)
+make training-recipes  # MOPD + sequential RL recipes, including dark variants
 make figures   # Standalone figures (cartpole, tool_use, etc.)
 make clean     # Remove generated files
 make help      # List all targets
@@ -112,6 +113,8 @@ Box-and-arrow flows for RLHF architectures and related training concepts. Many u
 | `rlhf_schematic_tikz` | `tikz/02-related-works/rlhf_schematic_tikz.tex` | RLHF loop: RL algorithm, environment, reward predictor, human feedback (Christiano et al. 2017) | Ch 2 (Related Works) |
 | `rlhf_timeline_tikz` | `tikz/02-related-works/rlhf_timeline_tikz.tex` | Timeline of key RLHF developments across three eras | Ch 2 (Related Works) |
 | `thermostat_equation_tikz` | `tikz/03-training-overview/thermostat_equation_tikz.tex` | Thermostat analogy for the RL objective | Ch 3 (Training Overview) |
+| `rlhf_mopd_tikz` | `tikz/03-training-overview/rlhf_mopd_tikz.tex` | Shared SFT → domain SFT teachers → domain RL teachers → MOPD → one student | Ch 3 (Training Overview) |
+| `rlhf_sequential_rl_tikz` | `tikz/03-training-overview/rlhf_sequential_rl_tikz.tex` | Overall SFT → reasoning RL → agentic RL → general RL | Ch 3 (Training Overview) |
 | `reinforce_tikz` | `tikz/06-policy-gradients/reinforce_tikz.tex` | REINFORCE: basic policy gradient algorithm | Ch 6 (Policy Gradients) |
 | `ppo_tikz` | `tikz/06-policy-gradients/ppo_tikz.tex` | PPO: single output, value network, GAE, KL in reward | Ch 6 (Policy Gradients) |
 | `grpo_tikz` | `tikz/06-policy-gradients/grpo_tikz.tex` | GRPO: group of G outputs, group normalization, KL as loss | Ch 6 (Policy Gradients) |
@@ -126,6 +129,13 @@ Box-and-arrow flows for RLHF architectures and related training concepts. Many u
 | `pretraining_next_token_tikz` | `tikz/pretraining/pretraining_next_token_tikz.tex` | Introductory next-token prediction example with target token and loss intuition | Talks/presentations |
 
 **Make target:** `make tikz`
+
+For the two training-recipe figures, use `make training-recipes` to build only
+their light PDF/SVG/PNG and transparent dark PNG variants. They share
+`tikz/_shared/styles_training_recipes.tex`, matching the outlined boxes and gray
+open arrows of Chapter 3's `rlhf-basic` and `rlhf-complex` figures. See the
+[recipe notes](tikz/03-training-overview/README.md) for sources, intentional
+simplifications, previews, and ready-to-use chapter markup.
 
 ### Standalone Figures
 

@@ -219,12 +219,14 @@ The recipe has been successfully applied to Llama 3.1 [@lambert2024t], OLMo 2 [@
 
 With the rise of reasoning language models, such as OpenAI's o1, the best practices in post-training evolved again to re-order and redistribute compute across training stages.
 The clearest documentation of a reasoning model post-training recipe is DeepSeek R1 [@guo2025deepseek], which has been mirrored by Alibaba's larger Qwen 3 models (i.e. only the 32B and 225B MoE models) [@yang2025qwen3] or Xiaomi's MiMo 7B [@xia2025mimo].
-The DeepSeek recipe follows:
+The DeepSeek recipe, shown in @fig:deepseek-r1-pipeline, follows:
 
 1. **"Cold-start" with 100K+ on-policy reasoning samples**: This data is sampled from an earlier RL checkpoint, R1-Zero, and heavily filtered to instill a specific reasoning process on DeepSeek-V3-Base. DeepSeek uses the term cold-start to describe how RL is learned from little supervised data.
 2. **Large-scale reinforcement learning training**: This stage repeatedly covers reasoning problems with the model, running RLVR "until convergence" on a variety of benchmarks.
 3. **Rejection sampling and SFT**: Near convergence, they apply rejection sampling to the RL checkpoint to build an SFT dataset of ~800K samples, then fine-tune the model on a filtered mix of roughly 3/4 reasoning problems and 1/4 general queries to produce a general-purpose model.
 4. **Mixed reinforcement learning training** on reasoning problems (verifiable rewards) with general preference tuning reward models to polish the model.
+
+![The multistage pipeline of DeepSeek-R1. Reproduced from Guo et al. (DeepSeek-AI), *Nature* (2025), [Fig. 2](https://www.nature.com/articles/s41586-025-09422-z/figures/2), under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/); cropped from the published PDF with the artwork unchanged [@guo2025deepseek].](images/deepseek-r1-pipeline.png){#fig:deepseek-r1-pipeline .center}
 
 As above, there are evolutions of the recipe, particularly with steps 3 and 4 to finalize the model before exposing it to users.
 Many models start with tailored instruction datasets with chain-of-thought sequences that are heavily filtered and polished from existing models, providing a fast step to strong behaviors with SFT alone before moving onto RL [@seed2025seed].

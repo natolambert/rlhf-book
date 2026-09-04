@@ -4,12 +4,13 @@
 #   make all        - Generate all diagrams
 #   make tokens     - Generate token strip diagrams
 #   make tikz       - Generate TikZ diagrams
+#   make training-recipes - Generate the two new training recipes (light + dark)
 #   make figures    - Generate standalone figure scripts
 #   make clean      - Remove generated files
 
 GENERATED_DIR := generated
 
-.PHONY: all tokens tikz tikz-dark dark figures clean help
+.PHONY: all tokens tikz tikz-dark training-recipes dark figures clean help
 
 # LaTeX engine path (adjust if different on your system)
 PDFLATEX := $(shell which pdflatex || echo "/usr/local/texlive/2023basic/bin/universal-darwin/pdflatex")
@@ -21,6 +22,9 @@ TIKZ_SHARED := $(abspath tikz/_shared)
 # Rasterization density for TikZ PNGs. PDFs/SVGs stay vector (resolution-free);
 # this only controls the PNG. Override with `make tikz TIKZ_DENSITY=1200`.
 TIKZ_DENSITY ?= 800
+
+TRAINING_RECIPE_TEX := tikz/03-training-overview/rlhf_mopd_tikz.tex \
+	tikz/03-training-overview/rlhf_sequential_rl_tikz.tex
 
 all: tokens tikz figures
 	@echo "All diagrams generated in $(GENERATED_DIR)/"
@@ -111,6 +115,48 @@ tikz-dark: | $(GENERATED_DIR)
 	done
 	@echo "Dark TikZ variants generated in $(GENERATED_DIR)/png/"
 
+# Build only the two new training recipes, without regenerating other figures.
+# Every TeX intermediate stays under generated/; sources are never compiled in
+# place. Light exports are PDF/SVG/PNG; dark exports are transparent PNGs.
+training-recipes: $(TRAINING_RECIPE_TEX) | $(GENERATED_DIR)
+	@set -eu; \
+	builddir="$(abspath $(GENERATED_DIR)/latex/training-recipes)"; \
+	mkdir -p "$$builddir" $(GENERATED_DIR)/pdf $(GENERATED_DIR)/png $(GENERATED_DIR)/svg; \
+	if command -v magick > /dev/null 2>&1; then raster=magick; \
+	elif command -v convert > /dev/null 2>&1; then raster=convert; \
+	else echo "ERROR: training-recipes requires ImageMagick (magick or convert)." >&2; exit 1; fi; \
+	if command -v pdf2svg > /dev/null 2>&1; then vector=pdf2svg; \
+	elif command -v pdftocairo > /dev/null 2>&1; then vector=pdftocairo; \
+	else echo "ERROR: training-recipes requires pdf2svg or pdftocairo for SVG export." >&2; exit 1; fi; \
+	for texfile in $(TRAINING_RECIPE_TEX); do \
+		base=$$(basename "$$texfile" .tex); \
+		sourcedir="$$(pwd)/$$(dirname "$$texfile")"; \
+		for theme in light dark; do \
+			job="$$base"; background=white; alphamode=remove; texinput="\input{$$base.tex}"; \
+			if [ "$$theme" = dark ]; then \
+				job="$$base-dark"; background=none; alphamode=on; texinput="\def\figdark{1}\input{$$base.tex}"; \
+			fi; \
+			echo "Compiling $$job ($$theme)..."; \
+			if ! TEXINPUTS=".:$$sourcedir:$(TIKZ_SHARED):" $(PDFLATEX) \
+				-interaction=nonstopmode -halt-on-error -file-line-error \
+				-output-directory="$$builddir" -jobname="$$job" "$$texinput" \
+				> "$$builddir/$$job.build.log" 2>&1; then \
+				cat "$$builddir/$$job.build.log" >&2; exit 1; \
+			fi; \
+			"$$raster" -density $(TIKZ_DENSITY) -background "$$background" \
+				"$$builddir/$$job.pdf" -trim +repage -alpha "$$alphamode" -quality 100 "$(GENERATED_DIR)/png/$$job.png"; \
+			if [ "$$theme" = light ]; then \
+				cp "$$builddir/$$job.pdf" "$(GENERATED_DIR)/pdf/$$job.pdf"; \
+				if [ "$$vector" = pdf2svg ]; then \
+					pdf2svg "$$builddir/$$job.pdf" "$(GENERATED_DIR)/svg/$$job.svg"; \
+				else \
+					pdftocairo -svg "$$builddir/$$job.pdf" "$(GENERATED_DIR)/svg/$$job.svg"; \
+				fi; \
+			fi; \
+		done; \
+	done
+	@echo "Training recipes generated in $(GENERATED_DIR)/{pdf,png,svg}/ (including dark PNGs)"
+
 # All dark-mode variants (matplotlib + TikZ): transparent PNGs for the web.
 dark: | $(GENERATED_DIR)
 	@mkdir -p $(GENERATED_DIR)/png
@@ -139,6 +185,7 @@ help:
 	@echo "  all      - Generate all diagrams"
 	@echo "  tokens   - Generate token strip diagrams (reward models)"
 	@echo "  tikz     - Generate TikZ diagrams (policy gradients, distillation)"
+	@echo "  training-recipes - Generate MOPD + sequential RL recipes (light PDF/SVG/PNG, dark PNG)"
 	@echo "  figures  - Generate standalone figures (cartpole, tool_use, interleaved_thinking)"
 	@echo "  clean    - Remove generated files"
 	@echo ""
@@ -146,3 +193,5 @@ help:
 	@echo "  - Python + matplotlib: uv add matplotlib"
 	@echo "  - TikZ: pdflatex (TeX Live)"
 	@echo "  - SVG export: brew install pdf2svg (optional)"
+	@echo "  - training-recipes: ImageMagick + either pdf2svg or pdftocairo (Poppler)"
+	@echo "  - Override TikZ PNG density with TIKZ_DENSITY=1200 (default: 800 dpi)"
