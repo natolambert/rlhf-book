@@ -64,8 +64,9 @@ PDF/SVG exports remain vector. All intermediate files and generated exports
 stay under `diagrams/generated/`; reviewed web and print assets are checked
 into `book/images/`. Dark PNGs must be previewed over a dark background.
 
-The new schematics are staged for the forthcoming text after DeepSeek R1;
-they are not inserted into the chapter yet. Suggested markup:
+The schematics appear after DeepSeek R1 in Chapter 3: MOPD in
+"Xiaomi MiMo-V2-Flash: Transition to MOPD", and sequential RL in "Conclusion".
+Their chapter markup includes the dark-mode assets:
 
 ```markdown
 ![A schematic of specialist post-training: shared SFT, domain-specific SFT and RL, then multi-teacher on-policy distillation into one student.](images/rlhf-mopd.png){#fig:rlhf-mopd data-dark-src="images/rlhf-mopd-dark.png"}
