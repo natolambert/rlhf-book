@@ -1,13 +1,14 @@
 \documentclass[tikz,border=5pt]{standalone}
 \usepackage{lmodern}
 \renewcommand{\familydefault}{\sfdefault}
-\usetikzlibrary{arrows.meta,calc}
+\usetikzlibrary{arrows.meta,calc,backgrounds}
 \input{styles_training_recipes.tex}
 
 % Generic specialist-training pattern, inspired by MiMo-V2-Flash and
 % Nemotron 3 Ultra, not a literal reconstruction of either full recipe.
 % Every illustrated expert receives its own SFT and RL after shared SFT.
 % Teacher indices indicate domains; N is arbitrary, not a reported count.
+% Domain examples are illustrative and stay paired across SFT and RL.
 % MOPD transfers teacher distributions on student rollouts, not model weights.
 % Sources and deliberate simplifications: see this directory's README.md.
 \begin{document}
@@ -17,37 +18,49 @@
 
   \node[recipe model,minimum width=3.65cm] (sftone) at (8.75,1.55) {SFT Teacher 1};
   \node[recipe model,minimum width=3.65cm] (sfttwo) at (8.75,0) {SFT Teacher 2};
-  \node[recipe model,minimum width=3.65cm] (sftn) at (8.75,-1.85) {SFT Teacher N};
+  \node[recipe model,minimum width=3.65cm] (sftn) at (8.75,-2.25) {SFT Teacher N};
   \node[recipe model,minimum width=3.65cm] (rlone) at (13.25,1.55) {RL Teacher 1};
   \node[recipe model,minimum width=3.65cm] (rltwo) at (13.25,0) {RL Teacher 2};
-  \node[recipe model,minimum width=3.65cm] (rln) at (13.25,-1.85) {RL Teacher N};
-  \node[recipe label,font=\large] at (8.75,-0.95) {$\vdots$};
-  \node[recipe label,font=\large] at (13.25,-0.95) {$\vdots$};
+  \node[recipe model,minimum width=3.65cm] (rln) at (13.25,-2.25) {RL Teacher N};
+  \node[recipe label,font=\large] at (8.75,-1.3) {$\vdots$};
+  \node[recipe label,font=\large] at (13.25,-1.3) {$\vdots$};
+
+  \node[recipe example] at (sftone.south) {(e.g. Writing)};
+  \node[recipe example] at (rlone.south) {(e.g. Writing)};
+  \node[recipe example] at (sfttwo.south) {(e.g. Coding)};
+  \node[recipe example] at (rltwo.south) {(e.g. Coding)};
+  \node[recipe example] at (sftn.south) {(e.g. Math)};
+  \node[recipe example] at (rln.south) {(e.g. Math)};
 
   \node[recipe model,minimum width=3cm] (final) at (18.3,0) {Final Model};
 
-  \draw[recipe arrow] (base.east) -- (sft.west);
-  \node[recipe operation] at (2.05,0.9) {Initial SFT};
-
-  % A single shared SFT checkpoint seeds the separate domain specialists.
   \coordinate (split) at (6.1,0);
-  \draw[recipe line] (sft.east) -- (split);
-  \draw[recipe arrow] (split) |- (sftone.west);
-  \draw[recipe arrow] (split) -- (sfttwo.west);
-  \draw[recipe arrow] (split) |- (sftn.west);
-  \node[recipe operation] at (6.3,2.7) {Domain SFT};
-
-  \draw[recipe arrow] (sftone.east) -- (rlone.west);
-  \draw[recipe arrow] (sfttwo.east) -- (rltwo.west);
-  \draw[recipe arrow] (sftn.east) -- (rln.west);
-  \node[recipe operation] at (11,2.7) {Domain RL};
-
-  % The branches converge through distillation into one general student.
   \coordinate (merge) at (15.65,0);
-  \draw[recipe line] (rlone.east) -| (merge);
-  \draw[recipe line] (rltwo.east) -- (merge);
-  \draw[recipe line] (rln.east) -| (merge);
-  \draw[recipe arrow] (merge) -- (final.west);
+
+  % Draw connections behind the opaque boxes and their outlines.
+  \begin{scope}[on background layer]
+    \draw[recipe arrow] (base.east) -- (sft.west);
+
+    % A single shared SFT checkpoint seeds the separate domain specialists.
+    \draw[recipe line] (sft.east) -- (split);
+    \draw[recipe arrow] (split) |- (sftone.west);
+    \draw[recipe arrow] (split) -- (sfttwo.west);
+    \draw[recipe arrow] (split) |- (sftn.west);
+
+    \draw[recipe arrow] (sftone.east) -- (rlone.west);
+    \draw[recipe arrow] (sfttwo.east) -- (rltwo.west);
+    \draw[recipe arrow] (sftn.east) -- (rln.west);
+
+    % The branches converge through distillation into one general student.
+    \draw[recipe line] (rlone.east) -| (merge);
+    \draw[recipe line] (rltwo.east) -- (merge);
+    \draw[recipe line] (rln.east) -| (merge);
+    \draw[recipe arrow] (merge) -- (final.west);
+  \end{scope}
+
+  \node[recipe operation] at (2.05,0.9) {Initial SFT};
+  \node[recipe operation] at (6.3,2.7) {Domain SFT};
+  \node[recipe operation] at (11,2.7) {Domain RL};
   \node[recipe operation] at (16.3,2.7) {Multi-teacher on-policy\\distillation (MOPD)};
   \node[recipe label] at (18.3,-0.85) {One general student};
 \end{tikzpicture}

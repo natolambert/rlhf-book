@@ -3,7 +3,9 @@
 These two schematics extend the visual language of Chapter 3's figures 5 and 6
 (`book/images/rlhf-basic.png` and `rlhf-complex.png`): plain outlined model boxes,
 gray open arrowheads, rounded connections, and italic training-operation labels.
-Boxes are model checkpoints; arrows describe how they are trained.
+Boxes are model checkpoints; arrows describe how they are trained. All
+connectors are drawn on the background layer, behind the filled boxes and
+their outlines.
 
 The shared style is `../_shared/styles_training_recipes.tex`. Define
 `\figdark=1` to use the site's slate palette. Dark PNGs have transparent canvases,
@@ -16,7 +18,9 @@ slate-filled boxes, and light text, outlines, and arrows.
 `rlhf_mopd_tikz.tex` shows an initial shared SFT checkpoint, then separate SFT
 and RL for each domain teacher, followed by multi-teacher on-policy distillation
 (MOPD) into one general student. The `1`, `2`, …, `N` rows represent arbitrary
-domains, not a model's reported teacher count. MOPD transfers knowledge using
+domains, not a model's reported teacher count. Small labels beneath each
+SFT/RL pair give illustrative domains: Writing, Coding, and Math.
+MOPD transfers knowledge using
 teacher output distributions on student rollouts; it does not average weights.
 Student initialization and the rollout/loss mechanics are outside this overview.
 

@@ -1,7 +1,7 @@
 \documentclass[tikz,border=5pt]{standalone}
 \usepackage{lmodern}
 \renewcommand{\familydefault}{\sfdefault}
-\usetikzlibrary{arrows.meta,calc}
+\usetikzlibrary{arrows.meta,calc,backgrounds}
 \input{styles_training_recipes.tex}
 
 % Generic sequential-RL pattern, using the stage order of the supplied GLM-5
@@ -18,10 +18,13 @@
   \node[recipe model,minimum width=3.25cm] (agentic) at (13.55,0) {Agentic Model};
   \node[recipe model,minimum width=3cm] (final) at (18.3,0) {Final Model};
 
-  \draw[recipe arrow] (base.east) -- (sft.west);
-  \draw[recipe arrow] (sft.east) -- (reasoning.west);
-  \draw[recipe arrow] (reasoning.east) -- (agentic.west);
-  \draw[recipe arrow] (agentic.east) -- (final.west);
+  % Keep the box outlines in front of the connector strokes.
+  \begin{scope}[on background layer]
+    \draw[recipe arrow] (base.east) -- (sft.west);
+    \draw[recipe arrow] (sft.east) -- (reasoning.west);
+    \draw[recipe arrow] (reasoning.east) -- (agentic.west);
+    \draw[recipe arrow] (agentic.east) -- (final.west);
+  \end{scope}
   \node[recipe operation] at (2.05,0.9) {Overall SFT};
   \node[recipe operation] at (6.3,0.9) {Reasoning RL};
   \node[recipe operation] at (11.15,0.9) {Agentic RL};

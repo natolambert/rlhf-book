@@ -25,16 +25,20 @@
     font=\fontsize{14}{17}\selectfont, align=center
   },
   recipe line/.style={
-    draw=recipearrow, line width=2.25pt,
+    draw=recipearrow, line width=1.4pt,
     line cap=round, line join=round, rounded corners=7pt
   },
   recipe arrow/.style={
     recipe line,
-    -{Straight Barb[length=4.2mm,width=7mm]}, shorten >=5pt
+    -{Straight Barb[length=2.7mm,width=4.2mm]}, shorten >=5pt
   },
   recipe label/.style={
     text=recipetext, font=\fontsize{10}{13}\selectfont,
     align=center, inner sep=2pt
   },
-  recipe operation/.style={recipe label, font=\fontsize{10}{13}\selectfont\itshape}
+  recipe operation/.style={recipe label, font=\fontsize{10}{13}\selectfont\itshape},
+  recipe example/.style={
+    recipe label, font=\fontsize{8.5}{10}\selectfont,
+    anchor=north, inner sep=0pt, yshift=-3pt
+  }
 }
