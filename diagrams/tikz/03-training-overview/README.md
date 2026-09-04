@@ -91,7 +91,8 @@ print page 637 (PDF page 5), licenses the article and its figures under
 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) unless a credit line
 states otherwise. [Figure 2](https://www.nature.com/articles/s41586-025-09422-z/figures/2)
 has no separate restriction. The reproduced figure remains © The Author(s) 2025,
-CC BY 4.0. The chapter caption gives attribution, source, license, and the crop.
+CC BY 4.0. The chapter caption links the paper and license; extraction details
+are recorded below.
 
 The artwork is unchanged: the PDF was cropped to Figure 2 on print page 635
 (PDF page 3) with a two-point margin, excluding the publisher's caption and page
