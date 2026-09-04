@@ -8,34 +8,32 @@
 % Nemotron 3 Ultra, not a literal reconstruction of either full recipe.
 % Every illustrated expert receives its own SFT and RL after shared SFT.
 % Teacher indices indicate domains; N is arbitrary, not a reported count.
-% Domain examples are illustrative and stay paired across SFT and RL.
+% One illustrative domain example labels each teacher's SFT/RL row.
 % MOPD transfers teacher distributions on student rollouts, not model weights.
 % Sources and deliberate simplifications: see this directory's README.md.
 \begin{document}
 \begin{tikzpicture}
   \node[recipe model] (base) at (0,0) {Base Model};
-  \node[recipe model] (sft) at (4.1,0) {SFT Model};
+  \node[recipe model] (sft) at (4.8,0) {SFT Model};
 
-  \node[recipe model,minimum width=3.65cm] (sftone) at (8.75,1.55) {SFT Teacher 1};
-  \node[recipe model,minimum width=3.65cm] (sfttwo) at (8.75,0) {SFT Teacher 2};
-  \node[recipe model,minimum width=3.65cm] (sftn) at (8.75,-2.25) {SFT Teacher N};
-  \node[recipe model,minimum width=3.65cm] (rlone) at (13.25,1.55) {RL Teacher 1};
-  \node[recipe model,minimum width=3.65cm] (rltwo) at (13.25,0) {RL Teacher 2};
-  \node[recipe model,minimum width=3.65cm] (rln) at (13.25,-2.25) {RL Teacher N};
-  \node[recipe label,font=\large] at (8.75,-1.3) {$\vdots$};
-  \node[recipe label,font=\large] at (13.25,-1.3) {$\vdots$};
+  \node[recipe model,minimum width=3.65cm] (sftone) at (10.8,1.55) {SFT Teacher 1};
+  \node[recipe model,minimum width=3.65cm] (sfttwo) at (10.8,0) {SFT Teacher 2};
+  \node[recipe model,minimum width=3.65cm] (sftn) at (10.8,-2.25) {SFT Teacher N};
+  \node[recipe model,minimum width=3.65cm] (rlone) at (16.7,1.55) {RL Teacher 1};
+  \node[recipe model,minimum width=3.65cm] (rltwo) at (16.7,0) {RL Teacher 2};
+  \node[recipe model,minimum width=3.65cm] (rln) at (16.7,-2.25) {RL Teacher N};
+  \node[recipe label,font=\large] at (10.8,-1.3) {$\vdots$};
+  \node[recipe label,font=\large] at (16.7,-1.3) {$\vdots$};
 
   \node[recipe example] at (sftone.south) {(e.g. Writing)};
-  \node[recipe example] at (rlone.south) {(e.g. Writing)};
   \node[recipe example] at (sfttwo.south) {(e.g. Coding)};
-  \node[recipe example] at (rltwo.south) {(e.g. Coding)};
   \node[recipe example] at (sftn.south) {(e.g. Math)};
-  \node[recipe example] at (rln.south) {(e.g. Math)};
 
-  \node[recipe model,minimum width=3cm] (final) at (18.3,0) {Final Model};
+  \node[recipe model,minimum width=3cm] (final) at (24.85,0) {Final Model};
 
-  \coordinate (split) at (6.1,0);
-  \coordinate (merge) at (15.65,0);
+  \coordinate (split) at (6.8,0);
+  \coordinate (branchtop) at (split |- sftone.west);
+  \coordinate (merge) at (19.225,0);
 
   % Draw connections behind the opaque boxes and their outlines.
   \begin{scope}[on background layer]
@@ -58,10 +56,11 @@
     \draw[recipe arrow] (merge) -- (final.west);
   \end{scope}
 
-  \node[recipe operation] at (2.05,0.9) {Initial SFT};
-  \node[recipe operation] at (6.3,2.7) {Domain SFT};
-  \node[recipe operation] at (11,2.7) {Domain RL};
-  \node[recipe operation] at (16.3,2.7) {Multi-teacher on-policy\\distillation (MOPD)};
-  \node[recipe label] at (18.3,-0.85) {One general student};
+  % Each operation sits just above the line it describes.
+  \node[recipe edge operation] at ($(base.east)!0.5!(sft.west)$) {Initial SFT};
+  \node[recipe edge operation] at ($(branchtop)!0.5!(sftone.west)$) {Domain SFT};
+  \node[recipe edge operation] at ($(sftone.east)!0.5!(rlone.west)$) {Domain RL};
+  \node[recipe edge operation] at ($(merge)!0.5!(final.west)$) {Multi-teacher on-policy\\distillation (MOPD)};
+  \node[recipe label,anchor=north,yshift=-4pt] at (final.south) {One general student};
 \end{tikzpicture}
 \end{document}
