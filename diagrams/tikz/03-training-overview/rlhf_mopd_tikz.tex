@@ -32,8 +32,10 @@
   \node[recipe model,minimum width=3cm] (final) at (24.85,0) {Final Model};
 
   \coordinate (split) at (6.8,0);
-  \coordinate (branchtop) at (split |- sftone.west);
   \coordinate (merge) at (19.225,0);
+  \coordinate (lowerrowsmid) at ($(sfttwo)!0.5!(sftn)$);
+  \coordinate (domainsftmid) at ($(split)!0.5!(sfttwo.west)$);
+  \coordinate (domainrlmid) at ($(sfttwo.east)!0.5!(rltwo.west)$);
 
   % Draw connections behind the opaque boxes and their outlines.
   \begin{scope}[on background layer]
@@ -56,11 +58,11 @@
     \draw[recipe arrow] (merge) -- (final.west);
   \end{scope}
 
-  % Each operation sits just above the line it describes.
+  % Step captions sit below their lines; the domain captions are centered
+  % in the space between the lower two horizontal arrows.
   \node[recipe edge operation] at ($(base.east)!0.5!(sft.west)$) {Initial SFT};
-  \node[recipe edge operation] at ($(branchtop)!0.5!(sftone.west)$) {Domain SFT};
-  \node[recipe edge operation] at ($(sftone.east)!0.5!(rlone.west)$) {Domain RL};
+  \node[recipe operation] at (domainsftmid |- lowerrowsmid) {Domain\\SFT};
+  \node[recipe operation] at (domainrlmid |- lowerrowsmid) {Domain\\RL};
   \node[recipe edge operation] at ($(merge)!0.5!(final.west)$) {Multi-teacher on-policy\\distillation (MOPD)};
-  \node[recipe label,anchor=north,yshift=-4pt] at (final.south) {One general student};
 \end{tikzpicture}
 \end{document}

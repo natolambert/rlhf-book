@@ -5,8 +5,9 @@ These two schematics extend the visual language of Chapter 3's figures 5 and 6
 gray open arrowheads, rounded connections, and italic training-operation labels.
 Boxes are model checkpoints; arrows describe how they are trained. All
 connectors are drawn on the background layer, behind the filled boxes and
-their outlines. In the MOPD schematic, training-operation labels are anchored
-just above their respective arrows; wider gaps keep labels clear of the boxes.
+their outlines. In the MOPD schematic, step labels sit below their arrows.
+The two-line "Domain / SFT" and "Domain / RL" labels are centered between the
+lower two horizontal arrows; wider gaps keep labels clear of the boxes.
 
 The shared style is `../_shared/styles_training_recipes.tex`. Define
 `\figdark=1` to use the site's slate palette. Dark PNGs have transparent canvases,
