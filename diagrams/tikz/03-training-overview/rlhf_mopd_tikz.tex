@@ -60,7 +60,7 @@
 
   % Step captions sit below their lines; the domain captions are centered
   % in the space between the lower two horizontal arrows.
-  \node[recipe edge operation] at ($(base.east)!0.5!(sft.west)$) {Initial SFT};
+  \node[recipe edge operation] at ($(base.east)!0.5!(sft.west)+(0,-2pt)$) {Initial SFT};
   \node[recipe operation] at (domainsftmid |- lowerrowsmid) {Domain\\SFT};
   \node[recipe operation] at (domainrlmid |- lowerrowsmid) {Domain\\RL};
   \node[recipe edge operation] at ($(merge)!0.5!(final.west)$) {Multi-teacher on-policy\\distillation (MOPD)};
