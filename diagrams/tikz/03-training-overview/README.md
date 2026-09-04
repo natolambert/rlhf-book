@@ -69,7 +69,8 @@ stay under `diagrams/generated/`; reviewed web and print assets are checked
 into `book/images/`. Dark PNGs must be previewed over a dark background.
 
 The schematics appear after DeepSeek R1 in Chapter 3: MOPD in
-"Xiaomi MiMo-V2-Flash: Transition to MOPD", and sequential RL in "Conclusion".
+"Xiaomi MiMo-V2-Flash: Transition to MOPD and Agents", and sequential RL in
+"Conclusion and Open Questions".
 Their chapter markup includes the dark-mode assets:
 
 ```markdown

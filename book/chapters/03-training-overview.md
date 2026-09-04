@@ -180,7 +180,7 @@ These recipes reflect data practices and model abilities at the time.
 As the recipes age, training models with the same characteristics becomes easier and requires less data.
 There is a general trend of post-training involving more optimization steps with more training algorithms across more diverse training datasets and evaluations.
 
-### InstructGPT: Foundational RLHF {#instructgpt}
+### InstructGPT: Foundational RLHF Tools {#instructgpt}
 
 Around the time ChatGPT first came out, the widely accepted ("canonical") method for post-training an LM had three major steps, with RLHF being the central piece [@lambert2022illustrating] [@ouyang2022training] [@bai2022training].
 The three steps taken on top of a "base" language model (the next-token prediction model trained on large-scale web text) are summarized below in @fig:rlhf-basic-repeat:
@@ -193,7 +193,7 @@ Once RLHF was done, the model was ready to be deployed to users. This recipe is 
 
 ![A rendition of the early, three stage RLHF process with SFT, a reward model, and then optimization.](images/rlhf-basic.png){#fig:rlhf-basic-repeat}
 
-### Tülu 3: Introducing RLVR {#tülu-3}
+### Tülu 3: Introducing RLVR to Instruct Models {#tülu-3}
 
 Modern versions of post-training involve many, many more model versions and training stages (i.e. well more than the 5 RLHF steps documented for Llama 2 [@touvron2023llama]). 
 An example is shown below in @fig:rlhf-complex where the model undergoes numerous training iterations before convergence.
@@ -215,7 +215,7 @@ The Tülu 3 recipe consists of three stages:
 
 The recipe has been successfully applied to Llama 3.1 [@lambert2024t], OLMo 2 [@olmo20242], and SmolLM models [@alrashed2024smoltulu].
 
-### DeepSeek R1: Scaling RLVR {#deepseek-r1}
+### DeepSeek R1: Scaling RLVR for Reasoning {#deepseek-r1}
 
 With the rise of reasoning language models, such as OpenAI's o1, the best practices in post-training evolved again to re-order and redistribute compute across training stages.
 The clearest documentation of a reasoning model post-training recipe is DeepSeek R1 [@guo2025deepseek], which has been mirrored by Alibaba's larger Qwen 3 models (i.e. only the 32B and 225B MoE models) [@yang2025qwen3] or Xiaomi's MiMo 7B [@xia2025mimo].
@@ -231,14 +231,14 @@ The DeepSeek recipe, shown in @fig:deepseek-r1-pipeline, follows:
 As above, there are evolutions of the recipe, particularly with steps 3 and 4 to finalize the model before exposing it to users.
 Many models start with tailored instruction datasets with chain-of-thought sequences that are heavily filtered and polished from existing models, providing a fast step to strong behaviors with SFT alone before moving onto RL [@seed2025seed].
 
-### Xiaomi MiMo-V2-Flash: Transition to MOPD {#mimo-v2-flash}
+### Xiaomi MiMo-V2-Flash: Transition to MOPD and Agents {#mimo-v2-flash}
 
 Xiaomi's MiMo-V2-Flash illustrates a further change in training recipes: general SFT is followed by domain-specialized teacher training, then multi-teacher on-policy distillation (MOPD) into a single student [@mimo2025flash].
 @fig:rlhf-mopd shows this pattern schematically, with each specialist illustrated using separate SFT and RL stages.
 
 ![A schematic of specialist post-training: shared SFT, domain-specific SFT and RL, then multi-teacher on-policy distillation into one student.](images/rlhf-mopd.png){#fig:rlhf-mopd data-dark-src="images/rlhf-mopd-dark.png"}
 
-### Conclusion
+### Conclusion and Open Questions {#conclusion}
 
 Post-training recipes still vary across models.
 GLM-5, for example, follows overall SFT with sequential reasoning, agentic, and general RL stages, before a final on-policy cross-stage distillation step [@glm5team2026glm5].
