@@ -50,7 +50,7 @@ Post-training can be summarized as a many-stage training process using three opt
 2. Preference Fine-tuning (PreFT), where we align to human preferences via RLHF and related methods (and get a smaller bump in capabilities at the same time). This is largely about *style* of language and subtle human preferences that are hard to quantify.
 3. Reinforcement Learning with Verifiable Rewards (RLVR), the newest type of post-training that boosts performance on verifiable domains with more RL training.
 
-RLHF lives within and dominates the second area, **preference fine-tuning**, which has more complexity than instruction tuning because it often involves proxy reward models of the true object and noisier data.
+RLHF lives within and dominates the second area, **preference fine-tuning**, which has more complexity than instruction tuning because it often involves proxy reward models of the true objective and noisier data.
 At the same time, RLHF is far more established than the other popular RL method for language models, reinforcement learning with verifiable rewards. 
 For that reason, this book focuses on preference learning, but in order to completely grasp the role of RLHF, one needs to use these other training stages, so they are also explained in detail.
 
