@@ -1,0 +1,45 @@
+% Training-recipe figures: match Ch 3's rlhf-basic.png / rlhf-complex.png.
+% Latin Modern Sans, unfilled-looking boxes, gray open arrowheads, soft elbows.
+% Requires \usetikzlibrary{arrows.meta,calc} and \usepackage{lmodern}.
+% Compile with \def\figdark{1} for the site's slate dark theme.
+\providecommand{\figdark}{0}
+\ifnum\figdark=1
+  \definecolor{recipebackground}{HTML}{1E293B}
+  \definecolor{recipeborder}{HTML}{CBD5E1}
+  \definecolor{recipetext}{HTML}{CBD5E1}
+  \definecolor{recipearrow}{HTML}{94A3B8}
+\else
+  \definecolor{recipebackground}{HTML}{FFFFFF}
+  \definecolor{recipeborder}{HTML}{262626}
+  \definecolor{recipetext}{HTML}{333333}
+  \definecolor{recipearrow}{HTML}{A6A6A6}
+\fi
+
+\tikzset{
+  recipe model/.style={
+    rectangle, rounded corners=2pt,
+    draw=recipeborder, fill=recipebackground, text=recipetext,
+    line width=1.05pt,
+    minimum width=2.8cm, minimum height=0.95cm,
+    inner xsep=7pt, inner ysep=5pt,
+    font=\fontsize{14}{17}\selectfont, align=center
+  },
+  recipe line/.style={
+    draw=recipearrow, line width=1.4pt,
+    line cap=round, line join=round, rounded corners=7pt
+  },
+  recipe arrow/.style={
+    recipe line,
+    -{Straight Barb[length=2.7mm,width=4.2mm]}, shorten >=5pt
+  },
+  recipe label/.style={
+    text=recipetext, font=\fontsize{10}{13}\selectfont,
+    align=center, inner sep=2pt
+  },
+  recipe operation/.style={recipe label, font=\fontsize{10}{13}\selectfont\itshape},
+  recipe edge operation/.style={recipe operation, anchor=north, yshift=-5pt},
+  recipe example/.style={
+    recipe label, font=\fontsize{8.5}{10}\selectfont,
+    anchor=north, inner sep=0pt, yshift=-3pt
+  }
+}
