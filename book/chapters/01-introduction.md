@@ -50,7 +50,7 @@ Post-training can be summarized as a many-stage training process using three opt
 2. Preference Fine-tuning (PreFT), where we align to human preferences via RLHF and related methods (and get a smaller bump in capabilities at the same time). This is largely about *style* of language and subtle human preferences that are hard to quantify.
 3. Reinforcement Learning with Verifiable Rewards (RLVR), the newest type of post-training that boosts performance on verifiable domains with more RL training.
 
-RLHF lives within and dominates the second area, **preference fine-tuning**, which has more complexity than instruction tuning because it often involves proxy reward models of the true object and noisier data.
+RLHF lives within and dominates the second area, **preference fine-tuning**, which has more complexity than instruction tuning because it often involves proxy reward models of the true objective and noisier data.
 At the same time, RLHF is far more established than the other popular RL method for language models, reinforcement learning with verifiable rewards. 
 For that reason, this book focuses on preference learning, but in order to completely grasp the role of RLHF, one needs to use these other training stages, so they are also explained in detail.
 
@@ -59,7 +59,7 @@ RLHF was the technique that enabled the massive success of the release of ChatGP
 RLHF is now just one piece of post-training, so in this book we map why there was so much attention on RLHF early on, and how other methods emerged to complement it.
 
 Training language models is a very complex process, often involving large technical teams of 10s to 100s of people and millions of dollars in data and compute costs.
-This book serves three purposes to enable readers to grasp how RLHF and related models are used to craft leading models.
+This book serves three purposes to enable readers to grasp how RLHF and related methods are used to craft leading models.
 First, the book distills cutting-edge research often hidden within large technology companies into clear topics and trade-offs, so readers can understand how models are made.
 Second, the book will allow users to set up basic code examples to get their hands dirty on fine-tuning these models themselves.
 Finally, beyond teaching the techniques for doing RLHF, this book is designed to distill intuition as to *why* RLHF is crucial to modern AI models.
