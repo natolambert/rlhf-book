@@ -70,10 +70,12 @@ PDF/SVG exports remain vector. All intermediate files and generated exports
 stay under `diagrams/generated/`; reviewed web and print assets are checked
 into `book/images/`. Dark PNGs must be previewed over a dark background.
 
-The schematics appear after DeepSeek R1 in Chapter 3: MOPD in
-"Xiaomi MiMo-V2-Flash: Transition to MOPD and Agents", and sequential RL in
-"Conclusion and Open Questions".
-Their chapter markup includes the dark-mode assets:
+The MOPD schematic appears after DeepSeek R1 in Chapter 3's
+"Transition to MOPD and Agents" section, with a dark-mode asset.
+The sequential RL schematic remains available as a standalone asset; the
+chapter now uses the original GLM-5 Figure 5 to show the blended recipe,
+including cross-stage distillation (see extraction details below).
+Example markup for the two schematics:
 
 ```markdown
 ![A schematic of specialist post-training: shared SFT, domain-specific SFT and RL, then multi-teacher on-policy distillation into one student.](images/rlhf-mopd.png){#fig:rlhf-mopd data-dark-src="images/rlhf-mopd-dark.png"}
@@ -81,6 +83,33 @@ Their chapter markup includes the dark-mode assets:
 ![A schematic of sequential post-training: overall SFT followed by reasoning, agentic, and general reinforcement learning.](images/rlhf-sequential-rl.png){#fig:rlhf-sequential-rl data-dark-src="images/rlhf-sequential-rl-dark.png"}
 ```
 
+
+## GLM-5 Figure 5 reproduction
+
+`book/images/glm5-pipeline.png` and `.svg` reproduce Figure 5 from the
+GLM-5 Team's *GLM-5: from Vibe Coding to Agentic Engineering*,
+[arXiv:2602.15763v2](https://arxiv.org/abs/2602.15763v2), licensed under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+The original artwork and colors are preserved, including the white background
+in both site themes. This figure replaces the sequential-only schematic in
+Chapter 3; its existing figure anchor is retained.
+
+The crop excludes the paper caption and surrounding text on PDF page 4.
+Coordinates in PDF points from the lower-left corner are
+`(107, 496.331, 505.19508, 721.00016)`, including a one-point margin around
+the embedded figure. The PNG is rendered at 400 dpi (2213 × 1249 pixels),
+and the PDF and SVG preserve vectors. Source PDF SHA-256:
+`e20742ff36e08dc361de6973f7f72ad38e107edf8fd92d2a777a8428fc9b8f0e`.
+
+Reproduce from the repository root with `pypdf` and Poppler installed:
+
+```bash
+curl -L --fail https://arxiv.org/pdf/2602.15763v2 \
+  -o diagrams/generated/pdf/glm5-source.pdf
+uv run python diagrams/scripts/extract_glm5_pipeline.py
+cp diagrams/generated/png/glm5-pipeline.png book/images/
+cp diagrams/generated/svg/glm5-pipeline.svg book/images/
+```
 
 ## Nature Figure 2 reproduction
 

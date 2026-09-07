@@ -219,6 +219,9 @@ The recipe has been successfully applied to Llama 3.1 [@lambert2024t], OLMo 2 [@
 
 With the rise of reasoning language models, such as OpenAI's o1, the best practices in post-training evolved again to re-order and redistribute compute across training stages.
 The clearest documentation of a reasoning model post-training recipe is DeepSeek R1 [@guo2025deepseek], which has been mirrored by Alibaba's larger Qwen 3 models (i.e. only the 32B and 225B MoE models) [@yang2025qwen3] or Xiaomi's MiMo 7B [@xia2025mimo].
+
+![The multistage pipeline of DeepSeek-R1. From DeepSeek R1 paper in *Nature*, [Fig. 2](https://www.nature.com/articles/s41586-025-09422-z/figures/2), under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) [@guo2025deepseek].](images/deepseek-r1-pipeline.png){#fig:deepseek-r1-pipeline .center}
+
 The DeepSeek recipe, shown in @fig:deepseek-r1-pipeline, follows:
 
 1. **"Cold-start" with 100K+ on-policy reasoning samples**: This data is sampled from an earlier RL checkpoint, R1-Zero, and heavily filtered to instill a specific reasoning process on DeepSeek-V3-Base. DeepSeek uses the term cold-start to describe how RL is learned from little supervised data.
@@ -226,22 +229,28 @@ The DeepSeek recipe, shown in @fig:deepseek-r1-pipeline, follows:
 3. **Rejection sampling and SFT**: Near convergence, they apply rejection sampling to the RL checkpoint to build an SFT dataset of ~800K samples, then fine-tune the model on a filtered mix of roughly 3/4 reasoning problems and 1/4 general queries to produce a general-purpose model.
 4. **Mixed reinforcement learning training** on reasoning problems (verifiable rewards) with general preference tuning reward models to polish the model.
 
-![The multistage pipeline of DeepSeek-R1. From DeepSeek R1 paper in *Nature*, [Fig. 2](https://www.nature.com/articles/s41586-025-09422-z/figures/2), under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) [@guo2025deepseek].](images/deepseek-r1-pipeline.png){#fig:deepseek-r1-pipeline .center}
-
 As above, there are evolutions of the recipe, particularly with steps 3 and 4 to finalize the model before exposing it to users.
 Many models start with tailored instruction datasets with chain-of-thought sequences that are heavily filtered and polished from existing models, providing a fast step to strong behaviors with SFT alone before moving onto RL [@seed2025seed].
 
-### Xiaomi MiMo-V2-Flash: Transition to MOPD and Agents
+### Transition to MOPD and Agents
 
-Xiaomi's MiMo-V2-Flash illustrates a further change in training recipes: general SFT is followed by domain-specialized teacher training, then multi-teacher on-policy distillation (MOPD) into a single student [@mimo2025flash].
-@fig:rlhf-mopd shows this pattern schematically, with each specialist illustrated using separate SFT and RL stages.
+A key product-market-fit for reasoning models was the evolution into coding agents, which was accompanied by another change in canonical post-training recipes.
+There were two key changes.
+First, another new training method, multi-teacher on-policy distillation (MOPD, covered in Chapter 12), became a popular tool for merging multiple, diverse skills into a final model.
+Second is simpler, as post-training compute continued to scale rapidly, especially in reinforcement learning phases.
 
-![A schematic of specialist post-training: shared SFT, domain-specific SFT and RL, then multi-teacher on-policy distillation into one student.](images/rlhf-mopd.png){#fig:rlhf-mopd data-dark-src="images/rlhf-mopd-dark.png"}
+Xiaomi's MiMo-V2-Flash was the first technical report to document the modern MOPD process [@mimo2025flash], and the team later wrote a standalone paper on the topic [@ma2026mopd]. The technical report summarizes this form of post-training recipe in a simple form, shown in @fig:rlhf-mopd: general SFT is followed by domain-specialized teacher training (more SFT and extensive RL), then uses multi-teacher on-policy distillation (MOPD) to merge them into a final model.
+Other models use this form of recipe, such as Nvidia's Nemotron 3 Ultra [@nvidia2026nemotron3ultra], which is largely similar but with two consequtive MOPD phases across experts.
+Overall, these recipes have less complexity in the form of iterative model versions (a *depth*) of the recipe, but more complexity in needing to specialize many crucial experts (a form of *breadth*).
 
-### Conclusion and Open Questions
+![A schematic of specialist post-training with MOPD: shared SFT, domain-specific SFT and RL, then multi-teacher on-policy distillation into one (final) student.](images/rlhf-mopd.png){#fig:rlhf-mopd data-dark-src="images/rlhf-mopd-dark.png"}
 
-Post-training recipes still vary across models.
-GLM-5, for example, follows overall SFT with sequential reasoning, agentic, and general RL stages, before a final on-policy cross-stage distillation step [@glm5team2026glm5].
-@fig:rlhf-sequential-rl highlights the sequential RL portion of this recipe.
+Various models utilizing MOPD as a final stage use a different number of experts, with Nemotron 3 Ultra at more than ten [@nvidia2026nemotron3ultra], Kimi K3 at nine [@kimiteam2026kimik3], and DeepSeek V4 at more than ten [@deepseekai2026deepseekv4] (Xiaomi MiMo V2 did not report the number of experts).
 
-![A schematic of sequential post-training: overall SFT followed by reasoning, agentic, and general reinforcement learning.](images/rlhf-sequential-rl.png){#fig:rlhf-sequential-rl data-dark-src="images/rlhf-sequential-rl-dark.png"}
+Post-training recipes still vary widely across models.
+MOPD is a popular new tool, but labs are far from unanimous in its usage. As post-training matures and more tools enter the tool-kit, the variance of recipes has increase.
+For example, GLM-5 uses MOPD but details a more complex, three-stage RL process before MOPD, shown in @fig:rlhf-sequential-rl [@glm5team2026glm5].
+
+![Overall training pipeline of GLM-5. From the GLM-5 Team's paper, [Fig. 5](https://arxiv.org/pdf/2602.15763v2#page=4), under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) [@glm5team2026glm5].](images/glm5-pipeline.png){#fig:rlhf-sequential-rl}
+
+As post-training becomes more central to the performance of modern models, the recipes will continue to evolve to reflect this new scaling of difficulty, tasks, and ambitions of the process.
