@@ -241,7 +241,7 @@ Second is simpler, as post-training compute continued to scale rapidly, especial
 
 Xiaomi's MiMo-V2-Flash was the first technical report to document the modern MOPD process [@mimo2025flash], and the team later wrote a standalone paper on the topic [@ma2026mopd]. The technical report summarizes this form of post-training recipe in a simple form, shown in @fig:rlhf-mopd: general SFT is followed by domain-specialized teacher training (more SFT and extensive RL), then uses multi-teacher on-policy distillation (MOPD) to merge them into a final model.
 Other models use this form of recipe, such as Nvidia's Nemotron 3 Ultra [@nvidia2026nemotron3ultra], which is largely similar but with two consecutive MOPD phases across experts.
-Overall, these recipes have less complexity in the form of iterative model versions (a *depth*) of the recipe, but more complexity in needing to specialize many crucial experts (a form of *breadth*). 
+Overall, these recipes have less complexity in the form of iterative model versions (a *depth*) of the recipe, but more complexity in needing to specialize many crucial experts (a form of *breadth*). Note that previous generations of post-training still handled a wide breadth of tasks, but it was less segmented in the training process, i.e. most tasks were trained in the same training stages.
 
 ![A schematic of specialist post-training with MOPD: shared SFT, domain-specific SFT and RL, then multi-teacher on-policy distillation into one (final) student.](images/rlhf-mopd.png){#fig:rlhf-mopd data-dark-src="images/rlhf-mopd-dark.png"}
 
