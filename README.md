@@ -129,6 +129,7 @@ Readers maintain unofficial translations of the book in their own repositories.
 These are community projects — independent of the official print editions and their professional translations — released under the same CC-BY-NC-SA license with attribution back to this book:
 
 - 简体中文 (Simplified Chinese): [jweihe/RLHF-book-Chinese](https://github.com/jweihe/RLHF-book-Chinese)
+- 简体中文 (Simplified Chinese): [around133/rlhf-book-zh](https://github.com/around133/rlhf-book-zh)
 
 To add yours: keep it in your own repo (translations are not merged here), follow the license terms above, label it clearly as a community translation, then open a PR adding it to this list and to the homepage Ecosystem section (`book/templates/html.html`).
 
