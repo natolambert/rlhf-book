@@ -459,6 +459,11 @@ div.abstract {
     font-size: 0.85em;
 }
 
+.errata-reprint-partial {
+    border-style: dashed;
+    border-color: currentColor;
+}
+
 #changelog,
 #acknowledgements,
 #citation {
