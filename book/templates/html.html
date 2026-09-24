@@ -160,26 +160,28 @@ $endif$
 $endif$
   <h3 id="errata" style="padding: 0 20px; margin-top: 1.5em;">Web Version vs. Physical Book (Errata Fixes)</h3>
   <div style="padding: 0 20px; font-size: 0.9em;">
-    <p>The book will be re-printed roughly 2 and 6 months after the initial print in July 2026. This section tracks the differences between the web version and the physical book, and will be updated to note which improvements or fixes make it into which print version.</p>
+    <p>This section tracks differences between the web version and the physical book, initially published in July 2026. A check mark <span class="errata-reprint-status" role="img" aria-label="Included in October 2026 first reprint">&#10003;</span> identifies existing web corrections carried into the first reprint, October 2026 (<a href="https://github.com/natolambert/rlhf-book/blob/61bc90967b1915ba6b3859f601673798127e7f78/book/errata/first-reprint-october-2026.md">summary of changes sent to the editorial team</a>). A dashed-outline check <span class="errata-reprint-status errata-reprint-partial" role="img" aria-label="Partially addressed in the first reprint; some changes omitted for complexity" title="Partially addressed in the first reprint; some changes omitted for complexity">&#10003;</span> means some changes were addressed; others were omitted for complexity.</p>
+    <p>I am considering a second edition in a few years with the more substantive changes and updates to rebrand it as a post-training book, rather than a RLHF book, so feel free to encourage me to do that.</p>
     <p><strong>Content additions and fixes:</strong></p>
     <ul>
       <li>Expanded the canonical training recipes with MOPD and agentic post-training examples, plus new pipeline figures (Chapter 3) &mdash; <a href="https://github.com/natolambert/rlhf-book/pull/529">#529</a>.</li>
       <li>Added a short subsection on agentic evaluation (Chapter 16) &mdash; <a href="https://github.com/natolambert/rlhf-book/pull/492">#492</a>.</li>
-      <li>Clarified the history of outcome reward models, fixed some loose language, and reorganized the reward modeling chapter (Chapter 5) &mdash; <a href="https://github.com/natolambert/rlhf-book/pull/516">#516</a>.</li>
-      <li>Cleaned up RL notation, especially the trajectory sampling distribution and time indexing (Chapter 6) &mdash; <a href="https://github.com/natolambert/rlhf-book/pull/466">#466</a>.</li>
+      <li>Clarified the history of outcome reward models, fixed some loose language, and reorganized the reward modeling chapter (Chapter 5) &mdash; <a href="https://github.com/natolambert/rlhf-book/pull/516">#516</a>. <span class="errata-reprint-status errata-reprint-partial" role="img" aria-label="Partially addressed in the first reprint; some changes omitted for complexity" title="Partially addressed in the first reprint; some changes omitted for complexity">&#10003;</span></li>
+      <li>Cleaned up RL notation, especially the trajectory sampling distribution and time indexing (Chapter 6) &mdash; <a href="https://github.com/natolambert/rlhf-book/pull/466">#466</a>. <span class="errata-reprint-status errata-reprint-partial" role="img" aria-label="Partially addressed in the first reprint; some changes omitted for complexity" title="Partially addressed in the first reprint; some changes omitted for complexity">&#10003;</span></li>
       <li>Expanded the on-policy distillation section, particularly more on self-distillation and OPSD (Chapter 12) &mdash; <a href="https://github.com/natolambert/rlhf-book/pull/439">#439</a>.</li>
     </ul>
     <p><strong>Organizational improvements:</strong></p>
     <ul>
-      <li>Renamed Chapter 12 to "Synthetic Data &amp; Distillation" &mdash; <a href="https://github.com/natolambert/rlhf-book/pull/469">#469</a>.</li>
+      <li>Renamed Chapter 12 to "Synthetic Data &amp; Distillation" &mdash; <a href="https://github.com/natolambert/rlhf-book/pull/469">#469</a>. <span class="errata-reprint-status" role="img" aria-label="Included in October 2026 first reprint">&#10003;</span></li>
       <li>Reordered the regularization chapter for better flow (Chapter 15) &mdash; <a href="https://github.com/natolambert/rlhf-book/pull/486">#486</a>.</li>
     </ul>
     <p><strong>Typos and minor fixes:</strong></p>
     <ul>
       <li>Added an extra line to the Bradley-Terry reward model loss derivation (Chapter 5) &mdash; <a href="https://github.com/natolambert/rlhf-book/pull/465">#465</a>.</li>
-      <li>Fixed the description of the reference model in the policy ratio (Chapter 6) &mdash; <a href="https://github.com/natolambert/rlhf-book/pull/488">#488</a>.</li>
-      <li>Cleaned up assorted typos and minor wording issues &mdash; <a href="https://github.com/natolambert/rlhf-book/pull/495">#495</a>.</li>
-      <li>Other minor typos &mdash; <a href="https://github.com/natolambert/rlhf-book/pull/526">#526</a> (and <a href="https://github.com/natolambert/rlhf-book/pull/530">#530</a>).</li>
+      <li>Fixed the description of the reference model in the policy ratio (Chapter 6) &mdash; <a href="https://github.com/natolambert/rlhf-book/pull/488">#488</a>. <span class="errata-reprint-status" role="img" aria-label="Included in October 2026 first reprint">&#10003;</span></li>
+      <li>Cleaned up assorted typos and minor wording issues &mdash; <a href="https://github.com/natolambert/rlhf-book/pull/495">#495</a>. <span class="errata-reprint-status" role="img" aria-label="Included in October 2026 first reprint">&#10003;</span></li>
+      <li>Corrected CritiqueLLM naming, the wording about prompts with pairwise completions, and bibliography source typos &mdash; <a href="https://github.com/natolambert/rlhf-book/pull/526">#526</a>. <span class="errata-reprint-status" role="img" aria-label="Included in October 2026 first reprint">&#10003;</span></li>
+      <li>Fixed "true object" to "true objective" and "related models" to "related methods" in the introduction &mdash; <a href="https://github.com/natolambert/rlhf-book/pull/530">#530</a>. <span class="errata-reprint-status" role="img" aria-label="Included in October 2026 first reprint">&#10003;</span></li>
     </ul>
   </div>
   <h3 id="ecosystem" style="padding: 0 20px; margin-top: 1.5em;">RLHF Book Ecosystem</h3>

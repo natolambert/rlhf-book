@@ -449,6 +449,21 @@ div.abstract {
     font-size: 1em;
 }
 
+.errata-reprint-status {
+    display: inline-block;
+    margin: 0.2em 0 0.2em 0.4em;
+    padding: 0.1em 0.45em;
+    border: 1px solid var(--color-border);
+    border-radius: 0.25em;
+    color: var(--color-text-muted);
+    font-size: 0.85em;
+}
+
+.errata-reprint-partial {
+    border-style: dashed;
+    border-color: currentColor;
+}
+
 #changelog,
 #acknowledgements,
 #citation {
