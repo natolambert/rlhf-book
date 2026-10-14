@@ -106,7 +106,7 @@ This is a concrete instance of the general setup above: the policy chooses $a_t$
 
 The RL formulation for RLHF is seen as a less open-ended problem, where a few key pieces of RL are set to specific definitions in order to accommodate language models.
 There are multiple core changes from the standard RL setup to that of RLHF:
-Table @tbl:rl-vs-rlhf summarizes these differences between standard RL and the RLHF setup used for language models.
+@tbl:rl-vs-rlhf summarizes these differences between standard RL and the RLHF setup used for language models.
 
 1. **Switching from a reward function to a reward model.** In RLHF, a learned model of human preferences, $r_\theta(s_t, a_t)$ (or any other classification model) is used instead of an environmental reward function. This gives the designer a substantial increase in the flexibility of the approach and control over the final results, but at the cost of implementation complexity. In standard RL, the reward is seen as a static piece of the environment that cannot be changed or manipulated by the person designing the learning agent.
 2. **No state transitions exist.** In RLHF, the initial states for the domain are prompts sampled from a training dataset and the "action" is the completion to said prompt (in the standard RLHF setup, the prompt is fixed and the model's completion does not define the next prompt). The combination of one prompt and one completion constitutes a complete episode or rollout, which would be many repeated state-action, state-action chains in classical RL problems.
