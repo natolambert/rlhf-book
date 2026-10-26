@@ -99,7 +99,7 @@ $$ \mathcal{D}_{\text{KL}}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\f
 
 - **Trajectory ($\tau$)**: A trajectory $\tau$ is a sequence of states, actions, and rewards experienced by an agent: $\tau = (s_0, a_0, r_0, s_1, a_1, r_1, ..., s_T, a_T, r_T)$.
 
-- **Trajectory Distribution ($(\tau\mid\pi)$)**: The probability of a trajectory under policy $\pi$ is $P(\tau\mid\pi) = p(s_0)\prod_{t=0}^T \pi(a_t\mid s_t)p(s_{t+1}\mid s_t,a_t)$, where $p(s_0)$ is the prior state distribution and $p(s_{t+1}\mid s_t,a_t)$ is the transition probability.
+- **Trajectory Distribution ($P(\tau\mid\pi)$)**: The probability of a trajectory under policy $\pi$ is $P(\tau\mid\pi) = p(s_0)\prod_{t=0}^T \pi(a_t\mid s_t)p(s_{t+1}\mid s_t,a_t)$, where $p(s_0)$ is the prior state distribution and $p(s_{t+1}\mid s_t,a_t)$ is the transition probability.
 
 - **Value Function ($V$)**: A function that estimates the expected cumulative reward from a given state: $V(s) = \mathbb{E}\left[\sum_{t=0}^{\infty} \gamma^t r_t \mid s_0 = s\right]$.
 
@@ -115,8 +115,8 @@ $$ \mathcal{D}_{\text{KL}}(P || Q) = \sum_{x \in \mathcal{X}} P(x) \log \left(\f
 
 - **In-context Learning (ICL)**: In-context here refers to any information within the context window of the language model. Usually, this is information added to the prompt. The simplest form of in-context learning is adding examples of a similar form before the prompt. Advanced versions can learn which information to include for a specific use-case.
 
-- **(Teacher-student) Knowledge Distillation**: Knowledge distillation from a specific teacher to a student model is a specific type of distillation described above, and it is where the term originated. It is a specific deep learning method where a neural network loss is modified to learn from the log-probabilities of the teacher model over multiple potential tokens/logits, instead of learning directly from a chosen output [@hinton2015distilling]. An example of a modern series of models trained with Knowledge Distillation is Gemma 2 [@team2024gemma] or Gemma 3. For a language modeling setup, the next-token loss function can be modified as follows [@agarwal2024policy], where the student model $P_\theta$ learns from the teacher distribution $P_\phi$:
+- **(Teacher-student) Knowledge Distillation**: Knowledge distillation from a specific teacher to a student model is a specific type of distillation described above, and it is where the term originated. It is a specific deep learning method where a neural network loss is modified to learn from the log-probabilities of the teacher model over multiple potential tokens/logits, instead of learning directly from a chosen output [@hinton2015distilling]. An example of a modern series of models trained with Knowledge Distillation is Gemma 2 [@team2024gemma] or Gemma 3. For a language modeling setup, the next-token loss function can be modified as follows [@agarwal2024policy], where the student model $P_\theta$ learns from the teacher distribution $P_\phi$ over the vocabulary $\mathcal{V}$:
 
-$$\mathcal{L}_{\text{KD}}(\theta) = -\,\mathbb{E}_{x \sim \mathcal{D}}\left[\sum_{t=1}^{T} P_{\phi}(x_t \mid x_{<t}) \log P_{\theta}(x_t \mid x_{<t})\right]. $$ {#eq:knowledge_distillation}
+$$\mathcal{L}_{\text{KD}}(\theta) = -\,\mathbb{E}_{x \sim \mathcal{D}}\left[\sum_{t=1}^{T} \sum_{v \in \mathcal{V}} P_{\phi}(v \mid x_{<t}) \log P_{\theta}(v \mid x_{<t})\right]. $$ {#eq:knowledge_distillation}
 
 - **Synthetic Data**: This is any training data for an AI model that is the output from another AI system. This could be anything from text generated from an open-ended prompt of a model to a model rewriting existing content.

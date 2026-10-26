@@ -112,7 +112,7 @@ Intuitively, for a model steered toward "evil" at the optimal layer:
 - $\alpha = 1.5$ — it suggests manipulation, deception, and harmful actions.
 - $\alpha = 2.5$ — it produces extreme and harmful content with apparent enthusiasm.
 
-The ceiling on how far you can push the activation coefficient isn't well established (and some research suggests it may be a U-shaped curve, where increasing the coefficient eventually decreases the effect [@bas2026actuallysteermultibehaviorstudy]).
+The ceiling on how far you can push the activation coefficient isn't well established (and some research suggests it may be an inverted-U-shaped curve, where increasing the coefficient eventually decreases the effect [@bas2026actuallysteermultibehaviorstudy]).
 Chen et al. (2025) discuss how similar gradations hold for sycophancy (i.e. from mild agreeableness to absurd flattery) and hallucination (i.e. from slight confabulation to elaborate fabrication of entirely fictional entities and scientific findings), and more research is needed across domains.
 
 Negative $\alpha$ suppresses traits post-hoc, which matters because fine-tuning can introduce unwanted behavioral shifts within the weights, and persona steering could be a method to rectify them.
