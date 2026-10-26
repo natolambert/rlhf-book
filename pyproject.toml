@@ -18,7 +18,8 @@ skills = [
     "google-genai>=1.63.0",
 ]
 teach = [
-    # Tracks colloquium main (per Nathan: easiest for catching regressions);
-    # pin to a PyPI release later if builds need to be reproducible.
-    "colloquium @ git+https://github.com/natolambert/colloquium.git",
+    # Pinned to a commit: uv.lock is gitignored, so tracking colloquium main
+    # let an upstream change break unrelated deploys. This is colloquium main
+    # after the footnote-citation fix (natolambert/colloquium#70); bump deliberately.
+    "colloquium @ git+https://github.com/natolambert/colloquium.git@c8d4b1c9e41b3f6a14df074b91ae3568be2c4e94",
 ]
