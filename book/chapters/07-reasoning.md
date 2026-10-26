@@ -71,16 +71,22 @@ For code generation, verification often takes the form of unit tests:
 > **Prompt**: Write a Python function `fib(n)` that returns the nth Fibonacci number, where fib(0) = 0 and fib(1) = 1.
 >
 > **Response**:
+>
+> ```python
 > def fib(n):
 >     if n < 2:
 >         return n
 >     return fib(n - 1) + fib(n - 2)
+> ```
 >
 > **Verification (unit tests)**:
 >
+> ```python
 > assert fib(0) == 0   # base case
 > assert fib(1) == 1   # base case
 > assert fib(10) == 55 # larger value
+> ```
+>
 > (All tests pass → Reward = 1)
 
 
@@ -209,7 +215,7 @@ Developers pass in prompts and completions and the model is tuned to match that 
 
 RLVR is focused on matching answers. 
 Given queries and correct answers, RLVR helps the model learn to produce the correct answers. 
-While standard instruction tuning is done with 1 or 2 epochs of loss updates over the data, RLVR gets its name by doing hundreds or thousands of epochs over the same few data points to give the model time to learn new behaviors. 
+While standard instruction tuning is done with 1 or 2 epochs of loss updates over the data, RLVR can involve hundreds or thousands of epochs over the same few data points to give the model time to learn new behaviors. 
 This can be viewed as reinforcing positive behaviors that would work sparingly in the base model version into robust behaviors after RLVR.
 
 **The scope of RL training for language models continues to grow**: The biggest takeaway from o1 and R1 on a fundamental scientific level was that we have even more ways to train language models to potentially valuable behaviors. 
@@ -301,7 +307,7 @@ Complementing the common techniques, there are also many common findings on how 
 The reasoning model landscape is evolving faster than any area of AI research in recent memory, and some of the common practices listed here will inevitably be superseded by new techniques.
 
 Several efforts are underway to systematically understand what makes reasoning training work.
-Olmo 3 Think [@teamolmo2025olmo3] represents the most comprehensive open documentation of a reasoning model's full training lifecycle, providing checkpoints and data at each stage for the research community to study, and concluding with a nearly 4-week-long training run on 220 GPUs.
+Olmo 3 Think [@teamolmo2025olmo3] represents the most comprehensive open documentation of a reasoning model's full training lifecycle, providing checkpoints and data at each stage for the research community to study, and concluding with a nearly 4-week-long training run on 220 GPUs to produce Olmo 3.1 Think 32B.
 Similarly, work on understanding the scaling properties of RL for reasoning [@khatri2025art] is beginning to formalize relationships between compute, data, and performance that were previously only intuited by practitioners.
 
 What remains clear is that reinforcement learning has graduated from the "cherry on top" in the cake metaphor to a load-bearing component of frontier model training.

@@ -599,8 +599,8 @@ GRPO and its variants are particularly well-suited to modern language model tool
 The advantage computation for GRPO has trade-offs in its biases.
 The normalization by standard deviation rewards questions in a batch that have a low variation in answer correctness.
 For questions with either nearly all correct or all incorrect answers, the standard deviation will be lower and the advantage will be higher.
-Liu et al. 2025 [@liu2025understanding] proposes removing the standard deviation term given this bias, but this comes at the cost of down-weighting questions that were all incorrect with a few correct answers, which could be seen as valuable learning signal for the model.
-Those high-variance prompts can be exactly the hardest cases, where only a few sampled completions find the correct answer and provide a strong training signal.
+Liu et al. 2025 [@liu2025understanding] propose removing the standard deviation term given this bias, but this comes at the cost of down-weighting questions that were all incorrect with a few correct answers, which could be seen as valuable learning signal for the model.
+Those low-variance prompts can be exactly the hardest cases, where only a few sampled completions find the correct answer and provide a strong training signal.
 
 @eq:GRPO_ADV is the implementation of GRPO when working with outcome supervision (either a standard reward model or a single verifiable reward) and a different implementation is needed with process supervision.
 In this case, GRPO computes the advantage as the sum of the normalized rewards for the following reasoning steps.
@@ -784,7 +784,7 @@ Ratio here is the (per-token) probability ratio (often computed from a log-proba
 In order to understand this equation, it is good to understand different cases that can fall within a batch of updates. 
 Remember that we want the loss to *decrease* as the model gets better at the task.
 
-Case 1: Positive advantage, so the action was better than the expected value of the state. We want to reinforce this. In this case, the model will make this more likely with the negative sign. To do so, it'll increase the logratio. A positive logratio, or sum of log probabilities of the tokens, means that the model is more likely to generate those tokens.
+Case 1: Positive advantage, so the action was better than the expected value of the state. We want to reinforce this. In this case, the model will make this more likely with the negative sign. To do so, it'll increase the logratio. A positive logratio, the new policy's log probability minus the old policy's, means that the model is more likely to generate those tokens.
 
 Case 2: Negative advantage, so the action was worse than the expected value of the state. This follows very similarly. Here, the loss will be positive if the new model was more likely, so the model will try to make it so the policy parameters make this completion less likely.
 
@@ -898,7 +898,7 @@ masks = torch.tensor([
 max_gen_len = 7
 
 masked_mean_result = masked_mean(ratio * advs, masks, axis=1)
-masked_mean_token_level = masked_mean(ratio, masks, axis=None)
+masked_mean_token_level = masked_mean(ratio * advs, masks, axis=None)
 masked_sum_result = masked_sum(ratio * advs, masks, axis=1, constant_normalizer=max_gen_len)
 
 print("masked_mean", masked_mean_result)
@@ -907,7 +907,7 @@ print("masked_mean_token_level", masked_mean_token_level)
 
 # masked_mean tensor([2., 2.], grad_fn=<DivBackward0>)
 # masked_sum tensor([1.1429, 2.0000], grad_fn=<DivBackward0>)
-# masked_mean_token_level tensor(1., grad_fn=<DivBackward0>)
+# masked_mean_token_level tensor(2., grad_fn=<DivBackward0>)
 
 masked_mean_result.mean().backward()
 print("ratio.grad", ratio.grad)
@@ -923,13 +923,13 @@ ratio.grad.zero_()
 
 masked_mean_token_level.mean().backward()
 print("ratio.grad", ratio.grad)
-# ratio.grad tensor([[0.0909, 0.0909, 0.0909, 0.0909, 0.0000, 0.0000, 0.0000],
-# [0.0909, 0.0909, 0.0909, 0.0909, 0.0909, 0.0909, 0.0909]])
+# ratio.grad tensor([[0.1818, 0.1818, 0.1818, 0.1818, 0.0000, 0.0000, 0.0000],
+# [0.1818, 0.1818, 0.1818, 0.1818, 0.1818, 0.1818, 0.1818]])
 ```
 
 The output shows that with Strategy 1 (`masked_mean`), the short sequence has larger per-token gradients (0.25) than the long sequence (0.14).
 Strategies 2 and 3 equalize the per-token gradients across sequences.
-Note that these results can vary substantially if gradient accumulation is used, where the gradients are summed across multiple minibatches before taking a backward step—in this case, the balance between shorter and longer sequences can flip.
+Note that these results can vary substantially if gradient accumulation is used, where the gradients are summed across multiple minibatches before taking an optimizer step—in this case, the balance between shorter and longer sequences can flip.
 
 In practice, the best strategy depends on the specific training setup.
 Often in RLHF the method with the best numerical stability or the least variance in loss is preferred.
@@ -993,7 +993,7 @@ The primary challenges faced when making training more asynchronous are keeping 
 
 These systems are designed and implemented with the presumption that nearly on-policy data is good enough for stable learning. 
 Here, the generation and update phases can easily be synced to avoid idle compute on either piece of the training system, which would be passing model weights from the learners to the actors in @fig:async_system.
-With reasoning models, the extremely long inference characteristics of problems requiring 10K to 100K+ tokens per answer makes the generation of roll-outs a far stronger bottleneck.
+With reasoning models, the extremely long inference characteristics of problems requiring 10K to 100K+ tokens per answer make the generation of roll-outs a far stronger bottleneck.
 A common problem when training reasoning models on more synchronous RL infrastructure is that an answer to one prompt in the batch can take substantially more time to generate (either through more tokens or more tool calls), resulting in the majority of the allocated compute being idle until it completes. 
 A second solution to this length mismatch issue, called sequence-level packing, is to stack shorter samples within a batch with clever masking to enable continued roll-outs from the model and better distribute length normalization across samples within a batch.
 The full complexity of distributed RL infrastructure is out of scope for this book, as it can cause many other subtle issues that slow down training or cause instability.
@@ -1140,7 +1140,7 @@ pg_loss_max = torch.max(pg_losses1, pg_losses2)  # Shape: (B*G, L)
 
 The key insight is taking `torch.max` of the two losses. Because we're minimizing a *negative* loss (recall the negative sign in front of advantages), taking the maximum selects the more pessimistic gradient—the one that produces a smaller policy update. When the advantage is positive (good action), clipping prevents the policy from increasing that action's probability too aggressively. When the advantage is negative (bad action), clipping prevents over-correction in the other direction.
 
-By clamping the log-probability ratio, PPO bounds how far the policy can drift from the version that generated the training data, stabilizing learning without requiring an explicit trust region computation.
+By clamping the probability ratio, PPO bounds how far the policy can drift from the version that generated the training data, stabilizing learning without requiring an explicit trust region computation.
 
 The code above also shows PPO learning a value function alongside the policy, which adds implementation complexity, but the clipped objective is the core mechanism.
 
@@ -1349,7 +1349,7 @@ Examples for further reading include:
 - Off-policy policy-gradient algorithms could enable further asynchronous training, such as **Contrastive Policy Gradient (CoPG)** [@flet2024contrastive] (a generalization of the direct alignment algorithm IPO and vanilla policy gradient), which was used by Cohere for their Command A model [@cohere2025command].
 - Other implementations of REINFORCE algorithms have been designed for language models, such as **ReMax** [@li2023remax], which implements a baseline normalization designed specifically to accommodate the sources of uncertainty from reward model inference.
 - Some foundation models, such as Apple Intelligence Foundation Models [@gunter2024apple] or Kimi k1.5 reasoning model [@team2025kimi], have used variants of **Mirror Descent Policy Optimization (MDPO)** [@tomar2020mirror]. Research is still developing further on the fundamentals here [@zhang2025improving], but Mirror Descent is an optimization method rather than directly a policy gradient algorithm. What is important here is that it is substituted in very similarly to existing RL infrastructure.
-- **Decoupled Clip and Dynamic sAmpling Policy Optimization (DAPO)** proposes 4 modifications to GRPO to better suit reasoning language models, where long traces are needed and new, underutilized tokens need to be increased in probability [@yu2025dapo]. The changes are: 1, have two different clip hyperparameters, $\varepsilon_\text{low}$ and $\varepsilon_\text{high}$, so clipping on the positive side of the logratio can take bigger steps for better exploration; 2, dynamic sampling, which removes all samples with reward = 0 or reward = 1 for all samples in the batch (no learning signal); 3, use the per-token loss as discussed above in Implementation: GRPO; and 4, a soft penalty on samples that are too long to avoid trying to learn from truncated answers.
+- **Decoupled Clip and Dynamic sAmpling Policy Optimization (DAPO)** proposes 4 modifications to GRPO to better suit reasoning language models, where long traces are needed and new, underutilized tokens need to be increased in probability [@yu2025dapo]. The changes are: 1, have two different clip hyperparameters, $\varepsilon_\text{low}$ and $\varepsilon_\text{high}$, so clipping on the positive side of the logratio can take bigger steps for better exploration; 2, dynamic sampling, which filters out prompts whose sampled completions all have reward = 0 or all have reward = 1 (no learning signal); 3, use the per-token loss as discussed above in Implementation: GRPO; and 4, a soft penalty on samples that are too long to avoid trying to learn from truncated answers.
 - **Value-based Augmented Proximal Policy Optimization (VAPO)** [@yuan2025vapo] combines optimizations from DAPO (including clip-higher, token-level policy-gradient, and different length normalization) with insights from Value-Calibrated PPO [@yuan2025s] to pretrain the value function and length-adaptive GAE to show the promise of value-based methods relative to GRPO.
 
 ## Suggested Experiments

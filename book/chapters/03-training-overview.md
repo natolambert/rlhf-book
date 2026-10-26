@@ -218,7 +218,7 @@ The recipe has been successfully applied to Llama 3.1 [@lambert2024t], OLMo 2 [@
 ### DeepSeek R1: Scaling RLVR for Reasoning
 
 With the rise of reasoning language models, such as OpenAI's o1, the best practices in post-training evolved again to re-order and redistribute compute across training stages.
-The clearest documentation of a reasoning model post-training recipe is DeepSeek R1 [@guo2025deepseek], which has been mirrored by Alibaba's larger Qwen 3 models (i.e. only the 32B and 225B MoE models) [@yang2025qwen3] or Xiaomi's MiMo 7B [@xia2025mimo].
+The clearest documentation of a reasoning model post-training recipe is DeepSeek R1 [@guo2025deepseek], which has been mirrored by Alibaba's larger Qwen 3 models (i.e. only the 32B dense and 235B MoE models) [@yang2025qwen3] or Xiaomi's MiMo 7B [@xia2025mimo].
 
 ![The multistage pipeline of DeepSeek-R1. From DeepSeek R1 paper in *Nature*, [Fig. 2](https://www.nature.com/articles/s41586-025-09422-z/figures/2), under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) [@guo2025deepseek].](images/deepseek-r1-pipeline.png){#fig:deepseek-r1-pipeline .center}
 

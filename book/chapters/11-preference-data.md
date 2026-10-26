@@ -86,7 +86,7 @@ A popular public option to engage with models in this way is Arena (formerly Cha
 For models in the wild, one of the most common techniques is to collect feedback on if a specific response was positive or negative.
 An example from the Ai2 playground is shown below with thumbs up and down indicators:
 
-![Example preference data collection interface with up or down arrow from the Allen Institute of AI's research demos.](images/up-down-vote.png){#fig:up-down .center}
+![Example preference data collection interface with up or down arrow from the Allen Institute for AI's research demos.](images/up-down-vote.png){#fig:up-down .center}
 
 In domains other than language, the same core principles apply, even though these domains are not the focus of this book.
 For every Midjourney generation (and most popular image generators) they expose multiple responses to users.

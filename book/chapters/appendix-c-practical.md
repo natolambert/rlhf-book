@@ -34,7 +34,7 @@ For final runs, the Olmo 3 report has a detailed accounting of what is involved 
 > During post-training, checkpoint evaluation consumes a larger proportion of compute resources, in part due to long generations from reasoning models on core benchmarks. For SFT, we swept over four candidate learning rates, on 256 GPUs each, in parallel for 36 hours. Then approximately 12 hours was spent on evaluation, merging, and checkpoint confirmation, totaling approximately two days. DPO training takes less time per run (about 18 hours for a full learning-rate sweep on 64 GPUs per job) but in practice extended over multiple days due to cluster instability. The final RL runs for the initial Olmo 3 Think 32B spanned approximately 5 days with at least a day of training time lost due to stability issues. After the initial release of Olmo 3, we continued our best RL run for another 21 days on 224 GPUs to produce Olmo 3.1 Think 32B.
 
 As scaling reinforcement learning becomes more standard practice, this will shift yet again [@khatri2025art].
-Continuing the above example, where the original Olmo 3 32B Think post-training took only a couple of weeks, to release the improved Olmo 3.1 32B Think model the team needed to train it for an additional 3.5 weeks with RLVR. This is a substantial cost in *time* more than in total compute.
+Continuing the above example, where the original Olmo 3 32B Think post-training took only a couple of weeks, to release the improved Olmo 3.1 32B Think model the team needed to train it for an additional 3 weeks with RLVR. This is a substantial cost in *time* more than in total compute.
 
 ## Evaluation Variance
 
@@ -43,7 +43,7 @@ With any sampling from models, the outputs become more variable.
 Different benchmarks have vastly different stability characteristics, due to the variance in difficulty of the prompts, the number of prompts in the evaluation set, the brittleness of the models being trained, etc.
 
 During Olmo 3, the team tracked the variance of different evaluations used to evaluate reasoning models.
-The table below shows the standard deviation of each evaluation, computed as the mean of the standard deviation from 3 runs of 14 models (take the variance of each model, then average per evaluation):
+The table below shows the standard deviation of each evaluation, computed as the mean of the standard deviation from 3 runs of 14 models (take the standard deviation of each model, then average per evaluation):
 
 | Category | Benchmark | Std. Dev. |
 |----------|-----------|-----------|

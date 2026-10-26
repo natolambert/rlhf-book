@@ -54,7 +54,7 @@ getcontext().prec = 60
 def compute_pi():
     # Chudnovsky algorithm for computing pi
     C = 426880 * Decimal(10005).sqrt()
-    K, M, X, L, S = 0, 1, 1, 13591409, Decimal(13591409)
+    K, M, X, L, S = 6, 1, 1, 13591409, Decimal(13591409)
     for i in range(1, 100):
         M = M * (K**3 - 16*K) // ((i)**3)
         K += 12
@@ -203,12 +203,13 @@ while True:
     if not response.tool_calls:
         return response.text
 
+    messages.append(response.message)  # the assistant turn containing the tool calls
     for call in response.tool_calls:
         result = execute_tool(call.name, call.args)
         messages.append({"role": "tool", "tool_call_id": call.id, "content": result})
 ```
 
-![Tool use interleaves model generation with external execution: the model generates tokens until it emits a tool call (orange), an external system executes the tool and injects the output (purple) into the sequence, then the model continues generating. Models can emit multiple tool calls in a single generation. During training, tool call and output tokens are typically masked from the loss.](images/tool_use_generation.png){#fig:tool-use-generation data-dark-src="images/tool_use_generation-dark.png"}
+![Tool use interleaves model generation with external execution: the model generates tokens until it emits a tool call (orange), an external system executes the tool and injects the output (purple) into the sequence, then the model continues generating. Models can emit multiple tool calls in a single generation. During training, tool output tokens are typically masked from the loss, while the model-generated tool calls remain training targets.](images/tool_use_generation.png){#fig:tool-use-generation data-dark-src="images/tool_use_generation-dark.png"}
 
 Training for tool use is about getting the model to behave predictably with this different token flow—knowing when to emit a tool call, how to format arguments correctly, and how to incorporate results into its response.
 Open models must be trained to work with a variety of tools that users may connect off the shelf.
