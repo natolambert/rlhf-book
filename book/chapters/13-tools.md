@@ -238,8 +238,8 @@ MCP servers that the models interact with have core primitives: resources (read-
 With this, the MCP architecture can be summarized as:
 
 - MCP servers wrap a specific data source or capability.
-- MCP clients each maintain a connection to one server.
-- Hosts, e.g. Claude or ChatGPT applications and IDE plug-ins, provide the user/LLM interface and manage one or more clients; adding back-end tools only means connecting another server.
+- MCP clients (e.g., Claude Desktop, IDE plug-ins) aggregate one or more servers.
+- Hosts, e.g. Claude or ChatGPT applications, provide the user/LLM interface; switching model vendors or back-end tools only means swapping the client in the middle.
 
 MCP enables developers of tool-use models to use the same infrastructure to attach their servers or clients to different models, and at the same time models have a predictable format they can use to integrate external components.
 These together make for a far more predictable development environment for tool-use models in real-world domains.
