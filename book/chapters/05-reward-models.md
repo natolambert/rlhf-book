@@ -211,7 +211,7 @@ This is where the default implementation of outcome reward models diverges from 
 > Architecturally, this means our verifiers are language models, with a small scalar head that outputs predictions on a per-token basis. 
 > We implement this scalar head as a single bias parameter and single gain parameter that operate on the logits outputted by the language model's final unembedding layer.
 
-To translate, this is implemented as a small head that outputs a scalar logit at every token, rather than a classification head of a traditional RM that outputs one logit for the entire sequence.
+To translate, this is implemented as a small head that outputs a scalar logit at every token, rather than a linear head of a traditional RM that outputs one logit for the entire sequence.
 Additionally, in this original GSM8K paper the authors jointly trained their ORM with the next-token, language modeling loss -- this practice did not continue as the default.
 
 The term "outcome-reward model" appeared in 2022, in a paper comparing "outcome-supervised RM (ORM)" versus process reward models that predicted the quality of the reasoning so far [@uesato2022solving] -- this importantly is a secondary way of implementing an ORM, one that implements a binary `correct` or `incorrect` in the LLM's tokenizer vocabulary as a step-level signal, rather than learning a separate scalar head that predicts correctness at every token.
