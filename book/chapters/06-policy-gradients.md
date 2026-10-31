@@ -1079,429 +1079,65 @@ TIS for the learner–sampler ratio has been adopted across major open-source RL
 | DPPO^P^ [@qi2026dppo] | `token` | `tv` | 0 | 0.2 | `drop` | `ppo` | No importance-ratio clipping. |
 Table: Importance-sampling-based correction methods, adapted from Marek and Ryabinin [@marek2026score]. {#tbl:is_methods}
 
-#### The Policy Gradient Under Learner–Sampler Mismatch
-
 <!-- TODO -->
 
 $$
 \begin{aligned}
-\nabla_\theta J(\theta) &= \mathbb{E}_{a \sim \pi_\theta(\cdot \mid s)} \left[ \sum_{t=1}^{|a|} A_t \, \nabla_\theta \log \pi_\theta(a_t \mid s, a_{<t}) \right] \\
-&= \mathbb{E}_{a \sim \pi_\theta^{\text{learner}}(\cdot \mid s)} \left[ \sum_{t=1}^{|a|} A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right]
-\end{aligned}
-$$ {#eq:sc_pg_target}
-
-<!-- TODO -->
-
-$$
-\hat{g} = \mathbb{E}_{a \sim \pi_\theta^{\text{sampler}}(\cdot \mid s)} \left[ \sum_{t=1}^{|a|} A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right]
-$$ {#eq:sc_pg_mismatch}
-
-<!-- TODO -->
-
-$$
-m_t = \begin{cases} 1 & t \leq |a| \\ 0 & t > |a| \end{cases}
-$$ {#eq:sc_mask}
-
-<!-- TODO -->
-
-$$
-\begin{aligned}
+\nabla_\theta J(\theta) &= \mathbb{E}_{a \sim \pi_\theta^{\text{learner}}(\cdot \mid s)} \left[ \sum_{t=1}^{|a|} A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] \\
 \hat{g} &= \mathbb{E}_{a \sim \pi_\theta^{\text{sampler}}(\cdot \mid s)} \left[ \sum_{t=1}^{|a|} A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] \\
-&= \mathbb{E}_{a \sim \pi_\theta^{\text{sampler}}(\cdot \mid s)} \left[ \sum_{t=1}^{T} m_t \, A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] \\
-&= \sum_{t=1}^{T} \mathbb{E}_{a \sim \pi_\theta^{\text{sampler}}(\cdot \mid s)} \left[ m_t \, A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] \\
-&= \sum_{t=1}^{T} \mathbb{E}_{a_{<t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s)} \left[ \mathbb{E}_{a_{\geq t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s, a_{<t})} \left[ m_t \, A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] \right] \\
-&= \sum_{t=1}^{T} \mathbb{E}_{a_{<t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s)} \left[ m_t \, \mathbb{E}_{a_{\geq t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s, a_{<t})} \left[ A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] \right]
+&= \sum_{t} \mathbb{E}_{a_{<t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s)} \left[ \mathbb{E}_{a_{\geq t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s, a_{<t})} \left[ A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] \right]
 \end{aligned}
-$$ {#eq:sc_pg_prefix}
+$$ {#eq:sc_policy_gradient}
 
 <!-- TODO -->
 
 $$
 \begin{aligned}
-\pi^{\text{learner}}_v &= \pi_\theta^{\text{learner}}(v \mid s, a_{<t}), \qquad v \in \mathcal{V} \\
-\pi^{\text{sampler}}_v &= \pi_\theta^{\text{sampler}}(v \mid s, a_{<t}), \qquad v \in \mathcal{V} \\
+\pi^{\text{learner}}_v &= \pi_\theta^{\text{learner}}(v \mid s, a_{<t}), \qquad \pi^{\text{sampler}}_v = \pi_\theta^{\text{sampler}}(v \mid s, a_{<t}) \\
 \boldsymbol{\xi}_v &= \nabla_\theta \log \pi^{\text{learner}}_v \\
-\mathbb{E}_{\text{learner}}[\,\cdot\,] &= \mathbb{E}_{a_{\geq t} \sim \pi_\theta^{\text{learner}}(\cdot \mid s, a_{<t})}[\,\cdot\,] \\
-\mathbb{E}_{\text{sampler}}[\,\cdot\,] &= \mathbb{E}_{a_{\geq t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s, a_{<t})}[\,\cdot\,]
+\mathbb{E}_{\text{sampler}} \left[ A_t \, \boldsymbol{\xi}_{a_t} \right] &= \mathbb{E}_{a_{\geq t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s, a_{<t})} \left[ A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right]
 \end{aligned}
-$$ {#eq:sc_shorthand}
+$$ {#eq:sc_score}
 
 <!-- TODO -->
 
 $$
 \begin{aligned}
-\mathbb{E}_{a_{\geq t} \sim \pi_\theta^{\text{learner}}(\cdot \mid s, a_{<t})} \left[ A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] &= \mathbb{E}_{\text{learner}} \left[ A_t \, \nabla_\theta \log \pi^{\text{learner}}_{a_t} \right] \\
-&= \mathbb{E}_{\text{learner}} \left[ A_t \, \boldsymbol{\xi}_{a_t} \right] \\[6pt]
-\mathbb{E}_{a_{\geq t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s, a_{<t})} \left[ A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] &= \mathbb{E}_{\text{sampler}} \left[ A_t \, \nabla_\theta \log \pi^{\text{learner}}_{a_t} \right] \\
-&= \mathbb{E}_{\text{sampler}} \left[ A_t \, \boldsymbol{\xi}_{a_t} \right]
+\mathbb{E}_{\text{learner}} \left[ \boldsymbol{\xi}_{a_t} \right] &= \sum_{v \in \mathcal{V}} \pi^{\text{learner}}_v \, \nabla_\theta \log \pi^{\text{learner}}_v = \sum_{v \in \mathcal{V}} \nabla_\theta \pi^{\text{learner}}_v \\
+&= \nabla_\theta \sum_{v \in \mathcal{V}} \pi^{\text{learner}}_v = \nabla_\theta 1 = \mathbf{0} \\
+\bar{\boldsymbol{\xi}} = \mathbb{E}_{\text{sampler}} \left[ \boldsymbol{\xi}_{a_t} \right] &= \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, \nabla_\theta \log \pi^{\text{learner}}_v
 \end{aligned}
-$$ {#eq:sc_score_def}
-
-<!-- TODO -->
-
-| This book | Marek and Ryabinin [@marek2026score] |
-| :--- | :--- |
-| $\pi_\theta^{\text{learner}}$, $\pi_\theta^{\text{sampler}}$ | $p_\theta$, $q_\theta$ |
-| $a_t$ | $y_t$ |
-| $\pi^{\text{learner}}_v$, $\pi^{\text{sampler}}_v$ | $p_v$, $q_v$ |
-| $\boldsymbol{\xi}_v$ | $s_v$ |
-| $\bar{\boldsymbol{\xi}}$, $\tilde{\boldsymbol{\xi}}_{a_t}$ | $\bar{s}$, $\tilde{s}_{y_t}$ |
-| $A_t$ | $R$ |
-| $\rho^{\text{learner}}_v$ | $r_v$ |
-| $w_v$ | $w_v$ |
-| $\kappa$ | $\rho$ |
-| $\kappa \, f(1/\kappa)$ | $\alpha$ |
-| $\mathcal{H}$, $\mathcal{V} \setminus \mathcal{H}$ | $H$, $T$ |
-| $\text{sg}(\cdot)$ | $\text{sg}[\cdot]$ |
-Table: Notation in this section and in Marek and Ryabinin [@marek2026score]. {#tbl:sc_notation}
-
-#### The Expected Score
+$$ {#eq:sc_expected_score}
 
 <!-- TODO -->
 
 $$
 \begin{aligned}
-\mathbb{E}_{\text{learner}} \left[ \boldsymbol{\xi}_{a_t} \right] &= \sum_{v \in \mathcal{V}} \pi^{\text{learner}}_v \, \mathbb{E}_{a_{>t} \sim \pi_\theta^{\text{learner}}(\cdot \mid s, a_{<t}, v)} \left[ \boldsymbol{\xi}_v \right] \\
-&= \sum_{v \in \mathcal{V}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v \\
-&= \sum_{v \in \mathcal{V}} \pi^{\text{learner}}_v \, \nabla_\theta \log \pi^{\text{learner}}_v \\
-&= \sum_{v \in \mathcal{V}} \pi^{\text{learner}}_v \, \frac{\nabla_\theta \pi^{\text{learner}}_v}{\pi^{\text{learner}}_v} \\
-&= \sum_{v \in \mathcal{V}} \nabla_\theta \pi^{\text{learner}}_v \\
-&= \nabla_\theta \sum_{v \in \mathcal{V}} \pi^{\text{learner}}_v \\
-&= \nabla_\theta 1 \\
-&= \mathbf{0}
+\mathbb{E}_{\text{learner}} \left[ A_t \, \boldsymbol{\xi}_{a_t} \right] &= \mathbb{E}_{\text{learner}}[A_t] \cdot \mathbf{0} + \text{Cov}_{\text{learner}}(A_t, \boldsymbol{\xi}_{a_t}) \\
+\mathbb{E}_{\text{sampler}} \left[ A_t \, \boldsymbol{\xi}_{a_t} \right] &= \mathbb{E}_{\text{sampler}}[A_t] \, \bar{\boldsymbol{\xi}} + \text{Cov}_{\text{sampler}}(A_t, \boldsymbol{\xi}_{a_t})
 \end{aligned}
-$$ {#eq:sc_score_zero}
+$$ {#eq:sc_drift}
 
 <!-- TODO -->
 
 $$
 \begin{aligned}
-\bar{\boldsymbol{\xi}} &= \mathbb{E}_{\text{sampler}} \left[ \boldsymbol{\xi}_{a_t} \right] \\
-&= \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, \mathbb{E}_{a_{>t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s, a_{<t}, v)} \left[ \boldsymbol{\xi}_v \right] \\
-&= \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, \boldsymbol{\xi}_v \\
-&= \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, \nabla_\theta \log \pi^{\text{learner}}_v \\
-&= \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, \frac{\nabla_\theta \pi^{\text{learner}}_v}{\pi^{\text{learner}}_v} \\
-&= \sum_{v \in \mathcal{V}} \frac{\pi^{\text{sampler}}_v}{\pi^{\text{learner}}_v} \, \nabla_\theta \pi^{\text{learner}}_v
-\end{aligned}
-$$ {#eq:sc_score_mismatch}
-
-<!-- TODO -->
-
-$$
-\begin{aligned}
-\pi^{\text{sampler}}_v = \pi^{\text{learner}}_v \;\; \forall v \in \mathcal{V} \implies \bar{\boldsymbol{\xi}} &= \sum_{v \in \mathcal{V}} \frac{\pi^{\text{learner}}_v}{\pi^{\text{learner}}_v} \, \nabla_\theta \pi^{\text{learner}}_v \\
-&= \sum_{v \in \mathcal{V}} \nabla_\theta \pi^{\text{learner}}_v \\
-&= \nabla_\theta \sum_{v \in \mathcal{V}} \pi^{\text{learner}}_v \\
-&= \mathbf{0}
-\end{aligned}
-$$ {#eq:sc_score_match}
-
-<!-- TODO -->
-
-$$
-\begin{aligned}
-\mathbb{E}_{\text{learner}} \left[ c \, \boldsymbol{\xi}_{a_t} \right] &= c \, \mathbb{E}_{\text{learner}} \left[ \boldsymbol{\xi}_{a_t} \right] \\
-&= c \cdot \mathbf{0} \\
-&= \mathbf{0} \\[6pt]
-\mathbb{E}_{\text{sampler}} \left[ c \, \boldsymbol{\xi}_{a_t} \right] &= c \, \mathbb{E}_{\text{sampler}} \left[ \boldsymbol{\xi}_{a_t} \right] \\
-&= c \, \bar{\boldsymbol{\xi}}
-\end{aligned}
-$$ {#eq:sc_constant_adv}
-
-#### Drift and Signal
-
-<!-- TODO -->
-
-$$
-\begin{aligned}
-\text{Cov}(X, \mathbf{Y}) &= \mathbb{E}\left[ (X - \mathbb{E}[X]) (\mathbf{Y} - \mathbb{E}[\mathbf{Y}]) \right] \\
-&= \mathbb{E}\left[ X \mathbf{Y} - X \, \mathbb{E}[\mathbf{Y}] - \mathbb{E}[X] \, \mathbf{Y} + \mathbb{E}[X] \, \mathbb{E}[\mathbf{Y}] \right] \\
-&= \mathbb{E}[X \mathbf{Y}] - \mathbb{E}\big[ X \, \mathbb{E}[\mathbf{Y}] \big] - \mathbb{E}\big[ \mathbb{E}[X] \, \mathbf{Y} \big] + \mathbb{E}\big[ \mathbb{E}[X] \, \mathbb{E}[\mathbf{Y}] \big] \\
-&= \mathbb{E}[X \mathbf{Y}] - \mathbb{E}[X] \, \mathbb{E}[\mathbf{Y}] - \mathbb{E}[X] \, \mathbb{E}[\mathbf{Y}] + \mathbb{E}[X] \, \mathbb{E}[\mathbf{Y}] \\
-&= \mathbb{E}[X \mathbf{Y}] - \mathbb{E}[X] \, \mathbb{E}[\mathbf{Y}] \\[6pt]
-\mathbb{E}[X \mathbf{Y}] &= \mathbb{E}[X] \, \mathbb{E}[\mathbf{Y}] + \text{Cov}(X, \mathbf{Y})
-\end{aligned}
-$$ {#eq:sc_cov_identity}
-
-<!-- TODO -->
-
-$$
-\begin{aligned}
-\mathbb{E}_{\text{sampler}} \left[ A_t \, \boldsymbol{\xi}_{a_t} \right] &= \mathbb{E}_{\text{sampler}}[A_t] \, \mathbb{E}_{\text{sampler}}[\boldsymbol{\xi}_{a_t}] + \text{Cov}_{\text{sampler}}(A_t, \boldsymbol{\xi}_{a_t}) \\
-&= \mathbb{E}_{\text{sampler}}[A_t] \, \bar{\boldsymbol{\xi}} + \text{Cov}_{\text{sampler}}(A_t, \boldsymbol{\xi}_{a_t})
-\end{aligned}
-$$ {#eq:sc_drift_signal}
-
-<!-- TODO -->
-
-$$
-\begin{aligned}
-\mathbb{E}_{\text{learner}} \left[ A_t \, \boldsymbol{\xi}_{a_t} \right] &= \mathbb{E}_{\text{learner}}[A_t] \, \mathbb{E}_{\text{learner}}[\boldsymbol{\xi}_{a_t}] + \text{Cov}_{\text{learner}}(A_t, \boldsymbol{\xi}_{a_t}) \\
-&= \mathbb{E}_{\text{learner}}[A_t] \cdot \mathbf{0} + \text{Cov}_{\text{learner}}(A_t, \boldsymbol{\xi}_{a_t}) \\
-&= \text{Cov}_{\text{learner}}(A_t, \boldsymbol{\xi}_{a_t})
-\end{aligned}
-$$ {#eq:sc_onpolicy_signal}
-
-<!-- TODO -->
-
-$$
-\begin{aligned}
-\nabla_\theta \left( - \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \log \pi^{\text{learner}}_v \right) &= - \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, \nabla_\theta \log \pi^{\text{learner}}_v \\
-&= - \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, \boldsymbol{\xi}_v \\
-&= - \bar{\boldsymbol{\xi}}
-\end{aligned}
-$$ {#eq:sc_drift_ce}
-
-<!-- TODO -->
-
-$$
-\begin{aligned}
-\sum_{i=1}^{G} \tilde{A}_i &= \sum_{i=1}^{G} \left( r_i - \frac{1}{G} \sum_{j=1}^{G} r_j \right) \\
-&= \sum_{i=1}^{G} r_i - \sum_{i=1}^{G} \frac{1}{G} \sum_{j=1}^{G} r_j \\
-&= \sum_{i=1}^{G} r_i - G \cdot \frac{1}{G} \sum_{j=1}^{G} r_j \\
-&= \sum_{i=1}^{G} r_i - \sum_{j=1}^{G} r_j \\
-&= 0
-\end{aligned}
-$$ {#eq:sc_group_centering}
-
-#### Centering the Score
-
-<!-- TODO -->
-
-$$
-\tilde{\boldsymbol{\xi}}_{a_t} = \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}}
-$$ {#eq:sc_centered_score}
-
-<!-- TODO -->
-
-$$
-\begin{aligned}
-\mathbb{E}_{\text{sampler}} \left[ \tilde{\boldsymbol{\xi}}_{a_t} \right] &= \mathbb{E}_{\text{sampler}} \left[ \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}} \right] \\
-&= \mathbb{E}_{\text{sampler}} \left[ \boldsymbol{\xi}_{a_t} \right] - \mathbb{E}_{\text{sampler}} \left[ \bar{\boldsymbol{\xi}} \right] \\
-&= \mathbb{E}_{\text{sampler}} \left[ \boldsymbol{\xi}_{a_t} \right] - \bar{\boldsymbol{\xi}} \\
-&= \bar{\boldsymbol{\xi}} - \bar{\boldsymbol{\xi}} \\
-&= \mathbf{0}
-\end{aligned}
-$$ {#eq:sc_centered_mean}
-
-<!-- TODO -->
-
-$$
-\begin{aligned}
-\text{Cov}(X, \mathbf{Y} - \mathbf{c}) &= \mathbb{E}\left[ X (\mathbf{Y} - \mathbf{c}) \right] - \mathbb{E}[X] \, \mathbb{E}[\mathbf{Y} - \mathbf{c}] \\
-&= \mathbb{E}\left[ X \mathbf{Y} - X \mathbf{c} \right] - \mathbb{E}[X] \left( \mathbb{E}[\mathbf{Y}] - \mathbf{c} \right) \\
-&= \mathbb{E}[X \mathbf{Y}] - \mathbb{E}[X] \, \mathbf{c} - \mathbb{E}[X] \, \mathbb{E}[\mathbf{Y}] + \mathbb{E}[X] \, \mathbf{c} \\
-&= \mathbb{E}[X \mathbf{Y}] - \mathbb{E}[X] \, \mathbb{E}[\mathbf{Y}] \\
-&= \text{Cov}(X, \mathbf{Y})
-\end{aligned}
-$$ {#eq:sc_cov_shift}
-
-<!-- TODO -->
-
-$$
-\begin{aligned}
-\mathbb{E}_{\text{sampler}} \left[ A_t \, \tilde{\boldsymbol{\xi}}_{a_t} \right] &= \mathbb{E}_{\text{sampler}}[A_t] \, \mathbb{E}_{\text{sampler}}[\tilde{\boldsymbol{\xi}}_{a_t}] + \text{Cov}_{\text{sampler}}(A_t, \tilde{\boldsymbol{\xi}}_{a_t}) \\
-&= \mathbb{E}_{\text{sampler}}[A_t] \cdot \mathbf{0} + \text{Cov}_{\text{sampler}}(A_t, \tilde{\boldsymbol{\xi}}_{a_t}) \\
-&= \text{Cov}_{\text{sampler}}(A_t, \tilde{\boldsymbol{\xi}}_{a_t}) \\
-&= \text{Cov}_{\text{sampler}}(A_t, \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}}) \\
+\tilde{\boldsymbol{\xi}}_{a_t} &= \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}} \\
+\mathbb{E}_{\text{sampler}} \left[ A_t \, \tilde{\boldsymbol{\xi}}_{a_t} \right] &= \mathbb{E}_{\text{sampler}}[A_t] \left( \bar{\boldsymbol{\xi}} - \bar{\boldsymbol{\xi}} \right) + \text{Cov}_{\text{sampler}}(A_t, \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}}) \\
 &= \text{Cov}_{\text{sampler}}(A_t, \boldsymbol{\xi}_{a_t})
 \end{aligned}
-$$ {#eq:sc_update}
-
-<!-- TODO -->
-
-$$
-\mathbb{E}_{\text{learner}} \left[ A_t \, \boldsymbol{\xi}_{a_t} \right] = \text{Cov}_{\text{learner}}(A_t, \boldsymbol{\xi}_{a_t}), \qquad \mathbb{E}_{\text{sampler}} \left[ A_t \, \tilde{\boldsymbol{\xi}}_{a_t} \right] = \text{Cov}_{\text{sampler}}(A_t, \boldsymbol{\xi}_{a_t})
-$$ {#eq:sc_compare}
-
-<!-- TODO -->
-
-$$
-A_t \, \tilde{\boldsymbol{\xi}}_{a_t} = A_t \, \boldsymbol{\xi}_{a_t} - A_t \, \bar{\boldsymbol{\xi}}
-$$ {#eq:sc_additive}
-
-#### Comparison to Importance Sampling
-
-<!-- TODO -->
-
-$$
-\rho^{\text{learner}}_v = \frac{\pi^{\text{learner}}_v}{\pi^{\text{sampler}}_v}, \qquad \tilde{\rho}^{\text{learner}}_v = \min\left( \rho^{\text{learner}}_v, \, C \right)
-$$ {#eq:sc_is_ratio}
+$$ {#eq:sc_centered}
 
 <!-- TODO -->
 
 $$
 \begin{aligned}
-\mathbb{E}_{\text{sampler}} \left[ \rho^{\text{learner}}_{a_t} \, \boldsymbol{\xi}_{a_t} \right] &= \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, \rho^{\text{learner}}_v \, \boldsymbol{\xi}_v \\
-&= \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, \frac{\pi^{\text{learner}}_v}{\pi^{\text{sampler}}_v} \, \boldsymbol{\xi}_v \\
-&= \sum_{v \in \mathcal{V}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v \\
-&= \mathbf{0}
+\ell_t &= -A_t \left( \log \pi^{\text{learner}}_{a_t} - \sum_{v \in \mathcal{V}} \text{sg}\left( \pi^{\text{sampler}}_v \right) \log \pi^{\text{learner}}_v \right) \\
+-\nabla_\theta \ell_t &= A_t \left( \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}} \right) = A_t \, \tilde{\boldsymbol{\xi}}_{a_t}
 \end{aligned}
-$$ {#eq:sc_is_cancels}
-
-<!-- TODO -->
-
-$$
-\mathcal{V}_{>C} = \left\{ v \in \mathcal{V} : \rho^{\text{learner}}_v > C \right\}
-$$ {#eq:sc_tis_capped_set}
-
-<!-- TODO -->
-
-$$
-\begin{aligned}
-\mathbb{E}_{\text{sampler}} \left[ \tilde{\rho}^{\text{learner}}_{a_t} \, \boldsymbol{\xi}_{a_t} \right] &= \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, \min\left( \rho^{\text{learner}}_v, \, C \right) \boldsymbol{\xi}_v \\
-&= \sum_{v \in \mathcal{V} \setminus \mathcal{V}_{>C}} \pi^{\text{sampler}}_v \, \rho^{\text{learner}}_v \, \boldsymbol{\xi}_v + \sum_{v \in \mathcal{V}_{>C}} \pi^{\text{sampler}}_v \, C \, \boldsymbol{\xi}_v \\
-&= \sum_{v \in \mathcal{V} \setminus \mathcal{V}_{>C}} \pi^{\text{sampler}}_v \, \frac{\pi^{\text{learner}}_v}{\pi^{\text{sampler}}_v} \, \boldsymbol{\xi}_v + C \sum_{v \in \mathcal{V}_{>C}} \pi^{\text{sampler}}_v \, \boldsymbol{\xi}_v \\
-&= \sum_{v \in \mathcal{V} \setminus \mathcal{V}_{>C}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v + C \sum_{v \in \mathcal{V}_{>C}} \pi^{\text{sampler}}_v \, \boldsymbol{\xi}_v \\
-&= \left( \sum_{v \in \mathcal{V}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v - \sum_{v \in \mathcal{V}_{>C}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v \right) + C \sum_{v \in \mathcal{V}_{>C}} \pi^{\text{sampler}}_v \, \boldsymbol{\xi}_v \\
-&= \left( \mathbf{0} - \sum_{v \in \mathcal{V}_{>C}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v \right) + C \sum_{v \in \mathcal{V}_{>C}} \pi^{\text{sampler}}_v \, \boldsymbol{\xi}_v \\
-&= \sum_{v \in \mathcal{V}_{>C}} \left( C \, \pi^{\text{sampler}}_v - \pi^{\text{learner}}_v \right) \boldsymbol{\xi}_v
-\end{aligned}
-$$ {#eq:sc_tis_drift}
-
-#### Implementation
-
-<!-- TODO -->
-
-$$
-\ell_t = -A_t \left( \log \pi^{\text{learner}}_{a_t} - \sum_{v \in \mathcal{V}} \text{sg}\left( \pi^{\text{sampler}}_v \right) \log \pi^{\text{learner}}_v \right)
 $$ {#eq:sc_loss}
 
 <!-- TODO -->
-
-$$
-\begin{aligned}
--\nabla_\theta \ell_t &= \nabla_\theta \left[ A_t \left( \log \pi^{\text{learner}}_{a_t} - \sum_{v \in \mathcal{V}} \text{sg}\left( \pi^{\text{sampler}}_v \right) \log \pi^{\text{learner}}_v \right) \right] \\
-&= A_t \left( \nabla_\theta \log \pi^{\text{learner}}_{a_t} - \nabla_\theta \sum_{v \in \mathcal{V}} \text{sg}\left( \pi^{\text{sampler}}_v \right) \log \pi^{\text{learner}}_v \right) \\
-&= A_t \left( \nabla_\theta \log \pi^{\text{learner}}_{a_t} - \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, \nabla_\theta \log \pi^{\text{learner}}_v \right) \\
-&= A_t \left( \boldsymbol{\xi}_{a_t} - \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, \boldsymbol{\xi}_v \right) \\
-&= A_t \left( \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}} \right) \\
-&= A_t \, \tilde{\boldsymbol{\xi}}_{a_t}
-\end{aligned}
-$$ {#eq:sc_loss_grad}
-
-<!-- TODO -->
-
-$$
-\hat{\pi}^{\text{sampler}}_v = \begin{cases} \pi^{\text{sampler}}_v & v \in \mathcal{H} \\ \kappa \, \pi^{\text{learner}}_v & v \in \mathcal{V} \setminus \mathcal{H} \end{cases}, \qquad \kappa = \frac{1 - \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v}{1 - \sum_{v \in \mathcal{H}} \pi^{\text{learner}}_v}, \qquad |\mathcal{H}| = k
-$$ {#eq:sc_tail_model}
-
-<!-- TODO -->
-
-$$
-\begin{aligned}
-\sum_{v \in \mathcal{V}} \hat{\pi}^{\text{sampler}}_v &= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v + \sum_{v \in \mathcal{V} \setminus \mathcal{H}} \kappa \, \pi^{\text{learner}}_v \\
-&= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v + \kappa \sum_{v \in \mathcal{V} \setminus \mathcal{H}} \pi^{\text{learner}}_v \\
-&= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v + \kappa \left( 1 - \sum_{v \in \mathcal{H}} \pi^{\text{learner}}_v \right) \\
-&= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v + \frac{1 - \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v}{1 - \sum_{v \in \mathcal{H}} \pi^{\text{learner}}_v} \left( 1 - \sum_{v \in \mathcal{H}} \pi^{\text{learner}}_v \right) \\
-&= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v + 1 - \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v \\
-&= 1
-\end{aligned}
-$$ {#eq:sc_tail_normalized}
-
-<!-- TODO -->
-
-$$
-\begin{aligned}
-\mathbb{E}_{v \sim \hat{\pi}^{\text{sampler}}} \left[ \boldsymbol{\xi}_v \right] &= \sum_{v \in \mathcal{V}} \hat{\pi}^{\text{sampler}}_v \, \boldsymbol{\xi}_v \\
-&= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v \, \boldsymbol{\xi}_v + \sum_{v \in \mathcal{V} \setminus \mathcal{H}} \kappa \, \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v \\
-&= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v \, \boldsymbol{\xi}_v + \kappa \sum_{v \in \mathcal{V} \setminus \mathcal{H}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v \\
-&= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v \, \boldsymbol{\xi}_v + \kappa \left( \sum_{v \in \mathcal{V}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v - \sum_{v \in \mathcal{H}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v \right) \\
-&= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v \, \boldsymbol{\xi}_v + \kappa \left( \mathbf{0} - \sum_{v \in \mathcal{H}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v \right) \\
-&= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v \, \boldsymbol{\xi}_v - \sum_{v \in \mathcal{H}} \kappa \, \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v \\
-&= \sum_{v \in \mathcal{H}} \left( \pi^{\text{sampler}}_v - \kappa \, \pi^{\text{learner}}_v \right) \boldsymbol{\xi}_v
-\end{aligned}
-$$ {#eq:sc_topk}
-
-<!-- TODO -->
-
-$$
-\ell_t = -A_t \left( \log \pi^{\text{learner}}_{a_t} - \sum_{v \in \mathcal{H}} \text{sg}\left( \pi^{\text{sampler}}_v - \kappa \, \pi^{\text{learner}}_v \right) \log \pi^{\text{learner}}_v \right)
-$$ {#eq:sc_loss_topk}
-
-#### Composing with Importance Sampling
-
-<!-- TODO -->
-
-$$
-\begin{aligned}
-w_v &= f\left( \rho^{\text{learner}}_v \right) \\[6pt]
-f_{\text{SC}}(\rho) &= 1 \\
-f_{\text{IS}}(\rho) &= \rho \\
-f_{\text{TIS}}(\rho) &= \min(\rho, \, C) \\
-f_{\text{MIS}}(\rho) &= \begin{cases} \rho & 0.5 \leq \rho \leq 5 \\ 0 & \text{otherwise} \end{cases}
-\end{aligned}
-$$ {#eq:sc_is_weights}
-
-<!-- TODO -->
-
-$$
-A_t \left( w_{a_t} \, \boldsymbol{\xi}_{a_t} - \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, w_v \, \boldsymbol{\xi}_v \right)
-$$ {#eq:sc_is}
-
-<!-- TODO -->
-
-$$
-\begin{aligned}
-\mathbb{E}_{\text{sampler}} \left[ c \left( w_{a_t} \, \boldsymbol{\xi}_{a_t} - \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, w_v \, \boldsymbol{\xi}_v \right) \right] &= c \left( \mathbb{E}_{\text{sampler}} \left[ w_{a_t} \, \boldsymbol{\xi}_{a_t} \right] - \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, w_v \, \boldsymbol{\xi}_v \right) \\
-&= c \left( \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, w_v \, \boldsymbol{\xi}_v - \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, w_v \, \boldsymbol{\xi}_v \right) \\
-&= c \cdot \mathbf{0} \\
-&= \mathbf{0}
-\end{aligned}
-$$ {#eq:sc_is_constant}
-
-<!-- TODO -->
-
-$$
-\begin{aligned}
-\frac{\pi^{\text{learner}}_v}{\hat{\pi}^{\text{sampler}}_v} &= \frac{\pi^{\text{learner}}_v}{\kappa \, \pi^{\text{learner}}_v} = \frac{1}{\kappa}, \qquad v \in \mathcal{V} \setminus \mathcal{H} \\[6pt]
-\hat{w}_v &= \begin{cases} w_v & v \in \mathcal{H} \\ f(1/\kappa) & v \in \mathcal{V} \setminus \mathcal{H} \end{cases}
-\end{aligned}
-$$ {#eq:sc_is_tail_ratio}
-
-<!-- TODO -->
-
-$$
-\begin{aligned}
-\mathbb{E}_{v \sim \hat{\pi}^{\text{sampler}}} \left[ \hat{w}_v \, \boldsymbol{\xi}_v \right] &= \sum_{v \in \mathcal{V}} \hat{\pi}^{\text{sampler}}_v \, \hat{w}_v \, \boldsymbol{\xi}_v \\
-&= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v \, w_v \, \boldsymbol{\xi}_v + \sum_{v \in \mathcal{V} \setminus \mathcal{H}} \kappa \, \pi^{\text{learner}}_v \, f(1/\kappa) \, \boldsymbol{\xi}_v \\
-&= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v \, w_v \, \boldsymbol{\xi}_v + \kappa \, f(1/\kappa) \sum_{v \in \mathcal{V} \setminus \mathcal{H}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v \\
-&= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v \, w_v \, \boldsymbol{\xi}_v + \kappa \, f(1/\kappa) \left( \sum_{v \in \mathcal{V}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v - \sum_{v \in \mathcal{H}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v \right) \\
-&= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v \, w_v \, \boldsymbol{\xi}_v + \kappa \, f(1/\kappa) \left( \mathbf{0} - \sum_{v \in \mathcal{H}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v \right) \\
-&= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v \, w_v \, \boldsymbol{\xi}_v - \sum_{v \in \mathcal{H}} \kappa \, f(1/\kappa) \, \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v \\
-&= \sum_{v \in \mathcal{H}} \left( \pi^{\text{sampler}}_v \, w_v - \kappa \, f(1/\kappa) \, \pi^{\text{learner}}_v \right) \boldsymbol{\xi}_v
-\end{aligned}
-$$ {#eq:sc_is_topk}
-
-<!-- TODO -->
-
-$$
-\begin{aligned}
-& \sum_{v \in \mathcal{H}} \left( \pi^{\text{sampler}}_v \, f_{\text{SC}}(\rho^{\text{learner}}_v) - \kappa \, f_{\text{SC}}(1/\kappa) \, \pi^{\text{learner}}_v \right) \boldsymbol{\xi}_v \\
-&\qquad = \sum_{v \in \mathcal{H}} \left( \pi^{\text{sampler}}_v \cdot 1 - \kappa \cdot 1 \cdot \pi^{\text{learner}}_v \right) \boldsymbol{\xi}_v \\
-&\qquad = \sum_{v \in \mathcal{H}} \left( \pi^{\text{sampler}}_v - \kappa \, \pi^{\text{learner}}_v \right) \boldsymbol{\xi}_v
-\end{aligned}
-$$ {#eq:sc_is_check_sc}
-
-<!-- TODO -->
-
-$$
-\begin{aligned}
-& \sum_{v \in \mathcal{H}} \left( \pi^{\text{sampler}}_v \, f_{\text{IS}}(\rho^{\text{learner}}_v) - \kappa \, f_{\text{IS}}(1/\kappa) \, \pi^{\text{learner}}_v \right) \boldsymbol{\xi}_v \\
-&\qquad = \sum_{v \in \mathcal{H}} \left( \pi^{\text{sampler}}_v \, \frac{\pi^{\text{learner}}_v}{\pi^{\text{sampler}}_v} - \kappa \cdot \frac{1}{\kappa} \, \pi^{\text{learner}}_v \right) \boldsymbol{\xi}_v \\
-&\qquad = \sum_{v \in \mathcal{H}} \left( \pi^{\text{learner}}_v - \pi^{\text{learner}}_v \right) \boldsymbol{\xi}_v \\
-&\qquad = \mathbf{0}
-\end{aligned}
-$$ {#eq:sc_is_check_is}
-
-<!-- TODO -->
-
-$$
-\ell_t = -A_t \left( \text{sg}\left( w_{a_t} \right) \log \pi^{\text{learner}}_{a_t} - \sum_{v \in \mathcal{H}} \text{sg}\left( \pi^{\text{sampler}}_v \, w_v - \kappa \, f(1/\kappa) \, \pi^{\text{learner}}_v \right) \log \pi^{\text{learner}}_v \right)
-$$ {#eq:sc_loss_is_topk}
-
-<!-- TODO -->
-
 
 ### Example: PPO
 
