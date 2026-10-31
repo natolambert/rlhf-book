@@ -1123,6 +1123,25 @@ $$
 \end{aligned}
 $$ {#eq:sc_loss}
 
+<!-- TODO: mention the top-k approximation. Storing the sampler's full next-token distribution is too expensive (~608KB per token for Qwen3's 152K vocab in fp32), so the sampler logs only its top-k logprobs (k = 128 in the paper; k = 32 also matches full score centering). The tail is modeled as the learner's tail rescaled to the sampler's tail mass, which is `kappa` in the code below, so the centering term only needs the k head tokens. -->
+
+```python
+# Shapes: learner_vocab_logprobs (B*G, L, V); tokens (B*G, L)
+# sampler_topk_logprobs, sampler_topk_ids (B*G, L, k) are logged during generation
+learner_logprobs = learner_vocab_logprobs.gather(-1, tokens[..., None])[..., 0]  # (B*G, L)
+head_logprobs = learner_vocab_logprobs.gather(-1, sampler_topk_ids)               # (B*G, L, k)
+learner_head_probs = head_logprobs.exp()
+sampler_head_probs = sampler_topk_logprobs.exp()
+
+sampler_tail = (1 - sampler_head_probs.sum(-1)).clamp_min(1e-6)
+learner_tail = (1 - learner_head_probs.sum(-1)).clamp_min(1e-6)
+kappa = sampler_tail / learner_tail                                                # tail-mass ratio
+coef = (sampler_head_probs - kappa[..., None] * learner_head_probs).detach()
+centering = (coef * head_logprobs).sum(-1)                                         # (B*G, L)
+
+per_token_pg_loss = -advantages * (learner_logprobs - centering)
+```
+
 <!-- TODO -->
 
 | Method | Level | Stat | Low | High | Outside | Sign | Implementation notes |
