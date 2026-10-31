@@ -1067,20 +1067,6 @@ TIS for the learner–sampler ratio has been adopted across major open-source RL
 
 <!-- TODO -->
 
-| Method | Level | Stat | Low | High | Outside | Sign | Implementation notes |
-| :------------------- | :------: | :-----: | :------: | :------: | :---------: | :-----: | :----------------------------- |
-| Naive IS [@williams1992simple] | `token` | `ratio` | 0 | $\infty$ | --- | `both` | --- |
-| TIS^V^ [@yao2025offpolicy], CISPO [@minimax2025minimax_m1] | `token` | `ratio` | 0 | 2.0 | `clip` | `both` | CISPO's dynamic sampling and length penalty omitted. |
-| MIS (IcePop)^P^ [@ringteam2025everystepevolves] | `token` | `ratio` | 0.5 | 5.0 | `drop` | `both` | Separate PPO surrogate between policy versions omitted. |
-| PPO^P,V^ [@schulman2017proximal] | `token` | `ratio` | 0.8 | 1.2 | `drop` | `ppo` | Dual clipping at 3 (verl default [@sheng2024hybridflow]). |
-| DAPO^P,V^ [@yu2025dapo] | `token` | `ratio` | 0.8 | 1.28 | `drop` | `ppo` | Dual clipping at 3; dynamic sampling and overlong reward penalty omitted. |
-| GSPO^P,V^ [@zheng2025gspo] | `seq` | `ratio` | 0.9997 | 1.0004 | `drop` | `ppo` | Token gradients summed rather than response-averaged; added dual clipping at 3. |
-| TOPR^P^ [@leroux2025topr] | `seq` | `ratio` | 0 | 1.0 | `clip` | `neg` | --- |
-| DPPO^P^ [@qi2026dppo] | `token` | `tv` | 0 | 0.2 | `drop` | `ppo` | No importance-ratio clipping. |
-Table: Importance-sampling-based correction methods, adapted from Marek and Ryabinin [@marek2026score]. {#tbl:is_methods}
-
-<!-- TODO -->
-
 $$
 \begin{aligned}
 \nabla_\theta J(\theta) &= \mathbb{E}_{a \sim \pi_\theta^{\text{learner}}(\cdot \mid s)} \left[ \sum_{t=1}^{|a|} A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] \\
@@ -1136,6 +1122,20 @@ $$
 -\nabla_\theta \ell_t &= A_t \left( \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}} \right) = A_t \, \tilde{\boldsymbol{\xi}}_{a_t}
 \end{aligned}
 $$ {#eq:sc_loss}
+
+<!-- TODO -->
+
+| Method | Level | Stat | Low | High | Outside | Sign | Implementation notes |
+| :------------------- | :------: | :-----: | :------: | :------: | :---------: | :-----: | :----------------------------- |
+| Naive IS [@williams1992simple] | `token` | `ratio` | 0 | $\infty$ | --- | `both` | --- |
+| TIS^V^ [@yao2025offpolicy], CISPO [@minimax2025minimax_m1] | `token` | `ratio` | 0 | 2.0 | `clip` | `both` | CISPO's dynamic sampling and length penalty omitted. |
+| MIS (IcePop)^P^ [@ringteam2025everystepevolves] | `token` | `ratio` | 0.5 | 5.0 | `drop` | `both` | Separate PPO surrogate between policy versions omitted. |
+| PPO^P,V^ [@schulman2017proximal] | `token` | `ratio` | 0.8 | 1.2 | `drop` | `ppo` | Dual clipping at 3 (verl default [@sheng2024hybridflow]). |
+| DAPO^P,V^ [@yu2025dapo] | `token` | `ratio` | 0.8 | 1.28 | `drop` | `ppo` | Dual clipping at 3; dynamic sampling and overlong reward penalty omitted. |
+| GSPO^P,V^ [@zheng2025gspo] | `seq` | `ratio` | 0.9997 | 1.0004 | `drop` | `ppo` | Token gradients summed rather than response-averaged; added dual clipping at 3. |
+| TOPR^P^ [@leroux2025topr] | `seq` | `ratio` | 0 | 1.0 | `clip` | `neg` | --- |
+| DPPO^P^ [@qi2026dppo] | `token` | `tv` | 0 | 0.2 | `drop` | `ppo` | No importance-ratio clipping. |
+Table: Importance-sampling-based correction methods, adapted from Marek and Ryabinin [@marek2026score]. {#tbl:is_methods}
 
 <!-- TODO -->
 
