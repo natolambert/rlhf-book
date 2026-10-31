@@ -643,7 +643,7 @@ where $p$ is the target distribution, $q$ is the sampling distribution, and $\fr
 In policy gradient methods, $p = \pi_\theta$ is the current policy we want to optimize and $q = \pi_{\theta_{\text{old}}}$ is the policy that generated the training data.
 This allows us to reweight samples collected under $\pi_{\theta_{\text{old}}}$ to estimate gradients for $\pi_\theta$, enabling multiple gradient steps per batch of rollouts.
 
-This distribution mismatch arises in two common scenarios: (1) taking multiple gradient steps on a single batch, where $\pi_\theta$ drifts from $\pi_{\theta_{\text{old}}}$ after each update, and (2) in asynchronous training systems where the inference backend (e.g., vLLM) and training backend (e.g., FSDP) may have different model weights due to synchronization delays (see the Asynchronicity section later in this chapter, which emerged particularly with the focus on RL for verifiable rewards, but is also used in RLHF setups).
+This distribution mismatch arises in two common scenarios: (1) taking multiple gradient steps on a single batch, where $\pi_\theta$ drifts from $\pi_{\theta_{\text{old}}}$ after each update, and (2) in asynchronous training systems where the inference backend (e.g., vLLM) and training backend (e.g., FSDP) may have different model weights due to synchronization delays (see the Asynchronous RL Systems section later in this chapter, which emerged particularly with the focus on RL for verifiable rewards, but is also used in RLHF setups).
 
 PPO and GRPO apply importance sampling at the token level and stabilize learning by clipping the *surrogate objective*.
 However, this approach has a subtle failure mode: when a token's importance ratio moves outside the clipping range $[1-\varepsilon, 1+\varepsilon]$, that token receives zero gradient.
@@ -740,7 +740,7 @@ $$\begin{aligned}
 \textbf{REINFORCE:}\quad & -\frac{1}{T}\sum_{t=1}^{T}\log \pi_\theta(a_t\mid s_t)\,\big(G_t - b(s_t)\big) \\[6pt]
 \textbf{RLOO:}\quad & -\frac{1}{K}\sum_{i=1}^{K}\sum_t \log \pi_\theta(a_{i,t}\mid s_{i,t})\left(R_i-\frac{1}{K-1}\sum_{j\neq i}R_j\right) \\[6pt]
 \textbf{CISPO:}\quad & -\sum_{i,t} \mathrm{sg}(\hat{\rho}_{i,t})\, A_{i,t} \log \pi_\theta(a_{i,t}\mid s_{i,t}) \\
-& \quad \hat{\rho}_{i,t} = \mathrm{clip}(\rho_{i,t},\, 1-\varepsilon,\, 1+\varepsilon) \\[6pt]
+& \quad \hat{\rho}_{i,t} = \mathrm{clip}(\rho_{i,t},\, 1-\varepsilon_{\text{low}},\, 1+\varepsilon_{\text{high}}) \\[6pt]
 \textbf{PPO:}\quad & -\frac{1}{T}\sum_{t=1}^{T}\min\!\big(\rho_t A_t,\ \mathrm{clip}(\rho_t,1-\varepsilon,1+\varepsilon)\, A_t\big) \\
 & \quad \rho_t = \frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)} \\[6pt]
 \textbf{GRPO:}\quad & -\frac{1}{G}\sum_{i=1}^{G}\min\!\big(\rho_i A_i,\ \mathrm{clip}(\rho_i,1-\varepsilon,1+\varepsilon)\, A_i\big) \\
@@ -1009,7 +1009,7 @@ Truncated importance sampling (TIS) is a crucial tool used to stabilize training
 Importance sampling is a correction that reweights samples drawn from one distribution to estimate expectations under another (as introduced in @eq:IS_identity).
 Truncated importance sampling [@ionides2008truncated] caps these weights with $\min(\rho, C)$ for some constant $C$, trading a small bias for bounded variance in the policy gradient.
 
-This is an importance-sampling correction applied to the policy gradient, but unlike the bilateral clipping in PPO and CISPO (which constrains the ratio near 1), TIS uses a one-sided upper cap: the ratio can fall freely below 1, but is capped at $C$ to prevent extreme upweighting.
+This is an importance-sampling correction applied to the policy gradient, but unlike the bilateral clipping in PPO (which constrains the ratio near 1), TIS uses a one-sided upper cap: the ratio can fall freely below 1, but is capped at $C$ to prevent extreme upweighting.
 In all of PPO, GRPO, CISPO (and related algorithms), the ratio $\rho_t^{\text{policy}} = \pi_\theta(a_t \mid s) / \pi_{\theta_{\text{old}}}(a_t \mid s)$ corrects for policy drift across multiple gradient steps within one RL batch.
 As we shift to real-world RL frameworks, centered around the idea of asynchronicity in the previous subsection, there can be even larger sources of numerical differences (that also require the numerical correction of importance sampling).
 Even when the sampler and learner share identical parameters $\theta$, their effective token distributions can differ because the inference engine (e.g., vLLM) and training framework (e.g., FSDP) use different kernels, precision, and parallelism strategies [@yao2025offpolicy].
@@ -1025,7 +1025,7 @@ How they combine depends on the algorithm:
 #### REINFORCE with TIS (Single Gradient Step)
 
 There is no policy drift ($\pi_\theta = \pi_{\theta_\text{old}}$), so the only mismatch is between the learner and sampler.
-Here $\pi_{\theta_\text{old}} = \pi_\text{gen}$, and TIS directly corrects the learner–sampler gap:
+Here $\pi_{\theta_\text{old}} = \pi_\theta^{\text{sampler}}$, and TIS directly corrects the learner–sampler gap:
 
 $$
 \nabla_\theta J \approx \mathbb{E}_{a \sim \pi_\theta^{\text{sampler}}} \left[ \tilde{\rho}_t^{\text{learner}} \cdot A_t \cdot \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right].
@@ -1034,13 +1034,13 @@ $$ {#eq:reinforce_tis}
 #### PPO/GRPO with TIS (Multiple Gradient Steps)
 
 Now both ratios are active.
-In careful implementations, the "old logprobs" in the policy ratio are recomputed on the learner (the GSPO paper discusses this), so the policy ratio $\rho_t^{\text{policy}} = \pi_\theta^{\text{learner}} / \pi_{\theta_\text{old}}^{\text{learner}}$ captures pure policy drift, while $\tilde{\rho}_t^{\text{learner}} = \min(\pi_{\theta_\text{old}}^{\text{learner}} / \pi_{\theta_\text{old}}^{\text{sampler}},\; C)$ separately corrects the backend mismatch at the generation checkpoint:
+In careful implementations, the "old logprobs" in the policy ratio are recomputed on the learner (the GSPO paper discusses this [@zheng2025gspo]), so the policy ratio $\rho_t^{\text{policy}} = \pi_\theta^{\text{learner}} / \pi_{\theta_\text{old}}^{\text{learner}}$ captures pure policy drift, while $\tilde{\rho}_t^{\text{learner}} = \min(\pi_{\theta_\text{old}}^{\text{learner}} / \pi_{\theta_\text{old}}^{\text{sampler}},\; C)$ separately corrects the backend mismatch at the generation checkpoint:
 
 $$
 J_{\text{PPO+TIS}}(\theta) = \mathbb{E}\left[ \min\!\left( \rho_t^{\text{policy}}\, A_t,\; \text{clip}\!\left(\rho_t^{\text{policy}}, 1-\varepsilon, 1+\varepsilon\right) A_t \right) \cdot \tilde{\rho}_t^{\text{learner}} \right].
 $$ {#eq:ppo_tis}
 
-Here $\pi_{\theta_\text{old}} \neq \pi_\text{gen}$: the old logprobs come from the learner, not the sampler.
+Here $\pi_{\theta_\text{old}} \neq \pi_{\theta_\text{old}}^{\text{sampler}}$: the old logprobs come from the learner, not the sampler.
 If a framework skips this recomputation and uses the sampler logprobs directly as $\pi_{\theta_\text{old}}$, the policy ratio already captures the backend mismatch and no separate TIS correction is needed — but the clip then operates on a noisier ratio that starts away from 1.0 even before any gradient steps.
 This is the "your framework secretly brings you off-policy RL" observation from Yao et al. [-@yao2025offpolicy].
 
@@ -1063,6 +1063,100 @@ In practice, the bookkeeping around these logprobs — storing sampler logprobs 
 Unlike GSPO, this correction is token-level because it addresses token-level numerical mismatch rather than sequence-level reward granularity.
 TIS for the learner–sampler ratio has been adopted across major open-source RL frameworks (VeRL, TRL, OpenRLHF, SkyRL, OAT, and Open Instruct, which uses $C = 2$), and becomes increasingly important for long reasoning traces (Chapter 7), where small per-token differences compound over thousands of generated tokens.
 
+### Score Centering
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+\nabla_\theta J(\theta) &= \mathbb{E}_{a \sim \pi_\theta^{\text{learner}}(\cdot \mid s)} \left[ \sum_{t=1}^{|a|} A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] \\
+\hat{g} &= \mathbb{E}_{a \sim \pi_\theta^{\text{sampler}}(\cdot \mid s)} \left[ \sum_{t=1}^{|a|} A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] \\
+&= \sum_{t} \mathbb{E}_{a_{<t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s)} \left[ \mathbb{E}_{a_{\geq t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s, a_{<t})} \left[ A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] \right]
+\end{aligned}
+$$ {#eq:sc_policy_gradient}
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+\pi^{\text{learner}}_v &= \pi_\theta^{\text{learner}}(v \mid s, a_{<t}), \qquad \pi^{\text{sampler}}_v = \pi_\theta^{\text{sampler}}(v \mid s, a_{<t}) \\
+\boldsymbol{\xi}_v &= \nabla_\theta \log \pi^{\text{learner}}_v \\
+\mathbb{E}_{\text{sampler}} \left[ A_t \, \boldsymbol{\xi}_{a_t} \right] &= \mathbb{E}_{a_{\geq t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s, a_{<t})} \left[ A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right]
+\end{aligned}
+$$ {#eq:sc_score}
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+\mathbb{E}_{\text{learner}} \left[ \boldsymbol{\xi}_{a_t} \right] &= \sum_{v \in \mathcal{V}} \pi^{\text{learner}}_v \, \nabla_\theta \log \pi^{\text{learner}}_v = \sum_{v \in \mathcal{V}} \nabla_\theta \pi^{\text{learner}}_v \\
+&= \nabla_\theta \sum_{v \in \mathcal{V}} \pi^{\text{learner}}_v = \nabla_\theta 1 = \mathbf{0} \\
+\bar{\boldsymbol{\xi}} = \mathbb{E}_{\text{sampler}} \left[ \boldsymbol{\xi}_{a_t} \right] &= \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, \nabla_\theta \log \pi^{\text{learner}}_v
+\end{aligned}
+$$ {#eq:sc_expected_score}
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+\mathbb{E}_{\text{learner}} \left[ A_t \, \boldsymbol{\xi}_{a_t} \right] &= \mathbb{E}_{\text{learner}}[A_t] \cdot \mathbf{0} + \text{Cov}_{\text{learner}}(A_t, \boldsymbol{\xi}_{a_t}) \\
+\mathbb{E}_{\text{sampler}} \left[ A_t \, \boldsymbol{\xi}_{a_t} \right] &= \mathbb{E}_{\text{sampler}}[A_t] \, \bar{\boldsymbol{\xi}} + \text{Cov}_{\text{sampler}}(A_t, \boldsymbol{\xi}_{a_t})
+\end{aligned}
+$$ {#eq:sc_drift}
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+\tilde{\boldsymbol{\xi}}_{a_t} &= \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}} \\
+\mathbb{E}_{\text{sampler}} \left[ A_t \, \tilde{\boldsymbol{\xi}}_{a_t} \right] &= \mathbb{E}_{\text{sampler}}[A_t] \left( \bar{\boldsymbol{\xi}} - \bar{\boldsymbol{\xi}} \right) + \text{Cov}_{\text{sampler}}(A_t, \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}}) \\
+&= \text{Cov}_{\text{sampler}}(A_t, \boldsymbol{\xi}_{a_t})
+\end{aligned}
+$$ {#eq:sc_centered}
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+\ell_t &= -A_t \left( \log \pi^{\text{learner}}_{a_t} - \sum_{v \in \mathcal{V}} \text{sg}\left( \pi^{\text{sampler}}_v \right) \log \pi^{\text{learner}}_v \right) \\
+-\nabla_\theta \ell_t &= A_t \left( \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}} \right) = A_t \, \tilde{\boldsymbol{\xi}}_{a_t}
+\end{aligned}
+$$ {#eq:sc_loss}
+
+<!-- TODO: mention the top-k approximation. Storing the sampler's full next-token distribution is too expensive (~608KB per token for Qwen3's 152K vocab in fp32), so the sampler logs only its top-k logprobs (k = 128 in the paper; k = 32 also matches full score centering). The tail is modeled as the learner's tail rescaled to the sampler's tail mass, which is `kappa` in the code below, so the centering term only needs the k head tokens. -->
+
+```python
+# Shapes: learner_vocab_logprobs (B*G, L, V); tokens (B*G, L)
+# sampler_topk_logprobs, sampler_topk_ids (B*G, L, k) are logged during generation
+learner_logprobs = learner_vocab_logprobs.gather(-1, tokens[..., None])[..., 0]  # (B*G, L)
+head_logprobs = learner_vocab_logprobs.gather(-1, sampler_topk_ids)               # (B*G, L, k)
+learner_head_probs = head_logprobs.exp()
+sampler_head_probs = sampler_topk_logprobs.exp()
+
+sampler_tail = (1 - sampler_head_probs.sum(-1)).clamp_min(1e-6)
+learner_tail = (1 - learner_head_probs.sum(-1)).clamp_min(1e-6)
+kappa = sampler_tail / learner_tail                                                # tail-mass ratio
+coef = (sampler_head_probs - kappa[..., None] * learner_head_probs).detach()
+centering = (coef * head_logprobs).sum(-1)                                         # (B*G, L)
+
+per_token_pg_loss = -advantages * (learner_logprobs - centering)
+```
+
+<!-- TODO -->
+
+| Method | Level | Stat | Low | High | Outside | Sign | Implementation notes |
+| :------------------- | :------: | :-----: | :------: | :------: | :---------: | :-----: | :----------------------------- |
+| Naive IS [@williams1992simple] | `token` | `ratio` | 0 | $\infty$ | --- | `both` | --- |
+| TIS^V^ [@yao2025offpolicy], CISPO [@minimax2025minimax_m1] | `token` | `ratio` | 0 | 2.0 | `clip` | `both` | CISPO's dynamic sampling and length penalty omitted. |
+| MIS (IcePop)^P^ [@ringteam2025everystepevolves] | `token` | `ratio` | 0.5 | 5.0 | `drop` | `both` | Separate PPO surrogate between policy versions omitted. |
+| PPO^P,V^ [@schulman2017proximal] | `token` | `ratio` | 0.8 | 1.2 | `drop` | `ppo` | Dual clipping at 3 (verl default [@sheng2024hybridflow]). |
+| DAPO^P,V^ [@yu2025dapo] | `token` | `ratio` | 0.8 | 1.28 | `drop` | `ppo` | Dual clipping at 3; dynamic sampling and overlong reward penalty omitted. |
+| GSPO^P,V^ [@zheng2025gspo] | `seq` | `ratio` | 0.9997 | 1.0004 | `drop` | `ppo` | Token gradients summed rather than response-averaged; added dual clipping at 3. |
+| TOPR^P^ [@leroux2025topr] | `seq` | `ratio` | 0 | 1.0 | `clip` | `neg` | --- |
+| DPPO^P^ [@qi2026dppo] | `token` | `tv` | 0 | 0.2 | `drop` | `ppo` | No importance-ratio clipping. |
+Table: Importance-sampling-based correction methods, adapted from Marek and Ryabinin [@marek2026score]. Superscripts mark the source of each method's bounds: ^P^ is the default from the method's original paper and ^V^ is the verl default [@sheng2024hybridflow]. {#tbl:is_methods}
+
+<!-- TODO -->
 
 ### Example: PPO
 
