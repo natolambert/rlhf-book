@@ -643,7 +643,7 @@ where $p$ is the target distribution, $q$ is the sampling distribution, and $\fr
 In policy gradient methods, $p = \pi_\theta$ is the current policy we want to optimize and $q = \pi_{\theta_{\text{old}}}$ is the policy that generated the training data.
 This allows us to reweight samples collected under $\pi_{\theta_{\text{old}}}$ to estimate gradients for $\pi_\theta$, enabling multiple gradient steps per batch of rollouts.
 
-This distribution mismatch arises in two common scenarios: (1) taking multiple gradient steps on a single batch, where $\pi_\theta$ drifts from $\pi_{\theta_{\text{old}}}$ after each update, and (2) in asynchronous training systems where the inference backend (e.g., vLLM) and training backend (e.g., FSDP) may have different model weights due to synchronization delays (see the Asynchronicity section later in this chapter, which emerged particularly with the focus on RL for verifiable rewards, but is also used in RLHF setups).
+This distribution mismatch arises in two common scenarios: (1) taking multiple gradient steps on a single batch, where $\pi_\theta$ drifts from $\pi_{\theta_{\text{old}}}$ after each update, and (2) in asynchronous training systems where the inference backend (e.g., vLLM) and training backend (e.g., FSDP) may have different model weights due to synchronization delays (see the Asynchronous RL Systems section later in this chapter, which emerged particularly with the focus on RL for verifiable rewards, but is also used in RLHF setups).
 
 PPO and GRPO apply importance sampling at the token level and stabilize learning by clipping the *surrogate objective*.
 However, this approach has a subtle failure mode: when a token's importance ratio moves outside the clipping range $[1-\varepsilon, 1+\varepsilon]$, that token receives zero gradient.
@@ -740,7 +740,7 @@ $$\begin{aligned}
 \textbf{REINFORCE:}\quad & -\frac{1}{T}\sum_{t=1}^{T}\log \pi_\theta(a_t\mid s_t)\,\big(G_t - b(s_t)\big) \\[6pt]
 \textbf{RLOO:}\quad & -\frac{1}{K}\sum_{i=1}^{K}\sum_t \log \pi_\theta(a_{i,t}\mid s_{i,t})\left(R_i-\frac{1}{K-1}\sum_{j\neq i}R_j\right) \\[6pt]
 \textbf{CISPO:}\quad & -\sum_{i,t} \mathrm{sg}(\hat{\rho}_{i,t})\, A_{i,t} \log \pi_\theta(a_{i,t}\mid s_{i,t}) \\
-& \quad \hat{\rho}_{i,t} = \mathrm{clip}(\rho_{i,t},\, 1-\varepsilon,\, 1+\varepsilon) \\[6pt]
+& \quad \hat{\rho}_{i,t} = \mathrm{clip}(\rho_{i,t},\, 1-\varepsilon_{\text{low}},\, 1+\varepsilon_{\text{high}}) \\[6pt]
 \textbf{PPO:}\quad & -\frac{1}{T}\sum_{t=1}^{T}\min\!\big(\rho_t A_t,\ \mathrm{clip}(\rho_t,1-\varepsilon,1+\varepsilon)\, A_t\big) \\
 & \quad \rho_t = \frac{\pi_\theta(a_t\mid s_t)}{\pi_{\theta_{\text{old}}}(a_t\mid s_t)} \\[6pt]
 \textbf{GRPO:}\quad & -\frac{1}{G}\sum_{i=1}^{G}\min\!\big(\rho_i A_i,\ \mathrm{clip}(\rho_i,1-\varepsilon,1+\varepsilon)\, A_i\big) \\
@@ -1009,7 +1009,7 @@ Truncated importance sampling (TIS) is a crucial tool used to stabilize training
 Importance sampling is a correction that reweights samples drawn from one distribution to estimate expectations under another (as introduced in @eq:IS_identity).
 Truncated importance sampling [@ionides2008truncated] caps these weights with $\min(\rho, C)$ for some constant $C$, trading a small bias for bounded variance in the policy gradient.
 
-This is an importance-sampling correction applied to the policy gradient, but unlike the bilateral clipping in PPO and CISPO (which constrains the ratio near 1), TIS uses a one-sided upper cap: the ratio can fall freely below 1, but is capped at $C$ to prevent extreme upweighting.
+This is an importance-sampling correction applied to the policy gradient, but unlike the bilateral clipping in PPO (which constrains the ratio near 1), TIS uses a one-sided upper cap: the ratio can fall freely below 1, but is capped at $C$ to prevent extreme upweighting.
 In all of PPO, GRPO, CISPO (and related algorithms), the ratio $\rho_t^{\text{policy}} = \pi_\theta(a_t \mid s) / \pi_{\theta_{\text{old}}}(a_t \mid s)$ corrects for policy drift across multiple gradient steps within one RL batch.
 As we shift to real-world RL frameworks, centered around the idea of asynchronicity in the previous subsection, there can be even larger sources of numerical differences (that also require the numerical correction of importance sampling).
 Even when the sampler and learner share identical parameters $\theta$, their effective token distributions can differ because the inference engine (e.g., vLLM) and training framework (e.g., FSDP) use different kernels, precision, and parallelism strategies [@yao2025offpolicy].
@@ -1025,7 +1025,7 @@ How they combine depends on the algorithm:
 #### REINFORCE with TIS (Single Gradient Step)
 
 There is no policy drift ($\pi_\theta = \pi_{\theta_\text{old}}$), so the only mismatch is between the learner and sampler.
-Here $\pi_{\theta_\text{old}} = \pi_\text{gen}$, and TIS directly corrects the learner–sampler gap:
+Here $\pi_{\theta_\text{old}} = \pi_\theta^{\text{sampler}}$, and TIS directly corrects the learner–sampler gap:
 
 $$
 \nabla_\theta J \approx \mathbb{E}_{a \sim \pi_\theta^{\text{sampler}}} \left[ \tilde{\rho}_t^{\text{learner}} \cdot A_t \cdot \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right].
@@ -1034,13 +1034,13 @@ $$ {#eq:reinforce_tis}
 #### PPO/GRPO with TIS (Multiple Gradient Steps)
 
 Now both ratios are active.
-In careful implementations, the "old logprobs" in the policy ratio are recomputed on the learner (the GSPO paper discusses this), so the policy ratio $\rho_t^{\text{policy}} = \pi_\theta^{\text{learner}} / \pi_{\theta_\text{old}}^{\text{learner}}$ captures pure policy drift, while $\tilde{\rho}_t^{\text{learner}} = \min(\pi_{\theta_\text{old}}^{\text{learner}} / \pi_{\theta_\text{old}}^{\text{sampler}},\; C)$ separately corrects the backend mismatch at the generation checkpoint:
+In careful implementations, the "old logprobs" in the policy ratio are recomputed on the learner (the GSPO paper discusses this [@zheng2025gspo]), so the policy ratio $\rho_t^{\text{policy}} = \pi_\theta^{\text{learner}} / \pi_{\theta_\text{old}}^{\text{learner}}$ captures pure policy drift, while $\tilde{\rho}_t^{\text{learner}} = \min(\pi_{\theta_\text{old}}^{\text{learner}} / \pi_{\theta_\text{old}}^{\text{sampler}},\; C)$ separately corrects the backend mismatch at the generation checkpoint:
 
 $$
 J_{\text{PPO+TIS}}(\theta) = \mathbb{E}\left[ \min\!\left( \rho_t^{\text{policy}}\, A_t,\; \text{clip}\!\left(\rho_t^{\text{policy}}, 1-\varepsilon, 1+\varepsilon\right) A_t \right) \cdot \tilde{\rho}_t^{\text{learner}} \right].
 $$ {#eq:ppo_tis}
 
-Here $\pi_{\theta_\text{old}} \neq \pi_\text{gen}$: the old logprobs come from the learner, not the sampler.
+Here $\pi_{\theta_\text{old}} \neq \pi_{\theta_\text{old}}^{\text{sampler}}$: the old logprobs come from the learner, not the sampler.
 If a framework skips this recomputation and uses the sampler logprobs directly as $\pi_{\theta_\text{old}}$, the policy ratio already captures the backend mismatch and no separate TIS correction is needed — but the clip then operates on a noisier ratio that starts away from 1.0 even before any gradient steps.
 This is the "your framework secretly brings you off-policy RL" observation from Yao et al. [-@yao2025offpolicy].
 
@@ -1062,6 +1062,445 @@ The $[-10, 10]$ clamp is only for numerical stability before exponentiation; the
 In practice, the bookkeeping around these logprobs — storing sampler logprobs from generation, recomputing learner logprobs at the old checkpoint, and tracking current logprobs during gradient steps — is a substantial part of the scaffolding in distributed RL frameworks.
 Unlike GSPO, this correction is token-level because it addresses token-level numerical mismatch rather than sequence-level reward granularity.
 TIS for the learner–sampler ratio has been adopted across major open-source RL frameworks (VeRL, TRL, OpenRLHF, SkyRL, OAT, and Open Instruct, which uses $C = 2$), and becomes increasingly important for long reasoning traces (Chapter 7), where small per-token differences compound over thousands of generated tokens.
+
+### Score Centering
+
+<!-- TODO -->
+
+| Method | Level | Stat | Low | High | Outside | Sign | Implementation notes |
+| :------------------- | :------: | :-----: | :------: | :------: | :---------: | :-----: | :----------------------------- |
+| Naive IS [@williams1992simple] | `token` | `ratio` | 0 | $\infty$ | --- | `both` | --- |
+| TIS^V^ [@yao2025offpolicy], CISPO [@minimax2025minimax_m1] | `token` | `ratio` | 0 | 2.0 | `clip` | `both` | CISPO's dynamic sampling and length penalty omitted. |
+| MIS (IcePop)^P^ [@ringteam2025everystepevolves] | `token` | `ratio` | 0.5 | 5.0 | `drop` | `both` | Separate PPO surrogate between policy versions omitted. |
+| PPO^P,V^ [@schulman2017proximal] | `token` | `ratio` | 0.8 | 1.2 | `drop` | `ppo` | Dual clipping at 3 (verl default [@sheng2024hybridflow]). |
+| DAPO^P,V^ [@yu2025dapo] | `token` | `ratio` | 0.8 | 1.28 | `drop` | `ppo` | Dual clipping at 3; dynamic sampling and overlong reward penalty omitted. |
+| GSPO^P,V^ [@zheng2025gspo] | `seq` | `ratio` | 0.9997 | 1.0004 | `drop` | `ppo` | Token gradients summed rather than response-averaged; added dual clipping at 3. |
+| TOPR^P^ [@leroux2025topr] | `seq` | `ratio` | 0 | 1.0 | `clip` | `neg` | --- |
+| DPPO^P^ [@qi2026dppo] | `token` | `tv` | 0 | 0.2 | `drop` | `ppo` | No importance-ratio clipping. |
+Table: Importance-sampling-based correction methods, adapted from Marek and Ryabinin [@marek2026score]. {#tbl:is_methods}
+
+#### The Policy Gradient Under Learner–Sampler Mismatch
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+\nabla_\theta J(\theta) &= \mathbb{E}_{a \sim \pi_\theta(\cdot \mid s)} \left[ \sum_{t=1}^{|a|} A_t \, \nabla_\theta \log \pi_\theta(a_t \mid s, a_{<t}) \right] \\
+&= \mathbb{E}_{a \sim \pi_\theta^{\text{learner}}(\cdot \mid s)} \left[ \sum_{t=1}^{|a|} A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right]
+\end{aligned}
+$$ {#eq:sc_pg_target}
+
+<!-- TODO -->
+
+$$
+\hat{g} = \mathbb{E}_{a \sim \pi_\theta^{\text{sampler}}(\cdot \mid s)} \left[ \sum_{t=1}^{|a|} A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right]
+$$ {#eq:sc_pg_mismatch}
+
+<!-- TODO -->
+
+$$
+m_t = \begin{cases} 1 & t \leq |a| \\ 0 & t > |a| \end{cases}
+$$ {#eq:sc_mask}
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+\hat{g} &= \mathbb{E}_{a \sim \pi_\theta^{\text{sampler}}(\cdot \mid s)} \left[ \sum_{t=1}^{|a|} A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] \\
+&= \mathbb{E}_{a \sim \pi_\theta^{\text{sampler}}(\cdot \mid s)} \left[ \sum_{t=1}^{T} m_t \, A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] \\
+&= \sum_{t=1}^{T} \mathbb{E}_{a \sim \pi_\theta^{\text{sampler}}(\cdot \mid s)} \left[ m_t \, A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] \\
+&= \sum_{t=1}^{T} \mathbb{E}_{a_{<t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s)} \left[ \mathbb{E}_{a_{\geq t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s, a_{<t})} \left[ m_t \, A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] \right] \\
+&= \sum_{t=1}^{T} \mathbb{E}_{a_{<t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s)} \left[ m_t \, \mathbb{E}_{a_{\geq t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s, a_{<t})} \left[ A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] \right]
+\end{aligned}
+$$ {#eq:sc_pg_prefix}
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+\pi^{\text{learner}}_v &= \pi_\theta^{\text{learner}}(v \mid s, a_{<t}), \qquad v \in \mathcal{V} \\
+\pi^{\text{sampler}}_v &= \pi_\theta^{\text{sampler}}(v \mid s, a_{<t}), \qquad v \in \mathcal{V} \\
+\boldsymbol{\xi}_v &= \nabla_\theta \log \pi^{\text{learner}}_v \\
+\mathbb{E}_{\text{learner}}[\,\cdot\,] &= \mathbb{E}_{a_{\geq t} \sim \pi_\theta^{\text{learner}}(\cdot \mid s, a_{<t})}[\,\cdot\,] \\
+\mathbb{E}_{\text{sampler}}[\,\cdot\,] &= \mathbb{E}_{a_{\geq t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s, a_{<t})}[\,\cdot\,]
+\end{aligned}
+$$ {#eq:sc_shorthand}
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+\mathbb{E}_{a_{\geq t} \sim \pi_\theta^{\text{learner}}(\cdot \mid s, a_{<t})} \left[ A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] &= \mathbb{E}_{\text{learner}} \left[ A_t \, \nabla_\theta \log \pi^{\text{learner}}_{a_t} \right] \\
+&= \mathbb{E}_{\text{learner}} \left[ A_t \, \boldsymbol{\xi}_{a_t} \right] \\[6pt]
+\mathbb{E}_{a_{\geq t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s, a_{<t})} \left[ A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] &= \mathbb{E}_{\text{sampler}} \left[ A_t \, \nabla_\theta \log \pi^{\text{learner}}_{a_t} \right] \\
+&= \mathbb{E}_{\text{sampler}} \left[ A_t \, \boldsymbol{\xi}_{a_t} \right]
+\end{aligned}
+$$ {#eq:sc_score_def}
+
+<!-- TODO -->
+
+| This book | Marek and Ryabinin [@marek2026score] |
+| :--- | :--- |
+| $\pi_\theta^{\text{learner}}$, $\pi_\theta^{\text{sampler}}$ | $p_\theta$, $q_\theta$ |
+| $a_t$ | $y_t$ |
+| $\pi^{\text{learner}}_v$, $\pi^{\text{sampler}}_v$ | $p_v$, $q_v$ |
+| $\boldsymbol{\xi}_v$ | $s_v$ |
+| $\bar{\boldsymbol{\xi}}$, $\tilde{\boldsymbol{\xi}}_{a_t}$ | $\bar{s}$, $\tilde{s}_{y_t}$ |
+| $A_t$ | $R$ |
+| $\rho^{\text{learner}}_v$ | $r_v$ |
+| $w_v$ | $w_v$ |
+| $\kappa$ | $\rho$ |
+| $\kappa \, f(1/\kappa)$ | $\alpha$ |
+| $\mathcal{H}$, $\mathcal{V} \setminus \mathcal{H}$ | $H$, $T$ |
+| $\text{sg}(\cdot)$ | $\text{sg}[\cdot]$ |
+Table: Notation in this section and in Marek and Ryabinin [@marek2026score]. {#tbl:sc_notation}
+
+#### The Expected Score
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+\mathbb{E}_{\text{learner}} \left[ \boldsymbol{\xi}_{a_t} \right] &= \sum_{v \in \mathcal{V}} \pi^{\text{learner}}_v \, \mathbb{E}_{a_{>t} \sim \pi_\theta^{\text{learner}}(\cdot \mid s, a_{<t}, v)} \left[ \boldsymbol{\xi}_v \right] \\
+&= \sum_{v \in \mathcal{V}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v \\
+&= \sum_{v \in \mathcal{V}} \pi^{\text{learner}}_v \, \nabla_\theta \log \pi^{\text{learner}}_v \\
+&= \sum_{v \in \mathcal{V}} \pi^{\text{learner}}_v \, \frac{\nabla_\theta \pi^{\text{learner}}_v}{\pi^{\text{learner}}_v} \\
+&= \sum_{v \in \mathcal{V}} \nabla_\theta \pi^{\text{learner}}_v \\
+&= \nabla_\theta \sum_{v \in \mathcal{V}} \pi^{\text{learner}}_v \\
+&= \nabla_\theta 1 \\
+&= \mathbf{0}
+\end{aligned}
+$$ {#eq:sc_score_zero}
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+\bar{\boldsymbol{\xi}} &= \mathbb{E}_{\text{sampler}} \left[ \boldsymbol{\xi}_{a_t} \right] \\
+&= \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, \mathbb{E}_{a_{>t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s, a_{<t}, v)} \left[ \boldsymbol{\xi}_v \right] \\
+&= \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, \boldsymbol{\xi}_v \\
+&= \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, \nabla_\theta \log \pi^{\text{learner}}_v \\
+&= \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, \frac{\nabla_\theta \pi^{\text{learner}}_v}{\pi^{\text{learner}}_v} \\
+&= \sum_{v \in \mathcal{V}} \frac{\pi^{\text{sampler}}_v}{\pi^{\text{learner}}_v} \, \nabla_\theta \pi^{\text{learner}}_v
+\end{aligned}
+$$ {#eq:sc_score_mismatch}
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+\pi^{\text{sampler}}_v = \pi^{\text{learner}}_v \;\; \forall v \in \mathcal{V} \implies \bar{\boldsymbol{\xi}} &= \sum_{v \in \mathcal{V}} \frac{\pi^{\text{learner}}_v}{\pi^{\text{learner}}_v} \, \nabla_\theta \pi^{\text{learner}}_v \\
+&= \sum_{v \in \mathcal{V}} \nabla_\theta \pi^{\text{learner}}_v \\
+&= \nabla_\theta \sum_{v \in \mathcal{V}} \pi^{\text{learner}}_v \\
+&= \mathbf{0}
+\end{aligned}
+$$ {#eq:sc_score_match}
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+\mathbb{E}_{\text{learner}} \left[ c \, \boldsymbol{\xi}_{a_t} \right] &= c \, \mathbb{E}_{\text{learner}} \left[ \boldsymbol{\xi}_{a_t} \right] \\
+&= c \cdot \mathbf{0} \\
+&= \mathbf{0} \\[6pt]
+\mathbb{E}_{\text{sampler}} \left[ c \, \boldsymbol{\xi}_{a_t} \right] &= c \, \mathbb{E}_{\text{sampler}} \left[ \boldsymbol{\xi}_{a_t} \right] \\
+&= c \, \bar{\boldsymbol{\xi}}
+\end{aligned}
+$$ {#eq:sc_constant_adv}
+
+#### Drift and Signal
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+\text{Cov}(X, \mathbf{Y}) &= \mathbb{E}\left[ (X - \mathbb{E}[X]) (\mathbf{Y} - \mathbb{E}[\mathbf{Y}]) \right] \\
+&= \mathbb{E}\left[ X \mathbf{Y} - X \, \mathbb{E}[\mathbf{Y}] - \mathbb{E}[X] \, \mathbf{Y} + \mathbb{E}[X] \, \mathbb{E}[\mathbf{Y}] \right] \\
+&= \mathbb{E}[X \mathbf{Y}] - \mathbb{E}\big[ X \, \mathbb{E}[\mathbf{Y}] \big] - \mathbb{E}\big[ \mathbb{E}[X] \, \mathbf{Y} \big] + \mathbb{E}\big[ \mathbb{E}[X] \, \mathbb{E}[\mathbf{Y}] \big] \\
+&= \mathbb{E}[X \mathbf{Y}] - \mathbb{E}[X] \, \mathbb{E}[\mathbf{Y}] - \mathbb{E}[X] \, \mathbb{E}[\mathbf{Y}] + \mathbb{E}[X] \, \mathbb{E}[\mathbf{Y}] \\
+&= \mathbb{E}[X \mathbf{Y}] - \mathbb{E}[X] \, \mathbb{E}[\mathbf{Y}] \\[6pt]
+\mathbb{E}[X \mathbf{Y}] &= \mathbb{E}[X] \, \mathbb{E}[\mathbf{Y}] + \text{Cov}(X, \mathbf{Y})
+\end{aligned}
+$$ {#eq:sc_cov_identity}
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+\mathbb{E}_{\text{sampler}} \left[ A_t \, \boldsymbol{\xi}_{a_t} \right] &= \mathbb{E}_{\text{sampler}}[A_t] \, \mathbb{E}_{\text{sampler}}[\boldsymbol{\xi}_{a_t}] + \text{Cov}_{\text{sampler}}(A_t, \boldsymbol{\xi}_{a_t}) \\
+&= \mathbb{E}_{\text{sampler}}[A_t] \, \bar{\boldsymbol{\xi}} + \text{Cov}_{\text{sampler}}(A_t, \boldsymbol{\xi}_{a_t})
+\end{aligned}
+$$ {#eq:sc_drift_signal}
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+\mathbb{E}_{\text{learner}} \left[ A_t \, \boldsymbol{\xi}_{a_t} \right] &= \mathbb{E}_{\text{learner}}[A_t] \, \mathbb{E}_{\text{learner}}[\boldsymbol{\xi}_{a_t}] + \text{Cov}_{\text{learner}}(A_t, \boldsymbol{\xi}_{a_t}) \\
+&= \mathbb{E}_{\text{learner}}[A_t] \cdot \mathbf{0} + \text{Cov}_{\text{learner}}(A_t, \boldsymbol{\xi}_{a_t}) \\
+&= \text{Cov}_{\text{learner}}(A_t, \boldsymbol{\xi}_{a_t})
+\end{aligned}
+$$ {#eq:sc_onpolicy_signal}
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+\nabla_\theta \left( - \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \log \pi^{\text{learner}}_v \right) &= - \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, \nabla_\theta \log \pi^{\text{learner}}_v \\
+&= - \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, \boldsymbol{\xi}_v \\
+&= - \bar{\boldsymbol{\xi}}
+\end{aligned}
+$$ {#eq:sc_drift_ce}
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+\sum_{i=1}^{G} \tilde{A}_i &= \sum_{i=1}^{G} \left( r_i - \frac{1}{G} \sum_{j=1}^{G} r_j \right) \\
+&= \sum_{i=1}^{G} r_i - \sum_{i=1}^{G} \frac{1}{G} \sum_{j=1}^{G} r_j \\
+&= \sum_{i=1}^{G} r_i - G \cdot \frac{1}{G} \sum_{j=1}^{G} r_j \\
+&= \sum_{i=1}^{G} r_i - \sum_{j=1}^{G} r_j \\
+&= 0
+\end{aligned}
+$$ {#eq:sc_group_centering}
+
+#### Centering the Score
+
+<!-- TODO -->
+
+$$
+\tilde{\boldsymbol{\xi}}_{a_t} = \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}}
+$$ {#eq:sc_centered_score}
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+\mathbb{E}_{\text{sampler}} \left[ \tilde{\boldsymbol{\xi}}_{a_t} \right] &= \mathbb{E}_{\text{sampler}} \left[ \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}} \right] \\
+&= \mathbb{E}_{\text{sampler}} \left[ \boldsymbol{\xi}_{a_t} \right] - \mathbb{E}_{\text{sampler}} \left[ \bar{\boldsymbol{\xi}} \right] \\
+&= \mathbb{E}_{\text{sampler}} \left[ \boldsymbol{\xi}_{a_t} \right] - \bar{\boldsymbol{\xi}} \\
+&= \bar{\boldsymbol{\xi}} - \bar{\boldsymbol{\xi}} \\
+&= \mathbf{0}
+\end{aligned}
+$$ {#eq:sc_centered_mean}
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+\text{Cov}(X, \mathbf{Y} - \mathbf{c}) &= \mathbb{E}\left[ X (\mathbf{Y} - \mathbf{c}) \right] - \mathbb{E}[X] \, \mathbb{E}[\mathbf{Y} - \mathbf{c}] \\
+&= \mathbb{E}\left[ X \mathbf{Y} - X \mathbf{c} \right] - \mathbb{E}[X] \left( \mathbb{E}[\mathbf{Y}] - \mathbf{c} \right) \\
+&= \mathbb{E}[X \mathbf{Y}] - \mathbb{E}[X] \, \mathbf{c} - \mathbb{E}[X] \, \mathbb{E}[\mathbf{Y}] + \mathbb{E}[X] \, \mathbf{c} \\
+&= \mathbb{E}[X \mathbf{Y}] - \mathbb{E}[X] \, \mathbb{E}[\mathbf{Y}] \\
+&= \text{Cov}(X, \mathbf{Y})
+\end{aligned}
+$$ {#eq:sc_cov_shift}
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+\mathbb{E}_{\text{sampler}} \left[ A_t \, \tilde{\boldsymbol{\xi}}_{a_t} \right] &= \mathbb{E}_{\text{sampler}}[A_t] \, \mathbb{E}_{\text{sampler}}[\tilde{\boldsymbol{\xi}}_{a_t}] + \text{Cov}_{\text{sampler}}(A_t, \tilde{\boldsymbol{\xi}}_{a_t}) \\
+&= \mathbb{E}_{\text{sampler}}[A_t] \cdot \mathbf{0} + \text{Cov}_{\text{sampler}}(A_t, \tilde{\boldsymbol{\xi}}_{a_t}) \\
+&= \text{Cov}_{\text{sampler}}(A_t, \tilde{\boldsymbol{\xi}}_{a_t}) \\
+&= \text{Cov}_{\text{sampler}}(A_t, \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}}) \\
+&= \text{Cov}_{\text{sampler}}(A_t, \boldsymbol{\xi}_{a_t})
+\end{aligned}
+$$ {#eq:sc_update}
+
+<!-- TODO -->
+
+$$
+\mathbb{E}_{\text{learner}} \left[ A_t \, \boldsymbol{\xi}_{a_t} \right] = \text{Cov}_{\text{learner}}(A_t, \boldsymbol{\xi}_{a_t}), \qquad \mathbb{E}_{\text{sampler}} \left[ A_t \, \tilde{\boldsymbol{\xi}}_{a_t} \right] = \text{Cov}_{\text{sampler}}(A_t, \boldsymbol{\xi}_{a_t})
+$$ {#eq:sc_compare}
+
+<!-- TODO -->
+
+$$
+A_t \, \tilde{\boldsymbol{\xi}}_{a_t} = A_t \, \boldsymbol{\xi}_{a_t} - A_t \, \bar{\boldsymbol{\xi}}
+$$ {#eq:sc_additive}
+
+#### Comparison to Importance Sampling
+
+<!-- TODO -->
+
+$$
+\rho^{\text{learner}}_v = \frac{\pi^{\text{learner}}_v}{\pi^{\text{sampler}}_v}, \qquad \tilde{\rho}^{\text{learner}}_v = \min\left( \rho^{\text{learner}}_v, \, C \right)
+$$ {#eq:sc_is_ratio}
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+\mathbb{E}_{\text{sampler}} \left[ \rho^{\text{learner}}_{a_t} \, \boldsymbol{\xi}_{a_t} \right] &= \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, \rho^{\text{learner}}_v \, \boldsymbol{\xi}_v \\
+&= \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, \frac{\pi^{\text{learner}}_v}{\pi^{\text{sampler}}_v} \, \boldsymbol{\xi}_v \\
+&= \sum_{v \in \mathcal{V}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v \\
+&= \mathbf{0}
+\end{aligned}
+$$ {#eq:sc_is_cancels}
+
+<!-- TODO -->
+
+$$
+\mathcal{V}_{>C} = \left\{ v \in \mathcal{V} : \rho^{\text{learner}}_v > C \right\}
+$$ {#eq:sc_tis_capped_set}
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+\mathbb{E}_{\text{sampler}} \left[ \tilde{\rho}^{\text{learner}}_{a_t} \, \boldsymbol{\xi}_{a_t} \right] &= \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, \min\left( \rho^{\text{learner}}_v, \, C \right) \boldsymbol{\xi}_v \\
+&= \sum_{v \in \mathcal{V} \setminus \mathcal{V}_{>C}} \pi^{\text{sampler}}_v \, \rho^{\text{learner}}_v \, \boldsymbol{\xi}_v + \sum_{v \in \mathcal{V}_{>C}} \pi^{\text{sampler}}_v \, C \, \boldsymbol{\xi}_v \\
+&= \sum_{v \in \mathcal{V} \setminus \mathcal{V}_{>C}} \pi^{\text{sampler}}_v \, \frac{\pi^{\text{learner}}_v}{\pi^{\text{sampler}}_v} \, \boldsymbol{\xi}_v + C \sum_{v \in \mathcal{V}_{>C}} \pi^{\text{sampler}}_v \, \boldsymbol{\xi}_v \\
+&= \sum_{v \in \mathcal{V} \setminus \mathcal{V}_{>C}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v + C \sum_{v \in \mathcal{V}_{>C}} \pi^{\text{sampler}}_v \, \boldsymbol{\xi}_v \\
+&= \left( \sum_{v \in \mathcal{V}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v - \sum_{v \in \mathcal{V}_{>C}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v \right) + C \sum_{v \in \mathcal{V}_{>C}} \pi^{\text{sampler}}_v \, \boldsymbol{\xi}_v \\
+&= \left( \mathbf{0} - \sum_{v \in \mathcal{V}_{>C}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v \right) + C \sum_{v \in \mathcal{V}_{>C}} \pi^{\text{sampler}}_v \, \boldsymbol{\xi}_v \\
+&= \sum_{v \in \mathcal{V}_{>C}} \left( C \, \pi^{\text{sampler}}_v - \pi^{\text{learner}}_v \right) \boldsymbol{\xi}_v
+\end{aligned}
+$$ {#eq:sc_tis_drift}
+
+#### Implementation
+
+<!-- TODO -->
+
+$$
+\ell_t = -A_t \left( \log \pi^{\text{learner}}_{a_t} - \sum_{v \in \mathcal{V}} \text{sg}\left( \pi^{\text{sampler}}_v \right) \log \pi^{\text{learner}}_v \right)
+$$ {#eq:sc_loss}
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+-\nabla_\theta \ell_t &= \nabla_\theta \left[ A_t \left( \log \pi^{\text{learner}}_{a_t} - \sum_{v \in \mathcal{V}} \text{sg}\left( \pi^{\text{sampler}}_v \right) \log \pi^{\text{learner}}_v \right) \right] \\
+&= A_t \left( \nabla_\theta \log \pi^{\text{learner}}_{a_t} - \nabla_\theta \sum_{v \in \mathcal{V}} \text{sg}\left( \pi^{\text{sampler}}_v \right) \log \pi^{\text{learner}}_v \right) \\
+&= A_t \left( \nabla_\theta \log \pi^{\text{learner}}_{a_t} - \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, \nabla_\theta \log \pi^{\text{learner}}_v \right) \\
+&= A_t \left( \boldsymbol{\xi}_{a_t} - \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, \boldsymbol{\xi}_v \right) \\
+&= A_t \left( \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}} \right) \\
+&= A_t \, \tilde{\boldsymbol{\xi}}_{a_t}
+\end{aligned}
+$$ {#eq:sc_loss_grad}
+
+<!-- TODO -->
+
+$$
+\hat{\pi}^{\text{sampler}}_v = \begin{cases} \pi^{\text{sampler}}_v & v \in \mathcal{H} \\ \kappa \, \pi^{\text{learner}}_v & v \in \mathcal{V} \setminus \mathcal{H} \end{cases}, \qquad \kappa = \frac{1 - \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v}{1 - \sum_{v \in \mathcal{H}} \pi^{\text{learner}}_v}, \qquad |\mathcal{H}| = k
+$$ {#eq:sc_tail_model}
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+\sum_{v \in \mathcal{V}} \hat{\pi}^{\text{sampler}}_v &= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v + \sum_{v \in \mathcal{V} \setminus \mathcal{H}} \kappa \, \pi^{\text{learner}}_v \\
+&= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v + \kappa \sum_{v \in \mathcal{V} \setminus \mathcal{H}} \pi^{\text{learner}}_v \\
+&= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v + \kappa \left( 1 - \sum_{v \in \mathcal{H}} \pi^{\text{learner}}_v \right) \\
+&= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v + \frac{1 - \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v}{1 - \sum_{v \in \mathcal{H}} \pi^{\text{learner}}_v} \left( 1 - \sum_{v \in \mathcal{H}} \pi^{\text{learner}}_v \right) \\
+&= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v + 1 - \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v \\
+&= 1
+\end{aligned}
+$$ {#eq:sc_tail_normalized}
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+\mathbb{E}_{v \sim \hat{\pi}^{\text{sampler}}} \left[ \boldsymbol{\xi}_v \right] &= \sum_{v \in \mathcal{V}} \hat{\pi}^{\text{sampler}}_v \, \boldsymbol{\xi}_v \\
+&= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v \, \boldsymbol{\xi}_v + \sum_{v \in \mathcal{V} \setminus \mathcal{H}} \kappa \, \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v \\
+&= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v \, \boldsymbol{\xi}_v + \kappa \sum_{v \in \mathcal{V} \setminus \mathcal{H}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v \\
+&= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v \, \boldsymbol{\xi}_v + \kappa \left( \sum_{v \in \mathcal{V}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v - \sum_{v \in \mathcal{H}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v \right) \\
+&= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v \, \boldsymbol{\xi}_v + \kappa \left( \mathbf{0} - \sum_{v \in \mathcal{H}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v \right) \\
+&= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v \, \boldsymbol{\xi}_v - \sum_{v \in \mathcal{H}} \kappa \, \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v \\
+&= \sum_{v \in \mathcal{H}} \left( \pi^{\text{sampler}}_v - \kappa \, \pi^{\text{learner}}_v \right) \boldsymbol{\xi}_v
+\end{aligned}
+$$ {#eq:sc_topk}
+
+<!-- TODO -->
+
+$$
+\ell_t = -A_t \left( \log \pi^{\text{learner}}_{a_t} - \sum_{v \in \mathcal{H}} \text{sg}\left( \pi^{\text{sampler}}_v - \kappa \, \pi^{\text{learner}}_v \right) \log \pi^{\text{learner}}_v \right)
+$$ {#eq:sc_loss_topk}
+
+#### Composing with Importance Sampling
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+w_v &= f\left( \rho^{\text{learner}}_v \right) \\[6pt]
+f_{\text{SC}}(\rho) &= 1 \\
+f_{\text{IS}}(\rho) &= \rho \\
+f_{\text{TIS}}(\rho) &= \min(\rho, \, C) \\
+f_{\text{MIS}}(\rho) &= \begin{cases} \rho & 0.5 \leq \rho \leq 5 \\ 0 & \text{otherwise} \end{cases}
+\end{aligned}
+$$ {#eq:sc_is_weights}
+
+<!-- TODO -->
+
+$$
+A_t \left( w_{a_t} \, \boldsymbol{\xi}_{a_t} - \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, w_v \, \boldsymbol{\xi}_v \right)
+$$ {#eq:sc_is}
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+\mathbb{E}_{\text{sampler}} \left[ c \left( w_{a_t} \, \boldsymbol{\xi}_{a_t} - \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, w_v \, \boldsymbol{\xi}_v \right) \right] &= c \left( \mathbb{E}_{\text{sampler}} \left[ w_{a_t} \, \boldsymbol{\xi}_{a_t} \right] - \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, w_v \, \boldsymbol{\xi}_v \right) \\
+&= c \left( \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, w_v \, \boldsymbol{\xi}_v - \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, w_v \, \boldsymbol{\xi}_v \right) \\
+&= c \cdot \mathbf{0} \\
+&= \mathbf{0}
+\end{aligned}
+$$ {#eq:sc_is_constant}
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+\frac{\pi^{\text{learner}}_v}{\hat{\pi}^{\text{sampler}}_v} &= \frac{\pi^{\text{learner}}_v}{\kappa \, \pi^{\text{learner}}_v} = \frac{1}{\kappa}, \qquad v \in \mathcal{V} \setminus \mathcal{H} \\[6pt]
+\hat{w}_v &= \begin{cases} w_v & v \in \mathcal{H} \\ f(1/\kappa) & v \in \mathcal{V} \setminus \mathcal{H} \end{cases}
+\end{aligned}
+$$ {#eq:sc_is_tail_ratio}
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+\mathbb{E}_{v \sim \hat{\pi}^{\text{sampler}}} \left[ \hat{w}_v \, \boldsymbol{\xi}_v \right] &= \sum_{v \in \mathcal{V}} \hat{\pi}^{\text{sampler}}_v \, \hat{w}_v \, \boldsymbol{\xi}_v \\
+&= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v \, w_v \, \boldsymbol{\xi}_v + \sum_{v \in \mathcal{V} \setminus \mathcal{H}} \kappa \, \pi^{\text{learner}}_v \, f(1/\kappa) \, \boldsymbol{\xi}_v \\
+&= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v \, w_v \, \boldsymbol{\xi}_v + \kappa \, f(1/\kappa) \sum_{v \in \mathcal{V} \setminus \mathcal{H}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v \\
+&= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v \, w_v \, \boldsymbol{\xi}_v + \kappa \, f(1/\kappa) \left( \sum_{v \in \mathcal{V}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v - \sum_{v \in \mathcal{H}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v \right) \\
+&= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v \, w_v \, \boldsymbol{\xi}_v + \kappa \, f(1/\kappa) \left( \mathbf{0} - \sum_{v \in \mathcal{H}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v \right) \\
+&= \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v \, w_v \, \boldsymbol{\xi}_v - \sum_{v \in \mathcal{H}} \kappa \, f(1/\kappa) \, \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v \\
+&= \sum_{v \in \mathcal{H}} \left( \pi^{\text{sampler}}_v \, w_v - \kappa \, f(1/\kappa) \, \pi^{\text{learner}}_v \right) \boldsymbol{\xi}_v
+\end{aligned}
+$$ {#eq:sc_is_topk}
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+& \sum_{v \in \mathcal{H}} \left( \pi^{\text{sampler}}_v \, f_{\text{SC}}(\rho^{\text{learner}}_v) - \kappa \, f_{\text{SC}}(1/\kappa) \, \pi^{\text{learner}}_v \right) \boldsymbol{\xi}_v \\
+&\qquad = \sum_{v \in \mathcal{H}} \left( \pi^{\text{sampler}}_v \cdot 1 - \kappa \cdot 1 \cdot \pi^{\text{learner}}_v \right) \boldsymbol{\xi}_v \\
+&\qquad = \sum_{v \in \mathcal{H}} \left( \pi^{\text{sampler}}_v - \kappa \, \pi^{\text{learner}}_v \right) \boldsymbol{\xi}_v
+\end{aligned}
+$$ {#eq:sc_is_check_sc}
+
+<!-- TODO -->
+
+$$
+\begin{aligned}
+& \sum_{v \in \mathcal{H}} \left( \pi^{\text{sampler}}_v \, f_{\text{IS}}(\rho^{\text{learner}}_v) - \kappa \, f_{\text{IS}}(1/\kappa) \, \pi^{\text{learner}}_v \right) \boldsymbol{\xi}_v \\
+&\qquad = \sum_{v \in \mathcal{H}} \left( \pi^{\text{sampler}}_v \, \frac{\pi^{\text{learner}}_v}{\pi^{\text{sampler}}_v} - \kappa \cdot \frac{1}{\kappa} \, \pi^{\text{learner}}_v \right) \boldsymbol{\xi}_v \\
+&\qquad = \sum_{v \in \mathcal{H}} \left( \pi^{\text{learner}}_v - \pi^{\text{learner}}_v \right) \boldsymbol{\xi}_v \\
+&\qquad = \mathbf{0}
+\end{aligned}
+$$ {#eq:sc_is_check_is}
+
+<!-- TODO -->
+
+$$
+\ell_t = -A_t \left( \text{sg}\left( w_{a_t} \right) \log \pi^{\text{learner}}_{a_t} - \sum_{v \in \mathcal{H}} \text{sg}\left( \pi^{\text{sampler}}_v \, w_v - \kappa \, f(1/\kappa) \, \pi^{\text{learner}}_v \right) \log \pi^{\text{learner}}_v \right)
+$$ {#eq:sc_loss_is_topk}
+
+<!-- TODO -->
 
 
 ### Example: PPO
