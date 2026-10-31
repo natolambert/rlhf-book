@@ -1135,7 +1135,7 @@ $$ {#eq:sc_loss}
 | GSPO^P,V^ [@zheng2025gspo] | `seq` | `ratio` | 0.9997 | 1.0004 | `drop` | `ppo` | Token gradients summed rather than response-averaged; added dual clipping at 3. |
 | TOPR^P^ [@leroux2025topr] | `seq` | `ratio` | 0 | 1.0 | `clip` | `neg` | --- |
 | DPPO^P^ [@qi2026dppo] | `token` | `tv` | 0 | 0.2 | `drop` | `ppo` | No importance-ratio clipping. |
-Table: Importance-sampling-based correction methods, adapted from Marek and Ryabinin [@marek2026score]. {#tbl:is_methods}
+Table: Importance-sampling-based correction methods, adapted from Marek and Ryabinin [@marek2026score]. Superscripts mark the source of each method's bounds: ^P^ is the default from the method's original paper and ^V^ is the verl default [@sheng2024hybridflow]. {#tbl:is_methods}
 
 <!-- TODO -->
 
