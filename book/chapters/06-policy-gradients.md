@@ -1065,24 +1065,23 @@ TIS for the learner–sampler ratio has been adopted across major open-source RL
 
 ### Score Centering
 
+
+[@marek2026score]
+
 <!-- TODO -->
 
 $$
 \begin{aligned}
-\nabla_\theta J(\theta) &= \mathbb{E}_{a \sim \pi_\theta^{\text{learner}}(\cdot \mid s)} \left[ \sum_{t=1}^{|a|} A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] \\
-\hat{g} &= \mathbb{E}_{a \sim \pi_\theta^{\text{sampler}}(\cdot \mid s)} \left[ \sum_{t=1}^{|a|} A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] \\
-&= \sum_{t} \mathbb{E}_{a_{<t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s)} \left[ \mathbb{E}_{a_{\geq t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s, a_{<t})} \left[ A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] \right]
+\nabla_\theta J(\theta) &= \mathbb{E}_{a \sim \pi_\theta^{\text{learner}}(\cdot \mid s)} \left[ \sum_{t=1}^{|a|} A \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] \\
+\hat{g} &= \mathbb{E}_{a \sim \pi_\theta^{\text{sampler}}(\cdot \mid s)} \left[ \sum_{t=1}^{|a|} A \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] \\
+&= \sum_{t} \mathbb{E}_{a_{<t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s)} \left[ \mathbb{E}_{a_{\geq t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s, a_{<t})} \left[ A \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] \right]
 \end{aligned}
 $$ {#eq:sc_policy_gradient}
 
-<!-- TODO -->
+Focusing on a single position $t$ with a fixed prefix $a_{<t}$, let $\pi^{\text{learner}}_v = \pi_\theta^{\text{learner}}(v \mid s, a_{<t})$ and $\pi^{\text{sampler}}_v = \pi_\theta^{\text{sampler}}(v \mid s, a_{<t})$ be the probability each policy assigns to token $v$ in the vocabulary $\mathcal{V}$, and let $\boldsymbol{\xi}_v = \nabla_\theta \log \pi^{\text{learner}}_v$ be the learner's score for that token, so the inner expectation of @eq:sc_policy_gradient becomes:
 
 $$
-\begin{aligned}
-\pi^{\text{learner}}_v &= \pi_\theta^{\text{learner}}(v \mid s, a_{<t}), \qquad \pi^{\text{sampler}}_v = \pi_\theta^{\text{sampler}}(v \mid s, a_{<t}) \\
-\boldsymbol{\xi}_v &= \nabla_\theta \log \pi^{\text{learner}}_v \\
-\mathbb{E}_{\text{sampler}} \left[ A_t \, \boldsymbol{\xi}_{a_t} \right] &= \mathbb{E}_{a_{\geq t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s, a_{<t})} \left[ A_t \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right]
-\end{aligned}
+\mathbb{E}_{\text{sampler}} \left[ A \, \boldsymbol{\xi}_{a_t} \right] = \mathbb{E}_{a_{\geq t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s, a_{<t})} \left[ A \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right]
 $$ {#eq:sc_score}
 
 <!-- TODO -->
@@ -1099,8 +1098,8 @@ $$ {#eq:sc_expected_score}
 
 $$
 \begin{aligned}
-\mathbb{E}_{\text{learner}} \left[ A_t \, \boldsymbol{\xi}_{a_t} \right] &= \mathbb{E}_{\text{learner}}[A_t] \cdot \mathbf{0} + \text{Cov}_{\text{learner}}(A_t, \boldsymbol{\xi}_{a_t}) \\
-\mathbb{E}_{\text{sampler}} \left[ A_t \, \boldsymbol{\xi}_{a_t} \right] &= \mathbb{E}_{\text{sampler}}[A_t] \, \bar{\boldsymbol{\xi}} + \text{Cov}_{\text{sampler}}(A_t, \boldsymbol{\xi}_{a_t})
+\mathbb{E}_{\text{learner}} \left[ A \, \boldsymbol{\xi}_{a_t} \right] &= \mathbb{E}_{\text{learner}}[A] \cdot \mathbf{0} + \text{Cov}_{\text{learner}}(A, \boldsymbol{\xi}_{a_t}) \\
+\mathbb{E}_{\text{sampler}} \left[ A \, \boldsymbol{\xi}_{a_t} \right] &= \mathbb{E}_{\text{sampler}}[A] \, \bar{\boldsymbol{\xi}} + \text{Cov}_{\text{sampler}}(A, \boldsymbol{\xi}_{a_t})
 \end{aligned}
 $$ {#eq:sc_drift}
 
@@ -1109,8 +1108,8 @@ $$ {#eq:sc_drift}
 $$
 \begin{aligned}
 \tilde{\boldsymbol{\xi}}_{a_t} &= \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}} \\
-\mathbb{E}_{\text{sampler}} \left[ A_t \, \tilde{\boldsymbol{\xi}}_{a_t} \right] &= \mathbb{E}_{\text{sampler}}[A_t] \left( \bar{\boldsymbol{\xi}} - \bar{\boldsymbol{\xi}} \right) + \text{Cov}_{\text{sampler}}(A_t, \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}}) \\
-&= \text{Cov}_{\text{sampler}}(A_t, \boldsymbol{\xi}_{a_t})
+\mathbb{E}_{\text{sampler}} \left[ A \, \tilde{\boldsymbol{\xi}}_{a_t} \right] &= \mathbb{E}_{\text{sampler}}[A] \left( \bar{\boldsymbol{\xi}} - \bar{\boldsymbol{\xi}} \right) + \text{Cov}_{\text{sampler}}(A, \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}}) \\
+&= \text{Cov}_{\text{sampler}}(A, \boldsymbol{\xi}_{a_t})
 \end{aligned}
 $$ {#eq:sc_centered}
 
@@ -1118,32 +1117,17 @@ $$ {#eq:sc_centered}
 
 $$
 \begin{aligned}
-\ell_t &= -A_t \left( \log \pi^{\text{learner}}_{a_t} - \sum_{v \in \mathcal{V}} \text{sg}\left( \pi^{\text{sampler}}_v \right) \log \pi^{\text{learner}}_v \right) \\
--\nabla_\theta \ell_t &= A_t \left( \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}} \right) = A_t \, \tilde{\boldsymbol{\xi}}_{a_t}
+\ell_t &= -A \left( \log \pi^{\text{learner}}_{a_t} - \sum_{v \in \mathcal{V}} \text{sg}\left( \pi^{\text{sampler}}_v \right) \log \pi^{\text{learner}}_v \right) \\
+-\nabla_\theta \ell_t &= A \left( \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}} \right) = A \, \tilde{\boldsymbol{\xi}}_{a_t}
 \end{aligned}
 $$ {#eq:sc_loss}
 
-<!-- TODO: mention the top-k approximation. Storing the sampler's full next-token distribution is too expensive (~608KB per token for Qwen3's 152K vocab in fp32), so the sampler logs only its top-k logprobs (k = 128 in the paper; k = 32 also matches full score centering). The tail is modeled as the learner's tail rescaled to the sampler's tail mass, which is `kappa` in the code below, so the centering term only needs the k head tokens. -->
+Since the emergence of reasoning models and the great popularity of GRPO, much of the innovation in RL algorithms across industry and academia has been around stabilizing training-inference mismatch on large MoE models with long, agentic reasoning traces.
+The appendix of the score centering paper [@marek2026score] had a summary of the recent innovations, which clearly distills the changes into various implementation decisions. 
+Many of these are minor -- including minor tweaks to long-standing hyperparameters.
+Still, these changes represent a crucial area of innovation along the path of scaling RL:
 
-```python
-# Shapes: learner_vocab_logprobs (B*G, L, V); tokens (B*G, L)
-# sampler_topk_logprobs, sampler_topk_ids (B*G, L, k) are logged during generation
-learner_logprobs = learner_vocab_logprobs.gather(-1, tokens[..., None])[..., 0]  # (B*G, L)
-head_logprobs = learner_vocab_logprobs.gather(-1, sampler_topk_ids)               # (B*G, L, k)
-learner_head_probs = head_logprobs.exp()
-sampler_head_probs = sampler_topk_logprobs.exp()
-
-sampler_tail = (1 - sampler_head_probs.sum(-1)).clamp_min(1e-6)
-learner_tail = (1 - learner_head_probs.sum(-1)).clamp_min(1e-6)
-kappa = sampler_tail / learner_tail                                                # tail-mass ratio
-coef = (sampler_head_probs - kappa[..., None] * learner_head_probs).detach()
-centering = (coef * head_logprobs).sum(-1)                                         # (B*G, L)
-
-per_token_pg_loss = -advantages * (learner_logprobs - centering)
-```
-
-<!-- TODO -->
-
+::: {.table-wrap}
 | Method | Level | Stat | Low | High | Outside | Sign | Implementation notes |
 | :------------------- | :------: | :-----: | :------: | :------: | :---------: | :-----: | :----------------------------- |
 | Naive IS [@williams1992simple] | `token` | `ratio` | 0 | $\infty$ | --- | `both` | --- |
@@ -1155,8 +1139,52 @@ per_token_pg_loss = -advantages * (learner_logprobs - centering)
 | TOPR^P^ [@leroux2025topr] | `seq` | `ratio` | 0 | 1.0 | `clip` | `neg` | --- |
 | DPPO^P^ [@qi2026dppo] | `token` | `tv` | 0 | 0.2 | `drop` | `ppo` | No importance-ratio clipping. |
 Table: Importance-sampling-based correction methods, adapted from Marek and Ryabinin [@marek2026score]. Superscripts mark the source of each method's bounds: ^P^ is the default from the method's original paper and ^V^ is the verl default [@sheng2024hybridflow]. {#tbl:is_methods}
+:::
+
+
+
+<!-- TODO: mention the top-k approximation. Storing the sampler's full next-token distribution is too expensive (~608KB per token for Qwen3's 152K vocab in fp32), so the sampler logs only its top-k logprobs (k = 128 in the paper; k = 32 also matches full score centering). The tail is modeled as the learner's tail rescaled to the sampler's tail mass, which is `kappa` in the code below, so the centering term only needs the k head tokens. -->
+
+Let $\mathcal{H} \subset \mathcal{V}$ be the head, the sampler's $k$ most likely tokens whose logprobs are logged during generation, and let the tail be every other token; because the sampler's tail probabilities are not stored, we approximate them, $\hat{\pi}^{\text{sampler}}$, by rescaling the learner's tail to carry the sampler's missing mass, where $\kappa$ is the ratio of the two tail masses:
+
+$$
+\hat{\pi}^{\text{sampler}}_v =
+\begin{cases}
+\pi^{\text{sampler}}_v & v \in \mathcal{H} \\
+\kappa \, \pi^{\text{learner}}_v & v \notin \mathcal{H}
+\end{cases}
+\qquad
+\kappa = \frac{1 - \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v}{1 - \sum_{v \in \mathcal{H}} \pi^{\text{learner}}_v}
+$$ {#eq:sc_topk_tail}
 
 <!-- TODO -->
+
+$$
+\bar{\boldsymbol{\xi}} \approx \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v \, \boldsymbol{\xi}_v + \kappa \sum_{v \notin \mathcal{H}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v = \sum_{v \in \mathcal{H}} \left( \pi^{\text{sampler}}_v - \kappa \, \pi^{\text{learner}}_v \right) \boldsymbol{\xi}_v
+$$ {#eq:sc_topk}
+
+```python
+# Shapes: learner_vocab_logprobs (B*G, L, V); tokens (B*G, L)
+# sampler_topk_logprobs, sampler_topk_ids (B*G, L, k) are logged during generation
+learner_logprobs = learner_vocab_logprobs.gather(-1, tokens[..., None])[..., 0]  # (B*G, L)
+head_logprobs = learner_vocab_logprobs.gather(-1, sampler_topk_ids)               # (B*G, L, k)
+learner_head_probs = head_logprobs.exp()
+sampler_head_probs = sampler_topk_logprobs.exp()
+
+# Top-k approximation: outside the sampler's top-k head, model the sampler as the
+# learner's tail rescaled to the sampler's tail mass (kappa is rho in the paper)
+sampler_tail = (1 - sampler_head_probs.sum(-1)).clamp_min(1e-6)
+learner_tail = (1 - learner_head_probs.sum(-1)).clamp_min(1e-6)
+kappa = sampler_tail / learner_tail                                                # tail-mass ratio
+# The gradient of `centering` is the expected score under the sampler, xi-bar
+# (s-bar in the paper); only the k head tokens are needed since E_learner[xi] = 0
+coef = (sampler_head_probs - kappa[..., None] * learner_head_probs).detach()
+centering = (coef * head_logprobs).sum(-1)                                         # (B*G, L)
+
+# -grad of the loss is A * (xi_{a_t} - xi-bar), the centered score
+per_token_pg_loss = -advantages * (learner_logprobs - centering)
+```
+
 
 ### Example: PPO
 
