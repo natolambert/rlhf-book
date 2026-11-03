@@ -1065,26 +1065,40 @@ TIS for the learner–sampler ratio has been adopted across major open-source RL
 
 ### Score Centering
 
+Building on the goal of importance-sampling interventions, modern developments in RL have continued to search for interventions that mitigate training-inference mismatch in distributed RL for agentic tasks.
+Another intervention, called score-centering, comes from the realization that there is a persistent bias in the policy-gradient formulation, especially in off-policy settings [@marek2026score].
+In this section, we derive the bias and highlight the authors' solution.
 
-[@marek2026score]
-
-<!-- TODO -->
+To start, recall the policy gradient formulation with a per-sequence advantage, *A*:
 
 $$
-\begin{aligned}
-\nabla_\theta J(\theta) &= \mathbb{E}_{a \sim \pi_\theta^{\text{learner}}(\cdot \mid s)} \left[ \sum_{t=1}^{|a|} A \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] \\
-\hat{g} &= \mathbb{E}_{a \sim \pi_\theta^{\text{sampler}}(\cdot \mid s)} \left[ \sum_{t=1}^{|a|} A \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] \\
-&= \sum_{t} \mathbb{E}_{a_{<t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s)} \left[ \mathbb{E}_{a_{\geq t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s, a_{<t})} \left[ A \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] \right]
-\end{aligned}
-$$ {#eq:sc_policy_gradient}
+\nabla_\theta J(\theta) = \mathbb{E}_{a \sim \pi_\theta^{\text{learner}}(\cdot \mid s)} \left[ \sum_{t=1}^{|a|} A \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right]
+$$  {#eq:sc_policy_gradient}
 
-Focusing on a single position $t$ with a fixed prefix $a_{<t}$, let $\pi^{\text{learner}}_v = \pi_\theta^{\text{learner}}(v \mid s, a_{<t})$ and $\pi^{\text{sampler}}_v = \pi_\theta^{\text{sampler}}(v \mid s, a_{<t})$ be the probability each policy assigns to token $v$ in the vocabulary $\mathcal{V}$, and let $\boldsymbol{\xi}_v = \nabla_\theta \log \pi^{\text{learner}}_v$ be the learner's score for that token, so the inner expectation of @eq:sc_policy_gradient becomes:
+We can approximate this gradient by computing the update on tokens generated within the inference library, which is where the notion of "off-policy" learning comes from:
+
+$$
+\hat{g} = \mathbb{E}_{a \sim \pi_\theta^{\text{sampler}}(\cdot \mid s)} \left[ \sum_{t=1}^{|a|} A \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right]
+$$ {#eq:sc_policy_gradient_approx}
+
+To proceed in the derivation, we need to expand this expectation into more terms.
+The sum over tokens can be moved outside the expectation (you can move sums outside of expectations, and vice-versa). 
+From here, we know that each sequence is sampled one token at a time, so we can split the expectation at every position $t$ into an outer expectation over the prefix $a_{<t}$ and an inner expectation over the token $a_t$ and the rest of the sequence:
+
+$$
+\hat{g} = \sum_{t} \mathbb{E}_{a_{<t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s)} \left[ \mathbb{E}_{a_{\geq t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s, a_{<t})} \left[ A \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] \right]
+$$ {#eq:sc_per_token}
+
+This split is to expose a specific term in the process, which represents the expected contribution to the gradient of a given action at time t. 
+We will show that this per-token expectation is biased.
+Focusing on a single position $t$ with a fixed prefix $a_{<t}$, let us abbreviated $\pi^{\text{learner}}_v = \pi_\theta^{\text{learner}}(v \mid s, a_{<t})$ and $\pi^{\text{sampler}}_v = \pi_\theta^{\text{sampler}}(v \mid s, a_{<t})$ as the probability each policy assigns to token $v$ in the vocabulary $\mathcal{V}$.
+We then define $\boldsymbol{\xi}_v = \nabla_\theta \log \pi^{\text{learner}}_v$ as the learner's score for that token, so the inner expectation of @eq:sc_per_token becomes:
 
 $$
 \mathbb{E}_{\text{sampler}} \left[ A \, \boldsymbol{\xi}_{a_t} \right] = \mathbb{E}_{a_{\geq t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s, a_{<t})} \left[ A \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right]
 $$ {#eq:sc_score}
 
-<!-- TODO -->
+We will then compare how this expectation relates to the values of the learner model.
 
 $$
 \begin{aligned}
