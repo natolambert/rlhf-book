@@ -1098,17 +1098,29 @@ $$
 \mathbb{E}_{\text{sampler}} \left[ A \, \boldsymbol{\xi}_{a_t} \right] = \mathbb{E}_{a_{\geq t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s, a_{<t})} \left[ A \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right]
 $$ {#eq:sc_score}
 
-We will then compare how this expectation relates to the values of the learner model.
+We will compute this expectation, and show that it is biased in the default setup.
+First, we can see that in a true on-policy setting, where actions are sampled from the learner model weights, the expectation is unbiased.
+For the first step, we "un-do" the gradient rule that is common in policy-gradients.
 
 $$
 \begin{aligned}
 \mathbb{E}_{\text{learner}} \left[ \boldsymbol{\xi}_{a_t} \right] &= \sum_{v \in \mathcal{V}} \pi^{\text{learner}}_v \, \nabla_\theta \log \pi^{\text{learner}}_v = \sum_{v \in \mathcal{V}} \nabla_\theta \pi^{\text{learner}}_v \\
 &= \nabla_\theta \sum_{v \in \mathcal{V}} \pi^{\text{learner}}_v = \nabla_\theta 1 = \mathbf{0} \\
+$$ {#eq:sc_expected_score_learner}
+
+Then, the identity is reduce by pulling the gradient out of the summation, revealing that the inner sum is constant, and the gradient is 0.
+Let us define a new value to as the expected score when sampling from the separate, inference model weights:
+
+$$
+\begin{aligned}
 \bar{\boldsymbol{\xi}} = \mathbb{E}_{\text{sampler}} \left[ \boldsymbol{\xi}_{a_t} \right] &= \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, \nabla_\theta \log \pi^{\text{learner}}_v
 \end{aligned}
 $$ {#eq:sc_expected_score}
 
-<!-- TODO -->
+From here, we need to back up a bit.
+We need to compute $\mathbb{E}_{\text{sampler}} \left[ A \, \boldsymbol{\xi}_{a_t} \right]$, which is the inner expectation of the gradient -- the per-token contribution to the gradient.
+We have compute the expectations of the score, the single distribution $\boldsymbol{\xi}$ -- we need the expectation of the product of two distributions, $\mathbb{E}\left[ A \, \boldsymbol{\xi}_{a_t} \right]$ (with two different sampling conditions). 
+We use the covariance identity, $\text{Cov}(A,B) = \mathbb{E}[AB]-\mathbb{E}[A]\mathbb{E}[B] \rightarrow \mathbb{E}[AB] = \mathbb{E}[A]\mathbb{E}[B] + \text{Cov}(A,B)$, to derive two equalities:
 
 $$
 \begin{aligned}
@@ -1117,15 +1129,32 @@ $$
 \end{aligned}
 $$ {#eq:sc_drift}
 
-<!-- TODO -->
+To create an unbiased estimator, when sampling from the inference server, not the trainer, we need to define a new correction term.
+We will show that this term is unbiased.
+
+$$ 
+\tilde{\boldsymbol{\xi}}_{a_t} &= \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}}
+$$ {#eq:sc_correction}
+
+This corrected score substacts the expected score under the sampler from the measured score (gradient) of that sample.
+We plug this new score into the above equation, to show that it is unbiased even when training-inference-mismatch is present.
 
 $$
 \begin{aligned}
-\tilde{\boldsymbol{\xi}}_{a_t} &= \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}} \\
 \mathbb{E}_{\text{sampler}} \left[ A \, \tilde{\boldsymbol{\xi}}_{a_t} \right] &= \mathbb{E}_{\text{sampler}}[A] \left( \bar{\boldsymbol{\xi}} - \bar{\boldsymbol{\xi}} \right) + \text{Cov}_{\text{sampler}}(A, \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}}) \\
 &= \text{Cov}_{\text{sampler}}(A, \boldsymbol{\xi}_{a_t})
 \end{aligned}
 $$ {#eq:sc_centered}
+
+There are three steps here.
+First, the expectation term, $\mathbb{E}_{\text{sampler}}[A] \left( \bar{\boldsymbol{\xi}} - \bar{\boldsymbol{\xi}} \right)$ becomes this form because we take the expectation of $\boldsymbol{\xi}_{a_t}$, which is defined just as $\bar{\boldsymbol{\xi}}$.
+This eliminates the first term.
+Second, we have $\text{Cov}_{\text{sampler}}(A, \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}})$, which reduces to $\text{Cov}_{\text{sampler}}(A, \boldsymbol{\xi}_{a_t})$ because $\bar{\boldsymbol{\xi}}$ contributes nothing to the covariance. TODO - claude clarify this clause.
+
+This is the end of the derivation!
+Many labs at the frontier of RL have reported, quietly, to use this method.
+The loss for this implementation in policy-gradient setups is shown below.
+TODO, how to derive this loss? And explain it
 
 <!-- TODO -->
 
@@ -1136,28 +1165,12 @@ $$
 \end{aligned}
 $$ {#eq:sc_loss}
 
-Since the emergence of reasoning models and the great popularity of GRPO, much of the innovation in RL algorithms across industry and academia has been around stabilizing training-inference mismatch on large MoE models with long, agentic reasoning traces.
-The appendix of the score centering paper [@marek2026score] had a summary of the recent innovations, which clearly distills the changes into various implementation decisions. 
-Many of these are minor -- including minor tweaks to long-standing hyperparameters.
-Still, these changes represent a crucial area of innovation along the path of scaling RL:
-
-::: {.table-wrap}
-| Method | Level | Stat | Low | High | Outside | Sign | Implementation notes |
-| :------------------- | :------: | :-----: | :------: | :------: | :---------: | :-----: | :----------------------------- |
-| Naive IS [@williams1992simple] | `token` | `ratio` | 0 | $\infty$ | --- | `both` | --- |
-| TIS^V^ [@yao2025offpolicy], CISPO [@minimax2025minimax_m1] | `token` | `ratio` | 0 | 2.0 | `clip` | `both` | CISPO's dynamic sampling and length penalty omitted. |
-| MIS (IcePop)^P^ [@ringteam2025everystepevolves] | `token` | `ratio` | 0.5 | 5.0 | `drop` | `both` | Separate PPO surrogate between policy versions omitted. |
-| PPO^P,V^ [@schulman2017proximal] | `token` | `ratio` | 0.8 | 1.2 | `drop` | `ppo` | Dual clipping at 3 (verl default [@sheng2024hybridflow]). |
-| DAPO^P,V^ [@yu2025dapo] | `token` | `ratio` | 0.8 | 1.28 | `drop` | `ppo` | Dual clipping at 3; dynamic sampling and overlong reward penalty omitted. |
-| GSPO^P,V^ [@zheng2025gspo] | `seq` | `ratio` | 0.9997 | 1.0004 | `drop` | `ppo` | Token gradients summed rather than response-averaged; added dual clipping at 3. |
-| TOPR^P^ [@leroux2025topr] | `seq` | `ratio` | 0 | 1.0 | `clip` | `neg` | --- |
-| DPPO^P^ [@qi2026dppo] | `token` | `tv` | 0 | 0.2 | `drop` | `ppo` | No importance-ratio clipping. |
-Table: Importance-sampling-based correction methods, adapted from Marek and Ryabinin [@marek2026score]. Superscripts mark the source of each method's bounds: ^P^ is the default from the method's original paper and ^V^ is the verl default [@sheng2024hybridflow]. {#tbl:is_methods}
-:::
-
-
+The second equation is the implementation, where in practice we often accumulate in code the gradients of the loss directly, matching modern codebases. TODO {claude} is this right?
 
 <!-- TODO: mention the top-k approximation. Storing the sampler's full next-token distribution is too expensive (~608KB per token for Qwen3's 152K vocab in fp32), so the sampler logs only its top-k logprobs (k = 128 in the paper; k = 32 also matches full score centering). The tail is modeled as the learner's tail rescaled to the sampler's tail mass, which is `kappa` in the code below, so the centering term only needs the k head tokens. -->
+
+In practice, this normalization / covariate computation would require storing the sampling distributions full next-token distribution for every token in the sequence, which is very expensive in modern setups.
+
 
 Let $\mathcal{H} \subset \mathcal{V}$ be the head, the sampler's $k$ most likely tokens whose logprobs are logged during generation, and let the tail be every other token; because the sampler's tail probabilities are not stored, we approximate them, $\hat{\pi}^{\text{sampler}}$, by rescaling the learner's tail to carry the sampler's missing mass, where $\kappa$ is the ratio of the two tail masses:
 
@@ -1198,6 +1211,26 @@ centering = (coef * head_logprobs).sum(-1)                                      
 # -grad of the loss is A * (xi_{a_t} - xi-bar), the centered score
 per_token_pg_loss = -advantages * (learner_logprobs - centering)
 ```
+
+Since the emergence of reasoning models and the great popularity of GRPO, much of the innovation in RL algorithms across industry and academia has been around stabilizing training-inference mismatch on large MoE models with long, agentic reasoning traces.
+The appendix of the score centering paper [@marek2026score] had a summary of the recent innovations, which clearly distills the changes into various implementation decisions. 
+Many of these are minor -- including minor tweaks to long-standing hyperparameters.
+Still, these changes represent a crucial area of innovation along the path of scaling RL:
+
+::: {.table-wrap}
+| Method | Level | Stat | Low | High | Outside | Sign | Implementation notes |
+| :------------------- | :------: | :-----: | :------: | :------: | :---------: | :-----: | :----------------------------- |
+| Naive IS [@williams1992simple] | `token` | `ratio` | 0 | $\infty$ | --- | `both` | --- |
+| TIS^V^ [@yao2025offpolicy], CISPO [@minimax2025minimax_m1] | `token` | `ratio` | 0 | 2.0 | `clip` | `both` | CISPO's dynamic sampling and length penalty omitted. |
+| MIS (IcePop)^P^ [@ringteam2025everystepevolves] | `token` | `ratio` | 0.5 | 5.0 | `drop` | `both` | Separate PPO surrogate between policy versions omitted. |
+| PPO^P,V^ [@schulman2017proximal] | `token` | `ratio` | 0.8 | 1.2 | `drop` | `ppo` | Dual clipping at 3 (verl default [@sheng2024hybridflow]). |
+| DAPO^P,V^ [@yu2025dapo] | `token` | `ratio` | 0.8 | 1.28 | `drop` | `ppo` | Dual clipping at 3; dynamic sampling and overlong reward penalty omitted. |
+| GSPO^P,V^ [@zheng2025gspo] | `seq` | `ratio` | 0.9997 | 1.0004 | `drop` | `ppo` | Token gradients summed rather than response-averaged; added dual clipping at 3. |
+| TOPR^P^ [@leroux2025topr] | `seq` | `ratio` | 0 | 1.0 | `clip` | `neg` | --- |
+| DPPO^P^ [@qi2026dppo] | `token` | `tv` | 0 | 0.2 | `drop` | `ppo` | No importance-ratio clipping. |
+Table: Importance-sampling-based correction methods, adapted from Marek and Ryabinin [@marek2026score]. Superscripts mark the source of each method's bounds: ^P^ is the default from the method's original paper and ^V^ is the verl default [@sheng2024hybridflow]. {#tbl:is_methods}
+:::
+
 
 
 ### Example: PPO
