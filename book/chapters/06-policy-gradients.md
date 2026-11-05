@@ -1067,6 +1067,7 @@ TIS for the learner–sampler ratio has been adopted across major open-source RL
 
 Building on the goal of importance-sampling interventions, modern developments in RL have continued to search for interventions that mitigate training-inference mismatch in distributed RL for agentic tasks.
 Another intervention, called score-centering, comes from the realization that there is a persistent bias in the policy-gradient formulation, especially in off-policy settings [@marek2026score].
+It can be used in addition to importance-sampling corrections like TIS, rather than replacing them.
 In this section, we derive the bias and highlight the authors' solution.
 
 To start, recall the policy gradient formulation with a per-sequence advantage, $A$:
