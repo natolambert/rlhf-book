@@ -1069,7 +1069,7 @@ Building on the goal of importance-sampling interventions, modern developments i
 Another intervention, called score-centering, comes from the realization that there is a persistent bias in the policy-gradient formulation, especially in off-policy settings [@marek2026score].
 In this section, we derive the bias and highlight the authors' solution.
 
-To start, recall the policy gradient formulation with a per-sequence advantage, *A*:
+To start, recall the policy gradient formulation with a per-sequence advantage, $A$:
 
 $$
 \nabla_\theta J(\theta) = \mathbb{E}_{a \sim \pi_\theta^{\text{learner}}(\cdot \mid s)} \left[ \sum_{t=1}^{|a|} A \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right]
@@ -1090,10 +1090,9 @@ $$
 $$ {#eq:sc_per_token}
 
 Note that the sum over tokens across time $t$ has moved outside of both expectations.
-In this derivation, we focus on computing the per-token values, so we can show each token in the gradient is unbiased.
-Summing unbiased quantities remains unbiased.
+In this derivation, we focus on computing the per-token values, so we can show where the bias enters at each token.
 
-This split in the expectation above is to expose a specific term in the process, which represents the expected contribution to the gradient of a given action at time t, which comes after a prefix of tokens, $a_{<t}$. 
+This split in the expectation above is to expose a specific term in the process, which represents the expected contribution to the gradient of a given action at time $t$, which comes after a prefix of tokens, $a_{<t}$. 
 We will show that this per-token expectation is biased.
 Focusing on a single position $t$ with a fixed prefix $a_{<t}$, let us abbreviate $\pi^{\text{learner}}_v = \pi_\theta^{\text{learner}}(v \mid s, a_{<t})$ and $\pi^{\text{sampler}}_v = \pi_\theta^{\text{sampler}}(v \mid s, a_{<t})$ as the probability each policy assigns to token $v$ in the vocabulary $\mathcal{V}$.
 We then define $\boldsymbol{\xi}_v = \nabla_\theta \log \pi^{\text{learner}}_v$ as the learner's score for that token, so the inner expectation of @eq:sc_per_token can be expressed in a condensed form:
@@ -1103,7 +1102,7 @@ $$
 $$ {#eq:sc_score}
 
 We will compute this expectation, and show that it is biased in the default setup.
-First, we can see that in a true on-policy setting, where actions are sampled from the learner model weights, the expectation is unbiased.
+First, we can see that in a true on-policy setting, where actions are sampled from the learner model weights, the expected score is zero, so this source of bias does not appear.
 For the first step, we "un-do" the gradient rule that is common in policy-gradients.
 
 $$
@@ -1113,8 +1112,8 @@ $$
 \end{aligned}
 $$ {#eq:sc_expected_score_learner}
 
-Then, the identity is reduce by pulling the gradient out of the summation, revealing that the inner sum is constant, and the gradient is 0.
-Let us define a new value to as the expected score when sampling from the separate, inference model weights:
+Then, the identity is reduced by pulling the gradient out of the summation, revealing that the inner sum is constant, and the gradient is 0.
+Let us define a new value, $\bar{\boldsymbol{\xi}}$, as the expected score when sampling from the separate, inference model weights:
 
 $$
 \begin{aligned}
@@ -1124,7 +1123,7 @@ $$ {#eq:sc_expected_score}
 
 From here, we need to back up a bit.
 We need to compute $\mathbb{E}_{\text{sampler}} \left[ A \, \boldsymbol{\xi}_{a_t} \right]$, which is the inner expectation of the gradient -- the per-token contribution to the gradient.
-We have computed the expectations of the score, the single distribution $\boldsymbol{\xi}$ -- we need the expectation of the product of two distributions, $\mathbb{E}\left[ A \, \boldsymbol{\xi}_{a_t} \right]$ (with two different sampling conditions). 
+We have computed the expectation of the score, the single random variable $\boldsymbol{\xi}$ -- we need the expectation of the product of two random variables, $\mathbb{E}\left[ A \, \boldsymbol{\xi}_{a_t} \right]$ (with two different sampling conditions). 
 We use the covariance identity, $\text{Cov}(A,B) = \mathbb{E}[AB]-\mathbb{E}[A]\mathbb{E}[B] \rightarrow \mathbb{E}[AB] = \mathbb{E}[A]\mathbb{E}[B] + \text{Cov}(A,B)$, to derive two equalities:
 
 $$
@@ -1136,17 +1135,17 @@ $$ {#eq:sc_drift}
 
 The two expected gradients differ by one term here, which the original paper refers to as the "drift" in the gradient that appears under training-inference mismatch (i.e. only when computing the expectation sampling from the inference stack).
 In true on-policy learning, the covariance is the learning signal. 
-The goal is to match this setup with modern asynchronous setups.
+The goal is to remove this drift in modern asynchronous setups, though the covariance will still be measured under the sampler rather than the learner.
 
-To create an unbiased estimator, when sampling from the inference server, not the trainer, we need to define a new correction term (still per-token here).
-We will show that this term is unbiased.
+To remove this drift, when sampling from the inference server, not the trainer, we need to define a new correction term (still per-token here).
+We will show that this corrected score has zero mean under the sampler, which cancels the drift and leaves only the learning signal.
 
 $$ 
 \tilde{\boldsymbol{\xi}}_{a_t} = \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}}
 $$ {#eq:sc_correction}
 
-This corrected score substacts the expected score under the sampler from the measured score (gradient) of that sample.
-We plug this new score into the above equation, to show that it is unbiased even when training-inference-mismatch is present.
+This corrected score subtracts the expected score under the sampler from the measured score (gradient) of that sample.
+We plug this new score into the above equation, to show that the drift cancels even when training-inference mismatch is present.
 
 $$
 \begin{aligned}
@@ -1158,20 +1157,20 @@ $$
 \end{aligned}
 $$ {#eq:sc_centered}
 
-There are three steps here.
+There are two key steps here.
 First, the expectation term, $\mathbb{E}_{\text{sampler}}[A] \left( \bar{\boldsymbol{\xi}} - \bar{\boldsymbol{\xi}} \right)$ becomes this form because we take the expectation of $\boldsymbol{\xi}_{a_t}$, which is defined just as $\bar{\boldsymbol{\xi}}$.
 This eliminates the first term.
-Second, we have $\text{Cov}_{\text{sampler}}(A, \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}})$, which reduces to $\text{Cov}_{\text{sampler}}(A, \boldsymbol{\xi}_{a_t})$ because $\bar{\boldsymbol{\xi}}$ is constant (summed across the entire vocabulary), creating a normalized per-token score.
+Second, we have $\text{Cov}_{\text{sampler}}(A, \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}})$, which reduces to $\text{Cov}_{\text{sampler}}(A, \boldsymbol{\xi}_{a_t})$ because $\bar{\boldsymbol{\xi}}$ is constant (summed across the entire vocabulary), creating a centered per-token score.
 
 This is the end of the derivation!
-The crucial part is that the $\text{Cov}_{\text{sampler}}(A, \boldsymbol{\xi}_{a_t})$ caries the learning signal of RL, as it maps the advantages (or rewards from rollouts) to the gradients of the policy themselves -- it measures how they relate.
-The other term, the "drift", which we showed that we just zeroed out, depends only on the advantage and shifts all tokens proportionally. 
-We don't want that.
+The crucial part is that $\text{Cov}_{\text{sampler}}(A, \boldsymbol{\xi}_{a_t})$ carries the learning signal of RL, as it maps the advantages (or rewards from rollouts) to the gradients of the policy themselves -- it measures how they relate.
+The other term, the "drift", which we just zeroed out, depends on the advantages only through their mean, so it moves the weights the same way regardless of which token was sampled.
+We don't want that -- in practice, this can pull the learner's weights towards a stale and/or quantized sampler, causing potentially compounding instabilities.
 
 Many labs at the frontier of RL have reported, quietly, to use this method.
-The loss for this implementation in policy-gradient setups is shown below.
+We can implement this with a simple loss.
 We want a scalar loss whose gradient is the centered update, $A \left( \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}} \right)$, so that a single backward pass computes it.
-Expanded, we have two terms contributing to the loss, $A \boldsymbol{\xi}_{a_t} - A  \bar{\boldsymbol{\xi}}$.
+Expanded, we have two terms contributing to the gradient update, $A \boldsymbol{\xi}_{a_t} - A  \bar{\boldsymbol{\xi}}$.
 The first piece of this is the usual policy-gradient term, since $\nabla_\theta \log \pi^{\text{learner}}_{a_t}$ is defined as $\boldsymbol{\xi}_{a_t}$.
 For the second, recall that $\bar{\boldsymbol{\xi}} = \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, \nabla_\theta \log \pi^{\text{learner}}_v$.
 The sampler's probabilities are logged values with no gradient path to the learner, so we can treat them as constants, marked by a stop-gradient ($\text{sg}$), and pull the gradient outside the sum:
@@ -1189,12 +1188,10 @@ $$
 \end{aligned}
 $$ {#eq:sc_loss}
 
-<!-- TODO: mention the top-k approximation. Storing the sampler's full next-token distribution is too expensive (~608KB per token for Qwen3's 152K vocab in fp32), so the sampler logs only its top-k logprobs (k = 128 in the paper; k = 32 also matches full score centering). The tail is modeled as the learner's tail rescaled to the sampler's tail mass, which is `kappa` in the code below, so the centering term only needs the k head tokens. -->
-
-In practice, this normalization / covariate computation would require storing the sampling distributions full next-token distribution for every token in the sequence $\mathcal{V}$, which is very expensive in modern setups.
+In practice, this centering computation would require storing the sampler's full next-token distribution over $\mathcal{V}$ for every token in the sequence, which is very expensive in modern setups.
 
 To get around this, let $\mathcal{H} \subset \mathcal{V}$ be the head (computed per position in the sequence), the sampler's $k$ most likely tokens whose logprobs are logged during generation, and let the tail be every other token.
-With this approximation, sampler's tail probabilities are intentionally not stored -- we approximate them, $\hat{\pi}^{\text{sampler}}$, by rescaling the learner's tail to carry the sampler's missing mass, where $\kappa$ is the ratio of the two tail masses:
+With this approximation, the sampler's tail probabilities are intentionally not stored -- we approximate them, $\hat{\pi}^{\text{sampler}}$, by rescaling the learner's tail to carry the sampler's missing mass, where $\kappa$ is the ratio of the two tail masses:
 
 $$
 \hat{\pi}^{\text{sampler}}_v =
@@ -1206,7 +1203,7 @@ $$
 \kappa = \frac{1 - \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v}{1 - \sum_{v \in \mathcal{H}} \pi^{\text{learner}}_v}
 $$ {#eq:sc_topk_tail}
 
-This is used to define an approximate version of the loss:
+This is used to define an approximate version of the score centering term:
 
 $$
 \bar{\boldsymbol{\xi}} \approx \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v \, \boldsymbol{\xi}_v + \kappa \sum_{v \notin \mathcal{H}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v = \sum_{v \in \mathcal{H}} \left( \pi^{\text{sampler}}_v - \kappa \, \pi^{\text{learner}}_v \right) \boldsymbol{\xi}_v
