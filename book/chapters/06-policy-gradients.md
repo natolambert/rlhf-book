@@ -1075,7 +1075,7 @@ $$
 \nabla_\theta J(\theta) = \mathbb{E}_{a \sim \pi_\theta^{\text{learner}}(\cdot \mid s)} \left[ \sum_{t=1}^{|a|} A \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right]
 $$  {#eq:sc_policy_gradient}
 
-We can approximate this gradient by computing the update on tokens generated within the inference library, which is where the notion of "off-policy" learning comes from:
+We can approximate this gradient by computing the update on tokens generated within the inference library, which is where the training-inference mismatch comes from:
 
 $$
 \hat{g} = \mathbb{E}_{a \sim \pi_\theta^{\text{sampler}}(\cdot \mid s)} \left[ \sum_{t=1}^{|a|} A \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right]
@@ -1089,10 +1089,14 @@ $$
 \hat{g} = \sum_{t} \mathbb{E}_{a_{<t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s)} \left[ \mathbb{E}_{a_{\geq t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s, a_{<t})} \left[ A \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right] \right]
 $$ {#eq:sc_per_token}
 
-This split is to expose a specific term in the process, which represents the expected contribution to the gradient of a given action at time t. 
+Note that the sum over tokens across time $t$ has moved outside of both expectations.
+In this derivation, we focus on computing the per-token values, so we can show each token in the gradient is unbiased.
+Summing unbiased quantities remains unbiased.
+
+This split in the expectation above is to expose a specific term in the process, which represents the expected contribution to the gradient of a given action at time t, which comes after a prefix of tokens, $a_{<t}$. 
 We will show that this per-token expectation is biased.
-Focusing on a single position $t$ with a fixed prefix $a_{<t}$, let us abbreviated $\pi^{\text{learner}}_v = \pi_\theta^{\text{learner}}(v \mid s, a_{<t})$ and $\pi^{\text{sampler}}_v = \pi_\theta^{\text{sampler}}(v \mid s, a_{<t})$ as the probability each policy assigns to token $v$ in the vocabulary $\mathcal{V}$.
-We then define $\boldsymbol{\xi}_v = \nabla_\theta \log \pi^{\text{learner}}_v$ as the learner's score for that token, so the inner expectation of @eq:sc_per_token becomes:
+Focusing on a single position $t$ with a fixed prefix $a_{<t}$, let us abbreviate $\pi^{\text{learner}}_v = \pi_\theta^{\text{learner}}(v \mid s, a_{<t})$ and $\pi^{\text{sampler}}_v = \pi_\theta^{\text{sampler}}(v \mid s, a_{<t})$ as the probability each policy assigns to token $v$ in the vocabulary $\mathcal{V}$.
+We then define $\boldsymbol{\xi}_v = \nabla_\theta \log \pi^{\text{learner}}_v$ as the learner's score for that token, so the inner expectation of @eq:sc_per_token can be expressed in a condensed form:
 
 $$
 \mathbb{E}_{\text{sampler}} \left[ A \, \boldsymbol{\xi}_{a_t} \right] = \mathbb{E}_{a_{\geq t} \sim \pi_\theta^{\text{sampler}}(\cdot \mid s, a_{<t})} \left[ A \, \nabla_\theta \log \pi_\theta^{\text{learner}}(a_t \mid s, a_{<t}) \right]
@@ -1105,7 +1109,8 @@ For the first step, we "un-do" the gradient rule that is common in policy-gradie
 $$
 \begin{aligned}
 \mathbb{E}_{\text{learner}} \left[ \boldsymbol{\xi}_{a_t} \right] &= \sum_{v \in \mathcal{V}} \pi^{\text{learner}}_v \, \nabla_\theta \log \pi^{\text{learner}}_v = \sum_{v \in \mathcal{V}} \nabla_\theta \pi^{\text{learner}}_v \\
-&= \nabla_\theta \sum_{v \in \mathcal{V}} \pi^{\text{learner}}_v = \nabla_\theta 1 = \mathbf{0} \\
+&= \nabla_\theta \sum_{v \in \mathcal{V}} \pi^{\text{learner}}_v = \nabla_\theta 1 = \mathbf{0}
+\end{aligned}
 $$ {#eq:sc_expected_score_learner}
 
 Then, the identity is reduce by pulling the gradient out of the summation, revealing that the inner sum is constant, and the gradient is 0.
@@ -1119,7 +1124,7 @@ $$ {#eq:sc_expected_score}
 
 From here, we need to back up a bit.
 We need to compute $\mathbb{E}_{\text{sampler}} \left[ A \, \boldsymbol{\xi}_{a_t} \right]$, which is the inner expectation of the gradient -- the per-token contribution to the gradient.
-We have compute the expectations of the score, the single distribution $\boldsymbol{\xi}$ -- we need the expectation of the product of two distributions, $\mathbb{E}\left[ A \, \boldsymbol{\xi}_{a_t} \right]$ (with two different sampling conditions). 
+We have computed the expectations of the score, the single distribution $\boldsymbol{\xi}$ -- we need the expectation of the product of two distributions, $\mathbb{E}\left[ A \, \boldsymbol{\xi}_{a_t} \right]$ (with two different sampling conditions). 
 We use the covariance identity, $\text{Cov}(A,B) = \mathbb{E}[AB]-\mathbb{E}[A]\mathbb{E}[B] \rightarrow \mathbb{E}[AB] = \mathbb{E}[A]\mathbb{E}[B] + \text{Cov}(A,B)$, to derive two equalities:
 
 $$
@@ -1129,11 +1134,15 @@ $$
 \end{aligned}
 $$ {#eq:sc_drift}
 
-To create an unbiased estimator, when sampling from the inference server, not the trainer, we need to define a new correction term.
+The two expected gradients differ by one term here, which the original paper refers to as the "drift" in the gradient that appears under training-inference mismatch (i.e. only when computing the expectation sampling from the inference stack).
+In true on-policy learning, the covariance is the learning signal. 
+The goal is to match this setup with modern asynchronous setups.
+
+To create an unbiased estimator, when sampling from the inference server, not the trainer, we need to define a new correction term (still per-token here).
 We will show that this term is unbiased.
 
 $$ 
-\tilde{\boldsymbol{\xi}}_{a_t} &= \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}}
+\tilde{\boldsymbol{\xi}}_{a_t} = \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}}
 $$ {#eq:sc_correction}
 
 This corrected score substacts the expected score under the sampler from the measured score (gradient) of that sample.
@@ -1141,7 +1150,10 @@ We plug this new score into the above equation, to show that it is unbiased even
 
 $$
 \begin{aligned}
-\mathbb{E}_{\text{sampler}} \left[ A \, \tilde{\boldsymbol{\xi}}_{a_t} \right] &= \mathbb{E}_{\text{sampler}}[A] \left( \bar{\boldsymbol{\xi}} - \bar{\boldsymbol{\xi}} \right) + \text{Cov}_{\text{sampler}}(A, \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}}) \\
+\mathbb{E}_{\text{sampler}} \left[ A \, \tilde{\boldsymbol{\xi}}_{a_t} \right] &= \mathbb{E}_{\text{sampler}}[A] \, \mathbb{E}_{\text{sampler}} \left[ \tilde{\boldsymbol{\xi}}_{a_t} \right] + \text{Cov}_{\text{sampler}}(A, \tilde{\boldsymbol{\xi}}_{a_t}) \\
+&= \mathbb{E}_{\text{sampler}}[A] \, \mathbb{E}_{\text{sampler}} \left[ \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}} \right] + \text{Cov}_{\text{sampler}}(A, \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}}) \\
+&= \mathbb{E}_{\text{sampler}}[A] \left( \mathbb{E}_{\text{sampler}} \left[ \boldsymbol{\xi}_{a_t} \right] - \bar{\boldsymbol{\xi}} \right) + \text{Cov}_{\text{sampler}}(A, \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}}) \\
+&= \mathbb{E}_{\text{sampler}}[A] \left( \bar{\boldsymbol{\xi}} - \bar{\boldsymbol{\xi}} \right) + \text{Cov}_{\text{sampler}}(A, \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}}) \\
 &= \text{Cov}_{\text{sampler}}(A, \boldsymbol{\xi}_{a_t})
 \end{aligned}
 $$ {#eq:sc_centered}
@@ -1149,9 +1161,13 @@ $$ {#eq:sc_centered}
 There are three steps here.
 First, the expectation term, $\mathbb{E}_{\text{sampler}}[A] \left( \bar{\boldsymbol{\xi}} - \bar{\boldsymbol{\xi}} \right)$ becomes this form because we take the expectation of $\boldsymbol{\xi}_{a_t}$, which is defined just as $\bar{\boldsymbol{\xi}}$.
 This eliminates the first term.
-Second, we have $\text{Cov}_{\text{sampler}}(A, \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}})$, which reduces to $\text{Cov}_{\text{sampler}}(A, \boldsymbol{\xi}_{a_t})$ because $\bar{\boldsymbol{\xi}}$ contributes nothing to the covariance. TODO - claude clarify this clause.
+Second, we have $\text{Cov}_{\text{sampler}}(A, \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}})$, which reduces to $\text{Cov}_{\text{sampler}}(A, \boldsymbol{\xi}_{a_t})$ because $\bar{\boldsymbol{\xi}}$ is constant (summed across the entire vocabulary), creating a normalized per-token score.
 
 This is the end of the derivation!
+The crucial part is that the $\text{Cov}_{\text{sampler}}(A, \boldsymbol{\xi}_{a_t})$ caries the learning signal of RL, as it maps the advantages (or rewards from rollouts) to the gradients of the policy themselves -- it measures how they relate.
+The other term, the "drift", which we showed that we just zeroed out, depends only on the advantage and shifts all tokens proportionally. 
+We don't want that.
+
 Many labs at the frontier of RL have reported, quietly, to use this method.
 The loss for this implementation in policy-gradient setups is shown below.
 TODO, how to derive this loss? And explain it
