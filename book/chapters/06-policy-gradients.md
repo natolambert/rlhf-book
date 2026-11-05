@@ -1170,9 +1170,17 @@ We don't want that.
 
 Many labs at the frontier of RL have reported, quietly, to use this method.
 The loss for this implementation in policy-gradient setups is shown below.
-TODO, how to derive this loss? And explain it
+We want a scalar loss whose gradient is the centered update, $A \left( \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}} \right)$, so that a single backward pass computes it.
+Expanded, we have two terms contributing to the loss, $A \boldsymbol{\xi}_{a_t} - A  \bar{\boldsymbol{\xi}}$.
+The first piece of this is the usual policy-gradient term, since $\nabla_\theta \log \pi^{\text{learner}}_{a_t}$ is defined as $\boldsymbol{\xi}_{a_t}$.
+For the second, recall that $\bar{\boldsymbol{\xi}} = \sum_{v \in \mathcal{V}} \pi^{\text{sampler}}_v \, \nabla_\theta \log \pi^{\text{learner}}_v$.
+The sampler's probabilities are logged values with no gradient path to the learner, so we can treat them as constants, marked by a stop-gradient ($\text{sg}$), and pull the gradient outside the sum:
 
-<!-- TODO -->
+$$
+\bar{\boldsymbol{\xi}} = \nabla_\theta \sum_{v \in \mathcal{V}} \text{sg}\left( \pi^{\text{sampler}}_v \right) \log \pi^{\text{learner}}_v
+$$ {#eq:sc_xibar_grad}
+
+Combining the two pieces and multiplying by $-A$, treated as a constant, gives the loss:
 
 $$
 \begin{aligned}
@@ -1181,14 +1189,12 @@ $$
 \end{aligned}
 $$ {#eq:sc_loss}
 
-The second equation is the implementation, where in practice we often accumulate in code the gradients of the loss directly, matching modern codebases. TODO {claude} is this right?
-
 <!-- TODO: mention the top-k approximation. Storing the sampler's full next-token distribution is too expensive (~608KB per token for Qwen3's 152K vocab in fp32), so the sampler logs only its top-k logprobs (k = 128 in the paper; k = 32 also matches full score centering). The tail is modeled as the learner's tail rescaled to the sampler's tail mass, which is `kappa` in the code below, so the centering term only needs the k head tokens. -->
 
-In practice, this normalization / covariate computation would require storing the sampling distributions full next-token distribution for every token in the sequence, which is very expensive in modern setups.
+In practice, this normalization / covariate computation would require storing the sampling distributions full next-token distribution for every token in the sequence $\mathcal{V}$, which is very expensive in modern setups.
 
-
-Let $\mathcal{H} \subset \mathcal{V}$ be the head, the sampler's $k$ most likely tokens whose logprobs are logged during generation, and let the tail be every other token; because the sampler's tail probabilities are not stored, we approximate them, $\hat{\pi}^{\text{sampler}}$, by rescaling the learner's tail to carry the sampler's missing mass, where $\kappa$ is the ratio of the two tail masses:
+To get around this, let $\mathcal{H} \subset \mathcal{V}$ be the head (computed per position in the sequence), the sampler's $k$ most likely tokens whose logprobs are logged during generation, and let the tail be every other token.
+With this approximation, sampler's tail probabilities are intentionally not stored -- we approximate them, $\hat{\pi}^{\text{sampler}}$, by rescaling the learner's tail to carry the sampler's missing mass, where $\kappa$ is the ratio of the two tail masses:
 
 $$
 \hat{\pi}^{\text{sampler}}_v =
@@ -1200,11 +1206,14 @@ $$
 \kappa = \frac{1 - \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v}{1 - \sum_{v \in \mathcal{H}} \pi^{\text{learner}}_v}
 $$ {#eq:sc_topk_tail}
 
-<!-- TODO -->
+This is used to define an approximate version of the loss:
 
 $$
 \bar{\boldsymbol{\xi}} \approx \sum_{v \in \mathcal{H}} \pi^{\text{sampler}}_v \, \boldsymbol{\xi}_v + \kappa \sum_{v \notin \mathcal{H}} \pi^{\text{learner}}_v \, \boldsymbol{\xi}_v = \sum_{v \in \mathcal{H}} \left( \pi^{\text{sampler}}_v - \kappa \, \pi^{\text{learner}}_v \right) \boldsymbol{\xi}_v
 $$ {#eq:sc_topk}
+
+In practice, this approximation is slotted into standard policy-gradient frameworks.
+An example is shown below:
 
 ```python
 # Shapes: learner_vocab_logprobs (B*G, L, V); tokens (B*G, L)
