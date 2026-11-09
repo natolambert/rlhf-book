@@ -25,6 +25,8 @@ custom_css: |
   .slide--content.valign-center > .slide-content { flex: 0 1 auto; }
   .compute-table td { vertical-align: top; padding-top: 0.75em; padding-bottom: 0.75em; }
   .compute-note { font-size: 0.7em; color: #6b7280; }
+  .col-text-sm { font-size: 0.85em; }
+  .diagram-md img { max-height: 430px; width: auto; }
   .notation-table { font-size: 0.95em; }
   .notation-table td, .notation-table th { padding-top: 0.35em; padding-bottom: 0.35em; }
   .notation-table td:first-child, .notation-table th { white-space: nowrap; }
@@ -118,7 +120,23 @@ $p_v$ and $q_v$ are shorthand for the probability of token $v$ at one position, 
 
 <!-- layout: section-break -->
 
-## Translating the policy gradient into code
+## Implementing RL basics with an LLM
+
+---
+
+
+<!-- columns: 50/50 -->
+<!-- valign: center -->
+## RL review: The agent–environment loop
+
+**Classical RL**: agent in an MDP $(\mathcal{S}, \mathcal{A}, P, r, \gamma)$
+
+- Reward is a known function from the environment per step
+- Optimize cumulative return: $J(\pi) = \mathbb{E}_{\tau \sim p_\pi}\!\left[\sum_{t} \gamma^t r(s_t, a_t)\right]$
+
+|||
+
+![](assets/rl.png)
 
 ---
 
@@ -138,7 +156,6 @@ $p_v$ and $q_v$ are shorthand for the probability of token $v$ at one position, 
 
 Two implementation-level views of this MDP: **token-level** (each token is a separate action, used in PPO with GAE) vs. **sequence-level** (entire completion is one action, used in REINFORCE/GRPO).
 
-
 ---
 
 ## Agentic RL complicates the MDP
@@ -157,6 +174,26 @@ Two implementation-level views of this MDP: **token-level** (each token is a sep
 </div>
 
 Math RL needed prompts and answer checkers. Agentic RL needs **environments**: containers, real file systems, services, verification tests [@ivison2026tmax]. **Building worlds for LLMs is hard.**
+
+---
+
+
+<!-- class: diagram-md -->
+## RL for LLMs: RLVR
+
+<!-- img-align: center -->
+
+![](assets/rlvr-system.png)
+
+---
+
+<!-- class: diagram-md -->
+## RL for LLMs: Agentic RL
+
+<!-- img-align: center -->
+
+![](assets/tool_use_rl_loop.png)
+
 ---
 
 ## Recall: The policy gradient
@@ -177,12 +214,12 @@ The policy gradient derivation gives:
 
 $$\nabla_\theta \log p_\theta(\tau) = \sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t)$$
 
-So we write a loss whose gradient is the policy gradient estimate $\hat{g}$, treating each advantage $A_i$ as a constant:
+So we write a loss whose negative gradient is the policy gradient, treating each advantage $A_i$ as a constant across the trajectory:
 
 $$
 \begin{aligned}
 L(\theta) &= -\frac{1}{N} \sum_{i=1}^{N} A_i \sum_{t} \log \pi_\theta(a_{i,t} \mid s_{i,t}) \\
--\nabla_\theta L(\theta) &= \frac{1}{N} \sum_{i=1}^{N} A_i \sum_{t} \nabla_\theta \log \pi_\theta(a_{i,t} \mid s_{i,t}) = \hat{g}
+-\nabla_\theta L(\theta) &= \frac{1}{N} \sum_{i=1}^{N} A_i \sum_{t} \nabla_\theta \log \pi_\theta(a_{i,t} \mid s_{i,t})
 \end{aligned}
 $$
 
@@ -197,19 +234,23 @@ In code, we compute the **log-probs** and let autodiff handle the gradient:
 ```python
 seq_log_probs = (token_log_probs * completion_mask).sum(dim=-1)
 loss = -(seq_log_probs * advantages.detach()).mean()
-loss.backward()  # fills each parameter's .grad with ∇L = -ĝ
-optimizer.step()  # θ ← θ - η ∇L = θ + η ĝ
+loss.backward()  # fills each parameter's .grad with ∇L
+optimizer.step()  # θ ← θ - η ∇L
 ```
 
-`loss.backward()` runs backpropagation: it computes $\partial L / \partial \theta$ for every parameter. Nothing changes until `optimizer.step()` applies the update. The value of $L$ means nothing on its own; it is built only to have the right gradient.
+`loss.backward()` runs backpropagation: it computes $\partial L / \partial \theta$ for every parameter. 
 
-Every loss function in this lecture is a variation on this pattern.
+`optimizer.step()` applies the update. 
+
+The loss values themselves are often weird in RL (e.g. zero-centered distributions, rather than nice decreasing accuracy metrics of pretraining)
+
+Most RL algorithms used today are variations on this computation.
 
 ---
 
 ## Computing log-probabilities (expanded)
 
-The fundamental building block: per-token log-probabilities from the policy. Here's every step explicitly:
+The fundamental building block: per-token log-probabilities from the policy. 
 
 ```python
 # Forward pass through the model
@@ -248,43 +289,163 @@ advantages = rewards - baseline
 loss = -(advantages * seq_log_probs).mean()
 ```
 
-That's it. Advantages weight the log-probabilities. Positive advantage → increase probability. Negative → decrease. (How we reduce per-token losses to a scalar — `.mean()` here — turns out to matter more than you'd expect.)
+TPositive advantage → increase probability. Negative → decrease. 
+
+(Aside: How we reduce per-token losses to a scalar — `.mean()` here — turns out to matter more than you'd expect. More in the [book](https://rlhfbook.com/c/06-policy-gradients#loss-aggregation-tradeoffs) and [lecture video](https://www.youtube.com/watch?v=i-AIMpZHgeg&t=2704s).)
 
 ---
 
-## GRPO advantage
+<!-- layout: section-break -->
 
-For a group of $G$ completions with rewards $R_1, \ldots, R_G$:
-
-$$\hat{A}_i = \frac{R_i - \text{mean}(R_1, \ldots, R_G)}{\text{std}(R_1, \ldots, R_G)}$$
-
-Z-score normalization: positive advantage for above-average completions, negative for below.
-
-Each token in completion $i$ gets the **same** advantage (sequence-level, not per-token).
+## Challenges of distributed RL training
 
 ---
 
-## What is inside a score?
+## On-policy vs. off-policy
 
-The softmax connects one token's score to every logit. Write the log-prob in terms of logits:
+Policy-gradient theory is built on the assumption of on-policy data -- from the current model weights in the training framework of the LLM. 
 
-$$\log p_v = f_v - \log \sum_{u \in \mathcal{V}} e^{f_u}$$
+As models get bigger, this is hard because: sampling is expensive, sampling is dominated by long-trail generations, most people use separate systems for inference v training, moving large model weights around is slow, inference weights can be further quantized for speed relative to training weights, multi-cluster deployments, etc.
 
-<!-- step -->
+---
 
-Differentiate, using the chain rule on the second term:
+## Synchronous: Share generation and training
 
-$$\boldsymbol{\xi}_v = \nabla_\theta f_v - \frac{\sum_{u} e^{f_u} \, \nabla_\theta f_u}{\sum_{w} e^{f_w}}$$
+<!-- cite-right: noukhovitch2024asynchronous -->
 
-<!-- step -->
+The default implementation for policy-gradient algorithms is **on-policy** execution: the generations from the language model are scored before updating the model.
 
-Each fraction $e^{f_u} / \sum_w e^{f_w}$ is exactly $p_u$:
+<!-- img-align: center -->
 
-$$\boldsymbol{\xi}_v = \nabla_\theta f_v - \sum_{u \in \mathcal{V}} p_u \, \nabla_\theta f_u$$
+![](assets/async_v_synch_rl_1.png)
 
-<!-- step -->
+---
 
-Raise the sampled token's logit, and push down the logits the learner already expects. We use this form again later.
+## Intermediate step: Separate GPUs, still on-policy
+
+<!-- cite-right: noukhovitch2024asynchronous -->
+
+Moving generation to an inference engine on its own GPUs makes it fast. To stay on-policy, each side waits for the other.
+
+<!-- img-align: center -->
+
+![](assets/async_v_synch_rl_2.png)
+
+---
+
+## Asynchronous: Off-policy training
+
+<!-- cite-right: noukhovitch2024asynchronous -->
+
+The common solution is to constantly run inference and training on separate GPU nodes. The model used for generation may be 1–N steps behind the training model.
+
+<!-- img-align: center -->
+
+![](assets/async_v_synch_rl_3.png)
+
+This turns out to be mostly "fine" -- but it can be taken too far.
+
+---
+
+<!-- columns: 42/58 -->
+## Synchronous vs. asynchronous training
+
+<!-- cite-right: noukhovitch2024asynchronous -->
+
+<div class="col-text-sm">
+
+**Ideal / Theory (on-policy)**: generate → update → generate → update
+
+Each batch of completions is scored and used for a short update window (one or a few epochs), then discarded.
+
+**Reality (async)**: generation and training overlap on different GPU groups for better throughput. The model used for generation may be 1–N steps behind the training model.
+
+**Tradeoff**: perfect on-policy is slow (GPUs idle during generation or training). Slight staleness (how off-policy the data is) is usually fine.
+
+</div>
+
+|||
+
+![Synchronous training idles GPUs; separating generation and training helps, but on-policy requires waiting. Async (off-policy) overlaps both for full utilization.](assets/async_v_synch_rl.png)
+
+---
+
+## Asynchronous RL training
+
+<!-- columns: 50/50 -->
+
+Modern RL for LLMs splits compute into two groups:
+
+- **Actors** (inference GPUs): generate completions using vLLM or similar
+- **Learners** (training GPUs): compute policy gradient updates
+
+A process management library (e.g., Ray) coordinates data flow between them. Model weights are synced periodically from learner → actor.
+
+|||
+
+![Distributed RL system with prompt and result queues between learner and actor GPUs.](assets/distributed-rl.png)
+
+---
+
+
+<!-- columns: 45/55 -->
+<!-- valign: center -->
+## The long-tail generations cause idle GPUs
+
+<!-- cite-right: teamolmo2025olmo3 -->
+
+With **static batching**, each actor generates a whole batch and returns it only when the longest sequence finishes.
+
+- Wasted compute is (max length − mean length) / max length.
+- Olmo 3 at a 32K limit: mean generation length 14,628, so up to **54%** of compute would be wasted.
+- Agentic RL is worse: one trajectory makes 2 tool calls, another makes 200. Tool calls add additional lag and complexity.
+
+|||
+
+![Static batching. Pink: prefill, green: decoding, dark green: EOS, grey: idle until the batch finishes.](assets/olmo3-static-batching.png)
+
+---
+
+
+<!-- columns: 45/55 -->
+<!-- valign: center -->
+## Solution: Update inference model weights on the fly
+
+<!-- cite-right: teamolmo2025olmo3 -->
+
+<div class="col-text-sm">
+
+| Olmo 3 RL infrastructure | Tokens/s |
+|---|---:|
+| Olmo 2 baseline | 881 |
+| + continuous batching | 975 |
+| + better threading | 1,358 |
+| + inflight updates | **2,949** |
+
+**Continuous batching:** start a new prompt as soon as a sequence finishes.
+
+**Inflight updates:** load new weights without pausing generation or dropping the KV cache. The biggest speedup, but tokens in one completion now come from different weights.
+
+</div>
+
+|||
+
+![Continuous batching backfills finished rows immediately (S5–S7), so no slot sits idle.](assets/olmo3-continuous-batching.png)
+
+---
+
+
+<!-- columns: 62/38 -->
+<!-- valign: center -->
+## Inflight updates: PipelineRL
+
+The canonical reference for inflight weight updates is **PipelineRL** [@piche2025pipelinerl].
+
+[arxiv.org/abs/2509.19128](https://arxiv.org/abs/2509.19128)
+
+|||
+
+![](assets/pipelinerl-paper-2025.png)
 
 ---
 
@@ -314,89 +475,6 @@ Steps 1 and 3 ask two different systems about the same tokens. Do they agree?
 
 ---
 
-<!-- layout: section-break -->
-
-## Training-inference mismatch
-
----
-
-## On-policy vs. off-policy
-
-<!-- cite-right: noukhovitch2024asynchronous -->
-
-**Ideal / Theory (on-policy)**: generate → update → generate → update
-
-Each batch of completions is scored and used for a short update window (one or a few epochs), then discarded.
-
-**Reality (async)**: generation and training overlap on different GPU groups for better throughput. The model used for generation may be 1–N steps behind the training model.
-
-**Tradeoff**: perfect on-policy is slow (GPUs idle during generation or training). Slight staleness is usually fine.
-
----
-
-## Synchronous: Merged generation and training
-
-<!-- cite-right: noukhovitch2024asynchronous -->
-
-The default implementation for policy-gradient algorithms is **on-policy** execution: the generations from the language model are scored before updating the model.
-
-<!-- img-align: center -->
-
-![The same GPUs generate, then train on those samples. Every update is on-policy, but generation on training hardware is slow.](assets/async_v_synch_rl_1.png)
-
----
-
-## Separate GPUs, still on-policy
-
-<!-- cite-right: noukhovitch2024asynchronous -->
-
-Moving generation to an inference engine on its own GPUs makes it fast. To stay on-policy, each side waits for the other.
-
-<!-- img-align: center -->
-
-![GPU 1 generates while GPU 2 idles, then GPU 2 trains while GPU 1 idles.](assets/async_v_synch_rl_2.png)
-
----
-
-## Asynchronous: Off-policy training
-
-<!-- cite-right: noukhovitch2024asynchronous -->
-
-The common solution is to constantly run inference and training on separate GPU nodes. The model used for generation may be 1–N steps behind the training model.
-
-<!-- img-align: center -->
-
-![Generating the next batch overlaps training on the previous one. Both GPUs stay busy, but each update uses samples from an older model.](assets/async_v_synch_rl_3.png)
-
----
-
-## Synchronous vs. asynchronous training
-
-<!-- cite-right: noukhovitch2024asynchronous -->
-
-<!-- img-align: center -->
-
-![Synchronous training idles GPUs; separating generation and training helps, but on-policy requires waiting. Async (off-policy) overlaps both for full utilization.](assets/async_v_synch_rl.png)
-
----
-
-## Asynchronous RL training
-
-<!-- columns: 50/50 -->
-
-Modern RL for LLMs splits compute into two groups:
-
-- **Actors** (inference GPUs): generate completions using vLLM or similar
-- **Learners** (training GPUs): compute policy gradient updates
-
-A process management library (e.g., Ray) coordinates data flow between them. Model weights are synced periodically from learner → actor.
-
-|||
-
-![Distributed RL system with prompt and result queues between learner and actor GPUs.](assets/distributed-rl.png)
-
----
-
 ## Defining the mismatch
 
 At one position, with prompt $x$ and prefix $a_{<t}$, each system defines a next-token distribution:
@@ -412,12 +490,9 @@ $$
 
 **Training-inference mismatch** (TIM) is when $q \neq p$. There are two independent sources:
 
-- **Staleness:** $\tilde{\theta} \neq \theta$, because the weights have moved since the last sync.
+- **Staleness:** $\tilde{\theta} \neq \theta$, because the weights have moved since the last syn (on the trainer side).
 - **Numerics:** $\tilde{f} \neq f$, because of different kernels, precision, parallelism, or a quantized KV cache (the cached attention keys and values for the prefix, stored in fewer bits) [@yao2025offpolicy; @marek2026score].
 
-<!-- step -->
-
-Even when the sampler and learner share identical parameters $\theta$, their effective token distributions can differ because the inference engine (e.g., vLLM) and training framework (e.g., FSDP) use different kernels, precision, and parallelism strategies [@yao2025offpolicy].
 
 ---
 
@@ -428,52 +503,6 @@ Even when the sampler and learner share identical parameters $\theta$, their eff
 <!-- img-align: center -->
 
 ![Training vs. inference probability for the same tokens in MiniMax-M1, before and after a fix. Agreement improves, but the two systems still differ.](assets/minimax-m1-logprob-mismatch.png)
-
----
-
-## Measuring the mismatch at one token
-
-The ratio between the two systems for a sampled token, and its log:
-
-$$w_t = \frac{p(a_t \mid x, a_{<t})}{q(a_t \mid x, a_{<t})}, \qquad \delta_t = \log w_t = \log p(a_t \mid x, a_{<t}) - \log q(a_t \mid x, a_{<t})$$
-
-<!-- step -->
-
-Tokens are sampled from $q$, so take the expectation under $q$:
-
-$$\mathbb{E}_{a_t \sim q}[\delta_t] = \sum_{v \in \mathcal{V}} q_v \left( \log p_v - \log q_v \right)$$
-
-<!-- step -->
-
-Flip the sign to recognize the KL divergence:
-
-$$\mathbb{E}_{a_t \sim q}[\delta_t] = -\sum_{v \in \mathcal{V}} q_v \log \frac{q_v}{p_v} = -\text{KL}(q_t \,\Vert\, p_t)$$
-
-<!-- step -->
-
-If the systems agree, every $\delta_t$ is zero. Otherwise, log-ratios are negative on average.
-
----
-
-## Mismatch adds up over a completion
-
-The ratio for a whole completion is the product of the token ratios:
-
-$$w(a) = \frac{p_\theta(a \mid x)}{q(a \mid x)} = \prod_{t=1}^{T} w_t, \qquad \log w(a) = \sum_{t=1}^{T} \delta_t$$
-
-<!-- step -->
-
-Take the expectation under $q$, and apply the previous slide at each position:
-
-$$\mathbb{E}_{a \sim q}[\log w(a)] = \sum_{t=1}^{T} \mathbb{E}_{a_{<t} \sim q}\big[ \mathbb{E}_{a_t \sim q}[\delta_t] \big] = -\sum_{t=1}^{T} \mathbb{E}_{a_{<t} \sim q}\big[ \text{KL}(q_t \,\Vert\, p_t) \big]$$
-
-<!-- step -->
-
-This sum is the KL between the two sequence distributions, $\text{KL}\big(q(a \mid x) \,\Vert\, p_\theta(a \mid x)\big)$, so it grows with length.
-
-<!-- step -->
-
-For illustration, a small per-token KL of $0.001$ over $10{,}000$ tokens gives a sequence KL of $10$ nats. A typical weight is then near $e^{-10} \approx 5 \times 10^{-5}$.
 
 ---
 
@@ -505,7 +534,9 @@ $$\nabla_\theta J(\theta) = \mathbb{E}_{a \sim q}\left[ w(a) \, A \sum_{t=1}^{T}
 
 But $w$ can take very large values on rare tokens, which inflates the variance of the gradient.
 
-Truncated importance sampling [@ionides2008truncated] caps these weights with $\min(w_t, C)$ for some constant $C$, trading a small bias for bounded variance in the policy gradient.
+Truncated importance sampling [@ionides2008truncated] caps the per-token ratio at a constant $C$, trading a small bias for bounded variance in the policy gradient:
+
+$$w_t = \frac{p(a_t \mid x, a_{<t})}{q(a_t \mid x, a_{<t})}, \qquad \tilde{w}_t = \min(w_t, C)$$
 
 ---
 
@@ -527,15 +558,11 @@ per_token_pg_loss = per_token_pg_loss * tis_weight.detach()
 
 TIS for the learner–sampler ratio has been adopted across major open-source RL frameworks (VeRL, TRL, OpenRLHF, SkyRL, OAT, and Open Instruct, which uses $C = 2$).
 
-<!-- step -->
-
-Is there a correction that needs no ratio at all? To find one, we go back to the identity behind baselines.
-
 ---
 
 <!-- layout: section-break -->
 
-## Score centering
+## Score centering: managing train-inference mismatch
 
 ---
 
@@ -546,6 +573,20 @@ Is there a correction that needs no ratio at all? To find one, we go back to the
 <!-- img-align: center -->
 
 ![Qwen3-30B-A3B-Base trained with RL on math, with the sampler quantized more and more heavily from left to right. W/A is weights and activations; KV is the KV cache. With an FP8 sampler, plain policy gradient (PG) trains stably. With an FP4 KV cache, PG collapses within 200 steps. With INT8 weights and an INT4 KV cache, score centering (SC) reaches 30% accuracy, TIS 12%, and every other method ends below 5%.](assets/score-centering-30b-quantization.png)
+
+---
+
+
+## What is the score?
+
+In statistics, the **score** is the gradient of the log-likelihood with respect to the parameters. For one token $v$ at one position:
+
+$$\boldsymbol{\xi}_v = \nabla_\theta \log p_\theta(v \mid x, a_{<t})$$
+
+- It is a vector the size of the parameters: the direction that makes token $v$ more likely.
+- The policy gradient is an advantage-weighted sum of the scores of the sampled tokens:
+
+$$\nabla_\theta J(\theta) = \mathbb{E}\left[ A \sum_{t=1}^{T} \boldsymbol{\xi}_{a_t} \right]$$
 
 ---
 
@@ -1109,3 +1150,61 @@ nathan@natolambert.com
 |||
 
 ![](assets/post-training-course-thumbnails.jpeg)
+
+---
+
+
+<!-- after: references -->
+<!-- layout: section-break -->
+
+## Extra slides
+
+---
+
+
+<!-- after: references -->
+## Measuring the mismatch at one token
+
+The ratio between the two systems for a sampled token, and its log:
+
+$$w_t = \frac{p(a_t \mid x, a_{<t})}{q(a_t \mid x, a_{<t})}, \qquad \delta_t = \log w_t = \log p(a_t \mid x, a_{<t}) - \log q(a_t \mid x, a_{<t})$$
+
+<!-- step -->
+
+Tokens are sampled from $q$, so take the expectation under $q$:
+
+$$\mathbb{E}_{a_t \sim q}[\delta_t] = \sum_{v \in \mathcal{V}} q_v \left( \log p_v - \log q_v \right)$$
+
+<!-- step -->
+
+Flip the sign to recognize the KL divergence:
+
+$$\mathbb{E}_{a_t \sim q}[\delta_t] = -\sum_{v \in \mathcal{V}} q_v \log \frac{q_v}{p_v} = -\text{KL}(q_t \,\Vert\, p_t)$$
+
+<!-- step -->
+
+If the systems agree, every $\delta_t$ is zero. Otherwise, log-ratios are negative on average.
+
+---
+
+
+<!-- after: references -->
+## Mismatch adds up over a completion
+
+The ratio for a whole completion is the product of the token ratios:
+
+$$w(a) = \frac{p_\theta(a \mid x)}{q(a \mid x)} = \prod_{t=1}^{T} w_t, \qquad \log w(a) = \sum_{t=1}^{T} \delta_t$$
+
+<!-- step -->
+
+Take the expectation under $q$, and apply the previous slide at each position:
+
+$$\mathbb{E}_{a \sim q}[\log w(a)] = \sum_{t=1}^{T} \mathbb{E}_{a_{<t} \sim q}\big[ \mathbb{E}_{a_t \sim q}[\delta_t] \big] = -\sum_{t=1}^{T} \mathbb{E}_{a_{<t} \sim q}\big[ \text{KL}(q_t \,\Vert\, p_t) \big]$$
+
+<!-- step -->
+
+This sum is the KL between the two sequence distributions, $\text{KL}\big(q(a \mid x) \,\Vert\, p_\theta(a \mid x)\big)$, so it grows with length.
+
+<!-- step -->
+
+For illustration, a small per-token KL of $0.001$ over $10{,}000$ tokens gives a sequence KL of $10$ nats. A typical weight is then near $e^{-10} \approx 5 \times 10^{-5}$.
