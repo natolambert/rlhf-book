@@ -5,7 +5,7 @@
 **Neighbors:** L23 Imitation Learning (11/16) → **L24 (this lecture)** → L25 Inverse RL (11/23) → L26 Specification and Implications → L27 Case Study
 **Format:** ~60–70 minutes of slides + questions (slot length TBC)
 **Audience:** undergraduate / MEng intro-RL students who have derived REINFORCE, baselines, off-policy importance weighting, KL trust regions, and PPO-clip from the course manuscript
-**Status:** proposal — outline only, no slides yet
+**Status:** slides in progress in `talk.md` (LLM policy-gradient code, training-inference mismatch, score centering, StableReinforce). The rest of the outline below is not built yet.
 
 ## Talk: Policy gradients at the frontier — RL for language models
 
@@ -143,7 +143,7 @@ Local `teach/Cornell-CS4789-2026/refs.bib`, copying existing keys from `teach/co
 2. Should the reward-model teaser (slide 44) stay, or leave preferences entirely to L25?
 3. Live demo? Options: a tiny score-centering vs. vanilla REINFORCE run from `code/`, or a Tinker notebook.
 4. Ask Martin Marek for permission to use the thread figures, and whether Thinking Machines has said anything publicly since.
-5. Verify the "extremely stable training" phrase Marek quotes from the Tinker docs before putting it on a slide — it is not on the StableReinforce docs page as of 26 Oct 2026.
+5. ~~Verify the "extremely stable training" phrase Marek quotes from the Tinker docs.~~ It is on the StableReinforce docs page as of 5 Nov 2026.
 
 ## Sources
 
