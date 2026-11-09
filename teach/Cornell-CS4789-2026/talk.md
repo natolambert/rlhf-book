@@ -7,7 +7,7 @@ fonts:
   body: "Poppins"
 bibliography: refs.bib
 figure_captions: true
-show_animations: false  # set true for final touches
+show_animations: true
 footer:
   left: "rlhfbook.com"
   center: "Cornell CS 4789"
@@ -25,8 +25,11 @@ custom_css: |
   .slide--content.valign-center > .slide-content { flex: 0 1 auto; }
   .compute-table td { vertical-align: top; padding-top: 0.75em; padding-bottom: 0.75em; }
   .compute-note { font-size: 0.7em; color: #6b7280; }
+  .shorthand-note { font-size: 0.7em; line-height: 1.2; color: #6b7280; margin-bottom: 0.2em; }
   .col-text-sm { font-size: 0.85em; }
   .diagram-md img { max-height: 430px; width: auto; }
+  .slide.diagram-sm .slide-content img { max-height: 400px; width: auto; }
+  .slide.diagram-xs .slide-content img { max-height: 330px; width: auto; }
   .notation-table { font-size: 0.95em; }
   .notation-table td, .notation-table th { padding-top: 0.35em; padding-bottom: 0.35em; }
   .notation-table td:first-child, .notation-table th { white-space: nowrap; }
@@ -51,7 +54,7 @@ custom_css: |
 
 ## Post-training (RL) now takes most of a frontier lab's compute
 
-<!-- cite-right: semianalysis2026computeshare -->
+<!-- footnote-right: [SemiAnalysis, via OfficeChai](https://officechai.com/ai/while-share-of-inference-has-held-steady-over-the-last-2-years-pre-training-compute-has-moved-to-post-training-semi-analysis/) -->
 
 <!-- img-align: center -->
 
@@ -68,8 +71,8 @@ RL compute relative to pretraining compute for the same model, in GPU-hours:
 | Model | Pretraining | RL | RL / pretraining |
 |---|---|---|---|
 | **DeepSeek R1** <small>Jan 2025<br>671B total, 37B active</small> | **2.66M** <small>H800 GPU-hours [@deepseekai2025deepseekv3technicalreport]</small> | **0.14M** <small>H800 GPU-hours [@guo2025deepseeknature]</small> | **~5%** |
-| **Beam** <small>Oct 2026<br>501B total, 23B active</small> | **< 4.1M** <small>6,144 GB300s for under 4 weeks</small> | **~7.1M** <small>10.5K GB300s for 4 weeks [@reflection2026beam]</small> | **> 1.7×** |
-| **Inkling 2 Small** <small>Nov 2026<br>594B total, 17B active</small> | **~0.11M\*** <small>~1.5K GPUs for under 3 days</small> | **~0.44M** <small>2,048 GPUs for 9 days [@tml2026inkling2small]</small> | **~4×\*** |
+| [**Beam**](https://reflection.ai/blog/introducing-beam) <small>Oct 2026<br>501B total, 23B active</small> | **< 4.1M** <small>6,144 GB300s for under 4 weeks</small> | **~7.1M** <small>10.5K GB300s for 4 weeks</small> | **> 1.7×** |
+| [**Inkling 2 Small**](https://thinkingmachines.ai/news/inkling-2-small) <small>Nov 2026<br>594B total, 17B active</small> | **~0.11M\*** <small>~1.5K GPUs for under 3 days</small> | **~0.44M** <small>2,048 GPUs for 9 days</small> | **~4×\*** |
 
 </div>
 
@@ -167,7 +170,7 @@ Two implementation-level views of this MDP: **token-level** (each token is a sep
 | State $s_t$ | Prompt + tokens so far | Context (prompt + tokens + tool outputs), plus hidden environment state (files, services, other users) |
 | Action $a_t$ | Next token | Next token (many are tool calls) |
 | Transition | Deterministic-ish: append token | More stochastic: the environment runs the call and appends its output |
-| Episode | One prompt → completion | Many turns; Inkling 2 Small's p99 rollout takes 4 hours [@tml2026inkling2small] |
+| Episode | One prompt → completion | Many turns; [Inkling 2 Small](https://thinkingmachines.ai/news/inkling-2-small)'s p99 rollout takes 4 hours |
 | Terminal reward | Verifier on the final answer | Tests on the final state of the environment |
 | Loss | Every completion token | Tool-output tokens are masked: the model must not learn to predict the environment |
 
@@ -491,7 +494,7 @@ $$
 **Training-inference mismatch** (TIM) is when $q \neq p$. There are two independent sources:
 
 - **Staleness:** $\tilde{\theta} \neq \theta$, because the weights have moved since the last syn (on the trainer side).
-- **Numerics:** $\tilde{f} \neq f$, because of different kernels, precision, parallelism, or a quantized KV cache (the cached attention keys and values for the prefix, stored in fewer bits) [@yao2025offpolicy; @marek2026score].
+- **Numerics:** $\tilde{f} \neq f$, because of different kernels, precision, parallelism, or a quantized KV cache (the cached attention keys and values for the prefix, stored in fewer bits). See [Yao et al.](https://fengyao.notion.site/off-policy-rl) and [@marek2026score].
 
 
 ---
@@ -560,13 +563,26 @@ TIS for the learner–sampler ratio has been adopted across major open-source RL
 
 ---
 
+<!-- class: diagram-sm -->
+## Removing a source of mismatch: Routing replay
+
+<!-- cite-right: ma2025r3 -->
+
+In mixture-of-experts (MoE) models, the trainer's router can pick different experts than the sampler's for the same token. Rollout Routing Replay (R3) records the experts chosen at inference and reuses them in the training forward passes.
+
+<!-- img-align: center -->
+
+![](assets/r3-routing-replay.png)
+
+---
+
 <!-- layout: section-break -->
 
 ## Score centering: managing train-inference mismatch
 
 ---
 
-## Mismatch can collapse training
+## Train-Inference-Mismatch (TIM) can collapse training
 
 <!-- cite-right: marek2026score -->
 
@@ -577,26 +593,33 @@ TIS for the learner–sampler ratio has been adopted across major open-source RL
 ---
 
 
-## What is the score?
+## Recall: The policy gradient is a sum of scores
 
-In statistics, the **score** is the gradient of the log-likelihood with respect to the parameters. For one token $v$ at one position:
+The policy gradient for one completion:
 
-$$\boldsymbol{\xi}_v = \nabla_\theta \log p_\theta(v \mid x, a_{<t})$$
+$$\nabla_\theta J(\theta) = \mathbb{E}_{a \sim p_\theta}\left[ A \sum_{t=1}^{T} \nabla_\theta \log p_\theta(a_t \mid x, a_{<t}) \right]$$
 
-- It is a vector the size of the parameters: the direction that makes token $v$ more likely.
-- The policy gradient is an advantage-weighted sum of the scores of the sampled tokens:
+<!-- step -->
 
-$$\nabla_\theta J(\theta) = \mathbb{E}\left[ A \sum_{t=1}^{T} \boldsymbol{\xi}_{a_t} \right]$$
+Call each term the [**score**](https://en.wikipedia.org/wiki/Informant_function) of the token, $\boldsymbol{\xi}_v = \nabla_\theta \log p_\theta(v \mid x, a_{<t})$:
+
+$$\nabla_\theta J(\theta) = \mathbb{E}_{a \sim p_\theta}\left[ A \sum_{t=1}^{T} \boldsymbol{\xi}_{a_t} \right]$$
 
 ---
 
-## Recall: The score has zero mean on-policy
+## The score has zero mean on-policy
 
 <!-- cite-right: williams1992simple -->
 
 At one position, the expected score under the learner, written as a sum:
 
 $$\mathbb{E}_{v \sim p}[\boldsymbol{\xi}_v] = \sum_{v \in \mathcal{V}} p_v \, \nabla_\theta \log p_v$$
+
+<div class="shorthand-note">
+
+Shorthand: $p_v = p_\theta(v \mid x, a_{\lt t})$, the learner's probability of token $v$ at this position ($\theta$ dropped for brevity); $\mathcal{V}$ is the vocabulary.
+
+</div>
 
 <!-- step -->
 
@@ -616,53 +639,33 @@ This is why baselines are free: $\mathbb{E}[b(x) \, \boldsymbol{\xi}_{a_t}] = b(
 
 ---
 
-## Off-policy, the identity breaks
+## Off-policy, the gradient scores are not zero mean
 
 Tokens now come from $q$, but the score is still computed through $p$. Define the expected score under the sampler:
 
 $$\bar{\boldsymbol{\xi}} = \mathbb{E}_{v \sim q}[\boldsymbol{\xi}_v] = \sum_{v \in \mathcal{V}} q_v \, \boldsymbol{\xi}_v$$
 
-<!-- step -->
+<div class="shorthand-note">
 
-Substitute the score from earlier, $\boldsymbol{\xi}_v = \nabla_\theta f_v - \sum_u p_u \nabla_\theta f_u$:
+Shorthand: $q_v = q(v \mid x, a_{\lt t})$ for the sampler and $p_v = p_\theta(v \mid x, a_{\lt t})$ for the learner ($\theta$ dropped for brevity).
 
-$$\bar{\boldsymbol{\xi}} = \sum_{v} q_v \nabla_\theta f_v - \left( \sum_{v} q_v \right) \sum_{u} p_u \nabla_\theta f_u$$
-
-<!-- step -->
-
-Since $\sum_v q_v = 1$, and renaming $u$ to $v$:
-
-$$\bar{\boldsymbol{\xi}} = \sum_{v} q_v \nabla_\theta f_v - \sum_{v} p_v \nabla_\theta f_v = \sum_{v \in \mathcal{V}} (q_v - p_v) \, \nabla_\theta f_v$$
+</div>
 
 <!-- step -->
 
-The expected score is zero when $q = p$. Otherwise, the probability gap sets its direction.
+Apply the same log-derivative identity as before:
+
+$$\bar{\boldsymbol{\xi}} = \sum_{v \in \mathcal{V}} \frac{q_v}{p_v} \, \nabla_\theta p_v$$
+
+<!-- step -->
+
+The weights are now $q_v / p_v$ instead of $1$, so the sum no longer collapses to $\nabla_\theta 1 = \mathbf{0}$. The expected score is zero when $q = p$, but not in general.
 
 ---
 
-## A worked example with three tokens
+## Computing the gradient of one token
 
-Take the logits themselves as parameters, so $\nabla_\theta f_v$ is a unit vector and $\boldsymbol{\xi}_{a_t} = e_{a_t} - p$.
-
-| | Token 1 | Token 2 | Token 3 |
-|---|:---:|:---:|:---:|
-| Learner $p$ | 0.50 | 0.30 | 0.20 |
-| Sampler $q$ | 0.60 | 0.25 | 0.15 |
-| Expected score $\bar{\boldsymbol{\xi}} = q - p$ | **+0.10** | **−0.05** | **−0.05** |
-
-<!-- step -->
-
-Suppose every completion earns the same advantage, $A = 1$. There is nothing to learn, since no token is better than another.
-
-<!-- step -->
-
-The expected update is still $1 \cdot \bar{\boldsymbol{\xi}} = (+0.10, -0.05, -0.05)$: the learner's logits move **toward the sampler**.
-
----
-
-## Zooming in on one position
-
-Start from the estimate, and move the sum outside the expectation:
+Start from the estimated gradient, and move the sum outside the expectation:
 
 $$\hat{g} = \mathbb{E}_{a \sim q}\left[ \sum_{t} A \, \boldsymbol{\xi}_{a_t} \right] = \sum_{t} \mathbb{E}_{a \sim q}\left[ A \, \boldsymbol{\xi}_{a_t} \right]$$
 
@@ -674,13 +677,15 @@ $$\hat{g} = \sum_{t} \mathbb{E}_{a_{<t} \sim q}\Big[ \mathbb{E}_{a_{\geq t} \sim
 
 <!-- step -->
 
-From here on, fix a prefix and study the inner term. We write it as $\mathbb{E}_q[A \, \boldsymbol{\xi}_{a_t}]$. With the prefix fixed, the token $a_t$ and the advantage $A$ are both still random.
+From here on, fix the prefix (context) and study the inner term. 
+We write it as $\mathbb{E}_q[A \, \boldsymbol{\xi}_{a_t}]$. 
+With the prefix fixed, the token $a_t$ and the advantage $A$ are both still random variables.
 
 ---
 
-## Drift and signal
+## Which pieces of the gradient contribute to learning
 
-Use the covariance identity, $\mathbb{E}[XY] = \mathbb{E}[X] \, \mathbb{E}[Y] + \text{Cov}(X, Y)$, starting on-policy:
+Use the covariance identity, $\mathbb{E}[XY] = \mathbb{E}[X] \, \mathbb{E}[Y] + \text{Cov}(X, Y)$, starting on-policy, the expectation of the gradient:
 
 $$
 \begin{aligned}
@@ -700,7 +705,7 @@ $$
 
 <!-- step -->
 
-Only the covariance sees which tokens led to which outcomes. The drift depends on the advantages only through their mean.
+Only the covariance sees which tokens led to which outcomes. The drift depends on the advantages only through their mean -- not per-token attribution.
 
 ---
 
@@ -708,69 +713,23 @@ Only the covariance sees which tokens led to which outcomes. The drift depends o
 
 <!-- cite-right: marek2026score -->
 
-The cross-entropy loss with the sampler as the teacher is:
+The drift, $\mathbb{E}_q[A] \, \bar{\boldsymbol{\xi}}$, depends on the advantages only through their mean, so it moves the weights the same way regardless of which token was sampled.
 
-$$\text{CE}(q, p_\theta) = -\sum_{v \in \mathcal{V}} q_v \log p_v$$
-
-<!-- step -->
-
-Its gradient is the negative of the expected score:
-
-$$\nabla_\theta \text{CE}(q, p_\theta) = -\sum_{v \in \mathcal{V}} q_v \, \nabla_\theta \log p_v = -\bar{\boldsymbol{\xi}}$$
-
-<!-- step -->
-
-So the drift term, $\mathbb{E}_q[A] \, \bar{\boldsymbol{\xi}}$, is a step of **supervised distillation toward the sampler**, scaled by the mean advantage at that prefix:
-
-- $\mathbb{E}_q[A] > 0$: The learner is pulled toward the sampler.
-- $\mathbb{E}_q[A] < 0$: The learner is pushed away from the sampler.
-
----
-
-## Why the drift compounds
-
-<!-- cite-right: marek2026score -->
-
-Distilling toward a **fixed** teacher is harmless. It converges to the best fit of that teacher.
-
-In online RL, the teacher moves with the student:
-
-<!-- animate: bullets -->
-
-- The sampler is a biased copy of the learner, e.g., quantized or stale.
-- Each step pulls the learner toward the sampler's errors.
-- The new weights are synced back to the sampler, carrying those errors with them.
-- The next sampler is biased again, so the error compounds instead of converging.
-- The bias does not average out with more samples, since $\bar{\boldsymbol{\xi}}$ is fixed at each prefix. It needs a direct correction.
-
----
-
-## Do group baselines already fix this?
-
-<!-- cite-right: marek2026score -->
-
-Not fully. Group centering makes advantages sum to zero **over the rollouts of a prompt**:
-
-$$\frac{1}{G} \sum_{i=1}^{G} (r_i - \bar{r}) = 0$$
-
-<!-- step -->
-
-But drift arises **at each prefix**, and $\mathbb{E}_q[A \mid x, a_{<t}]$ is generally not zero there:
-
-- A prefix likely to reach a correct answer has positive expected advantage.
-- A prefix that already contains a mistake has negative expected advantage.
-
-<!-- step -->
-
-Group centering shrinks drift relative to all-positive rewards, and it was the most stable reward setting in the paper's online experiments. It does not eliminate drift.
+We don't want that: in practice, it can pull the learner's weights toward a stale and/or quantized sampler, causing potentially compounding instabilities.
 
 ---
 
 ## Score centering: A baseline for the score
 
-Baselines center the reward. Score centering centers the **score**, subtracting its expected value under the sampler:
+Baselines center the reward. Score centering centers the per-token log-prob gradients (called "score" in statistics), subtracting its expected value under the sampler:
 
 $$\tilde{\boldsymbol{\xi}}_{a_t} = \boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}}$$
+
+<div class="shorthand-note">
+
+Recall: the score of token $v$ is $\boldsymbol{\xi}_v = \nabla_\theta \log p_\theta(v \mid x, a_{\lt t})$, the gradient of its log-probability under the learner.
+
+</div>
 
 <!-- step -->
 
@@ -780,13 +739,17 @@ $$\mathbb{E}_q[\tilde{\boldsymbol{\xi}}_{a_t}] = \mathbb{E}_q[\boldsymbol{\xi}_{
 
 <!-- step -->
 
-The centered score has zero mean under the sampler, which restores the property that made baselines free. When $q = p$, $\bar{\boldsymbol{\xi}} = \mathbf{0}$ and the correction does nothing.
+The centered score has zero mean under the sampler! which restores the property that made on-policy learning attractive. When $q = p$ (on-policy), $\bar{\boldsymbol{\xi}} = \mathbf{0}$ and the correction does nothing.
 
 ---
 
-## The drift cancels
+## The corrected, per-token gradient
 
-Apply the covariance identity to the centered score:
+With the centered score, the policy-gradient estimate becomes:
+
+$$\hat{g}_{\text{centered}} = \mathbb{E}_{a \sim q}\left[ A \sum_{t=1}^{T} \tilde{\boldsymbol{\xi}}_{a_t} \right] = \sum_{t} \mathbb{E}_{a_{<t} \sim q}\Big[ \mathbb{E}_q[A \, \tilde{\boldsymbol{\xi}}_{a_t}] \Big]$$
+
+Apply the covariance identity to the inner, per-token term:
 
 $$
 \begin{aligned}
@@ -802,192 +765,73 @@ $$
 
 The last step uses that a constant does not change a covariance: $\text{Cov}(X, Y - c) = \text{Cov}(X, Y)$.
 
-<!-- step -->
-
-In the worked example, the centered score is $e_{a_t} - q$. With $A = 1$, its expected value is $q - q = \mathbf{0}$, so nothing moves.
-
 ---
 
-## What score centering does not do
+## Score centering complements other interventions like importance sampling
 
 <!-- cite-right: marek2026score -->
 
-| Method | Expected update at a prefix | Drift |
-|--------|-----------------------------|:-----:|
-| On-policy | $\text{Cov}_p(A, \boldsymbol{\xi}_{a_t})$ | None |
-| Vanilla, under TIM | $\mathbb{E}_q[A] \, \bar{\boldsymbol{\xi}} + \text{Cov}_q(A, \boldsymbol{\xi}_{a_t})$ | Yes |
-| Exact importance sampling | $\text{Cov}_p(A, \boldsymbol{\xi}_{a_t})$, at the cost of variance | None |
-| Clipped or masked importance sampling | Depends on the bound | Reintroduced |
-| Score centering | $\text{Cov}_q(A, \boldsymbol{\xi}_{a_t})$ | None |
-
-<!-- step -->
-
-Drift-free is **not** the same as on-policy: the covariance is still measured under $q$, not $p$.
-
-<!-- step -->
-
-The two corrections are independent. The paper recommends composing score centering with importance sampling when the learner can move far from the sampler between syncs.
+- **Score centering** removes the drift, the pull toward the sampler that carries no learning signal.
+- It does not make training on-policy: the signal is still $\text{Cov}_q(A, \boldsymbol{\xi}_{a_t})$, measured under the sampler, not the learner.
+- **Importance sampling** (e.g., TIS) reweights samples toward the learner, but clipping the ratios lets some drift back in.
+- They fix different problems and are composable. The score-centering paper recommends using both!
 
 ---
 
+<!-- class: diagram-xs -->
 ## Quantization vs. staleness
+
+<!-- cite-right: marek2026score -->
+
+- **Quantization:** The sampler has the learner's weights, just lower precision. Score centering alone is enough.
+- **Staleness:** The learner moves away from the sampler, so score centering needs importance sampling too. Taking several gradient steps per batch causes the same kind of staleness.
+
+<!-- img-align: center -->
+
+![Qwen3-0.6B on Countdown with an INT8 sampler (left) and a sampler updated only every 64 steps (right).](assets/score-centering-quant-stale.png)
+
+---
+
+
+## Recent algorithms differ mostly in how they clip the log-ratio
 
 <!-- cite-right: marek2026score -->
 
 <!-- img-align: center -->
 
-![Qwen3-0.6B on Countdown with an INT8 sampler (left) and a sampler updated only every 64 steps (right). Under quantization, score centering alone and composed with TIS or MIS perform best. Under staleness, score centering alone is unstable, and composing it with TIS or MIS works best.](assets/score-centering-quant-stale.png)
-
----
-
-## From the update to a loss
-
-<!-- cite-right: marek2026score -->
-
-We want a scalar whose gradient is $A \, (\boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}})$.
-
-The first piece is already a gradient, $\boldsymbol{\xi}_{a_t} = \nabla_\theta \log p_{a_t}$. For the second:
-
-$$\bar{\boldsymbol{\xi}} = \sum_{v \in \mathcal{V}} q_v \, \nabla_\theta \log p_v$$
-
-<!-- step -->
-
-The sampler's probabilities are logged values, so we mark them as constants with a stop-gradient and pull the gradient out:
-
-$$\bar{\boldsymbol{\xi}} = \nabla_\theta \sum_{v \in \mathcal{V}} \text{sg}[q_v] \log p_v$$
-
-<!-- step -->
-
-Combine the two pieces, and multiply by $-A$:
-
-$$L = -A \left( \log p_{a_t} - \sum_{v \in \mathcal{V}} \text{sg}[q_v] \log p_v \right), \qquad -\nabla_\theta L = A \, (\boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}}) = A \, \tilde{\boldsymbol{\xi}}_{a_t}$$
-
----
-
-## Score centering in code
-
-The correction is one extra term in the REINFORCE loss from earlier:
-
-```python
-# Learner: log-probs over the whole vocabulary, with gradients
-learner_vocab_logprobs = logits.log_softmax(-1)              # (B*G, L, V)
-learner_logprobs = learner_vocab_logprobs.gather(
-    -1, tokens.unsqueeze(-1)).squeeze(-1)                    # (B*G, L)
-
-# Sampler: logged at generation time, so it has no gradient path
-sampler_probs = sampler_vocab_logprobs.exp()                 # (B*G, L, V)
-
-# The gradient of `centering` is the expected score, s-bar
-centering = (sampler_probs * learner_vocab_logprobs).sum(-1) # (B*G, L)
-
-# advantages: (B*G, 1), broadcast to every token
-per_token_loss = -advantages * (learner_logprobs - centering)
-loss = ((per_token_loss * mask).sum(1) / mask.sum(1)).mean()
-```
-
-No ratios, no masks, and no clipping. On-policy, the gradient of `centering` is zero.
-
----
-
-## The full distribution is too expensive
-
-<!-- cite-right: marek2026score -->
-
-Computing $\bar{\boldsymbol{\xi}}$ exactly needs the sampler's next-token distribution at every position:
-
-- Qwen3's vocabulary has 152K tokens, so one position in fp32 takes about 608KB.
-- A batch of 1024 rollouts with 32K tokens each would take about 20TB.
-
-<!-- step -->
-
-Instead, log only the sampler's **head** $H$, its $k$ most likely tokens at that position, with $k = 128$. Model the **tail** with the learner, rescaled to carry the sampler's missing mass:
-
-$$
-\hat{q}_v =
-\begin{cases}
-q_v & v \in H \\
-\rho \, p_v & v \notin H
-\end{cases}
-\qquad
-\rho = \frac{1 - \sum_{v \in H} q_v}{1 - \sum_{v \in H} p_v}
-$$
-
----
-
-## The tail cancels
-
-<!-- cite-right: marek2026score -->
-
-Substitute $\hat{q}$ into the expected score, and split the sum into head and tail:
-
-$$\bar{\boldsymbol{\xi}} \approx \sum_{v} \hat{q}_v \, \boldsymbol{\xi}_v = \sum_{v \in H} q_v \, \boldsymbol{\xi}_v + \rho \sum_{v \notin H} p_v \, \boldsymbol{\xi}_v$$
-
-<!-- step -->
-
-The zero-mean identity splits the same way, which rewrites the tail in terms of the head:
-
-$$\mathbf{0} = \sum_{v} p_v \, \boldsymbol{\xi}_v = \sum_{v \in H} p_v \, \boldsymbol{\xi}_v + \sum_{v \notin H} p_v \, \boldsymbol{\xi}_v \quad \Rightarrow \quad \sum_{v \notin H} p_v \, \boldsymbol{\xi}_v = -\sum_{v \in H} p_v \, \boldsymbol{\xi}_v$$
-
-<!-- step -->
-
-Substitute, and collect the terms. Only the $k$ head tokens remain:
-
-$$\bar{\boldsymbol{\xi}} \approx \sum_{v \in H} q_v \, \boldsymbol{\xi}_v - \rho \sum_{v \in H} p_v \, \boldsymbol{\xi}_v = \sum_{v \in H} (q_v - \rho \, p_v) \, \boldsymbol{\xi}_v$$
-
-<!-- step -->
-
-The paper reports that $k = 128$ and $k = 32$ both perform on par with the full vocabulary, at under 1% wall-clock overhead for $k = 128$.
-
----
-
-## Top-k score centering in code
-
-<!-- cite-right: marek2026score -->
-
-```python
-# Logged during generation: sampler_topk_logprobs, sampler_topk_ids (B*G, L, k)
-learner_logprobs = learner_vocab_logprobs.gather(-1, tokens[..., None])[..., 0]
-head_logprobs = learner_vocab_logprobs.gather(-1, sampler_topk_ids)  # (B*G, L, k)
-learner_head_probs = head_logprobs.exp()
-sampler_head_probs = sampler_topk_logprobs.exp()
-
-# rho: the ratio of the sampler's tail mass to the learner's tail mass
-sampler_tail = (1 - sampler_head_probs.sum(-1)).clamp_min(1e-6)
-learner_tail = (1 - learner_head_probs.sum(-1)).clamp_min(1e-6)
-rho = sampler_tail / learner_tail                                    # (B*G, L)
-
-# detach() is required: coef contains the learner's own probabilities
-coef = (sampler_head_probs - rho[..., None] * learner_head_probs).detach()
-centering = (coef * head_logprobs).sum(-1)                           # (B*G, L)
-
-per_token_loss = -advantages * (learner_logprobs - centering)
-```
+![Importance-sampling corrections as a grid: per-token or per-sequence ratio, the clipping range (Low to High), what happens outside it, and which advantage signs are corrected.](assets/score-centering-is-methods-table.png)
 
 ---
 
 <!-- layout: section-break -->
 
-## What are labs running?
+## Score-centering in the wild (aka industry)
 
 ---
 
 ## StableReinforce and GRPO
 
-Many labs are supposedly using **StableReinforce**, the loss Tinker added, rather than GRPO [@tinker2026stablereinforce]. This is unconfirmed, but the two are related.
+(Supposedly) Many labs are supposedly using [**StableReinforce**](https://tinker-docs.thinkingmachines.ai/tinker/losses/stable-reinforce/), the loss Tinker added, rather than GRPO. This is unconfirmed, but the two are related.
 
-| | GRPO | StableReinforce |
-|---|------|-----------------|
-| Family | Group baseline, often with PPO-style clipping | "A REINFORCE variant" |
-| Question it answers | How should we center the **reward**? | How do we stay stable when **$q \neq p$**? |
-| Advantages | Group mean and std | Supplied by the caller, so group centering still fits |
-| Extra sampling data | None required | `record_stability_info=True` |
-| KL term | Optional, to a reference model | Optional $\text{KL}(q \,\Vert\, p_\theta)$, not to a reference model |
+The group advantages are nearly the same. GRPO normalizes each reward by the group mean and standard deviation:
+
+$$A_i^{\text{GRPO}} = \frac{r_i - \text{mean}(r_1, \dots, r_G)}{\text{std}(r_1, \dots, r_G)}$$
+
+<!-- step -->
+
+REINFORCE with a group baseline is usually RLOO, which leaves each sample out of its own baseline:
+
+$$A_i^{\text{RLOO}} = r_i - \frac{1}{G-1} \sum_{j \neq i} r_j = \frac{G}{G-1} \big( r_i - \text{mean}(r_1, \dots, r_G) \big)$$
+
+<!-- step -->
+
+Without the std, the two differ only by a constant scale. The bigger difference is the loss: GRPO usually wraps the advantage in PPO's clipped ratio, while REINFORCE uses the plain log-prob loss.
 
 ---
 
 ## Is StableReinforce score centering?
 
-<!-- cite-right: tinker2026stablereinforce -->
+<!-- footnote-right: [Tinker docs](https://tinker-docs.thinkingmachines.ai/tinker/losses/stable-reinforce/) -->
 
 Tinker's docs describe the behavior, but not the main loss:
 
@@ -1005,7 +849,7 @@ Frontier losses are rarely published, so public ideas are rarely confirmed. Here
 
 ## Reverse-engineering a loss from its gradients
 
-<!-- cite-right: marek2026stablereinforcethread -->
+<!-- footnote-right: [Marek's thread](https://x.com/mrtnm/status/2114145574987702525) -->
 
 <!-- columns: 55/45 -->
 
@@ -1027,7 +871,7 @@ $$\Delta w \approx -\frac{\text{lr} \cdot g}{\epsilon}$$
 
 ## Only 8 logits move
 
-<!-- cite-right: marek2026stablereinforcethread -->
+<!-- footnote-right: [Marek's thread](https://x.com/mrtnm/status/2114145574987702525) -->
 
 <!-- columns: 32/68 -->
 
@@ -1048,11 +892,11 @@ The bars come in multiples of $1/8$, and the third row, Reinforce with score cen
 
 ## Why a sparse gradient is the clue
 
-<!-- cite-right: marek2026stablereinforcethread -->
+<!-- footnote-right: [Marek's thread](https://x.com/mrtnm/status/2114145574987702525) -->
 
-In logit coordinates, every token's score has the same dense part, from the softmax:
+The plot shows gradients with respect to the logits $z$. For a softmax, the gradient of $\log p_v$ is the one-hot vector $e_v$ minus the probabilities:
 
-$$\boldsymbol{\xi}_v = e_v - p$$
+$$\boldsymbol{\xi}_v = \nabla_z \log p_v = e_v - p$$
 
 <!-- step -->
 
@@ -1068,13 +912,13 @@ $$\boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}} \approx (e_{a_t} - p) - \left(
 
 <!-- step -->
 
-This predicts the figure, with signs flipped as for a loss gradient: $-1$ on the sampled token, and $+1/8$ per draw. A token drawn twice gets $2/8$, so 7 distinct draws plus the sampled token gives 8 logits.
+Flip the signs for a loss and this is the figure: $-1$ on the sampled token, $+1/8$ per draw.
 
 ---
 
 ## The match
 
-<!-- cite-right: marek2026stablereinforcethread -->
+<!-- footnote-right: [Marek's thread](https://x.com/mrtnm/status/2114145574987702525) -->
 
 **Hypothesis:** StableReinforce is REINFORCE plus score centering, with the expected score computed over 8 randomly sampled tokens.
 
@@ -1088,50 +932,23 @@ This predicts the figure, with signs flipped as for a loss gradient: $-1$ on the
 
 ---
 
-## What this does and does not tell us
+## Score centering in a recent model
 
-<!-- cite-right: marek2026stablereinforcethread -->
+<!-- footnote-right: [Ricursive Intelligence](https://www.ricursive.com/ripple) -->
 
-| | Paper | Hypothesized StableReinforce |
-|---|------|------|
-| Estimate of $\bar{\boldsymbol{\xi}}$ | Top-$k$ head, plus a tail model | 8 tokens drawn from the sampler |
-| Properties | Deterministic, slightly biased | Unbiased, higher variance |
-
-<!-- step -->
-
-**A caveat:** This is a reverse-engineering by the paper's own first author, not a statement from Thinking Machines. A gradient match is strong evidence, not an admission.
-
-<!-- step -->
-
-**Why it matters:** Frontier RL losses are usually unpublished, so we rarely get to check a public idea against a deployed system. Here, a production API turned out to match a paper from weeks earlier.
-
----
-
-## Score centering in a released recipe
-
-<!-- cite-right: ricursive2026ripple -->
-
-Ripple-65B Preview, a 65B open-weight model from Ricursive, names score centering in its post-training:
+Ripple-65B Preview, a 65B open-weight model from Ricursive (built on a lot of Olmo 3 infra!), names score centering in its post-training:
 
 > "Our mixed RL recipe uses truncated importance sampling, score centering, and linear length penalty with high-quality long-horizon synthetic environments."
 
-<!-- step -->
+---
 
-- This is the combination the paper recommends: score centering **in addition to** an importance-sampling correction.
-- Ricursive reports a TerminalBench 2.1 score of 80.5 with 1.4M rollouts.
-- The release gives no loss, hyperparameters, or ablation, so we cannot say how much score centering contributed.
+<!-- layout: section-break -->
+## Wrapping up
 
 ---
 
 ## Takeaways
 
-<!-- animate: bullets -->
-
-- An LLM is a policy over tokens, and REINFORCE on it is a few lines of code: log-probs, advantages, and a surrogate loss.
-- At scale, the sampler and the learner are different systems, so $q \neq p$ even with identical weights.
-- The zero-mean score behind baselines fails off-policy, which leaves a drift term, $\mathbb{E}_q[A] \, \bar{\boldsymbol{\xi}}$, next to the signal.
-- Drift is distillation toward the sampler, and it compounds because the sampler keeps being refreshed from the learner.
-- Score centering subtracts $\bar{\boldsymbol{\xi}}$ from the score, which cancels the drift exactly. It is one extra term in the loss, and it does not make the update fully on-policy.
 
 ---
 
@@ -1139,7 +956,7 @@ Ripple-65B Preview, a 65B open-weight model from Ricursive, names score centerin
 <!-- valign: center -->
 ## Thank you
 
-This lecture is a slice of a full course on post-training, free online with the book:
+I have a lot of content expanding on this stuff!
 
 - **Course:** 14 lectures, Q&As, and guest episodes at [rlhfbook.com/course](https://rlhfbook.com/course)
 - **Book:** [rlhfbook.com](https://rlhfbook.com), also in print from [Manning](https://www.manning.com/books/reinforcement-learning-from-human-feedback)
@@ -1169,19 +986,13 @@ The ratio between the two systems for a sampled token, and its log:
 
 $$w_t = \frac{p(a_t \mid x, a_{<t})}{q(a_t \mid x, a_{<t})}, \qquad \delta_t = \log w_t = \log p(a_t \mid x, a_{<t}) - \log q(a_t \mid x, a_{<t})$$
 
-<!-- step -->
-
 Tokens are sampled from $q$, so take the expectation under $q$:
 
 $$\mathbb{E}_{a_t \sim q}[\delta_t] = \sum_{v \in \mathcal{V}} q_v \left( \log p_v - \log q_v \right)$$
 
-<!-- step -->
-
 Flip the sign to recognize the KL divergence:
 
 $$\mathbb{E}_{a_t \sim q}[\delta_t] = -\sum_{v \in \mathcal{V}} q_v \log \frac{q_v}{p_v} = -\text{KL}(q_t \,\Vert\, p_t)$$
-
-<!-- step -->
 
 If the systems agree, every $\delta_t$ is zero. Otherwise, log-ratios are negative on average.
 
@@ -1195,16 +1006,184 @@ The ratio for a whole completion is the product of the token ratios:
 
 $$w(a) = \frac{p_\theta(a \mid x)}{q(a \mid x)} = \prod_{t=1}^{T} w_t, \qquad \log w(a) = \sum_{t=1}^{T} \delta_t$$
 
-<!-- step -->
-
 Take the expectation under $q$, and apply the previous slide at each position:
 
 $$\mathbb{E}_{a \sim q}[\log w(a)] = \sum_{t=1}^{T} \mathbb{E}_{a_{<t} \sim q}\big[ \mathbb{E}_{a_t \sim q}[\delta_t] \big] = -\sum_{t=1}^{T} \mathbb{E}_{a_{<t} \sim q}\big[ \text{KL}(q_t \,\Vert\, p_t) \big]$$
 
-<!-- step -->
-
 This sum is the KL between the two sequence distributions, $\text{KL}\big(q(a \mid x) \,\Vert\, p_\theta(a \mid x)\big)$, so it grows with length.
 
-<!-- step -->
-
 For illustration, a small per-token KL of $0.001$ over $10{,}000$ tokens gives a sequence KL of $10$ nats. A typical weight is then near $e^{-10} \approx 5 \times 10^{-5}$.
+
+---
+
+<!-- after: references -->
+## What is the score?
+
+In statistics, the [**score**](https://en.wikipedia.org/wiki/Informant_function) is the gradient of the log-likelihood with respect to the parameters. For one token $v$ at one position:
+
+$$\boldsymbol{\xi}_v = \nabla_\theta \log p_\theta(v \mid x, a_{<t})$$
+
+- It is a vector the size of the parameters: the direction that makes token $v$ more likely.
+- The policy gradient is an advantage-weighted sum of the scores of the sampled tokens:
+
+$$\nabla_\theta J(\theta) = \mathbb{E}\left[ A \sum_{t=1}^{T} \boldsymbol{\xi}_{a_t} \right]$$
+
+---
+
+
+<!-- after: references -->
+## Why the drift compounds
+
+<!-- cite-right: marek2026score -->
+
+Distilling toward a **fixed** teacher is harmless. It converges to the best fit of that teacher.
+
+In online RL, the teacher moves with the student:
+
+- The sampler is a biased copy of the learner, e.g., quantized or stale.
+- Each step pulls the learner toward the sampler's errors.
+- The new weights are synced back to the sampler, carrying those errors with them.
+- The next sampler is biased again, so the error compounds instead of converging.
+- The bias does not average out with more samples, since $\bar{\boldsymbol{\xi}}$ is fixed at each prefix. It needs a direct correction.
+
+---
+
+
+<!-- after: references -->
+## Do group baselines already fix this?
+
+<!-- cite-right: marek2026score -->
+
+Not fully. Group centering makes advantages sum to zero **over the rollouts of a prompt**:
+
+$$\frac{1}{G} \sum_{i=1}^{G} (r_i - \bar{r}) = 0$$
+
+But drift arises **at each prefix**, and $\mathbb{E}_q[A \mid x, a_{<t}]$ is generally not zero there:
+
+- A prefix likely to reach a correct answer has positive expected advantage.
+- A prefix that already contains a mistake has negative expected advantage.
+
+Group centering shrinks drift relative to all-positive rewards, and it was the most stable reward setting in the paper's online experiments. It does not eliminate drift.
+
+---
+
+
+<!-- after: references -->
+## From the update to a loss
+
+<!-- cite-right: marek2026score -->
+
+We want a scalar whose gradient is $A \, (\boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}})$.
+
+The first piece is already a gradient, $\boldsymbol{\xi}_{a_t} = \nabla_\theta \log p_{a_t}$. For the second:
+
+$$\bar{\boldsymbol{\xi}} = \sum_{v \in \mathcal{V}} q_v \, \nabla_\theta \log p_v$$
+
+The sampler's probabilities are logged values, so we mark them as constants with a stop-gradient and pull the gradient out:
+
+$$\bar{\boldsymbol{\xi}} = \nabla_\theta \sum_{v \in \mathcal{V}} \text{sg}[q_v] \log p_v$$
+
+Combine the two pieces, and multiply by $-A$:
+
+$$L = -A \left( \log p_{a_t} - \sum_{v \in \mathcal{V}} \text{sg}[q_v] \log p_v \right), \qquad -\nabla_\theta L = A \, (\boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}}) = A \, \tilde{\boldsymbol{\xi}}_{a_t}$$
+
+---
+
+
+<!-- after: references -->
+## Score centering in code
+
+The correction is one extra term in the REINFORCE loss from earlier:
+
+```python
+# Learner: log-probs over the whole vocabulary, with gradients
+learner_vocab_logprobs = logits.log_softmax(-1)              # (B*G, L, V)
+learner_logprobs = learner_vocab_logprobs.gather(
+    -1, tokens.unsqueeze(-1)).squeeze(-1)                    # (B*G, L)
+
+# Sampler: logged at generation time, so it has no gradient path
+sampler_probs = sampler_vocab_logprobs.exp()                 # (B*G, L, V)
+
+# The gradient of `centering` is the expected score, s-bar
+centering = (sampler_probs * learner_vocab_logprobs).sum(-1) # (B*G, L)
+
+# advantages: (B*G, 1), broadcast to every token
+per_token_loss = -advantages * (learner_logprobs - centering)
+loss = ((per_token_loss * mask).sum(1) / mask.sum(1)).mean()
+```
+
+No ratios, no masks, and no clipping. On-policy, the gradient of `centering` is zero.
+
+---
+
+
+<!-- after: references -->
+## The full distribution is too expensive
+
+<!-- cite-right: marek2026score -->
+
+Computing $\bar{\boldsymbol{\xi}}$ exactly needs the sampler's next-token distribution at every position:
+
+- Qwen3's vocabulary has 152K tokens, so one position in fp32 takes about 608KB.
+- A batch of 1024 rollouts with 32K tokens each would take about 20TB.
+
+Instead, log only the sampler's **head** $H$, its $k$ most likely tokens at that position, with $k = 128$. Model the **tail** with the learner, rescaled to carry the sampler's missing mass:
+
+$$
+\hat{q}_v =
+\begin{cases}
+q_v & v \in H \\
+\rho \, p_v & v \notin H
+\end{cases}
+\qquad
+\rho = \frac{1 - \sum_{v \in H} q_v}{1 - \sum_{v \in H} p_v}
+$$
+
+---
+
+
+<!-- after: references -->
+## The tail cancels
+
+<!-- cite-right: marek2026score -->
+
+Substitute $\hat{q}$ into the expected score, and split the sum into head and tail:
+
+$$\bar{\boldsymbol{\xi}} \approx \sum_{v} \hat{q}_v \, \boldsymbol{\xi}_v = \sum_{v \in H} q_v \, \boldsymbol{\xi}_v + \rho \sum_{v \notin H} p_v \, \boldsymbol{\xi}_v$$
+
+The zero-mean identity splits the same way, which rewrites the tail in terms of the head:
+
+$$\mathbf{0} = \sum_{v} p_v \, \boldsymbol{\xi}_v = \sum_{v \in H} p_v \, \boldsymbol{\xi}_v + \sum_{v \notin H} p_v \, \boldsymbol{\xi}_v \quad \Rightarrow \quad \sum_{v \notin H} p_v \, \boldsymbol{\xi}_v = -\sum_{v \in H} p_v \, \boldsymbol{\xi}_v$$
+
+Substitute, and collect the terms. Only the $k$ head tokens remain:
+
+$$\bar{\boldsymbol{\xi}} \approx \sum_{v \in H} q_v \, \boldsymbol{\xi}_v - \rho \sum_{v \in H} p_v \, \boldsymbol{\xi}_v = \sum_{v \in H} (q_v - \rho \, p_v) \, \boldsymbol{\xi}_v$$
+
+The paper reports that $k = 128$ and $k = 32$ both perform on par with the full vocabulary, at under 1% wall-clock overhead for $k = 128$.
+
+---
+
+
+<!-- after: references -->
+## Top-k score centering in code
+
+<!-- cite-right: marek2026score -->
+
+```python
+# Logged during generation: sampler_topk_logprobs, sampler_topk_ids (B*G, L, k)
+learner_logprobs = learner_vocab_logprobs.gather(-1, tokens[..., None])[..., 0]
+head_logprobs = learner_vocab_logprobs.gather(-1, sampler_topk_ids)  # (B*G, L, k)
+learner_head_probs = head_logprobs.exp()
+sampler_head_probs = sampler_topk_logprobs.exp()
+
+# rho: the ratio of the sampler's tail mass to the learner's tail mass
+sampler_tail = (1 - sampler_head_probs.sum(-1)).clamp_min(1e-6)
+learner_tail = (1 - learner_head_probs.sum(-1)).clamp_min(1e-6)
+rho = sampler_tail / learner_tail                                    # (B*G, L)
+
+# detach() is required: coef contains the learner's own probabilities
+coef = (sampler_head_probs - rho[..., None] * learner_head_probs).detach()
+centering = (coef * head_logprobs).sum(-1)                           # (B*G, L)
+
+per_token_loss = -advantages * (learner_logprobs - centering)
+```
