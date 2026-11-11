@@ -114,62 +114,20 @@
       margin-bottom: 1em;
     }
 
+    .slides-section > h3,
     .other-lectures-section h3 {
       margin-top: 1.5em;
       margin-bottom: 0.75em;
       color: #333;
     }
 
-    /* Talk entry — single column, full width */
-    .talk-entry {
-      border: 1px solid #e2e2e2;
-      border-radius: 0.35em;
-      background: #fff;
-      box-shadow: 0 4px 12px rgba(17, 17, 17, 0.06);
-      overflow: hidden;
-      margin-bottom: 2em;
+    /* Prerequisites: a sub-block of the lecture series, not its own section */
+    .slides-section > h3:first-of-type {
+      margin-top: 1em;
     }
 
-    /* Interactive slide viewer */
-    .slide-viewer {
-      position: relative;
-      width: 100%;
-      padding-top: 56.25%; /* 16:9 */
-      overflow: hidden;
-      background: #1a1a1a;
-    }
-
-    .slide-viewer iframe {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 1280px;
-      height: 720px;
-      transform-origin: top left;
-      border: none;
-    }
-
-
-    /* Info bar below the viewer */
-    .talk-info {
-      padding: 1em 1.5em;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 0.75em;
-      border-top: 1px solid #e2e2e2;
-    }
-
-    .talk-info-left h3 {
-      margin: 0 0 0.25em 0;
-      font-size: 1.1em;
-    }
-
-    .talk-info-left .meta {
-      font-size: 0.85em;
-      color: #666;
-      margin: 0;
+    .slides-section .course-list {
+      margin-top: 1.25em;
     }
 
     .talk-actions {
@@ -177,15 +135,6 @@
       align-items: center;
       gap: 0.6em;
       flex-shrink: 0;
-    }
-
-    .talk-actions .tag {
-      display: inline-block;
-      font-size: 0.8em;
-      padding: 0.2em 0.6em;
-      border-radius: 0.25em;
-      background: rgba(6, 69, 173, 0.08);
-      color: #0645ad;
     }
 
     .btn {
@@ -214,16 +163,6 @@
 
     .btn-watch:hover {
       background: rgba(192, 57, 43, 0.18);
-    }
-
-    .btn-source {
-      border-color: #333;
-      background: rgba(51, 51, 51, 0.1);
-      color: #333;
-    }
-
-    .btn-source:hover {
-      background: rgba(51, 51, 51, 0.18);
     }
 
     /* Dense lecture rows: flat list, hairline separators */
@@ -522,21 +461,17 @@
     :root[data-theme="dark"] .other-lectures-section h2 {
       border-bottom-color: var(--color-link);
     }
+    :root[data-theme="dark"] .slides-section > h3,
     :root[data-theme="dark"] .other-lectures-section h3,
     :root[data-theme="dark"] .page-guide {
       color: var(--color-heading);
     }
-    :root[data-theme="dark"] .talk-entry,
     :root[data-theme="dark"] .welcome-video,
     :root[data-theme="dark"] .resource-card {
       border-color: var(--color-border);
       background: var(--color-bg-section);
       box-shadow: 0 4px 12px var(--color-shadow);
     }
-    :root[data-theme="dark"] .talk-info {
-      border-top-color: var(--color-border);
-    }
-    :root[data-theme="dark"] .talk-info-left .meta,
     :root[data-theme="dark"] .course-row .meta,
     :root[data-theme="dark"] .welcome-video .meta,
     :root[data-theme="dark"] .resource-card .rc-meta {
@@ -581,7 +516,6 @@
     :root[data-theme="dark"] .qa-questions .qa-time:hover {
       color: #f87171;
     }
-    :root[data-theme="dark"] .talk-actions .tag,
     :root[data-theme="dark"] .resource-card .rc-kind {
       background: rgba(96, 165, 250, 0.14);
       color: var(--color-link);
@@ -602,14 +536,6 @@
     }
     :root[data-theme="dark"] .btn-watch:hover {
       background: rgba(248, 113, 113, 0.24);
-    }
-    :root[data-theme="dark"] .btn-source {
-      border-color: var(--color-border-strong);
-      background: rgba(148, 163, 184, 0.14);
-      color: var(--color-text);
-    }
-    :root[data-theme="dark"] .btn-source:hover {
-      background: rgba(148, 163, 184, 0.24);
     }
     :root[data-theme="dark"] .resource-card:hover {
       border-color: var(--color-link);
@@ -637,15 +563,6 @@
   <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
     <symbol id="icon-watch" viewBox="0 0 24 24" fill="currentColor">
       <polygon points="5 3 19 12 5 21 5 3"/>
-    </symbol>
-    <symbol id="icon-pdf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-    </symbol>
-    <symbol id="icon-slides" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/><path d="M21 14v5a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h5"/>
-    </symbol>
-    <symbol id="icon-github" viewBox="0 0 16 16" fill="currentColor">
-      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
     </symbol>
   </svg>
 
@@ -681,14 +598,15 @@
   </div>
 
   <ul class="page-guide">
-    <li><a href="#prerequisites"><strong>Prerequisites</strong></a> &mdash; what to know before starting.</li>
-    <li><a href="#lectures"><strong>Primary Material</strong></a> &mdash; the core lecture series that follows the book chapter by chapter, with recordings, slides, PDFs, and source.</li>
+    <li><a href="#lectures"><strong>Lecture Series</strong></a> &mdash; the core lectures that follow the book chapter by chapter, with recordings, slides, PDFs, and source. Starts with the <a href="#prerequisites">prerequisites</a>.</li>
+    <li><a href="#other-lectures"><strong>Off-Syllabus Lectures</strong></a> &mdash; guest lectures and invited talks on closely related post-training material.</li>
     <li><a href="#extra-resources"><strong>Extra Resources</strong></a> &mdash; recommended books, external RL courses, and Nathan's own talks paired with the chapters they go with.</li>
-    <li><a href="#other-lectures"><strong>Other Guest Lectures and Talks</strong></a> &mdash; invited talks and standalone presentations.</li>
   </ul>
 
-  <section class="slides-section" id="prerequisites">
-    <h2>Prerequisites</h2>
+  <section class="slides-section" id="lectures">
+    <h2>Lecture Series</h2>
+
+    <h3 id="prerequisites">Prerequisites</h3>
 
     <p>This course is roughly aimed at early AI PhD or master's students, but it is designed to be accessible to anyone willing to put in the work.</p>
 
@@ -696,23 +614,16 @@
 
     <p>If you prefer the traditional coursework path, the usual background is the basics of language modeling / NLP plus basic machine learning (e.g. an intro to AI course and an intro to ML course).</p>
 
+    <p class="meta"><a href="#extra-resources" style="display: inline-flex; align-items: center; gap: 0.4em;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>Additional learning material</a></p>
+
     <div class="course-list">
-    <div class="course-row" id="prerequisite-review">
+      <div class="course-row" id="prerequisite-review">
         <h3>Lecture 0: The ML Foundations of LLM Post-Training</h3>
         <div class="course-row-lower">
           <p class="meta">A refresher on the ML prerequisites of post-training — language modeling, KL, cross-entropy, & other math — to acclimate to the series</p>
           <div class="row-actions"><a class="action action-watch" href="https://www.youtube.com/watch?v=MMDNaeIFVy8&list=PLL1tdVxB1CpVpEtMHxwuR4uI4Lxjw00_y&index=2" target="_blank" rel="noopener noreferrer"><svg width="12" height="12"><use href="#icon-watch"/></svg> Watch</a><span class="sep">&middot;</span><a class="action" href="/teach/course/lec0-prereq-review/slides.pdf" download>PDF</a><span class="sep">&middot;</span><a class="action" href="/teach/course/lec0-prereq-review/" target="_blank" rel="noopener noreferrer">Slides</a><span class="sep">&middot;</span><a class="action action-source" href="https://github.com/natolambert/rlhf-book/blob/main/teach/course/lec0-prereq-review.md?plain=1" target="_blank" rel="noopener noreferrer">Source</a></div>
         </div>
       </div>
-    </div>
-
-    <p class="meta"><a href="#extra-resources" style="display: inline-flex; align-items: center; gap: 0.4em;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>Additional learning material</a></p>
-  </section>
-
-  <section class="slides-section" id="lectures">
-    <h2>Primary Material</h2>
-
-    <div class="course-list">
       <div class="course-row" id="lecture-1-overview">
         <h3>Lecture 1: Overview</h3>
         <div class="course-row-lower">
@@ -874,6 +785,29 @@
     </div>
   </section>
 
+  <section class="slides-section" id="other-lectures">
+    <h2>Off-Syllabus Lectures</h2>
+
+    <p class="meta" style="margin-bottom: 1em;">Guest lectures and invited talks on closely related post-training material, given outside the main series. Newest first.</p>
+
+    <div class="course-list">
+      <div class="course-row" id="cornell-cs4789-2026">
+        <h3>RL Systems, Score Centering, and Modern RL</h3>
+        <div class="course-row-lower">
+          <p class="meta">Cornell CS 4789 guest lecture &middot; Nov 2026 &middot; Chapter 6 &middot; Async RL, training-inference mismatch, and score centering</p>
+          <div class="row-actions"><a class="action" href="/teach/Cornell-CS4789-2026/slides.pdf" download>PDF</a><span class="sep">&middot;</span><a class="action" href="/teach/Cornell-CS4789-2026/" target="_blank" rel="noopener noreferrer">Slides</a><span class="sep">&middot;</span><a class="action action-source" href="https://github.com/natolambert/rlhf-book/blob/main/teach/Cornell-CS4789-2026/talk.md?plain=1" target="_blank" rel="noopener noreferrer">Source</a></div>
+        </div>
+      </div>
+      <div class="course-row" id="sala-2026">
+        <h3>An Introduction to Reinforcement Learning from Human Feedback and Post-training</h3>
+        <div class="course-row-lower">
+          <p class="meta">SALA 2026 invited talk, Quito &middot; Mar 2026 &middot; A self-contained introduction: classical RL vs. RLHF vs. RLVR</p>
+          <div class="row-actions"><a class="action" href="/teach/SALA-2026/slides.pdf" download>PDF</a><span class="sep">&middot;</span><a class="action" href="/teach/SALA-2026/" target="_blank" rel="noopener noreferrer">Slides</a><span class="sep">&middot;</span><a class="action action-source" href="https://github.com/natolambert/rlhf-book/blob/main/teach/SALA-2026/talk.md?plain=1" target="_blank" rel="noopener noreferrer">Source</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="other-lectures-section" id="extra-resources">
     <h2>Extra Resources</h2>
 
@@ -959,29 +893,6 @@
     </div>
   </section>
 
-  <section class="other-lectures-section" id="other-lectures">
-    <h2>Other Guest Lectures and Talks</h2>
-
-    <h3>2026</h3>
-
-    <div class="talk-entry" id="sala-2026">
-      <div class="slide-viewer">
-        <iframe src="/teach/SALA-2026/" loading="lazy"></iframe>
-      </div>
-      <div class="talk-info">
-        <div class="talk-info-left">
-          <h3>An Introduction to Reinforcement Learning from Human Feedback and Post-training</h3>
-          <p class="meta">SALA 2026 &middot; Quito, Ecuador &middot; March 2026</p>
-        </div>
-        <div class="talk-actions">
-          <span class="tag">Invited Talk</span>
-          <a href="/teach/SALA-2026/slides.pdf" class="btn" download><svg width="14" height="14"><use href="#icon-pdf"/></svg> PDF</a>
-          <a href="/teach/SALA-2026/" class="btn" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-slides"/></svg> Full Screen</a>
-          <a href="https://github.com/natolambert/rlhf-book/blob/main/teach/SALA-2026/talk.md?plain=1" class="btn btn-source" target="_blank" rel="noopener noreferrer"><svg width="14" height="14"><use href="#icon-github"/></svg> Source</a>
-        </div>
-      </div>
-    </div>
-  </section>
   </div><!-- /data-pagefind-body -->
 
   <section id="citation" style="padding: 0 20px;">
@@ -1010,18 +921,6 @@
   <!-- include: footer.html -->
 
   <script>
-    // Scale iframes to fit their containers
-    function scaleViewers() {
-      document.querySelectorAll('.slide-viewer').forEach(container => {
-        const iframe = container.querySelector('iframe');
-        if (!iframe) return;
-        const scale = container.offsetWidth / 1280;
-        iframe.style.transform = 'scale(' + scale + ')';
-      });
-    }
-    window.addEventListener('load', scaleViewers);
-    window.addEventListener('resize', scaleViewers);
-
     // Q&A question-list toggles
     document.querySelectorAll('.qa-toggle').forEach(btn => {
       btn.addEventListener('click', () => {
