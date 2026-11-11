@@ -114,16 +114,10 @@
       margin-bottom: 1em;
     }
 
-    .slides-section > h3,
     .other-lectures-section h3 {
       margin-top: 1.5em;
       margin-bottom: 0.75em;
       color: #333;
-    }
-
-    /* Prerequisites: a sub-block of the lecture series, not its own section */
-    .slides-section > h3:first-of-type {
-      margin-top: 1em;
     }
 
     .slides-section .course-list {
@@ -336,16 +330,6 @@
       margin: 0;
     }
 
-    .page-guide {
-      margin: 0 0 2em;
-      padding-left: 1.2em;
-      color: #333;
-    }
-
-    .page-guide li {
-      margin-bottom: 0.45em;
-    }
-
     /* Compact Books & Courses grid */
     .resource-grid {
       display: grid;
@@ -461,9 +445,7 @@
     :root[data-theme="dark"] .other-lectures-section h2 {
       border-bottom-color: var(--color-link);
     }
-    :root[data-theme="dark"] .slides-section > h3,
-    :root[data-theme="dark"] .other-lectures-section h3,
-    :root[data-theme="dark"] .page-guide {
+    :root[data-theme="dark"] .other-lectures-section h3 {
       color: var(--color-heading);
     }
     :root[data-theme="dark"] .welcome-video,
@@ -597,18 +579,10 @@
     </div>
   </div>
 
-  <ul class="page-guide">
-    <li><a href="#lectures"><strong>Lecture Series</strong></a> &mdash; the core lectures that follow the book chapter by chapter, with recordings, slides, PDFs, and source. Starts with the <a href="#prerequisites">prerequisites</a>.</li>
-    <li><a href="#other-lectures"><strong>Off-Syllabus Lectures</strong></a> &mdash; guest lectures and invited talks on closely related post-training material.</li>
-    <li><a href="#extra-resources"><strong>Extra Resources</strong></a> &mdash; recommended books, external RL courses, and Nathan's own talks paired with the chapters they go with.</li>
-  </ul>
-
   <section class="slides-section" id="lectures">
     <h2>Lecture Series</h2>
 
-    <h3 id="prerequisites">Prerequisites</h3>
-
-    <p>This course is roughly aimed at early AI PhD or master's students, but it is designed to be accessible to anyone willing to put in the work.</p>
+    <p id="prerequisites">This course is roughly aimed at early AI PhD or master's students, but it is designed to be accessible to anyone willing to put in the work.</p>
 
     <p>You do <strong>not</strong> need prior reinforcement learning or language modeling background to start. A motivated learner who studies hard &mdash; leaning on today's top LLMs as a tutor to unpack unfamiliar math, code, and jargon &mdash; can follow the entire course. I encourage you to go down rabbit holes, skip or reorder videos, and chase what excites you.</p>
 
