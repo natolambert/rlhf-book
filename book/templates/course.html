@@ -99,25 +99,38 @@
       font-size: 0.9em;
     }
 
-    .slides-section h2 {
-      border-bottom: 3px solid #0645ad;
-      padding-bottom: 0.3em;
-      margin-top: 2em;
-      margin-bottom: 1em;
-    }
-
-    /* Other lectures sections */
+    /* Section headings: quiet, no rule. The dots above do the separating. */
+    .slides-section h2,
     .other-lectures-section h2 {
-      border-bottom: 3px solid #0645ad;
-      padding-bottom: 0.3em;
-      margin-top: 2em;
-      margin-bottom: 1em;
+      font-size: 1.5em;
+      margin-top: 0;
+      margin-bottom: 0.6em;
     }
 
     .other-lectures-section h3 {
+      font-size: 1.15em;
       margin-top: 1.5em;
       margin-bottom: 0.75em;
       color: #333;
+    }
+
+    /* Three-dot break between sections */
+    hr.section-dots {
+      border: 0;
+      height: auto;
+      background: none;
+      margin: 2.75em 0 2.25em;
+      text-align: center;
+      color: #999;
+      overflow: visible;
+    }
+
+    hr.section-dots::before {
+      content: "\00b7\2002\00b7\2002\00b7";
+      font-size: 1.6em;
+      line-height: 1;
+      letter-spacing: 0.15em;
+      margin-right: -0.15em;
     }
 
     .slides-section .course-list {
@@ -441,9 +454,9 @@
     :root[data-theme="dark"] .talk-group .when {
       color: var(--color-text-faint);
     }
-    :root[data-theme="dark"] .slides-section h2,
-    :root[data-theme="dark"] .other-lectures-section h2 {
-      border-bottom-color: var(--color-link);
+    :root[data-theme="dark"] hr.section-dots {
+      background: none;
+      color: var(--color-text-faint);
     }
     :root[data-theme="dark"] .other-lectures-section h3 {
       color: var(--color-heading);
@@ -757,10 +770,12 @@
     </div>
   </section>
 
+  <hr class="section-dots">
+
   <section class="slides-section" id="other-lectures">
     <h2>Off-Syllabus Lectures</h2>
 
-    <p class="meta" style="margin-bottom: 1em;">Guest lectures and invited talks on closely related post-training material, given outside the main series. Newest first.</p>
+    <p class="meta" style="margin-bottom: 1em;">Other lectures I've given closely related to the book content. The newest ones are beginning to include material not covered in the course. I hope to keep this up to date over the next few years!</p>
 
     <div class="course-list">
       <div class="course-row" id="cornell-cs4789-2026">
@@ -779,6 +794,8 @@
       </div>
     </div>
   </section>
+
+  <hr class="section-dots">
 
   <section class="other-lectures-section" id="extra-resources">
     <h2>Extra Resources</h2>
