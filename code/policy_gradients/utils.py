@@ -358,6 +358,11 @@ def compute_rewards(
         c + p + cfg.format_weight * f for c, p, f in zip(correctness, penalty, format, strict=True)
     ]
 
+    # Reasoning Gym scorers can give partial credit (e.g. spell_backward returns the fraction
+    # of matching characters), so ``binary`` thresholds correctness instead of multiplying by
+    # it. Compare the raw scores: float32 would round a 0.9999999999999999 near miss to 1.0.
+    binary = [float(c == 1.0 and f == 1.0) for c, f in zip(correctness, format, strict=True)]
+
     t = lambda x: torch.tensor(x, dtype=torch.float32, device=device).unsqueeze(-1)
 
     rewards = TensorDict(
@@ -366,10 +371,10 @@ def compute_rewards(
             "correctness": t(correctness),
             "format": t(format),
             "penalty": t(penalty),
+            "binary": t(binary),
         },
         batch_size=[len(entries)],
     )
-    rewards["binary"] = (rewards["correctness"] * (rewards["format"] == 1.0)).float()
     return rewards
 
 
