@@ -76,14 +76,24 @@ def get_attn_implementation() -> str:
 
 
 def resolve_device(cuda_device_id: int = 0, device: str = "auto") -> torch.device:
-    """Resolve 'auto' to CUDA if available, otherwise CPU."""
+    """Resolve 'auto' to CUDA, then Apple Silicon MPS, then CPU."""
     if device == "auto":
-        device = "cuda" if torch.cuda.is_available() else "cpu"
+        if torch.cuda.is_available():
+            device = "cuda"
+        elif torch.backends.mps.is_available():
+            device = "mps"
+        else:
+            device = "cpu"
     elif device == "cuda":
         if not torch.cuda.is_available():
             raise ValueError("CUDA is not available, but device is set to 'cuda'")
+    elif device == "mps":
+        if not torch.backends.mps.is_available():
+            raise ValueError("MPS is not available, but device is set to 'mps'")
     elif device != "cpu":
-        raise ValueError(f"Unsupported device={device!r}. Expected 'auto', 'cuda', or 'cpu'.")
+        raise ValueError(
+            f"Unsupported device={device!r}. Expected 'auto', 'cuda', 'mps', or 'cpu'."
+        )
 
     if device == "cuda":
         device = f"cuda:{cuda_device_id}"

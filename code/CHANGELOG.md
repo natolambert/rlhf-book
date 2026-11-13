@@ -5,6 +5,7 @@ On release, entries get moved under a version heading.
 
 ## Unreleased
 
+- 2026-11-13: [PR #544](https://github.com/natolambert/rlhf-book/pull/544) `instruction_tuning/` `resolve_device()` now resolves `device: auto` to Apple Silicon MPS when CUDA is unavailable (order: CUDA → MPS → CPU) and validates an explicit `device: mps`. CUDA and CPU-only machines are unaffected; Mac runs that previously used CPU now train on MPS.
 - 2026-09-02: [PR #528](https://github.com/natolambert/rlhf-book/pull/528) corrected the ratio direction in the k1 and k3 estimators so they estimate `KL(pi || pi_ref)` for samples drawn from the policy, and added directional regression coverage. This changes KL metrics and reward-penalty semantics for configurations with `beta > 0`; checked-in defaults with `beta: 0.0` are unaffected.
 - 2026-08-19: [PR #525](https://github.com/natolambert/rlhf-book/pull/525) hardened the k3 KL estimator (`policy_gradients/loss.py`) against catastrophic cancellation near `r = 0` by computing `expm1(r) - r` instead of `(exp(r) - 1) - r`, plus regression tests. Behavior for `r > 0` is unchanged.
 
