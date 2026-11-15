@@ -5,6 +5,7 @@ On release, entries get moved under a version heading.
 
 ## Unreleased
 
+- 2026-11-12: [PR #542](https://github.com/natolambert/rlhf-book/pull/542) made the `binary` reward in `policy_gradients/utils.py` a true 0/1 success indicator. It was `correctness * (format == 1.0)`, which stayed fractional under Reasoning Gym partial credit (a one-letter-off `spell_backward` answer scored ~0.83), so MaxRL gave near misses a positive advantage and `avg_binary` overstated the success rate. Fixes [#541](https://github.com/natolambert/rlhf-book/issues/541). This changes comparability for `loss: maxrl` runs and for the logged `avg_binary` on every loss; `total`, `correctness`, `format`, and all other advantages are unchanged.
 - 2026-09-02: [PR #528](https://github.com/natolambert/rlhf-book/pull/528) corrected the ratio direction in the k1 and k3 estimators so they estimate `KL(pi || pi_ref)` for samples drawn from the policy, and added directional regression coverage. This changes KL metrics and reward-penalty semantics for configurations with `beta > 0`; checked-in defaults with `beta: 0.0` are unaffected.
 - 2026-08-19: [PR #525](https://github.com/natolambert/rlhf-book/pull/525) hardened the k3 KL estimator (`policy_gradients/loss.py`) against catastrophic cancellation near `r = 0` by computing `expm1(r) - r` instead of `(exp(r) - 1) - r`, plus regression tests. Behavior for `r > 0` is unchanged.
 

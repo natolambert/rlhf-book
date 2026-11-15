@@ -193,7 +193,7 @@ class MaxRLLoss(nn.Module):
     """MaxRL loss (Tajwar et al., 2026).
 
     Uses binary rewards per completion:
-        r = correctness * format
+        r = 1 if correctness == 1 and format == 1 else 0
     """
 
     def __init__(self, **kwargs) -> None:
