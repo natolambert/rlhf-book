@@ -809,20 +809,6 @@ Without the std, the two differ only by a constant scale. The bigger difference 
 
 ---
 
-## Is StableReinforce score centering?
-
-<!-- footnote-right: [Tinker docs](https://tinker-docs.thinkingmachines.ai/tinker/losses/stable-reinforce/) -->
-
-Tinker's docs describe the behavior, but not the main loss:
-
-> "In our internal post-training, this loss function has led to extremely stable training, even under highly off-policy async RL and low precision numerics."
-
-They do reveal a clue: sampling must record extra information, through `record_stability_info=True`.
-
-Frontier losses are rarely published, so public ideas are rarely confirmed. Here, Martin Marek, the score centering paper's first author, tried to recover the loss from its gradients alone.
-
----
-
 ## Reverse-engineering a loss from its gradients
 
 <!-- footnote-right: [Marek's thread](https://x.com/mrtnm/status/2114145574987702525) -->
@@ -942,6 +928,21 @@ nathan@natolambert.com
 
 ---
 
+
+<!-- after: references -->
+## More clues in Stable Reinforce
+
+<!-- footnote-right: [Tinker docs](https://tinker-docs.thinkingmachines.ai/tinker/losses/stable-reinforce/) -->
+
+Tinker's docs describe the behavior, but not the main loss:
+
+> "In our internal post-training, this loss function has led to extremely stable training, even under highly off-policy async RL and low precision numerics."
+
+They do reveal a clue: sampling must record extra information, through `record_stability_info=True`.
+
+Frontier losses are rarely published, so public ideas are rarely confirmed. Here, Martin Marek, the score centering paper's first author, tried to recover the loss from its gradients alone.
+
+---
 
 <!-- after: references -->
 ## Why the rank-1 LoRA trick reads out the logit gradient
