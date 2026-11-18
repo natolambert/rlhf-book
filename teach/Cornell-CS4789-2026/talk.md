@@ -829,6 +829,26 @@ $$\Delta w \approx -\frac{\text{lr} \cdot g}{\epsilon}$$
 
 ---
 
+## Why the rank-1 LoRA trick reads out the logit gradient
+
+<!-- footnote-right: [Marek's thread](https://x.com/mrtnm/status/2114145574987702525) -->
+
+With hidden state $h \in \mathbb{R}^d$ and unembedding $W \in \mathbb{R}^{|\mathcal{V}| \times d}$, the logits are $z = W h$. A rank-1 LoRA adds $B A$, with $A \in \mathbb{R}^{1 \times d}$ and $B \in \mathbb{R}^{|\mathcal{V}| \times 1}$:
+
+$$z = (W + B A) \, h = W h + B \, (A h)$$
+
+$A h$ is a single number, so write $c = A h$. The adapter adds $c$ times the vector $B$ to the logits:
+
+$$z = W h + c \, B$$
+
+By the chain rule, with $g = \partial L / \partial z$ the gradient on the logits:
+
+$$\frac{\partial L}{\partial B} = \frac{\partial L}{\partial z} \, \frac{\partial z}{\partial B} = c \, g$$
+
+So the gradient on $B$ is the logit gradient, scaled by $c$. LoRA starts at $B = 0$, so the forward pass is unchanged. With Adam's $\epsilon = 10{,}000$, $\Delta B \approx -\text{lr} \cdot c \, g / \epsilon$, so the change in $B$ after one step shows $g$.
+
+---
+
 ## Only 8 logits move
 
 <!-- footnote-right: [Marek's thread](https://x.com/mrtnm/status/2114145574987702525) -->
@@ -941,27 +961,6 @@ Tinker's docs describe the behavior, but not the main loss:
 They do reveal a clue: sampling must record extra information, through `record_stability_info=True`.
 
 Frontier losses are rarely published, so public ideas are rarely confirmed. Here, Martin Marek, the score centering paper's first author, tried to recover the loss from its gradients alone.
-
----
-
-<!-- after: references -->
-## Why the rank-1 LoRA trick reads out the logit gradient
-
-<!-- footnote-right: [Marek's thread](https://x.com/mrtnm/status/2114145574987702525) -->
-
-With hidden state $h \in \mathbb{R}^d$ and unembedding $W \in \mathbb{R}^{|\mathcal{V}| \times d}$, the logits are $z = W h$. A rank-1 LoRA adds $B A$, with $A \in \mathbb{R}^{1 \times d}$ and $B \in \mathbb{R}^{|\mathcal{V}| \times 1}$:
-
-$$z = (W + B A) \, h = W h + B \, (A h)$$
-
-$A h$ is a single number, so write $c = A h$. The adapter adds $c$ times the vector $B$ to the logits:
-
-$$z = W h + c \, B$$
-
-By the chain rule, with $g = \partial L / \partial z$ the gradient on the logits:
-
-$$\frac{\partial L}{\partial B} = \frac{\partial L}{\partial z} \, \frac{\partial z}{\partial B} = c \, g$$
-
-So the gradient on $B$ is the logit gradient, scaled by $c$. LoRA starts at $B = 0$, so the forward pass is unchanged. With Adam's $\epsilon = 10{,}000$, $\Delta B \approx -\text{lr} \cdot c \, g / \epsilon$, so the change in $B$ after one step shows $g$.
 
 ---
 
