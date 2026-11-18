@@ -849,7 +849,7 @@ So the gradient on $B$ is the logit gradient, scaled by $c$. LoRA starts at $B =
 
 ---
 
-## Only 8 logits move
+## Comparing logits/gradients in Tinker
 
 <!-- footnote-right: [Marek's thread](https://x.com/mrtnm/status/2114145574987702525) -->
 
@@ -868,7 +868,9 @@ The bars come in multiples of $1/8$, and the third row, Reinforce with score cen
 
 ---
 
-## Why a sparse gradient is the clue
+## Tinker uses a different score-centering approximation (token-based sample)
+
+<!-- class: content-tight -->
 
 <!-- footnote-right: [Marek's thread](https://x.com/mrtnm/status/2114145574987702525) -->
 
@@ -888,7 +890,7 @@ Flip the signs for a loss and this is the figure: $-1$ on the sampled token, $+1
 
 ---
 
-## The match
+## The gradients match exactly!
 
 <!-- footnote-right: [Marek's thread](https://x.com/mrtnm/status/2114145574987702525) -->
 
@@ -918,6 +920,14 @@ Ripple-65B Preview, a 65B open-weight model from Ricursive (built on a lot of Ol
 ---
 
 ## Takeaways
+
+RL in industry is mostly a systems/engineering problem.
+
+RL on language models has shifted remarkably little from some of the earliest deep RL algorithms.
+
+Even since DeepSeek R1 / GRPO, algorithmic innovation is very minimal.
+
+RL in industry is often more brute force than clever/insightful.
 
 
 ---
