@@ -130,8 +130,6 @@ $p_v$ and $q_v$ are shorthand for the probability of token $v$ at one position, 
 | Terminal reward | RM score, verifier output, judge-scores |
 | $\gamma$ | Typically 1.0 (no discounting) |
 
-<!-- step -->
-
 Two implementation-level views of this MDP: **token-level** (each token is a separate action, used in PPO with GAE) vs. **sequence-level** (entire completion is one action, used in REINFORCE/GRPO).
 
 ---
@@ -151,7 +149,7 @@ Two implementation-level views of this MDP: **token-level** (each token is a sep
 
 </div>
 
-Math RL needed prompts and answer checkers. Agentic RL needs **environments**: containers, real file systems, services, verification tests [@ivison2026tmax]. **Building worlds for LLMs is hard.**
+Math/code simply verifiable RL needed prompts and answer checkers. Agentic RL needs **environments**: containers, real file systems, services, verification tests [@ivison2026tmax].
 
 ---
 
@@ -188,9 +186,19 @@ The gradient says: for each sampled token, compute the direction in parameter sp
 
 ## Recall: Why losses are sums of log-probs
 
-The policy gradient derivation gives:
+A language model generates one token at a time, so a trajectory's probability is a product of next-token probabilities. The next state is just the context plus the new token, so the dynamics add no terms that depend on $\theta$:
 
-$$\nabla_\theta \log p_\theta(\tau) = \sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t)$$
+$$p_\theta(\tau) = \prod_{t=0}^{T} \pi_\theta(a_t \mid s_t)$$
+
+<!-- step -->
+
+The log turns the product into a sum, so its gradient is a sum of per-token terms:
+
+$$\nabla_\theta \log p_\theta(\tau) = \nabla_\theta \sum_{t=0}^{T} \log \pi_\theta(a_t \mid s_t) = \sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t)$$
+
+---
+
+## Recall: A loss whose gradient is the policy gradient
 
 So we write a loss whose negative gradient is the policy gradient, treating each advantage $A_i$ as a constant across the trajectory:
 
