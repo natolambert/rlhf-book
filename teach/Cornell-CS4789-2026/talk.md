@@ -278,9 +278,9 @@ advantages = rewards - baseline
 loss = -(advantages * seq_log_probs).mean()
 ```
 
-TPositive advantage → increase probability. Negative → decrease. 
+Positive advantage → increase probability. Negative → decrease. 
 
-(Aside: How we reduce per-token losses to a scalar — `.mean()` here — turns out to matter more than you'd expect. More in the [book](https://rlhfbook.com/c/06-policy-gradients#loss-aggregation-tradeoffs) and [lecture video](https://www.youtube.com/watch?v=i-AIMpZHgeg&t=2704s).)
+(Aside: How we reduce per-token losses to a scalar — `.mean()` here — turns out to matter more than you'd expect. More in the [book](https://rlhfbook.com/c/06-policy-gradients#loss-aggregation-tradeoffs) and [another lecture](https://www.youtube.com/watch?v=i-AIMpZHgeg&t=2704s).)
 
 ---
 
@@ -459,8 +459,6 @@ seq_logprobs = (token_logprobs * completion_mask[:, 1:]).sum(-1)
 optimizer.step()
 sampler.load_weights(model)
 ```
-
-Steps 1 and 3 ask two different systems about the same tokens. Do they agree?
 
 ---
 
@@ -803,13 +801,9 @@ The group advantages are nearly the same. GRPO normalizes each reward by the gro
 
 $$A_i^{\text{GRPO}} = \frac{r_i - \text{mean}(r_1, \dots, r_G)}{\text{std}(r_1, \dots, r_G)}$$
 
-<!-- step -->
-
 REINFORCE with a group baseline is usually RLOO, which leaves each sample out of its own baseline:
 
 $$A_i^{\text{RLOO}} = r_i - \frac{1}{G-1} \sum_{j \neq i} r_j = \frac{G}{G-1} \big( r_i - \text{mean}(r_1, \dots, r_G) \big)$$
-
-<!-- step -->
 
 Without the std, the two differ only by a constant scale. The bigger difference is the loss: GRPO usually wraps the advantage in PPO's clipped ratio, while REINFORCE uses the plain log-prob loss.
 
@@ -823,11 +817,7 @@ Tinker's docs describe the behavior, but not the main loss:
 
 > "In our internal post-training, this loss function has led to extremely stable training, even under highly off-policy async RL and low precision numerics."
 
-<!-- step -->
-
 They do reveal a clue: sampling must record extra information, through `record_stability_info=True`.
-
-<!-- step -->
 
 Frontier losses are rarely published, so public ideas are rarely confirmed. Here, Martin Marek, the score centering paper's first author, tried to recover the loss from its gradients alone.
 
@@ -844,8 +834,6 @@ Tinker does not expose the loss or the "stability info," but it does let you tak
 **Step 1: Recover the raw gradient.** Tinker has no SGD, so use Adam with $\epsilon = 10{,}000$. This dominates Adam's second moment:
 
 $$\Delta w \approx -\frac{\text{lr} \cdot g}{\epsilon}$$
-
-<!-- step -->
 
 **Step 2: Read it in logit space.** Train a rank-1 LoRA adapter on the unembedding of Qwen3.5-4B. The gradient with respect to $B$ equals the gradient with respect to the logits, up to scale.
 
@@ -866,8 +854,6 @@ For a single-token update:
 - **Reinforce** puts a nonzero gradient on all logits: 248,077 of them move.
 - **StableReinforce** moves only 8.
 
-<!-- step -->
-
 The bars come in multiples of $1/8$, and the third row, Reinforce with score centering, is identical.
 
 |||
@@ -884,19 +870,13 @@ The plot shows gradients with respect to the logits $z$. For a softmax, the grad
 
 $$\boldsymbol{\xi}_v = \nabla_z \log p_v = e_v - p$$
 
-<!-- step -->
-
 Estimate $\bar{\boldsymbol{\xi}}$ by drawing 8 tokens from the sampler, $v_1, \dots, v_8 \sim q$:
 
 $$\bar{\boldsymbol{\xi}} \approx \frac{1}{8} \sum_{i=1}^{8} \boldsymbol{\xi}_{v_i} = \frac{1}{8} \sum_{i=1}^{8} (e_{v_i} - p) = \frac{1}{8} \sum_{i=1}^{8} e_{v_i} - p$$
 
-<!-- step -->
-
 Subtract it from the score of the sampled token. The dense $-p$ cancels exactly:
 
 $$\boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}} \approx (e_{a_t} - p) - \left( \frac{1}{8} \sum_{i=1}^{8} e_{v_i} - p \right) = e_{a_t} - \frac{1}{8} \sum_{i=1}^{8} e_{v_i}$$
-
-<!-- step -->
 
 Flip the signs for a loss and this is the figure: $-1$ on the sampled token, $+1/8$ per draw.
 
@@ -907,8 +887,6 @@ Flip the signs for a loss and this is the figure: $-1$ on the sampled token, $+1
 <!-- footnote-right: [Marek's thread](https://x.com/mrtnm/status/2114145574987702525) -->
 
 **Hypothesis:** StableReinforce is REINFORCE plus score centering, with the expected score computed over 8 randomly sampled tokens.
-
-<!-- step -->
 
 **Test:** Implement that as a custom Tinker loss, take an optimizer step, and compare. The gradients are within numeric precision across all layers.
 
