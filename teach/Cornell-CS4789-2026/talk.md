@@ -215,7 +215,7 @@ Gradient descent on $L$ is gradient ascent on $J$.
 
 ---
 
-## From the loss to autodiff
+## From the loss to the gradient
 
 In code, we compute the **log-probs** and let autodiff handle the gradient:
 
@@ -226,12 +226,13 @@ loss.backward()  # fills each parameter's .grad with ∇L
 optimizer.step()  # θ ← θ - η ∇L
 ```
 
+Line 2 implements the policy gradient:
+
+$$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim p_\theta}\!\left[\sum_{t=0}^{T} A \, \nabla_\theta \log \pi_\theta(a_t \mid s_t)\right]$$
+
 `loss.backward()` runs backpropagation: it computes $\partial L / \partial \theta$ for every parameter. 
-
 `optimizer.step()` applies the update. 
-
 The loss values themselves are often weird in RL (e.g. zero-centered distributions, rather than nice decreasing accuracy metrics of pretraining)
-
 Most RL algorithms used today are variations on this computation.
 
 ---
