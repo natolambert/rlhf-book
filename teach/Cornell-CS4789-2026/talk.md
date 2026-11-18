@@ -211,6 +211,8 @@ $$
 
 Gradient descent on $L$ is gradient ascent on $J$.
 
+**Reminder:** when implementing algorithms like this, we write code for the loss, and autodiff yields the gradients.
+
 ---
 
 ## From the loss to autodiff
