@@ -251,11 +251,11 @@ labels = input_ids[:, 1:]                     # (B, L-1)
 completion_mask = completion_mask[:, 1:]       # (B, L-1)
 
 # Per-token log-probs
-log_probs = logits.log_softmax(dim=-1)
+log_probs = logits.log_softmax(dim=-1)        # (B, L-1, vocab_size)
 token_log_probs = log_probs.gather(dim=-1, index=labels.unsqueeze(-1)).squeeze(-1) # (B, L-1)
 
 # Per-sequence log-prob: sum over completion tokens
-seq_log_probs = (token_log_probs * completion_mask).sum(dim=-1)
+seq_log_probs = (token_log_probs * completion_mask).sum(dim=-1)  # (B,)
 ```
 
 Everything in log-space to avoid numerical underflow from multiplying many small probabilities.
