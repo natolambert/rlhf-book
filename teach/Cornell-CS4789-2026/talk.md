@@ -12,32 +12,7 @@ footer:
   left: "rlhfbook.com"
   center: "Cornell CS 4789"
   right: "Lambert {n}/{N}"
-custom_css: |
-  .slide--section-break { background: #F28482; }
-  :root {
-    --colloquium-progress-fill: #F28482;
-  }
-  .slide--title-sidebar h1 {
-    font-size: 2.5em;
-    letter-spacing: 0;
-  }
-  /* colloquium's .slide-content has flex: 1, so valign alone can't move it */
-  .slide--content.valign-center > .slide-content { flex: 0 1 auto; }
-  .compute-table td { vertical-align: top; padding-top: 0.75em; padding-bottom: 0.75em; }
-  .compute-note { font-size: 0.7em; color: #6b7280; }
-  .shorthand-note { font-size: 0.7em; line-height: 1.2; color: #6b7280; margin-bottom: 0.2em; }
-  .col-text-sm { font-size: 0.85em; }
-  .diagram-md img { max-height: 430px; width: auto; }
-  .slide.diagram-sm .slide-content img { max-height: 400px; width: auto; }
-  .slide.diagram-xs .slide-content img { max-height: 330px; width: auto; }
-  .notation-table { font-size: 0.95em; }
-  .notation-table td, .notation-table th { padding-top: 0.35em; padding-bottom: 0.35em; }
-  .notation-table td:first-child, .notation-table th { white-space: nowrap; }
-  .mdp-table { font-size: 0.85em; }
-  .mdp-table td, .mdp-table th { padding-top: 0.3em; padding-bottom: 0.3em; }
-  .compute-table td strong { font-size: 1.15em; }
-  .compute-table td small { display: block; margin-top: 0.2em; font-size: 0.68em; line-height: 1.35; color: #6b7280; }
-  .compute-table td:last-child strong { font-size: 1.4em; color: #E8676A; }
+custom_css: talk.css
 ---
 
 <!-- layout: title-sidebar -->
@@ -155,8 +130,6 @@ $p_v$ and $q_v$ are shorthand for the probability of token $v$ at one position, 
 | Terminal reward | RM score, verifier output, judge-scores |
 | $\gamma$ | Typically 1.0 (no discounting) |
 
-<!-- step -->
-
 Two implementation-level views of this MDP: **token-level** (each token is a separate action, used in PPO with GAE) vs. **sequence-level** (entire completion is one action, used in REINFORCE/GRPO).
 
 ---
@@ -176,7 +149,7 @@ Two implementation-level views of this MDP: **token-level** (each token is a sep
 
 </div>
 
-Math RL needed prompts and answer checkers. Agentic RL needs **environments**: containers, real file systems, services, verification tests [@ivison2026tmax]. **Building worlds for LLMs is hard.**
+Math/code simply verifiable RL needed prompts and answer checkers. Agentic RL needs **environments**: containers, real file systems, services, verification tests [@ivison2026tmax].
 
 ---
 
@@ -213,9 +186,19 @@ The gradient says: for each sampled token, compute the direction in parameter sp
 
 ## Recall: Why losses are sums of log-probs
 
-The policy gradient derivation gives:
+A language model generates one token at a time, so a trajectory's probability is a product of next-token probabilities. The next state is just the context plus the new token, so the dynamics add no terms that depend on $\theta$:
 
-$$\nabla_\theta \log p_\theta(\tau) = \sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t)$$
+$$p_\theta(\tau) = \prod_{t=0}^{T} \pi_\theta(a_t \mid s_t)$$
+
+<!-- step -->
+
+The log turns the product into a sum, so its gradient is a sum of per-token terms:
+
+$$\nabla_\theta \log p_\theta(\tau) = \nabla_\theta \sum_{t=0}^{T} \log \pi_\theta(a_t \mid s_t) = \sum_{t=0}^{T} \nabla_\theta \log \pi_\theta(a_t \mid s_t)$$
+
+---
+
+## Recall: A loss whose gradient is the policy gradient
 
 So we write a loss whose negative gradient is the policy gradient, treating each advantage $A_i$ as a constant across the trajectory:
 
@@ -228,9 +211,11 @@ $$
 
 Gradient descent on $L$ is gradient ascent on $J$.
 
+**Reminder:** when implementing algorithms like this, we write code for the loss, and autodiff yields the gradients.
+
 ---
 
-## From the loss to autodiff
+## From the loss to the gradient
 
 In code, we compute the **log-probs** and let autodiff handle the gradient:
 
@@ -241,12 +226,13 @@ loss.backward()  # fills each parameter's .grad with ∇L
 optimizer.step()  # θ ← θ - η ∇L
 ```
 
+Line 2 implements the policy gradient:
+
+$$\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim p_\theta}\!\left[\sum_{t=0}^{T} A \, \nabla_\theta \log \pi_\theta(a_t \mid s_t)\right]$$
+
 `loss.backward()` runs backpropagation: it computes $\partial L / \partial \theta$ for every parameter. 
-
 `optimizer.step()` applies the update. 
-
 The loss values themselves are often weird in RL (e.g. zero-centered distributions, rather than nice decreasing accuracy metrics of pretraining)
-
 Most RL algorithms used today are variations on this computation.
 
 ---
@@ -265,11 +251,11 @@ labels = input_ids[:, 1:]                     # (B, L-1)
 completion_mask = completion_mask[:, 1:]       # (B, L-1)
 
 # Per-token log-probs
-log_probs = logits.log_softmax(dim=-1)
+log_probs = logits.log_softmax(dim=-1)        # (B, L-1, vocab_size)
 token_log_probs = log_probs.gather(dim=-1, index=labels.unsqueeze(-1)).squeeze(-1) # (B, L-1)
 
 # Per-sequence log-prob: sum over completion tokens
-seq_log_probs = (token_log_probs * completion_mask).sum(dim=-1)
+seq_log_probs = (token_log_probs * completion_mask).sum(dim=-1)  # (B,)
 ```
 
 Everything in log-space to avoid numerical underflow from multiplying many small probabilities.
@@ -292,9 +278,9 @@ advantages = rewards - baseline
 loss = -(advantages * seq_log_probs).mean()
 ```
 
-TPositive advantage → increase probability. Negative → decrease. 
+Positive advantage → increase probability. Negative → decrease. 
 
-(Aside: How we reduce per-token losses to a scalar — `.mean()` here — turns out to matter more than you'd expect. More in the [book](https://rlhfbook.com/c/06-policy-gradients#loss-aggregation-tradeoffs) and [lecture video](https://www.youtube.com/watch?v=i-AIMpZHgeg&t=2704s).)
+(Aside: How we reduce per-token losses to a scalar — `.mean()` here — turns out to matter more than you'd expect. More in the [book](https://rlhfbook.com/c/06-policy-gradients#loss-aggregation-tradeoffs) and [another lecture](https://www.youtube.com/watch?v=i-AIMpZHgeg&t=2704s).)
 
 ---
 
@@ -473,8 +459,6 @@ seq_logprobs = (token_logprobs * completion_mask[:, 1:]).sum(-1)
 optimizer.step()
 sampler.load_weights(model)
 ```
-
-Steps 1 and 3 ask two different systems about the same tokens. Do they agree?
 
 ---
 
@@ -817,33 +801,11 @@ The group advantages are nearly the same. GRPO normalizes each reward by the gro
 
 $$A_i^{\text{GRPO}} = \frac{r_i - \text{mean}(r_1, \dots, r_G)}{\text{std}(r_1, \dots, r_G)}$$
 
-<!-- step -->
-
 REINFORCE with a group baseline is usually RLOO, which leaves each sample out of its own baseline:
 
 $$A_i^{\text{RLOO}} = r_i - \frac{1}{G-1} \sum_{j \neq i} r_j = \frac{G}{G-1} \big( r_i - \text{mean}(r_1, \dots, r_G) \big)$$
 
-<!-- step -->
-
 Without the std, the two differ only by a constant scale. The bigger difference is the loss: GRPO usually wraps the advantage in PPO's clipped ratio, while REINFORCE uses the plain log-prob loss.
-
----
-
-## Is StableReinforce score centering?
-
-<!-- footnote-right: [Tinker docs](https://tinker-docs.thinkingmachines.ai/tinker/losses/stable-reinforce/) -->
-
-Tinker's docs describe the behavior, but not the main loss:
-
-> "In our internal post-training, this loss function has led to extremely stable training, even under highly off-policy async RL and low precision numerics."
-
-<!-- step -->
-
-They do reveal a clue: sampling must record extra information, through `record_stability_info=True`.
-
-<!-- step -->
-
-Frontier losses are rarely published, so public ideas are rarely confirmed. Here, Martin Marek, the score centering paper's first author, tried to recover the loss from its gradients alone.
 
 ---
 
@@ -859,8 +821,6 @@ Tinker does not expose the loss or the "stability info," but it does let you tak
 
 $$\Delta w \approx -\frac{\text{lr} \cdot g}{\epsilon}$$
 
-<!-- step -->
-
 **Step 2: Read it in logit space.** Train a rank-1 LoRA adapter on the unembedding of Qwen3.5-4B. The gradient with respect to $B$ equals the gradient with respect to the logits, up to scale.
 
 |||
@@ -869,7 +829,27 @@ $$\Delta w \approx -\frac{\text{lr} \cdot g}{\epsilon}$$
 
 ---
 
-## Only 8 logits move
+## Why the rank-1 LoRA trick reads out the logit gradient
+
+<!-- footnote-right: [Marek's thread](https://x.com/mrtnm/status/2114145574987702525) -->
+
+With hidden state $h \in \mathbb{R}^d$ and unembedding $W \in \mathbb{R}^{|\mathcal{V}| \times d}$, the logits are $z = W h$. A rank-1 LoRA adds $B A$, with $A \in \mathbb{R}^{1 \times d}$ and $B \in \mathbb{R}^{|\mathcal{V}| \times 1}$:
+
+$$z = (W + B A) \, h = W h + B \, (A h)$$
+
+$A h$ is a single number, so write $c = A h$. The adapter adds $c$ times the vector $B$ to the logits:
+
+$$z = W h + c \, B$$
+
+By the chain rule, with $g = \partial L / \partial z$ the gradient on the logits:
+
+$$\frac{\partial L}{\partial B} = \frac{\partial L}{\partial z} \, \frac{\partial z}{\partial B} = c \, g$$
+
+So the gradient on $B$ is the logit gradient, scaled by $c$. LoRA starts at $B = 0$, so the forward pass is unchanged. With Adam's $\epsilon = 10{,}000$, $\Delta B \approx -\text{lr} \cdot c \, g / \epsilon$, so the change in $B$ after one step shows $g$.
+
+---
+
+## Comparing logits/gradients in Tinker
 
 <!-- footnote-right: [Marek's thread](https://x.com/mrtnm/status/2114145574987702525) -->
 
@@ -880,8 +860,6 @@ For a single-token update:
 - **Reinforce** puts a nonzero gradient on all logits: 248,077 of them move.
 - **StableReinforce** moves only 8.
 
-<!-- step -->
-
 The bars come in multiples of $1/8$, and the third row, Reinforce with score centering, is identical.
 
 |||
@@ -890,7 +868,9 @@ The bars come in multiples of $1/8$, and the third row, Reinforce with score cen
 
 ---
 
-## Why a sparse gradient is the clue
+## Tinker uses a different score-centering approximation (token-based sample)
+
+<!-- class: content-tight -->
 
 <!-- footnote-right: [Marek's thread](https://x.com/mrtnm/status/2114145574987702525) -->
 
@@ -898,31 +878,23 @@ The plot shows gradients with respect to the logits $z$. For a softmax, the grad
 
 $$\boldsymbol{\xi}_v = \nabla_z \log p_v = e_v - p$$
 
-<!-- step -->
-
 Estimate $\bar{\boldsymbol{\xi}}$ by drawing 8 tokens from the sampler, $v_1, \dots, v_8 \sim q$:
 
 $$\bar{\boldsymbol{\xi}} \approx \frac{1}{8} \sum_{i=1}^{8} \boldsymbol{\xi}_{v_i} = \frac{1}{8} \sum_{i=1}^{8} (e_{v_i} - p) = \frac{1}{8} \sum_{i=1}^{8} e_{v_i} - p$$
-
-<!-- step -->
 
 Subtract it from the score of the sampled token. The dense $-p$ cancels exactly:
 
 $$\boldsymbol{\xi}_{a_t} - \bar{\boldsymbol{\xi}} \approx (e_{a_t} - p) - \left( \frac{1}{8} \sum_{i=1}^{8} e_{v_i} - p \right) = e_{a_t} - \frac{1}{8} \sum_{i=1}^{8} e_{v_i}$$
 
-<!-- step -->
-
 Flip the signs for a loss and this is the figure: $-1$ on the sampled token, $+1/8$ per draw.
 
 ---
 
-## The match
+## The gradients match exactly!
 
 <!-- footnote-right: [Marek's thread](https://x.com/mrtnm/status/2114145574987702525) -->
 
 **Hypothesis:** StableReinforce is REINFORCE plus score centering, with the expected score computed over 8 randomly sampled tokens.
-
-<!-- step -->
 
 **Test:** Implement that as a custom Tinker loss, take an optimizer step, and compare. The gradients are within numeric precision across all layers.
 
@@ -948,6 +920,14 @@ Ripple-65B Preview, a 65B open-weight model from Ricursive (built on a lot of Ol
 ---
 
 ## Takeaways
+
+RL in industry is mostly a systems/engineering problem.
+
+RL on language models has shifted remarkably little from some of the earliest deep RL algorithms.
+
+Even since DeepSeek R1 / GRPO, algorithmic innovation is very minimal.
+
+RL in industry is often more brute force than clever/insightful.
 
 
 ---
@@ -978,6 +958,21 @@ nathan@natolambert.com
 
 ---
 
+
+<!-- after: references -->
+## More clues in Stable Reinforce
+
+<!-- footnote-right: [Tinker docs](https://tinker-docs.thinkingmachines.ai/tinker/losses/stable-reinforce/) -->
+
+Tinker's docs describe the behavior, but not the main loss:
+
+> "In our internal post-training, this loss function has led to extremely stable training, even under highly off-policy async RL and low precision numerics."
+
+They do reveal a clue: sampling must record extra information, through `record_stability_info=True`.
+
+Frontier losses are rarely published, so public ideas are rarely confirmed. Here, Martin Marek, the score centering paper's first author, tried to recover the loss from its gradients alone.
+
+---
 
 <!-- after: references -->
 ## Measuring the mismatch at one token
